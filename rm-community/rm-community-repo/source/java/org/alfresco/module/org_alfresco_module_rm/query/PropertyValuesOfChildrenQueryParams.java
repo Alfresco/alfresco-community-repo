@@ -27,7 +27,7 @@
 package org.alfresco.module.org_alfresco_module_rm.query;
 
 /**
- * Select parameter for <b>select_GetPropertyValuesOfChildren</b>.
+ * Select parameter for <b>select_GetStringPropertyValuesOfChildren</b>.
  *
  * @author Ana Manolache
  * @since 2.6

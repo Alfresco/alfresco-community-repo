@@ -21,7 +21,7 @@
     </select>
 
    <!-- Get distinct property values of children for a given property qname -->
-   <select id="select_GetPropertyValuesOfChildren"
+   <select id="select_GetStringPropertyValuesOfChildren"
            parameterType="org.alfresco.module.org_alfresco_module_rm.query.PropertyValuesOfChildrenQueryParams"
            resultType="java.lang.String">
       select

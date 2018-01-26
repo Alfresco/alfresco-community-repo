@@ -27,10 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -96,12 +95,12 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     }
 
     /**
-     * Given a folder containing 3 files with the descriptions set
-     * When I check if the folder contains children having the description of file2 or file2
-     * Then the answer is positive
+     * Given a folder containing 3 files with distinct descriptions set
+     * When I get the children property values
+     * Then the answer contains all distinct property values set
      */
     @org.junit.Test
-    public void testHasChildrenWithPropertyValues_someChildrenWithValues() throws Exception
+    public void testgetChildrenWithPropertyValues_childrenWithValues() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
@@ -112,8 +111,7 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             String propValue1 = "descr1"; // set on file1
             String propValue2 = "descr2"; // set on file2
             String propValue3 = "descr3"; // set on file3
-            String propValue4 = "descr4"; // not set on any file
-            Boolean result;
+            Set<String> propertyValues;
 
             @Override
             public void given() throws Exception
@@ -132,14 +130,72 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                List<String> propertyValues = queryDAO.getChildrenPropertyValues(parentFolder, PROP_DESCRIPTION);
-                result = !Collections.disjoint(Arrays.asList(propValue1, propValue2, propValue4),propertyValues);
+                propertyValues = queryDAO.getChildrenStringPropertyValues(parentFolder, PROP_DESCRIPTION);
             }
 
             @Override
             public void then() throws Exception
             {
-                assertTrue(result);
+                Set<String> expectedValues = ImmutableSet.of(propValue1,propValue2,propValue3);
+                assertEquals(propertyValues.size(),expectedValues.size());
+                assertTrue(propertyValues.containsAll(expectedValues));
+            }
+
+            @Override
+            public void after() throws Exception
+            {
+                if (parentFolder != null && nodeService.exists(parentFolder))
+                {
+                    nodeService.deleteNode(parentFolder);
+                }
+            }
+        });
+    }
+
+    /**
+     * Given a folder containing 3 files only some have description set
+     * When I get the children property values
+     * Then the answer  contains only the descriptions set
+     */
+    @org.junit.Test
+    public void testGetChildrenWithPropertyValues_someChildrenWithValues() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            NodeRef parentFolder;
+            NodeRef file1;
+            NodeRef file2;
+            NodeRef file3;
+            String propValue1 = "descr1"; // set on file1
+            String propValue2 = "descr2"; // set on file2
+            Set<String> propertyValues;
+
+
+            @Override
+            public void given() throws Exception
+            {
+                setupCollaborationSiteTestDataImpl();
+                parentFolder = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                file1 = fileFolderService.create(parentFolder, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                file2 = fileFolderService.create(parentFolder, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                file3 = fileFolderService.create(parentFolder, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+                nodeService.setProperty(file1, PROP_DESCRIPTION, propValue1);
+                nodeService.setProperty(file2, PROP_DESCRIPTION, propValue2);
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                propertyValues = queryDAO.getChildrenStringPropertyValues(parentFolder, PROP_DESCRIPTION);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                Set<String> expectedValues = ImmutableSet.of(propValue1, propValue2);
+                assertEquals(propertyValues.size(), expectedValues.size());
+                assertTrue(propertyValues.containsAll(expectedValues));
             }
 
             @Override
@@ -155,11 +211,11 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
 
     /**
      * Given a folder containing 3 files with the descriptions unset
-     * When I check if the folder contains children having certain descriptions
-     * Then the answer is negative
+     * When I get the children property values
+     * Then empty list is returned
      */
     @org.junit.Test
-    public void testHasChildrenWithPropertyValues_propertyNotSetOnChildren() throws Exception
+    public void testGetChildrenWithPropertyValues_propertyNotSetOnChildren() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
@@ -167,7 +223,7 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             NodeRef file1;
             NodeRef file2;
             NodeRef file3;
-            Boolean result;
+            Set<String> propertyValues;
 
             @Override
             public void given() throws Exception
@@ -182,14 +238,14 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                List<String> propertyValues = queryDAO.getChildrenPropertyValues(parentFolder, PROP_DESCRIPTION);
-                result = !Collections.disjoint(Arrays.asList("descr1", "descr2", "descr3"), propertyValues);
+                propertyValues = queryDAO.getChildrenStringPropertyValues(parentFolder, PROP_DESCRIPTION);
+
             }
 
             @Override
             public void then() throws Exception
             {
-                assertFalse(result);
+                assertTrue(propertyValues.isEmpty());
             }
 
             @Override
@@ -209,13 +265,13 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
      * Then the answer is negative
      */
     @org.junit.Test
-    public void testHasChildrenWithPropertyValues_noChildren() throws Exception
+    public void testGetChildrenWithPropertyValues_noChildren() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             NodeRef folder;
             String propValue = "descr";
-            Boolean result;
+            Set<String> propertyValues;
 
             @Override
             public void given() throws Exception
@@ -228,14 +284,13 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, PROP_DESCRIPTION);
-                result = !Collections.disjoint(Arrays.asList("descr"), propertyValues);
+                propertyValues = queryDAO.getChildrenStringPropertyValues(folder, PROP_DESCRIPTION);
             }
 
             @Override
             public void then() throws Exception
             {
-                assertFalse(result);
+                assertTrue(propertyValues.isEmpty());
             }
 
             @Override
@@ -251,17 +306,17 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
 
     /**
      * Given a folder with children and an unused property
-     * When I check if the folder contains children having the unused property
-     * Then the answer is negative
+     * When I get the property values for the unused property
+     * Then empty list is returned
      */
     @org.junit.Test
-    public void testHasChildrenWithPropertyValues_propertyNotUsed() throws Exception
+    public void testGetChildrenWithPropertyValues_propertyNotUsed() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             NodeRef parentFolder;
             QName property;
-            Boolean result;
+            Set<String> propertyValues;
 
             @Override
             public void given() throws Exception
@@ -276,14 +331,13 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, property);
-                result = !Collections.disjoint(Arrays.asList("descr"), propertyValues);
+                propertyValues = queryDAO.getChildrenStringPropertyValues(folder, property);
             }
 
             @Override
             public void then() throws Exception
             {
-                assertFalse(result);
+                assertTrue(propertyValues.isEmpty());
             }
 
             @Override
@@ -297,51 +351,4 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
         });
     }
 
-    /**
-     * Given any folder and any property
-     * When I pass an empty array to the getChildrenPropertyValues method
-     * Then the answer is negative
-     */
-    @org.junit.Test
-    public void testHasChildrenWithPropertyValues_emptyArray() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef parentFolder;
-            NodeRef file1;
-            Boolean result;
-
-            @Override
-            public void given() throws Exception
-            {
-                setupCollaborationSiteTestDataImpl();
-                parentFolder = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                file1 = fileFolderService.create(parentFolder, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-
-                nodeService.setProperty(file1, PROP_DESCRIPTION, "descr1");
-            }
-
-            @Override
-            public void when() throws Exception
-            {
-                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, PROP_DESCRIPTION);
-                result = !Collections.disjoint(new ArrayList(), propertyValues);
-            }
-
-            @Override
-            public void then() throws Exception
-            {
-                assertFalse(result);
-            }
-
-            @Override
-            public void after() throws Exception
-            {
-                if (folder != null && nodeService.exists(folder))
-                {
-                    nodeService.deleteNode(folder);
-                }
-            }
-        });
-    }
 }

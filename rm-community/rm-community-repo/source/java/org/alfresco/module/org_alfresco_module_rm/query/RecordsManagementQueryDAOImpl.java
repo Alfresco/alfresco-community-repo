@@ -29,8 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.query;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -51,8 +52,8 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
-    private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetPropertyValuesOfChildren";
-    
+    private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetStringPropertyValuesOfChildren";
+
     /** SQL session template */
     protected SqlSessionTemplate template;
     
@@ -117,7 +118,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     }
 
     @Override
-    public List<String> getChildrenPropertyValues(NodeRef parent, QName property)
+    public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property)
     {
         PropertyValuesOfChildrenQueryParams queryParams = new PropertyValuesOfChildrenQueryParams();
 
@@ -134,12 +135,12 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         Pair<Long, QName> pair = qnameDAO.getQName(property);
         if (pair == null)
         {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
         queryParams.setPropertyQnameId(pair.getFirst());
 
         // Perform the query
-        return template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams);
+        return new HashSet<String>(template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams));
 
     }
 }

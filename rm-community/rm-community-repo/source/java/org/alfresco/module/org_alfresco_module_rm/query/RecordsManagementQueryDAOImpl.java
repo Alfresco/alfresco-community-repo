@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -118,13 +117,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     }
 
     @Override
-    public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues)
+    public List<String> getChildrenPropertyValues(NodeRef parent, QName property)
     {
-        if (propertyValues.isEmpty())
-        {
-            return false;
-        }
-
         PropertyValuesOfChildrenQueryParams queryParams = new PropertyValuesOfChildrenQueryParams();
 
         // Set the parent node id
@@ -140,15 +134,12 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         Pair<Long, QName> pair = qnameDAO.getQName(property);
         if (pair == null)
         {
-            return false;
+            return Collections.emptyList();
         }
         queryParams.setPropertyQnameId(pair.getFirst());
 
         // Perform the query
-        List<String> childrenPropertyValues = template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams);
-
-        //check if any propertyValues is in the childrenPropertyValues
-        return !Collections.disjoint(propertyValues, childrenPropertyValues);
+        return template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams);
 
     }
 }

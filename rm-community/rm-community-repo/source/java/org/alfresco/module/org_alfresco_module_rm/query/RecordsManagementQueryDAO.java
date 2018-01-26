@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.List;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+
 
 /**
  * Records management query DAO
@@ -57,7 +58,7 @@ public interface RecordsManagementQueryDAO
      *
      * @param parent         the parent to evaluate
      * @param property       the QName of the property to evaluate
-     * @return list of property values
+     * @return list of distinct property values
      */
-    public List<String> getChildrenPropertyValues(NodeRef parent, QName property);
+    public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
 }

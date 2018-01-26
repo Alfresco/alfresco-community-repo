@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -130,7 +132,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                result = queryDAO.hasChildrenWithPropertyValues(parentFolder, PROP_DESCRIPTION, Arrays.asList(propValue1, propValue2, propValue4));
+                List<String> propertyValues = queryDAO.getChildrenPropertyValues(parentFolder, PROP_DESCRIPTION);
+                result = !Collections.disjoint(Arrays.asList(propValue1, propValue2, propValue4),propertyValues);
             }
 
             @Override
@@ -179,7 +182,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                result = queryDAO.hasChildrenWithPropertyValues(parentFolder, PROP_DESCRIPTION, Arrays.asList("descr1", "descr2", "descr3"));
+                List<String> propertyValues = queryDAO.getChildrenPropertyValues(parentFolder, PROP_DESCRIPTION);
+                result = !Collections.disjoint(Arrays.asList("descr1", "descr2", "descr3"), propertyValues);
             }
 
             @Override
@@ -224,7 +228,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                result = queryDAO.hasChildrenWithPropertyValues(folder, PROP_DESCRIPTION, Arrays.asList("descr"));
+                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, PROP_DESCRIPTION);
+                result = !Collections.disjoint(Arrays.asList("descr"), propertyValues);
             }
 
             @Override
@@ -271,7 +276,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                result = queryDAO.hasChildrenWithPropertyValues(folder, property, Arrays.asList("descr"));
+                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, property);
+                result = !Collections.disjoint(Arrays.asList("descr"), propertyValues);
             }
 
             @Override
@@ -293,7 +299,7 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
 
     /**
      * Given any folder and any property
-     * When I pass an empty array to the hasChildrenWithPropertyValues method
+     * When I pass an empty array to the getChildrenPropertyValues method
      * Then the answer is negative
      */
     @org.junit.Test
@@ -318,7 +324,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void when() throws Exception
             {
-                result = queryDAO.hasChildrenWithPropertyValues(folder, PROP_DESCRIPTION, new ArrayList());
+                List<String> propertyValues = queryDAO.getChildrenPropertyValues(folder, PROP_DESCRIPTION);
+                result = !Collections.disjoint(new ArrayList(), propertyValues);
             }
 
             @Override

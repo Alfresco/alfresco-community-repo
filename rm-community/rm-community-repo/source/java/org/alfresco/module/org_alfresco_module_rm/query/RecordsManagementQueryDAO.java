@@ -54,7 +54,7 @@ public interface RecordsManagementQueryDAO
     int getCountRmaIdentifier(String identifierValue);
 
     /**
-     * Returns the property values from children for the given property
+     * Returns distinct property values from children for the given property
      *
      * @param parent         the parent to evaluate
      * @param property       the QName of the property to evaluate

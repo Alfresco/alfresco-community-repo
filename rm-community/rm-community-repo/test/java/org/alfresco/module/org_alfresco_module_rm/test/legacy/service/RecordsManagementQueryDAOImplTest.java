@@ -100,7 +100,7 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
      * Then the answer contains all distinct property values set
      */
     @org.junit.Test
-    public void testgetChildrenWithPropertyValues_childrenWithValues() throws Exception
+    public void testGetChildrenWithPropertyValues_childrenWithValues() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
@@ -136,8 +136,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             @Override
             public void then() throws Exception
             {
-                Set<String> expectedValues = ImmutableSet.of(propValue1,propValue2,propValue3);
-                assertEquals(propertyValues.size(),expectedValues.size());
+                Set<String> expectedValues = ImmutableSet.of(propValue1, propValue2, propValue3);
+                assertEquals(propertyValues.size(), expectedValues.size());
                 assertTrue(propertyValues.containsAll(expectedValues));
             }
 
@@ -261,8 +261,8 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
 
     /**
      * Given a folder with no children but the property set on itself
-     * When I check if the folder contains children having certain descriptions
-     * Then the answer is negative
+     * When get the children property values
+     * Then the list is empty
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_noChildren() throws Exception

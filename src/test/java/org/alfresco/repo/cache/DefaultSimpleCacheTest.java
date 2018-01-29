@@ -138,65 +138,66 @@ public class DefaultSimpleCacheTest extends SimpleCacheTestBase<DefaultSimpleCac
     @Test
     public void cachesCanHaveTTL()
     {
-        // TTL of 7 seconds
-        cache = new DefaultSimpleCache<Integer, String>(0, false, 7, 0, getClass().getName());
+        // TTL of 2 seconds
+        cache = new DefaultSimpleCache<Integer, String>(0, false, 2, 0, getClass().getName());
         assertFalse(cache.isUseMaxItems());
-        
+
         cache.put(1, "1");
         assertTrue(cache.contains(1));
         assertFalse(cache.contains(2));
         assertFalse(cache.contains(3));
-        
-        sleep(5);
+
+        sleep(1500L);
         cache.put(2, "2");
         assertTrue(cache.contains(1));
         assertTrue(cache.contains(2));
         assertFalse(cache.contains(3));
-        
-        sleep(5);
+
+        sleep(1500L);
         cache.put(3, "3");
         assertFalse(cache.contains(1));
-        assertTrue(cache.contains(2)); // Only ~5 seconds have passed for this key
+        assertTrue(cache.contains(2));
         assertTrue(cache.contains(3));
     }
      
     @Test
     public void cachesCanHaveTTI()
     {
-        cache = new DefaultSimpleCache<Integer, String>(0, false, 0, 8, getClass().getName());
+        cache = new DefaultSimpleCache<Integer, String>(0, false, 0, 2, getClass().getName());
         assertFalse(cache.isUseMaxItems());
         assertEquals(0, cache.getTTLSecs());
-        assertEquals(8, cache.getMaxIdleSecs());
-        
+        assertEquals(2, cache.getMaxIdleSecs());
+
         cache.put(1, "1");
         assertEquals("1", cache.get(1));
-        
-        sleep(4);
+
+        sleep(1000L);
         // cause zeroing of idle time
         assertEquals("1", cache.get(1));
-        
-        sleep(4);
+
+        sleep(1000L);
         // cause zeroing of idle time
         assertEquals("1", cache.get(1));
-        
-        sleep(4);
-        // At least 12 seconds have passed, but the item should still be present. 
+
+        sleep(1000L);
+        // At least 3 seconds have passed, but the item should still be present. 
         assertEquals("1", cache.get(1));
-        
-        sleep(10);
+
+        sleep(2500L);
         // time-to-idle now exceeded without access
-        assertNotEquals("1", cache.get(1));      
+        assertNotEquals("1", cache.get(1));
     }
-    
-    private void sleep(int seconds)
+
+    private void sleep(long miliseconds)
     {
         try
         {
-            Thread.sleep(seconds * 1000);
+            Thread.sleep(miliseconds);
         }
         catch (InterruptedException error)
         {
             throw new RuntimeException(error);
         }
     }
+
 }

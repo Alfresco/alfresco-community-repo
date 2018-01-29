@@ -26,19 +26,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.Collection;
-
 /**
- * Select parameter for <b>select_CountChildrenWithPropertyValues</b>.
+ * Select parameter for <b>select_GetStringPropertyValuesOfChildren</b>.
  *
  * @author Ana Manolache
  * @since 2.6
  */
-public class ChildrenWithPropertyValuesQueryParams
+public class PropertyValuesOfChildrenQueryParams
 {
     private Long parentId;
     private Long propertyQnameId;
-    private Collection propertyValues;
 
     public Long getParentId()
     {
@@ -60,14 +57,5 @@ public class ChildrenWithPropertyValuesQueryParams
         this.propertyQnameId = propertyQnameId;
     }
 
-    public Collection getPropertyValues()
-    {
-        return propertyValues;
-    }
-
-    public void setPropertyValues(Collection propertyValues)
-    {
-        this.propertyValues = propertyValues;
-    }
 }
 

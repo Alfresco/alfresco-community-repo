@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.Collection;
+import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+
 
 /**
  * Records management query DAO
@@ -53,13 +54,11 @@ public interface RecordsManagementQueryDAO
     int getCountRmaIdentifier(String identifierValue);
 
     /**
-     * Returns whether a given node contains children with one of the given values for the given property
+     * Returns distinct property values from children for the given property
      *
      * @param parent         the parent to evaluate
      * @param property       the QName of the property to evaluate
-     * @param propertyValues the list of values to look for
-     * @return true if there is at least one child with one of the values from the list set on the given property
-     * false otherwise
+     * @return list of distinct property values
      */
-    public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues);
+    public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
 }

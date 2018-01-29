@@ -140,7 +140,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         queryParams.setPropertyQnameId(pair.getFirst());
 
         // Perform the query
-        return new HashSet<String>(template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams));
+        return new HashSet<>(template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams));
 
     }
 }

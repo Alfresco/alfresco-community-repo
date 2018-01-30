@@ -44,11 +44,23 @@ import java.util.stream.Collectors;
  */
 public class RepositoryInfo
 {
+    private String id;
     private String edition;
     private VersionInfo version;
     private LicenseInfo license;
     private StatusInfo status;
     private List<ModulePackage> modules;
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public RepositoryInfo setId(String id)
+    {
+        this.id = id;
+        return this;
+    }
 
     public String getEdition()
     {

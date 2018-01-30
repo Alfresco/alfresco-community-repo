@@ -145,6 +145,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         }
         Descriptor serverDescriptor = descriptorService.getServerDescriptor();
         return new RepositoryInfo()
+                    .setId(descriptorService.getCurrentRepositoryDescriptor().getId())
                     .setEdition(serverDescriptor.getEdition())
                     .setVersion(new VersionInfo(serverDescriptor))
                     .setLicense(licenseInfo)

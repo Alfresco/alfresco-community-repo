@@ -74,6 +74,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
     @Mock
     private Descriptor serverDescriptor;
     @Mock
+    private Descriptor currentRepositoryDescriptor;
+    @Mock
     private LicenseDescriptor licenseDescriptorMock;
     private DiscoveryApiWebscript discoveryApiWebscript;
 
@@ -94,6 +96,8 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         this.licenseDescriptorMock = mock(LicenseDescriptor.class);
 
         when(descriptorServiceMock.getServerDescriptor()).thenReturn(serverDescriptor);
+        when(descriptorServiceMock.getCurrentRepositoryDescriptor()).thenReturn(currentRepositoryDescriptor);
+        when(currentRepositoryDescriptor.getId()).thenReturn("repoId");
         when(serverDescriptor.getEdition()).thenReturn("Enterprise");
         when(serverDescriptor.getVersionMajor()).thenReturn("5");
         when(serverDescriptor.getVersionMinor()).thenReturn("2");
@@ -143,6 +147,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(discoveryDetails);
         RepositoryInfo repositoryInfo = discoveryDetails.getRepository();
         assertNotNull(repositoryInfo);
+        assertEquals("repoId", repositoryInfo.getId());
         assertEquals("Enterprise", repositoryInfo.getEdition());
 
         // Check version info

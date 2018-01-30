@@ -538,7 +538,7 @@
         <property name="capabilityService" ref="CapabilityService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="viewLogMaxSize">
-            <value>${audit.rm.viewLog.maxSize:100}</value>
+            <value>${audit.rm.viewLog.maxSize}</value>
         </property>
     </bean>
 

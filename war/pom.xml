@@ -60,11 +60,6 @@
             <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j-dom</artifactId>
-            <version>0.7.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.avalon.framework</groupId>
             <artifactId>avalon-framework-api</artifactId>
             <version>4.3.1</version>

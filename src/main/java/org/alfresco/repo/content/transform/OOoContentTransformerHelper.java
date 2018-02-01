@@ -51,10 +51,9 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.artofsolving.jodconverter.office.OfficeException;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.FileCopyUtils;
@@ -239,10 +238,6 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
             // Now write the in-memory PDF document into the temporary file.
             pdfDoc.save(tempToFile.getAbsolutePath());
 
-        }
-        catch (COSVisitorException cvx)
-        {
-            throw new ContentIOException("Error creating empty PDF file", cvx);
         }
         catch (IOException iox)
         {

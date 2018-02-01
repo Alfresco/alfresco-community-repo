@@ -25,6 +25,21 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
+import org.alfresco.service.cmr.repository.TransformationOptionPair;
+import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.tools.TextToPDF;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,24 +48,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.TransformationOptionLimits;
-import org.alfresco.service.cmr.repository.TransformationOptionPair;
-import org.alfresco.service.cmr.repository.TransformationOptionPair.Action;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.pdfbox.TextToPDF;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 /**
  * Makes use of the <a href="http://www.pdfbox.org/">PDFBox</a> library's <code>TextToPDF</code> utility.
  * 
@@ -60,7 +59,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 public class TextToPdfContentTransformer extends AbstractContentTransformer2
 {
     private static final Log logger = LogFactory.getLog(TextToPdfContentTransformer.class);
-    
+
     private PagedTextToPDF transformer;
     
     public TextToPdfContentTransformer()
@@ -73,26 +72,14 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     {
         try
         {
-            transformer.setFont(PDType1Font.getStandardFont(fontName));
+            transformer.setFont(transformer.getStandardFont(fontName));
         }
         catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to set Standard Font for PDF generation: " + fontName, e);
         }
     }
-    
-    public void setTrueTypeFont(String fontName)
-    {
-        try
-        {
-            transformer.setFont(PDTrueTypeFont.loadTTF(null, fontName));
-        }
-        catch (Throwable e)
-        {
-            throw new AlfrescoRuntimeException("Unable to set True Type Font for PDF generation: " + fontName, e);
-        }
-    }
-    
+
     public void setFontSize(int fontSize)
     {
         try
@@ -152,7 +139,7 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
 
             TransformationOptionLimits limits = getLimits(reader, writer, options);
             TransformationOptionPair pageLimits = limits.getPagesPair();
-            pdf = transformer.createPDFFromText(ir, pageLimits, reader.getContentUrl());
+            pdf = transformer.createPDFFromText(ir, pageLimits, reader.getContentUrl(), transformerDebug);
 
             // dump it all to the writer
             os = writer.getContentOutputStream();
@@ -205,13 +192,38 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
         return new InputStreamReader(is);
     }
     
-    private class PagedTextToPDF extends TextToPDF
+    private static class PagedTextToPDF extends TextToPDF
     {
+        // REPO-1066: duplicating the following lines from org.apache.pdfbox.tools.TextToPDF because they made them private
+        // before the upgrade to pdfbox 2.0.8, in pdfbox 1.8, this piece of code was public in org.apache.pdfbox.pdmodel.font.PDType1Font
+        static PDType1Font getStandardFont(String name) {
+            return (PDType1Font)STANDARD_14.get(name);
+        }
+        private static final Map<String, PDType1Font> STANDARD_14 = new HashMap<String, PDType1Font>();
+        static
+        {
+            STANDARD_14.put(PDType1Font.TIMES_ROMAN.getBaseFont(), PDType1Font.TIMES_ROMAN);
+            STANDARD_14.put(PDType1Font.TIMES_BOLD.getBaseFont(), PDType1Font.TIMES_BOLD);
+            STANDARD_14.put(PDType1Font.TIMES_ITALIC.getBaseFont(), PDType1Font.TIMES_ITALIC);
+            STANDARD_14.put(PDType1Font.TIMES_BOLD_ITALIC.getBaseFont(), PDType1Font.TIMES_BOLD_ITALIC);
+            STANDARD_14.put(PDType1Font.HELVETICA.getBaseFont(), PDType1Font.HELVETICA);
+            STANDARD_14.put(PDType1Font.HELVETICA_BOLD.getBaseFont(), PDType1Font.HELVETICA_BOLD);
+            STANDARD_14.put(PDType1Font.HELVETICA_OBLIQUE.getBaseFont(), PDType1Font.HELVETICA_OBLIQUE);
+            STANDARD_14.put(PDType1Font.HELVETICA_BOLD_OBLIQUE.getBaseFont(), PDType1Font.HELVETICA_BOLD_OBLIQUE);
+            STANDARD_14.put(PDType1Font.COURIER.getBaseFont(), PDType1Font.COURIER);
+            STANDARD_14.put(PDType1Font.COURIER_BOLD.getBaseFont(), PDType1Font.COURIER_BOLD);
+            STANDARD_14.put(PDType1Font.COURIER_OBLIQUE.getBaseFont(), PDType1Font.COURIER_OBLIQUE);
+            STANDARD_14.put(PDType1Font.COURIER_BOLD_OBLIQUE.getBaseFont(), PDType1Font.COURIER_BOLD_OBLIQUE);
+            STANDARD_14.put(PDType1Font.SYMBOL.getBaseFont(), PDType1Font.SYMBOL);
+            STANDARD_14.put(PDType1Font.ZAPF_DINGBATS.getBaseFont(), PDType1Font.ZAPF_DINGBATS);
+        }
+        //duplicating until here
+
         // The following code is based on the code in TextToPDF with the addition of
         // checks for page limits.
         // The calling code must close the PDDocument once finished with it.
-        public PDDocument createPDFFromText(Reader text, TransformationOptionPair pageLimits,
-                String contentUrl) throws IOException
+        public PDDocument createPDFFromText(Reader text, TransformationOptionPair pageLimits, String contentUrl, TransformerDebug transformerDebug)
+            throws IOException
         {
             int pageLimit = (int)pageLimits.getValue();
             PDDocument doc = null;

@@ -42,7 +42,7 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hslf.HSLFSlideShow;
+import org.apache.poi.hslf.usermodel.HSLFSlideShowImpl;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.EntryUtils;
@@ -412,8 +412,8 @@ public class CIFSContentComparator implements ContentComparator
                     excludes.add("Current User");
 
                     leftIs = existingContent.getContentInputStream();
-                    HSLFSlideShow slideShow1 = new HSLFSlideShow(leftIs);
-                    HSLFSlideShow slideShow2 = new HSLFSlideShow(new FileInputStream(newFile));
+                    HSLFSlideShowImpl slideShow1 = new HSLFSlideShowImpl(leftIs);
+                    HSLFSlideShowImpl slideShow2 = new HSLFSlideShowImpl(new FileInputStream(newFile));
 
                     String lastEditUsername1 = slideShow1.getCurrentUserAtom().getLastEditUsername();
                     String lastEditUsername2 = slideShow2.getCurrentUserAtom().getLastEditUsername();

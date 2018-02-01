@@ -34,6 +34,7 @@ import org.apache.tika.config.TikaConfig;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.EmptyParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pkg.PackageParser;
@@ -126,7 +127,12 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
          }
          context.set(Parser.class, new AutoDetectParser(tikaConfig));
       }
-      
+      else
+      {
+          // REPO-1066: an AutoDetectParser is the default in Tika after: https://issues.apache.org/jira/browse/TIKA-2096
+          // so we need to specify an empty one if we don't want the recurse parsing to happen
+          context.set(Parser.class, new EmptyParser());
+      }
       return context;
     }
 }

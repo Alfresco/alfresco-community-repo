@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.patch.AlfrescoPoiPatchUtils;
 import org.apache.tika.embedder.Embedder;
 import org.apache.tika.extractor.DocumentSelector;
 import org.apache.tika.io.TemporaryResources;
@@ -370,8 +369,6 @@ public abstract class TikaPoweredMetadataExtracter
 
         InputStream is = null;
 
-        // Parse using properties of the context of current implementation
-        boolean contextPresented = null != extractorContext;
         try
         {
             is = getInputStream(reader); 
@@ -398,12 +395,6 @@ public abstract class TikaPoweredMetadataExtracter
             else 
             {
                handler = new NullContentHandler(); 
-            }
-
-            // Set POI properties context if available...
-            if (contextPresented)
-            {
-                AlfrescoPoiPatchUtils.setContext(extractorContext);
             }
 
             parser.parse(is, handler, metadata, context);
@@ -469,12 +460,6 @@ public abstract class TikaPoweredMetadataExtracter
         }
         finally
         {
-            // Reset POI properties context
-            if (contextPresented)
-            {
-                AlfrescoPoiPatchUtils.setContext(null);
-            }
-
             if (is != null)
             {
                 try { is.close(); } catch (IOException e) {}

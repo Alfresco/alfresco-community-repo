@@ -993,6 +993,6 @@ public class BlogServiceTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(url), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
-        assertTrue("The user sould have permission to create a new blog.", Boolean.parseBoolean(result.getJSONObject("item").getJSONObject("permissions").getString("create")));
+        assertTrue("The user sould have permission to create a new blog.", result.getJSONObject("item").getJSONObject("permissions").getBoolean("create"));
     }
 }

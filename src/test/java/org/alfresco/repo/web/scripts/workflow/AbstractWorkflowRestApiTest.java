@@ -1088,8 +1088,8 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertEquals(adhocInstance.getDefinition().getDescription(), result.getString("description"));
         assertEquals(adhocInstance.isActive(), result.getBoolean("isActive"));
         assertEquals(org.springframework.extensions.surf.util.ISO8601DateFormat.format(adhocInstance.getStartDate()), result.getString("startDate"));
-        assertNotNull(result.getString("dueDate"));
-        assertNotNull(result.getString("endDate"));
+        assertNotNull(result.get("dueDate"));
+        assertNotNull(result.get("endDate"));
         assertEquals(1, result.getInt("priority"));
         JSONObject initiator = result.getJSONObject("initiator");
 
@@ -1754,7 +1754,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         for (int i=0; i<result.length(); i++)
         {
             JSONObject taskObject = result.getJSONObject(i);
-            assertEquals("2", taskObject.getJSONObject("properties").getString("bpm_priority"));
+            assertEquals(2, taskObject.getJSONObject("properties").get("bpm_priority"));
         }
     }
     

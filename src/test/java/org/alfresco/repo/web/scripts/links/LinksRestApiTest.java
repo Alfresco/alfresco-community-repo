@@ -782,7 +782,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(url), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
-        assertTrue("The user sould have permission to create a new link.", Boolean.parseBoolean(result.getJSONObject("metadata").getJSONObject("linkPermissions").getString("create")));
+        assertTrue("The user sould have permission to create a new link.", result.getJSONObject("metadata").getJSONObject("linkPermissions").getBoolean("create"));
     }
 
     public void testCommentLink() throws Exception

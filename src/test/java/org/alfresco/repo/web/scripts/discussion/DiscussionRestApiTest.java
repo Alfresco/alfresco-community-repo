@@ -1301,6 +1301,6 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         Response response = sendRequest(new GetRequest(url), 200);
         JSONObject result = new JSONObject(response.getContentAsString());
         
-        assertTrue("The user sould have permission to create a new discussion.", Boolean.parseBoolean(result.getJSONObject("forumPermissions").getString("create")));
+        assertTrue("The user sould have permission to create a new discussion.", result.getJSONObject("forumPermissions").getBoolean("create"));
     }
 }

@@ -31,7 +31,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-core.version>6.16</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
 
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
@@ -271,22 +271,28 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.6-20160727-alfresco-patched</version>
+            <version>1.17-20180201-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.6-20160727-alfresco-patched</version>
+            <version>1.17-20180201-alfresco-patched</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.tdunning</groupId>
+                    <artifactId>json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.gagravarr</groupId>
             <artifactId>vorbis-java-core</artifactId>
-            <version>0.4</version>
+            <version>0.8</version>
         </dependency>
         <dependency>
             <groupId>org.gagravarr</groupId>
             <artifactId>vorbis-java-tika</artifactId>
-            <version>0.4</version>
+            <version>0.8</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.juniversalchardet</groupId>

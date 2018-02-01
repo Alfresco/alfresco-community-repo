@@ -48,21 +48,9 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private static final int MINIMAL_EXPECTED_PROPERTIES_AMOUNT = 3;
 
-    // private static final int TIMEOUT_FOR_QUICK_EXTRACTION = 2000;
-
-    private static final int DEFAULT_FOOTNOTES_LIMIT = 50;
-
-    private static final int LARGE_FOOTNOTES_LIMIT = 25000;
-
-
     private static final String ALL_MIMETYPES_FILTER = "*";
 
     private static final String PROBLEM_FOOTNOTES_DOCUMENT_NAME = "problemFootnotes2.docx";
-
-    // private static final String PROBLEM_SLIDE_SHOW_DOCUMENT_NAME = "problemSlideShow.pptx";
-
-    private static final String EXTRACTOR_POI_BEAN_NAME = "extracter.Poi";
-
 
     private PoiMetadataExtracter extracter;
     
@@ -75,29 +63,13 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
         super.setUp();
         extracter = new PoiMetadataExtracter();
         extracter.setDictionaryService(dictionaryService);
-        resetPoiConfigurationToDefault();
         extracter.register();
     }
 
     @Override
     protected void tearDown() throws Exception
     {
-        resetPoiConfigurationToDefault();
         super.tearDown();
-    }
-
-    /**
-     * Resets POI library configuration to default. Sets allowable XSLF relationship types and footnotes limit as per 'extracter.Poi' bean configuration
-     * 
-     * @throws Exception
-     */
-    private void resetPoiConfigurationToDefault() throws Exception
-    {
-        PoiMetadataExtracter configuredExtractor = (PoiMetadataExtracter) ctx.getBean(EXTRACTOR_POI_BEAN_NAME);
-        extracter.setPoiExtractPropertiesOnly(true);
-        extracter.setPoiFootnotesLimit(DEFAULT_FOOTNOTES_LIMIT);
-        extracter.setPoiAllowableXslfRelationshipTypes(configuredExtractor.getPoiAllowableXslfRelationshipTypes());
-        extracter.afterPropertiesSet();
     }
 
     @Override
@@ -196,51 +168,6 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
         assertFalse("Reader was not closed", sourceReader.isChannelOpen());
     }
 
-//    /**
-//     * Test for MNT-11823: Upload of PPTX causes very high memory usage leading to system instability
-//     * 
-//     * @throws Exception
-//     */
-//    public void testProblemSlideShow() throws Exception
-//    {
-//        PoiMetadataExtracter extractor = (PoiMetadataExtracter) getExtracter();
-//        configureExtractorLimits(extractor, ALL_MIMETYPES_FILTER, TIMEOUT_FOR_QUICK_EXTRACTION);
-//
-//        File problemSlideShowFile = AbstractContentTransformerTest.loadNamedQuickTestFile(PROBLEM_SLIDE_SHOW_DOCUMENT_NAME);
-//        ContentReader sourceReader = new FileContentReader(problemSlideShowFile);
-//        sourceReader.setMimetype(MimetypeMap.MIMETYPE_OPENXML_PRESENTATION);
-//
-//        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-//        extractor.extract(sourceReader, properties);
-//
-//        assertExtractedProperties(properties);
-//        assertFalse("Reader was not closed", sourceReader.isChannelOpen());
-//
-//        extractor.setPoiExtractPropertiesOnly(false);
-//        extractor.afterPropertiesSet();
-//        properties = new HashMap<QName, Serializable>();
-//        extractor.extract(sourceReader, properties);
-//
-//        assertFalse("Reader was not closed", sourceReader.isChannelOpen());
-//        assertTrue(("Extraction completed successfully but failure is expected! Invalid properties are: " + properties), (null == properties) || properties.isEmpty());
-//    }
-
-    /**
-     * Configures timeout for given <code>extractor</code> and <code>mimetypeFilter</code>
-     * 
-     * @param extractor - {@link PoiMetadataExtracter} instance
-     * @param mimetypeFilter - {@link String} value which specifies mimetype filter for which timeout should be applied
-     * @param timeout - {@link Long} value which specifies timeout for <code>mimetypeFilter</code>
-     */
-    private void configureExtractorLimits(PoiMetadataExtracter extractor, String mimetypeFilter, long timeout)
-    {
-        MetadataExtracterLimits limits = new MetadataExtracterLimits();
-        limits.setTimeoutMs(timeout);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
-        mimetypeLimits.put(mimetypeFilter, limits);
-        extractor.setMimetypeLimits(mimetypeLimits);
-    }
-
     /**
      * Test for MNT-577: Alfresco is running 100% CPU for over 10 minutes while extracting metadata for Word office document
      * 
@@ -261,35 +188,6 @@ public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
 
         assertExtractedProperties(properties);
         if (extractionTimeWithLargeFootnotesLimit != null)
-        {
-            assertTrue("The second metadata extraction operation must be longer!", extractionTimeWithLargeFootnotesLimit > extractionTimeWithDefaultFootnotesLimit);
-        }
-    }
-    
-    
-    /**
-     * Test for MNT-577: Alfresco is running 100% CPU for over 10 minutes while extracting metadata for Word office document
-     * 
-     * @throws Exception
-     */
-    public void testFootnotesLimitParameterUsingLarge() throws Exception
-    {
-        PoiMetadataExtracter extractor = (PoiMetadataExtracter) getExtracter();
-
-        File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile(PROBLEM_FOOTNOTES_DOCUMENT_NAME);
-        ContentReader sourceReader = new FileContentReader(sourceFile);
-        sourceReader.setMimetype(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING);
-
-        // Just let the extractor do the job...
-        extractor.setPoiFootnotesLimit(LARGE_FOOTNOTES_LIMIT);
-        extractor.afterPropertiesSet();
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        long startTime = System.currentTimeMillis();
-        extractor.extract(sourceReader, properties);
-        extractionTimeWithLargeFootnotesLimit = System.currentTimeMillis() - startTime;
-
-        assertExtractedProperties(properties);
-        if (extractionTimeWithDefaultFootnotesLimit != null)
         {
             assertTrue("The second metadata extraction operation must be longer!", extractionTimeWithLargeFootnotesLimit > extractionTimeWithDefaultFootnotesLimit);
         }

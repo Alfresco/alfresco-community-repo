@@ -69,6 +69,7 @@ public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
     private static String EXIF_IMAGE_WIDTH_TAG = "Exif Image Width";
     private static String JPEG_IMAGE_HEIGHT_TAG = "Image Height";
     private static String JPEG_IMAGE_WIDTH_TAG = "Image Width";
+    private static String COMPRESSION_TAG = "Compression";
 
     public static ArrayList<String> SUPPORTED_MIMETYPES;
     private static ArrayList<String> buildMimeTypes(TikaConfig tikaConfig)
@@ -120,16 +121,19 @@ public class TikaAutoMetadataExtracter extends TikaPoweredMetadataExtracter
     protected Map<String, Serializable> extractSpecific(Metadata metadata,
          Map<String, Serializable> properties, Map<String,String> headers) 
     {
-        
-        if(MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(metadata.get(Metadata.CONTENT_TYPE)))                
+        if(MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(metadata.get(Metadata.CONTENT_TYPE)))
         {
             //check if the image has exif information
-            if(metadata.get(EXIF_IMAGE_WIDTH_TAG) != null && metadata.get(EXIF_IMAGE_HEIGHT_TAG) != null )
-            {    
+            if(metadata.get(EXIF_IMAGE_WIDTH_TAG) != null
+                    && metadata.get(EXIF_IMAGE_HEIGHT_TAG) != null
+                    && metadata.get(COMPRESSION_TAG) != null)
+            {
                 //replace the exif size properties that will be embedded in the node with
                 //the guessed dimensions from Tika
-                putRawValue(TIFF.IMAGE_LENGTH.getName(), extractSize(metadata.get(JPEG_IMAGE_HEIGHT_TAG)), properties);
-                putRawValue(TIFF.IMAGE_WIDTH.getName(), extractSize(metadata.get(JPEG_IMAGE_WIDTH_TAG)), properties);
+                putRawValue(TIFF.IMAGE_LENGTH.getName(), extractSize(metadata.get(EXIF_IMAGE_HEIGHT_TAG)), properties);
+                putRawValue(TIFF.IMAGE_WIDTH.getName(), extractSize(metadata.get(EXIF_IMAGE_WIDTH_TAG)), properties);
+                putRawValue(JPEG_IMAGE_HEIGHT_TAG, metadata.get(EXIF_IMAGE_HEIGHT_TAG), properties);
+                putRawValue(JPEG_IMAGE_WIDTH_TAG, metadata.get(EXIF_IMAGE_WIDTH_TAG), properties);
             }
         }
         return properties;

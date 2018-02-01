@@ -37,9 +37,9 @@
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
-        <dependency.alfresco-core.version>6.16</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>7.1</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>7.2</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.4</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.4</dependency.alfresco-hb-data-sender.version>
@@ -48,7 +48,7 @@
         <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
         <dependency.httpcomponents.version>4.5.2</dependency.httpcomponents.version>
         <dependency.truezip.version>7.7.9</dependency.truezip.version>
-        <dependency.poi.version>3.10.1-20151016-alfresco-patched</dependency.poi.version>
+        <dependency.poi.version>3.17</dependency.poi.version>
         <dependency.webscripts.version>6.13</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.activiti-engine.version>5.22.0</dependency.activiti-engine.version>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.12</version>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -295,12 +295,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.21</version>
+            <version>1.7.24</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.21</version>
+            <version>1.7.25</version>
         </dependency>
         <dependency>
             <groupId>org.beanshell</groupId>
@@ -371,17 +371,23 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>1.8.10-alfresco-patched</version>
+            <version>2.0.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>fontbox</artifactId>
-            <version>1.8.10</version>
+            <version>2.0.8</version>
+        </dependency>
+        <dependency>
+            <!-- we need this for TextToPdfContentTransformer -->
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-tools</artifactId>
+            <version>2.0.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>jempbox</artifactId>
-            <version>1.8.10</version>
+            <version>1.8.13</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -396,12 +402,12 @@
         <dependency>
             <groupId>com.googlecode.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
-            <version>1.1.21</version>
+            <version>1.1.22</version>
         </dependency>
         <dependency>
             <groupId>com.drewnoakes</groupId>
             <artifactId>metadata-extractor</artifactId>
-            <version>2.7.2</version>
+            <version>2.10.1</version>
         </dependency>
         <dependency>
             <groupId>org.ccil.cowan.tagsoup</groupId>
@@ -511,11 +517,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
             <version>${dependency.poi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>ooxml-schemas</artifactId>
-            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>org.livetribe</groupId>

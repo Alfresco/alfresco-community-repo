@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
 
 /**
  * Default implementation for the MetadataExtracterConfig;
@@ -53,7 +52,7 @@ public class MetadataExtracterConfigImpl implements MetadataExtracterConfig
             return;
         }
         boolean shouldParseShapes = getBooleanProperty(PARSE_SHAPE_PROP_STRING, TIKA_PARSER_PARSE_SHAPES_DEFAULT_VALUE);
-        metadata.add(TikaMetadataKeys.TIKA_PARSER_PARSE_SHAPES_KEY, Boolean.toString(shouldParseShapes));
+        //TODO decide in REPO-3251 if this method remains or not.
         
         if (logger.isDebugEnabled())
         {

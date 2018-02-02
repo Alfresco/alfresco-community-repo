@@ -92,7 +92,8 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
         testExtractFromMimetype(MimetypeMap.MIMETYPE_HTML);
     }
 
-    public void testHtmlExtractionJapanese() throws Exception {
+    public void testHtmlExtractionJapanese() throws Exception
+    {
         String mimetype = MimetypeMap.MIMETYPE_HTML;
 
         File japaneseHtml = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.japanese.html");

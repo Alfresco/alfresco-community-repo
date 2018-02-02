@@ -253,7 +253,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     {
         NodeRef dispositionedNode = getNodeService().getPrimaryParent(nextAction.getNodeRef()).getParentRef();
         DispositionActionDefinition definition = nextAction.getDispositionActionDefinition();
-        Date newAsOfDate = getDispositionService().calculateAsOfDate(dispositionedNode, definition, false);
+        Date newAsOfDate = getDispositionService().calculateAsOfDate(dispositionedNode, definition);
 
         if (logger.isDebugEnabled())
         {

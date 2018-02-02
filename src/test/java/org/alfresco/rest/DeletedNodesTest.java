@@ -469,9 +469,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // List all available renditions
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
-        assertEquals(2, renditions.size());
+        assertEquals(3, renditions.size());
         expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
-        assertEquals(2, expectedPaging.getCount().intValue());
+        assertEquals(3, expectedPaging.getCount().intValue());
         assertEquals(1, expectedPaging.getSkipCount().intValue());
         assertEquals(3, expectedPaging.getMaxItems().intValue());
         assertTrue(expectedPaging.getTotalItems() >= 3);

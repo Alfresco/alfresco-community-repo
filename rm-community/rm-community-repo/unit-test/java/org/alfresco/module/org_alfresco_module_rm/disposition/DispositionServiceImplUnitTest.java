@@ -82,7 +82,7 @@ public class DispositionServiceImplUnitTest
         when(mockPeriod.getNextDate(createdDate)).thenReturn(nextDate);
 
         // Call the method under test.
-        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition, true);
+        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition);
 
         assertEquals("Unexpected calculation for 'as of' date", nextDate, asOfDate);
     }
@@ -95,7 +95,7 @@ public class DispositionServiceImplUnitTest
         when(mockDispositionActionDefinition.getPeriod()).thenReturn(null);
 
         // Call the method under test.
-        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition, true);
+        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition);
 
         assertNull("It should not be possible to determine the 'as of' date.", asOfDate);
     }

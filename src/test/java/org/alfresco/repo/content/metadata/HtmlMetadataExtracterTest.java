@@ -43,10 +43,14 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -54,6 +58,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
+    private static final String QUICK_TITLE_JAPANESE = "確認した結果を添付しますので、確認してください";
     private HtmlMetadataExtracter extracter;
 
     @Override
@@ -85,6 +90,22 @@ public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
     public void testHtmlExtraction() throws Exception
     {
         testExtractFromMimetype(MimetypeMap.MIMETYPE_HTML);
+    }
+
+    public void testHtmlExtractionJapanese() throws Exception {
+        String mimetype = MimetypeMap.MIMETYPE_HTML;
+
+        File japaneseHtml = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.japanese.html");
+        Map<QName, Serializable> properties = extractFromFile(japaneseHtml, mimetype);
+
+        assertFalse("extractFromMimetype should return at least some properties, none found for " + mimetype,
+                properties.isEmpty());
+
+        // Title and description
+        assertEquals(
+                "Property " + ContentModel.PROP_TITLE + " not found for mimetype " + mimetype,
+                QUICK_TITLE_JAPANESE,
+                DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE)));
     }
 
     /** Extractor only does the usual basic three properties */

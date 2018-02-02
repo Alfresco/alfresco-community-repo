@@ -118,4 +118,19 @@ public class CharsetFinderTest extends TestCase
         assertNotNull(charset);
         assertEquals("windows-1251", charset.displayName()); // AKA CP1251
     }
+    
+    /**
+     * Ensure that a Japanese HTML file encoded with Shift_JS is detected correctly
+     */
+    public void testShiftJSHtml() throws Exception
+    {
+        String for_shift_js = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=Shift_JIS\">" +
+                "<title>確認した結果を添付しますので、確認してください</title>\r\n" + 
+                "<h3>特許印紙の売りさばきに関する省令</h3></html>";
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(for_shift_js.getBytes("Shift_JIS")));
+        
+        Charset charset = charsetFinder.getCharset(is, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        assertNotNull(charset);
+        assertEquals("Shift_JIS", charset.displayName());
+    }
 }

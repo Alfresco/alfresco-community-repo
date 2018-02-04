@@ -231,7 +231,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
 
                 // initialise the details of the next disposition action
-                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, true);
+                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
             }
         }
     }
@@ -700,7 +700,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *  @param nodeRef node reference
      *  @param dispositionActionDefinition disposition action definition
      */
-    private DispositionAction initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
+    private DispositionAction initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
         if (childAssocs != null && !childAssocs.isEmpty())
@@ -745,7 +745,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      * @param nodeRef The node which the schedule applies to.
      * @param dispositionActionDefinition The definition of the disposition action.
-     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      * @return The new "disposition as of" date.
      */
     @Override
@@ -761,8 +760,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
             if (periodProperty != null)
-//                    && (allowContextFromAsOf
-//                        || !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty)))
             {
                 if (RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
                 {
@@ -1032,7 +1029,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
                         }
 
-                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, false);
+                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
                     }
                 }
 
@@ -1327,7 +1324,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         {
                             recordOrFolder = folder;
                         }
-                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef, true);
+                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef);
                         newAction = firstDispositionAction.getNodeRef();
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();

@@ -177,8 +177,9 @@
    </bean>
 
     <!-- Our common Tika configuration -->
-    <bean id="tikaConfig" class="org.apache.tika.config.TikaConfig"
-          factory-method="getDefaultConfig" />
+    <bean id="tikaConfig" class="org.apache.tika.config.TikaConfig" >
+        <constructor-arg type="java.io.InputStream" value="classpath:alfresco/tika/tika-config.xml" />
+    </bean>
    
     <!-- Characterset decoder -->
     <bean id="charset.finder" class="org.alfresco.repo.content.encoding.ContentCharsetFinder">

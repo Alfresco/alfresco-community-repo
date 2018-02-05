@@ -78,8 +78,6 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
         TikaConfig config = (TikaConfig)ctx.getBean("tikaConfig");
         extracter = new TikaAutoMetadataExtracter(config);
         extracter.setDictionaryService(dictionaryService);
-        MetadataExtracterConfig metadataExtracterConfig = (MetadataExtracterConfig)ctx.getBean("metadataExtracterConfig");
-        extracter.setMetadataExtracterConfig(metadataExtracterConfig);
         extracter.register();
         
         // Attach some extra mappings, using the Tika
@@ -198,10 +196,7 @@ public class TikaAutoMetadataExtracterTest extends AbstractMetadataExtracterTest
         }
 
         // Have it processed
-        // Note that if the patched/fix from MNT-15219 is not applied,
-        // or if the default false value of the content.metadataExtracter.parseShapes property is overridden
-        // then the next call will throw an OutOfMemory that is dealt with by the tika metadata extracter framework
-        // and it will fail at the next assert because properties extracted will be empty
+        // see MNT-15219 and REPO-3251
         Map<QName, Serializable> properties = extractFromFile(file, mimetype);
 
         // check we got something

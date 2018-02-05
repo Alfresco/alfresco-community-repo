@@ -139,7 +139,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * Set the dictionary service
      *
-     * @param dictionaryServic  the dictionary service
+     * @param dictionaryService  the dictionary service
      */
     @Override
     public void setDictionaryService(DictionaryService dictionaryService)
@@ -246,7 +246,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
 
                 // initialise the details of the next disposition action
-                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, true);
+                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
             }
         }
     }
@@ -451,7 +451,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
         {
             List<ChildAssociationRef> childAssocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
-            if (childAssocs.size() != 0)
+            if (!childAssocs.isEmpty())
             {
                 ChildAssociationRef firstChildAssocRef = childAssocs.get(0);
                 result = firstChildAssocRef.getChildRef();
@@ -474,7 +474,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (nodeService.exists(dsNodeRef))
         {
             List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(dsNodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
-            if (assocs.size() != 0)
+            if (!assocs.isEmpty())
             {
                 if (assocs.size() != 1)
                 {
@@ -534,7 +534,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      * @param isRecordLevelDisposition
      * @param rmContainer
-     * @param root
      * @return
      */
     private List<NodeRef> getDisposableItemsImpl(boolean isRecordLevelDisposition, NodeRef rmContainer)
@@ -598,13 +597,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
             // Check whether there is already a disposition schedule object present
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
-            if (assocs.size() == 0)
+            if (assocs.isEmpty())
             {
             	DispositionSchedule currentDispositionSchdule = getDispositionSchedule(nodeRef);
             	if (currentDispositionSchdule != null)
             	{
             		List<NodeRef> items = getDisposableItemsImpl(currentDispositionSchdule.isRecordLevelDisposition(), nodeRef);
-            		if (items.size() != 0)
+            		if (!items.isEmpty())
             		{
             			throw new AlfrescoRuntimeException("Can not create a retention schedule if there are disposable items already under the control of an other retention schedule");
             		}
@@ -686,7 +685,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * Updates the given disposition action definition belonging to the given disposition
      * schedule.
      *
-     * @param schedule The DispositionSchedule the action belongs to
      * @param actionDefinition The DispositionActionDefinition to update
      * @param actionDefinitionParams Map of parameters to use to update the action definition
      * @return The updated DispositionActionDefinition
@@ -713,12 +711,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      *  @param nodeRef node reference
      *  @param dispositionActionDefinition disposition action definition
-     *  @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      */
-    private DispositionAction initialiseDispositionAction(final NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
+    private DispositionAction initialiseDispositionAction(final NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
-        if (childAssocs != null && childAssocs.size() > 0)
+        if (childAssocs != null && !childAssocs.isEmpty())
         {
             return new DispositionActionImpl(serviceRegistry, childAssocs.get(0).getChildRef());
         }
@@ -726,7 +723,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Create the properties
         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
 
-        Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition, allowContextFromAsOf);
+        Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition);
 
         // Set the property values
         props.put(PROP_DISPOSITION_ACTION_ID, dispositionActionDefinition.getId());
@@ -787,12 +784,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      * @param nodeRef The node which the schedule applies to.
      * @param dispositionActionDefinition The definition of the disposition action.
-     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      * @return The new "disposition as of" date.
      */
     @Override
-    public Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
-                boolean allowContextFromAsOf)
+    public Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
     {
         // Calculate the asOf date
         Date asOfDate = null;
@@ -803,12 +798,27 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
-            if (periodProperty != null && (allowContextFromAsOf
-                        || !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty)))
+            if (periodProperty != null)
             {
-                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
-                // when the value of the period property is set
-                contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
+                if (RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
+                {
+                    DispositionAction lastCompletedDispositionAction = getLastCompletedDispostionAction(nodeRef);
+                    if (lastCompletedDispositionAction != null)
+                    {
+                        contextDate = lastCompletedDispositionAction.getCompletedAt();
+                    }
+                    else
+                    {
+                        contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
+                    }
+
+                }
+                else
+                {
+                    // doesn't matter if the period property isn't set ... the asOfDate will get updated later
+                    // when the value of the period property is set
+                    contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
+                }
             }
             else
             {
@@ -910,7 +920,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         NodeRef result = null;
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
-        if (assocs.size() != 0)
+        if (!assocs.isEmpty())
         {
             result = assocs.get(0).getChildRef();
         }
@@ -1031,7 +1041,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
                     {
                         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
-                        if (assocs.size() > 0)
+                        if (!assocs.isEmpty())
                         {
                             currentDispositionAction = assocs.get(0).getChildRef();
                         }
@@ -1086,7 +1096,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
                         }
 
-                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, false);
+                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
                     }
                 }
 
@@ -1159,14 +1169,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
-        if (assocs != null && assocs.size() > 0)
+        if (assocs != null && !assocs.isEmpty())
         {
             for (ChildAssociationRef assoc : assocs)
             {
                 if (assoc != null && assoc.getQName().getLocalName().contains(dispositionActionName))
                 {
                     DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
-                    return calculateAsOfDate(record, actionDefinition, true);
+                    return calculateAsOfDate(record, actionDefinition);
                 }
             }
         }
@@ -1381,14 +1391,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         {
                             recordOrFolder = folder;
                         }
-                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef, true);
+                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef);
                         newAction = firstDispositionAction.getNodeRef();
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();
                     }
                     else if (firstDispositionActionDef.getPeriod() != null)
                     {
-                        Date firstActionDate = calculateAsOfDate(record, firstDispositionActionDef, true);
+                        Date firstActionDate = calculateAsOfDate(record, firstDispositionActionDef);
                         if (firstActionDate == null || (newDispositionActionDateAsOf != null
                                         && newDispositionActionDateAsOf.before(firstActionDate)))
                         {

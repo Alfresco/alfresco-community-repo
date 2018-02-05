@@ -151,7 +151,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Properties properties;
     private Map<String, MetadataExtracterLimits> mimetypeLimits;
     private ExecutorService executorService;
-    protected MetadataExtracterConfig metadataExtracterConfig;
     
     private static final AtomicInteger CONCURRENT_EXTRACTIONS_COUNT = new AtomicInteger(0);
 
@@ -399,14 +398,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public void setProperties(Properties properties)
     {
         this.properties = properties;
-    }
-    
-    /**
-     * The metadata extracter config.
-     */
-    public void setMetadataExtracterConfig(MetadataExtracterConfig metadataExtracterConfig)
-    {
-        this.metadataExtracterConfig = metadataExtracterConfig;
     }
     
     /**

@@ -60,8 +60,6 @@ import org.alfresco.jlan.ftp.InvalidPathException;
 import org.alfresco.jlan.netbios.NetBIOSSession;
 import org.alfresco.jlan.netbios.RFCNetBIOSProtocol;
 import org.alfresco.jlan.netbios.win32.Win32NetBIOS;
-import org.alfresco.jlan.oncrpc.RpcAuthenticator;
-import org.alfresco.jlan.oncrpc.nfs.NFSConfigSection;
 import org.alfresco.jlan.server.auth.ICifsAuthenticator;
 import org.alfresco.jlan.server.auth.acl.AccessControlList;
 import org.alfresco.jlan.server.auth.passthru.DomainMapping;
@@ -73,21 +71,16 @@ import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.server.core.DeviceContext;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.core.ShareMapper;
-import org.alfresco.jlan.server.core.ShareType;
-import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FilesystemsConfigSection;
 import org.alfresco.jlan.server.filesys.cache.FileStateLockManager;
 import org.alfresco.jlan.server.filesys.cache.StandaloneFileStateCache;
-import org.alfresco.jlan.server.filesys.cache.hazelcast.ClusterConfigSection;
-import org.alfresco.jlan.server.filesys.cache.hazelcast.HazelCastClusterFileStateCache;
 import org.alfresco.jlan.server.thread.ThreadRequestPool;
 import org.alfresco.jlan.smb.server.CIFSConfigSection;
 import org.alfresco.jlan.smb.server.VirtualCircuitList;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.jlan.util.Platform;
-import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.springframework.beans.factory.DisposableBean;
@@ -115,7 +108,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     private CoreServerConfigBean coreServerConfigBean;
 
     private ThreadRequestPool threadPool;
-    protected ClusterConfigBean clusterConfigBean;
 
     /**
      * Default constructor
@@ -161,11 +153,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         this.coreServerConfigBean = coreServerConfigBean;
     }
     
-    public void setClusterConfigBean(ClusterConfigBean clusterConfigBean)
-    {
-        this.clusterConfigBean = clusterConfigBean;
-    }
-
     /**
      * Process the CIFS server configuration
      */
@@ -1597,25 +1584,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
                     ExtendedDiskInterface filesysDriver = getRepoDiskInterface();
                     ContentContext filesysContext = (ContentContext) filesystem;
-                    
-                    if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
-                    {
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ filesysContext.getShareName());
-                        }
-                        GenericConfigElement hazelConfig = createClusterConfig("cifs.filesys."+filesysContext.getShareName()); 
-                        HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
-                        hazel.initializeCache(hazelConfig, this);   
-                        filesysContext.setStateCache(hazel);
-                    }
-                    else
-                    {
-                        // Create state cache here and inject
-                        StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                        standaloneCache.initializeCache( new GenericConfigElement( ""), this);
-                        filesysContext.setStateCache(standaloneCache);
-                    }
+
+                    // Create state cache here and inject
+                    StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                    standaloneCache.initializeCache( new GenericConfigElement( ""), this);
+                    filesysContext.setStateCache(standaloneCache);
                     
                     if ( filesysContext.hasStateCache()) {
                         
@@ -2071,25 +2044,11 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
               
               try 
               {
-                  if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
-                  {
-                      if(logger.isDebugEnabled())
-                      {
-                          logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", uniqueName: "+ uniqueName);
-                      }
-                      GenericConfigElement hazelConfig = createClusterConfig(uniqueName); 
-                      HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
-                      hazel.initializeCache(hazelConfig, this);   
-                      diskCtx.setStateCache(hazel);
-                  }
-                  else
-                  {          
-                      // Create a standalone state cache
-                      StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                      standaloneCache.initializeCache( new GenericConfigElement( ""), this); 
-                      filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
-                      diskCtx.setStateCache( standaloneCache);
-                  }
+                  // Create a standalone state cache
+                  StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                  standaloneCache.initializeCache( new GenericConfigElement( ""), this);
+                  filesysConfig.addFileStateCache( diskCtx.getDeviceName(), standaloneCache);
+                  diskCtx.setStateCache( standaloneCache);
                     
                   // Register the state cache with the reaper thread
                   // has many side effects including initialisation of the cache    
@@ -2105,67 +2064,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
               }
           }
       }
-    }
-    
-
-    @Override
-    protected void processClusterConfig() throws InvalidConfigurationException
-    {
-
-// Done by org.alfresco.jlan.server.config.ServerConfiguration.closeConfiguration        
-//        /**
-//         * Close the old hazelcast configuration
-//         */
-//        ClusterConfigSection secConfig = (ClusterConfigSection) getConfigSection(ClusterConfigSection.SectionName);
-//        {
-//            if(secConfig != null)
-//            {
-//                secConfig.closeConfig();
-//            }
-//        }
-        
-        if (clusterConfigBean  == null || !clusterConfigBean.getClusterEnabled())
-        {
-            removeConfigSection(ClusterConfigSection.SectionName);
-            logger.info("Filesystem cluster cache not enabled");
-            return;
-        }
-                
-        // Create a ClusterConfigSection and attach it to 'this'.
-        ClusterConfigSection clusterConf = new ClusterConfigSection(this);
-    }
-    
-    
-   private  GenericConfigElement createClusterConfig(String topicName) throws InvalidConfigurationException 
-    {
-        GenericConfigElement config = new GenericConfigElement("hazelcastStateCache");
-        GenericConfigElement clusterNameCfg = new GenericConfigElement("clusterName");
-        clusterNameCfg.setValue(clusterConfigBean.getClusterName());
-        config.addChild(clusterNameCfg);
-    
-        GenericConfigElement topicNameCfg = new GenericConfigElement("clusterTopic");
-        if(topicName == null || topicName.isEmpty())
-        {
-            topicName="default";
-        }
-        topicNameCfg.setValue(topicName);
-        config.addChild(topicNameCfg);
-    
-        if(clusterConfigBean.getDebugFlags() != null)
-        {
-            GenericConfigElement debugCfg = new GenericConfigElement("cacheDebug");
-            debugCfg.addAttribute("flags", clusterConfigBean.getDebugFlags());
-            config.addChild(debugCfg);
-        }
-    
-        if(clusterConfigBean.getNearCacheTimeout() > 0)
-        {
-            GenericConfigElement nearCacheCfg = new GenericConfigElement("nearCache");
-            nearCacheCfg.addAttribute("disable", Boolean.FALSE.toString());
-            nearCacheCfg.addAttribute("timeout", Integer.toString(clusterConfigBean.getNearCacheTimeout()));
-            config.addChild(nearCacheCfg);
-        }
-        return config;
     }
 
     @Override

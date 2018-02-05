@@ -437,9 +437,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
           // Process the security configuration
           processSecurityConfig();
           
-          // Process the Cluster  configuration
-          processClusterConfig();
-
           // Process the filesystems configuration
           processFilesystemsConfig();
       }
@@ -511,9 +508,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   protected abstract void processCIFSServerConfig();
 
   protected abstract void processFTPServerConfig();
-  
-  protected abstract void processClusterConfig() throws InvalidConfigurationException;
-  
+
   protected void processWINSServerConfig() {}
 
   /**

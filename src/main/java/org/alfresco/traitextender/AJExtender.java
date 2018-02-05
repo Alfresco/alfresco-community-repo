@@ -40,14 +40,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-
-import com.hazelcast.util.ConcurrentHashSet;
 
 /**
  * Static utility used for aspectJ extension consistency , routing and for
@@ -81,7 +80,7 @@ public class AJExtender
 
     private static Log logger = LogFactory.getLog(AJExtender.class);
 
-    private static ConcurrentHashSet<ExtensionRoute> oneTimeLogSet = null;
+    private static ConcurrentHashMap.KeySetView<ExtensionRoute, Boolean> oneTimeLogSet = null;
 
     /**
      *  
@@ -517,7 +516,7 @@ public class AJExtender
         {
             if (oneTimeLogSet == null)
             {
-                oneTimeLogSet = new ConcurrentHashSet<>();
+                oneTimeLogSet = ConcurrentHashMap.newKeySet();
             }
         }
 

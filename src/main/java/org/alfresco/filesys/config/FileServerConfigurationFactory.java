@@ -36,9 +36,4 @@ public class FileServerConfigurationFactory
     {
         return new ServerConfigurationBean();
     }
-    
-    public ClusterConfigBean createClusterConfigBean()
-    {
-        return new ClusterConfigBean();
-    }
 }

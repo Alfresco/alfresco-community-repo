@@ -19,9 +19,6 @@
       <property name="securityConfigBean">
          <ref bean="fileSecurityConfig" />
       </property>
-      <property name="clusterConfigBean">
-         <ref bean="fileSystemClusterConfig" />
-      </property>
    </bean>
 
    <!-- CIFS Server -->
@@ -257,13 +254,6 @@
 	 <property name="sslEngineDebug">
 		 <value>${ftp.sslEngineDebug}</value>
 	 </property>
-   </bean>
-
-   <!-- Cluster Configuration -->
-   <bean id="fileSystemClusterConfig" factory-bean="fileServerConfigurationFactory" factory-method="createClusterConfigBean">
-      <property name="debugFlags">
-          <value>${filesystem.cluster.debugFlags}</value>
-      </property>
    </bean>
    
    <!-- Home Share Mapper -->

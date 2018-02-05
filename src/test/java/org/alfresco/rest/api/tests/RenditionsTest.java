@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Ordering;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -51,6 +52,8 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
@@ -93,9 +96,12 @@ public class RenditionsTest extends AbstractBaseApiTest
     
     private final static long DELAY_IN_MS = 500;
 
+    protected static ContentService contentService;
+
     @Before
     public void setup() throws Exception
     {
+        contentService = applicationContext.getBean("contentService", ContentService.class);
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -313,9 +319,12 @@ public class RenditionsTest extends AbstractBaseApiTest
         // renditionId in the path parameter is not registered/available
         getSingle(getNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis()), 404);
 
-        // Create a node without any content
+        // Create a node without any content. Test only if OpenOffice is available
+        if(isOpenOfficeAvailable())
+        {
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
-        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 404); // TODO REPO-1834 - different results local (200) than build (404) ?
+        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 200);
+        }
 
         // Create multipart request
         String jpgFileName = "quick.jpg";
@@ -396,6 +405,26 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
 
+        // Create 'doclib' rendition request
+        Rendition renditionRequest = new Rendition().setId("doclib");
+
+        // Test only if OpenOffice is available
+        if (isOpenOfficeAvailable())
+        {
+        // Create a node without any content
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
+        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 202);
+
+        // Rendition for binary content
+        String content = "The quick brown fox jumps over the lazy dog.";
+        file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData("binaryFileName", file));
+        reqBody = multiPartBuilder.build();
+        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 202);
+        }
+
         //
         // -ve Tests
         //
@@ -410,9 +439,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(errorResponse.getDescriptionURL());
         assertEquals(409, errorResponse.getStatusCode());
 
-        // Create 'doclib' rendition request
-        Rendition renditionRequest = new Rendition().setId("doclib");
-        
         // nodeId in the path parameter does not represent a file
         post(getNodeRenditionsUrl(folder_Id), toJsonAsString(renditionRequest), 400);
 
@@ -442,22 +468,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         multipleRenditionRequest.add(new Rendition().setId("doclib"));
         multipleRenditionRequest.add(new Rendition().setId("imgpreview"));
         post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(multipleRenditionRequest), 400);
-
-        // Create a node without any content
-        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
-
-        // The source node has no content
-        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 400); // TODO REPO-1834 - different results local (202) than build (400) ?
-
-        String content = "The quick brown fox jumps over the lazy dog.";
-        file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
-        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData("binaryFileName", file));
-        reqBody = multiPartBuilder.build();
-        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        // No transformer is currently available for 'application/octet-stream'
-        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 400); // TODO REPO-1834 - different results local (202) than build (400) ?
 
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
         // Disable thumbnail generation
@@ -528,9 +538,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         response = getSingle(getNodeRenditionsUrl(contentNodeId), ("doclib/content"), params, 200);
         assertNotNull(response.getResponseAsBytes());
 
-        /* TODO fails on build machine but not locally
-         * returns 400 instead of 201, apparently: Unable to create thumbnail 'doclib' for application/msword as no transformer is currently available.
-
+        if(isOpenOfficeAvailable())
+        {
         // Create multipart request - Word doc file
         renditionName = "doclib";
         fileName = "farmers_markets_list_2003.doc";
@@ -541,15 +550,15 @@ public class RenditionsTest extends AbstractBaseApiTest
                 .build();
 
         // Upload file into 'folder' - including request to create 'doclib' thumbnail
-        response = post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         contentNodeId = document.getId();
 
         // wait and check that rendition is created ...
-        rendition = waitAndGetRendition(userId, contentNodeId, renditionName);
+        rendition = waitAndGetRendition(contentNodeId, renditionName);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
-        */
+        }
 
         /* RA-834: commented-out since not currently applicable for empty file
         Document d1 = new Document();
@@ -933,5 +942,25 @@ public class RenditionsTest extends AbstractBaseApiTest
     public String getScope()
     {
         return "public";
+    }
+
+    /**
+     * Returns <code>true</code> if OpenOffice-based transformations are currently known to
+     * be available, else <code>false</code>.
+     */
+    protected boolean isOpenOfficeAvailable()
+    {
+        ContentTransformer transformer = contentService.getTransformer(null, MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF,
+                new TransformationOptions());
+
+        // A transformer may not be returned here if it is unavailable.
+        if (transformer == null)
+        {
+            return false;
+        }
+
+        // Maybe it's non-null, but not available.
+        boolean isTransformable = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF, null);
+        return isTransformable;
     }
 }

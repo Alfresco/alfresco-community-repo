@@ -40,7 +40,6 @@ import org.alfresco.repo.content.AbstractStreamAwareProxy;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
 import org.alfresco.repo.content.StreamAwareContentWriterProxy;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
-import org.alfresco.repo.content.metadata.MetadataExtracterConfig;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
@@ -71,7 +70,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     private boolean registerTransformer;
     private boolean retryTransformOnDifferentMimeType;
     private boolean strictMimeTypeCheck;
-    MetadataExtracterConfig metadataExtracterConfig;
+
     /**
      * A flag that indicates that the transformer should be started in it own Thread so
      * that it may be interrupted rather than using the timeout in the Reader.
@@ -113,15 +112,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     {
         this.registry = registry;
     }
-    
-    /**
-     * The metadata extracter config.
-     */
-    public void setMetadataExtracterConfig(MetadataExtracterConfig metadataExtracterConfig)
-    {
-        this.metadataExtracterConfig = metadataExtracterConfig;
-    }
-    
+
     /**
      * @param registerTransformer as been available for selection.
      *        If {@code false} this indicates that the transformer may only be

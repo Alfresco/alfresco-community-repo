@@ -258,9 +258,30 @@ public class FilePlanComponentsApiUtils
         ParameterCheck.mandatoryString("nodeId", nodeId);
         ParameterCheck.mandatory("expectedNodeType", expectedNodeType);
 
-        /*
-         * Lookup by placeholder
-         */
+        NodeRef nodeRef = lookupByPlaceholder(nodeId);
+
+        QName nodeType = nodeService.getType(nodeRef);
+        if (!nodeType.equals(expectedNodeType))
+        {
+            throw new InvalidArgumentException("The given id:'" + nodeId + "' (nodeType:" + nodeType.toString()
+            + ") is not valid for this endpoint. Expected nodeType is:" + expectedNodeType.toString());
+        }
+
+        if(StringUtils.isNotBlank(relativePath))
+        {
+            nodeRef = lookupAndValidateRelativePath(nodeRef, relativePath, readOnlyRelativePath, expectedNodeType);
+        }
+        return nodeRef;
+    }
+
+    /**
+     * Lookup node by placeholder
+     *
+     * @param nodeId
+     * @return NodeRef for corresponding id
+     */
+    public NodeRef lookupByPlaceholder(String nodeId)
+    {
         NodeRef nodeRef;
         if (nodeId.equals(FILE_PLAN_ALIAS))
         {
@@ -314,18 +335,7 @@ public class FilePlanComponentsApiUtils
         {
             nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         }
-
-        QName nodeType = nodeService.getType(nodeRef);
-        if (!nodeType.equals(expectedNodeType))
-        {
-            throw new InvalidArgumentException("The given id:'" + nodeId + "' (nodeType:" + nodeType.toString()
-            + ") is not valid for this endpoint. Expected nodeType is:" + expectedNodeType.toString());
-        }
-
-        if(StringUtils.isNotBlank(relativePath))
-        {
-            nodeRef = lookupAndValidateRelativePath(nodeRef, relativePath, readOnlyRelativePath, expectedNodeType);
-        }
+        
         return nodeRef;
     }
 
@@ -584,7 +594,7 @@ public class FilePlanComponentsApiUtils
     }
     /**
      * Helper method that converts a map of String properties into a map of QName properties
-     * @param props
+     * @param properties
      * @return a map of properties
      */
     public Map<QName, Serializable> mapToNodeProperties(Map<String, Object> properties)

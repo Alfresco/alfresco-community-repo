@@ -65,6 +65,8 @@ public interface SearchService
     public static final String LANGUAGE_SOLR_CMIS = "solr-cmis";
 
     public static final String LANGUAGE_SOLR_ALFRESCO = "solr-alfresco";
+    
+    public static final String LANGUAGE_SOLR_SQL = "solr-sql";
 
     /**
      * Search against a store. Pulls back all attributes on each node. Does not

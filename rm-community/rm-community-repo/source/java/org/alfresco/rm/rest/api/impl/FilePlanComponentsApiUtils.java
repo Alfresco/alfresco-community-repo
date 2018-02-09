@@ -27,6 +27,7 @@
 
 package org.alfresco.rm.rest.api.impl;
 
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
@@ -126,6 +127,8 @@ public class FilePlanComponentsApiUtils
     public static final String UNFILED_ALIAS = "-unfiled-";
     public static final String HOLDS_ALIAS = "-holds-";
     public static final String RM_SITE_ID = "rm";
+    public static final List<String> CONTAINERS_FOR_CLASSIFIABLE_CHILDREN_ALIAS = Arrays.asList(
+            FILE_PLAN_ALIAS, UNFILED_ALIAS);
     //public static String PARAM_RELATIVE_PATH = "relativePath";
 
     // excluded properties
@@ -270,6 +273,47 @@ public class FilePlanComponentsApiUtils
         if(StringUtils.isNotBlank(relativePath))
         {
             nodeRef = lookupAndValidateRelativePath(nodeRef, relativePath, readOnlyRelativePath, expectedNodeType);
+        }
+        return nodeRef;
+    }
+
+    /**
+     * look up node by id and validate node type is suitable container
+     *
+     * @param nodeId
+     * @return
+     */
+    public NodeRef validateAndLookUpContainerNode(String nodeId, List<String> allowedPlaceholders)
+    {
+        ParameterCheck.mandatoryString("nodeId", nodeId);
+
+        NodeRef nodeRef = lookupByAllowedPlaceholders(nodeId, allowedPlaceholders);
+        QName nodeType = nodeService.getType(nodeRef);
+        if(!dictionaryService.isSubClass(nodeType, TYPE_FOLDER))
+        {
+            throw new InvalidArgumentException("The given id:'" + nodeId + "' (nodeType:" + nodeType.toString()
+            + ") is not valid for this endpoint. Expected nodeType is:" + TYPE_FOLDER.toString());
+        }
+
+        return nodeRef;
+    }
+    /**
+     * Lookup node by placeholder from allowed placeholder list
+     *
+     * @param nodeId
+     * @param allowedPlaceholders
+     * @return NodeRef for corresponding id
+     */
+    public NodeRef lookupByAllowedPlaceholders(String nodeId, List<String> allowedPlaceholders)
+    {
+        NodeRef nodeRef;
+        if (allowedPlaceholders.contains(nodeId))
+        {
+            nodeRef = lookupByPlaceholder(nodeId);
+        }
+        else
+        {
+            nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         }
         return nodeRef;
     }

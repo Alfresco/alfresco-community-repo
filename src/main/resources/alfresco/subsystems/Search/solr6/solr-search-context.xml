@@ -74,7 +74,22 @@
         <property name="useDynamicShardRegistration" value="${solr.useDynamicShardRegistration}"/>
     </bean>
     
-    
+    <bean id="search.solrSQLQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrSQLHttpClient" init-method="init">
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="repositoryState">
+            <ref bean="repositoryState" />
+        </property>
+        <property name="storeMappings">
+            <ref bean="solr6.store.mappings" />
+        </property>
+        <property name="includeGroupsForRoleAdmin">
+            <value>${solr.query.includeGroupsForRoleAdmin}</value>
+        </property>
+        <property name="anyDenyDenies" value="${security.anyDenyDenies}"/>
+        <property name="useDynamicShardRegistration" value="${solr.useDynamicShardRegistration}"/>
+    </bean>
     <!--The configurable RPC user mappings - actually a post-processed composite property! -->
     <bean id="solr6.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
         <property name="singleton" value="false"/>
@@ -228,7 +243,20 @@
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
-    
+    <!-- Adding solr SQL language. -->
+    <bean id="search.solr.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage">
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>solr-sql</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrSQLQueryHTTPCLient" />
+        </property>
+    </bean>
     <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
 	    <property name="factories">
 			<list>
@@ -336,5 +364,4 @@
             <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
-
 </beans>

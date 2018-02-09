@@ -991,6 +991,7 @@
         <property name="resultMapper" ref="searchapiResultMapper" />
         <property name="searchMapper" ref="searchapiSearchMapper" />
     </bean>
+    
 
     <bean id="searchapiStoreMapper" class="org.alfresco.rest.api.search.impl.StoreMapper" />
 

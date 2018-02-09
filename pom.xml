@@ -37,7 +37,7 @@
 
         <dependency.alfresco-repository.version>6.23</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>7.2</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>7.3-SNAPSHOT</dependency.alfresco-data-model.version>
 
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.8.10</dependency.jackson.version>

@@ -4343,6 +4343,54 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             clearAuthorityContext();
         }
     }
+    
+    /**
+     * Test upload using relativePath
+     * @throws Exception 
+     * 
+     */
+    @Test
+    public void testUploadUsingRelativePath() throws Exception{
+        setRequestContext(user1);
+
+        // user1 creates a private site and adds user2 as a site consumer
+        String site1Title = "site-testGetPathElements_DocLib-" + RUNID;
+        String site1Id = createSite(site1Title, SiteVisibility.PRIVATE).getId();
+        addSiteMember(site1Id, user2, SiteRole.SiteConsumer);
+        
+        String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
+        
+        // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A
+        String folderA = "folder" + RUNID + "_A";
+        String folderA_Id = createFolder(site1DocLibNodeId, folderA).getId();
+
+        // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B
+        String folderB = "folder" + RUNID + "_B";
+        String folderB_Id = createFolder(folderA_Id, folderB).getId();
+        NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id);
+
+        // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C
+        String folderC = "folder" + RUNID + "_C";
+        String folderC_Id = createFolder(folderB_Id, folderC).getId();
+        NodeRef folderC_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderC_Id);
+
+        // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C/content<timestamp>
+        String content = "content" + RUNID;
+        String content_Id = createTextFile(folderC_Id, content, "The quick brown fox jumps over the lazy dog.").getId();
+        
+        
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "path");
+        params.put("relativePath", folderA + "/" + folderB + "/" + folderC);
+        
+        //call get with relativePathParam
+        HttpResponse response = getAll(getNodeChildrenUrl(site1DocLibNodeId), null, params, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+         
+        assertEquals(1, nodes.size()); 
+        assertEquals("/" + folderA + "/" + folderB + "/" + folderC,((Node)(nodes.get(0))).getPath().getRelativePath());
+    }
+
 
     /**
      * Test update permission on a node
@@ -4773,5 +4821,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         return "public";
     }
+    
+    
 }
 

@@ -1311,8 +1311,46 @@ public class NodesImpl implements Nodes
                 FileInfo fInfo = page.get(index);
 
                 // minimal info by default (unless "include"d otherwise)
-                // (pass in null as parentNodeRef to force loading of primary parent node as parentId)
-                return getFolderOrDocument(fInfo.getNodeRef(), null, fInfo.getType(), includeParam, mapUserInfo);
+                // (pass in null as parentNodeRef to force loading of primary
+                // parent node as parentId)
+
+                // (pass in null as parentNodeRef to force loading of primary
+                // parent node as parentId)
+                Node node = getFolderOrDocument(fInfo.getNodeRef(), null, fInfo.getType(), includeParam, mapUserInfo);
+                if (node.getPath() != null)
+                {
+                    NodeRef rootNodeRef = validateOrLookupNode(parentFolderNodeId,null);
+                    try
+                    {
+                        // get the path elements
+                        List<String> pathInfos = fileFolderService.getNameOnlyPath(rootNodeRef, node.getNodeRef());
+
+                        int sizePathInfos = pathInfos.size();
+
+                        if (sizePathInfos > 1)
+                        {
+                            // remove the current child
+                            pathInfos.remove(sizePathInfos - 1);
+
+                            // build the path string
+                            StringBuilder sb = new StringBuilder(pathInfos.size() * 20);
+                            for (String fileInfo : pathInfos)
+                            {
+                                sb.append("/");
+                                sb.append(fileInfo);
+                            }
+
+                            node.getPath().setRelativePath(sb.toString());
+                        }
+
+                    }
+
+                    catch (FileNotFoundException e)
+                    {
+                    }
+                }
+
+                return node;
             }
 
             @Override

@@ -37,6 +37,7 @@ public class PathInfo
 {
     private String name;
     private Boolean isComplete;
+    private String relativePath;
     private List<ElementInfo> elements;
 
     public PathInfo()
@@ -63,6 +64,16 @@ public class PathInfo
     public List<ElementInfo> getElements()
     {
         return elements;
+    }
+    
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath)
+    {
+        this.relativePath = relativePath;
     }
 
     @Override

@@ -94,7 +94,9 @@
          <ref bean="sysAdminParams" />
       </property>
       <property name="personService">
-         <ref bean="PersonService" />
+          <!-- use the unsecure "personService" because we need to know if  -->
+          <!-- personService.getUserNamesAreCaseSensitive(), without having the user authenticated yet -->
+         <ref bean="personService" />
       </property>
       <property name="protectedUsersCache">
          <ref bean="protectedUsersCache" />

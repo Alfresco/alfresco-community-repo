@@ -28,6 +28,7 @@ package org.alfresco.repo.security.authentication.external;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -106,5 +107,7 @@ public class LocalAuthenticationServiceTest
         personService.setPersonProperties(username, properties);
         assertFalse("The isEnabed flag should be set to false for the disabled user",
                 localAuthenticationService.getAuthenticationEnabled(username));
+        assertFalse("External authentication should not protect against brute force attacks",
+            ((AuthenticationServiceImpl) localAuthenticationService).isProtectionEnabled());
     }
 }

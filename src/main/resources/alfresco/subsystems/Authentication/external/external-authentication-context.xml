@@ -55,7 +55,9 @@
          <ref bean="protectedUsersCache" />
       </property>
       <property name="protectionEnabled">
-         <value>${authentication.protection.enabled}</value>
+         <!-- for external authentication ignore ${authentication.protection.enabled} -->
+         <!-- the external users are already authenticated by something else -->
+         <value>false</value>
       </property>
       <property name="protectionLimit">
          <value>${authentication.protection.limit}</value>

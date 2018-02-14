@@ -314,7 +314,8 @@ public class RmSiteType extends    BaseBehaviourBean
 
     /**
      * Add the limitation of creating only one rma:filePlan or one dod:filePlan depending on the type of rm site.
-     * Also added the limitation of crating two cm:folder type under rm site.
+     * Let multiple cm:folder type be created under rm site.
+     *
      * Other than this nothing can be created under rm site nodeRef
      *
      * @author Silviu Dinuta
@@ -342,21 +343,15 @@ public class RmSiteType extends    BaseBehaviourBean
     }
 
     /**
-     * Overridden this because in this case we need to have multiple cm:folder types but not more than two of them.
-     * The two mentioned folders are created when rm site is created and one of them is Saved Searches and the other surf-config folder.
-     * After that creation of cm:folder should not be allowed under rm site node
+     * Overridden this because in this case we need to have multiple cm:folder types.
+     * The two mentioned folders are created when rm site is created and those are Saved Searches and surf-config folder.
+     *
      */
     @Override
     protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType,
                 List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         super.validateNewChildAssociation(parent, child, acceptedUniqueChildType, acceptedMultipleChildType);
-
-        // check the user is not trying to create more than 2 folders that are created by default.
-        if (nodeService.getChildAssocs(parent, Sets.newHashSet(ContentModel.TYPE_FOLDER)).size() > 2)
-        {
-            throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, ContentModel.TYPE_FOLDER), null);
-        }
     }
 
     @Behaviour(kind = BehaviourKind.CLASS,

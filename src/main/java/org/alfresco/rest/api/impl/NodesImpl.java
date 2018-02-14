@@ -1351,7 +1351,8 @@ public class NodesImpl implements Nodes
                 }
 
                 catch (FileNotFoundException e)
-                {
+                {   
+                 // NOTE: return null as relativePath
                 }
             }
 

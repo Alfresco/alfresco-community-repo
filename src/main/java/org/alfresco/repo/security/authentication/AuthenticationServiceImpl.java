@@ -71,6 +71,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         this.protectionEnabled = protectionEnabled;
     }
 
+    public boolean isProtectionEnabled()
+    {
+        return protectionEnabled;
+    }
+
     public void setProtectionLimit(int protectionLimit)
     {
         this.protectionLimit = protectionLimit;

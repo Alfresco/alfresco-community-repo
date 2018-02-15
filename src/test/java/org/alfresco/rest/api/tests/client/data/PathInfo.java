@@ -39,6 +39,7 @@ public class PathInfo
 {
     private String name;
     private Boolean isComplete;
+    private String relativePath;
     private List<ElementInfo> elements;
 
     public PathInfo()
@@ -60,6 +61,11 @@ public class PathInfo
     public Boolean getIsComplete()
     {
         return isComplete;
+    }
+    
+    public String getRelativePath()
+    {
+        return relativePath;
     }
 
     public List<ElementInfo> getElements()

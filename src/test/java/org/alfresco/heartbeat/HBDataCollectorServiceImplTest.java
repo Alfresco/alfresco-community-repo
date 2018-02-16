@@ -109,6 +109,34 @@ public class HBDataCollectorServiceImplTest
         assertCollectorJobsNotScheduled("Job was scheduled but HB is disabled", scheduler);
     }
 
+    @Test
+    // Based on testJobSchedulingWhenEnabled() and then calls deregister(..) and register(...).
+    public void testDeregister() throws Exception
+    {
+        // Enable heartbeat by setting the default enabled state ( as if set in prop file)
+        final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
+        collectorService.setScheduler(scheduler);
+
+        // Register few collectors
+        registerValidCollectors(collectorService);
+
+        // Check that the jobs are scheduled for all collectors when heartbeat is enabled
+        assertTrue(collectorService.isEnabled());
+        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
+        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+
+        collectorService.deregisterCollector(validCollector1);
+
+        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
+        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+
+        collectorService.registerCollector(validCollector1);
+        collectorService.deregisterCollector(validCollector2);
+
+        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
+        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+    }
+
     /**
      * Heartbeat enabled by default but disabled in licence on onLicenseChange
      */

@@ -139,6 +139,29 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         }
     }
 
+    public void deregisterCollector(final HBBaseDataCollector collector)
+    {
+        if (collectors.remove(collector))
+        {
+            try
+            {
+                final String jobName = "heartbeat-" + collector.getCollectorId();
+                final String triggerName = jobName + "-Trigger";
+                unscheduleJob(triggerName, collector);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("HeartBeat deregistered collector: " + collectorInfo(collector));
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("HeartBeat did not deregister collector: "
+                        + collectorInfo(collector), e);
+            }
+        }
+    }
+
     @Override
     public boolean isEnabledByDefault()
     {

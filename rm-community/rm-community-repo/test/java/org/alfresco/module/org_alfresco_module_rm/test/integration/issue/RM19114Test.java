@@ -113,9 +113,6 @@ public class RM19114Test extends BaseRMTestCase
                 {
                     public void runImpl() throws Exception
                     {
-                        System.out.println(nodeService.getChildAssocs(wikiPage));
-                        System.out.println(nodeService.getProperties(wikiPage));
-
                         assertEquals( true, nodeService.exists(wikiPage));
                     }
                 });

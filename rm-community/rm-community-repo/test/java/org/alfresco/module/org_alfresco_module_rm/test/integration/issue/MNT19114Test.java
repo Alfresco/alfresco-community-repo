@@ -35,9 +35,9 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
- * Test class for RM 19114, wiki page can not be created under RM site
+ * Test class for MNT 19114, wiki page can not be created under RM site
  */
-public class RM19114Test extends BaseRMTestCase
+public class MNT19114Test extends BaseRMTestCase
 {
     public static final String PARENT_NODE = "RMSite";
     public static final String DOCUMENT_LIBRARY_FOLDER_TYPE = "documentLibrary";
@@ -57,74 +57,54 @@ public class RM19114Test extends BaseRMTestCase
      */
     public void testCreateWikiPageInRmSite() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             NodeRef wikiPage;
 
             public void given()
             {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // Creating a Records Management site
-                        SiteInfo rmSite= siteService.createSite("rmSite", PARENT_NODE, generate(), generate(), SiteVisibility.PUBLIC, TYPE_RM_SITE);
+                // Creating a Records Management site
+                siteService.createSite("rmSite", PARENT_NODE, generate(), generate(), SiteVisibility.PUBLIC, TYPE_RM_SITE);
 
-                        // Adding two immediate folder type children
-                        getSiteContainer(
-                                PARENT_NODE,
-                                DOCUMENT_LIBRARY_FOLDER_TYPE,
-                                true,
-                                siteService,
-                                transactionService,
-                                taggingService);
-                        getSiteContainer(
-                                PARENT_NODE,
-                                SURF_CONFIG_FOLDER_TYPE,
-                                true,
-                                siteService,
-                                transactionService,
-                                taggingService);
-                    }
-                });
+                // Adding two immediate folder type children
+                getSiteContainer(
+                        PARENT_NODE,
+                        DOCUMENT_LIBRARY_FOLDER_TYPE,
+                        true,
+                        siteService,
+                        transactionService,
+                        taggingService);
+                getSiteContainer(
+                        PARENT_NODE,
+                        SURF_CONFIG_FOLDER_TYPE,
+                        true,
+                        siteService,
+                        transactionService,
+                        taggingService);
             }
 
             public void when() throws Exception
             {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        wikiPage = getSiteContainer(
-                                PARENT_NODE,
-                                WIKI_PAGE_FOLDER_TYPE,
-                                true,
-                                siteService,
-                                transactionService,
-                                taggingService);
-                    }
 
-                });
+                wikiPage = getSiteContainer(
+                        PARENT_NODE,
+                        WIKI_PAGE_FOLDER_TYPE,
+                        true,
+                        siteService,
+                        transactionService,
+                        taggingService);
+
             }
 
             public void then() throws Exception
             {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        assertEquals( true, nodeService.exists(wikiPage));
-                    }
-                });
-
+                // Check if the new folder type wiki page has been created
+                assertEquals(true, nodeService.exists(wikiPage));
             }
 
-            public void after(){
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                siteService.deleteSite(PARENT_NODE);}});
+            public void after()
+            {
+                siteService.deleteSite(PARENT_NODE);
             }
         });
     }

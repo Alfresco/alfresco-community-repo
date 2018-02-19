@@ -27,20 +27,19 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -59,7 +58,6 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Behaviour associated with the RM Site type
@@ -340,18 +338,6 @@ public class RmSiteType extends    BaseBehaviourBean
                 return null;
             }
         });
-    }
-
-    /**
-     * Overridden this because in this case we need to have multiple cm:folder types.
-     * The two mentioned folders are created when rm site is created and those are Saved Searches and surf-config folder.
-     *
-     */
-    @Override
-    protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType,
-                List<QName> acceptedMultipleChildType) throws IntegrityException
-    {
-        super.validateNewChildAssociation(parent, child, acceptedUniqueChildType, acceptedMultipleChildType);
     }
 
     @Behaviour(kind = BehaviourKind.CLASS,

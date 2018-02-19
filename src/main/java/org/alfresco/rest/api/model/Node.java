@@ -99,6 +99,7 @@ public class Node implements Comparable<Node>
     //optional SearchEntry (only ever returned from a search)
     protected SearchEntry search = null;
     protected String location;
+    private Boolean favorite;
 
     public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
@@ -330,6 +331,16 @@ public class Node implements Comparable<Node>
     public void setIsLocked(Boolean isLocked)
     {
         this.isLocked = isLocked;
+    }
+    
+    public Boolean getFavorite()
+    {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite)
+    {
+        this.favorite = favorite;
     }
 
     public List<String> getAllowableOperations()

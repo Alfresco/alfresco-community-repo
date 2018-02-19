@@ -130,6 +130,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -808,7 +809,15 @@ public class NodesImpl implements Nodes
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
 
-        return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
+        Node node = getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
+
+        // calculate if node is a favorite node for the current user
+        List<Node> currentList = new ArrayList<Node>(1);
+        currentList.add(node);
+        isFavorite(currentList);
+
+        return node;
+
     }
 
     private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters)
@@ -1369,6 +1378,8 @@ public class NodesImpl implements Nodes
             sourceEntity = getFolderOrDocumentFullInfo(parentNodeRef, null, null, null, mapUserInfo);
         }
 
+        isFavorite(nodes);        
+        
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }
 
@@ -3338,6 +3349,56 @@ public class NodesImpl implements Nodes
         }
         return duplicate;
     }
+    
+    /**
+     * 
+     * @param nodes
+     */
+    private void isFavorite(List<Node> nodes)
+    {
+        PreferenceService preferenceService = (PreferenceService) sr.getService(ServiceRegistry.PREFERENCE_SERVICE);
+        String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
+        Map<String, Serializable> preferences = preferenceService.getPreferences(currentUserName);
+        Set<NodeRef> preferencesSet = new HashSet<>();
+
+        for (Serializable nodesFavorites : preferences.values())
+        {
+            StringTokenizer st = new StringTokenizer((String) nodesFavorites, ",");
+            while (st.hasMoreTokens())
+            {
+                String nodeRefStr = st.nextToken();
+                nodeRefStr = nodeRefStr.trim();
+
+                if (!NodeRef.isNodeRef((String) nodeRefStr))
+                {
+                    continue;
+                }
+
+                NodeRef nodeRef = new NodeRef((String) nodeRefStr);
+
+                if (nodeService.exists(nodeRef))
+                {
+
+                    preferencesSet.add(nodeRef);
+
+                }
+
+            }
+        }
+
+        if (!preferencesSet.isEmpty())
+        {
+            for (Node node : nodes)
+            {
+                if (preferencesSet.contains(node.getNodeRef()))
+                {
+                    node.setFavorite(true);
+                }
+            }
+        }
+
+    }
+    
 
     /**
      * @author Jamal Kaabi-Mofrad

@@ -53,6 +53,7 @@ import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Favourites;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
@@ -69,12 +70,14 @@ import org.alfresco.rest.api.tests.client.data.FileFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.FolderFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.InvalidFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
+import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.Site;
 import org.alfresco.rest.api.tests.client.data.SiteFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -89,6 +92,8 @@ import org.junit.Test;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
+
+import junit.framework.Assert;
 
 /**
  * 
@@ -1880,6 +1885,33 @@ public class TestFavourites extends AbstractBaseApiTest
         siteJsonObject = favouriteResp.getTarget().toJSON();
         assertNotNull("There should be a site JSON object.", siteJsonObject);
         assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+    }
+    
+    
+    @Test
+    public void testVerifyFavorite() throws Exception
+    {
+        setRequestContext(network1.getId(), person12Id, "password");
+
+        final NodeRef folderNodeRef = person1PublicFolders.get(0); // person1's folder (Test Folder1)
+        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+        final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2) in the folder (Test Folder1)
+
+        // Favourite the doc (Test Doc1)
+        Favourite file1Favourite = makeFileFavourite(nodeRef1.getId());
+        favouritesProxy.createFavourite(person12Id, file1Favourite);
+
+        // Favourite the doc (Test Doc2)
+        Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
+        favouritesProxy.createFavourite(person12Id, file2Favourite);
+
+        HttpResponse response = getAll(getNodeChildrenUrl(folderNodeRef.getId()), null, null, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertTrue(nodes.size() == 1);
+        assertTrue(nodes.get(0).getFavorite());
+        response = getAll(getNode(nodeRef1.getId()), null, null, 200);
+        Node node1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue(node1.getFavorite());
     }
 
     private void assertPathInfo(PathInfo expectedPathInfo, String expectedPathName, boolean expectedIsComplete)

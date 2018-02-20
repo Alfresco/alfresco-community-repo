@@ -808,14 +808,8 @@ public class NodesImpl implements Nodes
     {
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
-
         Node node = getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
-
-        // calculate if node is a favorite node for the current user
-        List<Node> currentList = new ArrayList<Node>(1);
-        currentList.add(node);
-        isFavorite(currentList);
-
+        node.setFavorite(isFavorite(node));
         return node;
 
     }
@@ -1328,6 +1322,7 @@ public class NodesImpl implements Nodes
                     calculateRelativePath(parentFolderNodeId, node);
                 }
 
+                node.setFavorite(isFavorite(node));
                 return node;
             }
 
@@ -1378,7 +1373,7 @@ public class NodesImpl implements Nodes
             sourceEntity = getFolderOrDocumentFullInfo(parentNodeRef, null, null, null, mapUserInfo);
         }
 
-        isFavorite(nodes);        
+          
         
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }
@@ -3352,14 +3347,13 @@ public class NodesImpl implements Nodes
     
     /**
      * 
-     * @param nodes
+     * @param node
      */
-    private void isFavorite(List<Node> nodes)
+    private boolean isFavorite(Node node)
     {
         PreferenceService preferenceService = (PreferenceService) sr.getService(ServiceRegistry.PREFERENCE_SERVICE);
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         Map<String, Serializable> preferences = preferenceService.getPreferences(currentUserName);
-        Set<NodeRef> preferencesSet = new HashSet<>();
 
         for (Serializable nodesFavorites : preferences.values())
         {
@@ -3378,28 +3372,14 @@ public class NodesImpl implements Nodes
 
                     NodeRef nodeRef = new NodeRef((String) nodeRefStr);
 
-                    if (nodeService.exists(nodeRef))
+                    if (nodeService.exists(nodeRef) && nodeRef.equals(node.getNodeRef()))
                     {
-
-                        preferencesSet.add(nodeRef);
-
+                        return true;
                     }
-
                 }
             }
         }
-
-        if (!preferencesSet.isEmpty())
-        {
-            for (Node node : nodes)
-            {
-                if (preferencesSet.contains(node.getNodeRef()))
-                {
-                    node.setFavorite(true);
-                }
-            }
-        }
-
+        return false;
     }
     
 

@@ -86,6 +86,18 @@ public class Node
     protected List<AssocTarget> targets;
 
     protected SearchResultEntry search;
+    
+    protected Boolean favorite;
+
+    public Boolean getFavorite()
+    {
+        return favorite;
+    }
+
+    public void setFavorite(Boolean favorite)
+    {
+        this.favorite = favorite;
+    }
 
     public Node()
     {

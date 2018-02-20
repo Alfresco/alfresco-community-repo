@@ -97,7 +97,6 @@ import org.springframework.context.ApplicationContext;
     // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
     // classpath:alfresco/test/global-integration-test-context.xml]
     org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
-    // REPO-2783 only passes on a dirty DB. fails to pass on a clean DB - testConcurrentArchive
     org.alfresco.repo.node.NodeServiceTest.class,
 
     // [classpath:alfresco/application-context.xml, classpath:alfresco/minimal-context.xml]

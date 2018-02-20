@@ -86,6 +86,8 @@ public class Node
     protected List<AssocTarget> targets;
 
     protected SearchResultEntry search;
+    
+    protected Boolean isFavorite;
 
     public Node()
     {
@@ -343,6 +345,16 @@ public class Node
     public void setSearch(SearchResultEntry search)
     {
         this.search = search;
+    }
+    
+    public Boolean getIsFavorite()
+    {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean isFavorite)
+    {
+        this.isFavorite = isFavorite;
     }
 
     public void expected(Object o)

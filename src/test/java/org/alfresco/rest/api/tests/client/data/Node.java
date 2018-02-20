@@ -87,17 +87,7 @@ public class Node
 
     protected SearchResultEntry search;
     
-    protected Boolean favorite;
-
-    public Boolean getFavorite()
-    {
-        return favorite;
-    }
-
-    public void setFavorite(Boolean favorite)
-    {
-        this.favorite = favorite;
-    }
+    protected Boolean isFavorite;
 
     public Node()
     {
@@ -355,6 +345,16 @@ public class Node
     public void setSearch(SearchResultEntry search)
     {
         this.search = search;
+    }
+    
+    public Boolean getIsFavorite()
+    {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean isFavorite)
+    {
+        this.isFavorite = isFavorite;
     }
 
     public void expected(Object o)

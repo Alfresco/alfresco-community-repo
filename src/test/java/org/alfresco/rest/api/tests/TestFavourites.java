@@ -1886,8 +1886,7 @@ public class TestFavourites extends AbstractBaseApiTest
         assertNotNull("There should be a site JSON object.", siteJsonObject);
         assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
     }
-    
-    
+        
     @Test
     public void testVerifyFavorite() throws Exception
     {
@@ -1908,10 +1907,10 @@ public class TestFavourites extends AbstractBaseApiTest
         HttpResponse response = getAll(getNodeChildrenUrl(folderNodeRef.getId()), null, null, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertTrue(nodes.size() == 1);
-        assertTrue(nodes.get(0).getFavorite());
+        assertTrue(nodes.get(0).getIsFavorite());
         response = getAll(getNode(nodeRef1.getId()), null, null, 200);
         Node node1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertTrue(node1.getFavorite());
+        assertTrue(node1.getIsFavorite());
     }
 
     private void assertPathInfo(PathInfo expectedPathInfo, String expectedPathName, boolean expectedIsComplete)

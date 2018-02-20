@@ -809,7 +809,7 @@ public class NodesImpl implements Nodes
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
         Node node = getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
-        node.setFavorite(isFavorite(node));
+        node.setIsFavorite(isFavorite(node));
         return node;
 
     }
@@ -1322,7 +1322,7 @@ public class NodesImpl implements Nodes
                     calculateRelativePath(parentFolderNodeId, node);
                 }
 
-                node.setFavorite(isFavorite(node));
+                node.setIsFavorite(isFavorite(node));
                 return node;
             }
 
@@ -1372,9 +1372,7 @@ public class NodesImpl implements Nodes
         {
             sourceEntity = getFolderOrDocumentFullInfo(parentNodeRef, null, null, null, mapUserInfo);
         }
-
-          
-        
+ 
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }
 

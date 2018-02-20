@@ -3363,26 +3363,29 @@ public class NodesImpl implements Nodes
 
         for (Serializable nodesFavorites : preferences.values())
         {
-            StringTokenizer st = new StringTokenizer((String) nodesFavorites, ",");
-            while (st.hasMoreTokens())
+            if (nodesFavorites instanceof String)
             {
-                String nodeRefStr = st.nextToken();
-                nodeRefStr = nodeRefStr.trim();
-
-                if (!NodeRef.isNodeRef((String) nodeRefStr))
+                StringTokenizer st = new StringTokenizer((String) nodesFavorites, ",");
+                while (st.hasMoreTokens())
                 {
-                    continue;
+                    String nodeRefStr = st.nextToken();
+                    nodeRefStr = nodeRefStr.trim();
+
+                    if (!NodeRef.isNodeRef((String) nodeRefStr))
+                    {
+                        continue;
+                    }
+
+                    NodeRef nodeRef = new NodeRef((String) nodeRefStr);
+
+                    if (nodeService.exists(nodeRef))
+                    {
+
+                        preferencesSet.add(nodeRef);
+
+                    }
+
                 }
-
-                NodeRef nodeRef = new NodeRef((String) nodeRefStr);
-
-                if (nodeService.exists(nodeRef))
-                {
-
-                    preferencesSet.add(nodeRef);
-
-                }
-
             }
         }
 

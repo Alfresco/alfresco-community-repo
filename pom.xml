@@ -41,7 +41,7 @@
         <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
         <installer.imagemagick.version>7.0.5</installer.imagemagick.version>
         <installer.manager.version>1.0</installer.manager.version>
-        <installer.alfresco-pdf-renderer.version>1.0</installer.alfresco-pdf-renderer.version>
+        <installer.alfresco-pdf-renderer.version>1.1</installer.alfresco-pdf-renderer.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
 
         <!-- Install builder version -->

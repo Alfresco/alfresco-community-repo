@@ -46,7 +46,7 @@
         <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>7.2</dependency.alfresco-data-model.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
-        <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+        <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.8</dependency.alfresco-messaging-repo.version>

@@ -53,12 +53,10 @@ import org.json.JSONObject;
 public class SolrSQLJSONResultSet implements ResultSet, JSONResult
 {
     private static Log logger = LogFactory.getLog(SolrSQLJSONResultSet.class);
-    private Long status;
     private Long queryTime;
     private SimpleResultSetMetaData resultSetMetaData;
     private String solrRes;
     private int length;
-    private String errorMsg; 
     ResultSet wrapped;
     public SolrSQLJSONResultSet(JSONObject json, BasicSearchParameters searchParameters)
     {
@@ -248,6 +246,5 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     {
         return solrRes;
     }
-    
 
 }

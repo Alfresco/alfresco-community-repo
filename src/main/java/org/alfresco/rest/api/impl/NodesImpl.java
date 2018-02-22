@@ -809,7 +809,6 @@ public class NodesImpl implements Nodes
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
         Node node = getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
-        node.setIsFavorite(isFavorite(node));
         return node;
 
     }
@@ -913,6 +912,12 @@ public class NodesImpl implements Nodes
         {
             boolean isLocked = isLocked(nodeRef, aspects);
             node.setIsLocked(isLocked);
+        }
+
+        if (includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
+        {
+            boolean isFavorite = isFavorite(nodeRef);
+            node.setIsFavorite(isFavorite);
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
@@ -1321,8 +1326,6 @@ public class NodesImpl implements Nodes
                 {
                     calculateRelativePath(parentFolderNodeId, node);
                 }
-
-                node.setIsFavorite(isFavorite(node));
                 return node;
             }
 
@@ -3347,7 +3350,7 @@ public class NodesImpl implements Nodes
      * 
      * @param node
      */
-    private boolean isFavorite(Node node)
+    private boolean isFavorite(NodeRef node)
     {
         PreferenceService preferenceService = (PreferenceService) sr.getService(ServiceRegistry.PREFERENCE_SERVICE);
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -3370,7 +3373,7 @@ public class NodesImpl implements Nodes
 
                     NodeRef nodeRef = new NodeRef((String) nodeRefStr);
 
-                    if (nodeService.exists(nodeRef) && nodeRef.equals(node.getNodeRef()))
+                    if (nodeRef.equals(node))
                     {
                         return true;
                     }

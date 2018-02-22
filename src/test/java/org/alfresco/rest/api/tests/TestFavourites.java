@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1904,11 +1905,14 @@ public class TestFavourites extends AbstractBaseApiTest
         Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
         favouritesProxy.createFavourite(person12Id, file2Favourite);
 
-        HttpResponse response = getAll(getNodeChildrenUrl(folderNodeRef.getId()), null, null, 200);
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "isFavorite");
+
+        HttpResponse response = getAll(getNodeChildrenUrl(folderNodeRef.getId()), null, params, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertTrue(nodes.size() == 1);
         assertTrue(nodes.get(0).getIsFavorite());
-        response = getAll(getNode(nodeRef1.getId()), null, null, 200);
+        response = getAll(getNode(nodeRef1.getId()), null, params, 200);
         Node node1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertTrue(node1.getIsFavorite());
     }

@@ -913,8 +913,8 @@ public class NodesImpl implements Nodes
             boolean isLocked = isLocked(nodeRef, aspects);
             node.setIsLocked(isLocked);
         }
-        
-        if(includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
+
+        if (includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
         {
             boolean isFavorite = isFavorite(nodeRef);
             node.setIsFavorite(isFavorite);

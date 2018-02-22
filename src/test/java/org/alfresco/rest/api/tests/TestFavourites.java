@@ -1905,9 +1905,9 @@ public class TestFavourites extends AbstractBaseApiTest
         Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
         favouritesProxy.createFavourite(person12Id, file2Favourite);
 
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         params.put("include", "isFavorite");
-        
+
         HttpResponse response = getAll(getNodeChildrenUrl(folderNodeRef.getId()), null, params, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertTrue(nodes.size() == 1);

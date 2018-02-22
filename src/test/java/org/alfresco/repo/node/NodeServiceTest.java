@@ -113,6 +113,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  * @since 4.0
  */
+
 @Category(OwnJVMTestsCategory.class)
 public class NodeServiceTest
 {
@@ -391,10 +392,9 @@ public class NodeServiceTest
      * <p/>
      * See: <a href="https://issues.alfresco.com/jira/browse/ALF-5714">ALF-5714</a><br/>
      * See: <a href="https://issues.alfresco.com/jira/browse/ALF-16888">ALF-16888</a>
+     * See: <a href="https://issues.alfresco.com/jira/browse/REPO-2783">REPO-2783</a>
      * <p/>
      * Note: if this test hangs for MySQL then check if 'innodb_locks_unsafe_for_binlog = true' (and restart MySQL + test)
-     * 
-     * TODO add @Test marker back to the test after REPO-2783 is fixed
      */
     public void testConcurrentArchive() throws Exception
     {
@@ -404,11 +404,11 @@ public class NodeServiceTest
             // See ALF-16888.  DB2 fails this test persistently.
             return;
         }
-        
+
         final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        final NodeRef[] nodesPrimer = new NodeRef[1];
+        final NodeRef[] nodesPrimer = new NodeRef[2];
         buildNodeHierarchy(workspaceRootNodeRef, nodesPrimer);
-        final NodeRef[] nodesOne = new NodeRef[10];
+        final NodeRef[] nodesOne = new NodeRef[15];
         buildNodeHierarchy(workspaceRootNodeRef, nodesOne);
         final NodeRef[] nodesTwo = new NodeRef[10];
         buildNodeHierarchy(workspaceRootNodeRef, nodesTwo);

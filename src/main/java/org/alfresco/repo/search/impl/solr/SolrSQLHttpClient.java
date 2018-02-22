@@ -25,17 +25,12 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepositoryState;
@@ -44,6 +39,8 @@ import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
+import org.alfresco.repo.search.impl.lucene.SolrSQLJSONResultSet;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
@@ -54,30 +51,25 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 /**
- * Client that queries Solr using solr sql handler.
+ * HTTP Client that queries Solr using the sql handler.
  * @author Michael Suzuki
  */
-public class SolrSQLHttpClient implements SolrQueryClient
+public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements SolrQueryClient
 {
     private HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<StoreRef, SolrStoreMappingWrapper>();
     static Log logger = LogFactory.getLog(SolrSQLHttpClient.class);
@@ -89,6 +81,7 @@ public class SolrSQLHttpClient implements SolrQueryClient
     private boolean anyDenyDenies;
     private boolean useDynamicShardRegistration;
     private ShardRegistry shardRegistry;
+    private TenantService tenantService;
     
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     @Override
@@ -112,16 +105,19 @@ public class SolrSQLHttpClient implements SolrQueryClient
         PropertyCheck.mandatory(this, "PermissionService", permissionService);
         PropertyCheck.mandatory(this, "StoreMappings", storeMappings);
         PropertyCheck.mandatory(this, "RepositoryState", repositoryState);
+        PropertyCheck.mandatory(this, "TenantService", tenantService);
     }
     
-    public ResultSet executeQuery(BasicSearchParameters searchParameters, String language)
+    public ResultSet executeQuery(BasicSearchParameters searchParameters, String language) 
     {
         if(repositoryState.isBootstrapping())
         {
             throw new AlfrescoRuntimeException("SOLR queries can not be executed while the repository is bootstrapping");
         }
-        //Get the index to query against from the sql statement.
-//        SolrStoreMappingWrapper mapping = extractMapping(store);
+        if(StringUtils.isEmpty(searchParameters.getQuery()))
+        {
+            throw new AlfrescoRuntimeException("SOLR query statement is missing");
+        }
         try
         {
             StoreRef store = SolrClientUtil.extractStoreRef(searchParameters);
@@ -143,34 +139,19 @@ public class SolrSQLHttpClient implements SolrQueryClient
             {
                 url.append("/");
             }
-            
+            url.append("sql?stmt=" + encoder.encode(searchParameters.getQuery()));
 
-            if((searchParameters.getStores().size() > 1) || (mapping.isSharded()))
+            url.append("&alfresco.shards=");
+            if(mapping.isSharded())
             {
-                boolean requiresSeparator = false;
-                url.append("&shards=");
-                for(StoreRef storeRef : searchParameters.getStores())
-                {
-                    SolrStoreMappingWrapper storeMapping = SolrClientUtil.extractMapping(storeRef,
-                                                                                         mappingLookup,
-                                                                                         shardRegistry,
-                                                                                         requiresSeparator,
-                                                                                         beanFactory);
-                    if(requiresSeparator)
-                    {
-                        url.append(',');
-                    }
-                    else
-                    {
-                        requiresSeparator = true;
-                    }
-                    url.append(storeMapping.getShards());
-                }
+                url.append(mapping.getShards());
             }
-
+            else
+            {
+               String solrurl = httpClient.getHostConfiguration().getHostURL() + httpClientAndBaseUrl.getSecond();
+                url.append(solrurl);
+            }
             JSONObject body = new JSONObject();
-            body.put("stmt", searchParameters.getQuery());
-
             
             // Authorities go over as is - and tenant mangling and query building takes place on the SOLR side
 
@@ -194,6 +175,10 @@ public class SolrSQLHttpClient implements SolrQueryClient
             }
             body.put("authorities", authorities);
             body.put("anyDenyDenies", anyDenyDenies);
+            
+            JSONArray tenants = new JSONArray();
+            tenants.put(tenantService.getCurrentUserDomain());
+            body.put("tenants", tenants);
 
             JSONArray locales = new JSONArray();
             for (Locale currentLocale : searchParameters.getLocales())
@@ -205,21 +190,12 @@ public class SolrSQLHttpClient implements SolrQueryClient
                 locales.put(I18NUtil.getLocale());
             }
             body.put("locales", locales);
-            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, null);
+            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, json ->
+            {
+                return new SolrSQLJSONResultSet(json, searchParameters);
+            });
         }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new LuceneQueryParserException("", e);
-        }
-        catch (HttpException e)
-        {
-            throw new LuceneQueryParserException("", e);
-        }
-        catch (IOException e)
-        {
-            throw new LuceneQueryParserException("", e);
-        }
-        catch (JSONException e)
+        catch (JSONException | IOException | EncoderException e)
         {
             throw new LuceneQueryParserException("", e);
         }
@@ -235,65 +211,13 @@ public class SolrSQLHttpClient implements SolrQueryClient
         if (logger.isDebugEnabled())
         {
             logger.debug("Sent :" + url);
-            logger.debug("   with: " + body.toString());
+            logger.debug("with: " + body.toString());
             logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
         }
         return results;
     }
     
-    protected JSONObject postQuery(HttpClient httpClient,
-                                   String url,
-                                   JSONObject body) throws UnsupportedEncodingException,IOException,
-                                                           HttpException, URIException,JSONException
-    {
-        PostMethod post = new PostMethod(url);
-        if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
-        {
-            post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-        }
-        post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), 
-                                                         "application/json"));
-        try
-        {
-            httpClient.executeMethod(post);
-            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY ||
-                    post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
-            {
-                Header locationHeader = post.getResponseHeader("location");
-                if (locationHeader != null)
-                {
-                    String redirectLocation = locationHeader.getValue();
-                    post.setURI(new URI(redirectLocation, true));
-                    httpClient.executeMethod(post);
-                }
-            }
-
-            if (post.getStatusCode() != HttpServletResponse.SC_OK)
-            {
-                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() +
-                        " " + url.toString());
-            }
-
-            Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), 
-                                                                     post.getResponseCharSet()));
-            // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-            JSONObject json = new JSONObject(new JSONTokener(reader));
-
-            if (json.has("status"))
-            {
-                JSONObject status = json.getJSONObject("status");
-                if (status.getInt("code") != HttpServletResponse.SC_OK)
-                {
-                    throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
-                }
-            }
-            return json;
-        }
-        finally
-        {
-            post.releaseConnection();
-        }
-    }
+    
     public void setStoreMappings(List<SolrStoreMapping> storeMappings)
     {
         this.storeMappings = storeMappings;
@@ -375,6 +299,9 @@ public class SolrSQLHttpClient implements SolrQueryClient
         }
         
     }
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
 
-    
 }

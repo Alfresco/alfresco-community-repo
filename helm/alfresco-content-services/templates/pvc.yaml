@@ -1,0 +1,34 @@
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+{{- if .Values.persistence.efs.enabled -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "{{ .Release.Namespace }}-alfresco-volume"
+spec:
+  capacity:
+    storage: {{ .Values.persistence.baseSize | quote }}
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: "{{ .Values.persistence.efs.dns }}"
+    path: "{{ .Values.persistence.efs.path }}"
+  storageClassName: efs
+---
+{{- end -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: content-services-database-data
+spec:
+  accessModes:
+  {{ if .Values.persistence.efs.enabled }}
+    - ReadWriteMany
+  volumeName: "{{ .Release.Namespace }}-alfresco-volume"
+  storageClassName: efs
+  {{ else }}
+    - ReadWriteOnce
+  {{ end }}
+  resources:
+    requests:
+      storage: {{ .Values.database.persistence.size | quote }}
+{{- end }}

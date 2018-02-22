@@ -88,6 +88,12 @@ public abstract class HBBaseDataCollector
         hbDataCollectorService.registerCollector(this);
     }
 
+    public void deregister()
+    {
+        PropertyCheck.mandatory(this, "hbDataCollectorService", hbDataCollectorService);
+        hbDataCollectorService.deregisterCollector(this);
+    }
+
     /**
      * This method returns data to be collected.
      * @return List of {@link HBData}

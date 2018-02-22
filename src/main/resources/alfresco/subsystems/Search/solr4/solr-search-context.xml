@@ -352,20 +352,6 @@
         </property>
     </bean>
 
-    <!-- Adding solr SQL language. -->
-    
-    <bean id="search.solr.sql.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage">
-        <property name="factories">
-            <list>
-                <ref bean="search.indexerAndSearcherFactory" />
-            </list>
-        </property>
-        <property name="name">
-            <value>solr-sql</value>
-        </property>
-        <property name="solrQueryHTTPClient">
-            <ref bean="search.solrSQLQueryHTTPCLient" />
-        </property>
-    </bean>
+  
 
 </beans>

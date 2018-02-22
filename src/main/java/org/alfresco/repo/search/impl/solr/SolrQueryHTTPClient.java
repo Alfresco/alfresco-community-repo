@@ -92,10 +92,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,7 +108,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Andy
  */
-public class SolrQueryHTTPClient implements SolrQueryClient
+public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements SolrQueryClient
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
@@ -146,8 +143,6 @@ public class SolrQueryHTTPClient implements SolrQueryClient
     private boolean anyDenyDenies;
     
     private boolean useDynamicShardRegistration = false;
-	
-    public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     
     private int defaultUnshardedFacetLimit = 100;
     
@@ -1142,55 +1137,7 @@ public class SolrQueryHTTPClient implements SolrQueryClient
             return results;
     }
 
-    protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
-                IOException, HttpException, URIException, JSONException
-    {
-        PostMethod post = new PostMethod(url);
-        if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
-        {
-            post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-        }
-        post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
-
-        try
-        {
-            httpClient.executeMethod(post);
-
-            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
-            {
-                Header locationHeader = post.getResponseHeader("location");
-                if (locationHeader != null)
-                {
-                    String redirectLocation = locationHeader.getValue();
-                    post.setURI(new URI(redirectLocation, true));
-                    httpClient.executeMethod(post);
-                }
-            }
-
-            if (post.getStatusCode() != HttpServletResponse.SC_OK)
-            {
-                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
-            }
-
-            Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
-            // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-            JSONObject json = new JSONObject(new JSONTokener(reader));
-
-            if (json.has("status"))
-            {
-                JSONObject status = json.getJSONObject("status");
-                if (status.getInt("code") != HttpServletResponse.SC_OK)
-                {
-                    throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
-                }
-            }
-            return json;
-        }
-        finally
-        {
-            post.releaseConnection();
-        }
-    }
+    
 
     private StringBuffer buildSortParameters(BasicSearchParameters searchParameters, URLCodec encoder)
                 throws UnsupportedEncodingException

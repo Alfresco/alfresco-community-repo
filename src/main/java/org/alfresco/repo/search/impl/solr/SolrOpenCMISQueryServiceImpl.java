@@ -51,12 +51,9 @@ import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 
 /**
  * @author Andy
- *
  */
 public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
 {
-//	private CmisVersion cmisVersion;
-
     private LuceneQueryLanguageSPI solrQueryLanguage;
     
     private NodeService nodeService;
@@ -85,15 +82,12 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.opencmis.search.CMISQueryService#query(org.alfresco.opencmis.search.CMISQueryOptions)
-     */
     @Override
     public CMISResultSet query(CMISQueryOptions options)
     {
     	SearchParameters searchParameters = options.getAsSearchParmeters();
     	searchParameters.addExtraParameter("cmisVersion", options.getCmisVersion().toString());
-        ResultSet rs = solrQueryLanguage.executeQuery(searchParameters, null);
+        ResultSet rs = solrQueryLanguage.executeQuery(searchParameters);
         
         CapabilityJoin joinSupport = getJoinSupport();
         if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
@@ -127,9 +121,6 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
         return cmis;
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.opencmis.search.CMISQueryService#query(java.lang.String, org.alfresco.service.cmr.repository.StoreRef)
-     */
     @Override
     public CMISResultSet query(String query, StoreRef storeRef)
     {
@@ -156,5 +147,4 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
     {
         return CapabilityJoin.NONE;
     }
-
 }

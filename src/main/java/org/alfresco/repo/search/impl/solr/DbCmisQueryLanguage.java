@@ -25,24 +25,17 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import java.util.List;
-import java.util.Set;
-
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.opencmis.search.CMISQueryParser;
 import org.alfresco.opencmis.search.CmisFunctionEvaluationContext;
-import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;
-import org.alfresco.repo.admin.patch.PatchService;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryModelFactory;
-import org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryModelFactory;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
@@ -61,7 +54,6 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     
     OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
     
-   
 
     /**
      * @param metadataIndexCheck1 the metadataIndexCheck1 to set
@@ -100,19 +92,17 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
-
-
     public DbCmisQueryLanguage()
     {
         this.setName("db-cmis");
     }
 
     @Override
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         if(metadataIndexCheck1.getPatchApplied())
         {
-            return executeQueryImpl(searchParameters, admLuceneSearcher);
+            return executeQueryImpl(searchParameters);
         }
         else
         {
@@ -121,7 +111,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     }
     
     
-    private ResultSet executeQueryImpl(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    private ResultSet executeQueryImpl(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
@@ -135,22 +125,23 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
         org.alfresco.repo.search.impl.querymodel.Query queryModelQuery = parser.parse(new DBQueryModelFactory(), functionContext);
 
-        // build lucene query
-        Set<String> selectorGroup = null;
-        if (queryModelQuery.getSource() != null)
-        {
-            List<Set<String>> selectorGroups = queryModelQuery.getSource().getSelectorGroups(functionContext);
-            if (selectorGroups.size() == 0)
-            {
-                throw new UnsupportedOperationException("No selectors");
-            }
-            if (selectorGroups.size() > 1)
-            {
-                throw new UnsupportedOperationException("Advanced join is not supported");
-            }
-            selectorGroup = selectorGroups.get(0);
-        }
-
+// TODO: Remove as this appears to be dead code
+//        // build lucene query
+//        Set<String> selectorGroup = null;
+//        if (queryModelQuery.getSource() != null)
+//        {
+//            List<Set<String>> selectorGroups = queryModelQuery.getSource().getSelectorGroups(functionContext);
+//            if (selectorGroups.size() == 0)
+//            {
+//                throw new UnsupportedOperationException("No selectors");
+//            }
+//            if (selectorGroups.size() > 1)
+//            {
+//                throw new UnsupportedOperationException("Advanced join is not supported");
+//            }
+//            selectorGroup = selectorGroups.get(0);
+//        }
+//
         QueryEngineResults results = queryEngine.executeQuery(queryModelQuery, options, functionContext);
         ResultSet resultSet = results.getResults().values().iterator().next();
         return resultSet;

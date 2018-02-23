@@ -59,11 +59,10 @@ public class LuceneAlfrescoSqlQueryLanguage extends AbstractLuceneQueryLanguage
         this.cmisQueryService = cmisQueryService;
     }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(cmisQueryService.query(options));
     }
-
 }

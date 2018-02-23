@@ -28,9 +28,7 @@ package org.alfresco.repo.content.filestore;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -208,7 +206,8 @@ public class FileContentStore
         this.readOnly = readOnly;
     }
     
-    public void setFileContentUrlProvider(FileContentUrlProvider fileContentUrlProvider) {
+    public void setFileContentUrlProvider(FileContentUrlProvider fileContentUrlProvider)
+    {
         this.fileContentUrlProvider = fileContentUrlProvider;
     }
 

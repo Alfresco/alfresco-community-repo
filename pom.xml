@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acs-community-packaging</artifactId>
     <name>Alfresco Content Services Community Packaging</name>
-    <version>6.0.3-SNAPSHOT</version>
+    <version>6.0.3-ea</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -21,7 +21,7 @@
         <connection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</connection>
         <developerConnection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</developerConnection>
         <url>https://github.com/Alfresco/acs-community-packaging</url>
-        <tag>HEAD</tag>
+        <tag>acs-community-packaging-6.0.3-ea</tag>
     </scm>
 
     <distributionManagement>

@@ -269,7 +269,6 @@
       <property name="permissionService" ref="permissionServiceImpl" />
       <property name="policyComponent" ref="policyComponent"/>
       <property name="storeArchiveMap" ref="storeArchiveMap"/>
-      <property name="nodeIndexer" ref="nodeIndexer"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="tenantService" ref="tenantService"/>
       <property name="storesToIgnorePolicies">

@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * @author Andy
@@ -59,12 +60,28 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
  */
 public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
 {
+    NamespaceService namespaceService;
+    DictionaryService dictionaryService;
 
     QueryEngine queryEngine;
     
     /**
-     * Set the query engine
-     * 
+     * @param namespaceService the namespaceService to set
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * @param dictionaryService the dictionaryService to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    /**
      * @param queryEngine QueryEngine
      */
     public void setQueryEngine(QueryEngine queryEngine)
@@ -72,21 +89,22 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
         this.queryEngine = queryEngine;
     }
     
-    protected NamespacePrefixResolver getNamespacePrefixResolver(ADMLuceneSearcherImpl admLuceneSearcher)
+    protected NamespacePrefixResolver getNamespacePrefixResolver()
     {
-        return admLuceneSearcher.getNamespacePrefixResolver();   
+        return namespaceService;
     }
     
-    protected DictionaryService getDictionaryService(ADMLuceneSearcherImpl admLuceneSearcher)
+    protected DictionaryService getDictionaryService()
     {
-        return admLuceneSearcher.getDictionaryService();
+        return dictionaryService;
     }
     
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         String ftsExpression = searchParameters.getQuery();
         QueryModelFactory factory = queryEngine.getQueryModelFactory();
-        AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(getNamespacePrefixResolver(admLuceneSearcher), getDictionaryService(admLuceneSearcher),
+        AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(
+                namespaceService, dictionaryService,
                 searchParameters.getNamespace());
 
         QueryOptions options = QueryOptions.create(searchParameters);

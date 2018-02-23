@@ -27,8 +27,6 @@ package org.alfresco.repo.search;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.solr.DisabledFeatureException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -38,7 +36,13 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.*;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.PermissionEvaluationMode;
+import org.alfresco.service.cmr.search.QueryConsistency;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -46,47 +50,29 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class SearchServiceTest extends TestCase
 {
-
     private ApplicationContext ctx;
 
     private AuthenticationComponent authenticationComponent;
-
     private MutableAuthenticationService authenticationService;
-
     private MutableAuthenticationDao authenticationDAO;
-
     private UserTransaction tx;
-
     private SearchService pubSearchService;
 
     private NodeRef rootNodeRef;
 
     private NodeRef n1;
-
     private NodeRef n2;
-
     private NodeRef n3;
-
     private NodeRef n4;
-
-    private NodeRef n6;
-
     private NodeRef n5;
-
-    private NodeRef n7;
-
-    private NodeRef n8;
-
-    private NodeRef n9;
-
-    private NodeRef n10;
 
     private NodeService nodeService;
 
@@ -147,17 +133,16 @@ public class SearchServiceTest extends TestCase
         n5 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}05"),
                 ContentModel.TYPE_FOLDER).getChildRef();
         pubPermissionService.setPermission(n5, "andy", "Read", true);
-        n6 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}06"),
+        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}06"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        n7 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}07"),
+        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}07"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        n8 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}08"),
+        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}08"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        n9 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}09"),
+        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}09"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        n10 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}10"),
+        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}10"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-
     }
 
     @Override
@@ -187,110 +172,6 @@ public class SearchServiceTest extends TestCase
         {
             // Got here, good.
         }
-    }
-
-    @Category(RedundantTests.class)
-    public void testAdmim()
-    {
-        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("PATH:\"//*\"");
-        sp.addStore(rootNodeRef.getStoreRef());
-        ResultSet results = pubSearchService.query(sp);
-        assertEquals(10, results.length());
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(20);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 10);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(10);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 10);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(9);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 9);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.FINAL_SIZE);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-        
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(5);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 5);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.FINAL_SIZE);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-    }
-
-    @Category(RedundantTests.class)
-    public void testAndy()
-    {
-        authenticationComponent.setCurrentUser("andy");
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-        sp.setQuery("PATH:\"//*\"");
-        sp.addStore(rootNodeRef.getStoreRef());
-        ResultSet results = pubSearchService.query(sp);
-        assertEquals(results.length(), 5);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(20);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 5);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(5);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 5);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(4);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 4);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.FINAL_SIZE);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
-        
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(2);
-        results = pubSearchService.query(sp);
-        assertEquals(results.length(), 2);
-        assertNotNull(results.getResultSetMetaData());
-        assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.FINAL_SIZE);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
-        results.close();
     }
     
     public void testAndyCMIS()

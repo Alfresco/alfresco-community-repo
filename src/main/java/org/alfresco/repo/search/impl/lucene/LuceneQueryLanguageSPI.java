@@ -29,10 +29,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.lucene.search.Searcher;
 
 /**
  * @author andyh
@@ -51,10 +49,9 @@ public interface LuceneQueryLanguageSPI
     /**
      * Execute the query
      * @param searchParameters SearchParameters
-     * @param admLuceneSearcher ADMLuceneSearcherImpl
      * @return - the query results
      */
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher);
+    public ResultSet executeQuery(SearchParameters searchParameters);
     
     /**
      * Register

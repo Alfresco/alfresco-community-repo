@@ -51,6 +51,63 @@ public class ISO8601DateFormatTest extends TestCase
         assertEquals(date2, dateAfter2);
     }
 
+    public void test19000101()
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+
+        String test = "1900-01-01";
+        Date date = ISO8601DateFormat.parse(test);
+        String strDate = ISO8601DateFormat.format(date);
+        Date dateAfter = ISO8601DateFormat.parse(strDate);
+        assertEquals(date, dateAfter);
+    }
+
+    public void test18991231()
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+
+        String test = "1899-12-31";
+        Date date = ISO8601DateFormat.parse(test);
+        String strDate = ISO8601DateFormat.format(date);
+        Date dateAfter = ISO8601DateFormat.parse(strDate);
+        assertEquals(date, dateAfter);
+    }
+
+    public void test18800207()
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+
+        String test = "1880-02-07";
+        Date date = ISO8601DateFormat.parse(test);
+        String strDate = ISO8601DateFormat.format(date);
+        Date dateAfter = ISO8601DateFormat.parse(strDate);
+        assertEquals(date, dateAfter);
+    }
+
+    public void test15000207() // MNT-19261 JULIAN CALENDAR
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+
+        String test = "1500-02-07";
+        Date date = ISO8601DateFormat.parse(test);
+        String strDate = ISO8601DateFormat.format(date); // 1500-02-07T00:00:00.000Z
+        Date dateAfter = ISO8601DateFormat.parse(strDate);
+        // Before MNT-19261 Expected Wed Jan 29 03:06:28 GMT 1500 Actual Mon Jan 20 03:06:28 GMT 1500
+        //  After MNT-19261 Expected and Actual: Fri Feb 07 00:00:00 GMT 1500
+        assertEquals(date, dateAfter);
+    }
+
+    public void test10661014() // Battle of Hastings
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+
+        String test = "10661014";
+        Date date = ISO8601DateFormat.parse(test);
+        String strDate = ISO8601DateFormat.format(date);
+        Date dateAfter = ISO8601DateFormat.parse(strDate);
+        assertEquals(date, dateAfter);
+    }
+
     public void testFormat()
     {
         TimeZone.setDefault(TimeZone.getTimeZone("PST")); // Any timezone other than UTC

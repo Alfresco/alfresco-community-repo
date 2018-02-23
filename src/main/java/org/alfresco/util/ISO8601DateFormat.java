@@ -27,10 +27,8 @@ import java.util.TimeZone;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.IllegalInstantException;
-import org.joda.time.LocalDate;
+import org.joda.time.*;
+import org.joda.time.chrono.GJChronology;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -215,7 +213,8 @@ public class ISO8601DateFormat
             DateTimeZone dtz = DateTimeZone.forTimeZone(timezone);
             try
             {
-                DateTime dateTime = new DateTime(isoDate, dtz);
+                Chronology chrono = GJChronology.getInstance(dtz);
+                DateTime dateTime = new DateTime(isoDate, chrono);
                 Date date = dateTime.toDate();
                 return date;
             }

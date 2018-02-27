@@ -1,14 +1,15 @@
 {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
-{{- if .Values.persistence.efs.enabled -}}
+{{- if and .Values.persistence.efs.enabled -}}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: "{{ .Release.Namespace }}-alfresco-volume"
+  name: content-services-pv
 spec:
   capacity:
     storage: {{ .Values.persistence.baseSize | quote }}
   accessModes:
     - ReadWriteMany
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy | default "Delete" }}
   nfs:
     server: "{{ .Values.persistence.efs.dns }}"
     path: "{{ .Values.persistence.efs.path }}"
@@ -18,12 +19,11 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: content-services-database-data
+  name: content-services-pvc
 spec:
-  accessModes:
+  accessModes: 
   {{ if .Values.persistence.efs.enabled }}
     - ReadWriteMany
-  volumeName: "{{ .Release.Namespace }}-alfresco-volume"
   storageClassName: efs
   {{ else }}
     - ReadWriteOnce

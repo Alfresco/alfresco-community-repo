@@ -89,7 +89,7 @@ postgresql:
   postgresPassword: alfresco
   postgresDatabase: alfresco
   persistence:
-    existingClaim: "content-services-database-data"
+    existingClaim: "content-services-pvc"
     subPath: "alfresco-content-services/database-data"
   resources:
     requests:

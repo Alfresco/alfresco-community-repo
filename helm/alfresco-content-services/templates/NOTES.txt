@@ -14,6 +14,15 @@ echo "http://$DNSNAME/share"
 
 5. Note: if you deployed on a different namespace than the default one, then the kubectl commands should also specify the namespace to run in with --namespace
 
-6. Depending on the storage you use for volumes you should be able to access the persisted db data in the following locations:
+6. Persistent Storage
+
+Depending on the storage you use for volumes you should be able to access the persisted db data in the following locations:
     - On minikube the usual location is /tmp/hostpath-provisioning
     - With docker-for-desktop the usual location is /Users/YourUser/.docker/Volumes/
+
+If you choose to use EFS for persistence keep in mind that the persistent volume created has the ReclaimPolicy set to Recycle.
+This means that by default, when you delete the release the saved data is deleted automatically.
+
+To change this behaviour and keep the data you can set the persistence.reclaimPolicy value to Retain.
+
+For more Information on Reclaim Policies checkout the official K8S documentation here -> https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaim-policy

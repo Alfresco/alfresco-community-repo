@@ -9,7 +9,7 @@ spec:
     storage: {{ .Values.persistence.baseSize | quote }}
   accessModes:
     - ReadWriteMany
-  persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy | default "Delete" }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.reclaimPolicy | default "Recycle" }}
   nfs:
     server: "{{ .Values.persistence.efs.dns }}"
     path: "{{ .Values.persistence.efs.path }}"

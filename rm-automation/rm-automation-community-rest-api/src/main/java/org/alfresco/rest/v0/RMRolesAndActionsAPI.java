@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static java.util.stream.Collectors.toSet;
+
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
@@ -38,7 +40,9 @@ import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
@@ -70,6 +74,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class RMRolesAndActionsAPI extends BaseAPI
 {
+    /** The URI to view the configured roles and capabilities. Using is=true includes the in-place readers and writers. */
+    private static final String RM_ROLES = "{0}rma/admin/rmroles?is=true";
     private static final String RM_ROLES_AUTHORITIES = "{0}rm/roles/{1}/authorities/{2}?alf_ticket={3}";
 
     // logger
@@ -87,6 +93,21 @@ public class RMRolesAndActionsAPI extends BaseAPI
 
     @Autowired
     private ContentService contentService;
+
+    /**
+     * Get all the configured RM roles.
+     *
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
+     * @return The display labels of the RM roles in the system.
+     */
+    public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
+    {
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES);
+        Collection<Object> dataValues = jsonObject.getJSONObject("data").toMap().values();
+        return dataValues.stream().filter(v -> v instanceof Map).map(v -> (String) ((Map) v).get("displayLabel"))
+                    .collect(toSet());
+    }
 
     /**
      * create user and assign to records management role

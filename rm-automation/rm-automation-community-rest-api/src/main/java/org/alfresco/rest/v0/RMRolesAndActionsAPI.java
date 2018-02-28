@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.v0;
 
-import static java.util.stream.Collectors.toSet;
-
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
@@ -40,7 +38,6 @@ import java.text.MessageFormat;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,15 +96,29 @@ public class RMRolesAndActionsAPI extends BaseAPI
      *
      * @param adminUser The RM admin user.
      * @param adminPassword The password of the user.
-     * @return The display labels of the RM roles in the system.
+     * @return The RM roles in the system (Note that this will be the internal names, not the display labels).
      */
     public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
     {
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES);
-        Collection<Object> dataValues = jsonObject.getJSONObject("data").toMap().values();
-        return dataValues.stream().filter(v -> v instanceof Map).map(v -> (String) ((Map) v).get("displayLabel"))
-                    .collect(toSet());
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES).getJSONObject("data");
+        return jsonObject.toMap().keySet();
     }
+
+    /**
+     * Get the capabilities for a given role.
+     *
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
+     * @param role The role to get capabilities for.
+     * @return The set of system names for the capabilities.
+     */
+    public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
+    {
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES).getJSONObject("data");
+        assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
+        return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
+    }
+
 
     /**
      * create user and assign to records management role

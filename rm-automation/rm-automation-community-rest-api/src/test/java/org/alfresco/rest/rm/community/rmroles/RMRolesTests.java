@@ -29,6 +29,7 @@ package org.alfresco.rest.rm.community.rmroles;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
@@ -46,10 +47,11 @@ import org.testng.annotations.Test;
  */
 public class RMRolesTests extends BaseRMRestTest
 {
-    /** The display labels of the expected default RM roles. */
-    private static final Set<String> ROLES = newHashSet("Records Management Administrator",
-                "Records Management Manager", "Records Management Power User", "Records Management Security Officer",
-                "Records Management User");
+    /** The name of the RM user role. */
+    private static final String RM_USER = "User";
+    /** The names of the expected default RM roles. */
+    private static final Set<String> ROLES = newHashSet("Administrator", "RecordsManager", "PowerUser",
+                "SecurityOfficer", RM_USER);
     /** The API for managing RM roles and capabilities. */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -61,5 +63,15 @@ public class RMRolesTests extends BaseRMRestTest
         Set<String> configuredRoles = rmRolesAndActionsAPI
                     .getConfiguredRoles(getAdminUser().getUsername(), getAdminUser().getPassword());
         ROLES.forEach(role -> assertTrue("Could not found role " + role, configuredRoles.contains(role)));
+    }
+
+    /** Check that the RM user has the capability to view and declare records. */
+    @Test(description = "Check the capabilities for the RM user.")
+    public void checkCapabilitiesForUser()
+    {
+        Set<String> capabilities = rmRolesAndActionsAPI
+                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_USER);
+        assertEquals("Unexpected capabilities found for RM User.", capabilities,
+                    newHashSet("ViewRecords", "DeclareRecords"));
     }
 }

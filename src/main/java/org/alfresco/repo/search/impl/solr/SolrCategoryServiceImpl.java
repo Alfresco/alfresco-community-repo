@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl;
-import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneSearcher;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;

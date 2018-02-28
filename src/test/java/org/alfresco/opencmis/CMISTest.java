@@ -412,11 +412,11 @@ public class CMISTest
     @Test
     public void testIsLatestMajorVersionMNT10868()
     {
-    	 CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
-    	
-    	 String repositoryId = null;
-    	 
-    	 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
+        
+        String repositoryId = null;
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
          CmisService cmisService = factory.getService(context);
          try

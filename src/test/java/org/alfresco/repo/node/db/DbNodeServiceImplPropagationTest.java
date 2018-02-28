@@ -115,14 +115,6 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         }
         super.onTearDownInTransaction();
     }
-    
-    // REPO-2963 Initially just pass tests on selected DBs
-    protected boolean skipTestRepo2963()
-    {
-        return true; // Always skip the test
-//        String name = dialect.getClass().getName();
-//        return name.contains("PostgreSQL") || name.contains("MySQL");
-    }
 
     /**
      * Loads the test model required for building the node graphs
@@ -155,12 +147,6 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
     @SuppressWarnings("deprecation")
     public void testAuditablePropagation() throws Exception
     {
-        // See REPO-2963
-        if (skipTestRepo2963())
-        {
-            return;
-        }
-
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
         final QName TYPE_NOT_AUDITABLE = ContentModel.TYPE_CONTAINER;
@@ -301,7 +287,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac1, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac2, ContentModel.PROP_MODIFIER));
-        
+
         // Updates won't apply if the parent is newer than the child
         Date now = new Date();
         long futureShift = 4000l;
@@ -356,8 +342,9 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         
         setComplete();
         endTransaction();
-        
+
         startNewTransaction();
+        txn.commit();
 
     }
     

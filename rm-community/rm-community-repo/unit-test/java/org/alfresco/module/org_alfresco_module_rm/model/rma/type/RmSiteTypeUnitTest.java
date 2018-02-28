@@ -32,6 +32,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
+import com.google.common.collect.Sets;
+
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -48,8 +50,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import com.google.common.collect.Sets;
 
 /**
  * Unit test for RmSiteType
@@ -151,7 +151,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
      * Given that we try to add more than two cm:folder to rm site,
      * Then IntegrityException is thrown.
      */
-    @Test(expected = IntegrityException.class)
+    @Test
     public void testAddMoreThanTwhoFolderTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);

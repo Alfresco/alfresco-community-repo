@@ -231,7 +231,6 @@ public class DBQueryTest  implements DictionaryListener
     {
         // Register the test model
         dictionaryDAO.putModel(model);
-        namespaceDao.addPrefix("test", TEST_NAMESPACE);
     }
     
     @Before

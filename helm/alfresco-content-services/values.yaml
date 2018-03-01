@@ -67,18 +67,8 @@ solr:
     limits:
       memory: "500Mi"
 
-persistence: 
-  enabled: true
-  baseSize: 10Gi
-  efs:
-    enabled: false
-    dns: fs-example.efs.us-east-1.amazonaws.com
-    path: "/"
-
 database:
   type: postgresql
-  persistence:
-    size: 2Gi
 
 postgresql:
   ## If true, install the postgresql chart alongside Alfresco Content Services
@@ -89,7 +79,7 @@ postgresql:
   postgresPassword: alfresco
   postgresDatabase: alfresco
   persistence:
-    existingClaim: "content-services-pvc"
+    existingClaim: "alfresco-volume-claim"
     subPath: "alfresco-content-services/database-data"
   resources:
     requests:

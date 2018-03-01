@@ -36,20 +36,34 @@ Build and start Alfresco Content Services Community using docker-compose or Kube
 
 ### Kubernetes Instructions:
 #### Prerequisite: 
-* A minikube/aws k8s cluster up and ready (minimum 5GB memory)
+* Deploy the infrastructure chart as specified in https://github.com/Alfresco/alfresco-infrastructure-deployment
 * Access to docker-internal.alfresco.com and quay.io repositories - Platform Services team is working on getting the images in [Docker Hub](https://hub.docker.com/u/alfresco/) registry.
 * A kubernetes secret (quay-registry-secret) with the above mentioned credentials created in your cluster.
 
+**Note!** You do not need to pull this repo in order to deploy Alfresco Content Services in Kubernetes
+
 #### Steps
-1. Go to **helm** folder
-2. Run ```helm dependency update alfresco-content-services && helm install alfresco-content-services``` 
+1. Run ```helm repo add alfresco-incubator http://kubernetes-charts.alfresco.com/incubator``` to add the Alfresco Kubernetes repository to helm.
+2. Deploy Alfresco Content Services:
+
+```bash
+#On MINIKUBE
+helm install alfresco-incubator/alfresco-content-services \
+--set dnsaddress="http://$ELBADDRESS:$INFRAPORT" \
+--namespace=$DESIREDNAMESPACE
+#On AWS
+helm install alfresco-incubator/alfresco-content-services \
+--set dnsaddress="http://$ELBADDRESS" \
+--namespace=$DESIREDNAMESPACE
+``` 
+
 3. After deploying the helm chart you will get information for obtaining the URL for repository, share and solr.
 
 #### Notes:
 
 * The images used in the alfresco-content-services/values.yml are images that are built in the 'docker-alfresco' and 'docker-share' subfolders of the project - see the relevant sections below.
 * If you don't have access to the docker-internal.alfresco.com and quay.io images, or if you want custom data in your docker images, you can use the 'docker-alfresco' and 'docker-share' folders to customize and build your customized docker images that are used in the docker-compose project. Just make sure you build them in the minikube docker environment and update the alfresco-content-services/values.yml with the tags that you created.
-* You can also change those values when deploying the helm chart by running ```helm install alfresco-content-services --set repository.image.tag="yourTag" --set share.image.tag="yourTag"```.
+* You can also change those values when deploying the helm chart by running ```helm install alfresco-incubator/alfresco-content-services --set repository.image.tag="yourTag" --set share.image.tag="yourTag"```.
 * Hint: Run  ```eval $(minikube docker-env)``` to switch to your minikube docker environment on osx.
 
 ## Docker images

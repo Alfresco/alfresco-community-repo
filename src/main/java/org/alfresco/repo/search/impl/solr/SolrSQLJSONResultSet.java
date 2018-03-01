@@ -23,13 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.lucene;
+package org.alfresco.repo.search.impl.solr;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
@@ -52,25 +53,30 @@ import org.json.JSONObject;
  */
 public class SolrSQLJSONResultSet implements ResultSet, JSONResult
 {
+    private static final String SOLR_STREAM_EXCEPTION = "EXCEPTION";
     private static Log logger = LogFactory.getLog(SolrSQLJSONResultSet.class);
     private Long queryTime;
     private SimpleResultSetMetaData resultSetMetaData;
     private String solrRes;
     private int length;
     ResultSet wrapped;
+    private JSONArray docs;
+    private long numberFound;
+    
     public SolrSQLJSONResultSet(JSONObject json, BasicSearchParameters searchParameters)
     {
         try
         {
             solrRes = ((JSONObject) json).toString();
             JSONObject res = (JSONObject) json.get("result-set");
-            JSONArray docs = (JSONArray) res.get("docs");
+            docs = (JSONArray) res.get("docs");
             try
             {
                 JSONObject obj1 = docs.getJSONObject(0);
-                if(obj1.has("EXCEPTION")) 
+                if(obj1.has(SOLR_STREAM_EXCEPTION)) 
                 {
-                    throw new RuntimeException("Unable to execute the query, error caused by: " + obj1.toString());
+                    String error =  obj1.get(SOLR_STREAM_EXCEPTION).toString();
+                    throw new RuntimeException("Unable to execute the query, error caused by: " + error);
                 }
             }
             catch (JSONException e)
@@ -80,6 +86,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
             //Check if it has an error
             this.length = docs.length();
             JSONObject time = (JSONObject) docs.get(length -1);
+            this.numberFound = length - 1;
             queryTime = new Long((Integer) time.get("RESPONSE_TIME"));
             // We'll say we were unlimited if we got a number less than the limit
             this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, 
@@ -100,8 +107,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     @Override
     public long getNumberFound()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        return numberFound;
     }
 
     @Override
@@ -121,8 +127,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     @Override
     public void close()
     {
-        // TODO Auto-generated method stub
-        
+        // NO OP
     }
 
     @Override
@@ -162,70 +167,68 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     @Override
     public int getStart()
     {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public boolean hasMore()
     {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean setBulkFetch(boolean bulkFetch)
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return false;
     }
 
     @Override
     public boolean getBulkFetch()
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return false;
     }
 
     @Override
     public int setBulkFetchSize(int bulkFetchSize)
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return 0;
     }
 
     @Override
     public int getBulkFetchSize()
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return 0;
     }
 
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return null;
     }
 
     @Override
     public Map<String, Integer> getFacetQueries()
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return null;
     }
 
     @Override
     public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return null;
     }
 
     @Override
     public SpellCheckResult getSpellCheckResult()
     {
-        // TODO Auto-generated method stub
+        //Not applicable.
         return null;
     }
 
@@ -245,6 +248,11 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     public String getSolrRes()
     {
         return solrRes;
+    }
+
+    public JSONArray getDocs()
+    {
+        return docs;
     }
 
 }

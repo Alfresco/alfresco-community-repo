@@ -39,7 +39,6 @@ import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
-import org.alfresco.repo.search.impl.lucene.SolrSQLJSONResultSet;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;

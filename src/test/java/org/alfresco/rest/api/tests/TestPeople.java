@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -229,6 +228,10 @@ public class TestPeople extends AbstractBaseApiTest
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person2));
             Person resp = people.getPerson(person1);
             Person person1Entity = repoService.getPerson(person1);
+
+            Map<String, Boolean> respCapabilities = resp.getCapabilities();
+            assertNotNull("Check if capabilities are present", respCapabilities);
+
             check(person1Entity, resp);
         }
         
@@ -237,6 +240,11 @@ public class TestPeople extends AbstractBaseApiTest
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
             Person resp = people.getPerson(org.alfresco.rest.api.People.DEFAULT_USER);
             Person person1Entity = repoService.getPerson(person1);
+
+            Map<String, Boolean> respCapabilities = resp.getCapabilities();
+            assertNotNull("Check if capabilities are present", respCapabilities);
+            assertTrue("Check if -me- user is mutable", respCapabilities.get("isMutable"));
+
             check(person1Entity, resp);
         }
 
@@ -2296,6 +2304,42 @@ public class TestPeople extends AbstractBaseApiTest
         
     }
 
+    @Test
+    public void testListPeopleWithCapabilities() throws Exception
+    {
+        String personGuestId = "guest@" + account3.getId();
+        publicApiClient
+                .setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        // Are capabilities left absent when not required?
+        {
+            PublicApiClient.ListResponse<Person> resp = listPeople(Collections.emptyMap(), 200);
+            assertNull(resp.getList().get(0).getCapabilities());
+        }
+
+        // Are capabilities populated when requested?
+        {
+            // Test user admin, non-guest and mutable account
+            Map<String, String> parameters = Collections.singletonMap("include", "capabilities");
+            PublicApiClient.ListResponse<Person> resp = listPeople(parameters, 200);
+            Person personAdmin = resp.getList().stream()
+                    .filter(p -> p.getUserName().equals(account3Admin)).findFirst().get();
+            assertNotNull(personAdmin.getCapabilities());
+            assertTrue(personAdmin.getCapabilities().get("isAdmin").booleanValue());
+            assertFalse(personAdmin.getCapabilities().get("isGuest").booleanValue());
+            assertTrue(personAdmin.getCapabilities().get("isMutable").booleanValue());
+
+            // Test user non-admin, guest and non-mutable account
+            System.out.println(resp.getList());
+            Person personGuest = resp.getList().stream()
+                    .filter(p -> p.getUserName().equals(personGuestId)).findFirst().get();
+            assertNotNull(personGuest.getCapabilities());
+            assertFalse(personGuest.getCapabilities().get("isAdmin").booleanValue());
+            assertTrue(personGuest.getCapabilities().get("isGuest").booleanValue());
+            assertFalse(personGuest.getCapabilities().get("isMutable").booleanValue());
+        }
+    }
+    
     @Override
     public String getScope()
     {

@@ -345,6 +345,10 @@ public class RMRolesAndActionsAPI extends BaseAPI
         addPropertyToRequest(requestParams, "prop_cm_title", properties, RMProperty.TITLE);
         addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
         addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
+        addPropertyToRequest(requestParams, "prop_dod_originator", properties, RMProperty.ORIGINATOR);
+        addPropertyToRequest(requestParams, "prop_dod_originatingOrganization", properties, RMProperty
+                .ORIGINATING_ORGANIZATION);
+        addPropertyToRequest(requestParams, "prop_dod_publicationDate", properties, RMProperty.PUBLICATION_DATE);
 
         return doPostJsonRequest(username, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
     }

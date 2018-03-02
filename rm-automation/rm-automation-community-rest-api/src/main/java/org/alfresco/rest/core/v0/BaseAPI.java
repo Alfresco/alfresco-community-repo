@@ -311,6 +311,78 @@ public abstract class BaseAPI
     }
 
     /**
+     * Helper method for PUT requests
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     */
+    protected HttpResponse doPutJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        return doPutJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+    }
+
+    /**
+     * Helper method for PUT requests
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param urlStart the start of the URL (for example "alfresco/s/slingshot").
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     * @throws AssertionError if the returned status code is not as expected.
+     */
+    private HttpResponse doPutJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                String urlStart,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        String requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
+        try
+        {
+            HttpResponse httpResponse = doRequestJson(HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals("PUT request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
+            return httpResponse;
+        }
+        catch (InstantiationException | IllegalAccessException error)
+        {
+            throw new IllegalArgumentException("doPutRequest failed", error);
+        }
+    }
+
+    /**
+     * Fill in the parameters for a URL template.
+     *
+     * @param urlStart The start of the URL.
+     * @param urlTemplate The template.
+     * @param urlTemplateParams Any parameters that need to be filled into the URL template.
+     * @return The resultant URL.
+     */
+    private String formatRequestUrl(String urlStart, String urlTemplate, String[] urlTemplateParams)
+    {
+        if (urlTemplateParams.length == 1)
+        {
+            // The format method needs some help to know not to use the whole array object.
+            return MessageFormat.format(urlTemplate, urlStart, urlTemplateParams[0]);
+        }
+        return MessageFormat.format(urlTemplate, urlStart, urlTemplateParams);
+    }
+
+    /**
      * Helper method for POST requests
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
@@ -403,11 +475,8 @@ public abstract class BaseAPI
                 String urlTemplate,
                 String... urlTemplateParams)
     {
-        // Ensure the host is part of the request URL.
-        String requestUrl = MessageFormat.format(
-                    urlTemplate,
-                    urlStart,
-                    urlTemplateParams);
+        String requestUrl;
+        requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);

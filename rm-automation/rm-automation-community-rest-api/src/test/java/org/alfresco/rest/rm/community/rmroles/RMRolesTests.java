@@ -27,8 +27,11 @@
 
 package org.alfresco.rest.rm.community.rmroles;
 
+import static java.util.Collections.singleton;
+
 import static com.google.common.collect.Sets.newHashSet;
 
+import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -49,6 +52,12 @@ public class RMRolesTests extends BaseRMRestTest
 {
     /** The name of the RM user role. */
     private static final String RM_USER = "User";
+    /** The id of the view records capability. */
+    public static final String VIEW_RECORDS_CAP = "ViewRecords";
+    /** The id of the declare records capability. */
+    public static final String DECLARE_RECORDS_CAP = "DeclareRecords";
+    /** A list of capabilities. */
+    private static final java.util.HashSet<String> CAPABILITIES = newHashSet(VIEW_RECORDS_CAP, DECLARE_RECORDS_CAP);
     /** The names of the expected default RM roles. */
     private static final Set<String> ROLES = newHashSet("Administrator", "RecordsManager", "PowerUser",
                 "SecurityOfficer", RM_USER);
@@ -71,7 +80,38 @@ public class RMRolesTests extends BaseRMRestTest
     {
         Set<String> capabilities = rmRolesAndActionsAPI
                     .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_USER);
-        assertEquals("Unexpected capabilities found for RM User.", capabilities,
-                    newHashSet("ViewRecords", "DeclareRecords"));
+        assertEquals("Unexpected capabilities found for RM User.", capabilities, CAPABILITIES);
+    }
+
+    /** Check that a new role can be created and retrieved. */
+    @Test(description = "Create a new role.")
+    public void createNewRole()
+    {
+        String roleName = generateTestPrefix(RMRolesTests.class) + "newName";
+
+        // Call the endpoint under test.
+        rmRolesAndActionsAPI.createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName,
+                    "New Role Label", CAPABILITIES);
+
+        Set<String> actualCapabilities = rmRolesAndActionsAPI
+                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName);
+        assertEquals("Unexpected capabilities found for RM User.", actualCapabilities, CAPABILITIES);
+    }
+
+    /** Check that a role can be edited. */
+    @Test(description = "Update a role.")
+    public void updateRole()
+    {
+        String roleName = generateTestPrefix(RMRolesTests.class) + "Name";
+        rmRolesAndActionsAPI.createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName, "Label",
+                    singleton(VIEW_RECORDS_CAP));
+
+        // Call the endpoint under test.
+        rmRolesAndActionsAPI.updateRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName,
+                    "Updated Label", singleton(DECLARE_RECORDS_CAP));
+
+        Set<String> actualCapabilities = rmRolesAndActionsAPI
+                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName);
+        assertEquals("Unexpected capabilities for edited RM User.", actualCapabilities, singleton(DECLARE_RECORDS_CAP));
     }
 }

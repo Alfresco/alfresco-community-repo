@@ -31,6 +31,8 @@ import static java.util.Collections.singleton;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import static org.alfresco.rest.rm.community.model.user.UserRoles.RM_ROLES;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,17 +52,12 @@ import org.testng.annotations.Test;
  */
 public class RMRolesTests extends BaseRMRestTest
 {
-    /** The name of the RM user role. */
-    private static final String RM_USER = "User";
     /** The id of the view records capability. */
     public static final String VIEW_RECORDS_CAP = "ViewRecords";
     /** The id of the declare records capability. */
     public static final String DECLARE_RECORDS_CAP = "DeclareRecords";
     /** A list of capabilities. */
     private static final java.util.HashSet<String> CAPABILITIES = newHashSet(VIEW_RECORDS_CAP, DECLARE_RECORDS_CAP);
-    /** The names of the expected default RM roles. */
-    private static final Set<String> ROLES = newHashSet("Administrator", "RecordsManager", "PowerUser",
-                "SecurityOfficer", RM_USER);
     /** The API for managing RM roles and capabilities. */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -71,7 +68,7 @@ public class RMRolesTests extends BaseRMRestTest
     {
         Set<String> configuredRoles = rmRolesAndActionsAPI
                     .getConfiguredRoles(getAdminUser().getUsername(), getAdminUser().getPassword());
-        ROLES.forEach(role -> assertTrue("Could not found role " + role, configuredRoles.contains(role)));
+        RM_ROLES.forEach(role -> assertTrue("Could not found role " + role, configuredRoles.contains(role)));
     }
 
     /** Check that the RM user has the capability to view and declare records. */
@@ -79,7 +76,7 @@ public class RMRolesTests extends BaseRMRestTest
     public void checkCapabilitiesForUser()
     {
         Set<String> capabilities = rmRolesAndActionsAPI
-                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_USER);
+                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), ROLE_RM_USER);
         assertEquals("Unexpected capabilities found for RM User.", capabilities, CAPABILITIES);
     }
 

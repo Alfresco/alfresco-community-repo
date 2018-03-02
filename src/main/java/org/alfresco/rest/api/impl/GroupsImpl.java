@@ -619,7 +619,7 @@ public class GroupsImpl implements Groups
         return new Pair<>(DISPLAY_NAME, Boolean.TRUE);
     }
 
-    private class AuthorityInfoComparator implements Comparator<AuthorityInfo>
+    private static class AuthorityInfoComparator implements Comparator<AuthorityInfo>
     {
         private Map<AuthorityInfo, String> nameCache;
         private String sortBy;

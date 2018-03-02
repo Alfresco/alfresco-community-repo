@@ -1830,7 +1830,7 @@ public class NodesImpl implements Nodes
         String str = parameters.getParameter(PARAM_VERSION_MAJOR);
         if (str != null)
         {
-            versionMajor = new Boolean(str);
+            versionMajor = Boolean.valueOf(str);
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
@@ -2656,7 +2656,7 @@ public class NodesImpl implements Nodes
         String str = parameters.getParameter(PARAM_VERSION_MAJOR);
         if (str != null)
         {
-            versionMajor = new Boolean(str);
+            versionMajor = Boolean.valueOf(str);
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 

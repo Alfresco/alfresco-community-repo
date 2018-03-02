@@ -442,7 +442,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 }
                 else
                 {
-                    return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
+                    return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), Long.valueOf(queryResults.getNumberFound()).intValue());
                 }
             }
             finally

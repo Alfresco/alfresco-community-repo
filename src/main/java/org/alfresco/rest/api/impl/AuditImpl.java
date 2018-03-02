@@ -340,8 +340,8 @@ public class AuditImpl implements Audit
 
             if (propertyName.equals(ID))
             {
-                fromId = new Long(firstValue);
-                toId = new Long(secondValue) + 1;
+                fromId = Long.valueOf(firstValue);
+                toId = Long.valueOf(secondValue) + 1;
             }
         }
 
@@ -621,8 +621,8 @@ public class AuditImpl implements Audit
 
             if (propertyName.equals(ID))
             {
-                fromId = new Long(firstValue);
-                toId = new Long(secondValue) + 1;
+                fromId = Long.valueOf(firstValue);
+                toId = Long.valueOf(secondValue) + 1;
             }
         }
 

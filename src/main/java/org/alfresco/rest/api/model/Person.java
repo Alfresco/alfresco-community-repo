@@ -65,11 +65,11 @@ public class Person implements Serializable
 	protected Long quotaUsed;
 	protected Boolean emailNotificationsEnabled;
 	protected String description;
-	protected Company company;
+	protected transient Company company;
 	protected String password;
 	protected String oldPassword;
-	protected Map<String, Object> properties;
-	protected List<String> aspectNames;
+	protected transient Map<String, Object> properties;
+	protected transient List<String> aspectNames;
 	protected Map<String, Boolean> capabilities;
 
 	private Map<QName, Boolean> setFields = new HashMap<>(7);

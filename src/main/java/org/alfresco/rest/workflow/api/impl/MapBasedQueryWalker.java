@@ -417,7 +417,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         return false;
     }
     
-    public class QueryVariableHolder implements Serializable
+    public static class QueryVariableHolder implements Serializable
     {
         private static final long serialVersionUID = 1L;
         

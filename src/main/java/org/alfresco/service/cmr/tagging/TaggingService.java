@@ -306,6 +306,17 @@ public interface TaggingService
      */
     @NotAuditable
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);
+    
+    
+    /**
+     * Get tags with count tagged nodes
+     * 
+     * @param storeRef
+     * @return
+     */
+    @NotAuditable
+    List<Pair<String, Integer>> getTagsCountByTaggedNodes(StoreRef storeRef);
+
 }
 
 

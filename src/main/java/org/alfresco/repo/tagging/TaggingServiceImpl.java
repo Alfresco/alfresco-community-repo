@@ -75,6 +75,8 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
@@ -1374,7 +1376,7 @@ public class TaggingServiceImpl implements TaggingService,
 
     // ===== Methods Dealing with TagScope Updates ==== //
     
-    public static final String TAG_UPDATES = "tagUpdates"; 
+    public static final String TAG_UPDATES = "tagUpdates";
     
     /**
      * Triggers an async update of all the relevant tag scopes when a tag is 
@@ -1541,6 +1543,36 @@ public class TaggingServiceImpl implements TaggingService,
                 && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY))
         {
             updateAllScopeTags(workingCopy, Boolean.FALSE);
+        }
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.tagging.TaggingService#getTagsCountByTaggedNode(StoreRef)
+     */
+    @Override
+    public List<Pair<String, Integer>> getTagsCountByTaggedNodes(StoreRef storeRef)
+    {
+        String queryTaggeble = "ASPECT:\"" + ContentModel.ASPECT_TAGGABLE + "\"" + "-ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"";
+        ResultSet resultSet = null;
+        SearchParameters sp = new SearchParameters();
+        sp.setQuery(queryTaggeble);
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.addStore(storeRef);
+        sp.addFieldFacet(new FieldFacet("TAG"));
+
+        try
+        {
+            // Do the search for nodes
+            resultSet = this.searchService.query(sp);
+            return resultSet.getFieldFacet("TAG");
+
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
         }
     }
 

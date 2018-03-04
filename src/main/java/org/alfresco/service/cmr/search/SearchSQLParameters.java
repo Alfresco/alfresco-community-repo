@@ -26,10 +26,8 @@
 package org.alfresco.service.cmr.search;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
@@ -91,6 +89,16 @@ public class SearchSQLParameters implements BasicSearchParameters
     public void addStore(StoreRef store)
     {
         stores.add(store);
+    }
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SearchParameters [language=").append(this.language)
+               .append(", query=").append(this.query).append(", stores=").append(this.stores)
+               .append(", locales=").append(this.locales).append("]");
+        return builder.toString();
+        
     }
 
 }

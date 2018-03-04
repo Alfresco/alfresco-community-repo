@@ -40,12 +40,18 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.junit.Before;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test custom role for a Site. Based on MNT-12873
  * 
  * @author Alex Bykov
  */
+@Transactional
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:org/alfresco/repo/site/site-custom-context.xml"})
 public class CustomRoleTest extends BaseAlfrescoSpringTest
 {
     private static final String USER_ONE = "UserOne_CustomRoleTest";
@@ -54,10 +60,10 @@ public class CustomRoleTest extends BaseAlfrescoSpringTest
     private SiteService siteService;
     private PersonService personService;
 
-    @SuppressWarnings("deprecation")
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
 
         // Get the required services
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
@@ -95,18 +101,5 @@ public class CustomRoleTest extends BaseAlfrescoSpringTest
         {
             fail("Custom role breaks sites API. Take a look on MNT-12873\n" + ex.getMessage());
         }
-    }
-
-    @Override
-    protected String[] getConfigLocations()
-    {
-        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
-
-        List<String> locations = Arrays.asList(existingConfigLocations);
-        List<String> mutableLocationsList = new ArrayList<String>(locations);
-        mutableLocationsList.add("classpath:org/alfresco/repo/site/site-custom-context.xml");
-
-        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
-        return result;
     }
 }

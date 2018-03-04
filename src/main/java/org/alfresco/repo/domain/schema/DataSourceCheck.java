@@ -31,14 +31,12 @@ import java.sql.DatabaseMetaData;
 import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.hibernate.DialectFactory;
+import org.alfresco.repo.domain.dialect.SQLServerDialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.DialectFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.SQLServerDialect;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 /**
  * Bean to log connection details and attempt to ensure that the connection is OK.
@@ -58,16 +56,10 @@ public class DataSourceCheck
     /** The required transaction isolation */
     private static final int SQL_SERVER_TRANSACTION_ISOLATION = 4096;
 
-    private Configuration cfg;
     private String dbUrl;
     private String dbUsername;
     private int transactionIsolation;
     private DataSource dataSource;
-
-    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
-    {
-        this.cfg = localSessionFactory.getConfiguration();
-    }
 
     public void setDbUrl(String dbUrl)
     {
@@ -104,9 +96,9 @@ public class DataSourceCheck
                     meta.getDatabaseProductName(), meta.getDatabaseProductVersion()));
 
             Dialect dialect = DialectFactory.buildDialect(
-                    cfg.getProperties(),
                     meta.getDatabaseProductName(),
-                    meta.getDatabaseMajorVersion());
+                    meta.getDatabaseMajorVersion(),
+                    meta.getDriverName());
 
             // Check MS SQL Server specific settings
             if (dialect instanceof SQLServerDialect)

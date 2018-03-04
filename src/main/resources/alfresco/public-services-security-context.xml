@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <!-- ========================== -->
 <!-- Enforcement of permissions -->
@@ -10,7 +9,10 @@
 <!-- and enforce security based on the currently authenticated user.                     -->
 <!--                                                                                     -->
 
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- ===================== -->
     <!-- Permissions Model DAO -->
@@ -160,8 +162,7 @@
     <!-- starting with the prefix "ROLE_"                                                -->
     <!-- Any match grants                                                                -->
 
-    <bean id="roleVoter" class="net.sf.acegisecurity.vote.RoleVoter" abstract="false" singleton="true"
-        lazy-init="default" autowire="default" dependency-check="default" >
+    <bean id="roleVoter" class="net.sf.acegisecurity.vote.RoleVoter">
         <property name="rolePrefix">
             <value>ROLE_</value>
         </property>
@@ -171,8 +172,7 @@
     <!-- starting with the prefix "GROUP_"                                               -->
     <!-- Any match grants                                                                -->
 
-    <bean id="groupVoter" class="net.sf.acegisecurity.vote.RoleVoter" abstract="false" singleton="true"
-        lazy-init="default" autowire="default" dependency-check="default" >
+    <bean id="groupVoter" class="net.sf.acegisecurity.vote.RoleVoter">
         <property name="rolePrefix">
             <value>GROUP_</value>
         </property>
@@ -188,8 +188,7 @@
     <!-- Note: ff the context evaluates to null (e.g. doing an exists test on a node     -->
     <!-- that does not exist) then access will be allowed.                               -->
 
-    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoter" abstract="false" singleton="true"
-        lazy-init="default" autowire="default" dependency-check="default" >
+    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoter">
        <property name="permissionService">
            <ref bean="permissionService"></ref>
        </property>
@@ -222,9 +221,9 @@
         <property name="allowIfAllAbstainDecisions"><value>false</value></property>
         <property name="decisionVoters">
             <list>
-                <ref local="roleVoter"/>
-                <ref local="groupVoter"/>
-                <ref local="aclEntryVoter"/>
+                <ref bean="roleVoter"/>
+                <ref bean="groupVoter"/>
+                <ref bean="aclEntryVoter"/>
             </list>
         </property>
     </bean>
@@ -233,8 +232,7 @@
     <!-- Post method call application of security -->
     <!-- ======================================== -->
 
-    <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider" abstract="false" singleton="true"
-        lazy-init="default" autowire="default" dependency-check="default" >
+    <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider">
         <property name="permissionService">
             <ref bean="permissionServiceImpl"></ref>
         </property>
@@ -271,7 +269,7 @@
     <bean id="afterInvocationManager" class="net.sf.acegisecurity.afterinvocation.AfterInvocationProviderManager">
         <property name="providers">
             <list>
-                <ref local="afterAcl"/>
+                <ref bean="afterAcl"/>
                 <ref bean="afterAclMarking"/>
             </list>
         </property>
@@ -377,8 +375,8 @@
 
     <bean id="NodeService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.repository.NodeService.getStores=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -438,8 +436,8 @@
 
     <bean id="FileFolderService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.model.FileFolderService.list=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -486,8 +484,8 @@
 
     <bean id="ContentService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.repository.ContentService.getStoreTotalSpace=ACL_ALLOW
@@ -523,8 +521,8 @@
 
     <bean id="SearchService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.search.SearchService.query=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
@@ -539,8 +537,8 @@
 
     <bean id="StasService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.search.StatsService.query=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
@@ -559,8 +557,8 @@
 
     <bean id="CategoryService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.search.CategoryService.getChildren=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -589,8 +587,8 @@
 
     <bean id="CopyService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.repository.CopyService.copy=ACL_ALLOW
@@ -617,8 +615,8 @@
 
     <bean id="LockService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.lock.LockService.lock=ACL_NODE.0.cm:lockable.Lock
@@ -653,8 +651,8 @@
 
     <bean id="MultilingualContentService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
     <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.ml.MultilingualContentService.getTranslationContainer=ACL_ALLOW
@@ -681,8 +679,8 @@
 
     <bean id="EditionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
     <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.ml.EditionService.createEdition=ACL_NODE.0.sys:base.Read
@@ -705,8 +703,8 @@
 
     <bean id="CheckOutCheckInService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.coci.CheckOutCheckInService.checkout=ACL_NODE.0.cm:lockable.CheckOut
@@ -757,8 +755,8 @@
 
     <bean id="PermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.PermissionService.getOwnerAuthority=ACL_ALLOW
@@ -790,8 +788,8 @@
 
     <bean id="AuthorityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.AuthorityService.hasAdminAuthority=ACL_ALLOW
@@ -847,8 +845,8 @@
    <!-- Update authentication checks internally -->
    <bean id="AuthenticationService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.MutableAuthenticationService.isAuthenticationMutable=ACL_ALLOW
@@ -884,8 +882,8 @@
 
     <bean id="OwnableService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.OwnableService.getOwner=ACL_NODE.0.sys:base.ReadProperties
@@ -902,8 +900,8 @@
 
      <bean id="PersonService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.security.PersonService.getPerson=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -971,8 +969,8 @@
 
     <bean id="AuditService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.audit.AuditService.*=ACL_METHOD.ROLE_ADMINISTRATOR
@@ -1006,8 +1004,8 @@
     
     <bean id="SiteService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.site.SiteService.cleanSitePermissions=ACL_NODE.0.sys:base.ReadProperties
@@ -1065,8 +1063,8 @@
     <!-- The canned queries that the calendar service uses do however need to check -->
     <bean id="CalendarService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.calendar.CalendarService.listCalendarEntries=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -1092,8 +1090,8 @@
     <!-- The canned queries that the calendar service uses do however need to check -->
     <bean id="DownloadService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.download.DownloadService.deleteDownloads=ACL_ALLOW
@@ -1118,8 +1116,8 @@
     <!-- The canned queries that the links service uses do however need to check -->
     <bean id="LinksService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.links.LinksService.listLinks=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -1144,8 +1142,8 @@
     <!-- The canned queries that the discussion services use do however need to check -->
     <bean id="DiscussionService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                org.alfresco.service.cmr.discussion.DiscussionService.listPosts=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
@@ -1177,8 +1175,8 @@
     
     <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.service.cmr.admin.RepoAdminService.getRestrictions=ACL_ALLOW
@@ -1200,10 +1198,10 @@
             <ref bean="authenticationManager"/>
         </property>
         <property name="accessDecisionManager">
-            <ref local="accessDecisionManager"/>
+            <ref bean="accessDecisionManager"/>
         </property>
         <property name="afterInvocationManager">
-            <ref local="afterInvocationManager"/>
+            <ref bean="afterInvocationManager"/>
         </property>
         <property name="objectDefinitionSource">
             <value>org.alfresco.service.cmr.security.PublicServiceAccessService.hasAccess=ACL_ALLOW
@@ -1236,10 +1234,10 @@
             <ref bean="authenticationManager"/>
         </property>
         <property name="accessDecisionManager">
-            <ref local="accessDecisionManager"/>
+            <ref bean="accessDecisionManager"/>
         </property>
         <property name="afterInvocationManager">
-            <ref local="afterInvocationManager"/>
+            <ref bean="afterInvocationManager"/>
         </property>
         <property name="objectDefinitionSource">
             <value>

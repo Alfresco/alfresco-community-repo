@@ -42,20 +42,18 @@ import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQLInnoDBDialect;
-import org.hibernate.dialect.PostgreSQLDialect;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 
 public class ScriptExecutorImpl implements ScriptExecutor
@@ -83,7 +81,6 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private Dialect dialect;
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
     private static Log logger = LogFactory.getLog(ScriptExecutorImpl.class);
-    private LocalSessionFactoryBean localSessionFactory;
     private Properties globalProperties;
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
     private DataSource dataSource;
@@ -133,17 +130,6 @@ public class ScriptExecutorImpl implements ScriptExecutor
     {
         globalProperties = new Properties();
     }
-
-
-    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
-    {
-        this.localSessionFactory = localSessionFactory;
-    }
-    
-    public LocalSessionFactoryBean getLocalSessionFactory()
-    {
-        return localSessionFactory;
-    }
     
     public void setDataSource(DataSource dataSource)
     {
@@ -165,12 +151,11 @@ public class ScriptExecutorImpl implements ScriptExecutor
     @Override
     public void executeScriptUrl(String scriptUrl) throws Exception
     {
-        Configuration cfg = localSessionFactory.getConfiguration();
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(true);
         try
         {
-            executeScriptUrl(cfg, connection, scriptUrl);
+            executeScriptUrl(connection, scriptUrl);
         }
         finally
         {
@@ -178,9 +163,9 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
     }
     
-    private void executeScriptUrl(Configuration cfg, Connection connection, String scriptUrl) throws Exception
+    private void executeScriptUrl(Connection connection, String scriptUrl) throws Exception
     {
-        Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        Dialect dialect = this.dialect;
         String dialectStr = dialect.getClass().getSimpleName();
         InputStream scriptInputStream = getScriptInputStream(dialect.getClass(), scriptUrl);
         // check that it exists
@@ -203,7 +188,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         // now execute it
         String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
-        executeScriptFile(cfg, connection, tempFile, dialectScriptUrl);
+        executeScriptFile(connection, tempFile, dialectScriptUrl);
     }
     
     /**
@@ -281,19 +266,17 @@ public class ScriptExecutorImpl implements ScriptExecutor
     }
     
     /**
-     * @param cfg           the Hibernate configuration
      * @param connection    the DB connection to use
      * @param scriptFile    the file containing the statements
      * @param scriptUrl     the URL of the script to report.  If this is null, the script
      *                      is assumed to have been auto-generated.
      */
     private void executeScriptFile(
-            Configuration cfg,
             Connection connection,
             File scriptFile,
             String scriptUrl) throws Exception
     {
-        final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        final Dialect dialect = this.dialect;
         
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
@@ -371,7 +354,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                     }
                     String includedScriptUrl = sql.substring(10, sql.length());
                     // Execute the script in line
-                    executeScriptUrl(cfg, connection, includedScriptUrl);
+                    executeScriptUrl(connection, includedScriptUrl);
                 }
                 // Check for variable assignment
                 else if (sql.startsWith("--ASSIGN:"))
@@ -546,11 +529,11 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
                         
-                        if (this.dialect != null && this.dialect instanceof AlfrescoMySQLClusterNDBDialect)
+                        if (this.dialect != null && this.dialect instanceof MySQLClusterNDBDialect)
                         {
                             // note: enable bootstrap on MySQL Cluster NDB
                             /*
-                        	 * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+                        	 * WARNING: Experimental/unsupported - see MySQLClusterNDBDialect !
                     		 */
                         	sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
                             sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");

@@ -78,8 +78,14 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Action service test
@@ -87,6 +93,9 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:org/alfresco/repo/action/test-action-services-context.xml"})
 public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static final String BAD_NAME = "badName";
@@ -95,23 +104,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     private NodeRef folder;
     private RetryingTransactionHelper transactionHelper;
     
-    @Override
-    protected String[] getConfigLocations()
+    @Before
+    public void before() throws Exception
     {
-        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
-
-        List<String> locations = Arrays.asList(existingConfigLocations);
-        List<String> mutableLocationsList = new ArrayList<String>(locations);
-        mutableLocationsList.add("classpath:org/alfresco/repo/action/test-action-services-context.xml");
-        
-        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
-        return result;
-    }
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception
-    {
-        super.onSetUpInTransaction();
+        super.before();
 
         this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
 
@@ -138,6 +134,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test getActionDefinition
      */
+    @Test
     public void testGetActionDefinition()
     {
         ActionDefinition action = actionService.getActionDefinition(AddFeaturesActionExecuter.NAME);
@@ -151,6 +148,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test getActionDefintions
      */
+    @Test
     public void testGetActionDefinitions()
     {
         List<ActionDefinition> defintions = this.actionService.getActionDefinitions();
@@ -172,6 +170,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test getActionConditionDefinition
      */
+    @Test
     public void testGetActionConditionDefinition()
     {
         ActionConditionDefinition condition = this.actionService.getActionConditionDefinition(NoConditionEvaluator.NAME);
@@ -186,6 +185,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      * Test getActionConditionDefinitions
      *
      */
+    @Test
     public void testGetActionConditionDefinitions()
     {
         List<ActionConditionDefinition> defintions = this.actionService.getActionConditionDefinitions();
@@ -201,6 +201,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test create action condition
      */
+    @Test
     public void testCreateActionCondition()
     {
         ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
@@ -217,7 +218,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
       /**
     * Test createCompositeAction
     */
-   public void testCreateCompositeActionCondition()
+   @Test
+    public void testCreateCompositeActionCondition()
    {
       CompositeActionCondition action = this.actionService.createCompositeActionCondition();
       assertNotNull(action);
@@ -227,6 +229,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test createAction
      */
+    @Test
     public void testCreateAction()
     {
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
@@ -242,6 +245,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test createCompositeAction
      */
+    @Test
     public void testCreateCompositeAction()
     {
         CompositeAction action = this.actionService.createCompositeAction();
@@ -252,6 +256,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Evaluate action
      */
+    @Test
     public void testEvaluateAction()
     {
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
@@ -277,6 +282,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test evaluate action condition
      */
+    @Test
     public void testEvaluateActionCondition()
     {
         ActionCondition condition = this.actionService.createActionCondition(ComparePropertyValueEvaluator.NAME);
@@ -294,7 +300,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
    /**
     * Test evaluate action condition
     */
-   public void testEvaluateCompositeActionConditionWith1SubCondition()
+   @Test
+    public void testEvaluateCompositeActionConditionWith1SubCondition()
    {
       CompositeActionCondition compositeCondition = this.actionService.createCompositeActionCondition();
       
@@ -314,7 +321,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
    /**
     * Test evaluate action condition
     */
-   public void testEvaluateCompositeActionConditionWith2SubConditions()
+   @Test
+    public void testEvaluateCompositeActionConditionWith2SubConditions()
    {
       CompositeActionCondition compositeCondition = this.actionService.createCompositeActionCondition();
       
@@ -356,6 +364,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test execute action
      */
+    @Test
     public void testExecuteAction()
     {
         assertFalse(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE));
@@ -413,6 +422,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE));
     }    
 
+    @Test
     public void testGetAndGetAllWithNoActions()
     {
         assertNull(this.actionService.getAction(this.nodeRef, AddFeaturesActionExecuter.NAME));
@@ -421,6 +431,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(0, actions.size());
     }
     
+    @Test
     public void testExecuteActionWithNoParameterDef()
     {
         Action action = this.actionService.createAction("empty-action");
@@ -432,6 +443,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      * Test saving an action with no conditions.  Includes testing storage and retrieval 
      * of compensating actions.
      */
+    @Test
     public void testSaveActionNoCondition()
     {
         // Create the action
@@ -513,6 +525,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         //System.out.println(NodeStoreInspector.dumpNodeStore(this.nodeService, this.testStoreRef));
     }
 
+    @Test
     public void testOwningNodeRef()
     {
         // Create the action
@@ -540,6 +553,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test saving an action with conditions
      */
+    @Test
     public void testSaveActionWithConditions()
     {
         // Create the action
@@ -632,6 +646,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test saving a composite action
      */
+    @Test
     public void testSaveCompositeAction()
     {
         Action action1 = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
@@ -696,6 +711,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test remove action
      */
+    @Test
     public void testRemove()
     {
         assertEquals(0, this.actionService.getActions(this.nodeRef).size());
@@ -713,6 +729,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(0, this.actionService.getActions(this.nodeRef).size());        
     }
     
+    @Test
     public void testConditionOrder()
     {
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
@@ -750,6 +767,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(condition4, savedAction2.getActionCondition(2));
     }
     
+    @Test
     public void testActionOrder()
     {
         CompositeAction action = this.actionService.createCompositeAction();
@@ -790,6 +808,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test the action result parameter
      */
+    @Test
     public void testActionResult()
     {
         // Create the script node reference
@@ -828,8 +847,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void offtestAsyncLongRunningActionsFilter()
     {
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         final SleepActionExecuter sleepAction = (SleepActionExecuter)applicationContext.getBean("sleep-action");
         assertNotNull(sleepAction);
@@ -904,6 +923,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test asynchronous execute action
      */
+    @Test
     public void testAsyncExecuteAction()
     {
         assertFalse(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE));
@@ -913,9 +933,9 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         action.setExecuteAsynchronously(true);
         
         this.actionService.executeAction(action, this.nodeRef);
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         final NodeService finalNodeService = this.nodeService;
         final NodeRef finalNodeRef = this.nodeRef;
@@ -939,6 +959,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test async composite action execution
      */
+    @Test
     public void testAsyncCompositeActionExecute()
     {
         // Create the composite action
@@ -955,9 +976,9 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         
         // Execute the composite action
         this.actionService.executeAction(compAction, this.nodeRef);
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         final NodeService finalNodeService = this.nodeService;
         final NodeRef finalNodeRef = this.nodeRef;
@@ -988,10 +1009,10 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         for (int i = 0; i < 1000; i++)
         {
             this.actionService.executeAction(action, this.nodeRef);
-        }        
-        
-        setComplete();
-        endTransaction();
+        }
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         // TODO how do we assess whether the large number of actions stacked cause a problem ??
     }
@@ -1071,6 +1092,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test sync failure behaviour
      */
+    @Test
     public void testSyncFailureBehaviour()
     {
         // Create an action that is going to fail
@@ -1116,6 +1138,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Test the compensating action
      */
+    @Test
     public void testCompensatingAction()
     {
         // Create actions that are going to fail
@@ -1142,9 +1165,9 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         
         this.actionService.executeAction(fatalAction, this.nodeRef);
         this.actionService.executeAction(nonfatalAction, this.nodeRef);
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         postAsyncActionTest(
                 this.transactionService,
@@ -1200,6 +1223,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * http://issues.alfresco.com/jira/browse/ALF-5027
      */
+    @Test
     public void testALF5027() throws Exception
     {
         String userName = "bob" + GUID.generate();
@@ -1239,6 +1263,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      *  execution related details such as started at,
      *  ended at, status and exception
      */
+    @Test
     public void testExecutionTrackingDetails() {
        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
        String actionId = action.getId();
@@ -1394,7 +1419,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        /**
         * Loads this executor into the ApplicationContext, if it isn't already there
         */
-        public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+        public static void registerIfNeeded(ApplicationContext ctx)
         {
             if (!ctx.containsBean(SleepActionExecuter.NAME))
             {
@@ -1403,7 +1428,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 executor.setTrackStatus(true);
                 executor.actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
                 // Register
-                ctx.getBeanFactory().registerSingleton(SleepActionExecuter.NAME, executor);
+                ((ConfigurableApplicationContext) ctx).getBeanFactory().registerSingleton(SleepActionExecuter.NAME, executor);
             }
         }
        

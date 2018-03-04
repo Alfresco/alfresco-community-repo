@@ -32,6 +32,7 @@ import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
 
 /**
  * Action parameter constraint unit test
@@ -44,12 +45,8 @@ public class ActionParameterConstraintTest extends BaseSpringTest
     
     private ActionService actionService;
     
-    /**
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
        actionService = (ActionService)applicationContext.getBean("ActionService");
     }

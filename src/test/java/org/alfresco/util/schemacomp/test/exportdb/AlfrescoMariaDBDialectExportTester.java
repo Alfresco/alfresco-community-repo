@@ -25,18 +25,25 @@
  */
 package org.alfresco.util.schemacomp.test.exportdb;
 
+import java.util.Iterator;
 import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.ExportDbTest;
-import org.alfresco.util.schemacomp.model.*;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.alfresco.util.schemacomp.model.Column;
+import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.ForeignKey;
+import org.alfresco.util.schemacomp.model.Index;
+import org.alfresco.util.schemacomp.model.PrimaryKey;
+import org.alfresco.util.schemacomp.model.Schema;
+import org.alfresco.util.schemacomp.model.Table;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Iterator;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * MySQL specific test for the ExportDb class.
@@ -54,7 +61,7 @@ public class AlfrescoMariaDBDialectExportTester extends AbstractExportTester
      * @param jdbcTemplate
      */
     public AlfrescoMariaDBDialectExportTester(ExportDb exporter, PlatformTransactionManager tx,
-                                              SimpleJdbcTemplate jdbcTemplate)
+                                              JdbcTemplate jdbcTemplate)
     {
         super(exporter, tx, jdbcTemplate);
     }

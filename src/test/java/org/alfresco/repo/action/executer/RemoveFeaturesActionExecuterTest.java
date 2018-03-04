@@ -35,7 +35,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Remove features action execution test
@@ -43,6 +46,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
 {
     /**
@@ -78,8 +82,8 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
     /**
      * Called at the begining of all tests
      */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         
@@ -107,6 +111,7 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
     /**
      * Test execution
      */
+    @Test
     public void testExecution()
     {
         // Check that the node has the classifiable aspect

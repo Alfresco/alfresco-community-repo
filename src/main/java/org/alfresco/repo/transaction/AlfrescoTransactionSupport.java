@@ -34,7 +34,6 @@ import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.orm.hibernate3.SessionFactoryUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
@@ -67,10 +66,8 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
     /**
      * The order of synchronization set to be 100 less than the Hibernate synchronization order
      */
-    public static final int SESSION_SYNCHRONIZATION_ORDER =
-        SessionFactoryUtils.SESSION_SYNCHRONIZATION_ORDER - 100;
+    public static final int SESSION_SYNCHRONIZATION_ORDER = 800;
 
-    
     private static Log logger = LogFactory.getLog(AlfrescoTransactionSupport.class);
     
     /**
@@ -101,11 +98,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
             return TxnReadState.TXN_NONE;
         }
         // Find the read-write state of the txn
-        if (getResource(RESOURCE_KEY_TXN_COMPLETING) != null)
-        {
-            // Transaction is completing.  For all intents and purposes, we are not in a transaction.
-            return TxnReadState.TXN_NONE;
-        }
         else if (TransactionSynchronizationManager.isCurrentTransactionReadOnly())
         {
             return TxnReadState.TXN_READ_ONLY;

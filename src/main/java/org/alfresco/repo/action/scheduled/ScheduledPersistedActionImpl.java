@@ -30,9 +30,10 @@ import java.util.Date;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.quartz.DateIntervalTrigger;
-import org.quartz.SimpleTrigger;
+import org.quartz.CalendarIntervalScheduleBuilder;
+import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 
 /**
  * The scheduling wrapper around a persisted
@@ -268,13 +269,17 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
                   // So, don't run it
                   return null;
                }
-               
+
                // Based on the start time, when would it next be
                //  due to fire?
-               DateIntervalTrigger testT = buildDateIntervalTrigger("TEST", scheduleStart, null);
+               Trigger testT = TriggerBuilder.newTrigger()
+                       .withIdentity("TEST")
+                       .withSchedule(CalendarIntervalScheduleBuilder.calendarIntervalSchedule())
+                       .startAt(scheduleStart)
+                       .build();
                Date nextFireFromNow = testT.getFireTimeAfter(new Date());
                Date nextFireFromLast = testT.getFireTimeAfter(lastExecutedAt);
-               
+
                // If the next fire time from the last is before the
                //  next due date, then we missed one
                if(nextFireFromLast.getTime() < nextFireFromNow.getTime())
@@ -293,38 +298,29 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
             }
          }
       }
-      
-      
-      // If they don't want it to repeat, just use a simple interval
-      if(getScheduleInterval() == null)
-      {
-         SimpleTrigger trigger = new SimpleTrigger(
-               triggerName, null,
-               startAt
-         ); 
-         trigger.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_FIRE_NOW);
-         return trigger;
-      }
-      
-      return buildDateIntervalTrigger(triggerName, startAt, endAt);
-   }
-   
-   private DateIntervalTrigger buildDateIntervalTrigger(String triggerName, Date startAt, Date endAt)
-   {
-      // There are some repeating rules
-      // Create a Date Interval trigger
-      DateIntervalTrigger.IntervalUnit quartzInterval = 
-         DateIntervalTrigger.IntervalUnit.valueOf(
-               intervalPeriod.toString().toUpperCase()
-         );
-      
-      // Create the interval
-      DateIntervalTrigger trigger = new DateIntervalTrigger(
-               triggerName, null,
-               startAt, endAt,
-               quartzInterval, intervalCount
-      );
-      trigger.setMisfireInstruction( DateIntervalTrigger.MISFIRE_INSTRUCTION_FIRE_ONCE_NOW );
-      return trigger;
+
+       Trigger trigger;
+       if(getScheduleInterval() == null)
+       {
+           trigger = TriggerBuilder.newTrigger()
+                   .withIdentity(triggerName)
+                   .startAt(startAt)
+                   .withSchedule(
+                           SimpleScheduleBuilder.simpleSchedule()
+                                   .withMisfireHandlingInstructionFireNow())
+                   .build();
+       }
+       else
+       {
+           trigger = TriggerBuilder.newTrigger()
+                   .withIdentity(triggerName)
+                   .startAt(startAt)
+                   .endAt(endAt)
+                   .withSchedule(
+                           CalendarIntervalScheduleBuilder.calendarIntervalSchedule()
+                                   .withMisfireHandlingInstructionFireAndProceed())
+                   .build();
+       }
+       return trigger;
    }
 }

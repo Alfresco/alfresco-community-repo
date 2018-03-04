@@ -60,12 +60,16 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test of the ActionExecuter for embedding metadata
  * 
  * @author Ray Gauss II
  */
+@Transactional
 public class ContentMetadataEmbedderTest extends BaseSpringTest
 {
 
@@ -82,8 +86,8 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
 
     private final static String ID = GUID.generate();
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
@@ -122,6 +126,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
     /**
      * Test that a failing embedder does not destroy the original content
      */
+    @Test
     public void testFailingEmbedder()
     {
         MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");

@@ -78,7 +78,12 @@ public class TestPersonManager
                 }
                 else
                 {
-                    return personService.getPerson(userName);
+                    NodeRef personRef = personService.getPerson(userName);
+                    if (personRef != null)
+                    {
+                        people.put(userName, personRef);
+                    }
+                    return personRef;
                 }
             }
         }, AuthenticationUtil.getSystemUserName());

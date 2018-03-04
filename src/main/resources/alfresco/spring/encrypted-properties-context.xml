@@ -5,11 +5,9 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
 
-    <util:map id="encrypted-properties" >
+    <util:properties id="encrypted-properties" >
         <!-- A dummy value -->
-        <entry key="empty.enc" >
-            <value>empty</value>
-        </entry>
-    </util:map>
+        <prop key="empty.enc">empty</prop>
+    </util:properties>
 
 </beans>

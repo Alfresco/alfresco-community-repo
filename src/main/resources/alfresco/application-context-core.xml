@@ -1,9 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<!-- These are the XML files of the "core" of the context -->
-<!-- This includes bootstrap-context.xml, so subsystems are "core" too -->
-<beans>
+    <!-- These are the XML files of the "core" of the context -->
+    <!-- This includes bootstrap-context.xml, so subsystems are "core" too -->
     <import resource="classpath:alfresco/tx-cache-context.xml" />
     <import resource="classpath:alfresco/cache-context.xml" />
     <import resource="classpath*:alfresco/enterprise/cluster/cluster-context.xml" />
@@ -12,7 +14,6 @@
     <import resource="classpath:alfresco/st-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
     <import resource="classpath:alfresco/encryption-context.xml" />
-    <import resource="classpath:alfresco/hibernate-context.xml" />
     <import resource="classpath*:alfresco/enterprise/jmx/jmx-context.xml" />
     <import resource="classpath:alfresco/spring/*-context.xml" />
     <import resource="classpath*:alfresco/enterprise/spring/*-context.xml" />

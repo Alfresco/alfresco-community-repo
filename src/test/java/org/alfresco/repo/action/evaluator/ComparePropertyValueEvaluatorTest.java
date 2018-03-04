@@ -54,12 +54,17 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Compare property value evaluator test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
 {
     private static final String TEST_TYPE_NAMESPACE = "testNamespace";
@@ -77,7 +82,8 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     private Date dateValue;
     private Date afterDateValue;
     private NodeRef nodeValue;
-    
+
+    @Autowired
     private DictionaryDAO dictionaryDAO;
     private NodeService nodeService;
     private ContentService contentService;
@@ -87,22 +93,8 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     private NodeRef nodeRef;
     private ComparePropertyValueEvaluator evaluator;
     
-    /**
-     * Sets the meta model DAO
-     * 
-     * @param dictionaryDAO  the meta model DAO
-     */
-    public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
-    {
-        this.dictionaryDAO = dictionaryDAO;
-    }
-    
-    /**
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         // Need to create model to contain our custom type
         createTestModel();
@@ -142,7 +134,8 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         
         this.evaluator = (ComparePropertyValueEvaluator)this.applicationContext.getBean(ComparePropertyValueEvaluator.NAME);
     }
-    
+
+    @Test
     public void testCheckParamDefintionWithConstraint()
     {
         ActionConditionDefinition def = evaluator.getActionConditionDefintion();        
@@ -160,6 +153,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * Test numeric comparisions
      */
+    @Test
     public void testNumericComparison()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
@@ -242,6 +236,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * Test date comparison
      */
+    @Test
     public void testDateComparison()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
@@ -324,6 +319,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * Test text comparison
      */
+    @Test
     public void testTextComparison()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
@@ -404,6 +400,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * Test some combinations of test file names that had been failing 
      */
+    @Test
     public void testTempFileNames()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
@@ -418,6 +415,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     /**
      * Test comparison of properties that do not have a registered comparitor
      */
+    @Test
     public void testOtherComparison()
     {
         NodeRef badNodeRef = new NodeRef(this.testStoreRef, "badId");
@@ -465,6 +463,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         
     }
     
+    @Test
     public void testContentPropertyComparisons()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
@@ -503,6 +502,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         
     }
 
+    @Test
     public void testMultiValuedPropertyComparisons()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);

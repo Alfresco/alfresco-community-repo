@@ -34,12 +34,16 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Is sub class evaluator test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class IsSubTypeEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -50,8 +54,8 @@ public class IsSubTypeEvaluatorTest extends BaseSpringTest
     
     private final static String ID = GUID.generate();
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         
@@ -71,6 +75,7 @@ public class IsSubTypeEvaluatorTest extends BaseSpringTest
         this.evaluator = (IsSubTypeEvaluator)this.applicationContext.getBean(IsSubTypeEvaluator.NAME);
     }
     
+    @Test
     public void testMandatoryParamsMissing()
     {
         ActionCondition condition = new ActionConditionImpl(ID, IsSubTypeEvaluator.NAME, null);
@@ -86,6 +91,7 @@ public class IsSubTypeEvaluatorTest extends BaseSpringTest
         }
     }
     
+    @Test
     public void testPass()
     {
         ActionCondition condition = new ActionConditionImpl(ID, IsSubTypeEvaluator.NAME, null);
@@ -95,6 +101,7 @@ public class IsSubTypeEvaluatorTest extends BaseSpringTest
         assertTrue(this.evaluator.evaluate(condition, this.nodeRef));
     }
     
+    @Test
     public void testFail()
     {
         ActionCondition condition = new ActionConditionImpl(ID, IsSubTypeEvaluator.NAME, null);

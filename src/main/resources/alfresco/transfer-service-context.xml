@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
     <!-- Transfer Service Configuration -->
     <bean id="transferService" class="org.alfresco.repo.transfer.TransferServiceImpl">
         <property name="transferServiceImpl2">
@@ -212,10 +215,10 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="TransferService_transaction" />
+                <idref bean="TransferService_transaction" />
                 <idref bean="AuditMethodInterceptor" />
                 <idref bean="exceptionTranslator" />
-                <idref local="TransferService_security" />
+                <idref bean="TransferService_security" />
             </list>
         </property>
     </bean>
@@ -229,10 +232,10 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="TransferService_transaction" />
+                <idref bean="TransferService_transaction" />
                 <idref bean="AuditMethodInterceptor" />
                 <idref bean="exceptionTranslator" />
-                <idref local="TransferService_security" />
+                <idref bean="TransferService_security" />
             </list>
         </property>
     </bean>
@@ -263,10 +266,10 @@
 		</property>
 		<property name="interceptorNames">
 			<list>
-				<idref local="TransferReceiver_transaction" />
+				<idref bean="TransferReceiver_transaction" />
 				<idref bean="AuditMethodInterceptor" />
 				<idref bean="exceptionTranslator" />
-				<idref local="TransferReceiver_security" />
+				<idref bean="TransferReceiver_security" />
 			</list>
 		</property>
 	</bean>

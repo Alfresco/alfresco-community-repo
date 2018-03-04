@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Preference Service Bean -->
     <bean id="PreferenceService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -13,10 +14,10 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="PreferenceService_transaction"/>
+                <idref bean="PreferenceService_transaction"/>
                 <idref bean="AuditMethodInterceptor"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="PreferenceService_security"/>
+                <idref bean="PreferenceService_security"/>
             </list>
         </property>
     </bean>

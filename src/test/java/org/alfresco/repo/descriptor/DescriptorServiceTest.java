@@ -36,19 +36,23 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class DescriptorServiceTest extends BaseSpringTest
 {
     private NodeService nodeService;
     private ImporterBootstrap systemBootstrap;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
-    
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         systemBootstrap = (ImporterBootstrap)applicationContext.getBean("systemBootstrap");
@@ -62,17 +66,17 @@ public class DescriptorServiceTest extends BaseSpringTest
         this.authenticationComponent.setSystemUserAsCurrentUser();
     } 
     
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after()
     {
         authenticationComponent.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
     }
     
     
     /**
      * Test server decriptor
      */
+    @Test
     public void testServerDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -102,6 +106,7 @@ public class DescriptorServiceTest extends BaseSpringTest
     /**
      * Test current repository descriptor
      */
+    @Test
     public void testCurrentRepositoryDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -129,6 +134,7 @@ public class DescriptorServiceTest extends BaseSpringTest
         assertTrue("Repository schema version must be greater than -1", schemaVersion > -1);
     }
     
+    @Test
     public void testCompareDescriptors()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -164,6 +170,7 @@ public class DescriptorServiceTest extends BaseSpringTest
     /**
      * Test installed repository descriptor
      */
+    @Test
     public void testInstalledRepositoryDescriptor()
     {
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -224,11 +231,9 @@ public class DescriptorServiceTest extends BaseSpringTest
        return builder.toString();
     }
     
+    @Test
     public void testReadOnlyLicenseLoad_ALF10110() throws Exception
     {
-        setComplete();
-        endTransaction();
-        
         QName vetoName = QName.createQName("{test}veto");
         TransactionServiceImpl txnService = (TransactionServiceImpl) applicationContext.getBean("TransactionService");
         ServiceRegistry registry = (ServiceRegistry)applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);

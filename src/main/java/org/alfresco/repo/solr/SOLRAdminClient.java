@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.util.ParameterCheck;
@@ -47,12 +46,15 @@ import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
-import org.quartz.CronTrigger;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -333,19 +335,23 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
                 // It is not expected that this will occur during production, but it is possible during automated testing
                 // where application contexts could be rebuilt between test cases, leading to multiple creations of
                 // equivalent Quartz jobs. Quartz disallows the scheduling of multiple jobs with the same name and group.
-                JobDetail existingJob = scheduler.getJobDetail(jobName, jobGroup);
+                JobDetail existingJob = scheduler.getJobDetail(new JobKey(jobName, jobGroup));
                 if (existingJob != null)
                 {
-                    scheduler.deleteJob(jobName, jobGroup);
+                    scheduler.deleteJob(existingJob.getKey());
                 }
-		        
-		        JobDetail job = new JobDetail(jobName, jobGroup, SOLRWatcherJob.class);
-		        JobDataMap jobDataMap = new JobDataMap();
-		        jobDataMap.put("SOLR_TRACKER", this);
-		        job.setJobDataMap(jobDataMap);
-
-	            trigger = new CronTrigger("SolrWatcherTrigger", jobGroup, solrPingCronExpression);
-	            scheduler.scheduleJob(job, trigger);
+                JobDataMap jobDataMap = new JobDataMap();
+                jobDataMap.put("SOLR_TRACKER", this);
+                final JobDetail jobDetail = JobBuilder.newJob()
+                        .withIdentity(jobName, jobGroup)
+                        .usingJobData(jobDataMap)
+                        .ofType(SOLRWatcherJob.class)
+                        .build();
+	            trigger = TriggerBuilder.newTrigger()
+                        .withIdentity("rmt")
+                        .withSchedule(CronScheduleBuilder.cronSchedule(solrPingCronExpression))
+                        .build();
+	            scheduler.scheduleJob(jobDetail, trigger);
 	    	}
 	    	catch(Exception e)
 	    	{
@@ -355,12 +361,12 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 	    
 	    protected void startTimer() throws SchedulerException
 	    {
-	    	scheduler.resumeTrigger(trigger.getName(), trigger.getGroup());
+	    	scheduler.resumeTrigger(trigger.getKey());
 	    }
 	    
 	    protected void stopTimer() throws SchedulerException
 	    {
-	    	scheduler.pauseTrigger(trigger.getName(), trigger.getGroup());
+	    	scheduler.pauseTrigger(trigger.getKey());
 	    }
 
 	    void registerCores(List<String> cores)

@@ -1,8 +1,10 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<!-- Core and miscellaneous bean definitions -->
-<beans>
+    <!-- Core and miscellaneous bean definitions -->
 
     <!--                    -->
     <!--  PERSISTENCE       -->
@@ -124,11 +126,11 @@
     <bean id="abstractPropertyBackedBean" class="org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean"
         abstract="true">
         <property name="registry">
-            <ref local="propertyBackedBeanRegistry" />
+            <ref bean="propertyBackedBeanRegistry" />
         </property>
         <!-- Ensure that child application contexts propagate global default values -->
         <property name="propertyDefaults">
-            <ref local="global-properties" />
+            <ref bean="global-properties" />
         </property>
         
         <property name="encryptedPropertyDefaults">
@@ -232,6 +234,15 @@
         </property>
     </bean>
 
+    <bean id="dialect" class="org.alfresco.repo.domain.dialect.DialectFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="transactionSynchronizationName" value="SYNCHRONIZATION_ALWAYS"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck" init-method="init" depends-on="resourceBundles">
         <property name="dbUrl">
             <value>${db.url}</value>
@@ -244,9 +255,6 @@
         </property>
         <property name="dataSource">
             <ref bean="dataSource"/>
-        </property>
-        <property name="localSessionFactory">
-            <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
         </property>
     </bean>
 
@@ -649,7 +657,7 @@
     </bean>
 
     <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
-        <property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+        <property name="dictionaryDAO"><ref bean="dictionaryDAO"/></property>
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>

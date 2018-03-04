@@ -45,9 +45,10 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * A 2-level cache that mainains both a transaction-local cache and
+ * A 2-level cache that maintains both a transaction-local cache and
  * wraps a non-transactional (shared) cache.
  * <p>
  * It uses the <b>shared</b> <tt>SimpleCache</tt> for it's per-transaction
@@ -58,7 +59,7 @@ import org.springframework.beans.factory.InitializingBean;
  * virtually no overhead when running out-of-transaction.
  * <p>
  * The first phase of the commit ensures that any values written to the cache in the
- * current transaction are not already superceded by values in the shared cache.  In
+ * current transaction are not already superseded by values in the shared cache.  In
  * this case, the transaction is failed for concurrency reasons and will have to retry.
  * The second phase occurs post-commit.  We are sure that the transaction committed
  * correctly, but things may have changed in the cache between the commit and post-commit.
@@ -273,7 +274,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
 
             // ensure that we get the transaction callbacks as we have bound the unique
             // transactional caches to a common manager
-            AlfrescoTransactionSupport.bindListener(this);
+            // The synchronizations are not available after the txn is committed/rolled back
+            // the resources are still stored in org.alfresco.util.transaction.TransactionSupportUtil
+            if (TransactionSynchronizationManager.isSynchronizationActive())
+            {
+                AlfrescoTransactionSupport.bindListener(this);
+            }
             AlfrescoTransactionSupport.bindResource(resourceKeyTxnData, data);
         }
         return data;
@@ -740,12 +746,12 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     txnData.isClearOn = true;
                     if (!txnData.haveIssuedFullWarning)
                     {
-                    	if (logger.isInfoEnabled())
+                        if (logger.isInfoEnabled())
                         {
                              Exception e = new Exception("Stack: ");
                              logger.info("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").", e);
                         }
-                    	else if (logger.isWarnEnabled())
+                        else if (logger.isWarnEnabled())
                         {
                             logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
                         }
@@ -850,14 +856,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         txnData.isClearOn = true;
                         if (!txnData.haveIssuedFullWarning)
                         {
-                        	if (logger.isInfoEnabled())
+                            if (logger.isInfoEnabled())
                             {
                                  Exception e = new Exception("Stack: ");
                                  logger.info("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").", e);
                             }
                             else if (logger.isWarnEnabled())
                             {
-                            	logger.warn("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").");
+                                logger.warn("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").");
                             }
                             txnData.haveIssuedFullWarning = true;
                         }

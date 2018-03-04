@@ -31,12 +31,12 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
-import org.hibernate.dialect.Oracle10gDialect;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +56,7 @@ public class NameValidatorTest
     {
         validator = new NameValidator();
         validationResults = new Results();
-        ctx = new DiffContext(new Oracle10gDialect(), validationResults, null, null);
+        ctx = new DiffContext(new Oracle9Dialect(), validationResults, null, null);
     }
 
     @Test

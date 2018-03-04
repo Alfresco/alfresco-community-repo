@@ -40,11 +40,15 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 {
 
@@ -91,10 +95,9 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         super();
     }
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
         mlAwareNodeService = (NodeService) applicationContext.getBean("mlAwareNodeService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryDAO = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
@@ -114,8 +117,8 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
     }
 
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
         try
         {
@@ -125,9 +128,9 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         {
             // do nothing
         }
-        super.onTearDownInTransaction();
     }
 
+    @Test
     public void testOnRead()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -416,6 +419,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
     }
 
+    @Test
     public void testAddAspectNull()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -449,6 +453,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testAddAspectNullValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -491,6 +496,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testAddAspectInvalidValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -536,6 +542,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testAddAspectValidNode()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -578,6 +585,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testAddAspectValidCategory()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -620,6 +628,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testAddAspectEmptyList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -661,6 +670,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testAddAspectInvalidList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -705,6 +715,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testAddAspectNodeRefList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -747,6 +758,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testAddAspectCatList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -789,6 +801,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testAddAspectMixedList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -833,6 +846,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testCreateNodeNull()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -858,6 +872,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testCreateNodeNullValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -889,6 +904,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testCreateNodeInvalidValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -920,6 +936,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testCreateNodeNodeRefValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -951,6 +968,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testCreateNodeCatValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -982,6 +1000,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
     }
 
+    @Test
     public void testCreateEmptyListValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1013,6 +1032,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testCreateInvalidListValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1045,6 +1065,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testCreateNodeRefListValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1077,6 +1098,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testCreateCatListValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1109,6 +1131,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testCreateMixedListValues()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1143,6 +1166,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertyNull()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1190,6 +1214,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(typeNoderefsProp));
     }
 
+    @Test
     public void testSetPropertyInvalid()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1237,6 +1262,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(typeNoderefsProp));
     }
 
+    @Test
     public void testSetPropertyNodeRef()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1288,6 +1314,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertyCat()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1344,6 +1371,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
     }
 
+    @Test
     public void testSetPropertyEmptyList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1383,6 +1411,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertyNodeRefList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1423,6 +1452,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertyCatList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1464,6 +1494,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertyMixedList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1506,6 +1537,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertiesNull()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1556,6 +1588,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(typeNoderefsProp));
     }
 
+    @Test
     public void testSetPropertiesInvalid()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1606,6 +1639,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(nodeService.getProperties(n1).get(typeNoderefsProp));
     }
 
+    @Test
     public void testSetPropertiesNodeRef()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1660,6 +1694,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertiesCat()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1719,6 +1754,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
     }
 
+    @Test
     public void testSetPropertiesEmptyList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1761,6 +1797,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertiesNodeRefList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1804,6 +1841,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertiesCatList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
@@ -1847,6 +1885,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
+    @Test
     public void testSetPropertiesMixedList()
     {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");

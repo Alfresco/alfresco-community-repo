@@ -20,9 +20,10 @@
         </property>
     </bean>
 
-    <!-- Task scheduler -->
-    <!-- Triggers should not appear here - the scheduler should be injected into the trigger definition -->
-    <!-- This bean should not need to apear else where in extension configuration -->
+    <!-- Search task scheduler -->
+    <!-- Triggers should not appear here-->
+    <!-- This bean should not need to appear else where in extension configuration -->
+    <!-- if it is required to add triggers to the scheduler use SchedulerAccessorBean or AlfrescoSchedulerAccessorBean-->
     <bean id="searchSchedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" depends-on="dynamicExporter">
         <property name="waitForJobsToCompleteOnShutdown">
             <value>true</value>

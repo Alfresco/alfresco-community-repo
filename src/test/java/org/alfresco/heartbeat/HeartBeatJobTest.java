@@ -28,12 +28,12 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.JobLockServiceImpl;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -89,16 +89,18 @@ public class HeartBeatJobTest
     {
         // mock the job context
         JobExecutionContext mockJobExecutionContext = mock(JobExecutionContext.class);
-        JobDetail jobDetail = new JobDetail();
-        when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
-
         // create the hb collector
         SimpleHBDataCollector simpleCollector = spy(new SimpleHBDataCollector("simpleCollector"));
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("collector", simpleCollector);
         jobDataMap.put("hbDataSenderService", mockDataSenderService);
         jobDataMap.put("jobLockService", mockJobLockService);
-        jobDetail.setJobDataMap(jobDataMap);
+        JobDetail jobDetail = JobBuilder.newJob()
+                .setJobData(jobDataMap)
+                .ofType(HeartBeatJob.class)
+                .build();
+        when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
+
 
         // collector job is not locked from an other collector
         String lockToken = "locked";
@@ -162,14 +164,15 @@ public class HeartBeatJobTest
 
         // mock the job context
         JobExecutionContext mockJobExecutionContext = mock(JobExecutionContext.class);
-        JobDetail jobDetail = new JobDetail();
-        when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
-
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("collector", simpleCollector);
         jobDataMap.put("hbDataSenderService", mockDataSenderService);
         jobDataMap.put("jobLockService", mockJobLockService);
-        jobDetail.setJobDataMap(jobDataMap);
+        JobDetail jobDetail = JobBuilder.newJob()
+                .setJobData(jobDataMap)
+                .ofType(HeartBeatJob.class)
+                .build();
+        when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
 
         // Simulate job lock service
         String lockToken = "token";

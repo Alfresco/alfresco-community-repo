@@ -5,9 +5,9 @@
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/util
-                           http://www.springframework.org/schema/util/spring-util-3.0.xsd">  
+                           http://www.springframework.org/schema/util/spring-util.xsd">
 
   <!-- Public beans for the bulk filesystem importer that can be overridden in a custom context file located in alfresco/extension -->
 

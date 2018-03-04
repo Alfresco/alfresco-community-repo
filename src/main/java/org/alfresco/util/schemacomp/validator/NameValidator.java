@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
@@ -36,7 +37,6 @@ import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**

@@ -136,9 +136,13 @@ public class FileFolderLoaderTest extends TestCase
             @Override
             public Void doWork() throws Exception
             {
-                fileFolderService.delete(hiddenFolderNodeRef);
-                fileFolderService.delete(readOnlyFolderNodeRef);
-                fileFolderService.delete(writeFolderNodeRef);
+                transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () ->
+                {
+                    fileFolderService.delete(hiddenFolderNodeRef);
+                    fileFolderService.delete(readOnlyFolderNodeRef);
+                    fileFolderService.delete(writeFolderNodeRef);
+                    return null;
+                });
                 // Done
                 return null;
             }

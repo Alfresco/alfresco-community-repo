@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -67,7 +67,7 @@ public class ValidatingVisitorTest
     {
         refTable = new Table("reference_table");
         refIndex = new Index(refTable, "index_name", Arrays.asList("a", "b", "c"));
-        ctx = new DiffContext(new MySQL5InnoDBDialect(), refSchema, targetSchema);
+        ctx = new DiffContext(new MySQLInnoDBDialect(), refSchema, targetSchema);
         visitor = new ValidatingVisitor(ctx);
         
         validators = new ArrayList<DbValidator>();

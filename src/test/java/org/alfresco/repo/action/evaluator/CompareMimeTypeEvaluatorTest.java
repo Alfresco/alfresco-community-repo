@@ -36,12 +36,16 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Compare property value evaluator test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class CompareMimeTypeEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -51,11 +55,8 @@ public class CompareMimeTypeEvaluatorTest extends BaseSpringTest
     private NodeRef nodeRef;
     private CompareMimeTypeEvaluator evaluator;
     
-    /**
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
@@ -76,7 +77,8 @@ public class CompareMimeTypeEvaluatorTest extends BaseSpringTest
         
         this.evaluator = (CompareMimeTypeEvaluator)this.applicationContext.getBean(CompareMimeTypeEvaluator.NAME);
     }
-    
+
+    @Test
     public void testContentPropertyComparisons()
     {
         ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);

@@ -32,12 +32,12 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Table;
-import org.hibernate.dialect.Oracle10gDialect;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public class IndexColumnsValidatorTest
     {
         validator = new IndexColumnsValidator();
         validationResults = new Results();
-        ctx = new DiffContext(new Oracle10gDialect(), validationResults, null, null);
+        ctx = new DiffContext(new Oracle9Dialect(), validationResults, null, null);
     }
 
     @Test

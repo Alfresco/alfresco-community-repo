@@ -5,20 +5,6 @@
 
    <import resource="classpath:test/alfresco/test-context.xml" />
 
-   <!-- load hibernate configuration properties -->
-   <bean id="testHibernateConfigProperties"
-      class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-      <!--  Load in hibernate defaults -->
-      <property name="locations">
-         <list>
-            <value>classpath:test/alfresco/test-hibernate-cfg.properties</value>
-         </list>
-      </property>
-      <property name="localOverride">
-         <value>true</value>
-      </property>
-   </bean>
-
    <!-- Datasource bean -->
    <bean id="testDataSource" class="org.apache.commons.dbcp.BasicDataSource"
       destroy-method="close">
@@ -86,38 +72,4 @@
          <value>${db.pool.statements.max}</value>
       </property>
    </bean>
-
-   <!-- Hibernate session factory -->
-   <bean id="testSessionFactory"
-      class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-      <property name="dataSource">
-         <ref bean="testDataSource" />
-      </property>
-      <property name="schemaUpdate">
-         <value>true</value>
-      </property>
-      <!--
-         <property name="eventListeners" > <map> <entry key="load">
-         <list> <ref bean="defaltOnLoadListsner" /> <ref
-         bean="clearCGLibThreadLocal" /> </list> </entry> </map>
-         </property>
-      -->
-      <property name="mappingResources">
-         <list>
-         </list>
-      </property>
-      <property name="hibernateProperties" ref="testHibernateConfigProperties" />
-   </bean>
-
-   <!-- create a transaction manager -->
-   <bean id="testTransactionManager"
-      class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-      <property name="transactionSynchronizationName">
-         <value>SYNCHRONIZATION_ALWAYS</value>
-      </property>
-      <property name="sessionFactory">
-         <ref bean="testSessionFactory" />
-      </property>
-   </bean>
-
 </beans>

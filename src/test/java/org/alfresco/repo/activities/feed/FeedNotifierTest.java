@@ -58,10 +58,10 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.quartz.JobDetailBean;
 
 import java.util.Collections;
 import java.util.List;
@@ -121,18 +121,18 @@ public class FeedNotifierTest
 
         Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
 
-        JobDetailBean feedGeneratorJobDetail = (JobDetailBean) activitiesFeedCtx.getBean("feedGeneratorJobDetail");
-        JobDetailBean postLookupJobDetail = (JobDetailBean) activitiesFeedCtx.getBean("postLookupJobDetail");
-        JobDetailBean feedCleanerJobDetail = (JobDetailBean) activitiesFeedCtx.getBean("feedCleanerJobDetail");
-        JobDetailBean postCleanerJobDetail = (JobDetailBean) activitiesFeedCtx.getBean("postCleanerJobDetail");
-        JobDetailBean feedNotifierJobDetail = (JobDetailBean) activitiesFeedCtx.getBean("feedNotifierJobDetail");
+        JobDetail feedGeneratorJobDetail = (JobDetail) activitiesFeedCtx.getBean("feedGeneratorJobDetail");
+        JobDetail postLookupJobDetail = (JobDetail) activitiesFeedCtx.getBean("postLookupJobDetail");
+        JobDetail feedCleanerJobDetail = (JobDetail) activitiesFeedCtx.getBean("feedCleanerJobDetail");
+        JobDetail postCleanerJobDetail = (JobDetail) activitiesFeedCtx.getBean("postCleanerJobDetail");
+        JobDetail feedNotifierJobDetail = (JobDetail) activitiesFeedCtx.getBean("feedNotifierJobDetail");
 
         // Pause activities jobs so that we aren't competing with their scheduled versions
-        scheduler.pauseJob(feedGeneratorJobDetail.getName(), feedGeneratorJobDetail.getGroup());
-        scheduler.pauseJob(postLookupJobDetail.getName(), postLookupJobDetail.getGroup());
-        scheduler.pauseJob(feedCleanerJobDetail.getName(), feedCleanerJobDetail.getGroup());
-        scheduler.pauseJob(postCleanerJobDetail.getName(), postCleanerJobDetail.getGroup());
-        scheduler.pauseJob(feedNotifierJobDetail.getName(), feedNotifierJobDetail.getGroup());
+        scheduler.pauseJob(feedGeneratorJobDetail.getKey());
+        scheduler.pauseJob(postLookupJobDetail.getKey());
+        scheduler.pauseJob(feedCleanerJobDetail.getKey());
+        scheduler.pauseJob(postCleanerJobDetail.getKey());
+        scheduler.pauseJob(feedNotifierJobDetail.getKey());
 
         this.personService = (PersonService) ctx.getBean("personService");
         this.nodeService = (NodeService) ctx.getBean("nodeService");

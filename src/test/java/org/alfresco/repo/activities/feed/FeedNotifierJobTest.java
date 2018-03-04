@@ -56,6 +56,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -157,13 +158,16 @@ public class FeedNotifierJobTest
         userNotifier.setExcludedEmailSuffixes(emailUserNotifier.getExcludedEmailSuffixes());
         userNotifier.setEmailHelper(emailHelper);
         feedNotifier.setUserNotifier(userNotifier);
-        
-        jobDetail = new JobDetail("feedNotifier", FeedNotifierJob.class);
-        JobDataMap jobDataMap = jobDetail.getJobDataMap();
+
+        JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("tenantAdminService", tenantAdminService);
         jobDataMap.put("feedNotifier", feedNotifier);
+        jobDetail = JobBuilder.newJob()
+                .withIdentity("feedNotifier")
+                .ofType(FeedNotifierJob.class)
+                .setJobData(jobDataMap)
+                .build();
         feedNotifierJob = new FeedNotifierJob();
-        
         when(jobCtx.getJobDetail()).thenReturn(jobDetail);
     }
 

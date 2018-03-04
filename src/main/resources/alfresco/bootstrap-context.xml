@@ -1,7 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-
 <!--
     Repository Bootstrap Sequence.
 
@@ -26,7 +23,10 @@
     4) Add the bean definition to this file - Note: the beans are initialised in the order they are specified.
 -->
 
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--
     The Shutdown Backstop Bean is a special bean which is used to terminate Alfresco if its
@@ -50,9 +50,6 @@
 
 
     <bean id="databaseMetaDataHelper" class="org.alfresco.util.DatabaseMetaDataHelper">
-       <property name="localSessionFactory">
-          <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
-       </property>
     </bean>
 
     <!-- ensure that the schema is bootstrapped -->
@@ -66,9 +63,6 @@
        <property name="appliedPatchDAO">
           <ref bean="appliedPatchDAO"/>
        </property>
-       <property name="localSessionFactory">
-          <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
-       </property>
        <property name="descriptorService">
           <ref bean="descriptorComponent"/>
        </property>
@@ -77,9 +71,6 @@
        </property>
        <property name="maximumStringLength">
           <value>${system.maximumStringLength}</value>
-       </property>
-       <property name="hibernateMaxExecutions">
-          <value>${system.hibernateMaxExecutions}</value>
        </property>
        <property name="dbSchemaName">
           <value>${db.schema.name}</value>
@@ -107,12 +98,6 @@
        </property>
     </bean>
 
-    <bean id="unserializerValidatorBootstrap" class="org.alfresco.repo.admin.UnserializerValidatorBootstrap">
-       <property name="properties">
-          <ref bean="global-properties" />
-       </property>
-    </bean>
-    
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">
        <property name="transactionService" ref="transactionService"/>
        <property name="keyStoreChecker" ref="keyStoreChecker"/>
@@ -131,23 +116,23 @@
     </bean>
 
     <!-- Bootstrap Data: Concrete instances for the basic Alfresco bootstrap -->
-    <bean id="systemInfoBootstrap" parent="systemInfoBootstrap-base" singleton="true" />
-    <bean id="userBootstrap" parent="userBootstrap-base" singleton="true" />
-    <bean id="systemBootstrap" parent="systemBootstrap-base" singleton="true" />
-    <bean id="versionBootstrap" parent="versionBootstrap-base" singleton="true" />
-    <bean id="version2Bootstrap" parent="version2Bootstrap-base" singleton="true" />
-    <bean id="spacesArchiveBootstrap" parent="spacesArchiveBootstrap-base" singleton="true" />
+    <bean id="systemInfoBootstrap" parent="systemInfoBootstrap-base"/>
+    <bean id="userBootstrap" parent="userBootstrap-base"/>
+    <bean id="systemBootstrap" parent="systemBootstrap-base"/>
+    <bean id="versionBootstrap" parent="versionBootstrap-base"/>
+    <bean id="version2Bootstrap" parent="version2Bootstrap-base"/>
+    <bean id="spacesArchiveBootstrap" parent="spacesArchiveBootstrap-base"/>
     <!--
         NOOP for fresh bootstrap (will skip store creation) - provides ordering when performing a repo restore (bootstrap import)
     -->
-    <bean id="spacesModelsBootstrap" parent="storeImporter" singleton="true" />
-    <bean id="spacesBootstrap" parent="spacesBootstrap-base" singleton="true" />
+    <bean id="spacesModelsBootstrap" parent="storeImporter"/>
+    <bean id="spacesBootstrap" parent="spacesBootstrap-base"/>
 
     <!--
         NOOP for fresh bootstrap - provides ordering for site imports which occur via bootstrap context extensions
     -->
-    <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter" singleton="true" />
-    <bean id="siteLoadBootstrap-Users" parent="userStoreImporter" singleton="true" />
+    <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter"/>
+    <bean id="siteLoadBootstrap-Users" parent="userStoreImporter"/>
 
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
@@ -746,7 +731,7 @@
 
     <bean id="startupLog" class="org.alfresco.repo.descriptor.DescriptorStartupLog">
        <property name="descriptorService">
-           <ref local="descriptorComponent"/>
+           <ref bean="descriptorComponent"/>
        </property>
        <property name="transactionService">
            <ref bean="transactionService"/>

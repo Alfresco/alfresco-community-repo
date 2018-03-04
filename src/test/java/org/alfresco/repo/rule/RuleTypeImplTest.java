@@ -38,7 +38,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Parameter definition implementation unit test.
@@ -46,6 +49,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class RuleTypeImplTest extends BaseSpringTest
 {
     private static final String NAME = "name";
@@ -55,17 +59,18 @@ public class RuleTypeImplTest extends BaseSpringTest
 	
 	private StoreRef testStoreRef;
 	private NodeRef rootNodeRef;
-	
-	@Override
-	protected void onSetUpInTransaction() throws Exception
-	{
-		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+
+    @Before
+    public void before() throws Exception
+    {
+        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
 		this.contentService = (ContentService)this.applicationContext.getBean("contentService");
 		
 		this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
 	}
     
+    @Test
     public void testConstructor()
     {
         create();
@@ -79,6 +84,7 @@ public class RuleTypeImplTest extends BaseSpringTest
         return temp;
     }
     
+    @Test
     public void testGetName()
     {
         RuleTypeImpl temp = create();
@@ -91,6 +97,7 @@ public class RuleTypeImplTest extends BaseSpringTest
     
     // TODO Test triggerRuleType
     
+    @Test
     public void testMockInboundRuleType()
     {
     	List<RuleTrigger> triggers = new ArrayList<RuleTrigger>(2);

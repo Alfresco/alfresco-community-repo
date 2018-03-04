@@ -88,7 +88,6 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.SchemaReferenceFileTest.class,
     org.alfresco.repo.module.ModuleComponentHelperTest.class,
     org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
-    org.alfresco.util.CronTriggerBeanSystemTest.class,
     org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class,
 
     // the following test fails locally - on windows

@@ -40,7 +40,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Start Advanced Workflow action execution test
@@ -48,6 +51,7 @@ import org.junit.experimental.categories.Category;
  * @author David Caruana
  */
 @Category(OwnJVMTestsCategory.class)
+@Transactional
 public class StartWorkflowActionExecuterTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -57,13 +61,8 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
     private NodeRef nodeRef;
     private StartWorkflowActionExecuter executer;
 
-    
-    /**
-     * Called at the begining of all tests
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
@@ -87,6 +86,7 @@ public class StartWorkflowActionExecuterTest extends BaseSpringTest
     /**
      * Test execution
      */
+    @Test
     public void testExecution()
     {
         // Execute the action

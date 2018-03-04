@@ -45,14 +45,16 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
-import org.quartz.TriggerUtils;
+import org.quartz.TriggerBuilder;
 
 /**
  * This component monitors the repository usages, issuing warnings and errors
@@ -124,17 +126,24 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
 
         // Trigger the scheduled updates
-        final JobDetail jobDetail = new JobDetail("rmj", Scheduler.DEFAULT_GROUP, RepoUsageMonitorJob.class);
-        jobDetail.getJobDataMap().put("RepoUsageMonitor", this);
-        final Trigger trigger = TriggerUtils.makeHourlyTrigger(12);                         // every 12 hours
-        trigger.setStartTime(new Date(System.currentTimeMillis() + 60L * 60L * 1000L));     // one hour from now
-        trigger.setName("rmt");
-        trigger.setGroup(Scheduler.DEFAULT_GROUP);
-        
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("RepoUsageMonitor", this);
+        final JobDetail jobDetail = JobBuilder.newJob()
+                .withIdentity("rmj")
+                .usingJobData(jobDataMap)
+                .ofType(RepoUsageMonitorJob.class)
+                .build();
+
+        final Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("rmt")
+                .withSchedule(SimpleScheduleBuilder.repeatHourlyForever().withIntervalInHours(12))
+                .startAt(new Date(System.currentTimeMillis() + 60L * 60L * 1000L))
+                .build();
+
         repoUsageComponent.observeRestrictions(this);
         
         // Unschedule in case it was scheduled in an earlier retry of the transaction
-        scheduler.unscheduleJob("rmt", Scheduler.DEFAULT_GROUP);
+        scheduler.unscheduleJob(trigger.getKey());
         scheduler.scheduleJob(jobDetail, trigger);
     }
     

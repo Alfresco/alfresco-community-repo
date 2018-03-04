@@ -37,7 +37,9 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.Transaction;
@@ -63,12 +65,13 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see org.alfresco.repo.node.db.DbNodeServiceImpl
@@ -76,6 +79,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  */
 @SuppressWarnings("unused")
+@Transactional
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class DbNodeServiceImplTest extends BaseNodeServiceTest
 {
@@ -91,10 +95,10 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         return (NodeService) applicationContext.getBean("dbNodeService");
     }
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before()
     {
-        super.onSetUpInTransaction();
+        super.before();
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         dictionaryService = (DictionaryService) applicationContext.getBean("dictionaryService");
@@ -105,9 +109,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
      */
     public void testCallWithoutTxn()
     {
-        setComplete();
-        endTransaction();
-        
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
         nodeService.getAllRootNodes(rootNodeRef.getStoreRef());
     }
 
@@ -117,9 +121,9 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     @SuppressWarnings("deprecation")
     public void testNodeCleanupRegistry() throws Exception
     {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         // REPO-2963: this test takes a long time in order to pass on a clean DB.
-        setComplete();
-        endTransaction();
         NodeCleanupRegistry cleanupRegistry = (NodeCleanupRegistry) applicationContext.getBean("nodeCleanupRegistry");
         cleanupRegistry.doClean();
     }
@@ -144,8 +148,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         assertEquals("Should not have found a written txn", 0L, currentTxnCommitTime);
         
         // Now commit
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         // Now check again.  The transaction time must be greater than the last time that
         // the listener wrote through.
@@ -215,8 +219,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
         // commit results
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         UserTransaction userTransaction = txnService.getUserTransaction();
         
@@ -267,8 +271,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         final Map<QName, Serializable> properties = nodeService.getProperties(n6Ref);
 
         // commit results
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         // change property - check status
         RetryingTransactionCallback<Object> changePropertiesWork = new RetryingTransactionCallback<Object>()
@@ -567,8 +571,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
                1, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
        
        // Force a commit here
-       setComplete();
-       endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
        
        // start another transaction to remove the aspect
        UserTransaction txn = txnService.getUserTransaction();
@@ -725,12 +729,12 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
     @SuppressWarnings("deprecation")
     public void testMySQLInnoDBNodeStringLengthWorker() throws Exception
     {
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         // Skip of the dialect if not MySQL (also skip for MySQL Cluster NDB)
         Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-        if ((dialect instanceof AlfrescoMySQLClusterNDBDialect) || (! (dialect instanceof MySQLInnoDBDialect)))
+        if ((dialect instanceof MySQLClusterNDBDialect) || (! (dialect instanceof MySQLInnoDBDialect)))
         {
             return;
         }

@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
 <!-- Core and miscellaneous bean definitions -->
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
     <!-- SOLR Tracking   -->
     
     <bean id="search.solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
@@ -30,7 +31,7 @@
         <property name="dictionaryService" ref="dictionaryService"/>
     </bean>
     
-    <bean id="search.TypeIndexFilter" class="org.alfresco.repo.search.TypeIndexFilter" parent="search.abstractIndexFilter" singleton="true" >
+    <bean id="search.TypeIndexFilter" class="org.alfresco.repo.search.TypeIndexFilter" parent="search.abstractIndexFilter">
         <property name="ignorePathsForSpecificTypes">
             <value>${search.solrTrackingSupport.ignorePathsForSpecificTypes}</value>
         </property>
@@ -43,7 +44,7 @@
         </property>
     </bean>
     
-    <bean id="search.AspectIndexFilter" class="org.alfresco.repo.search.AspectIndexFilter" parent="search.abstractIndexFilter" singleton="true" >
+    <bean id="search.AspectIndexFilter" class="org.alfresco.repo.search.AspectIndexFilter" parent="search.abstractIndexFilter">
         <property name="ignorePathsForSpecificAspects">
             <value>${search.solrTrackingSupport.ignorePathsForSpecificAspects}</value>
         </property>

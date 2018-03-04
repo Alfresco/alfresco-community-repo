@@ -139,9 +139,9 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
 		{
 			MediaType media = MediaType.parseMediaType(req.getContentType());
 			contentType = media.getType()+'/'+media.getSubtype();
-			if (media.getCharSet() != null)
+			if (media.getCharset() != null)
 			{
-				encoding = media.getCharSet().toString();
+				encoding = media.getCharset().toString();
 			}			
 		}
 

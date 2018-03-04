@@ -57,7 +57,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     private static Log logger = LogFactory.getLog(SolrSQLJSONResultSet.class);
     private Long queryTime;
     private SimpleResultSetMetaData resultSetMetaData;
-    private String solrRes;
+    private String solrResponse;
     private int length;
     ResultSet wrapped;
     private JSONArray docs;
@@ -67,7 +67,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     {
         try
         {
-            solrRes = ((JSONObject) json).toString();
+            solrResponse = ((JSONObject) json).toString();
             JSONObject res = (JSONObject) json.get("result-set");
             docs = (JSONArray) res.get("docs");
             try
@@ -245,9 +245,9 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
         return queryTime;
     }
 
-    public String getSolrRes()
+    public String getSolrResponse()
     {
-        return solrRes;
+        return solrResponse;
     }
 
     public JSONArray getDocs()

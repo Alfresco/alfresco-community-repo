@@ -278,10 +278,6 @@
    </filter-mapping>
 
    <!-- Enterprise filter-mapping placeholder -->
-
-   <listener>
-      <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-   </listener>
    
    <!-- Spring Context Loader listener - can disable loading of context if runtime config changes are needed -->
    <listener>

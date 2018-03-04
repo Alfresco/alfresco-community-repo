@@ -40,19 +40,18 @@
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
         <version.edition>Community</version.edition>
 
-        <dependency.alfresco-repository.version>6.26</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.16</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
-        <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>7.2</dependency.alfresco-data-model.version>
+        <dependency.alfresco-repository.version>6.28</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.18</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
+        <dependency.alfresco-core.version>7.0</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.0</dependency.alfresco-data-model.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.8</dependency.alfresco-messaging-repo.version>
-        <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
 
-        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
         <dependency.mysql.version>5.1.40</dependency.mysql.version>
         <dependency.mariadb.version>2.0.1</dependency.mariadb.version>
@@ -80,11 +79,6 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-jlan-embed</artifactId>
                 <version>${dependency.alfresco-jlan.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-mbeans</artifactId>
-                <version>${dependency.alfresco-mbeans.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>

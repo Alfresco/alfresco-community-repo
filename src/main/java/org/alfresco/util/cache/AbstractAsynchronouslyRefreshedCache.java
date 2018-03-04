@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * The base implementation for an asynchronously refreshed cache. 
@@ -280,7 +281,12 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
 
                 // ensure that we get the transaction callbacks as we have bound the unique
                 // transactional caches to a common manager
-                TransactionSupportUtil.bindListener(this, 0);
+                // The synchronizations are not available after the txn is committed/rolled back
+                // the resources are still stored in org.alfresco.util.transaction.TransactionSupportUtil
+                if (TransactionSynchronizationManager.isSynchronizationActive())
+                {
+                    TransactionSupportUtil.bindListener(this, 0);
+                }
                 TransactionSupportUtil.bindResource(resourceKeyTxnData, data);
             }
             return data;

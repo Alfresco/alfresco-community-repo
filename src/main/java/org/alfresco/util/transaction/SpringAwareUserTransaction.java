@@ -29,6 +29,7 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.StackTraceUtil;
+import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.CannotCreateTransactionException;
@@ -211,12 +212,9 @@ public class SpringAwareUserTransaction
         return true;
     }
     
-    /**
-     * @see #NAME
-     */
     public String getName()
     {
-        return NAME;
+        return Thread.currentThread().getName() + "-" + GUID.generate();
     }
 
     public boolean isReadOnly()
@@ -413,8 +411,7 @@ public class SpringAwareUserTransaction
         try
         {
             internalTxnInfo = createTransactionIfNecessary(
-                (Method) null,
-                (Class<?>) null);  // super class will just pass nulls back to us
+                getTransactionManager(), getTransactionAttribute(null, null), getName());
         }
         catch (CannotCreateTransactionException e)
         {
@@ -577,13 +574,6 @@ public class SpringAwareUserTransaction
         super.completeTransactionAfterThrowing(txInfo, ex);
     }
 
-    @Override
-    protected String methodIdentification(Method method)
-    {
-        // note: override for debugging purposes - this method called by Spring
-        return NAME;
-    }
-    
     @Override
     protected void finalize() throws Throwable
     {

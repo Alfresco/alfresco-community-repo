@@ -30,7 +30,7 @@
    </distributionManagement>
    
    <properties>
-      <dependency.spring.version>3.2.16.RELEASE</dependency.spring.version>
+      <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
       <dependency.surf.version>6.8</dependency.surf.version>
    </properties>
 
@@ -64,11 +64,6 @@
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-math3</artifactId>
          <version>3.6.1</version>
-      </dependency>
-      <dependency>
-         <groupId>org.hibernate</groupId>
-         <artifactId>hibernate</artifactId>
-         <version>3.2.6-alf-20131023</version>
       </dependency>
       <dependency>
          <groupId>org.safehaus.jug</groupId>
@@ -120,7 +115,7 @@
       <dependency>
          <groupId>org.quartz-scheduler</groupId>
          <artifactId>quartz</artifactId>
-         <version>1.8.3-alfresco-patched</version>
+         <version>2.3.0</version>
       </dependency>
       <dependency>
          <groupId>org.alfresco.surf</groupId>

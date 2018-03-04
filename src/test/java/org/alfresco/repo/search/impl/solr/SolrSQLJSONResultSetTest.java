@@ -45,10 +45,10 @@ public class SolrSQLJSONResultSetTest
         SolrSQLJSONResultSet ssjr = new SolrSQLJSONResultSet(json, null);
         Assert.assertNotNull(ssjr);
         Assert.assertNotNull(ssjr.getQueryTime());
-        Assert.assertEquals("96", ssjr.getQueryTime().toString());
+        Assert.assertEquals(new Long(96), ssjr.getQueryTime());
         Assert.assertEquals(3, ssjr.getNumberFound());
-        Assert.assertNotNull(ssjr.getSolrRes());
-        Assert.assertEquals(response, ssjr.getSolrRes());
+        Assert.assertNotNull(ssjr.getSolrResponse());
+        Assert.assertEquals(response, ssjr.getSolrResponse());
         JSONArray docs = ssjr.getDocs();
         Assert.assertNotNull(docs);
         Assert.assertNotNull(ssjr.getResultSetMetaData());

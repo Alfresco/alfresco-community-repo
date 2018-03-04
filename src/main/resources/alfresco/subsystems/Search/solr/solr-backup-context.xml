@@ -1,38 +1,36 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<beans>
+    <bean id="schedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="searchSchedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <ref bean="search.alfrescoCoreBackupTrigger"/>
+                <ref bean="search.archiveCoreBackupTrigger"/>
+            </list>
+        </property>
+    </bean>
+
     <!-- workspace://SpacesStore - alfresco -->
-  
-    <bean id="search.alfrescoCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.search.impl.solr.SolrBackupJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="solrBackupClient">
-                    <ref bean="search.alfrescoCoreSolrBackupClient" />
-                </entry>
-            </map>
-        </property>
-    </bean>
-    
-    <bean id="search.alfrescoCoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+
+    <bean id="search.alfrescoCoreBackupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${solr.backup.alfresco.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <ref bean="search.alfrescoCoreBackupJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="searchSchedulerFactory" />
-        </property>
-        <!-- trigger at 3am each day -->
-        <property name="cronExpression">
-            <value>${solr.backup.alfresco.cronExpression}</value>
-        </property>
-        <property name="startDelayMinutes">
-            <value>${system.cronJob.startDelayMinutes}</value>
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.search.impl.solr.SolrBackupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="solrBackupClient" value-ref="search.alfrescoCoreSolrBackupClient"/>
+                    </map>
+                </property>
+            </bean>
         </property>
     </bean>
-    
+
     <bean id="search.alfrescoCoreSolrBackupClient" class="org.alfresco.repo.search.impl.solr.SolrBackupClient" >
         <property name="jobLockService">
             <ref bean="jobLockService" />
@@ -55,33 +53,19 @@
     </bean>
     
     <!--  archive://SpacesStore - archive -->
-  
-    <bean id="search.archiveCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.search.impl.solr.SolrBackupJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="solrBackupClient">
-                    <ref bean="search.archiveCoreSolrBackupClient" />
-                </entry>
-            </map>
-        </property>
-    </bean>
-    
-    <bean id="search.archiveCoreBackupTrigger" class="org.alfresco.util.CronTriggerBean">
+
+    <bean id="search.archiveCoreBackupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${solr.backup.archive.cronExpression}"/>
+        <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <ref bean="search.archiveCoreBackupJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="searchSchedulerFactory" />
-        </property>
-        <!-- trigger at 3am each day -->
-        <property name="cronExpression">
-            <value>${solr.backup.archive.cronExpression}</value>
-        </property>
-        <property name="startDelayMinutes">
-            <value>${system.cronJob.startDelayMinutes}</value>
+            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                <property name="jobClass" value="org.alfresco.repo.search.impl.solr.SolrBackupJob"/>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="solrBackupClient" value-ref="search.archiveCoreSolrBackupClient"/>
+                    </map>
+                </property>
+            </bean>
         </property>
     </bean>
     

@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Configurable service implementation test
@@ -46,6 +49,7 @@ import org.junit.experimental.categories.Category;
  */
 @SuppressWarnings("unused")
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ConfigurableServiceImplTest extends BaseSpringTest
 {
 	public NodeService nodeService;
@@ -54,12 +58,9 @@ public class ConfigurableServiceImplTest extends BaseSpringTest
 	private StoreRef testStoreRef;
 	private NodeRef rootNodeRef;
 	private NodeRef nodeRef;
-	
-	/**
-	 * onSetUpInTransaction
-	 */
-	@Override
-	protected void onSetUpInTransaction() throws Exception
+
+	@Before
+	public void before() throws Exception
 	{
 		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
 		this.serviceRegistry = (ServiceRegistry)this.applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -79,6 +80,7 @@ public class ConfigurableServiceImplTest extends BaseSpringTest
 	/**
 	 * Test isConfigurable
 	 */
+	@Test
 	public void testIsConfigurable()
 	{
 		assertFalse(this.configurableService.isConfigurable(this.nodeRef));
@@ -89,6 +91,7 @@ public class ConfigurableServiceImplTest extends BaseSpringTest
 	/**
 	 * Test make configurable
 	 */
+	@Test
 	public void testMakeConfigurable()
 	{
 		this.configurableService.makeConfigurable(this.nodeRef);
@@ -104,6 +107,7 @@ public class ConfigurableServiceImplTest extends BaseSpringTest
 	/**
 	 * Test getConfigurationFolder
 	 */
+	@Test
 	public void testGetConfigurationFolder()
 	{
 		assertNull(this.configurableService.getConfigurationFolder(this.nodeRef));

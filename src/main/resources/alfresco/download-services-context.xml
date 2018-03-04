@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!-- Bootstrap the Sync model -->
     <bean id="downloadDictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
@@ -114,33 +115,28 @@
       <property name="downloadStorage" ref="downloadStorage"/>
       <property name="transactionHelper" ref="retryingTransactionHelper"/>
    </bean>
-   
-      <bean id="downloadCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.download.DownloadsCleanupJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="downloadService" value-ref="DownloadService" />
-                <entry key="tenantAdminService" value-ref="tenantAdminService"/>
-                <entry key="maxAgeInMinutes" value="${download.cleaner.maxAgeMins}"/>
-                
-            </map>
-        </property>
-    </bean>
-    
-    <bean id="downloadCleanerTrigger" class="org.alfresco.util.TriggerBean">
-        <property name="jobDetail">
-            <ref bean="downloadCleanerJobDetail" />
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${download.cleaner.startDelayMins}</value>
-        </property>
-        <property name="repeatIntervalMinutes">
-            <value>${download.cleaner.repeatIntervalMins}</value>
+
+    <bean id="downloadCleanerSchedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <bean id="downloadCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+                    <property name="repeatInterval" value="${download.cleaner.repeatIntervalSeconds}"/>
+                    <property name="startDelay" value="${download.cleaner.startDelayMilliseconds}"/>
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                            <property name="jobClass" value="org.alfresco.repo.download.DownloadsCleanupJob"/>
+                            <property name="jobDataAsMap">
+                                <map>
+                                    <entry key="downloadService" value-ref="DownloadService" />
+                                    <entry key="tenantAdminService" value-ref="tenantAdminService"/>
+                                    <entry key="maxAgeInMinutes" value="${download.cleaner.maxAgeMins}"/>
+                                </map>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
         </property>
     </bean>
 </beans>

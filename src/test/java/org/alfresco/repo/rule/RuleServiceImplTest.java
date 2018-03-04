@@ -67,10 +67,14 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import javax.transaction.UserTransaction;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -79,6 +83,7 @@ import javax.transaction.UserTransaction;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class RuleServiceImplTest extends BaseRuleTest
 {    
     private String ASSOC_NAME_RULES_PREFIX = "rules";
@@ -89,11 +94,11 @@ public class RuleServiceImplTest extends BaseRuleTest
     SearchService searchService;
     NamespaceService namespaceService;
     FileFolderService fileFolderService;
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception 
+
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();        
+        super.before();
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
 		this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
         this.searchService = (SearchService) applicationContext.getBean("SearchService");
@@ -104,6 +109,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * Test get rule type
      */
+    @Test
     public void testGetRuleType()
     {
         List<RuleType> ruleTypes = this.ruleService.getRuleTypes();
@@ -120,6 +126,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * Test addRule
      *
      */
+    @Test
     public void testAddRule()
     {
         Rule newRule = createTestRule();
@@ -151,6 +158,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertTrue(savedRule2.isAppliedToChildren());
     }
     
+    @Test
     public void testRemoveRule()
     {
         this.ruleService.removeAllRules(this.nodeRef);
@@ -209,6 +217,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertEquals(false, nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES));
     }
     
+    @Test
     public void testRemoveAllRules()
     {
         this.ruleService.removeAllRules(this.nodeRef);
@@ -242,6 +251,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * Test get rules
      */
+    @Test
     public void testGetRules()
     {
         // Check that there are no rules associationed with the node
@@ -279,6 +289,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     }
     
     /** Ensure the rules are retrieved in the correct order **/
+    @Test
     public void testGetRulesOrder()
     {
         for (int index = 0; index < 10; index++)
@@ -402,6 +413,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         }
     }
     
+    @Test
     public void testIgnoreInheritedRules()
     {
         // Create the nodes and rules
@@ -452,6 +464,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * Test disabling the rules
      */
+    @Test
     public void testRulesDisabled()
     {
         testAddRule();
@@ -475,6 +488,7 @@ public class RuleServiceImplTest extends BaseRuleTest
                 ContentModel.TYPE_CONTAINER).getChildRef();
     }
     
+    @Test
     public void testRuleServicePermissionsConsumer()
     {
         this.authenticationService.createAuthentication("conUser", "password".toCharArray());
@@ -496,6 +510,7 @@ public class RuleServiceImplTest extends BaseRuleTest
 
     }
     
+    @Test
     public void testRuleServicePermissionsEditor()
     {
         this.authenticationService.createAuthentication("editorUser", "password".toCharArray());
@@ -516,6 +531,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         }
     }
     
+    @Test
     public void testRuleServicePermissionsCoordinator()
     {
         this.authenticationService.createAuthentication("coordUser", "password".toCharArray());
@@ -532,6 +548,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * Tests the rule inheritance within the store, checking that the cache is reset correctly when 
      * rules are added and removed.
      */
+    @Test
     public void testRuleInheritance()
     {
         // Create the nodes and rules
@@ -781,6 +798,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * 
      * @throws Exception
      */
+    @Test
     public void testCyclicGraphWithInheritedRules()
         throws Exception
     {
@@ -830,6 +848,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * Ensures that rules are not duplicated when inherited    
      */
+    @Test
     public void testRuleDuplication()
     {
         NodeRef nodeRef1 = createNewNode(this.rootNodeRef);
@@ -873,10 +892,13 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertTrue(allRules4.contains(rule4));        
     }
     
+    @Test
     public void testCyclicRules()
     {
     }
-    
+
+    @Commit
+    @Test
     public void testCyclicAsyncRules() throws Exception
     {
         NodeRef nodeRef = createNewNode(this.rootNodeRef);
@@ -946,9 +968,6 @@ public class RuleServiceImplTest extends BaseRuleTest
         writer.setMimetype(MimetypeMap.MIMETYPE_IMAGE_JPEG);
         writer.putContent(file);
         
-        setComplete();
-        endTransaction();
-        
         //final NodeRef finalNodeRef = nodeRef;
         
         // Check to see what has happened
@@ -972,9 +991,12 @@ public class RuleServiceImplTest extends BaseRuleTest
 //                });
     }    
     
+    @Test
     public void testDeleteSpaceWithExecuteScriptRule() throws Exception
     {
-        endTransaction(); // So we don't hang indefinitely waiting for the outer transaction
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        // So we don't hang indefinitely waiting for the outer transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute()
@@ -1027,6 +1049,7 @@ public class RuleServiceImplTest extends BaseRuleTest
         }, false, true);
     }
 
+    @Test
     public void testPermissionsForPropagatedRules_ALF_8408() throws Exception
     {
         // Create parent and child folders
@@ -1096,6 +1119,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * ALF-12726
      * use FileFolderService to rename
      */
+    @Test
     public void testOutboundRuleTriggeredAfterRename1() throws Exception
     {
         String newName = "newName" + GUID.generate();
@@ -1145,6 +1169,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * ALF-12726
      * use NodeService to rename
      */
+    @Test
     public void testOutboundRuleTriggeredAfterRename2() throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -1202,6 +1227,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * MNT-11670
      */
+    @Test
     public void testRuleExecutionWhenSecurityContextIsEmpty() throws Exception
     {
         // Create parent and child folders
@@ -1251,6 +1277,7 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * Test for MNT-11695
      */
+    @Test
     public void testOutBoundRuleTriggerForPendingDelete() throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -1356,6 +1383,7 @@ public class RuleServiceImplTest extends BaseRuleTest
      * 
      * @throws Exception
      */
+    @Test
     public void testRuleTriggerWithTemporaryFiles() throws Exception
     {
         UserTransaction txn = transactionService.getUserTransaction();
@@ -1428,11 +1456,9 @@ public class RuleServiceImplTest extends BaseRuleTest
     /**
      * MNT-12819
      * Create two rules: outbound (enabled) and inbound (disabled). Then try to remove them via removeAllRules method.
-     * @throws SystemException 
-     * @throws NotSupportedException 
      */
     @Test
-    public void testRemoveAllRulesForInboundAndOutbound() throws Exception
+    public void testRemoveAllRulesForInboundAndOutbound()
     {
         String scriptName = "nothingToDo.js";
         createNothingToDoScript(scriptName);

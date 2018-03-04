@@ -34,9 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.transaction.UserTransaction;
-
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,8 +41,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests the fully-intercepted version of the NodeService
@@ -54,38 +56,24 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Derek Hulley
  */
+@Transactional
 @Category(OwnJVMTestsCategory.class)
 public class FullNodeServiceTest extends BaseNodeServiceTest
 {
-    private Locale contentLocaleToRestore;
-    private Locale localeToRestore;
+    private static Locale contentLocaleToRestore;
+    private static Locale localeToRestore;
 
     protected NodeService getNodeService()
     {
         return (NodeService) applicationContext.getBean("NodeService");
     }
 
-
-    @Override
-    protected void onSetUp() throws Exception
+    @Before
+    public void before()
     {
-        super.onSetUp();
+        super.before();
         contentLocaleToRestore = I18NUtil.getContentLocale();
         localeToRestore = I18NUtil.getLocale();
-    }
-
-    @Override
-    protected void onTearDown() throws Exception
-    {
-        super.onTearDown();
-        I18NUtil.setContentLocale(contentLocaleToRestore);
-        I18NUtil.setLocale(localeToRestore);
-    }
-
-    @Override
-    protected void onSetUpInTransaction() throws Exception
-    {
-        super.onSetUpInTransaction();
         Locale.setDefault(Locale.ENGLISH);
         MLPropertyInterceptor.setMLAware(false);
     }
@@ -93,13 +81,15 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     /* (non-Javadoc)
      * @see org.alfresco.repo.node.BaseNodeServiceTest#onTearDownInTransaction()
      */
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after()
     {
-        super.onTearDownInTransaction();
-        I18NUtil.setContentLocale(null);
+        super.after();
+        I18NUtil.setContentLocale(contentLocaleToRestore);
+        I18NUtil.setLocale(localeToRestore);
     }
 
+    @Test
     public void testMLTextValues() throws Exception
     {
         // Set the server default locale
@@ -140,6 +130,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
      * with a locale of en_US will result in the addition of the en_US text rather than a true update (they're both
      * English, and using two slightly differently configured browsers in this way leads to confusion).
      */
+    @Test
     public void testMLTextUpdatedForCorrectLanguage() throws Exception
     {
         Locale.setDefault(Locale.UK);
@@ -196,7 +187,8 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                     ((MLText) textValue).getClosestValue(Locale.UK));
         assertEquals("fr_FR String", ((MLText) textValue).getValue(Locale.FRANCE));
     }
-    
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testMLTextCollectionUpdatedForCorrectLanguage()
     {
@@ -267,7 +259,8 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         assertEquals("entirely new text value should be added", 1, mlText.size());
         assertEquals("text 4 added using en_US", mlText.getValue(Locale.ENGLISH));
     }
-    
+
+    @Test
     public void testLongMLTextValues() throws Exception
     {
         StringBuilder sb = new StringBuilder();
@@ -296,7 +289,8 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE,
                 mlTextProperty);
     }
-    
+
+    @Test
     public void testNullMLText() throws Exception
     {
         // Set an ML value to null
@@ -333,6 +327,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         }
     }
 
+    @Test
     public void testMLValuesOnCreate() throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -345,7 +340,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
                 BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName(BaseNodeServiceTest.NAMESPACE, getName()),
+                QName.createQName(BaseNodeServiceTest.NAMESPACE, getClass().getName()),
                 BaseNodeServiceTest.TYPE_QNAME_TEST_MANY_PROPERTIES,
                 properties).getChildRef();
         // Now switch to English
@@ -368,6 +363,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
 
+    @Test
     public void testMLValuesOnAddAspect() throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -402,6 +398,7 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
                 nodeService.getProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_ML_TEXT_VALUE));
     }
 
+    @Test
     public void testMLValuesOnAddProperties() throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -444,11 +441,12 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         String strValue = mlTextValue.getDefaultValue();
         checkProperties.put(PROP_QNAME_ML_TEXT_VALUE, strValue);
     }
-    
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testMultiProp() throws Exception
     {
-        QName undeclaredPropQName = QName.createQName(NAMESPACE, getName());
+        QName undeclaredPropQName = QName.createQName(NAMESPACE, getClass().getName());
         // create node
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -471,13 +469,12 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         nodeService.setProperty(nodeRef, undeclaredPropQName, values);
 
         // commit as we will be breaking the transaction in the next test
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
         
-        UserTransaction txn = transactionService.getUserTransaction();
         try
         {
-            txn.begin();
             // this should fail as we are passing multiple values into a non-any that is multiple=false
             nodeService.setProperty(nodeRef, PROP_QNAME_STRING_PROP_SINGLE, values);
         }
@@ -487,13 +484,13 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         }
         finally
         {
-            try { txn.rollback(); } catch (Throwable e) {}
+            TestTransaction.flagForRollback();
+            TestTransaction.end();
         }
-        
-        txn = transactionService.getUserTransaction();
+
+        TestTransaction.start();
         try
         {
-            txn.begin();
             // Check that multi-valued d:mltext can be collections of MLText
             values.clear();
             values.add(new MLText("ABC"));
@@ -539,10 +536,12 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
         }
         finally
         {
-            try { txn.rollback(); } catch (Throwable e) {}
+            TestTransaction.flagForRollback();
+            TestTransaction.end();
         }
     }
-    
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testMultiValueMLTextProperties() throws Exception
     {

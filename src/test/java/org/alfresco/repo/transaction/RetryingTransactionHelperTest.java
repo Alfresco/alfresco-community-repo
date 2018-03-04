@@ -35,14 +35,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
 import junit.framework.TestCase;
-
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -63,13 +62,9 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQLInnoDBDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  * Tests the transaction retrying behaviour with various failure modes.
@@ -502,32 +497,6 @@ public class RetryingTransactionHelperTest extends TestCase
         }
     }
     
-    public void testLostConnectionRecovery()
-    {
-        RetryingTransactionCallback<Object> killConnectionCallback = new RetryingTransactionCallback<Object>()
-        {
-            private boolean killed = false;
-            public Object execute() throws Throwable
-            {
-                // Do some work
-                nodeService.deleteNode(workingNodeRef);
-                // Successful upon retry
-                if (killed)
-                {
-                    return null;
-                }
-                // Kill the connection the first time
-                HibernateConnectionKiller killer = new HibernateConnectionKiller();
-                killer.setSessionFactory((SessionFactory)ctx.getBean("sessionFactory"));
-                killer.killConnection();
-                killed = true;
-                return null;
-            }
-        };
-        // This should work
-        txnHelper.doInTransaction(killConnectionCallback);
-    }
-    
     public void testZeroAndNegativeRetries()
     {
         final MutableInt callCount = new MutableInt(0);
@@ -828,17 +797,5 @@ public class RetryingTransactionHelperTest extends TestCase
         {
         }
 
-    }
-
-    /**
-     * Helper class to kill the session's DB connection
-     */
-    private class HibernateConnectionKiller extends HibernateDaoSupport
-    {
-        @SuppressWarnings("deprecation")
-        private void killConnection() throws Exception
-        {
-            getSession().connection().rollback();
-        }
     }
 }

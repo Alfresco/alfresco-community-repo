@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!-- Replication global parameters (implemented as a subsystem) -->
    <!-- NOTE: the replication service as a whole could be converted to a subsystem in the future) -->
@@ -32,10 +33,10 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="ReplicationService_transaction" />
+            <idref bean="ReplicationService_transaction" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
-            <idref local="ReplicationService_security" />
+            <idref bean="ReplicationService_security" />
          </list>
       </property>
    </bean>

@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<beans>
     <import resource="classpath:alfresco/public-services-security-context.xml"/>
 
     <!-- Service Registry -->
@@ -23,7 +25,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="exceptionTranslator"/>
+                <idref bean="exceptionTranslator"/>
             </list>
         </property>
     </bean>
@@ -71,9 +73,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="NodeService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="NodeService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
                 <idref bean="disableAuditablePolicySetPropertyInterceptor"/>
 				
@@ -133,9 +135,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ContentService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="ContentService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="mlContentInterceptor"/>
                 <idref bean="ContentService_security"/>
             </list>
@@ -175,9 +177,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="SearchService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="SearchService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="SearchService_security"/>
             </list>
         </property>
@@ -192,9 +194,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="SearchService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="SearchService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="SearchService_security"/>
             </list>
         </property>
@@ -222,9 +224,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="CategoryService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="CategoryService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="CategoryService_security"/>
             </list>
         </property>
@@ -252,9 +254,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="CopyService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="CopyService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="CopyService_security"/>
             </list>
         </property>
@@ -282,9 +284,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="LockService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="LockService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="LockService_security"/>
                 <idref bean="lockServiceDisableAuditablePolicyInterceptor"/>
             </list>
@@ -329,9 +331,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="VersionService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="VersionService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="VersionService_security"/>
             </list>
         </property>
@@ -360,9 +362,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="CheckOutCheckInService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="CheckOutCheckInService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="CheckOutCheckInService_security"/>
             </list>
         </property>
@@ -390,9 +392,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="RuleService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="RuleService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="RuleService_security"/>
             </list>
         </property>
@@ -420,9 +422,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ImporterService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="ImporterService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="ImporterService_security"/>
             </list>
         </property>
@@ -450,8 +452,8 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ExporterService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
+                <idref bean="ExporterService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
             </list>
         </property>
     </bean>
@@ -478,9 +480,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ActionService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="ActionService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="ActionService_security"/>
             </list>
         </property>
@@ -508,9 +510,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="PermissionService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="PermissionService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="PermissionService_security"/>
             </list>
         </property>
@@ -538,9 +540,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="AuthorityService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="AuthorityService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="AuthorityService_security"/>
             </list>
         </property>
@@ -568,9 +570,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="OwnableService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="OwnableService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="OwnableService_security"/>
             </list>
         </property>
@@ -598,9 +600,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="PersonService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="PersonService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="PersonService_security"/>
             </list>
         </property>
@@ -628,9 +630,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ContenUsageService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="ContenUsageService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="ContentUsageService_security"/>
             </list>
         </property>
@@ -659,9 +661,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="AuthenticationService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="AuthenticationService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="AuthenticationService_security"/>
             </list>
         </property>
@@ -697,9 +699,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="TemplateService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="TemplateService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="TemplateService_security"/>
             </list>
         </property>
@@ -727,9 +729,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ScriptService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="ScriptService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="ScriptService_security"/>
             </list>
         </property>
@@ -756,10 +758,10 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="FileFolderService_transaction"/>
+                <idref bean="FileFolderService_transaction"/>
                 <idref bean="filenameFilteringInterceptor"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="FileFolderService_security"/>
                 <idref bean="mlTranslationInterceptor"/>
                 <idref bean="mlContentInterceptor"/>
@@ -854,9 +856,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="WorkflowService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="WorkflowService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                  <idref bean="WorkflowService_security"/>
             </list>
         </property>
@@ -884,9 +886,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="AuditService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="AuditService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                  <idref bean="AuditService_security"/>
             </list>
         </property>
@@ -915,8 +917,8 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="MultilingualContentService_transaction"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="MultilingualContentService_transaction"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="MultilingualContentService_security"/>
             </list>
         </property>
@@ -947,7 +949,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="EditionService_transaction"/>
+                <idref bean="EditionService_transaction"/>
                 <idref bean="EditionService_security"/>
             </list>
         </property>
@@ -975,7 +977,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ConfigurableService_transaction"/>
+                <idref bean="ConfigurableService_transaction"/>
             </list>
         </property>
     </bean>
@@ -1004,7 +1006,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="RegistryService_transaction"/>
+                <idref bean="RegistryService_transaction"/>
             </list>
         </property>
     </bean>
@@ -1032,7 +1034,7 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ModuleService_transaction"/>
+                <idref bean="ModuleService_transaction"/>
             </list>
         </property>
     </bean>
@@ -1060,15 +1062,16 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="RepoAdminService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="RepoAdminService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="RepoAdminService_security"/>
             </list>
         </property>
     </bean>
     
-    <bean id="RepoAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="RepoAdminService_transaction" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService" ref="TransactionService"/>
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>
@@ -1089,10 +1092,10 @@
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="ScheduledPersistedActionService_transaction" />
+            <idref bean="ScheduledPersistedActionService_transaction" />
             <idref bean="AuditMethodInterceptor" />
             <idref bean="exceptionTranslator" />
-            <idref local="ScheduledPersistedActionService_security" />
+            <idref bean="ScheduledPersistedActionService_security" />
          </list>
       </property>
     </bean>
@@ -1121,9 +1124,9 @@
         </property>
         <property name="interceptorNames">
              <list>
-                <idref local="PublicServiceAccessService_transaction"/>
-                <idref local="AuditMethodInterceptor"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="PublicServiceAccessService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
                 <idref bean="PublicServiceAccessService_security"/>
             </list>
         </property>
@@ -1152,8 +1155,8 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="TenantAdminService_transaction"/>
-                <idref local="exceptionTranslator"/>
+                <idref bean="TenantAdminService_transaction"/>
+                <idref bean="exceptionTranslator"/>
             </list>
         </property>
     </bean>
@@ -1178,8 +1181,8 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="DocumentLinkService_transaction"/>
-                <idref local="exceptionTranslator" />
+                <idref bean="DocumentLinkService_transaction"/>
+                <idref bean="exceptionTranslator" />
                 <idref bean="DocumentLinkService_security"/>
             </list>
         </property>

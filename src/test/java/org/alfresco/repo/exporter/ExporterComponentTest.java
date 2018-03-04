@@ -77,10 +77,15 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Transactional
 public class ExporterComponentTest extends BaseSpringTest
 {
 
@@ -97,8 +102,8 @@ public class ExporterComponentTest extends BaseSpringTest
     private Locale contentLocaleToRestore;
     private Locale localeToRestore;
     
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         exporterService = (ExporterService)applicationContext.getBean("exporterComponent");
@@ -112,31 +117,19 @@ public class ExporterComponentTest extends BaseSpringTest
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-    }
-
-    @Override
-    protected void onTearDownInTransaction() throws Exception
-    {
-        authenticationComponent.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
-    }
-
-    @Override
-    protected void onSetUp() throws Exception
-    {
-        super.onSetUp();
         contentLocaleToRestore = I18NUtil.getContentLocale();
         localeToRestore = I18NUtil.getLocale();
     }
 
-    @Override
-    protected void onTearDown() throws Exception
+    @After
+    public void after()
     {
-        super.onTearDown();
         I18NUtil.setContentLocale(contentLocaleToRestore);
         I18NUtil.setLocale(localeToRestore);
+        authenticationComponent.clearCurrentSecurityContext();
     }
 
+    @Test
     public void testExport()
         throws Exception
     {
@@ -177,6 +170,7 @@ public class ExporterComponentTest extends BaseSpringTest
      */
     @SuppressWarnings("unchecked")
     @Category(RedundantTests.class)
+    @Test
     public void testRoundTripKeepsCategoriesWhenWithinSameStore() throws Exception
     {   
         // Use a store ref that has the bootstrapped categories
@@ -207,6 +201,7 @@ public class ExporterComponentTest extends BaseSpringTest
      */
     @SuppressWarnings("unchecked")
     @Category(RedundantTests.class)
+    @Test
     public void testRoundTripLosesCategoriesImportingToDifferentStore() throws Exception
     {   
         // Use a store ref that has the bootstrapped categories
@@ -230,6 +225,7 @@ public class ExporterComponentTest extends BaseSpringTest
         assertEquals("No categories should have been imported for the content", 0, importedFileCategories.size());
     }
     
+    @Test
     public void testMLText() throws Exception
     {
 	    NodeRef rootNode = nodeService.getRootNode(storeRef);
@@ -278,6 +274,7 @@ public class ExporterComponentTest extends BaseSpringTest
     	}
     }
     
+    @Test
     public void testMNT12504() throws Exception
     {
         String testUser = "testUserMnt12504";

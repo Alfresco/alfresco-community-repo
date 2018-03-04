@@ -25,13 +25,9 @@
  */
 package org.alfresco.util.schemacomp.validator;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
-
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
+import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.model.Column;
@@ -39,6 +35,9 @@ import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -57,7 +56,7 @@ public class TypeNameOnlyValidatorTest
     {
         validator = new TypeNameOnlyValidator();
         validationResults = new Results();
-        ctx = new DiffContext(new AlfrescoSQLServerDialect(), validationResults, null, null);
+        ctx = new DiffContext(new SQLServerDialect(), validationResults, null, null);
     }
     
     @Test

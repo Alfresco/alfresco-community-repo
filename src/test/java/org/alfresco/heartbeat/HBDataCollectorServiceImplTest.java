@@ -32,7 +32,9 @@ import org.alfresco.service.license.LicenseDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.CronTrigger;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
+import org.quartz.TriggerKey;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.junit.rules.ExpectedException;
 
@@ -279,9 +281,9 @@ public class HBDataCollectorServiceImplTest
         collectorService.registerCollector(c2);
         collectorService.registerCollector(c3);
 
-        String testCron1 = ((CronTrigger) scheduler.getTrigger(triggerName1, Scheduler.DEFAULT_GROUP)).getCronExpression();
-        String testCron2 = ((CronTrigger) scheduler.getTrigger(triggerName2, Scheduler.DEFAULT_GROUP)).getCronExpression();
-        String testCron3 = ((CronTrigger) scheduler.getTrigger(triggerName3, Scheduler.DEFAULT_GROUP)).getCronExpression();
+        String testCron1 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName1, Scheduler.DEFAULT_GROUP))).getCronExpression();
+        String testCron2 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName2, Scheduler.DEFAULT_GROUP))).getCronExpression();
+        String testCron3 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName3, Scheduler.DEFAULT_GROUP))).getCronExpression();
 
         assertEquals("Cron expression doesn't match", cron1, testCron1);
         assertEquals("Cron expression doesn't match", cron2, testCron2);
@@ -331,10 +333,8 @@ public class HBDataCollectorServiceImplTest
     {
         String jobName = "heartbeat-" + collectorId;
         String triggerName = jobName + "-Trigger";
-
-        String[] jobs = scheduler.getJobNames(Scheduler.DEFAULT_GROUP);
-        String[] triggers = scheduler.getTriggerNames(Scheduler.DEFAULT_GROUP);
-        return Arrays.asList(jobs).contains(jobName) && Arrays.asList(triggers).contains(triggerName);
+        return scheduler.checkExists(new JobKey(jobName, Scheduler.DEFAULT_GROUP))
+                && scheduler.checkExists(new TriggerKey(triggerName, Scheduler.DEFAULT_GROUP));
     }
 
     private class SimpleHBDataCollector extends HBBaseDataCollector

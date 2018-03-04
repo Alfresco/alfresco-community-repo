@@ -55,10 +55,15 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.joda.time.DateTimeZone;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ImporterComponentTest extends BaseSpringTest
 {
     private ImporterService importerService;
@@ -68,9 +73,9 @@ public class ImporterComponentTest extends BaseSpringTest
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
 
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
         nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         importerService = (ImporterService)applicationContext.getBean(ServiceRegistry.IMPORTER_SERVICE.getLocalName());
@@ -92,14 +97,14 @@ public class ImporterComponentTest extends BaseSpringTest
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(tz));
     }
     
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after()
     {
         authenticationComponent.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
     }
     
     
+    @Test
     public void testImport() throws Exception
     {
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
@@ -109,6 +114,7 @@ public class ImporterComponentTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
     
+    @Test
     public void testImportWithAuditableProperties() throws Exception
     {
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
@@ -159,6 +165,7 @@ public class ImporterComponentTest extends BaseSpringTest
         assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
     }
     
+    @Test
     public void testImportWithVersioning() throws Exception
     {
         InputStream test = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/importercomponent_test.xml");
@@ -204,6 +211,7 @@ public class ImporterComponentTest extends BaseSpringTest
         assertEquals(1, vh.getAllVersions().size());
     }
     
+    @Test
     public void testImportWithUuidBinding() throws Exception
     {
         Location location = new Location(storeRef);
@@ -252,6 +260,7 @@ public class ImporterComponentTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
 
+    @Test
     public void testBootstrap()
     {
         StoreRef bootstrapStoreRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -261,6 +270,7 @@ public class ImporterComponentTest extends BaseSpringTest
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, bootstrapStoreRef));
     }
     
+    @Test
     public void testImportFoldersUuidBindingNullUuidNullLocationPath() throws Exception
     {
         Location location = new Location(storeRef);

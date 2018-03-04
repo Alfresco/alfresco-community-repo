@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -55,10 +56,11 @@ public class PropTablesCleanupJobTest
     @Before
     public void setUp() throws Exception
     {
-        jobDetail = new JobDetail("propTablesCleanupJob", PropTablesCleanupJob.class);
+        jobDetail = JobBuilder.newJob()
+                .withIdentity("propTablesCleanupJob")
+                .ofType(PropTablesCleanupJob.class).build();
         jobDetail.getJobDataMap().put("propTablesCleaner", propTablesCleaner);
         cleanupJob = new PropTablesCleanupJob();
-        
         when(jobCtx.getJobDetail()).thenReturn(jobDetail);
     }
 

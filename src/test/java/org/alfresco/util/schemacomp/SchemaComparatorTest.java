@@ -61,6 +61,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Index;
@@ -69,8 +71,6 @@ import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 import org.alfresco.util.schemacomp.validator.NameValidator;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -91,7 +91,7 @@ public class SchemaComparatorTest
     {
         reference = new Schema("schema", "alf_", 590, true);
         target = new Schema("schema", "alf_", 590, true);
-        dialect = new MySQL5InnoDBDialect();
+        dialect = new MySQLInnoDBDialect();
     }
     
 

@@ -51,7 +51,10 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Parameter definition implementation unit test.
@@ -59,6 +62,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class RuleLinkTest extends BaseSpringTest
 {
     protected static final String RULE_TYPE_NAME = RuleType.INBOUND;
@@ -80,17 +84,16 @@ public class RuleLinkTest extends BaseSpringTest
     private NodeRef folderOne;
     private NodeRef folderTwo;
     private NodeRef folderThree;
-    
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
-    {               
+
+    @Before
+    public void before() throws Exception
+    {
         // Get the services
-        nodeService = (NodeService)getApplicationContext().getBean("nodeService");
-        ruleService = (RuleService)getApplicationContext().getBean("ruleService");
-        actionService = (ActionService)getApplicationContext().getBean("actionService");
-        authenticationComponent = (AuthenticationComponent)getApplicationContext().getBean("authenticationComponent");
-        fileFolderService = (FileFolderService)getApplicationContext().getBean("fileFolderService");
+        nodeService = (NodeService) applicationContext.getBean("nodeService");
+        ruleService = (RuleService) applicationContext.getBean("ruleService");
+        actionService = (ActionService) applicationContext.getBean("actionService");
+        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
 
         //authenticationComponent.setSystemUserAsCurrentUser();
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -114,6 +117,7 @@ public class RuleLinkTest extends BaseSpringTest
         folderThree = fileFolderService.create(folder, "folderThree", ContentModel.TYPE_FOLDER).getNodeRef();
     }
 
+    @Test
     public void testLinkRule()
     {
         // Create a rule
@@ -212,6 +216,7 @@ public class RuleLinkTest extends BaseSpringTest
         actionService.executeAction(unlinkAction, folder);
     }   
     
+    @Test
     public void testRelink()
     {
         // Setup test data
@@ -274,6 +279,7 @@ public class RuleLinkTest extends BaseSpringTest
      * @since 4.0.2
      * @author Neil Mc Erlean.
      */
+    @Test
     public void testDeleteFolderWithPrimaryRules()
     {
         // Setup test data
@@ -311,6 +317,7 @@ public class RuleLinkTest extends BaseSpringTest
      * @since 4.1.1
      * @author Neil Mc Erlean.
      */
+    @Test
     public void testDeleteFolderWithSecondaryRules()
     {
         // Setup test data

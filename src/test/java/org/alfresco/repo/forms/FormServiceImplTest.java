@@ -73,7 +73,10 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
@@ -83,6 +86,7 @@ import org.springframework.util.StringUtils;
  * @author Nick Smith
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class FormServiceImplTest extends BaseAlfrescoSpringTest 
 {
     private FormService formService;
@@ -136,15 +140,11 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static final String TYPE_FORM_ITEM_KIND = "type";
     private static final String WORKFLOW_FORM_ITEM_KIND = "workflow";
     private static final String TASK_FORM_ITEM_KIND = "task";
-    
-    /**
-     * Called during the transaction setup
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         
         // Get the required services
         this.formService = (FormService)this.applicationContext.getBean("FormService");
@@ -244,6 +244,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    @Test
     public void testGetAllDocForm() throws Exception
     {
         Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.document.toString()));
@@ -401,6 +402,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    @Test
     public void testGetSelectedFieldsDocForm() throws Exception
     {
         // define a list of fields to retrieve from the node
@@ -521,6 +523,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(this.associatedDoc.toString(), targets.get(0));
     }
     
+    @Test
     public void testMissingFieldsDocForm() throws Exception
     {
         // define a list of fields to retrieve from the node
@@ -574,6 +577,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(VALUE_TITLE, data.getFieldData(titleField.getDataKeyName()).getValue());
     }
     
+    @Test
     public void testForcedFieldsDocForm() throws Exception
     {
         // define a list of fields to retrieve from the node
@@ -642,6 +646,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    @Test
     public void testGetAllFolderForm() throws Exception
     {
         Form form = this.formService.getForm(new Item(NODE_FORM_ITEM_KIND, this.folder.toString()));
@@ -723,6 +728,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    @Test
     public void testSaveNodeForm() throws Exception
     {
         // create FormData object containing the values to update
@@ -820,6 +826,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         */
     }
     
+    @Test
     public void testGetAllCreateForm() throws Exception
     {
         // get a form for the cm:content type
@@ -868,6 +875,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expecting to find the cm:modifier field", modifierField);
     }
     
+    @Test
     public void testGetSelectedFieldsCreateForm() throws Exception
     {
         // define a list of fields to retrieve from the node
@@ -921,6 +929,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         
     }
     
+    @Test
     public void testSaveTypeForm() throws Exception
     {
         // create FormData object containing the values to update
@@ -973,6 +982,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull("Expected new node to be created using itemId " + ContentModel.TYPE_CONTENT.toString(), newNode);
     }
     
+    @Test
     public void testContentForms() throws Exception
     {
         // create FormData object 
@@ -1315,6 +1325,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
 
+    @Test
     public void testGetFormForActivitiTask() throws Exception
     {
         checkGetFormForTask("activiti$activitiReview");
@@ -1349,6 +1360,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
 
+    @Test
     public void testSaveActivitiTask() throws Exception
     {
         checkSaveTask("activiti$activitiReview");
@@ -1374,6 +1386,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     
+    @Test
     public void testTransitionActivitiTask() throws Exception
     {
         checkTransitionTask("activiti$activitiReview", ActivitiConstants.DEFAULT_TRANSITION_NAME, "Approve");
@@ -1446,6 +1459,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         return fields;
     }
         
+    @Test
     public void testActivitiWorkflowForm() throws Exception
     {
         checkWorkflowForms("activiti$activitiAdhoc", "Next|Task Done");
@@ -1572,6 +1586,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testNoForm() throws Exception
     {
         // test that a form can not be retrieved for a non-existent item
@@ -1649,6 +1664,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testFormData() throws Exception
     {
         FormData formData = new FormData();
@@ -1687,6 +1703,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("Expecting 'overwritten' value to be 'three'", "three", value);
     }
     
+    @Test
     public void testFormContext() throws Exception
     {
         Map<String, Object> context = new HashMap<String, Object>(2);
@@ -1697,6 +1714,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(form);
     }
     
+    @Test
     public void testNonContentNode() throws Exception
     {
         // create a node (not cm:content)
@@ -1736,6 +1754,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     @SuppressWarnings("unchecked")
+    @Test
     public void testMNT_10969() throws Exception
     {
         // create a node (cm:content)
@@ -1774,6 +1793,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(Arrays.asList("", "titi", "toto", ""), savedValue);
     }
     
+    @Test
     public void testJavascriptAPI() throws Exception
     {
         Map<String, Object> model = new HashMap<String, Object>();

@@ -1,6 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
 <!-- ========================================================= -->
 <!-- The configuration of the Authority Service Implementation -->
 <!-- ========================================================= -->
@@ -10,7 +8,10 @@
 <!-- It also supports groups and allows groups and users to be arranged into  -->
 <!-- hierarchies.                                                             -->
 <!--                                                                          -->
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl" init-method="init">
         <property name="personService">

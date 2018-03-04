@@ -30,12 +30,12 @@ import static org.mockito.Mockito.inOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.Results;
-import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,7 +51,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class DbObjectTestBase<T extends AbstractDbObject>
 {
-    protected @Mock Dialect dialect;
+    @Mock
+    protected Dialect dialect;
     protected @Mock Results differences;
     protected DiffContext ctx;
     protected @Mock ComparisonUtils comparisonUtils;

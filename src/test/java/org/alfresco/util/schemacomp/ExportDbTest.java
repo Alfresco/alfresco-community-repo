@@ -28,7 +28,10 @@ package org.alfresco.util.schemacomp;
 
 import javax.sql.DataSource;
 
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMariaDBDialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MariaDBDialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.schemacomp.model.Schema;
@@ -39,14 +42,11 @@ import org.alfresco.util.schemacomp.test.exportdb.PostgreSQLDialectExportTester;
 import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQLDialect;
-import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -66,7 +66,7 @@ public class ExportDbTest
     private ExportDb exporter;
     private Dialect dialect;
     private DataSource dataSource;
-    private SimpleJdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
     private PlatformTransactionManager tx;
     private AbstractExportTester exportTester;
     private static final Log logger = LogFactory.getLog(ExportDbTest.class);
@@ -78,7 +78,7 @@ public class ExportDbTest
         ctx = ApplicationContextHelper.getApplicationContext();
         dataSource = (DataSource) ctx.getBean("dataSource");
         tx = (PlatformTransactionManager) ctx.getBean("transactionManager"); 
-        jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+        jdbcTemplate = new JdbcTemplate(dataSource);
         exporter = new ExportDb(ctx);
         exporter.setNamePrefix("export_test_");
         dialect = (Dialect) ctx.getBean("dialect");
@@ -98,11 +98,11 @@ public class ExportDbTest
         {
             exportTester = new PostgreSQLDialectExportTester(exporter, tx, jdbcTemplate);
         }
-        else if (AlfrescoMariaDBDialect.class.isAssignableFrom(dialectClass))
+        else if (MariaDBDialect.class.isAssignableFrom(dialectClass))
         {
             exportTester = new AlfrescoMariaDBDialectExportTester(exporter, tx, jdbcTemplate);
         }
-        else if (MySQLDialect.class.isAssignableFrom(dialectClass))
+        else if (MySQLInnoDBDialect.class.isAssignableFrom(dialectClass))
         {
             exportTester = new MySQLDialectExportTester(exporter, tx, jdbcTemplate);
         }

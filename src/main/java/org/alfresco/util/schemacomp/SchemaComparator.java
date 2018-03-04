@@ -25,9 +25,9 @@
  */
 package org.alfresco.util.schemacomp;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.xml.serialize.LineSeparator;
-import org.hibernate.dialect.Dialect;
 
 /**
  * Compares two abstract database schemas, a reference schema and a target schema (the schema to check for validity).

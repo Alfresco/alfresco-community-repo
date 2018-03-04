@@ -121,9 +121,6 @@ import org.springframework.context.ApplicationContext;
     // [module/module-component-test-beans.xml]
     org.alfresco.repo.module.ComponentsTest.class,
 
-    // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
-    org.alfresco.util.CronTriggerBeanTest.class,
-
     // ----------------------------------------------------------------------
     // Transformer/Rendition contexts
     //
@@ -140,6 +137,8 @@ import org.springframework.context.ApplicationContext;
     // this does NOT passes locally
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
+    // [ibatis/hierarchy-test/hierarchy-test-context.xml]
+    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class
 })
 public class MiscContextTestSuite
 {

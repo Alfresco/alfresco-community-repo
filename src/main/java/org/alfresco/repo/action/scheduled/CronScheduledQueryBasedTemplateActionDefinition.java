@@ -25,10 +25,8 @@
  */
 package org.alfresco.repo.action.scheduled;
 
-import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -37,9 +35,10 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.quartz.CronTrigger;
+import org.quartz.CronScheduleBuilder;
 import org.quartz.Scheduler;
 import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
 
 /**
  * A scheduled action for which the trigger is defined in the standard cron format and the nodes to which the action
@@ -206,9 +205,13 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     {
         try
         {
-            return new CronTrigger(getTriggerName(), getTriggerGroup(), getCronExpression());
+            return TriggerBuilder.newTrigger()
+                    .withIdentity(getTriggerName(), getTriggerGroup())
+                    .withSchedule(CronScheduleBuilder.cronSchedule(getCronExpression()))
+                    .build();
         }
-        catch (final ParseException e)
+        // CronScheduleBuilder is throwing RuntimeException which is wrapping ParseException
+        catch (final RuntimeException e)
         {
             throw new InvalidCronExpression("Invalid chron expression: n" + getCronExpression());
         }

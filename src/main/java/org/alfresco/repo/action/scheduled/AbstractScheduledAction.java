@@ -38,6 +38,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
+import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -366,12 +367,11 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     {
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put(ACTION_JOB_DATA_MAP_KEY, this);
-
-        JobDetail jobDetail = new JobDetail();
-        jobDetail.setName(getJobName());
-        jobDetail.setGroup(getJobGroup());
-        jobDetail.setJobDataMap(jobDataMap);
-        jobDetail.setJobClass(JobDefinition.class);
+        final JobDetail jobDetail = JobBuilder.newJob()
+                .withIdentity(getJobName(), getJobGroup())
+                .usingJobData(jobDataMap)
+                .ofType(JobDefinition.class)
+                .build();
         return jobDetail;
     }
 

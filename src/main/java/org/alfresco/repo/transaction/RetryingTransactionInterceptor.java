@@ -64,7 +64,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                     method, invocation.getThis().getClass());
             final PlatformTransactionManager tm = determineTransactionManager(txnAttr);
             @SuppressWarnings("deprecation")
-            final String joinpointIdentification = methodIdentification(invocation.getMethod());
+            final String joinpointIdentification = methodIdentification(invocation.getMethod(), invocation.getThis().getClass());
             final int propagationBehaviour = txnAttr.getPropagationBehavior();
             try
             {

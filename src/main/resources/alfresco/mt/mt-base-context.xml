@@ -1,18 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!--
         Bootstrap Data: Prototype beans for the per-tenant bootstrap.
         These are fetched by the MultiTAdminServiceImpl when new tenant is created.
    -->
-   <bean id="userBootstrap-mt" parent="userBootstrap-base" singleton="false" />
-   <bean id="systemBootstrap-mt" parent="systemBootstrap-base" singleton="false" />
-   <bean id="versionBootstrap-mt" parent="versionBootstrap-base" singleton="false" />
-   <bean id="version2Bootstrap-mt" parent="version2Bootstrap-base" singleton="false" />
-   <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" singleton="false" />
-   <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" singleton="false" />
+   <bean id="userBootstrap-mt" parent="userBootstrap-base" scope="prototype" />
+   <bean id="systemBootstrap-mt" parent="systemBootstrap-base" scope="prototype" />
+   <bean id="versionBootstrap-mt" parent="versionBootstrap-base" scope="prototype" />
+   <bean id="version2Bootstrap-mt" parent="version2Bootstrap-base" scope="prototype" />
+   <bean id="spacesArchiveBootstrap-mt" parent="spacesArchiveBootstrap-base" scope="prototype" />
+   <bean id="spacesBootstrap-mt" parent="spacesBootstrap-base" scope="prototype" />
    
    <bean id="baseMultiTAdminService" abstract="true">
    

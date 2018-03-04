@@ -62,7 +62,11 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public abstract class BaseVersionStoreTest extends BaseSpringTest
 {
     /*
@@ -71,6 +75,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected NodeService dbNodeService;
     protected VersionService versionService;
     protected ContentService contentService;
+    @Autowired
     protected DictionaryDAO dictionaryDAO;
     protected MutableAuthenticationService authenticationService;
     protected TransactionService transactionService;
@@ -141,17 +146,7 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      * Test user details
      */
     private static final String PWD = "admin";
-    
-	/**
-	 * Sets the meta model dao
-	 * 
-	 * @param dictionaryDAO  the meta model dao
-	 */
-	public void setDictionaryDAO(DictionaryDAO dictionaryDAO) 
-	{
-		this.dictionaryDAO = dictionaryDAO;
-	}
-	
+
 	public void setVersionService(VersionService versionService) 
 	{
 	    this.versionService = versionService;
@@ -160,7 +155,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     /**
      * Called during the transaction setup
      */
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         // Set the multi value if required
         if (this.multiValue == null)

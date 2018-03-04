@@ -37,8 +37,15 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.view.RepositoryExporterService.FileExportHandle;
 import org.alfresco.service.cmr.view.RepositoryExporterService.RepositoryExportHandle;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
 
 
+@Transactional
 public class RepositoryExporterComponentTest extends BaseSpringTest
 {
     private RepositoryExporterService repositoryService;
@@ -46,9 +53,8 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
     private NodeService nodeService;
     private FileFolderService fileFolderService;
 
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)applicationContext.getBean(ServiceRegistry.NODE_SERVICE.getLocalName());
         this.fileFolderService = (FileFolderService)applicationContext.getBean(ServiceRegistry.FILE_FOLDER_SERVICE.getLocalName());
@@ -57,14 +63,14 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
         this.authenticationComponent.setSystemUserAsCurrentUser();
     }
 
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
         authenticationComponent.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
     }
     
 
+    @Test
     public void testDummy()
     {
     }
@@ -80,9 +86,11 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
             assertTrue(tempFile.exportFile.exists());
         }
     }
-        
-    public void xtestRepositoryExport()
-        throws Exception
+
+    @Ignore
+    @Commit
+    @Test
+    public void testRepositoryExport()
     {
         // Create a temp store to hold exports
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -97,8 +105,6 @@ public class RepositoryExporterComponentTest extends BaseSpringTest
         {
             assertTrue(nodeService.exists(handle.exportFile));
         }
-        
-        setComplete();
     }
 
 }

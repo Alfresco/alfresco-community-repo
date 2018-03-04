@@ -36,11 +36,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.model.AbstractDbObject;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +58,8 @@ public class DefaultComparisonUtilsTest
     private @Mock Results differences;
     private DefaultComparisonUtils comparisonUtils;
     private DiffContext ctx;
-    private @Mock Dialect dialect;
+    @Mock
+    private Dialect dialect;
     
     @Before
     public void setUp()

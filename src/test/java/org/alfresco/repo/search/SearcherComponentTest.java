@@ -36,6 +36,8 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
@@ -52,9 +54,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO9075;
-import org.alfresco.util.testing.category.LuceneTests;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 

@@ -300,7 +300,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     @Override
     public void tearDown() throws Exception
     {
-        scheduler.getScheduler().unscheduleJob(scheduler.getTriggerName(), scheduler.getJobGroup());
+        scheduler.getScheduler().unscheduleJob(scheduler.getTrigger().getKey());
 
         if (Status.STATUS_ROLLEDBACK != transaction.getStatus())
         {

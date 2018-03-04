@@ -1,15 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
 <!--
     Beans common to iBatis infrastructure
 -->
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Hierarchical Resource Loader -->
     <bean id="dialectResourceLoader" class="org.alfresco.util.resource.HierarchicalResourceLoader">
         <property name="dialectBaseClass">
-            <value>org.hibernate.dialect.Dialect</value>
+            <value>org.alfresco.repo.domain.dialect.Dialect</value>
         </property>
         <!--  Resolve the (perhaps auto detected) dialect class -->
         <property name="dialectClass">

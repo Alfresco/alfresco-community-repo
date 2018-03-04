@@ -23,11 +23,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.domain.hibernate.dialect;
+package org.alfresco.repo.domain.dialect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.MySQLInnoDBDialect;
 
 /**
  * MySQL Cluster NDB specific DAO overrides
@@ -43,19 +42,14 @@ import org.hibernate.dialect.MySQLInnoDBDialect;
  *
  */
 //note: *not* a dialect of InnoDB but, for now, extends here so that we can override those scripts
-public class AlfrescoMySQLClusterNDBDialect extends MySQLInnoDBDialect
+public class MySQLClusterNDBDialect extends MySQLInnoDBDialect
 {
-    protected Log logger = LogFactory.getLog(AlfrescoMySQLClusterNDBDialect.class);
+    protected Log logger = LogFactory.getLog(MySQLClusterNDBDialect.class);
     
-    public AlfrescoMySQLClusterNDBDialect()
+    public MySQLClusterNDBDialect()
     {
         super();
         
         logger.error("Using NDB with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
     }
-    
-    public String getTableTypeString() {
-        return " engine=NDB";
-    }
-
 }

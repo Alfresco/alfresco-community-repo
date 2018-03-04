@@ -33,6 +33,7 @@ import static org.mockito.Mockito.inOrder;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.DbObjectVisitor;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
@@ -40,7 +41,6 @@ import org.alfresco.util.schemacomp.Difference.Where;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.AbstractDbValidator;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +59,8 @@ public class AbstractDbObjectTest
     private ConcreteDbObject dbObject;
     private @Mock Results differences;
     private DiffContext ctx;
-    private @Mock Dialect dialect;
+    @Mock
+    private Dialect dialect;
     
     /**
      * @throws java.lang.Exception

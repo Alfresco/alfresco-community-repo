@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <!--  ================================================================== -->
 <!--  = This context is only used to run DataModel specific tests      = -->
@@ -7,12 +10,6 @@
 <!--  ================================================================== -->
 
 <!-- Core and miscellaneous bean definitions -->
-<beans>
-
-
-    
-  
-
 
     <!--                        -->
     <!-- I18N                   -->
@@ -98,7 +95,7 @@
     </bean>
 
     <bean id="dictionaryModelBootstrap" class="org.alfresco.repo.dictionary.DictionaryBootstrap" init-method="bootstrap" abstract="true">
-        <property name="dictionaryDAO"><ref local="dictionaryDAO"/></property>
+        <property name="dictionaryDAO"><ref bean="dictionaryDAO"/></property>
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>

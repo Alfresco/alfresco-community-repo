@@ -63,13 +63,16 @@ public class LazyClassPathXmlApplicationContext extends
       reader.setDocumentReaderClass(AlwaysLazyInitBeanDefinitionDocumentReader.class);
    }
 
-   protected static class AlwaysLazyInitBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader {
-      @Override
-      protected BeanDefinitionParserDelegate createHelper(
-            XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
-         BeanDefinitionParserDelegate helper = super.createHelper(readerContext, root, parentDelegate);
-         helper.getDefaults().setLazyInit("true");
-         return helper;
-      }
+   protected static class AlwaysLazyInitBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader
+   {
+
+       @Override
+       protected BeanDefinitionParserDelegate createDelegate(
+               XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate)
+       {
+           BeanDefinitionParserDelegate delegate = super.createDelegate(readerContext, root, parentDelegate);
+           delegate.getDefaults().setLazyInit("true");
+           return delegate;
+       }
    }
 }

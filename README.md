@@ -5,6 +5,7 @@ The library contains the following:
 * Canned queries interface and supporting classes
 * Generic encryption supporting classes
 
+Version 7 of the library uses Spring 5, Quartz 2.3 and does not have Hibernate dependency.
 
 ### Building and testing
 The project can be built and tested by running Maven command:

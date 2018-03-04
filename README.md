@@ -9,6 +9,7 @@ Please note that the data model uses version 2 of the Jackson libraries.
 The upgrade from version 1 was not backward compatible, any projects
 that are dependent on data model using Jackson 1.x should use the data-model 6.N branch. 
 
+Version 8.0 of data-model depends on alfresco-core 7.0 which is based on Spring 5.
  
 
 ### Building and testing

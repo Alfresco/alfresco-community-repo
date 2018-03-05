@@ -576,6 +576,9 @@ public abstract class BaseAPI
         SHELF,
         BOX,
         FILE,
+        ORIGINATOR,
+        ORIGINATING_ORGANIZATION,
+        PUBLICATION_DATE
     }
 
     public enum RETENTION_SCHEDULE

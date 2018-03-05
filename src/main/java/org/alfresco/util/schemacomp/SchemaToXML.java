@@ -36,8 +36,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.xml.sax.SAXException;
 
-import com.sun.star.uno.RuntimeException;
-
 /**
  * Converts an in-memory Schema to an XML output stream.
  * 

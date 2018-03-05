@@ -94,8 +94,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 
-import junit.framework.Assert;
-
 /**
  * 
  * @author steveglover
@@ -144,9 +142,6 @@ public class TestFavourites extends AbstractBaseApiTest
         super.setup();
 
         final Iterator<TestNetwork> networksIt = getTestFixture().networksIterator();
-
-        // Workaround for domain name mismatch in lucene indexing that occurs when this test runs.
-        repoService.disableInTxnIndexing();
 
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {

@@ -79,8 +79,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import com.sun.star.lang.NullPointerException;
-
 /**
  * This class adds some new behaviour to the standard ActionExecuterAbstractBase
  * in order to support the RenditionService.

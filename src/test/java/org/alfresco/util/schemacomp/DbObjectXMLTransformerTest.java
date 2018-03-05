@@ -65,8 +65,6 @@ import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.star.uno.RuntimeException;
-
 /**
  * Tests for the {@link DbObjectXMLTransformer} class.
  * 

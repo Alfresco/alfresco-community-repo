@@ -33,8 +33,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.StringUtils;
 
-import com.sun.star.uno.RuntimeException;
-
 /**
  * Creates string-pair hashes of {@link NodeRef}s where the first string is a
  * stored hash combination for {@link NodeRef} store elements (protocol and id)

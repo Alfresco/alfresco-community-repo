@@ -238,9 +238,7 @@ public class RMSiteTests extends BaseRMRestTest
         createRMSiteIfNotExists();
 
         // Create RM site model
-        RMSite rmSiteToUpdate = RMSite.builder().build();
-        rmSiteToUpdate.setTitle(NEW_TITLE);
-        rmSiteToUpdate.setDescription(NEW_DESCRIPTION);
+        RMSite rmSiteToUpdate = RMSite.builder().title(NEW_TITLE).description(NEW_DESCRIPTION).build();
 
         // Create the RM site
         getRestAPIFactory().getRMSiteAPI(getDataUser().createRandomTestUser("testUser")).updateRMSite(rmSiteToUpdate);

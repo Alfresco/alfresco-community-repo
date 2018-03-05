@@ -39,8 +39,9 @@ public class Tag implements Comparable<Tag>
 {
 	private NodeRef nodeRef;
 	private String tag;
+	private Integer count;
 
-	public Tag()
+    public Tag()
 	{
 	}
 	
@@ -70,6 +71,17 @@ public class Tag implements Comparable<Tag>
 	public void setTag(String tag)
 	{
 		this.tag = tag;
+	}
+	
+	public Integer getCount()
+	{
+	
+	    return count;
+	}
+
+	public void setCount(Integer count)
+	{
+	    this.count = count;
 	}
 
 	/*

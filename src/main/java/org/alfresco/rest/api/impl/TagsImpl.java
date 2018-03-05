@@ -58,7 +58,8 @@ import org.alfresco.util.TypeConstraint;
  */
 public class TagsImpl implements Tags
 {
-	private Nodes nodes;
+	private static final Object PARAM_INCLUDE_COUNT = "count";
+    private Nodes nodes;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	
@@ -125,20 +126,40 @@ public class TagsImpl implements Tags
     	taggingService.removeTag(nodeRef, tagValue);
     }
 
-    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Paging paging)
+    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
-    	PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging));
-    	Integer totalItems = results.getTotalResultCount().getFirst();
-    	List<Pair<NodeRef, String>> page = results.getPage();
-    	List<Tag> tags = new ArrayList<Tag>(page.size());
-    	for(Pair<NodeRef, String> pair : page)
-    	{
-    		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
-    	}
+        Paging paging = params.getPaging();
+        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging));
+        taggingService.getPagedTags(storeRef, 0, paging.getMaxItems());
+        Integer totalItems = results.getTotalResultCount().getFirst();
+        List<Pair<NodeRef, String>> page = results.getPage();
+        List<Tag> tags = new ArrayList<Tag>(page.size());
+        List<Pair<String, Integer>> tagsByCount = null;
 
-    	return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+        if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
+        {
+            tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
+        }
+        for (Pair<NodeRef, String> pair : page)
+        {
+            Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
+            if (tagsByCount != null)
+            {
+                for (Pair<String, Integer> tagByCount : tagsByCount)
+                {
+                    if (tagByCount.getFirst().equals(selectedTag.getTag()))
+                    {
+                        selectedTag.setCount(tagByCount.getSecond());
+                        break;
+                    }
+                }
+            }
+            tags.add(selectedTag);
+        }
+
+        return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
-    
+
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);

@@ -62,7 +62,7 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>, Entit
     @WebApiDescription(title="A paged list of all tags in the network.")
 	public CollectionWithPagingInfo<Tag> readAll(Parameters parameters)
 	{
-		return tags.getTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parameters.getPaging());
+		return tags.getTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parameters);
 	}
 
 	@Override

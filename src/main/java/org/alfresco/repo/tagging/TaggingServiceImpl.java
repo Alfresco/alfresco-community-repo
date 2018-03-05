@@ -1547,25 +1547,24 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTagsCountByTaggedNode(StoreRef)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodesAndCountByTagName(StoreRef)
      */
     @Override
-    public List<Pair<String, Integer>> getTagsCountByTaggedNodes(StoreRef storeRef)
+    public List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef)
     {
         String queryTaggeble = "ASPECT:\"" + ContentModel.ASPECT_TAGGABLE + "\"" + "-ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"";
-        ResultSet resultSet = null;
         SearchParameters sp = new SearchParameters();
         sp.setQuery(queryTaggeble);
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.addStore(storeRef);
         sp.addFieldFacet(new FieldFacet("TAG"));
 
+        ResultSet resultSet = null;
         try
         {
             // Do the search for nodes
             resultSet = this.searchService.query(sp);
             return resultSet.getFieldFacet("TAG");
-
         }
         finally
         {

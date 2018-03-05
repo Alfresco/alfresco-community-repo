@@ -309,13 +309,13 @@ public interface TaggingService
     
     
     /**
-     * Get tags with count tagged nodes
+     * Get tagged nodes and count of nodes group by tag name
      * 
      * @param storeRef
      * @return
      */
     @NotAuditable
-    List<Pair<String, Integer>> getTagsCountByTaggedNodes(StoreRef storeRef);
+    List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef);
 
 }
 

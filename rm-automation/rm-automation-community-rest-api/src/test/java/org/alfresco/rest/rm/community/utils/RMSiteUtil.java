@@ -60,10 +60,7 @@ public class RMSiteUtil
      */
     public static RMSite createRMSiteModel(RMSiteCompliance compliance, String title, String description)
     {
-        RMSite rmSiteModel = RMSite.builder().compliance(compliance).build();
-        rmSiteModel.setTitle(title);
-        rmSiteModel.setDescription(description);
-        return rmSiteModel;
+        return RMSite.builder().compliance(compliance).title(title).description(description).build();
     }
 
     /**

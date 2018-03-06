@@ -33,8 +33,10 @@ import static org.junit.Assert.fail;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.alfresco.repo.tenant.TenantUtil;
@@ -43,25 +45,35 @@ import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.SiteMembershipRequests;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.MemberOfSite;
+import org.alfresco.rest.api.tests.client.data.SiteMembershipApproval;
+import org.alfresco.rest.api.tests.client.data.SiteMembershipRejection;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.servlet.http.HttpServletResponse;
+
 @SuppressWarnings("unused")
 public class TestSiteMembershipRequests extends EnterpriseTestApi
 {
+	private static final String URL_SITES = "sites";
+	
 	private TestNetwork network1;
 	private TestNetwork network2;
 
@@ -1462,4 +1474,447 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
 		siteMembershipRequest.setMessage("Please can I join your site?");
 		SiteMembershipRequest ret = siteMembershipRequestsProxy.createSiteMembershipRequest(person1.getId(), siteMembershipRequest);
 	}
+
+    @Test
+    public void testGetSiteMembershipRequests() throws Exception
+    {
+        String networkId = network1.getId();
+
+        final TestNetwork systemNetwork = getRepoService().getSystemNetwork();
+
+        // note: username for site creator is of the form user@network
+        TestPerson siteManager = network1.createUser();
+        TestPerson person1 = network1.createUser();
+        TestPerson person2 = network1.createUser();
+
+        TestSite sitePublic = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                TestSite site = systemNetwork.createSite(SiteVisibility.PUBLIC);
+                return site;
+            }
+        }, siteManager.getId(), networkId);
+
+        TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+                return site;
+            }
+        }, siteManager.getId(), networkId);
+
+        TestSite site2 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+                return site;
+            }
+        }, siteManager.getId(), networkId);
+
+        // Public site.
+        publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+        SiteMembershipRequest siteMembershipRequest = new SiteMembershipRequest();
+        siteMembershipRequest.setId(sitePublic.getSiteId());
+        siteMembershipRequest.setMessage("Please can I join your site?");
+        SiteMembershipRequest ret = siteMembershipRequestsProxy.createSiteMembershipRequest(person1.getId(), siteMembershipRequest);
+
+        assertNotNull(ret);
+
+        // Moderated site.
+        publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+        siteMembershipRequest = new SiteMembershipRequest();
+        siteMembershipRequest.setId(site.getSiteId());
+        siteMembershipRequest.setMessage("Please can I join your site?");
+        ret = siteMembershipRequestsProxy.createSiteMembershipRequest(person1.getId(), siteMembershipRequest);
+
+        assertNotNull(ret);
+
+        int skipCount = 0;
+        int maxItems = Integer.MAX_VALUE;
+        Paging paging = getPaging(skipCount, maxItems);
+
+        // Test that we have a moderated site request only.
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            ListResponse<SiteMembershipRequest> resp = getSiteMembershipRequests(paging, null);
+            List<SiteMembershipRequest> list = resp.getList();
+
+            assertEquals(1, list.size());
+
+            SiteMembershipRequest smr = list.get(0);
+
+            // Check if the person details is retrieved.
+            assertNotNull(smr.getPerson());
+            assertNotNull(smr.getPerson().getUserName());
+        }
+
+        // Test that the user has no site membership requests.
+
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, person2.getId()));
+
+            ListResponse<SiteMembershipRequest> resp = getSiteMembershipRequests(paging, null);
+            List<SiteMembershipRequest> list = resp.getList();
+
+            assertEquals(0, list.size());
+        }
+
+        // Test retrieve site membership request using where clause.
+
+        {
+            // Prepare test data.
+
+            publicApiClient.setRequestContext(new RequestContext("-default-", person2.getId()));
+            ret = createSiteMembershipRequest(site.getSiteId(), person2.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+            ret = createSiteMembershipRequest(site2.getSiteId(), person1.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            ListResponse<SiteMembershipRequest> resp = getSiteMembershipRequests(paging, null);
+            List<SiteMembershipRequest> list = resp.getList();
+
+            assertEquals(3, list.size());
+
+            // Test filter by site id.
+
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("where", "(siteId='" + site.getSiteId() + "')");
+
+            resp = getSiteMembershipRequests(paging, otherParams);
+            list = resp.getList();
+
+            assertEquals(2, list.size());
+
+            // Test filter by person id.
+
+            otherParams = new HashMap<>();
+            otherParams.put("where", "(personId='" + person2.getId() + "')");
+
+            resp = getSiteMembershipRequests(paging, otherParams);
+            list = resp.getList();
+
+            assertEquals(1, list.size());
+
+            // Test filter by site and personId
+
+            otherParams = new HashMap<>();
+            otherParams.put("where", "(siteId='" + site.getSiteId() + "' and personId='" + person2.getId() + "')");
+
+            resp = getSiteMembershipRequests(paging, otherParams);
+            list = resp.getList();
+
+            assertEquals(1, list.size());
+        }
+
+        {
+            TestPerson person3 = network1.createUser();
+
+            publicApiClient.setRequestContext(new RequestContext("-default-", person3.getId()));
+            ret = createSiteMembershipRequest(site.getSiteId(), person3.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            approve(site.getSiteId(), person3.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_OK, null);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, person3.getId()));
+
+            ListResponse<SiteMembershipRequest> resp = getSiteMembershipRequests(paging, null);
+            List<SiteMembershipRequest> list = resp.getList();
+
+            assertEquals(0, list.size());
+        }
+    }
+    
+    @Test
+    public void testApproveSiteMembershipRequests() throws Exception {
+		String networkId = network1.getId();
+
+		final TestNetwork systemNetwork = getRepoService().getSystemNetwork();
+
+		TestPerson siteManager = network1.createUser();
+
+		TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
+			@Override
+			public TestSite doWork() throws Exception {
+				TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+				return site;
+			}
+		}, siteManager.getId(), networkId);
+
+		TestPerson person1 = network1.createUser();
+		TestPerson person2 = network1.createUser();
+
+		publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+		SiteMembershipRequest ret = createSiteMembershipRequest(site.getSiteId(), person1.getId());
+		assertNotNull(ret);
+
+		publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+		// Site not found.
+		approve("siteId", person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+
+		// Invitee not found.
+		approve(site.getSiteId(), null, new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+
+		// Invitation not found.
+		approve(site.getSiteId(), person2.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+
+        {
+        	// Create moderated site.
+			TestSite tempSite = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
+				@Override
+				public TestSite doWork() throws Exception {
+					TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+					return site;
+				}
+			}, siteManager.getId(), networkId);
+
+            // Create site membership request
+            publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+            ret = createSiteMembershipRequest(tempSite.getSiteId(), person1.getId());
+            assertNotNull(ret);
+
+            // Change site visibility to private.
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            SiteInfo tempSiteInfo = tempSite.getSiteInfo();
+            assertEquals(SiteVisibility.MODERATED, tempSiteInfo.getVisibility());
+
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    tempSite.setSiteVisibility(SiteVisibility.PRIVATE);
+                    assertEquals(SiteVisibility.PRIVATE, tempSiteInfo.getVisibility());
+                    return null;
+                }
+            }, siteManager.getId(), networkId);
+
+            // Site private so not found error.
+            approve(tempSite.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+        }
+		
+		// User tries to approve his own request.
+		{
+			publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+
+			approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+		}
+
+        // Valid request.
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_OK, null);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+
+            MemberOfSite memberOfSite = publicApiClient.sites().getPersonSite(person1.getId(), site.getSiteId());
+            assertNotNull(memberOfSite);
+            assertEquals(SiteRole.SiteConsumer, memberOfSite.getRole());
+        }
+
+        // Approve again.
+		approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+        
+		{
+			TestSite tempSite = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
+				@Override
+				public TestSite doWork() throws Exception {
+					TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+					return site;
+                }
+            }, siteManager.getId(), networkId);
+
+            // Create site membership request
+            publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+            ret = createSiteMembershipRequest(tempSite.getSiteId(), person1.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            // Invalid role.
+            approve(tempSite.getSiteId(), person1.getId(), new SiteMembershipApproval("invalidRole"), HttpServletResponse.SC_BAD_REQUEST, null);
+
+            approve(tempSite.getSiteId(), person1.getId(), new SiteMembershipApproval(SiteRole.SiteCollaborator.toString()), HttpServletResponse.SC_OK, null);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+
+            MemberOfSite memberOfSite = publicApiClient.sites().getPersonSite(person1.getId(), tempSite.getSiteId());
+            assertNotNull(memberOfSite);
+            assertEquals(SiteRole.SiteCollaborator, memberOfSite.getRole());
+		}
+	}
+
+	@Test
+	public void testRejectSiteMembershipRequests() throws Exception {
+		String networkId = network1.getId();
+
+		final TestNetwork systemNetwork = getRepoService().getSystemNetwork();
+
+		TestPerson siteManager = network1.createUser();
+
+		TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
+			@Override
+			public TestSite doWork() throws Exception {
+				TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+				return site;
+			}
+		}, siteManager.getId(), networkId);
+
+		TestPerson person1 = network1.createUser();
+		TestPerson person2 = network1.createUser();
+
+		publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+		SiteMembershipRequest ret = createSiteMembershipRequest(site.getSiteId(), person1.getId());
+		assertNotNull(ret);
+
+		publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+		// Site not found.
+		reject("siteId", person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+
+		// Invitee not found.
+		reject(site.getSiteId(), null, new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+
+		// Invitation not found.
+		reject(site.getSiteId(), person2.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+
+		{
+			// Create moderated site.
+			TestSite tempSite = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
+				@Override
+				public TestSite doWork() throws Exception {
+					TestSite site = systemNetwork.createSite(SiteVisibility.MODERATED);
+					return site;
+				}
+			}, siteManager.getId(), networkId);
+
+			// Create site membership request
+			publicApiClient.setRequestContext(new RequestContext("-default-", person1.getId()));
+			ret = createSiteMembershipRequest(tempSite.getSiteId(), person1.getId());
+			assertNotNull(ret);
+
+			// Change site visibility to private.
+
+			publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+			SiteInfo tempSiteInfo = tempSite.getSiteInfo();
+			assertEquals(SiteVisibility.MODERATED, tempSiteInfo.getVisibility());
+
+			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+			{
+				@Override
+				public Void doWork() throws Exception
+				{
+					tempSite.setSiteVisibility(SiteVisibility.PRIVATE);
+					assertEquals(SiteVisibility.PRIVATE, tempSiteInfo.getVisibility());
+					return null;
+				}
+			}, siteManager.getId(), networkId);
+
+			// Site private so not found error.
+			reject(tempSite.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+		}
+
+		// User tries to reject his own request.
+		{
+			publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+
+			reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+		}
+
+        // Valid request.
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_OK, null);
+
+            int skipCount = 0;
+            int maxItems = Integer.MAX_VALUE;
+            Paging paging = getPaging(skipCount, maxItems);
+
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("where", "(siteId='" + site.getSiteId() + "')");
+
+            ListResponse<SiteMembershipRequest> resp = getSiteMembershipRequests(paging, otherParams);
+            List<SiteMembershipRequest> list = resp.getList();
+
+            assertEquals(0, list.size());
+        }
+
+		// Reject again.
+		reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+    }
+
+    private ListResponse<SiteMembershipRequest> getSiteMembershipRequests(final Paging paging, Map<String, String> otherParams) throws Exception
+    {
+        return siteMembershipRequestsProxy.getSiteMembershipRequests(createParams(paging, otherParams), "Failed to get site membership requests", HttpServletResponse.SC_OK);
+    }
+
+    private SiteMembershipRequest createSiteMembershipRequest(String siteId, String personId) throws ParseException, PublicApiException
+    {
+        SiteMembershipRequest siteMembershipRequest = new SiteMembershipRequest();
+        siteMembershipRequest.setId(siteId);
+        siteMembershipRequest.setMessage("Please can I join your site?");
+
+        return siteMembershipRequestsProxy.createSiteMembershipRequest(personId, siteMembershipRequest);
+    }
+
+    private void approve(String siteId, String inviteeId, SiteMembershipApproval siteMembershipApproval, int expectedStatus, Map<String, String> parameters) throws Exception
+    {
+        String scope = "public";
+        String url = getMembershipRequestApprovalUrl(siteId, inviteeId);
+        String body = RestApiUtil.toJsonAsString(siteMembershipApproval);
+
+        HttpResponse response = publicApiClient.post(scope, url, null, null, null, body);
+        checkStatus(expectedStatus, response.getStatusCode());
+    }
+
+    private void reject(String siteId, String inviteeId, SiteMembershipRejection siteMembershipRejection, int expectedStatus, Map<String, String> parameters) throws Exception
+    {
+        String scope = "public";
+        String url = getMembershipRequestRejectionUrl(siteId, inviteeId);
+        String body = RestApiUtil.toJsonAsString(siteMembershipRejection);
+
+        HttpResponse response = publicApiClient.post(scope, url, null, null, null, body);
+        checkStatus(expectedStatus, response.getStatusCode());
+    }
+
+    private String getMembershipRequestApprovalUrl(String siteId, String inviteeId)
+    {
+        return getMembershipRequestUrlByAction(siteId, inviteeId, "approve");
+    }
+
+    private String getMembershipRequestRejectionUrl(String siteId, String inviteeId)
+    {
+        return getMembershipRequestUrlByAction(siteId, inviteeId, "reject");
+    }
+
+    private String getMembershipRequestUrlByAction(String siteId, String inviteeId, String action)
+    {
+        return URL_SITES + '/' + siteId + "/site-membership-requests/" + inviteeId + "/" + action;
+    }
+
+    private void checkStatus(int expectedStatus, int actualStatus)
+    {
+        if (expectedStatus > 0 && expectedStatus != actualStatus)
+        {
+            fail("Status code " + actualStatus + " returned, but expected " + expectedStatus);
+        }
+    }
 }

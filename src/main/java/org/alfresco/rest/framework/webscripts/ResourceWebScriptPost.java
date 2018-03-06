@@ -171,7 +171,16 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         Object jsonContent = null;
                         if (objType != null)
                         {
-                            jsonContent = extractJsonContent(req, assistant.getJsonHelper(), objType);
+                            // check if the body is optional and is not provided
+                            if (!resourceParameter.isRequired() && Integer.valueOf(req.getHeader("content-length")) <= 0)
+                            {
+                                // in some cases the body is optional and the json doesn't need to be extracted
+                                return null;
+                            }
+                            else
+                            {
+                                jsonContent = extractJsonContent(req, assistant.getJsonHelper(), objType);
+                            }
                         }
                         
                         if (isTypeOperation)

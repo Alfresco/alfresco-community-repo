@@ -411,7 +411,7 @@ public abstract class BaseAPI
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("POST request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
+            assertEquals("POST request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)

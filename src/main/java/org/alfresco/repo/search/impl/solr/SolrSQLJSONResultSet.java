@@ -76,6 +76,10 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
                 if(obj1.has(SOLR_STREAM_EXCEPTION)) 
                 {
                     String error =  obj1.get(SOLR_STREAM_EXCEPTION).toString();
+                    if(error.equalsIgnoreCase("/sql handler only works in Solr Cloud mode"))
+                    {
+                        throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
+                    }
                     throw new RuntimeException("Unable to execute the query, error caused by: " + error);
                 }
             }

@@ -69,6 +69,27 @@ public class SolrSQLJSONResultSetTest
             Assert.assertNotNull(e);
             Assert.assertEquals("Unable to execute the query, error caused by: Column 'SIT1E' not found in any table", e.getMessage());
         }
-       
+    }
+    
+    /**
+     * Validates that when a query is done against SearchService then it should state that it works only with
+     * Insight Engine.
+     * @throws JSONException
+     */
+    @Test
+    public void parseInvalidInsightEngineResponse() throws JSONException
+    {
+        String response = "{\"result-set\":{\"docs\":[{\"EXCEPTION\":\"/sql handler only works in Solr Cloud mode\",\"EOF\":true}]}}";
+        try
+        {
+            JSONObject json = new JSONObject(response);
+            SolrSQLJSONResultSet ssjr = new SolrSQLJSONResultSet(json, null);
+            Assert.assertNull(ssjr);
+        }
+        catch (RuntimeException e)
+        {
+            Assert.assertNotNull(e);
+            Assert.assertEquals("Unable to execute the query, this API requires InsightEngine.", e.getMessage());
+        }
     }
 }

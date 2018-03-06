@@ -38,7 +38,7 @@ public interface Tags
     public List<Tag> addTags(String nodeId, List<Tag> tags);
     public Tag getTag(StoreRef storeRef, String tagId);
     public void deleteTag(String nodeId, String tagId);
-    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Paging paging);
+    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params);
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag);
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params);
 }

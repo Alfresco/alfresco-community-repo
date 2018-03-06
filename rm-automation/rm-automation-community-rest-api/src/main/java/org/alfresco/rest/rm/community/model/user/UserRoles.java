@@ -24,11 +24,16 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.rm.community.model.user;
+
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Set;
 
 /**
  * Constants for RM user roles
- * 
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
@@ -39,4 +44,8 @@ public class UserRoles
     public static final String ROLE_RM_POWER_USER = "PowerUser";
     public static final String ROLE_RM_SECURITY_OFFICER = "SecurityOfficer";
     public static final String ROLE_RM_USER = "User";
+
+    /** The ids of the default RM roles. */
+    public static final Set<String> RM_ROLES = newHashSet(ROLE_RM_ADMIN, ROLE_RM_MANAGER, ROLE_RM_POWER_USER,
+                ROLE_RM_SECURITY_OFFICER, ROLE_RM_USER);
 }

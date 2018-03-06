@@ -39,6 +39,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
@@ -70,6 +71,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class RMRolesAndActionsAPI extends BaseAPI
 {
+    /** The URI to view the configured roles and capabilities. */
+    private static final String RM_ROLES = "{0}rma/admin/rmroles";
+    /** The URI for REST requests about a particular configured role. */
+    private static final String RM_ROLES_ROLE = RM_ROLES + "/{1}";
     private static final String RM_ROLES_AUTHORITIES = "{0}rm/roles/{1}/authorities/{2}?alf_ticket={3}";
 
     // logger
@@ -87,6 +92,75 @@ public class RMRolesAndActionsAPI extends BaseAPI
 
     @Autowired
     private ContentService contentService;
+
+    /**
+     * Get all the configured RM roles.
+     *
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
+     * @return The RM roles in the system (Note that this will be the internal names, not the display labels).
+     */
+    public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
+    {
+        // Using "is=true" includes the in-place readers and writers.
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
+        return jsonObject.toMap().keySet();
+    }
+
+    /**
+     * Get the capabilities for a given role.
+     *
+     * @param adminUser The RM admin user.
+     * @param adminPassword The password of the user.
+     * @param role The role to get capabilities for.
+     * @return The set of system names for the capabilities.
+     */
+    public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
+    {
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES).getJSONObject("data");
+        assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
+        return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
+    }
+
+    /**
+     * Create a new RM role.
+     *
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the new role.
+     * @param roleDisplayLabel A human-readable label for the role.
+     * @param capabilities A list of capabilities for the role.
+     */
+    public void createRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
+    {
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("name", roleName);
+        requestBody.put("displayLabel", roleDisplayLabel);
+        JSONArray capabilitiesArray = new JSONArray();
+        capabilities.forEach(capabilitiesArray::put);
+        requestBody.put("capabilities", capabilitiesArray);
+        doPostJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES);
+    }
+
+    /**
+     * Update an existing RM role.
+     *
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the new role.
+     * @param roleDisplayLabel A human-readable label for the role.
+     * @param capabilities A list of capabilities for the role.
+     */
+    public void updateRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
+    {
+        JSONObject requestBody = new JSONObject();
+        requestBody.put("name", roleName);
+        requestBody.put("displayLabel", roleDisplayLabel);
+        JSONArray capabilitiesArray = new JSONArray();
+        capabilities.forEach(capabilitiesArray::put);
+        requestBody.put("capabilities", capabilitiesArray);
+        doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES_ROLE, roleName);
+    }
 
     /**
      * create user and assign to records management role

@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import com.sun.star.lang.IllegalArgumentException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Queries;

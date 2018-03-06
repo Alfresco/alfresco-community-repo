@@ -25,11 +25,15 @@
  */
 package org.alfresco.repo.webdav;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.rest.api.tests.client.data.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -78,6 +82,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the {@link PutMethod} class.
@@ -114,6 +120,7 @@ public class PutMethodTest
     private ContentService contentService;
     private CheckOutCheckInService checkOutCheckInService;
     private PermissionService permissionService;
+    private ActionService actionService;
 
     private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
@@ -148,6 +155,7 @@ public class PutMethodTest
         checkOutCheckInService = ctx.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
         permissionService = ctx.getBean("PermissionService", PermissionService.class);
         namespaceService = ctx.getBean("namespaceService", NamespaceService.class);
+        actionService = ctx.getBean("ActionService", ActionService.class);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
@@ -805,8 +813,14 @@ public class PutMethodTest
         String lockHeaderValue = "(<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">)";
         HashMap<String, String> headers = new HashMap<String, String>();
         headers.put(WebDAV.HEADER_IF, lockHeaderValue);
+        // Simulate any failure during the content write
+        // null content is no longer null in MockHttpServletRequest (Spring 5)
+        ActionService mockActionService = mock(ActionService.class);
+        when(mockActionService.createAction(ContentMetadataExtracter.EXECUTOR_NAME))
+                .thenThrow(new AlfrescoRuntimeException("Negative test"));
         try
         {
+            webDAVHelper.setActionService(mockActionService);
             // setting a null content
             executeMethod(WebDAV.METHOD_PUT, fileName, null, headers);
 
@@ -823,6 +837,10 @@ public class PutMethodTest
         catch (Exception e)
         {
             throw new RuntimeException("Failed to upload a file", e);
+        }
+        finally
+        {
+            webDAVHelper.setActionService(actionService);
         }
 
         if (fileNoderef != null && nodeService.exists(fileNoderef))

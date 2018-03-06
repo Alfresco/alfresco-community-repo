@@ -32,13 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.opencmis.OpenCMISClientContext;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.TestParameters;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
 import org.junit.Before;
 
 /**
@@ -55,9 +53,10 @@ public class TestPublicApiBrowser11TCK extends AbstractEnterpriseOpenCMIS11TCKTe
 	@Before
 	public void before() throws Exception
 	{
-        //see REPO-1524	
-        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-        assumeFalse(dialect instanceof AlfrescoOracle9Dialect);
+        // see REPO-1524
+        // the tests are always run on PostgreSQL only
+//        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+//        assumeFalse(dialect instanceof Oracle9Dialect);
 
 		int port = getTestFixture().getJettyComponent().getPort();
 		TestNetwork network = getTestFixture().getRandomNetwork();

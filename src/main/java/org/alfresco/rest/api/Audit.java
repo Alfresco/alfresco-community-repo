@@ -31,8 +31,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-import com.sun.star.auth.InvalidArgumentException;
-
 /**
  * Handles audit (applications & entries)
  *
@@ -91,7 +89,6 @@ public interface Audit
      *            if null then across all audit apps
      * @param parameters
      * @return Collection of audit entries
-     * @throws InvalidArgumentException 
      */
      CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
 

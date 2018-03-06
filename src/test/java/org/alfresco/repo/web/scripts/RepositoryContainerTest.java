@@ -42,11 +42,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.CronTriggerBean;
 import org.alfresco.util.PropertyMap;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.quartz.CronTrigger;
+import org.quartz.Scheduler;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
@@ -161,13 +162,12 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         assertEquals(SUCCESS, response.getContentAsString());
         
         // trigger the webscript temp folder cleaner job
-        CronTriggerBean webscriptsTempFileCleanerJobTrigger = (CronTriggerBean) getServer().getApplicationContext().getBean("webscripts.tempFileCleanerTrigger");
-        
-        webscriptsTempFileCleanerJobTrigger.getScheduler().triggerJobWithVolatileTrigger(
-                webscriptsTempFileCleanerJobTrigger.getJobDetail().getName(),
-                webscriptsTempFileCleanerJobTrigger.getJobDetail().getGroup(),
-                webscriptsTempFileCleanerJobTrigger.getJobDetail().getJobDataMap());
-        
+        CronTrigger webscriptsTempFileCleanerJobTrigger = (CronTrigger) getServer().getApplicationContext().getBean("webscripts.tempFileCleanerTrigger");
+
+        Scheduler scheduler = (Scheduler) getServer().getApplicationContext().getBean("schedulerFactory");
+
+        scheduler.triggerJob(webscriptsTempFileCleanerJobTrigger.getJobKey());
+
         // check that we still can upload file larger than 4 mb, i.e. ensure that cleaner has not deleted temp folder
         response = sendRequest(new PutRequest("/test/largecontenttest", content, "text/plain"), STATUS_OK);
         assertEquals(SUCCESS, response.getContentAsString());

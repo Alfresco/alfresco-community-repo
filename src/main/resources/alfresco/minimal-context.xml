@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
 <!-- This is the smallest XML configuration that will manage to start -->
 <!-- Many parts of the application are missing though, so don't expect -->
 <!--  to be able to do much more than run core unit tests with it -->
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!--
          Import the core parts of the context. They are required

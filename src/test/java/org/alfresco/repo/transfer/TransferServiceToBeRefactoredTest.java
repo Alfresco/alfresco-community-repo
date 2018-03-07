@@ -94,8 +94,12 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ResourceUtils;
 
@@ -111,6 +115,7 @@ import org.springframework.util.ResourceUtils;
  */
 @SuppressWarnings("deprecation")
 @Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Transactional
 public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest 
 {
     private TransferService transferService;
@@ -134,27 +139,18 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     String REPO_ID_A = "RepoIdA";
     String REPO_ID_B;
     String REPO_ID_C = "RepoIdC";
-    
-    @Override
-    public void runBare() throws Throwable
-    {
-        preventTransaction();
-        super.runBare();
-    }
 
-    /**
-     * Called during the transaction setup
-     */
-    protected void onSetUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
+        super.before();
+
+        TestTransaction.end();
         // Catch transactions left dangling by inadequate transaction handling during test failures
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             fail("Dangling transaction at start of test.");
         }
-        
-        super.onSetUp();
-        
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
         this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
@@ -179,7 +175,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
         
         authenticationComponent.setSystemUserAsCurrentUser();
-        setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
+//        setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
         assertNotNull("receiver is null", this.receiver);     
     }
     
@@ -188,10 +184,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testTransferReport() throws Exception
     {
-        setDefaultRollback(false);
-
         final NodeRef guestHome = repositoryHelper.getGuestHome();
 
         /**
@@ -285,8 +280,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
          * Step 1.
          * Call the transfer method. to get a failed transfer - orphan nodes exist
          */
-        setDefaultRollback(true);
-        startNewTransaction();
+        TestTransaction.start();
         try
         {
             TestTransferCallback callback = new TestTransferCallback();
@@ -342,11 +336,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            endTransaction();
+            TestTransaction.end();
         }
-
-        setDefaultRollback(false);
-
+        
         /**
          * Now validate the client side error transfer report against the xsd file
          */
@@ -622,10 +614,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      *   restore node A2 (and A4 and A5 cascade restore)
      *   transfer
      */
+    @Test
     public void testTransferSyncNodes() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
@@ -1333,10 +1324,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)</li>
      * </ol>   
      */
+    @Test
     public void testTransferInvadedByLocalAlienNodes() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.JAPAN;
         final String CONTENT_STRING = "Hello";
@@ -2017,10 +2007,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * </ol>
      * @throws Exception
      */
+    @Test
     public void testLocalAlienRestore() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
 
         /**
@@ -2347,10 +2336,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * <p>
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testTransferWithPermissions() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
@@ -2683,10 +2671,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * Step 5
      * remove locks on A and B - transfer without read only flag - content should all be unlocked.
      */
+    @Test
     public void testReadOnlyFlag() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "The quick brown fox";
@@ -3079,6 +3066,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * transfer 
      * 
      */
+    @Test
     public void testTwoRepoSync() throws Exception
     {
         /**
@@ -3089,7 +3077,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
         * transfer (sync)
         */
-        setDefaultRollback(false);
 
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
@@ -3400,10 +3387,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * Step 5.  Delete C3  - A2 dest images folder uninvaded.
        
      */
+    @Test
     public void testMultiRepoTransfer() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
 
         final String targetName = "testMultiRepoTransfer";
@@ -3827,10 +3813,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * A4 should be invaded by B due to B6 but not by A.
      * C2Dest should not be invaded.
      */
+    @Test
     public void testMultiRepoTransferMove() throws Exception
     {
-        setDefaultRollback(false);
-
         final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
 
         final String CONTENT_TITLE = "ContentTitle";
@@ -4234,10 +4219,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * <p>
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testCopyTransferredNode() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
 
         /**
@@ -4465,10 +4449,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * B6 Copy not invaded.
      * 
      */
+    @Test
     public void testCopyAlien() throws Exception
     {
-        setDefaultRollback(false);
-
         final String CONTENT_TITLE = "ContentTitle";
 
         final String targetName = "testCopyAlien";

@@ -25,17 +25,17 @@
  */
 package org.alfresco.util.schemacomp.test.exportdb;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import org.alfresco.util.schemacomp.ExportDb;
 import org.alfresco.util.schemacomp.ExportDbTest;
 import org.alfresco.util.schemacomp.model.DbObject;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Base class for DBMS-specific ExportDb tests.
@@ -47,10 +47,10 @@ public abstract class AbstractExportTester
 {
     protected ExportDb exporter;
     protected PlatformTransactionManager tx;
-    protected SimpleJdbcTemplate jdbcTemplate;
+    protected JdbcTemplate jdbcTemplate;
     private final static Log log = LogFactory.getLog(AbstractExportTester.class);
     
-    public AbstractExportTester(ExportDb exporter, PlatformTransactionManager tx, SimpleJdbcTemplate jdbcTemplate)
+    public AbstractExportTester(ExportDb exporter, PlatformTransactionManager tx, JdbcTemplate jdbcTemplate)
     {
         this.exporter = exporter;
         this.tx = tx;

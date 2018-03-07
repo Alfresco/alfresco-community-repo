@@ -49,6 +49,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.GenericApplicationListenerAdapter;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.core.OrderComparator;
+import org.springframework.core.ResolvableType;
 
 /**
  * Abstract implementation of the {@link ApplicationEventMulticaster} interface,
@@ -197,6 +198,12 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
         {
             this.queuedEvents.add(event);
         }
+    }
+
+    @Override
+    public void multicastEvent(ApplicationEvent event, ResolvableType eventType)
+    {
+        multicastEvent(event);
     }
 
     @SuppressWarnings("unchecked")

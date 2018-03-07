@@ -193,7 +193,12 @@ import org.junit.runners.Suite;
     org.alfresco.heartbeat.ConfigurationDataCollectorTest.class,
     org.alfresco.heartbeat.InfoDataCollectorTest.class,
     org.alfresco.heartbeat.ModelUsageDataCollectorTest.class,
-    org.alfresco.heartbeat.SystemUsageDataCollectorTest.class
+    org.alfresco.heartbeat.SystemUsageDataCollectorTest.class,
+
+    org.alfresco.repo.domain.DialectFactoryBeanTest.class,
+    org.alfresco.util.BeanExtenderUnitTest.class,
+    org.alfresco.util.bean.HierarchicalBeanLoaderTest.class,
+    org.alfresco.util.resource.HierarchicalResourceLoaderTest.class
 })
 public class AllUnitTestsSuite
 {

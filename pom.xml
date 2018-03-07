@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>6.27-SNAPSHOT</version>
+    <version>6.30-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -36,16 +36,15 @@
         <img.exe>convert</img.exe>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
-        <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
-        <dependency.alfresco-core.version>6.17</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>7.0</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>7.3-SNAPSHOT</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.1</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-        <dependency.alfresco-hb-data-sender.version>1.0.4</dependency.alfresco-hb-data-sender.version>
+        <dependency.alfresco-hb-data-sender.version>1.0.5</dependency.alfresco-hb-data-sender.version>
 
 
-        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
         <dependency.httpcomponents.version>4.5.2</dependency.httpcomponents.version>
         <dependency.truezip.version>7.7.9</dependency.truezip.version>
         <dependency.poi.version>3.17</dependency.poi.version>
@@ -89,18 +88,13 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-mbeans</artifactId>
-            <version>${dependency.alfresco-mbeans.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
             <version>${dependency.alfresco-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-text-gen</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.services</groupId>
@@ -226,6 +220,26 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${dependency.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${dependency.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${dependency.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${dependency.spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${dependency.spring.version}</version>
         </dependency>
@@ -256,11 +270,6 @@
             <artifactId>truezip-file</artifactId>
             <version>${dependency.truezip.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.pdfview</groupId>
@@ -630,13 +639,18 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>3.1.7.RELEASE</version>
+            <version>5.0.1.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-expression</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.3.0</version>
         </dependency>
         <!-- Activiti -->
         <!-- Updated commons-email to 1.5 -->
@@ -745,12 +759,6 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${dependency.mariadb.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.192</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -1012,51 +1020,6 @@
                                     <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
                                 </copy>
                             </target>
-                        </configuration>
-                    </execution>
-                    <!-- ACE-4563 Package h2 dialect files, copying the PostgreSQL ones, to be reused by Maven SDK -->
-                    <execution>
-                        <id>package-h2scripts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <zip destfile="${project.build.directory}/h2scripts.jar">
-                                    <mappedresources>
-                                        <zipfileset dir="${basedir}/src/main/resources">
-                                            <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
-                                            <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
-                                        </zipfileset>
-                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2" />
-                                    </mappedresources>
-                                </zip>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                 <executions>
-                    <!-- ACE-4563 Attach h2 dialect file to project -->
-                    <execution>
-                        <id>attach-h2scripts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>${project.build.directory}/h2scripts.jar</file>
-                                    <type>jar</type>
-                                    <classifier>h2scripts</classifier>
-                                </artifact>
-                            </artifacts>
                         </configuration>
                     </execution>
                 </executions>

@@ -63,12 +63,17 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.email.ExtendedMailActionExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.test.annotation.Commit;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
 
 /**
  * Unit tests of Invitation Service
  */
+@Transactional
 public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static final String TEST_REJECT_URL = "testRejectUrl";
@@ -110,14 +115,11 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     
     private Collection<String> enabledEngines;
     private Collection<String> visibleEngines;
-    /**
-     * Called during the transaction setup
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         this.invitationService = (InvitationService) this.applicationContext.getBean("InvitationService");
         this.siteService = (SiteService) this.applicationContext.getBean("SiteService");
         this.personService = (PersonService) this.applicationContext.getBean("PersonService");
@@ -175,8 +177,8 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
     }
 
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
         // Make sure both workflow engines are enabled.and visible
         
@@ -193,7 +195,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 //        deletePersonByUserName(USER_TWO);
 //        deletePersonByUserName(USER_EVE);
 //        deletePersonByUserName(USER_MANAGER);
-        super.onTearDownInTransaction();
+        super.after();
     }
 
     /*
@@ -1332,6 +1334,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         
     }
 
+    @Commit
     public void disabled_test100Invites() throws Exception
     {
         Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
@@ -1362,9 +1365,6 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         
         assertEquals(1, results.size());
         assertEquals(invite.getInviteId(), results.get(0).getInviteId());
-        this.setComplete();
-        this.endTransaction();
-
     }
 
     public void testGetInvitation()

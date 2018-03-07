@@ -114,6 +114,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.site.SiteServiceImplMoreTest.class,
     org.alfresco.util.test.junitrules.TemporarySitesTest.class,
 
+    // [classpath:alfresco/application-context.xml, classpath:subsystem-test-context.xml]
+    org.alfresco.repo.management.subsystems.test.SubsystemsTest.class,
+
     // ======================================================================
     // any other order may lead to failing tests
     // ======================================================================

@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -91,10 +90,16 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Neil McErlean
@@ -103,6 +108,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  */
 @SuppressWarnings("deprecation")
 @Category({OwnJVMTestsCategory.class})
+@Transactional
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String WHITE = "ffffff";
@@ -127,10 +133,10 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     private ScriptService scriptService;
     private RetryingTransactionHelper transactionHelper;
     
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         this.namespaceService= (NamespaceService) this.applicationContext.getBean("namespaceService");
         this.renditionService = (RenditionService) this.applicationContext.getBean("renditionService");
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
@@ -148,10 +154,10 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         NodeRef companyHome = this.repositoryHelper.getCompanyHome();
 
         // Create the test folder used for these tests
-        this.testTargetFolder = createNode(companyHome, "testFolder", ContentModel.TYPE_FOLDER);
+        this.testTargetFolder = createNode(companyHome, "testFolder-" + GUID.generate(), ContentModel.TYPE_FOLDER);
 
         // Create the node used as a content supplier for tests
-        this.nodeWithDocContent  =  createContentNode(companyHome, "testDocContent");
+        this.nodeWithDocContent  =  createContentNode(companyHome, "testDocContent-" + GUID.generate());
         
         // Put some known PDF content in it.
         File pdfQuickFile = AbstractContentTransformerTest.loadQuickTestFile("pdf");
@@ -172,7 +178,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
 
         // Create a test image
-        this.nodeWithImageContent = createContentNode(companyHome, "testImageNode"); 
+        this.nodeWithImageContent = createContentNode(companyHome, "testImageNode-" + GUID.generate());
         // Stream some well-known image content into the node.       
         URL url = RenditionServiceIntegrationTest.class.getClassLoader().getResource("images/gray21.512.png");
         assertNotNull("url of test image was null", url);
@@ -181,6 +187,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         // Create a test template node.
         this.nodeWithFreeMarkerContent = createFreeMarkerNode(companyHome);
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
     }
 
     private NodeRef createContentNode(NodeRef companyHome, String name)
@@ -201,7 +210,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     private NodeRef createFreeMarkerNode(NodeRef companyHome)
     {
-        NodeRef fmNode = createContentNode(companyHome, "testFreeMarkerNode");
+        NodeRef fmNode = createContentNode(companyHome, "testFreeMarkerNode-" + GUID.generate());
         nodeService.setProperty(fmNode, ContentModel.PROP_CONTENT, new ContentData(null,
                     MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
 
@@ -217,19 +226,15 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         return fmNode;
     }
 
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
-        nodeService.deleteNode(nodeWithImageContent);
-        nodeService.deleteNode(nodeWithDocContent);
-        nodeService.deleteNode(nodeWithFreeMarkerContent);
-        nodeService.deleteNode(testTargetFolder);
+        super.after();
     }
     
+    @Test
     public void testRenderFreeMarkerTemplate() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
                     FreemarkerRenderingEngine.NAME);
 
@@ -265,10 +270,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         });
     }
 
+    @Test
     public void testHTMLRenderFreeMarkerTemplate() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
                 "htmlRenderingDefinition");
 
@@ -321,10 +325,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     }
 
+    @Test
     public void testRenderFreeMarkerTemplateOneTransaction() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
                     FreemarkerRenderingEngine.NAME);
 
@@ -350,11 +353,10 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     });
     }
     
+    @Test
     public void testRenderFreemarkerTemplatePath() throws Exception
     {
         //TODO displayName paths.
-        this.setComplete();
-        this.endTransaction();
         final QName renditionName1 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
                 FreemarkerRenderingEngine.NAME + "_UpdateOnAnyPropChange");
         final QName renditionName2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
@@ -526,11 +528,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * type PDF) into a different format (of type plain_text) and place the
      * rendition under the source node.
      */
+    @Test
     public void testRenderDocumentInAnotherFormatInSitu() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                     {
@@ -661,9 +661,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     protected void renderPdfDocumentLongRunningTest(AbstractNodeModifyingRunnable nodeModifyingRunnable, boolean joinNodeModifyingThread) throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-        
         // Register our dummy transformer
         ContentTransformerRegistry contentTransformerRegistry = 
                 (ContentTransformerRegistry) this.applicationContext.getBean("contentTransformerRegistry");
@@ -700,7 +697,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                                         nodeWithDocContent, RenditionModel.ASPECT_RENDITIONED));
                             return renditionAssoc.getChildRef();
                         }
-                    });
+                    }, false, true);
         }
         catch (RenditionCancelledException e)
         {
@@ -732,6 +729,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testRenderPdfDocumentLongRunningCheckout() throws Exception
     {
         try
@@ -747,16 +745,23 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     AuthenticationUtil.setRunAsUserSystem();
                     CheckOutCheckInService checkOutCheckInService = 
                         (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
-                    checkOutCheckInService.checkout(nodeWithDocContent);
+                    NodeRef wc = checkOutCheckInService.checkout(nodeRef);
+                    assertNotNull(wc);
                 }
             };
             renderPdfDocumentLongRunningTest(new CheckoutRunnable(nodeWithDocContent), true);
         }
         finally
         {
-            AuthenticationUtil.setRunAsUserSystem();
-            CheckOutCheckInService checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckOutCheckInService");
-            checkOutCheckInService.cancelCheckout(checkOutCheckInService.getWorkingCopy(nodeWithDocContent));
+            transactionHelper.doInTransaction(() ->
+            {
+                AuthenticationUtil.setRunAsUserSystem();
+                CheckOutCheckInService checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckOutCheckInService");
+                NodeRef wc = checkOutCheckInService.getWorkingCopy(nodeWithDocContent);
+                assertNotNull(wc);
+                checkOutCheckInService.cancelCheckout(wc);
+                return null;
+            }, false, true);
         }
     }
     
@@ -765,6 +770,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testRenderPdfDocumentLongRunningLock() throws Exception
     {
         class LockRunnable extends AbstractNodeModifyingRunnable
@@ -783,11 +789,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         renderPdfDocumentLongRunningTest(new LockRunnable(nodeWithDocContent));
     }
 
+    @Test
     public void testCompositeReformatAndResizeRendition() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "composite");
         final int newX = 20;
         final int newY = 30;
@@ -839,11 +843,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * type PDF) into a different format (of type plain_text) and place the
      * rendition under the specified folder.
      */
+    @Test
     public void testRenderDocumentInAnotherFormatUnderSpecifiedFolder() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -897,11 +899,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * type PNG) as a cropped image of the same type.
      */
     @SuppressWarnings("unused")
+    @Test
     public void testRenderCropImage() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final int originalImageWidth = 512;
         final int originalImageHeight = 512;
 
@@ -1021,11 +1021,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * This test method used the RenditionService to render a test image (of
      * type PNG) as a rescaled image of the same type.
      */
+    @Test
     public void testRenderRescaledImage() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final int originalImageWidth = 512;
         final int originalImageHeight = 512;
 
@@ -1130,11 +1128,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testReformatImage() throws Exception
     {
-        setComplete();
-        endTransaction();
-
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                     {
@@ -1186,11 +1182,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @since 4.0.1
      */
+    @Test
     public void testSuitablyMarkedNodesDoNotGetRenditioned() throws Exception
     {
-        setComplete();
-        endTransaction();
-
         this.renditionNode = transactionHelper
             .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
             {
@@ -1223,6 +1217,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
             });
     }
     
+    @Test
     public void testSuccessfulAsynchronousRendition() throws Exception
     {
         // There are two relevant threads here: the JUnit test thread and the background
@@ -1267,6 +1262,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * @throws Exception
      * @see {@link #testSuccessfulAsynchronousRendition()}
      */
+    @Test
     public void testFailedAsynchronousRendition() throws Exception
     {
         // see comment in method above for explanation of the countdown latch.
@@ -1313,9 +1309,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     private void performAsyncRendition(final NodeRef nodeToRender, final RenderCallback callback, CountDownLatch latch,
             final AsyncResultsHolder failureMessage) throws InterruptedException
     {
-        setComplete();
-        endTransaction();
-        
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -1327,7 +1320,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 renditionService.render(nodeToRender, action, callback);
                 return null;
             }
-        });
+        }, false, true);
         
         // Now wait for the actionService thread to complete the rendering.
         // We'll arbitrarily timeout after 30 seconds, which should be plenty for the
@@ -1381,11 +1374,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testGetRenditionsForNode() throws Exception
     {
-        setComplete();
-        endTransaction();
-
         this.renditionNode = transactionHelper
                     .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                     {
@@ -1518,11 +1509,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * Checks that the saveRenderingAction Method creates the proper node in the
      * repository.
      */
+    @Test
     public void testSaveRenderingAction() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final List<RenditionDefinition> savedRenditionsToDelete = new ArrayList<RenditionDefinition>();
         try
         {
@@ -1599,9 +1588,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void off_test_CleanPersistedRenditionsAndCreateExportedACP() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         // Check that if no node exists already then a new node is created.
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
@@ -1758,11 +1744,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testLoadRenderingAction() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final RenditionDefinition reformatAction = makeReformatAction(null, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         final RenditionDefinition rescaleAction = makeRescaleImageAction();
 
@@ -1857,11 +1841,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         }
     }
 
+    @Test
     public void testSaveAndLoadCompositeRenditionDefinition() throws Exception
     {
-        this.setComplete();
-        this.endTransaction();
-
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "composite");
         final CompositeRenditionDefinition compositeDefinition = makeCompositeReformatAndResizeDefinition(
                     renditionName, 20, 30);
@@ -1955,6 +1937,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testBuiltinRenditionDefinitions() throws Exception
     {
         final RenditionDefinition mediumRenditionDef = loadAndValidateRenditionDefinition("medium");
@@ -1977,11 +1960,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      * 
      * @since 3.4.2
      */
+    @Test
     public void testRenderValidContentThenUpdateToInvalidContent() throws Exception
     {
-        setComplete();
-        endTransaction();
-        
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -2004,7 +1985,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 renditionService.render(nodeWithDocContent, doclib, dummyCallback);
                 return null;
             }
-        });
+        }, false, true);
         
         // Now wait for the actionService thread to complete the rendering.
         Thread.sleep(5000);
@@ -2019,7 +2000,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         assertEquals("Wrong rendition count", 1, renditions.size());
                         return null;
                     }
-                });
+                }, false, true);
         
         // Now update the content to a corrupt PDF file that cannot be rendered.
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -2036,7 +2017,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         
                         return null;
                     }
-                });
+                }, false, true);
         
         // Now wait for the actionService thread to complete the rendition removal.
         Thread.sleep(5000);
@@ -2050,10 +2031,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         assertEquals("Wrong rendition count", 0, renditions.size());
                         return null;
                     }
-                });
+                }, false, true);
     }
 
     
+    @Test
     public void testALF3733() throws Exception
     {
     	// ALF-3733 was caused by ${cwd} evaluating to the empty string and a path "//sourceNodeName"
@@ -2112,6 +2094,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      *  end up with both source nodes thinking they have the same
      *  rendition node, because it'd only be one of theirs!
      */
+    @Test
     public void testPathBasedRenditionOverwrite() throws Exception
     {
        
@@ -2122,6 +2105,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      *  renditions, both single and composite, to check that
      *  the renditions always end up as they should do.
      */
+    @Test
     public void testRenditionPlacements() throws Exception
     {
        QName plainQName = QName.createQName("Plain");
@@ -2515,6 +2499,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         return compositeDefinition;
     }
     
+    @Test
     public void testJavascriptAPI() throws Exception
     {
         Map<String, Object> model = new HashMap<String, Object>();
@@ -2528,6 +2513,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     /**
      * This test method takes an image with Exif Orientation information and checks if it is automatially rotated.
      */
+    @Test
     public void testAutoRotateImage() throws Exception
     {
         NodeRef companyHome = repositoryHelper.getCompanyHome();
@@ -2620,7 +2606,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         * Loads this executor into the ApplicationContext, if it
         *  isn't already there
         */
-       public static void registerIfNeeded(ConfigurableApplicationContext ctx)
+       public static void registerIfNeeded(ApplicationContext ctx)
        {
           if(!ctx.containsBean(ENGINE_NAME))
           {
@@ -2646,7 +2632,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
              );
              
              // Register
-             ctx.getBeanFactory().registerSingleton(
+              ((ConfigurableApplicationContext) ctx).getBeanFactory().registerSingleton(
                    ENGINE_NAME, hw
              );
              hw.init();

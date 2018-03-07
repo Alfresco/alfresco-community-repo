@@ -36,12 +36,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Tests checkout using action executer
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class CheckOutActionExecuterTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -62,8 +65,8 @@ public class CheckOutActionExecuterTest extends BaseSpringTest
      */
     private final static String ID = GUID.generate();
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
 

@@ -61,7 +61,10 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration test for Transfer Manifest
@@ -69,6 +72,7 @@ import org.junit.experimental.categories.Category;
  * @author Mark Rogers
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;
@@ -77,12 +81,10 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
     private DictionaryService dictionaryService;
     private NodeService mlAwareNodeService;
 
-    /**
-     * Called during the transaction setup
-     */
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
 
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
@@ -92,6 +94,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
         this.mlAwareNodeService = (NodeService) this.applicationContext.getBean("mlAwareNodeService");
     }
 
+    @Test
     public void testSnapshot() throws Exception
     {
         // Snapshot a transfer node

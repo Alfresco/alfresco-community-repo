@@ -28,8 +28,6 @@ package org.alfresco.heartbeat;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
@@ -37,7 +35,15 @@ import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.*;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 
 public class HBDataCollectorServiceImpl implements HBDataCollectorService, LicenseChangeHandler
 {
@@ -188,18 +194,26 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
 
     }
 
-    private void scheduleJob(final String jobName, final String triggerName, final HBBaseDataCollector collector) throws ParseException, SchedulerException
+    private void scheduleJob(final String jobName, final String triggerName, final HBBaseDataCollector collector) throws SchedulerException
     {
-        final JobDetail jobDetail = new JobDetail(jobName, Scheduler.DEFAULT_GROUP, HeartBeatJob.class);
-        final String cronExpression = testMode ? testCronExpression : collector.getCronExpression();
-        jobDetail.getJobDataMap().put(HeartBeatJob.COLLECTOR_KEY, collector);
-        jobDetail.getJobDataMap().put(HeartBeatJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
-        jobDetail.getJobDataMap().put(HeartBeatJob.JOB_LOCK_SERVICE_KEY, jobLockService);
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(HeartBeatJob.COLLECTOR_KEY, collector);
+        jobDataMap.put(HeartBeatJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+        jobDataMap.put(HeartBeatJob.JOB_LOCK_SERVICE_KEY, jobLockService);
+        final JobDetail jobDetail = JobBuilder.newJob()
+                .withIdentity(jobName)
+                .usingJobData(jobDataMap)
+                .ofType(HeartBeatJob.class)
+                .build();
 
-        // Ensure the job wasn't already scheduled in an earlier retry of this transaction
-        scheduler.unscheduleJob(triggerName, Scheduler.DEFAULT_GROUP);
+        final String cronExpression = testMode ? testCronExpression : collector.getCronExpression();
         // Schedule job
-        final CronTrigger cronTrigger = new CronTrigger(triggerName , Scheduler.DEFAULT_GROUP, cronExpression);
+        final CronTrigger cronTrigger = TriggerBuilder.newTrigger()
+                .withIdentity(triggerName)
+                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
+                .build();
+        // Ensure the job wasn't already scheduled in an earlier retry of this transaction
+        scheduler.unscheduleJob(cronTrigger.getKey());
         scheduler.scheduleJob(jobDetail, cronTrigger);
 
         if (logger.isDebugEnabled())
@@ -210,7 +224,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
 
     private void unscheduleJob(final String triggerName, final HBBaseDataCollector collector) throws SchedulerException
     {
-        scheduler.unscheduleJob(triggerName, Scheduler.DEFAULT_GROUP);
+        scheduler.unscheduleJob(new TriggerKey(triggerName));
 
         if (logger.isDebugEnabled())
         {

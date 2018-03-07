@@ -43,7 +43,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class tests {@link NodeEligibleForRethumbnailingEvaluator}.
@@ -52,6 +56,7 @@ import org.junit.experimental.categories.Category;
  * @since 3.5.0
  */
 @Category(OwnJVMTestsCategory.class)
+@Transactional
 public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
 {
     private final QName thumbnailDef1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbDef1");
@@ -72,13 +77,9 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
      * No thumbnails. 1 failed attempt 2 seconds ago.
      */
     private NodeRef recentlyFailedNodeRef;
-    
-    /**
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
         final Date now = new Date();
         final Date twoSecondsAgo = new Date(now.getTime() - 2000);
@@ -117,13 +118,14 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
         nodeService.setProperty(thumbDef1FailureNode, ContentModel.PROP_FAILURE_COUNT, 1);
     }
     
-    @Override
-    public void onTearDownInTransaction()
+    @After
+    public void after()
     {
         nodeService.deleteStore(testStoreRef);
     }
 
     @SuppressWarnings("deprecation")
+    @Test
     public void testNodeWithNoFailedThumbnails()
     {
         // Such a node is always eligible for thumbnailing.
@@ -135,13 +137,14 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
                 failureHandlingOptions.getRetryCount());
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD, 0L);
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD_RETRIES_ENABLED, true);
-        
+
         NodeEligibleForRethumbnailingEvaluator evaluator =
             (NodeEligibleForRethumbnailingEvaluator)this.applicationContext.getBean(NodeEligibleForRethumbnailingEvaluator.NAME);
-        
+
         assertTrue(evaluator.evaluate(condition, newUnthumbnailedNodeRef));
     }
 
+    @Test
     public void testNodeWithFailedThumbnails()
     {
         // A "non-difficult" node is one which is not yet known to be difficult to thumbnail.

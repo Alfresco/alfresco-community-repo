@@ -34,12 +34,16 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Is sub class evaluator test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class HasAspectEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -50,9 +54,8 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
     
     private final static String ID = GUID.generate();
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         
@@ -72,6 +75,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
         this.evaluator = (HasAspectEvaluator)this.applicationContext.getBean(HasAspectEvaluator.NAME);
     }
     
+    @Test
     public void testMandatoryParamsMissing()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasAspectEvaluator.NAME, null);
@@ -87,6 +91,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
         }
     }
     
+    @Test
     public void testPass()
     {
         this.nodeService.addAspect(this.nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
@@ -95,6 +100,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
         assertTrue(this.evaluator.evaluate(condition, this.nodeRef));
     }
     
+    @Test
     public void testFail()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasAspectEvaluator.NAME, null);

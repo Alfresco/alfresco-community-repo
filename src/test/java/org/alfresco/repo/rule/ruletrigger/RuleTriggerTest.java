@@ -38,7 +38,12 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Rule trigger test
@@ -46,6 +51,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class RuleTriggerTest extends BaseSpringTest
 {
     private static final String ON_CREATE_NODE_TRIGGER = "on-create-node-trigger";
@@ -63,9 +69,9 @@ public class RuleTriggerTest extends BaseSpringTest
     
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
-    
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.nodeService = serviceRegistry.getNodeService();
@@ -77,12 +83,13 @@ public class RuleTriggerTest extends BaseSpringTest
         this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
     }
     
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after()
     {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
+    @Test
     public void testOnCreateNodeTrigger()
     {
         TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
@@ -99,6 +106,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);
     }
 
+    @Test
     public void testOnCreateIgnoredTypesTrigger()
     {
         TestRuleType ruleType = createTestRuleType(ON_CREATE_NODE_TRIGGER);
@@ -115,6 +123,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertFalse(ruleType.rulesTriggered);
     }
  
+    @Test
     public void testOnUpdateNodeTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -151,6 +160,7 @@ public class RuleTriggerTest extends BaseSpringTest
 //        assertTrue(ruleType.rulesTriggered);        
 //    }
     
+    @Test
     public void testOnCreateChildAssociationTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -178,6 +188,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);        
     }
     
+    @Test
     public void testOnDeleteChildAssociationTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -206,6 +217,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);        
     }
     
+    @Test
     public void testOnCreateAssociationTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -229,6 +241,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);
     }
     
+    @Test
     public void testOnCreateOriginalAssociationTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -252,6 +265,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertFalse(ruleType.rulesTriggered);
     }
     
+    @Test
     public void testOnDeleteAssociationTrigger()
     {
         NodeRef nodeRef = this.nodeService.createNode(
@@ -276,6 +290,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(ruleType.rulesTriggered);        
     }
     
+    @Test
     public void testOnContentCreateTrigger()
     {
         TestRuleType nodeCreate = createTestRuleType(ON_CREATE_NODE_TRIGGER);
@@ -290,9 +305,9 @@ public class RuleTriggerTest extends BaseSpringTest
         assertTrue(nodeCreate.rulesTriggered);
 
         // Terminate the transaction
-        setComplete();
-        endTransaction();
-        startNewTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
 
         TestRuleType contentCreate = createTestRuleType(ON_CONTENT_CREATE_TRIGGER);
         assertFalse(contentCreate.rulesTriggered);
@@ -318,6 +333,7 @@ public class RuleTriggerTest extends BaseSpringTest
         assertFalse(contentCreate.rulesTriggered);
     }
     
+    @Test
     public void testOnContentUpdateTrigger()
     {
         TestRuleType nodeCreate = createTestRuleType(ON_CREATE_NODE_TRIGGER);
@@ -361,8 +377,9 @@ public class RuleTriggerTest extends BaseSpringTest
                 contentUpdate.rulesTriggered);
         
         // Terminate the transaction
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
         contentCreate.rulesTriggered = false;
         
         // Try and trigger the type (again)
@@ -380,6 +397,7 @@ public class RuleTriggerTest extends BaseSpringTest
                 contentUpdate.rulesTriggered);
     }
     
+    @Test
     public void testOnMoveNodeTrigger()
     {
         NodeRef nodeRef1 = this.nodeService.createNode(this.rootNodeRef,

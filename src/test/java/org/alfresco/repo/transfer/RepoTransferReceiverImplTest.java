@@ -79,9 +79,13 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 /**
@@ -91,6 +95,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  */
 @SuppressWarnings("deprecation")
 @Category({BaseSpringTestsCategory.class})
+@Transactional
 public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 {
     private static int fileCount = 0;
@@ -105,19 +110,10 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     private Repository repositoryHelper;
     private NamespaceService namespaceService;
     
-    @Override
-    public void runBare() throws Throwable
+    @Before
+    public void before() throws Exception
     {
-        preventTransaction();
-        super.runBare();
-    }
-
-    /**
-     * Called during the transaction setup
-     */
-    protected void onSetUp() throws Exception
-    {
-        super.onSetUp();
+        super.before();
         System.out.println("java.io.tmpdir == " + System.getProperty("java.io.tmpdir"));
 
         // Get the required services
@@ -129,21 +125,21 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         this.transactionService = (TransactionService) this.applicationContext.getBean("transactionComponent");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
-        this.receiver = (RepoTransferReceiverImpl) this.getApplicationContext().getBean("transferReceiver");
-        this.policyComponent = (PolicyComponent) this.getApplicationContext().getBean("policyComponent");
-        this.searchService = (SearchService) this.getApplicationContext().getBean("searchService");
-        this.repositoryHelper = (Repository) this.getApplicationContext().getBean("repositoryHelper");
-        this.namespaceService = (NamespaceService) this.getApplicationContext().getBean("namespaceService");
+        this.receiver = (RepoTransferReceiverImpl) this.applicationContext.getBean("transferReceiver");
+        this.policyComponent = (PolicyComponent) this.applicationContext.getBean("policyComponent");
+        this.searchService = (SearchService) this.applicationContext.getBean("searchService");
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.namespaceService = (NamespaceService) this.applicationContext.getBean("namespaceService");
         this.dummyContent = "This is some dummy content.";        
         this.dummyContentBytes = dummyContent.getBytes("UTF-8");
-        setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
         authenticationComponent.setSystemUserAsCurrentUser();
 
-        startNewTransaction();
         guestHome = repositoryHelper.getGuestHome();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
     }
 
+    @Test
     public void testDelete()
     {
         log.debug("start testDelete");
@@ -381,75 +377,57 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         log.info("end testLockTimeout");
     }
 
+    @Test
     public void testSaveContent() throws Exception
     {
         log.info("start testSaveContent");
-        
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        startNewTransaction();
+        String transferId = receiver.start("1234", true, receiver.getVersion());
         try
         {
-            String transferId = receiver.start("1234", true, receiver.getVersion());
-            try
-            {
-                String contentId = "mytestcontent";
-                receiver.saveContent(transferId, contentId, new ByteArrayInputStream(dummyContentBytes));
-                File contentFile = new File(receiver.getStagingFolder(transferId), contentId);
-                assertTrue(contentFile.exists());
-                assertEquals(dummyContentBytes.length, contentFile.length());
-            }
-            finally
-            {
-                receiver.end(transferId);
-            }
+            String contentId = "mytestcontent";
+            receiver.saveContent(transferId, contentId, new ByteArrayInputStream(dummyContentBytes));
+            File contentFile = new File(receiver.getStagingFolder(transferId), contentId);
+            assertTrue(contentFile.exists());
+            assertEquals(dummyContentBytes.length, contentFile.length());
         }
         finally
         {
-            endTransaction();
+            receiver.end(transferId);
         }
     }
 
+    @Test
     public void testSaveSnapshot() throws Exception
     {
         log.info("start testSaveSnapshot");
-        
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        startNewTransaction();
+
+        String transferId = receiver.start("1234", true, receiver.getVersion());
+        File snapshotFile = null;
         try
         {
-            String transferId = receiver.start("1234", true, receiver.getVersion());
-            File snapshotFile = null;
-            try
-            {
-                TransferManifestNode node = createContentNode();
-                List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
-                nodes.add(node);
-                String snapshot = createSnapshot(nodes);
+            TransferManifestNode node = createContentNode();
+            List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
+            nodes.add(node);
+            String snapshot = createSnapshot(nodes);
 
-                receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
+            receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
-                File stagingFolder = receiver.getStagingFolder(transferId);
-                snapshotFile = new File(stagingFolder, "snapshot.xml");
-                assertTrue(snapshotFile.exists());
-                assertEquals(snapshot.getBytes("UTF-8").length, snapshotFile.length());
-            }
-            finally
-            {
-                receiver.end(transferId);
-                if (snapshotFile != null)
-                {
-                    assertFalse(snapshotFile.exists());
-                }
-            }
+            File stagingFolder = receiver.getStagingFolder(transferId);
+            snapshotFile = new File(stagingFolder, "snapshot.xml");
+            assertTrue(snapshotFile.exists());
+            assertEquals(snapshot.getBytes("UTF-8").length, snapshotFile.length());
         }
         finally
         {
-            endTransaction();
+            receiver.end(transferId);
+            if (snapshotFile != null)
+            {
+                assertFalse(snapshotFile.exists());
+            }
         }
     }
 
+    @Test
     public void testBasicCommit() throws Exception
     {
         log.info("start testBasicCommit");
@@ -547,6 +525,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testMoreComplexCommit() throws Exception
     {
         log.info("start testMoreComplexCommit");
@@ -691,6 +670,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
+    @Test
     public void testNodeDeleteAndRestore() throws Exception
     {
         log.info("start testNodeDeleteAndRestore");
@@ -1094,6 +1074,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testJira_ALF_2772() throws Exception
     {
         log.debug("start testJira_ALF_2772");
@@ -1307,6 +1288,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
      * @throws Exception
      */
 
+    @Test
     public void testMNT11057() throws Exception
     {
         String folder1Name = "H1";
@@ -1314,8 +1296,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         String folder3Name = "H3";
 
         //Step 1 transfer from repo A (H1 -> H2)
-        setDefaultRollback(true);
-        startNewTransaction();
+        TestTransaction.start();
 
         String transferIdA1 = receiver.start("transferFromRepoA1", true, receiver.getVersion());
 
@@ -1329,10 +1310,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         nodesA1.add(folder1A1);
         nodesA1.add(folder2A1);
 
-        endTransaction();
-
-        this.setDefaultRollback(false);
-        startNewTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
         try
         {
             String snapshot = createSnapshot(nodesA1, "repo A");
@@ -1354,12 +1334,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         finally
         {
             receiver.end(transferIdA1);
-            endTransaction();
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
         }
 
         //Step 2 trasfer from repo B (H1 -> H3)
-        setDefaultRollback(true);
-        startNewTransaction();
+        TestTransaction.start();
 
         String transferIdB1 = receiver.start("transferFromRepoB1", true, receiver.getVersion());
 
@@ -1372,10 +1352,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         nodesB1.add(folder1B1);
         nodesB1.add(folder3B1);
 
-        endTransaction();
-
-        this.setDefaultRollback(false);
-        startNewTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
         try
         {
             String snapshot = createSnapshot(nodesB1, "repo B");
@@ -1391,7 +1370,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         finally
         {
             receiver.end(transferIdB1);
-            endTransaction();
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
         }
 
         assertTrue(nodeService.exists(folder1A1.getNodeRef()));
@@ -1408,7 +1388,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         log.info("has Alien");
         assertTrue(nodeService.hasAspect(folder3B1.getNodeRef(), TransferModel.ASPECT_ALIEN));
 
-        startNewTransaction();
+        TestTransaction.start();
 
         moveNode(folder3A1, folder1A1);
         moveNode(folder2A1, folder3A1);
@@ -1419,11 +1399,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         nodesA1.add(folder3A1);
         nodesA1.add(folder2A1);
 
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
 
         //Step 3 transfer from repo A again (H2 is moved to newly created H3 on A: H1 -> H3 -> H2)
-        startNewTransaction();
+        TestTransaction.start();
         try
         {
             String transferId = receiver.start("transferFromRepoA1Again", true, receiver.getVersion());
@@ -1441,27 +1422,25 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            endTransaction();
+
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
         }
     }
     
     
+    @Test
     public void testAsyncCommit() throws Exception
     {
         log.info("start testAsyncCommit");
-
-        this.setDefaultRollback(false);
-        
         localTestAsyncCommit();
     }
 
     private String localTestAsyncCommit() throws Exception, InterruptedException
     {
-        startNewTransaction();
         final String transferId = receiver.start("1234", true, receiver.getVersion());
-        endTransaction();
 
-        startNewTransaction();
+        TestTransaction.start();
         final List<TransferManifestNode> nodes = new ArrayList<TransferManifestNode>();
         final TransferManifestNormalNode node1 = createContentNode();
         nodes.add(node1);
@@ -1491,24 +1470,28 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         associatePeers(node1, node2);
         moveNode(node2, node11);
 
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         String snapshot = createSnapshot(nodes);
 
-        startNewTransaction();
+        TestTransaction.start();
         receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         for (TransferManifestNode node : nodes)
         {
-            startNewTransaction();
+            TestTransaction.start();
             receiver.saveContent(transferId, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
-            endTransaction();
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
         }
 
-        startNewTransaction();
+        TestTransaction.start();
         receiver.commitAsync(transferId);
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         log.debug("Posted request for commit");
 
@@ -1517,15 +1500,16 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         while (progress == null || !TransferProgress.getTerminalStatuses().contains(progress.getStatus()))
         {
             Thread.sleep(500);
-            startNewTransaction();
+            TestTransaction.start();
             progress = progressMonitor.getProgress(transferId);
-            endTransaction();
+            TestTransaction.flagForCommit();
+            TestTransaction.end();
             log.debug("Progress indication: " + progress.getStatus() + ": " + progress.getCurrentPosition() + "/"
                     + progress.getEndPosition());
         }
         assertEquals(TransferProgress.Status.COMPLETE, progress.getStatus());
 
-        startNewTransaction();
+        TestTransaction.start();
         try
         {
             assertTrue(nodeService.getAspects(node1.getNodeRef()).contains(ContentModel.ASPECT_ATTACHABLE));
@@ -1537,17 +1521,16 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
         finally
         {
-            endTransaction();
+            TestTransaction.end();
         }
         return transferId;
     }
 
+    @Test
     public void testAsyncCommitWithSummaryReport() throws Exception
     {
         log.info("start testAsyncCommitWithSummaryReport");
-
-        this.setDefaultRollback(false);
-        Properties properties = (Properties) this.getApplicationContext().getBean("global-properties");
+        Properties properties = (Properties) this.applicationContext.getBean("global-properties");
         //save the value of this summary report property to restore later
         String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
         try
@@ -1571,13 +1554,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testAsyncCommitWithOutSummaryReport() throws Exception
     {
         log.info("start testAsyncCommitWithOutSummaryReport");
 
-        this.setDefaultRollback(false);
-        this.setDefaultRollback(false);
-        Properties properties = (Properties) this.getApplicationContext().getBean("global-properties");
+        Properties properties = (Properties) this.applicationContext.getBean("global-properties");
         //save the value of this summary report property to restore later
         String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
         try
@@ -1608,7 +1590,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         // check the destination report was generated and
         // check that the simplified destination transfer report was
         // generated
-        FileFolderService fileFolderService = (FileFolderService) this.getApplicationContext().getBean("fileFolderService");
+        FileFolderService fileFolderService = (FileFolderService) this.applicationContext.getBean("fileFolderService");
 
         NodeRef destinationReportNodeRef = new NodeRef(transferId);
         assertTrue(nodeService.exists(destinationReportNodeRef));

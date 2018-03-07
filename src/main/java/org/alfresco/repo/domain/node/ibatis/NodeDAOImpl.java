@@ -220,7 +220,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         */
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected ServerEntity selectServer(String ipAddress)
     {
@@ -281,7 +280,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.delete(DELETE_TRANSACTION_BY_ID, transaction);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<StoreEntity> selectAllStores()
     {
@@ -377,6 +375,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Pair<Long, Long> getNodeIdsIntervalForType(QName type, Long startTxnTime, Long endTxnTime)
     {
         final Pair<Long, Long> intervalPair = new Pair<Long, Long>(LONG_ZERO, LONG_ZERO);
@@ -484,7 +483,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<Node> selectNodesByUuids(Long storeId, SortedSet<String> uuids)
     {
@@ -497,7 +495,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<Node> selectNodesByIds(SortedSet<Long> ids)
     {
@@ -555,7 +552,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Set<Long> nodeIds)
     {
         if (nodeIds.size() == 0)
@@ -568,13 +564,14 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         List<NodePropertyEntity> rows = template.selectList(SELECT_NODE_PROPERTIES, prop);
         return makePersistentPropertiesMap(rows);
     }
+
     @Override
     protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId)
     {
         return selectNodeProperties(nodeId, Collections.<Long>emptySet());
     }
+
     @Override
-    @SuppressWarnings("unchecked")
     protected Map<NodeVersionKey, Map<NodePropertyKey, NodePropertyValue>> selectNodeProperties(Long nodeId, Set<Long> qnameIds)
     {
         NodePropertyEntity prop = new NodePropertyEntity();
@@ -599,6 +596,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public List<NodePropertyEntity> selectNodePropertiesByTypes(Set<QName> qnames)
     {
         final List<NodePropertyEntity> properties = new ArrayList<NodePropertyEntity>();
@@ -623,6 +621,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return properties;
     }
     
+    @SuppressWarnings("rawtypes")
     @Override
     public List<NodePropertyEntity> selectNodePropertiesByDataType(QName dataType, long minNodeId, long maxNodeId)
     {
@@ -721,7 +720,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Map<NodeVersionKey, Set<QName>> selectNodeAspects(Set<Long> nodeIds)
     {
@@ -778,6 +776,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             Long minNodeId, Long maxNodeId,
             final NodeRefQueryCallback resultsCallback)
     {
+        @SuppressWarnings("rawtypes")
         ResultHandler resultHandler = new ResultHandler()
         {
             public void handleResult(ResultContext context)
@@ -851,7 +850,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.delete(DELETE_NODE_ASSOCS, param);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<NodeAssocEntity> selectNodeAssocs(Long nodeId)
     {
@@ -886,7 +884,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE_AND_PROPERTY_VALUE, assoc);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId, Long typeQNameId)
     {
@@ -989,7 +986,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectOne(SELECT_CHILD_ASSOC_BY_ID, assoc);
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     protected List<ChildAssocEntity> selectChildNodeIds(
             Long nodeId,
@@ -1010,7 +1006,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_CHILD_NODE_IDS, assoc, rowBounds);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<NodeIdAndAclId> selectPrimaryChildAcls(Long nodeId)
     {
@@ -1025,7 +1020,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_NODE_PRIMARY_CHILD_ACLS, assoc);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<ChildAssocEntity> selectChildAssoc(
             Long parentNodeId,
@@ -1075,6 +1069,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
      * @author Derek Hulley
      * @since 3.4
      */
+    @SuppressWarnings("rawtypes")
     private class ChildAssocResultHandler implements ResultHandler
     {
         private final ChildAssocResultHandlerFilter filter;
@@ -1178,6 +1173,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void selectChildAssocs(
             Long parentNodeId,
@@ -1217,6 +1213,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         RowBounds rowBounds = new RowBounds(0, maxResults);
         List<?> entities = template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_LIMITED, assoc, rowBounds);
+        @SuppressWarnings("rawtypes")
         final DefaultResultContext resultContext = new DefaultResultContext();
         for (Object entity : entities)
         {
@@ -1502,7 +1499,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<ChildAssocEntity> selectParentAssocs(Long childNodeId)
     {
@@ -1588,7 +1584,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     {
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Transaction selectLastTxnBeforeCommitTime(Long maxCommitTime)
     {
@@ -1623,7 +1618,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectOne(SELECT_TXNS, query);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<NodeEntity> selectTxnChanges(Long txnId, Long storeId)
     {
@@ -1638,7 +1632,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_TXN_NODES, query);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<Transaction> selectTxns(
             Long fromTimeInclusive,
@@ -1676,7 +1669,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<Long> selectTxnsUnused(Long minTxnId, Long maxCommitTime, Integer count)
     {
@@ -1814,7 +1806,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     /**
      * MySQL Cluster NDB specific DAO overrides
      *
-     * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+     * WARNING: Experimental/unsupported - see MySQLClusterNDBDialect !
      * 
      * @author janv
      */
@@ -1823,38 +1815,38 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         @Override
         protected Long newNodeImplInsert(NodeEntity node)
         {
-        	Long id = null;
+            Long id = null;
             try
             {
-            	// We need to handle existing deleted nodes.
+                // We need to handle existing deleted nodes.
                 NodeRef targetNodeRef = node.getNodeRef();
                 Node dbTargetNode = selectNodeByNodeRef(targetNodeRef);
                 if (dbTargetNode != null)
                 {
-	                if (dbTargetNode.getDeleted(qnameDAO))
-	                {
-	                    Long dbTargetNodeId = dbTargetNode.getId();
-	                    // This is OK.  It happens when we create a node that existed in the past.
-	                    // Remove the row completely
-	                    deleteNodeProperties(dbTargetNodeId, (Set<Long>) null);
-	                    deleteNodeById(dbTargetNodeId);
-	                }
-	                else
-	                {
-	                    // A live node exists.
-	                	throw new NodeExistsException(dbTargetNode.getNodePair(), null);
-	                }
+                    if (dbTargetNode.getDeleted(qnameDAO))
+                    {
+                        Long dbTargetNodeId = dbTargetNode.getId();
+                        // This is OK.  It happens when we create a node that existed in the past.
+                        // Remove the row completely
+                        deleteNodeProperties(dbTargetNodeId, (Set<Long>) null);
+                        deleteNodeById(dbTargetNodeId);
+                    }
+                    else
+                    {
+                        // A live node exists.
+                        throw new NodeExistsException(dbTargetNode.getNodePair(), null);
+                    }
                 }
                 
                 id = insertNode(node);
             }
             catch (Throwable e)
             {
-            	if (e instanceof NodeExistsException)
-            	{
-            		throw e;
-            	}
-            	
+                if (e instanceof NodeExistsException)
+                {
+                    throw e;
+                }
+                
                 // There does not appear to be any row that could prevent an insert
                 throw new AlfrescoRuntimeException("Failed to insert new node: " + node, e);
             }

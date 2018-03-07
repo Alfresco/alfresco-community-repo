@@ -32,7 +32,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Specialise type action execution test
@@ -40,6 +43,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
 {    
     /**
@@ -60,10 +64,10 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     /**
      * Called at the begining of all tests
      */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
@@ -79,6 +83,7 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     /**
      * Test execution
      */
+    @Test
     public void testExecution()
     {
         // Check the type of the node

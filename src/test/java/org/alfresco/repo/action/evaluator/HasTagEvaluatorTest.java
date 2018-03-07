@@ -36,12 +36,15 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Has tag evaluator unit test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class HasTagEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -53,9 +56,8 @@ public class HasTagEvaluatorTest extends BaseSpringTest
     
     private final static String ID = GUID.generate();
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)applicationContext.getBean("nodeService");
         this.taggingService = (TaggingService)applicationContext.getBean("taggingService");

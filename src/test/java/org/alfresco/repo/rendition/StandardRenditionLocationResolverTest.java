@@ -43,13 +43,17 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian Remmington
  * @author Nick Smith
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTest
 {
     private ServiceRegistry serviceRegistry;
@@ -58,26 +62,23 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
     private RenditionService renditionService;
     private Repository repositoryHelper;
 
-    /**
-     * Called during the transaction setup
-     */
-    @Override
-    @SuppressWarnings("deprecation")
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
 
         // Get the required services
-        this.serviceRegistry = (ServiceRegistry) this.getApplicationContext().getBean("ServiceRegistry");
+        this.serviceRegistry = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
         this.nodeService=serviceRegistry.getNodeService();
-        this.renditionService = (RenditionService) this.getApplicationContext().getBean("RenditionService");
-        this.repositoryHelper = (Repository) this.getApplicationContext().getBean("repositoryHelper");
+        this.renditionService = (RenditionService) applicationContext.getBean("RenditionService");
+        this.repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
         this.companyHome = this.applicationContext.getBean("repositoryHelper", Repository.class).getCompanyHome();
         locationResolver = new StandardRenditionLocationResolverImpl();
         locationResolver.setServiceRegistry(serviceRegistry);
         locationResolver.setRepositoryHelper(repositoryHelper);
     }
 
+    @Test
     public void testChildAssociationFinder()
     {
         QName renditionKind = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "test");
@@ -139,6 +140,7 @@ public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTes
         assertEquals(destinationNode, location.getChildRef());
     }
 
+    @Test
     public void testCreatesFoldersForTemplatedLocation() throws Exception
     {
         QName fooName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testFooFolder");

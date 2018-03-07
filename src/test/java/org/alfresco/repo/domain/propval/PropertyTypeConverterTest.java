@@ -25,10 +25,10 @@
  */
 package org.alfresco.repo.domain.propval;
 
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.apache.commons.lang.RandomStringUtils;
-import org.hibernate.dialect.MySQLInnoDBDialect;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

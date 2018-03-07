@@ -35,6 +35,8 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.TypeNames;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.DatabaseMetaDataHelper;
@@ -48,8 +50,6 @@ import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.TypeNames;
 import org.springframework.context.ApplicationContext;
 
 
@@ -172,8 +172,6 @@ public class ExportDb
             }
         }
     }
-
-    
     
     public void execute()
     {

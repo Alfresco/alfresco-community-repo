@@ -30,7 +30,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.springframework.jmx.export.MBeanExporter;
-import org.springframework.jmx.support.MBeanRegistrationSupport;
+import org.springframework.jmx.support.RegistrationPolicy;
 
 /**
  * An {@link MBeanExporter} that allows individual MBeans to be registered and unregistered over time.
@@ -51,9 +51,9 @@ public class DynamicMBeanExporter extends MBeanExporter implements DynamicMBeanE
             setServer(server); 
         } 
 
-        // Make replace existing the default registration behavior 
-        setRegistrationBehavior(MBeanRegistrationSupport.REGISTRATION_REPLACE_EXISTING); 
-        setAutodetectMode(MBeanExporter.AUTODETECT_NONE); 
+        // Make replace existing the default registration behavior
+        setRegistrationPolicy(RegistrationPolicy.IGNORE_EXISTING);
+        setAutodetectMode(MBeanExporter.AUTODETECT_NONE);
     } 
 
     @Override

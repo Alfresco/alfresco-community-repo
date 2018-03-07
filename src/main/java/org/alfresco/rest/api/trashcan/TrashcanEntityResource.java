@@ -30,9 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTargetAssoc;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -71,10 +74,11 @@ public class TrashcanEntityResource implements
     }
 
     @Operation("restore")
-    @WebApiDescription(title = "Restore deleted Node", description="Restores an archived node",successStatus = HttpServletResponse.SC_OK)
-    public Node restoreDeletedNode(String nodeId, Void ignored, Parameters parameters, WithResponse withResponse)
+    @WebApiDescription(title = "Restore deleted Node", description = "Restores an archived node", successStatus = HttpServletResponse.SC_OK)
+    @WebApiParam(name = "nodeAssocTarget", title = "Target parent id and association type", description = "Target parent id and association type", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required = false)
+    public Node restoreDeletedNode(String nodeId, NodeTargetAssoc nodeTargetAssoc, Parameters parameters, WithResponse withResponse)
     {
-        return deletedNodes.restoreArchivedNode(nodeId);
+        return deletedNodes.restoreArchivedNode(nodeId, nodeTargetAssoc);
     }
 
     @Override

@@ -28,9 +28,9 @@ package org.alfresco.rest.api;
 import java.util.Map;
 
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTargetAssoc;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -61,10 +61,13 @@ public interface DeletedNodes
 
     /**
      * Restores a deleted node and returns it.
+     * 
      * @param archivedId
+     * @param nodeTargetAssoc
+     *            - optional
      * @return the new undeleted node.
      */
-    Node restoreArchivedNode(String archivedId);
+    Node restoreArchivedNode(String archivedId, NodeTargetAssoc nodeTargetAssoc);
 
     /**
      * Permanently delete the node.

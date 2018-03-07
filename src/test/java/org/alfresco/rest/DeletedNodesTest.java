@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,8 +45,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.NodeTargetAssoc;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -205,44 +206,85 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     public void testCreateAndRestore() throws Exception
     {
         setRequestContext(user1);
-        
+
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
         String f1Id = createdFolder.getId();
 
-        //Create a folder outside a site
+        // Create a folder outside a site
         Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
         Document document = createEmptyTextFile(f1Id, "restoreme.txt");
         deleteNode(document.getId());
-        
-        //Create another document with the same name
+
+        // Create another document with the same name
         Document documentSameName = createEmptyTextFile(f1Id, "restoreme.txt");
 
-        //Can't restore a node of the same name
-        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", null, null, Status.STATUS_CONFLICT);
+        // Can't restore a node of the same name
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", null, null, Status.STATUS_CONFLICT);
 
         deleteNode(documentSameName.getId());
 
-        //Now we can restore it.
-        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", null, null, 200);
+        // Now we can restore it.
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", null, null, 200);
 
+        deleteNode(document.getId());
+
+        // Create a new nodeTargetAssoc containing target id and association type
+        NodeTargetAssoc nodeTargetAssoc = new NodeTargetAssoc();
+        nodeTargetAssoc.setTargetParentId(f1Id);
+        nodeTargetAssoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
+
+        // restore to new location
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 200);
+
+        deleteNode(document.getId());
+        // restore to nonexistent nodeId as the new location
+        nodeTargetAssoc.setTargetParentId("nonexistentTargetNode");
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 404);
+
+        // restore to new location and using an invalid assocType
+        nodeTargetAssoc.setTargetParentId(f1Id);
+        nodeTargetAssoc.setAssocType("invalidAssociationType");
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 400);
+
+        // restore to new location without adding an association type
+        nodeTargetAssoc.setTargetParentId(f1Id);
+        nodeTargetAssoc.setAssocType(null);
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 400);
+
+        // create an folder as an admin
+        setRequestContext(networkAdmin);
+
+        String folderAdmin = "adminsFolder" + now.getTime() + "_1";
+        Folder adminCreatedFolder = createFolder(Nodes.PATH_MY, folderAdmin, null);
+        assertNotNull(adminCreatedFolder);
+        String adminf1Id = adminCreatedFolder.getId();
+
+        // switch context, re-delete the document and try to restore it to a
+        // folder user1 does not have permissions to
+        setRequestContext(user1);
+        nodeTargetAssoc.setTargetParentId(adminf1Id);
+        nodeTargetAssoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
+        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 403);
+        
         deleteNode(createdFolder.getId());
 
-        //We deleted the parent folder so lets see if we can restore a child doc, hopefully not.
-        post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", null, null, Status.STATUS_NOT_FOUND);
+        // We deleted the parent folder so lets see if we can restore a child
+        // doc, hopefully not.
+        post(URL_DELETED_NODES + "/" + documentSameName.getId() + "/restore", null, null, Status.STATUS_NOT_FOUND);
 
-        //Can't delete "nonsense" noderef
+        // Can't delete "nonsense" noderef
         post("deleted-nodes/nonsense/restore", null, null, Status.STATUS_NOT_FOUND);
 
-        //User 2 can't restore it but user 1 can.
+        // User 2 can't restore it but user 1 can.
         setRequestContext(user2);
-        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", null, null, Status.STATUS_FORBIDDEN);
+        post(URL_DELETED_NODES + "/" + createdFolder.getId() + "/restore", null, null, Status.STATUS_FORBIDDEN);
         setRequestContext(user1);
-        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", null, null, 200);
+        post(URL_DELETED_NODES + "/" + createdFolder.getId() + "/restore", null, null, 200);
     }
 
     /**

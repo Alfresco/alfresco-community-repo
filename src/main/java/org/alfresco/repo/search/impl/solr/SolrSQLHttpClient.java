@@ -141,6 +141,10 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
             url.append("sql?stmt=" + encoder.encode(searchParameters.getQuery()));
 
             url.append("&alfresco.shards=");
+            /*
+             * When sharded we pass array of shard instances otherwise we pass the local instance url which
+             * is http://url:port/solr/collection_name
+             */
             if(mapping.isSharded())
             {
                 url.append(mapping.getShards());
@@ -196,7 +200,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         }
         catch (JSONException | IOException | EncoderException e)
         {
-            throw new LuceneQueryParserException("", e);
+            throw new LuceneQueryParserException("Unable to parse the solr response ", e);
         }
     }
 

@@ -49,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * Pojo that parses and stores solr stream response.
  * @author Michael Suzuki
  */
 public class SolrSQLJSONResultSet implements ResultSet, JSONResult
@@ -70,29 +71,27 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
             solrResponse = ((JSONObject) json).toString();
             JSONObject res = (JSONObject) json.get("result-set");
             docs = (JSONArray) res.get("docs");
-            try
+            /*
+             * Check that there is no error, which is returned in the first object.
+             */
+            
+            JSONObject obj1 = docs.getJSONObject(0);
+            if(obj1.has(SOLR_STREAM_EXCEPTION)) 
             {
-                JSONObject obj1 = docs.getJSONObject(0);
-                if(obj1.has(SOLR_STREAM_EXCEPTION)) 
+                String error =  obj1.get(SOLR_STREAM_EXCEPTION).toString();
+                if(error.equalsIgnoreCase("/sql handler only works in Solr Cloud mode"))
                 {
-                    String error =  obj1.get(SOLR_STREAM_EXCEPTION).toString();
-                    if(error.equalsIgnoreCase("/sql handler only works in Solr Cloud mode"))
-                    {
-                        throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
-                    }
-                    throw new RuntimeException("Unable to execute the query, error caused by: " + error);
+                    throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
                 }
-            }
-            catch (JSONException e)
-            {
-                //Ignore as its a good thing if it does find above line.
+                throw new RuntimeException("Unable to execute the query, error caused by: " + error);
             }
             //Check if it has an error
             this.length = docs.length();
+            //Last element will contain the object that hold the solr response time.
             JSONObject time = (JSONObject) docs.get(length -1);
             this.numberFound = length - 1;
             queryTime = new Long((Integer) time.get("RESPONSE_TIME"));
-            // We'll say we were unlimited if we got a number less than the limit
+            // Were hard coding this as we have a hard limit of 1000 results, any more will not be readable.
             this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, 
                     PermissionEvaluationMode.EAGER, (SearchParameters)searchParameters);
         } 
@@ -177,6 +176,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     @Override
     public boolean hasMore()
     {
+        //Hard coded to 1000 and o pagination.
         return false;
     }
 

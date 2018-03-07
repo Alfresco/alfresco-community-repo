@@ -136,22 +136,7 @@
             </list>
         </property>
     </bean>
-    <bean id="search.solrSQLQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrSQLHttpClient" init-method="init">
-        <property name="permissionService">
-            <ref bean="permissionService" />
-        </property>
-        <property name="repositoryState">
-            <ref bean="repositoryState" />
-        </property>
-        <property name="storeMappings">
-            <ref bean="solr4.store.mappings" />
-        </property>
-        <property name="includeGroupsForRoleAdmin">
-            <value>${solr.query.includeGroupsForRoleAdmin}</value>
-        </property>
-        <property name="anyDenyDenies" value="${security.anyDenyDenies}"/>
-        <property name="useDynamicShardRegistration" value="${solr.useDynamicShardRegistration}"/>
-    </bean>
+    
     <bean id="solrHttpClientFactory" class="org.alfresco.httpclient.HttpClientFactory" init-method="init">
         <property name="secureCommsType" value="${solr.secureComms}"/>
         <property name="sSLEncryptionParameters" ref="sslEncryptionParameters"/>

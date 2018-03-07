@@ -90,7 +90,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             }
             else
             {
-                CollectionWithPagingInfo<TupleList> nodes = resultMapper.toCollectionWithPagingInfo(ssjr.getDocs());
+                CollectionWithPagingInfo<TupleList> nodes = resultMapper.toCollectionWithPagingInfo(ssjr.getDocs(), searchQuery);
                 renderJsonResponse(res, nodes, assistant.getJsonHelper());
             }
             setResponse(res, DEFAULT_SUCCESS);

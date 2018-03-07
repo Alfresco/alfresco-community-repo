@@ -38,17 +38,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SearchSQLQuery
 {
     private final String stmt;
-    private Integer paging;
+    private Integer itemLimit;
     private final String format;
     private List<String> locales;
     
     public SearchSQLQuery(@JsonProperty("stmt") String stmt,
                           @JsonProperty("format") String format,
-                          @JsonProperty("locales") List<String> locales)
+                          @JsonProperty("locales") List<String> locales,
+                          @JsonProperty("limit") Integer itemLimit)
     {
         this.stmt = stmt;
         this.format = format != null ? format : "default";
-        this.locales = locales != null ? locales : Collections.EMPTY_LIST;
+        this.locales = locales != null ? locales : Collections.emptyList();
+        this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
     }
 
     public String getStmt()
@@ -56,9 +58,9 @@ public class SearchSQLQuery
         return stmt;
     }
 
-    public Integer getPaging()
+    public Integer getItemLimit()
     {
-        return paging;
+        return itemLimit;
     }
 
     public String getFormat()

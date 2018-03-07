@@ -79,6 +79,7 @@ import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -852,24 +853,34 @@ public class ResultMapperTests
     {
         JSONObject response = new JSONObject("{\"docs\":[{\"SITE\":\"_REPOSITORY_\"},{\"SITE\":\"surf-config\"},{\"SITE\":\"swsdp\"},{\"EOF\":true,\"RESPONSE_TIME\":96}]}");
         JSONArray docs = response.getJSONArray("docs");
-        CollectionWithPagingInfo<TupleList> info = mapper.toCollectionWithPagingInfo(docs);
-        assertEquals(1000, info.getPaging().getMaxItems());
+        SearchSQLQuery query = new SearchSQLQuery("select SITE from alfresco group by SITE", null, null, 100);
+        CollectionWithPagingInfo<TupleList> info = mapper.toCollectionWithPagingInfo(docs, query);
+        assertEquals(100, info.getPaging().getMaxItems());
         assertEquals(0, info.getPaging().getSkipCount());
         assertEquals(false, info.getCollection().isEmpty());
         assertEquals(3, info.getCollection().size());
-        info = mapper.toCollectionWithPagingInfo(new JSONArray());
-        assertEquals(1000, info.getPaging().getMaxItems());
+        info = mapper.toCollectionWithPagingInfo(new JSONArray(), query);
+        assertEquals(100, info.getPaging().getMaxItems());
         assertEquals(0, info.getPaging().getSkipCount());
         assertEquals(true, info.getCollection().isEmpty());
         assertEquals(0, info.getCollection().size());
         try 
         {
-            mapper.toCollectionWithPagingInfo(null);
+            mapper.toCollectionWithPagingInfo(null, query);
         }
         catch (Exception e) 
         {
             assertNotNull(e);
-            assertEquals("Solr response is required instead of docs:null", e.getMessage());
+            assertEquals("Solr response is required instead of JSONArray docs was null", e.getMessage());
+        }
+        try 
+        {
+            mapper.toCollectionWithPagingInfo(docs, null);
+        }
+        catch (Exception e) 
+        {
+            assertNotNull(e);
+            assertEquals("SearchSQLQuery is required", e.getMessage());
         }
     }
 }

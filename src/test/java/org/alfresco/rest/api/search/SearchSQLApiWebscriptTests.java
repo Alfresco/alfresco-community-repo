@@ -47,7 +47,7 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParams() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.EMPTY_LIST);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000);
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
@@ -57,7 +57,7 @@ public class SearchSQLApiWebscriptTests
     @Test
     public void testSearchQueryNullStmt() throws Exception
     {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.EMPTY_LIST);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null);
         try
         {
             webscript.buildSearchParameters(searchQuery);
@@ -70,7 +70,7 @@ public class SearchSQLApiWebscriptTests
     @Test
     public void testSearchSQLQueryAgainstNonInsight() throws Exception
     {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.EMPTY_LIST);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), 1000);
         try
         {
             webscript.buildSearchParameters(searchQuery);

@@ -81,7 +81,6 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             SearchSQLQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchSQLQuery.class);
             SearchParameters sparams = buildSearchParameters(searchQuery);
             ResultSet results = searchService.query(sparams);
-            setResponse(res, DEFAULT_SUCCESS);
             FilteringResultSet frs = (FilteringResultSet) results;
             SolrSQLJSONResultSet ssjr = (SolrSQLJSONResultSet) frs.getUnFilteredResultSet();
             //When solr format is requested pass the solr output directly.
@@ -94,6 +93,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
                 CollectionWithPagingInfo<TupleList> nodes = resultMapper.toCollectionWithPagingInfo(ssjr.getDocs(),searchQuery);
                 renderJsonResponse(res, nodes, assistant.getJsonHelper());
             }
+            setResponse(res, DEFAULT_SUCCESS);
         }
         catch (Exception exception) 
         {

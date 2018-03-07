@@ -26,28 +26,40 @@
 package org.alfresco.rest.api.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.NetworksService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.SiteMembershipRequests;
 import org.alfresco.rest.api.Sites;
+import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.SiteMembershipApproval;
+import org.alfresco.rest.api.model.SiteMembershipRejection;
 import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.where.Query;
+import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
@@ -74,7 +86,10 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
     private static final Log logger = LogFactory.getLog(SiteMembershipRequestsImpl.class);
 	
 	// Default role to assign to the site membership request
-	public final static String DEFAULT_ROLE = SiteModel.SITE_CONSUMER;
+    public final static String DEFAULT_ROLE = SiteModel.SITE_CONSUMER;
+
+    // List site memberships filtering (via where clause)
+    private final static Set<String> LIST_SITE_MEMBERSHIPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_SITE_ID, PARAM_PERSON_ID }));
 
 	private People people;
 	private Sites sites;
@@ -384,8 +399,13 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
 		}
 	}
-	
-	private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation)
+
+    private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation)
+    {
+		return getSiteMembershipRequest(moderatedInvitation, false);
+    }
+
+	private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation, boolean includePersonDetails)
 	{
 		SiteMembershipRequest siteMembershipRequest = null;
 
@@ -420,6 +440,12 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 				siteMembershipRequest.setMessage(moderatedInvitation.getInviteeComments());
 				siteMembershipRequest.setCreatedAt(moderatedInvitation.getCreatedAt());
 				siteMembershipRequest.setModifiedAt(moderatedInvitation.getModifiedAt());
+
+                if (includePersonDetails)
+                {
+                    Person person = people.getPerson(moderatedInvitation.getInviteeUserName());
+                    siteMembershipRequest.setPerson(person);
+                }
 			}
 		}
 		else
@@ -428,25 +454,22 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 		}
 
 		return siteMembershipRequest;
-	}
-	
-    @Override
-	public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String personId, Paging paging)
-	{
-    	personId = people.validatePerson(personId, true);
+    }
 
-		int skipCount = paging.getSkipCount();
-		int maxItems = paging.getMaxItems();
-		int max = skipCount + maxItems + 1; // to detect hasMoreItems
+    private List<SiteMembershipRequest> toSiteMembershipRequests(List<Invitation> invitations)
+    {
+        return toSiteMembershipRequests(invitations, false);
+    }
 
-		List<Invitation> invitations = getSiteInvitations(personId);
+    private List<SiteMembershipRequest> toSiteMembershipRequests(List<Invitation> invitations, boolean includePersonDetails)
+    {
 		List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>(invitations.size());
 		for(Invitation invitation : invitations)
 		{
 			if(invitation instanceof ModeratedInvitation)
 			{
 				ModeratedInvitation moderatedInvitation = (ModeratedInvitation)invitation;
-				SiteMembershipRequest siteMembershipRequest = getSiteMembershipRequest(moderatedInvitation);
+				SiteMembershipRequest siteMembershipRequest = getSiteMembershipRequest(moderatedInvitation, includePersonDetails);
 				if(siteMembershipRequest != null)
 				{
 					// note: siteMembershipRequest may be null if the site is now no longer a moderated site
@@ -459,25 +482,193 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 				// just ignore, shouldn't happen because getSiteInvitations filters by ModeratedInvitation
 			}
 		}
+		
+		return siteMembershipRequests;
+    }
 
-		// unfortunately, need to sort in memory because there's no way to get site membership requests sorted by title from
-		// the workflow apis
-		Collections.sort(siteMembershipRequests);
+    private CollectionWithPagingInfo<SiteMembershipRequest> createPagedSiteMembershipRequests(List<SiteMembershipRequest> siteMembershipRequests, Paging paging)
+    {
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        int max = skipCount + maxItems + 1; // to detect hasMoreItems
 
-		int totalItems = siteMembershipRequests.size();
+        // unfortunately, need to sort in memory because there's no way to get site
+        // membership requests sorted by title from
+        // the workflow apis
+        Collections.sort(siteMembershipRequests);
 
-		if(skipCount >= totalItems)
-		{
-			List<SiteMembershipRequest> empty = Collections.emptyList();
-			return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
-		}
-		else
-		{
-			int end = Math.min(max - 1, totalItems);
-			boolean hasMoreItems = totalItems > end;
+        int totalItems = siteMembershipRequests.size();
 
-			siteMembershipRequests = siteMembershipRequests.subList(skipCount, end);
-			return CollectionWithPagingInfo.asPaged(paging, siteMembershipRequests, hasMoreItems, totalItems);
-		}
-	}
+        if (skipCount >= totalItems)
+        {
+            List<SiteMembershipRequest> empty = Collections.emptyList();
+            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+        }
+        else
+        {
+            int end = Math.min(max - 1, totalItems);
+            boolean hasMoreItems = totalItems > end;
+
+            siteMembershipRequests = siteMembershipRequests.subList(skipCount, end);
+            return CollectionWithPagingInfo.asPaged(paging, siteMembershipRequests, hasMoreItems, totalItems);
+        }
+    }
+
+    @Override
+    public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String personId, Paging paging)
+    {
+        personId = people.validatePerson(personId, true);
+
+        List<Invitation> invitations = getSiteInvitations(personId);
+        return createPagedSiteMembershipRequests(toSiteMembershipRequests(invitations), paging);
+    }
+
+    @Override
+    public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(final Parameters parameters)
+    {
+        InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+        criteria.setInvitationType(InvitationType.MODERATED);
+        criteria.setResourceType(ResourceType.WEB_SITE);
+
+        // Parse where clause properties.
+        Query q = parameters.getQuery();
+        if (q != null)
+        {
+            // Filtering via "where" clause.
+            MapBasedQueryWalker propertyWalker = createSiteMembershipRequestQueryWalker();
+            QueryHelper.walk(q, propertyWalker);
+
+            String siteId = propertyWalker.getProperty(PARAM_SITE_ID, WhereClauseParser.EQUALS, String.class);
+
+            if (siteId != null && !siteId.isEmpty())
+            {
+                criteria.setResourceName(siteId);
+            }
+
+            String personId = propertyWalker.getProperty(PARAM_PERSON_ID, WhereClauseParser.EQUALS, String.class);
+
+            if (personId != null && !personId.isEmpty())
+            {
+                criteria.setInvitee(personId);
+            }
+        }
+
+        List<Invitation> invitations = invitationService.searchInvitation(criteria);
+        return createPagedSiteMembershipRequests(toSiteMembershipRequests(invitations, true), parameters.getPaging());
+    }
+
+    @Override
+    public void approveSiteMembershipRequest(String siteId, String inviteeId, SiteMembershipApproval siteMembershipApproval)
+    {
+        SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            throw new EntityNotFoundException(siteId);
+        }
+
+        // Set the site id to the short name (to deal with case sensitivity issues with
+        // using the siteId from the url)
+        siteId = siteInfo.getShortName();
+
+        // Validate invitation.
+        Invitation invitation = getSiteInvitation(inviteeId, siteId);
+        if (invitation == null || !(invitation instanceof ModeratedInvitation))
+        {
+            throw new RelationshipResourceNotFoundException(siteId, inviteeId);
+        }
+
+        ModeratedInvitation moderatedInvitation = (ModeratedInvitation) invitation;
+        ResourceType resourceType = moderatedInvitation.getResourceType();
+
+        if (!resourceType.equals(ResourceType.WEB_SITE) || !SiteVisibility.MODERATED.equals(siteInfo.getVisibility()))
+        {
+            // note: security, no indication that this has a different visibility
+            throw new RelationshipResourceNotFoundException(siteId, inviteeId);
+        }
+
+        invitationService.approve(invitation.getInviteId(), "");
+
+        if (siteMembershipApproval != null && !(siteMembershipApproval.getRole() == null || siteMembershipApproval.getRole().isEmpty()))
+        {
+            String role = siteMembershipApproval.getRole();
+
+            // Check if role chosen by moderator differs from the invite role.
+            if (!moderatedInvitation.getRoleName().equals(role))
+            {
+                String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+
+                // Update invitation with new role.
+                try
+                {
+                    addSiteMembership(invitation.getInviteeUserName(), siteId, role, currentUserId);
+                }
+                catch (UnknownAuthorityException e)
+                {
+                    logger.debug("addSiteMember:  UnknownAuthorityException " + siteId + " person " + invitation.getInviteId() + " role " + role);
+                    throw new InvalidArgumentException("Unknown role '" + role + "'");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void rejectSiteMembershipRequest(String siteId, String inviteeId, SiteMembershipRejection siteMembershipRejection)
+    {
+        SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            throw new EntityNotFoundException(siteId);
+        }
+
+        // set the site id to the short name (to deal with case sensitivity issues with
+        // using the siteId from the url)
+        siteId = siteInfo.getShortName();
+
+        // Validate invitation.
+        Invitation invitation = getSiteInvitation(inviteeId, siteId);
+        if (invitation == null || !(invitation instanceof ModeratedInvitation))
+        {
+            throw new RelationshipResourceNotFoundException(siteId, inviteeId);
+        }
+
+        ModeratedInvitation moderatedInvitation = (ModeratedInvitation) invitation;
+        ResourceType resourceType = moderatedInvitation.getResourceType();
+
+        if (!resourceType.equals(ResourceType.WEB_SITE) || !SiteVisibility.MODERATED.equals(siteInfo.getVisibility()))
+        {
+            // note: security, no indication that this has a different visibility
+            throw new RelationshipResourceNotFoundException(siteId, inviteeId);
+        }
+
+        String reason = null;
+        if (siteMembershipRejection != null && !(siteMembershipRejection.getComment() == null || siteMembershipRejection.getComment().isEmpty()))
+        {
+            reason = siteMembershipRejection.getComment();
+        }
+
+        invitationService.reject(invitation.getInviteId(), reason);
+    }
+
+    /**
+     * Create query walker for <code>listChildren</code>.
+     *
+     * @return The created {@link MapBasedQueryWalker}.
+     */
+    private MapBasedQueryWalker createSiteMembershipRequestQueryWalker()
+    {
+        return new MapBasedQueryWalker(LIST_SITE_MEMBERSHIPS_EQUALS_QUERY_PROPERTIES, null);
+    }
+
+    private void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                siteService.setMembership(siteName, invitee, role);
+                return null;
+            }
+
+        }, runAsUser);
+    }
 }

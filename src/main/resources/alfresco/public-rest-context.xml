@@ -872,6 +872,14 @@
         <property name="sites" ref="Sites" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.sitesmembershipsrequests.SiteMembershipRequestEntityResource">
+        <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.sites.SiteMembershipRequestsRelation">
+        <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.people.PeopleEntityResource">
         <property name="people" ref="People" />
     </bean>

@@ -52,6 +52,7 @@ public class SiteMembershipRequest implements Comparable<SiteMembershipRequest>
     private Date createdAt;
     private Date modifiedAt;
     private String title; // for sorting only
+	private Person person;
 
 	public static Pair<String, String> splitId(String id)
 	{
@@ -125,6 +126,16 @@ public class SiteMembershipRequest implements Comparable<SiteMembershipRequest>
 	{
 		this.message = message;
 	}
+
+    public Person getPerson()
+    {
+        return person;
+    }
+
+    public void setPerson(Person person)
+    {
+        this.person = person;
+    }
 
 	@Override
 	public String toString()

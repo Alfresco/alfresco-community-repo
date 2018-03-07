@@ -67,6 +67,9 @@ solr:
     limits:
       memory: "500Mi"
 
+database:
+  type: postgresql
+
 postgresql:
   ## If true, install the postgresql chart alongside Alfresco Content Services
   enabled: true
@@ -76,15 +79,13 @@ postgresql:
   postgresPassword: alfresco
   postgresDatabase: alfresco
   persistence:
-    enabled: false
+    existingClaim: "alfresco-volume-claim"
+    subPath: "alfresco-content-services/database-data"
   resources:
     requests:
       memory: "250Mi"
     limits:
       memory: "500Mi"
   driver: org.postgresql.Driver
-
-database:
-  type: postgresql
 
 replicaCount: 1

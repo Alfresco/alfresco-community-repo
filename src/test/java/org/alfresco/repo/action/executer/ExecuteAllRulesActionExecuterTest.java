@@ -51,12 +51,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
 
@@ -66,6 +69,7 @@ import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
 {
     /** The node service */
@@ -101,8 +105,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     /**
      * Called at the beginning of all tests
      */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    protected void before() throws Exception
     {
         this.checkOutCheckInService = (CheckOutCheckInService) this.applicationContext.getBean("checkOutCheckInService");
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
@@ -157,8 +161,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         // Execute rule on document upload
         ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
         this.executer.execute(action, folder);
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         assertTrue(this.nodeService.hasAspect(doc, ContentModel.ASPECT_CLASSIFIABLE));
         
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
@@ -256,8 +260,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         ActionImpl action = new ActionImpl(null, ID, ExecuteAllRulesActionExecuter.NAME, null);
         this.executer.execute(action, folder);
         
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
@@ -390,8 +394,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         linkAction.setExecuteAsynchronously(false);
         actionService.executeAction(linkAction, folderA);
         
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         transactionHelper.doInTransaction(() -> {
             assertFalse(nodeService.hasAspect(folderA, ContentModel.ASPECT_CLASSIFIABLE));
@@ -462,8 +466,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
 
         NodeRef fileB = createFile(folderB, "fileB.txt").getNodeRef();
 
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
 
         // On RootFolder create a rule
         transactionHelper.doInTransaction(() -> {

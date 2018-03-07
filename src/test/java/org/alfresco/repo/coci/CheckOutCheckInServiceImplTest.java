@@ -74,15 +74,26 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TestWithUserUtils;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 /**
  * Version operations service implementation unit tests
  * 
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class CheckOutCheckInServiceImplTest extends BaseSpringTest 
 {
     /**
@@ -131,9 +142,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * On setup in transaction implementation
      */
-    @Override
-    protected void onSetUpInTransaction() 
-        throws Exception 
+    @Before
+    public void before()
     {
         // Set the services
         this.cociService = (CheckOutCheckInService)this.applicationContext.getBean("checkOutCheckInService");
@@ -239,6 +249,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test checkout 
      */
+    @Test
     public void testCheckOut()
     {
         checkout();
@@ -296,6 +307,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test checkIn
      */
+    @Test
     public void testCheckIn()
     {
         NodeRef workingCopy = checkout();
@@ -357,6 +369,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         this.cociService.checkin(workingCopy2, new HashMap<String, Serializable>(), null, true);    
     }
 
+    @Test
     public void testCheckInVersionedNode_MNT_8789()
     {
         String versionDescription = "This is a test version";
@@ -425,6 +438,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * <a href="https://issues.alfresco.com/jira/browse/MNT-9202">MNT-9202</a>
      */
+    @Test
     public void testDeleteSourceOfLockedCopy()
     {
         // Create a FolderA
@@ -496,6 +510,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals("cm:modified should not change on the copied node when deleting the original", wcModBefore, wcModAfter);
     }
 
+    @Test
     public void testCheckOutCheckInWithDifferentLocales()
     {
         // Check-out nodeRef using the locale fr_FR
@@ -521,6 +536,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals("Working copy label was not removed.", "myDocument.doc", name);
     }
     
+    @Test
     public void testCheckOutCheckInWithAlteredWorkingCopyName()
     {
         // Check-out nodeRef using the locale fr_FR
@@ -549,6 +565,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals("File not renamed correctly.", "newName.doc", name);
     }
     
+    @Test
     public void testCheckInWithNameChange()
     {
         // Check out the file
@@ -564,6 +581,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         cociService.checkin(fileWorkingCopyNodeRef, null);
     }
     
+    @Test
     public void testCheckOutCheckInWithTranslatableAspect()
     {
         // Create a node to be used as the translation
@@ -593,6 +611,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test when the aspect is not set when check-in is performed
      */
+    @Test
     public void testVersionAspectNotSetOnCheckIn()
     {
         // Create a bag of props
@@ -619,6 +638,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test cancel checkOut
      */
+    @Test
     public void testCancelCheckOut()
     {
         NodeRef workingCopy = checkout();
@@ -644,6 +664,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test the deleting a wokring copy node removed the lock on the original node
      */
+    @Test
     public void testAutoCancelCheckOut()
     {
         Date modifiedDateBeforeCheckOut = (Date) this.nodeService.getProperty(this.nodeRef, ContentModel.PROP_MODIFIED);
@@ -678,6 +699,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
      * @see CheckOutCheckInService#getWorkingCopy(NodeRef)
      * @see CheckOutCheckInService#getCheckedOut(NodeRef)
      */
+    @Test
     public void testBidirectionalReferences()
     {
         final NodeRef origNodeRef = nodeService.createNode(
@@ -699,9 +721,9 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals("Expect a 1:1 relationship", 1, sourceAssocs.size());
         
         // Need to commit the transaction in order to get the indexer to run
-        setComplete();
-        endTransaction();
-        
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
         final NodeRef finalNodeRef = origNodeRef;        
         
         NodeRef wk3 = this.transactionService.getRetryingTransactionHelper().doInTransaction(
@@ -725,6 +747,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * Test the getWorkingCopy method
      */
+    @Test
     public void testETWOTWO_733()
     {
         NodeRef origNodeRef = nodeService.createNode(
@@ -748,8 +771,8 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         final NodeRef workingCopy = cociService.checkout(origNodeRef);
         
         // Need to commit the transaction in order to get the indexer to run
-        setComplete();
-        endTransaction();
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         final NodeRef finalNodeRef = origNodeRef;        
         
@@ -769,6 +792,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertNull(wk3);           
     }
     
+    @Test
     public void testAR1056()
     {
         // Check out the node
@@ -795,6 +819,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
     }
     
+    @Test
     public void testMultipleCheckoutsCheckInsWithPropChange()
     {
         // Note: this test assumes cm:autoVersionProps=true by default (refer to cm:versionableAspect in contentModel.xml)
@@ -810,9 +835,9 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         
         // Add the version aspect to the created node
         nodeService.addAspect(testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         // Checkout
         final NodeRef workingCopy1 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
@@ -887,6 +912,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         });
     }
     
+    @Test
     public void testAlfrescoCheckoutDoesNotModifyNode()
     {
         String adminUser = AuthenticationUtil.getAdminUserName();
@@ -927,6 +953,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         assertEquals("The modifier should NOT change to Admin after checkin!", initModifier, modifier);
     }
     
+    @Test
     public void testCheckOutPermissions_ALF7680_ALF535()
     {
         /*
@@ -1027,6 +1054,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
     }
 
+    @Test
     public void testCheckInLockableAspectDoesntCopies_ALF16194()
     {
         // Check-out nodeRef
@@ -1048,6 +1076,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
     }
 
+    @Test
     public void testCanCheckInWhenOriginalHasUndeletableAspect()
     {
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_UNDELETABLE, null);
@@ -1121,6 +1150,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
      * Creating a document and working copy. Then try to move working copy to another place. Test is passed, if a working copy was moved to another place with original
      * document. Only the lock owner can move documents.
      */
+    @Test
     public void testMoveOriginalWithWorkingCopy()
     {
         // Create a FolderA
@@ -1236,6 +1266,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * MNT-2641 (however, see also REPO-1108)
      */
+    @Test
     public void testDeleteUpdateOriginalOfCheckedOutDocument()
     {
         // Create a FolderA
@@ -1334,6 +1365,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
      * MNT-2641
      * The working copy delete is equivalent to "cancelCheckout". This should fail for everyone except the lock owner.
      */
+    @Test
     public void testDeleteOfWorkingCopy()
     {
         // Create a FolderA
@@ -1357,6 +1389,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * MNT-2641: The {@link ContentModel#ASPECT_WORKING_COPY} aspect cannot be removed from a working copy
      */
+    @Test
     public void testDeleteWorkingCopyAspect()
     {
         // Create a FolderA
@@ -1373,9 +1406,9 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
                 nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY));
         assertTrue("cm:copiedFrom aspect not found on working copy.",
                 nodeService.hasAspect(workingCopy, ContentModel.ASPECT_COPIEDFROM));
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         // try to delete cm:copiedfrom aspect from working copy - must be allowed
         nodeService.removeAspect(workingCopy, ContentModel.ASPECT_COPIEDFROM);
@@ -1394,6 +1427,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     /**
      * MNT-2641 The cm:workingcopylink association cannot be removed
      */
+    @Test
     public void testDeleteWorkingCopyLinkAssociation()
     {
      // Create a FolderA
@@ -1409,9 +1443,9 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         // Check that the cm:original association is present
         assertEquals("Did not find cm:workingcopylink",
                 1, nodeService.getSourceAssocs(workingCopy, ContentModel.ASSOC_WORKING_COPY_LINK).size());
-        
-        setComplete();
-        endTransaction();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         
         // try to delete cm:workingcopylink association - must be denied
         try
@@ -1472,6 +1506,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
      * <br>
      * Creating node - CheckOut - Add write lock to working copy - Unlock working copy - CancelCheckOut
      */
+    @Test
     public void testCancelCheckoutUnlockedWCopy()
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry)this.applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -1488,6 +1523,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     }
 
     // REPO-1108 / ALF-21645 (see also MNT-15855)
+    @Test
     public void testDeleteAndRestore()
     {
         authenticationComponent.setSystemUserAsCurrentUser();

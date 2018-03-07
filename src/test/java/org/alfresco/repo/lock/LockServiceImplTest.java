@@ -62,17 +62,20 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Simple lock service test
  * 
  * @author Roy Wetherall
  */
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Category({BaseSpringTestsCategory.class})
+@Transactional
 public class LockServiceImplTest extends BaseSpringTest
 {
     /**
@@ -101,10 +104,8 @@ public class LockServiceImplTest extends BaseSpringTest
     NodeRef rootNodeRef;
     private StoreRef storeRef;
 
-    /**
-     * Called during the transaction setup
-     */
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
@@ -594,7 +595,7 @@ public class LockServiceImplTest extends BaseSpringTest
         lockService.lock(rootNodeRef, LockType.NODE_LOCK, 3600, Lifetime.EPHEMERAL);
         
         // Rollback
-        endTransaction();
+        TestTransaction.end();
         
         // This lock should not be present.
         assertEquals(LockStatus.NO_LOCK, lockService.getLockStatus(noAspectNode));

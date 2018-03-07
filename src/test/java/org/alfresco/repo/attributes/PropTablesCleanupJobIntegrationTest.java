@@ -29,9 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.CronTriggerBean;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
@@ -44,19 +42,18 @@ import org.springframework.context.ApplicationContext;
 public class PropTablesCleanupJobIntegrationTest
 {
     private ApplicationContext ctx;
-    private CronTriggerBean jobTrigger;
+    private JobDetail jobDetail;
     
     @Before
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
-        jobTrigger = ctx.getBean("propTablesCleanupTrigger", CronTriggerBean.class);
+        jobDetail = ctx.getBean("propTablesCleanupJobDetail", JobDetail.class);
     }
     
     @Test
     public void checkJobDetails()
     {
-        JobDetail jobDetail = jobTrigger.getJobDetail();
         assertEquals(PropTablesCleanupJob.class, jobDetail.getJobClass());
         assertTrue("JobDetail did not contain PropTablesCleaner reference",
                     jobDetail.getJobDataMap().get("propTablesCleaner") instanceof PropTablesCleaner);

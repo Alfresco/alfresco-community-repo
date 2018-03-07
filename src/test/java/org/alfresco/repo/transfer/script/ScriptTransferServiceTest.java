@@ -43,9 +43,12 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *  Script Transfer unit test
@@ -53,6 +56,7 @@ import org.mockito.Mockito;
  * @author Mark Rogers
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest 
 {
     
@@ -61,12 +65,12 @@ public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest
     
     private ScriptService scriptService;
     private ScriptTransferService scriptTransferService;
-   
-    
-    @SuppressWarnings("deprecation")
-    protected void onSetUpInTransaction() throws Exception
+
+
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         
         // Get the required services
         this.scriptService = (ScriptService)this.applicationContext.getBean("ScriptService");
@@ -75,7 +79,7 @@ public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest
     }   
     
   // == Test the JavaScript API ==
-  
+  @Test
   public void testJSAPI() throws Exception
   {
       /**

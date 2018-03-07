@@ -72,7 +72,11 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Nick Smith
@@ -80,6 +84,7 @@ import org.junit.experimental.categories.Category;
  * @since 3.4.e
  */
 @Category(LuceneTests.class)
+@Transactional
 public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringTest
 {
     private static final String XML = MimetypeMap.MIMETYPE_XML;
@@ -383,9 +388,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         transactionService.setAllowWrite(true);
         assertTrue(workflowService.isTaskEditable(currentTask, USER2));
         assertTrue(workflowService.isTaskReassignable(currentTask, USER2));
-        
-        setComplete();
-        endTransaction();        
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -396,7 +401,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
                 return null;
             }
         });
-        startNewTransaction();
     }
     
     public void testPooledTaskCapabilities()
@@ -564,8 +568,8 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         assertFalse(workflowService.isTaskReassignable(currentTask, USER2));
         assertFalse(workflowService.isTaskReassignable(currentTask, USER3));
 
-        setComplete();
-        endTransaction();        
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -576,7 +580,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
                 return null;
             }
         });
-        startNewTransaction();
     }
 
     public void testGetWorkflowTaskDefinitions()
@@ -1337,10 +1340,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     }
 
     @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
         serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.workflowService = serviceRegistry.getWorkflowService();
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
@@ -1386,10 +1388,9 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     }
 
     @SuppressWarnings("deprecation")
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -1400,8 +1401,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
                 groupManager.clearGroups();
                 personManager.clearPeople();
                 authenticationComponent.clearCurrentSecurityContext();
-
-                AbstractWorkflowServiceIntegrationTest.super.onTearDownInTransaction();
                 return null;
             }
         });

@@ -52,7 +52,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -60,6 +64,8 @@ import org.junit.Test;
  * @since 4.0
  *
  */
+@Transactional
+@ContextConfiguration({"classpath:tenant/mt-*context.xml"})
 public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
 {
     protected static final String XML = MimetypeMap.MIMETYPE_XML;
@@ -207,12 +213,10 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         assertEquals(path2Id, tasks.get(0).getPath().getId());
 
     }
-    
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpBeforeTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpBeforeTransaction();
         this.serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         this.tenantService= (TenantService) applicationContext.getBean("tenantService");
         this.tenantAdminService= (TenantAdminService) applicationContext.getBean("tenantAdminService");
@@ -244,13 +248,11 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
         });
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onTearDown() throws Exception
+    @After
+    public void after() throws Exception
     {
         wfTestHelper.tearDown();
         
-        super.onTearDown();
         WorkflowSuiteContextShutdownTest.closeContext();
     }
     
@@ -266,16 +268,6 @@ public abstract class AbstractMultitenantWorkflowTest extends BaseSpringTest
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         return classLoader.getResourceAsStream(resource);
-    }
-
-    /**
-    * {@inheritDoc}
-    */
-    @Override
-    protected String[] getConfigLocations()
-    {
-        return new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0],
-                "classpath:tenant/mt-*context.xml"};
     }
     
     protected abstract String getTestDefinitionPath();

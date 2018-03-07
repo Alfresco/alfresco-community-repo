@@ -53,8 +53,6 @@ import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.sun.star.io.IOException;
-
 /**
  * Helper class to list the dependencies between different 
  *  spring context files that make up a full or partial
@@ -300,7 +298,7 @@ public class ContextDependencyLister
    /**
     * Renders the dependencies as GraphViz DotXML
     */
-   public void graphVizDependencies(String outFile) throws IOException, FileNotFoundException {
+   public void graphVizDependencies(String outFile) throws FileNotFoundException {
       calculateDependencies();
       
       // We need to know one bean from each context that we'll output

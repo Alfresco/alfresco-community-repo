@@ -25,8 +25,8 @@
  */
 package org.alfresco.util.schemacomp;
 
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.schemacomp.model.Schema;
-import org.hibernate.dialect.Dialect;
 
 /**
  * A context made available to schema differencing and validation operations. It supplies information

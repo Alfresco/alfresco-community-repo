@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.alfresco.ibatis.treeset">
+
+   <resultMap id="TestOneResult" type="TestDAO">
+      <result property="id" column="sequence_id"/>
+      <result property="propOne" column="prop_one"/>
+      <result property="propTwo" column="prop_two"/>
+   </resultMap>
+   
+   <select id="java_util_TreeSet" parameterType="TestDAO" resultType="TestDAO">
+      <![CDATA[
+      select 
+         id as id,
+         prop_one as propOne,
+         prop_two as propTwo
+      from 
+         dummy_table
+      where
+         id = #{id} 
+      ]]>
+   </select>
+   
+</mapper>

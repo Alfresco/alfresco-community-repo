@@ -50,6 +50,9 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base class for rule service test.
@@ -58,6 +61,7 @@ import org.alfresco.util.BaseSpringTest;
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class BaseRuleTest extends BaseSpringTest
 {
     /**
@@ -109,12 +113,9 @@ public class BaseRuleTest extends BaseSpringTest
     protected ActionService actionService;
     protected TransactionService transactionService;
 
-    /**
-     * onSetUpInTransaction implementation
-     */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
-    {               
+    @Before
+    public void before() throws Exception
+    {
         // Get the services
         this.nodeService = (NodeService) this.applicationContext
                 .getBean("nodeService");
@@ -147,11 +148,10 @@ public class BaseRuleTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER).getChildRef();
     }
     
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after()
     {
         authenticationComponent.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
     }
 
     protected void addRulesAspect()

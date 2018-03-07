@@ -48,7 +48,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * LockBehaviourImpl Unit Test.
@@ -56,6 +59,7 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(OwnJVMTestsCategory.class)
+@Transactional
 public class LockBehaviourImplTest extends BaseSpringTest
 {
     /**
@@ -111,9 +115,9 @@ public class LockBehaviourImplTest extends BaseSpringTest
     private static final String BAD_USER_WITH_ALL_PERMS_NAME = "badUserOwns";
     
     NodeRef rootNodeRef;
-   
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
@@ -186,6 +190,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * Test checkForLock (no user specified)
      */
+    @Test
     public void testCheckForLockNoUser()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);     	
@@ -268,6 +273,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
         assertTrue(lockService.isLockedAndReadOnly(nodeRef));
     }
 
+    @Test
     public void testCheckForLockWhenExpired()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 
@@ -298,6 +304,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * Test version service lock checking
      */
+    @Test
     public void testVersionServiceLockBehaviour01()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 
@@ -342,6 +349,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * Test version service lock checking
      */
+    @Test
     public void testVersionServiceLockBehaviour02()
     {
         // Add the version aspect to the node
@@ -426,6 +434,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * ALF-5680: It is possible to cut/paste a locked file
      */
+    @Test
     public void testCannotMoveNodeWhenLocked()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 
@@ -469,6 +478,7 @@ public class LockBehaviourImplTest extends BaseSpringTest
     /**
      * MNT-9475: Moving locked content breaks edit online
      */
+    @Test
     public void testCanMoveCopyDeleteWithLockOwner()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService); 

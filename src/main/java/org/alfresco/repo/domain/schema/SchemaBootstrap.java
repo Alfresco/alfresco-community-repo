@@ -27,25 +27,21 @@ package org.alfresco.repo.domain.schema;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -76,10 +72,13 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.Oracle9Dialect;
+import org.alfresco.repo.domain.dialect.SQLServerDialect;
+import org.alfresco.repo.domain.dialect.DB2Dialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -97,26 +96,6 @@ import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
-import org.hibernate.connection.UserSuppliedConnectionProvider;
-import org.hibernate.dialect.DB2Dialect;
-import org.hibernate.dialect.DerbyDialect;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.HSQLDialect;
-import org.hibernate.dialect.MySQL5Dialect;
-import org.hibernate.dialect.MySQLDialect;
-import org.hibernate.dialect.MySQLInnoDBDialect;
-import org.hibernate.dialect.Oracle10gDialect;
-import org.hibernate.dialect.Oracle9Dialect;
-import org.hibernate.dialect.Oracle9iDialect;
-import org.hibernate.dialect.OracleDialect;
-import org.hibernate.dialect.PostgreSQLDialect;
-import org.hibernate.engine.ActionQueue;
-import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.Resource;
@@ -124,8 +103,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-
 
 /**
  * Bootstraps the schema and schema update.  The schema is considered missing if the applied patch table
@@ -151,11 +128,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_COPIED_SCRIPT = "schema.update.msg.executing_copied_script";
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
-    private static final String WARN_DIALECT_UNSUPPORTED = "schema.update.warn.dialect_unsupported";
-    private static final String WARN_DIALECT_HSQL = "schema.update.warn.dialect_hsql";
-    private static final String WARN_DIALECT_DERBY = "schema.update.warn.dialect_derby";
     private static final String ERR_FORCED_STOP = "schema.update.err.forced_stop";
-    private static final String ERR_DIALECT_SHOULD_USE = "schema.update.err.dialect_should_use";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
@@ -191,7 +164,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     public static final void setMaxStringLength(int length, Dialect dialect)
     {
-        int max = (dialect instanceof AlfrescoMySQLClusterNDBDialect ? DEFAULT_MAX_STRING_LENGTH_NDB : DEFAULT_MAX_STRING_LENGTH);
+        int max = (dialect instanceof MySQLClusterNDBDialect ? DEFAULT_MAX_STRING_LENGTH_NDB : DEFAULT_MAX_STRING_LENGTH);
         
         if (length < max)
         {
@@ -268,7 +241,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private DescriptorService descriptorService;
     private DataSource dataSource;
     private AppliedPatchDAO appliedPatchDAO;
-    private LocalSessionFactoryBean localSessionFactory;
     private String schemaOuputFilename;
     private boolean updateSchema;
     private boolean stopAfterSchemaBootstrap;
@@ -306,16 +278,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
     {
         this.appliedPatchDAO = appliedPatchDAO;
-    }
-
-    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
-    {
-        this.localSessionFactory = localSessionFactory;
-    }
-    
-    public LocalSessionFactoryBean getLocalSessionFactory()
-    {
-        return localSessionFactory;
     }
 
     /**
@@ -416,23 +378,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Get the limit for the hibernate executions queue
-     */
-    public int getHibernateMaxExecutions()
-    {
-        return ActionQueue.getMAX_EXECUTIONS_SIZE();
-    }
-
-    /**
-     * Set the limit for the hibernate executions queue
-     * Less than zero always uses event amalgamation 
-     */
-    public void setHibernateMaxExecutions(int hibernateMaxExecutions)
-    {
-        ActionQueue.setMAX_EXECUTIONS_SIZE(hibernateMaxExecutions);
-    }
-
-    /**
      * Set db.schema.name to be used
      */
     public void setDbSchemaName(String dbSchemaName)
@@ -452,11 +397,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setGlobalProperties(Properties globalProperties)
     {
         this.globalProperties = globalProperties;
-    }
-
-    private SessionFactory getSessionFactory()
-    {
-        return (SessionFactory) localSessionFactory.getObject();
     }
     
     /**
@@ -580,12 +520,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Count applied patches.  This fails if multiple applied patch tables are found,
      * which normally indicates that the schema view needs to be limited.
      * 
-     * @param cfg           The Hibernate config
      * @param connection    a valid database connection
      * @return Returns the number of applied patches
      * @throws NoSchemaException if the table of applied patches can't be found
      */
-    private int countAppliedPatches(Configuration cfg, Connection connection) throws Exception
+    private int countAppliedPatches(Connection connection) throws Exception
     {
         String defaultSchema = dbSchemaName != null ? dbSchemaName : databaseMetaDataHelper.getSchema(connection);
 
@@ -593,7 +532,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         {
             defaultSchema = null;
         }
-        String defaultCatalog = cfg.getProperty("hibernate.default_catalog");
+        String defaultCatalog = connection.getCatalog();
         if (defaultCatalog != null && defaultCatalog.length() == 0)
         {
             defaultCatalog = null;
@@ -882,19 +821,19 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Builds the schema from scratch or applies the necessary patches to the schema.
      */
-    private boolean updateSchema(Configuration cfg, Session session, Connection connection) throws Exception
+    private boolean updateSchema(Connection connection) throws Exception
     {
         boolean create = false;
         try
         {
-            countAppliedPatches(cfg, connection);
+            countAppliedPatches(connection);
         }
         catch (NoSchemaException e)
         {
             create = true;
         }
         // Get the dialect
-        final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        final Dialect dialect = this.dialect;
         String dialectStr = dialect.getClass().getSimpleName();
 
         if (create)
@@ -904,39 +843,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // execute pre-create scripts (not patches)
             for (String scriptUrl : this.preCreateScriptUrls)
             {
-                executeScriptUrl(cfg, connection, scriptUrl);
-            }
-            // Build and execute changes generated by Hibernate
-            File tempFile = null;
-            Writer writer = null;
-            try
-            {
-                DatabaseMetadata metadata = new DatabaseMetadata(connection, dialect);
-                String[] sqls = cfg.generateSchemaUpdateScript(dialect, metadata);
-                if (sqls.length > 0)
-                {
-                    tempFile = TempFileProvider.createTempFile("AlfrescoSchema-" + dialectStr + "-Update-", ".sql");
-                    writer = new BufferedWriter(new FileWriter(tempFile));
-                    for (String sql : sqls)
-                    {
-                        writer.append(sql);
-                        writer.append(";\n");
-                    }
-                    try {writer.close();} catch (Throwable e) {}
-                    executeScriptFile(cfg, connection, tempFile, null);
-                }
-            }
-            finally
-            {
-                if (writer != null)
-                {
-                    try {writer.close();} catch (Throwable e) {}
-                }
+                executeScriptUrl(connection, scriptUrl);
             }
             // execute post-create scripts (not patches)
             for (String scriptUrl : this.postCreateScriptUrls)
             {
-                executeScriptUrl(cfg, connection, scriptUrl);
+                executeScriptUrl(connection, scriptUrl);
             }
 
             if (logger.isInfoEnabled())
@@ -947,41 +859,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         else
         {
             // Execute any pre-auto-update scripts
-            checkSchemaPatchScripts(cfg, connection, preUpdateScriptPatches, true);
-            
-            // Build and execute changes generated by Hibernate
-            File tempFile = null;
-            Writer writer = null;
-            try
-            {
-                DatabaseMetadata metadata = new DatabaseMetadata(connection, dialect);
-                String[] sqls = cfg.generateSchemaUpdateScript(dialect, metadata);
-                if (sqls.length > 0)
-                {
-                    tempFile = TempFileProvider.createTempFile("AlfrescoSchema-" + dialectStr + "-Update-", ".sql");
-                    writer = new BufferedWriter(new FileWriter(tempFile));
-                    for (String sql : sqls)
-                    {
-                        writer.append(sql);
-                        writer.append(";\n");
-                    }
-                }
-            }
-            finally
-            {
-                if (writer != null)
-                {
-                    try {writer.close();} catch (Throwable e) {}
-                }
-            }
-            // execute if there were changes raised by Hibernate
-            if (tempFile != null)
-            {
-                executeScriptFile(cfg, connection, tempFile, null);
-            }
+            checkSchemaPatchScripts(connection, preUpdateScriptPatches, true);
             
             // Execute any post-auto-update scripts
-            checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, true);
+            checkSchemaPatchScripts(connection, postUpdateScriptPatches, true);
         }
 
         // Initialise Activiti DB, using an unclosable connection
@@ -1016,10 +897,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         else
         {
             // Execute any auto-update scripts for Activiti tables
-            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, true);
+            checkSchemaPatchScripts(connection, updateActivitiScriptPatches, true);
 
             // verify that all Activiti patches have been applied correctly
-            checkSchemaPatchScripts(cfg, connection, updateActivitiScriptPatches, false);
+            checkSchemaPatchScripts(connection, updateActivitiScriptPatches, false);
         }
         
         return create;
@@ -1063,13 +944,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Check that the necessary scripts have been executed against the database
      */
     private void checkSchemaPatchScripts(
-            Configuration cfg,
             Connection connection,
             List<SchemaUpgradeScriptPatch> scriptPatches,
             boolean apply) throws Exception
     {
         // first check if there have been any applied patches
-        int appliedPatchCount = countAppliedPatches(cfg, connection);
+        int appliedPatchCount = countAppliedPatches(connection);
         if (appliedPatchCount == 0)
         {
             // This is a new schema, so upgrade scripts are irrelevant
@@ -1116,13 +996,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 throw AlfrescoRuntimeException.create(ERR_SCRIPT_NOT_RUN, scriptUrl);
             }
             // it wasn't run and it can be run now
-            executeScriptUrl(cfg, connection, scriptUrl);
+            executeScriptUrl(connection, scriptUrl);
         }
     }
     
-    private void executeScriptUrl(Configuration cfg, Connection connection, String scriptUrl) throws Exception
+    private void executeScriptUrl(Connection connection, String scriptUrl) throws Exception
     {
-        Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        Dialect dialect = this.dialect;
         String dialectStr = dialect.getClass().getSimpleName();
         InputStream scriptInputStream = getScriptInputStream(dialect.getClass(), scriptUrl);
         // check that it exists
@@ -1145,7 +1025,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // now execute it
         String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
-        executeScriptFile(cfg, connection, tempFile, dialectScriptUrl);
+        executeScriptFile(connection, tempFile, dialectScriptUrl);
     }
     
     /**
@@ -1219,19 +1099,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     }
     
     /**
-     * @param cfg           the Hibernate configuration
      * @param connection    the DB connection to use
      * @param scriptFile    the file containing the statements
      * @param scriptUrl     the URL of the script to report.  If this is null, the script
      *                      is assumed to have been auto-generated.
      */
     private void executeScriptFile(
-            Configuration cfg,
             Connection connection,
             File scriptFile,
             String scriptUrl) throws Exception
     {
-        final Dialect dialect = Dialect.getDialect(cfg.getProperties());
+        final Dialect dialect = this.dialect;
         
         StringBuilder executedStatements = executedStatementsThreadLocal.get();
         if (executedStatements == null)
@@ -1315,7 +1193,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     }
                     String includedScriptUrl = sql.substring(10, sql.length());
                     // Execute the script in line
-                    executeScriptUrl(cfg, connection, includedScriptUrl);
+                    executeScriptUrl(connection, includedScriptUrl);
                 }
                 // Check for variable assignment
                 else if (sql.startsWith("--ASSIGN:"))
@@ -1488,11 +1366,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
                         
-                        if (this.dialect != null && this.dialect instanceof AlfrescoMySQLClusterNDBDialect)
+                        if (this.dialect != null && this.dialect instanceof MySQLClusterNDBDialect)
                         {
                             // note: enable bootstrap on MySQL Cluster NDB
                             /*
-                             * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+                             * WARNING: Experimental/unsupported - see MySQLClusterNDBDialect !
                              */
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
                             sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
@@ -1604,44 +1482,38 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         Class<?> dialectClazz = dialect.getClass();
         LogUtil.info(logger, MSG_DIALECT_USED, dialectClazz.getName());
-        if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
-        {
-            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), MySQLInnoDBDialect.class.getName());
-            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-        }
-        else if (dialectClazz.equals(HSQLDialect.class))
-        {
-            LogUtil.info(logger, WARN_DIALECT_HSQL);
-        }
-        else if (dialectClazz.equals(DerbyDialect.class))
-        {
-            LogUtil.info(logger, WARN_DIALECT_DERBY);
-        }
-        else if (dialectClazz.equals(Oracle9iDialect.class) || dialectClazz.equals(Oracle10gDialect.class))
-        {
-            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), AlfrescoOracle9Dialect.class.getName());
-            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-        }
-        else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
-        {
-            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), AlfrescoOracle9Dialect.class.getName());
-            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
-        }
+//        if (dialectClazz.equals(MySQLDialect.class) || dialectClazz.equals(MySQL5Dialect.class))
+//        {
+//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), MySQLInnoDBDialect.class.getName());
+//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+//        }
+//        else if (dialectClazz.equals(HSQLDialect.class))
+//        {
+//            LogUtil.info(logger, WARN_DIALECT_HSQL);
+//        }
+//        else if (dialectClazz.equals(DerbyDialect.class))
+//        {
+//            LogUtil.info(logger, WARN_DIALECT_DERBY);
+//        }
+//        else if (dialectClazz.equals(Oracle9iDialect.class) || dialectClazz.equals(Oracle10gDialect.class))
+//        {
+//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
+//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+//        }
+//        else if (dialectClazz.equals(OracleDialect.class) || dialectClazz.equals(Oracle9Dialect.class))
+//        {
+//            LogUtil.error(logger, ERR_DIALECT_SHOULD_USE, dialectClazz.getName(), Oracle9Dialect.class.getName());
+//            throw AlfrescoRuntimeException.create(WARN_DIALECT_UNSUPPORTED, dialectClazz.getName());
+//        }
         
         int maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         int serializableType = SerializableTypeHandler.getSerializableType();
         // Adjust the maximum allowable String length according to the dialect
-        if (dialect instanceof AlfrescoSQLServerDialect)
+        if (dialect instanceof SQLServerDialect)
         {
             // string_value nvarchar(1024) null,
             // serializable_value image null,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
-        }
-        else if (dialect instanceof AlfrescoSybaseAnywhereDialect)
-        {
-            // string_value text null,
-            // serializable_value varbinary(8192) null,
-            maxStringLength = Integer.MAX_VALUE;
         }
         else if (dialect instanceof DB2Dialect)
         {
@@ -1650,13 +1522,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
             serializableType = Types.BLOB;
         }
-        else if (dialect instanceof HSQLDialect)
-        {
-            // string_value varchar(1024),
-            // serializable_value varbinary(8192),
-            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
-        }
-        else if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        else if (dialect instanceof MySQLClusterNDBDialect)
         {
             // string_value varchar(400),
             // serializable_value blob,
@@ -1668,7 +1534,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value blob,
             maxStringLength = Integer.MAX_VALUE;
         }
-        else if (dialect instanceof AlfrescoOracle9Dialect)
+        else if (dialect instanceof Oracle9Dialect)
         {
             // string_value varchar2(1024 char),
             // serializable_value blob,
@@ -1701,7 +1567,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
         
         // do everything in a transaction
-        Session session = getSessionFactory().openSession();
         Connection connection = null;
         try
         {
@@ -1709,16 +1574,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             connection = dataSource.getConnection();
             connection.setAutoCommit(true);
             LogUtil.info(logger, MSG_DATABASE_USED, connection);
-            
-            Configuration cfg = localSessionFactory.getConfiguration();
-            
+
             // Check and dump the dialect being used
             checkDialect(this.dialect);
-            
-            // Ensure that our static connection provider is used
-            String defaultConnectionProviderFactoryClass = cfg.getProperty(Environment.CONNECTION_PROVIDER);
-            cfg.setProperty(Environment.CONNECTION_PROVIDER, SchemaBootstrapConnectionProvider.class.getName());
-            SchemaBootstrapConnectionProvider.setBootstrapConnection(connection);
             
             // Update the schema, if required.
             if (updateSchema)
@@ -1734,7 +1592,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     try
                     {
-                        createdSchema = updateSchema(cfg, session, connection);
+                        createdSchema = updateSchema(connection);
                         updatedSchema = true;
                         break;
                     }
@@ -1780,8 +1638,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (! createdSchema)
                 {
                     // verify that all patches have been applied correctly 
-                    checkSchemaPatchScripts(cfg, connection, preUpdateScriptPatches, false);       // check scripts
-                    checkSchemaPatchScripts(cfg, connection, postUpdateScriptPatches, false);      // check scripts
+                    checkSchemaPatchScripts(connection, preUpdateScriptPatches, false);       // check scripts
+                    checkSchemaPatchScripts(connection, postUpdateScriptPatches, false);      // check scripts
                 }
                 
                 if (executedStatements != null)
@@ -1813,9 +1671,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 LogUtil.error(logger, ERR_FORCED_STOP);
                 throw new BootstrapStopException();
             }
-
-            // Reset the configuration
-            cfg.setProperty(Environment.CONNECTION_PROVIDER, defaultConnectionProviderFactoryClass);
 
             if (event != null)
             {
@@ -1853,20 +1708,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 logger.warn("Error closing DB connection: " + e.getMessage());
             }
-            try
-            {
-                if (session != null)
-                {
-                    session.close();
-                }
-            }
-            catch (Throwable e)
-            {
-                logger.warn("Error closing Hibernate session: " + e.getMessage());
-            }
-            // Remove the connection reference from the threadlocal boostrap
-            SchemaBootstrapConnectionProvider.setBootstrapConnection(null);
-            
         }
     }
     
@@ -2159,91 +2000,10 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         
         return files;
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-        // Shut down DB, if required
-        Class<?> dialectClazz = this.dialect.getClass();
-        if (dialectClazz.equals(DerbyDialect.class))
-        {
-            try
-            {
-                DriverManager.getConnection("jdbc:derby:;shutdown=true");
-            }
-            // Derby shutdown always triggers an exception, even when clean
-            catch (Throwable e) 
-            {
-            }
-        }
-    }
-    
-    /**
-     * This is a workaround for the odd Spring-Hibernate interaction during configuration.
-     * The Hibernate code assumes that schema scripts will be generated during context
-     * initialization.  We want to do it afterwards and have a little more control.  Hence this class.
-     * <p>
-     * The connection that is used will not be closed or manipulated in any way.  This class
-     * merely serves to give the connection to Hibernate.
-     * 
-     * @author Derek Hulley
-     */
-    public static class SchemaBootstrapConnectionProvider extends UserSuppliedConnectionProvider
-    {
-        private static ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<Connection>();
-        
-        public SchemaBootstrapConnectionProvider()
-        {
-        }
-        
-        /**
-         * Set the connection for Hibernate to use for schema generation.
-         */
-        public static void setBootstrapConnection(Connection connection)
-        {
-            threadLocalConnection.set(connection);
-        }
-
-        /**
-         * Unsets the connection.
-         */
-        @Override
-        public void close()
-        {
-            // Leave the connection well alone, just remove it
-            threadLocalConnection.set(null);
-        }
-
-        /**
-         * Does nothing.  The connection was given by a 3rd party and they can close it.
-         */
-        @Override
-        public void closeConnection(Connection conn)
-        {
-        }
-
-        /**
-         * Does nothing.
-         */
-        @Override
-        public void configure(Properties props) throws HibernateException
-        {
-        }
-
-        /**
-         * @see #setBootstrapConnection(Connection)
-         */
-        @Override
-        public Connection getConnection()
-        {
-            return threadLocalConnection.get();
-        }
-
-        @Override
-        public boolean supportsAggressiveRelease()
-        {
-            return false;
-        }
     }
     
     /**

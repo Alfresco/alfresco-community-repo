@@ -35,6 +35,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -48,9 +49,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.DBTests;
-import org.hibernate.dialect.Dialect;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @see org.alfresco.repo.node.db.DbNodeServiceImpl#propagateTimeStamps(ChildAssociationRef)
@@ -58,6 +64,7 @@ import org.springframework.context.ApplicationContext;
  * @author sergey.shcherbovich
  */
 @Category(DBTests.class)
+@Transactional
 public class DbNodeServiceImplPropagationTest extends BaseSpringTest 
 {
     private TransactionService txnService;
@@ -69,10 +76,9 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
     private UserTransaction txn = null;
     private Dialect dialect;
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
         txnService = (TransactionService) applicationContext.getBean("transactionComponent");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         dialect = (Dialect) applicationContext.getBean("dialect");
@@ -99,11 +105,11 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         dictionary.setDictionaryDAO(dictionaryDao);
         dictionaryService = loadModel(applicationContext);
         
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
     }
 
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
         try
         {
@@ -113,15 +119,6 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         {
             // do nothing
         }
-        super.onTearDownInTransaction();
-    }
-    
-    // REPO-2963 Initially just pass tests on selected DBs
-    protected boolean skipTestRepo2963()
-    {
-        return true; // Always skip the test
-//        String name = dialect.getClass().getName();
-//        return name.contains("PostgreSQL") || name.contains("MySQL");
     }
 
     /**
@@ -153,14 +150,10 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
      *  are added or removed.
      */
     @SuppressWarnings("deprecation")
+    @Commit
+    @Test
     public void testAuditablePropagation() throws Exception
     {
-        // See REPO-2963
-        if (skipTestRepo2963())
-        {
-            return;
-        }
-
         String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
         final QName TYPE_NOT_AUDITABLE = ContentModel.TYPE_CONTAINER;
@@ -190,16 +183,15 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         QName typeBefore = nodeService.getType(n2Ref);
 
         // Get onto our own transactions
-        setComplete();
-        endTransaction();
-        txn = restartAuditableTxn(txn);
+        TestTransaction.flagForCommit();
+        restartAuditableTxn();
 
         // Create a non-auditable child, parent won't update
         NodeRef naC = nodeService.createNode(n2Ref, ASSOC_NOT_AUDITABLE, 
                    QName.createQName("not-auditable"), TYPE_NOT_AUDITABLE).getChildRef();
         logger.debug("Created non-auditable child " + naC);
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         // Parent hasn't been updated
         assertNull(nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIED));
@@ -210,7 +202,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
                    QName.createQName("is-auditable"), TYPE_AUDITABLE).getChildRef();
         nodeService.addAspect(adC, ContentModel.ASPECT_AUDITABLE, null);
         logger.debug("Created auditable child " + naC + " of non-auditable parent " + n2Ref);
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         // Parent hasn't been updated, but auditable child has
         assertNull(nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIED));
@@ -221,11 +213,11 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         // Make the parent auditable, and give it a special modified by
         nodeService.addAspect(n2Ref, ContentModel.ASPECT_AUDITABLE, null);
         nodeService.setType(n2Ref, ContentModel.TYPE_FOLDER);
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         Date modified = new Date();
         nodeDAO.setModifiedProperties(n2Id, modified, "TestModifier");
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
         assertEquals(modified.getTime(), ((Date)nodeDAO.getNodeProperty(n2Id, ContentModel.PROP_MODIFIED)).getTime());
         assertEquals("TestModifier", nodeDAO.getNodeProperty(n2Id, ContentModel.PROP_MODIFIER));
 
@@ -234,7 +226,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         logger.debug("Deleting non-auditable child " + naC + " of auditable parent " + n2Ref);
         nodeService.addAspect(naC, ContentModel.ASPECT_TEMPORARY, null);
         nodeService.deleteNode(naC);
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         assertEquals(modified.getTime(), ((Date)nodeDAO.getNodeProperty(n2Id, ContentModel.PROP_MODIFIED)).getTime());
         assertEquals("TestModifier", nodeDAO.getNodeProperty(n2Id, ContentModel.PROP_MODIFIER));
@@ -244,7 +236,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
                    QName.createQName("is-auditable"), TYPE_AUDITABLE).getChildRef();
         final long adCId = nodeDAO.getNodePair(adC).getFirst();
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
         modifiedAt = (Date)nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIED);
         assertNotNull(modifiedAt);
         assertEquals((double)new Date().getTime(), (double)modifiedAt.getTime(), 10000d);
@@ -253,14 +245,14 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         // Set well-known modified details on both nodes
         nodeDAO.setModifiedProperties(n2Id, new Date(Integer.MIN_VALUE), "TestModifierPrnt");
         nodeDAO.setModifiedProperties(adCId, new Date(Integer.MIN_VALUE), "TestModifierChld");
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         // Now delete the auditable child
         // The parent's modified date will change, but not the modified by, as the child
         // has been deleted so the child's modified-by can't be read
         logger.debug("Deleting auditable child " + adC + " of auditable parent " + n2Ref);
         nodeService.deleteNode(adC);
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         // Parent's date was updated, but not the modifier, since child was deleted
         //  which means the child's modifier wasn't available to read
@@ -272,7 +264,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         // Set well-known modified detail on our parent again
         modified = new Date();
         nodeDAO.setModifiedProperties(n2Id, modified,  "ModOn2");
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
         assertEquals("ModOn2", nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
 
         // Add two auditable children, both with special modifiers
@@ -291,7 +283,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         // Ensure the parent is "old", so that the propagation can take place
         nodeDAO.setModifiedProperties(n2Id, new Date(Integer.MIN_VALUE), "ModOn2");
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         // Check that only the first reached the parent
         assertNotNull(nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIED));
@@ -301,7 +293,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac1, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac2, ContentModel.PROP_MODIFIER));
-        
+
         // Updates won't apply if the parent is newer than the child
         Date now = new Date();
         long futureShift = 4000l;
@@ -311,7 +303,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         NodeRef ac3 = nodeService.createNode(n2Ref, ASSOC_AUDITABLE, 
                 QName.createQName("is-auditable-3"), TYPE_AUDITABLE).getChildRef();
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         assertEquals("TestModifierPrnt", nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac3, ContentModel.PROP_MODIFIER));
@@ -324,7 +316,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         // Parent-Child association needs to be a suitable kind to trigger
         nodeService.setType(n2Ref, typeBefore);
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         try
         {
@@ -337,14 +329,14 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         modified = new Date();
         nodeDAO.setModifiedProperties(n2Id, modified, "TestModifier");
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         assertEquals("TestModifier", nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
 
         NodeRef ac4 = nodeService.createNode(n2Ref, ASSOC_NOT_AUDITABLE, 
                 QName.createQName("is-auditable-4"), TYPE_AUDITABLE).getChildRef();
 
-        txn = restartAuditableTxn(txn);
+        restartAuditableTxn();
 
         assertEquals("TestModifier", nodeService.getProperty(n2Ref, ContentModel.PROP_MODIFIER));
         assertEquals(fullyAuthenticatedUser, nodeService.getProperty(ac4, ContentModel.PROP_MODIFIER));
@@ -353,20 +345,11 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         assertEquals(modified.getTime(), modifiedAt.getTime());
         modifiedAt = (Date)nodeService.getProperty(ac4, ContentModel.PROP_MODIFIED);
         assertEquals((double)new Date().getTime(), (double)modifiedAt.getTime(), 3000d);
-        
-        setComplete();
-        endTransaction();
-        
-        startNewTransaction();
-
     }
     
-    private UserTransaction restartAuditableTxn(UserTransaction txn) throws Exception
+    private void restartAuditableTxn() throws Exception
     {
-        if (txn != null)
-            txn.commit();
-        txn = txnService.getUserTransaction();
-        txn.begin();
+        TestTransaction.end();
 
         // Wait long enough that AuditablePropertiesEntity.setAuditModified
         // will recognize subsequent changes as needing new audit entries
@@ -377,8 +360,6 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         catch(InterruptedException e)
         {
         }
-
-        return txn;
+        TestTransaction.start();
     }
-    
 }

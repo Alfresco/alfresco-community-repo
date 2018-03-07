@@ -49,11 +49,16 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import javax.transaction.UserTransaction;
+import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 {
     public static final String TEMPLATE_MODEL_XML = 
@@ -120,8 +125,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
 
-    @Override
-    protected void onSetUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
         // Get the behaviour filter
         this.behaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");
@@ -179,8 +184,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         txn.commit();
     }
 
-    @Override
-    protected void onTearDown() throws Exception
+    @After
+    public void after() throws Exception
     {
         authenticationService.clearCurrentSecurityContext();
     }
@@ -188,6 +193,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     /**
      * Test bootstrap
      */
+    @Test
     public void testBootstrap() throws Exception
     {
         txn = transactionService.getUserTransaction();

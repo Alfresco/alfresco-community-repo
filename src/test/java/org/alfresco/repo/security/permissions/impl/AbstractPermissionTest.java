@@ -63,7 +63,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
-import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 public class AbstractPermissionTest extends TestCase
 {
@@ -86,8 +85,6 @@ public class AbstractPermissionTest extends TestCase
     protected MutableAuthenticationService authenticationService;
     
     private MutableAuthenticationDao authenticationDAO;
-
-    protected LocalSessionFactoryBean sessionFactory;
 
     protected StoreRef testStoreRef;
 

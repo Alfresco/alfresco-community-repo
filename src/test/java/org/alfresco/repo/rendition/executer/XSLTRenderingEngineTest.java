@@ -51,13 +51,17 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.custommonkey.xmlunit.Diff;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
  * 
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTRenderingEngineTest.class);
@@ -67,16 +71,10 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     private TemplateService templateService;
     private RenditionService renditionService;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.util.BaseAlfrescoSpringTest#onSetUpInTransaction()
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.fileFolderService = (FileFolderService) this.applicationContext.getBean("FileFolderService");
@@ -87,6 +85,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         this.companyHome = this.applicationContext.getBean("repositoryHelper", Repository.class).getCompanyHome();
     }
 
+    @Test
     public void testSimplestStringTemplate() throws Exception
     {
         try
@@ -116,6 +115,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     }
 
 
+    @Test
     public void testSimplestTemplateWithTargetPath() throws Exception
     {
         try
@@ -147,6 +147,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     }
 
 
+    @Test
     public void testParseXMLDocument() throws Exception
     {
         try
@@ -176,6 +177,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         }
     }
 
+    @Test
     public void testParseXMLDocuments() throws Exception
     {
         try
@@ -218,6 +220,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         }
     }
 
+    @Test
     public void testImportXMLDocument() throws Exception
     {
         try

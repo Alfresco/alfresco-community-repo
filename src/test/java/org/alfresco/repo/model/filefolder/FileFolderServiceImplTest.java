@@ -53,7 +53,8 @@ import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -88,7 +89,6 @@ import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -1759,7 +1759,7 @@ public class FileFolderServiceImplTest extends TestCase
         int COUNT = 3000;
         
         Dialect dialect = (Dialect) ctx.getBean("dialect");
-        if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        if (dialect instanceof MySQLClusterNDBDialect)
         {
             // note: to increase the file count on NDB, may need to further bump-up NDB cluster config
             // eg. DataMemory, IndexMemory, MaxNoOfConcurrentOperations, ...

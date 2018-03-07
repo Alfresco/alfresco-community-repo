@@ -39,13 +39,17 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Add features action execution test
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public class AddFeaturesActionExecuterTest extends BaseSpringTest
 {
     /**
@@ -81,8 +85,8 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
     /**
      * Called at the begining of all tests
      */
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         
@@ -109,6 +113,7 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
     /**
      * Test execution
      */
+    @Test
     public void testExecution()
     {
         // Check that the node does not have the classifiable aspect
@@ -126,6 +131,7 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
     /**
      * MNT-15802
      */
+    @Test
     public void testCheckLocalizedParamDefintionWithConstraint()
     {
         // test for other than default locale

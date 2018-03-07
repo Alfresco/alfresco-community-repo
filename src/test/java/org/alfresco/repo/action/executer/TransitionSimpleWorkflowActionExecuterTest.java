@@ -38,6 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -72,10 +73,10 @@ public class TransitionSimpleWorkflowActionExecuterTest extends BaseAlfrescoSpri
      * Called at the begining of all tests
      */
     @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         
         fileFolderService = (FileFolderService)this.applicationContext.getBean("fileFolderService");
         

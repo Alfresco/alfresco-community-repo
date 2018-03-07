@@ -33,13 +33,13 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.MySQLInnoDBDialect;
-import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

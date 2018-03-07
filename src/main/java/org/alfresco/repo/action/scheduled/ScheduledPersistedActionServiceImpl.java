@@ -60,8 +60,11 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -409,7 +412,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         // Ask to remove it
         try
         {
-            scheduler.deleteJob(schedule.getPersistedAtNodeRef().toString(), SCHEDULER_GROUP);
+            scheduler.deleteJob(new JobKey(schedule.getPersistedAtNodeRef().toString(), SCHEDULER_GROUP));
         }
         catch (SchedulerException e)
         {
@@ -453,24 +456,14 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
 
     protected JobDetail buildJobDetail(ScheduledPersistedActionImpl schedule)
     {
-        // Build the details
-        JobDetail detail = new JobDetail(schedule.getPersistedAtNodeRef().toString(),
-                    SCHEDULER_GROUP, 
-                    ScheduledJobWrapper.class
-        );
-
-        // Record the action that is to be executed
-        detail.getJobDataMap().put(
-              JOB_ACTION_NODEREF,
-              schedule.getActionNodeRef().toString()
-        );
-        detail.getJobDataMap().put(
-              JOB_SCHEDULE_NODEREF,
-              schedule.getPersistedAtNodeRef().toString()
-        );
-        
-        // All done
-        return detail;
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put(JOB_ACTION_NODEREF, schedule.getActionNodeRef().toString());
+        jobDataMap.put(JOB_SCHEDULE_NODEREF, schedule.getPersistedAtNodeRef().toString());
+        return JobBuilder.newJob()
+                .withIdentity(schedule.getPersistedAtNodeRef().toString(), SCHEDULER_GROUP)
+                .ofType(ScheduledJobWrapper.class)
+                .setJobData(jobDataMap)
+                .build();
     }
     
     

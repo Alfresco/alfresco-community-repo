@@ -34,6 +34,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test class for {@link HasChildEvaluator}.
@@ -41,6 +43,7 @@ import org.alfresco.util.GUID;
  * @author Neil McErlean
  * @since 3.4
  */
+@Transactional
 public class HasChildEvaluatorTest extends BaseSpringTest
 {
     private NodeService nodeService;
@@ -53,9 +56,8 @@ public class HasChildEvaluatorTest extends BaseSpringTest
     
     private final static String ID = GUID.generate();
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         

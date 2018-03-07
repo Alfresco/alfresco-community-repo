@@ -46,12 +46,15 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class BlogIntegrationServiceSystemTest extends BaseAlfrescoSpringTest implements BlogIntegrationModel
 {
     /**
@@ -100,11 +103,10 @@ public class BlogIntegrationServiceSystemTest extends BaseAlfrescoSpringTest imp
     private NodeRef nodeRef;
     private NodeRef blogDetailsNodeRef;
     
-    @Override
-    protected void onSetUpInTransaction() 
-        throws Exception 
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
+        super.before();
         
         // Get references to the relevant services
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");

@@ -41,8 +41,6 @@ import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.config.evaluator.Evaluator;
 import org.springframework.extensions.config.xml.elementreader.ConfigElementReader;
 
-import com.sun.star.uno.RuntimeException;
-
 /**
  * An innder class that uses the {@link RepoXMLConfigService config service} to asynchronously
  * refresh tenant config data.

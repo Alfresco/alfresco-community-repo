@@ -32,9 +32,12 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.List;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test class with test spring contexts for auth subsystems.
@@ -42,6 +45,8 @@ import java.util.List;
  * @author alex.mukha
  * @since 4.2.1
  */
+@Transactional
+@ContextConfiguration({"classpath:test-ftp-auth-context.xml"})
 public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
 {
     private static String SOURCE_BEAN_NAME = "testFtpAuthenticator";
@@ -51,15 +56,7 @@ public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
     private @Mock ClientInfo info;
     private @Mock FTPSrvSession session;
 
-    @Override
-    protected String[] getConfigLocations()
-    {
-        return new String[]
-        {
-            ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:test-ftp-auth-context.xml"
-        };
-    }
-
+    @Test
     public void testNumberOfAuthenticatorsInChain()
     {
         // The contexts are configured for 3 subsystems:
@@ -85,6 +82,7 @@ public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
     /**
      * As the context is configured to fail on first two subsystems, the third should be used
      */
+    @Test
     public void testAuthenticatorChain()
     {
         // The contexts are configured for 3 subsystems:
@@ -110,7 +108,7 @@ public class SubsystemChainingFtpAuthenticatorTest extends BaseSpringTest
     private void setContextForSubsystem(String beanName)
     {
         chainingAuthenticator = new SubsystemChainingFtpAuthenticator();
-        ChildApplicationContextManager applicationContextManager = (ChildApplicationContextManager) getApplicationContext().getBean(beanName); 
+        ChildApplicationContextManager applicationContextManager = (ChildApplicationContextManager) applicationContext.getBean(beanName);
         chainingAuthenticator.setApplicationContextManager(applicationContextManager);
         chainingAuthenticator.setSourceBeanName(SOURCE_BEAN_NAME);
     }

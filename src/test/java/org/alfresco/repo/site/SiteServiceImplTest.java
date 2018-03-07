@@ -94,8 +94,13 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -106,6 +111,9 @@ import static org.mockito.Mockito.when;
  * @author Roy Wetherall
  */
 @Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Transactional
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:org/alfresco/repo/site/site-custom-context.xml"})
 public class SiteServiceImplTest extends BaseAlfrescoSpringTest 
 {
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
@@ -158,16 +166,16 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Called during the transaction setup
      */
     @SuppressWarnings("deprecation")
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
+        super.before();
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
         {
 
             @Override
             public Object execute() throws Throwable
             {
-                // from super.onSetUpInTransaction();
-
                 // Get a reference to the node service
                 nodeService = (NodeService) applicationContext.getBean("nodeService");
                 contentService = (ContentService) applicationContext.getBean("contentService");
@@ -242,15 +250,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
-        transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
+        transactionService.getRetryingTransactionHelper().doInTransaction(work, false, true);
     }
     
-    @Override
-    protected void onTearDownInTransaction() throws Exception {
-       super.onTearDownInTransaction();
+    @After
+    public void after() throws Exception
+    {
+       super.after();
        
        // Reset the sysadmin params on the site service, in case of changes to it
        siteServiceImpl.setSysAdminParams(sysAdminParams);
@@ -260,6 +267,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * This test method ensures that public sites can be created and that their site info is correct.
      * It also tests that a duplicate site cannot be created.
      */
+    @Test
     public void testCreateSite() throws Exception
     {
         // Create a public site
@@ -323,6 +331,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testHasSite() throws Exception
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -353,10 +362,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
-
     }
     
     /**
@@ -364,6 +370,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testETHREEOH_2133() throws Exception
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -394,10 +401,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
-
     }
 
     /**
@@ -408,6 +412,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * @since 3.4
      */
     @SuppressWarnings("deprecation")
+    @Test
     public void testConfigurableSitePublicGroup() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -500,6 +505,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * This method tests that admin and system users can set site membership for a site of which they are not SiteManagers.
      */
+    @Test
     public void testETHREEOH_15() throws Exception
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -550,9 +556,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
     private void checkSiteInfo(SiteInfo siteInfo, 
@@ -583,6 +587,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * should offer consistent, accurate result sets.
      */
     @Category(RedundantTests.class)
+    @Test
     public void testListSites() throws Exception
     {
         // We'll match against the first few letter of TEST_TITLE in various listSites() tests below.
@@ -802,19 +807,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }        
     }
     
-    @Override
-    protected String[] getConfigLocations()
-    {
-        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
-
-        List<String> locations = Arrays.asList(existingConfigLocations);
-        List<String> mutableLocationsList = new ArrayList<String>(locations);
-        mutableLocationsList.add("classpath:org/alfresco/repo/site/site-custom-context.xml");
-
-        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
-        return result;
-    }
-    
+    @Test
     public void testMNT_13710() throws Exception
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -855,14 +848,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
     /**
      * Test listSite case sensitivity
      */
+    @Test
     public void testListSitesCaseSensitivity() throws Exception
     {
         // RUN AS USER_ONE
@@ -895,6 +887,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * This test method ensures that searches with wildcards work as they should
      */
     @Category(RedundantTests.class)
+    @Test
     public void testfindSitesWithWildcardTitles() throws Exception
     {
         // How many sites are there already in the repo?
@@ -927,6 +920,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * This test method ensures that searches with wildcards work as they should
      */
     @Category(RedundantTests.class)
+    @Test
     public void testfindSitesForLiveSearchWithWildcardTitles() throws Exception
     {
         // How many sites are there already in the repo?
@@ -1052,6 +1046,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("Matched wrong number of sites for top draw", 1, sites.size());
     }
     
+    @Test
     public void testGetSite()
     {
         // Get a site that isn't there
@@ -1093,6 +1088,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
        
+    @Test
     public void testUpdateSite()
     {
         SiteInfo siteInfo = new SiteInfoImpl(TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", SiteVisibility.PRIVATE, null);
@@ -1122,6 +1118,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testUpdateSite", "changedTitle", "changedDescription", SiteVisibility.PUBLIC);         
     }
     
+    @Test
     public void testDeleteSite_DoesNotExist()
     {
         // delete a site that isn't there
@@ -1136,6 +1133,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testDeleteSite_ViaNodeService()
     {
         String siteShortName = "testUpdateSite";
@@ -1155,6 +1153,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testMoveSite_ViaNodeService()
     {
         String siteShortName1 = "testMoveSite" + GUID.generate();
@@ -1182,6 +1181,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * This is an integration test for MNT-18014
      */
+    @Test
     public void testMoveFolderStructureWithNonInheritedPermission()
     {
         //Login to share as the admin user
@@ -1287,6 +1287,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         return nodeService.getProperties(childAssocs.get(0).getChildRef()).get(ContentModel.PROP_NAME).toString();
     }
 
+    @Test
     public void testDeleteSite()
     {
         @SuppressWarnings("deprecation")
@@ -1332,6 +1333,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertTrue(authorityService.authorityExists(testGroup));
     }    
     
+    @Test
     public void testIsPublic()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -1381,11 +1383,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
+    @Test
     public void testMembership()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -1562,11 +1563,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
 
+    @Test
     public void testDefaults()
     {
         assertFalse(this.siteService.isSiteAdmin(null));
@@ -1575,6 +1575,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(comparator);
     }
 
+    @Test
     public void testListSiteMemberships()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -1663,13 +1664,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
     
 
+    @Test
     public void testJoinLeave()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -1751,11 +1751,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
         
+    @Test
     public void testContainer()
     {
         // Create a couple of sites as user one
@@ -1821,6 +1820,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    @Test
     public void testSiteGetRoles()
     {
         List<String> roles = this.siteService.getSiteRoles();
@@ -1837,6 +1837,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // For custom roles, see testCustomSiteType()
     }
     
+    @Test
     public void testCustomSiteProperties()
     {
         QName additionalInformationQName = QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation");
@@ -1870,6 +1871,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      *  it behaves correctly.
      */
     @SuppressWarnings("deprecation")
+    @Test
     public void testCustomSiteType()
     {
         final String CS_URI = "http://example.com/site";
@@ -1997,6 +1999,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
     }
    
+    @Test
     public void testGroupMembership()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -2220,15 +2223,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
     /**
      * 
      * See https://issues.alfresco.com/jira/browse/MNT-2229
      */    
+    @Test
     public void testUserRoleInGroups()
     {
     	String sitName = "testMembership2" + UUID.randomUUID();
@@ -2255,6 +2257,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * See https://issues.alfresco.com/jira/browse/JAWS-291
      */
+    @Test
     public void testSiteVisibility()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -2330,9 +2333,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
     
     /**
@@ -2370,6 +2371,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * ALF-10343 - When the default public group for sites isn't EVERYBODY,
      * check that creating and altering sites results in the correct permissions 
      */
+    @Test
     public void testNonDefaultPublicGroupPermissions() throws Exception
     {
        // Sanity check the current permissions
@@ -2573,6 +2575,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Lower User membership - should be prevented (last manager)
      * 
      */
+    @Test
     public void testALFCOM_3109()
     {
         // USER_ONE - SiteManager
@@ -2638,6 +2641,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Remove User membership - should be prevented (last manager)
      * 
      */
+    @Test
     public void testALFCOM_3111()
     {
         // USER_ONE - SiteManager
@@ -2696,6 +2700,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * Attempt to access a private site by someone that is not a consumer of that site.
      * 
      */
+    @Test
     public void testETHREEOH_1268()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -2728,9 +2733,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        endTransaction();
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-        startNewTransaction();
     }
 
     /**
@@ -2740,6 +2743,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      *  authorities is based on a pattern that uses the site name.
      * However, you are free to change a site's display name. 
      */
+    @Test
     public void testALF_3200() throws Exception
     {
        // Create the site
@@ -2779,6 +2783,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(newName2, nodeService.getProperty(siteNodeRef, ContentModel.PROP_TITLE));
     }
     
+    @Test
     public void testALF_5556() throws Exception
     {
         String siteName = "testALF_5556";
@@ -2800,6 +2805,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
 
+    @Test
     public void testALF8036_PermissionsAfterCopyingFolderBetweenSites() throws Exception
     {
         alf8036Impl(true);
@@ -2863,6 +2869,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * ALF-1017 - Non sites in the Sites Space container shouldn't
      *  break the listing methods
      */
+    @Test
     public void testALF_1017_nonSitesInSitesSpace() throws Exception
     {
        // Initially listing is fine
@@ -2932,6 +2939,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         return siteInfo;
     }
 
+    @Test
     public void testRenameSite()
     {
         // test that changing the name of a site generates an appropriate exception
@@ -2994,6 +3002,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         return result;
     }
 
+    @Test
     public void testPermissionsAfterMovingFolderBetweenSites() throws Exception
     {
         alf8036Impl(false);
@@ -3001,6 +3010,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
     // == Test the JavaScript API ==
     
+    @Test
     public void testJSAPI() throws Exception
     {
         // Create a site with a custom property
@@ -3020,6 +3030,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.scriptService.executeScript(location, model);
     }
 
+    @Test
     public void testListMembersInfo()
     {
         String siteShortName = "testMemberInfo";
@@ -3079,6 +3090,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * From CLOUD-957, insure that GROUP_EVERYONE does not have read access to private sites' containers.
      */
+    @Test
     public void testPrivateSite() throws Exception
     {
         String siteName = GUID.generate();
@@ -3095,6 +3107,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * From CLOUD-957, insure that GROUP_EVERYONE does not have read access to moderated sites' containers.
      */
+    @Test
     public void testModeratedSite() throws Exception
     {
         String siteName = GUID.generate();
@@ -3111,6 +3124,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      *  From MNT-14452, insure that GROUP_EVERYONE have read access to public sites' containers.
      */
+    @Test
     public void testChangeSiteVisibility()
     {
         String siteName = GUID.generate();

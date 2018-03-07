@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.transfer;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -45,27 +42,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -78,11 +64,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
-import org.alfresco.service.cmr.search.CategoryService.Depth;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -91,7 +73,6 @@ import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
 import org.alfresco.service.cmr.transfer.TransferEventBegin;
-import org.alfresco.service.cmr.transfer.TransferEventReport;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.cmr.transfer.TransferService;
@@ -103,16 +84,21 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.util.ResourceUtils;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test for TransferServiceImpl
@@ -122,8 +108,8 @@ import org.springframework.util.ResourceUtils;
  * @author Mark Rogers
  */
 @SuppressWarnings("deprecation")
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
-public class TransferServiceImplTest extends BaseAlfrescoSpringTest 
+@Category({BaseSpringTestsCategory.class})
+public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;
     private ContentService contentService;
@@ -152,10 +138,10 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Called during the transaction setup
      */
-    protected void onSetUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-       
-        super.onSetUp();
+        super.before();
         
         // Get the required services
         this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
@@ -184,28 +170,26 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
         
         authenticationComponent.setSystemUserAsCurrentUser();
-        assertNotNull("receiver is null", this.receiver);     
+        assertNotNull("receiver is null", this.receiver);
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
     }
     
-    @Override
-    public void runBare() throws Throwable
-    {
-        preventTransaction();
-        super.runBare();
-    }
-    
+    @Test
     public void testSetup()
     {
         assertEquals(
                 "Must run without transactions",
                 TxnReadState.TXN_NONE, AlfrescoTransactionSupport.getTransactionReadState());
     }
-    
+
     /**
      * Test create target.
      * 
      * @throws Exception
      */
+    @Test
     public void testCreateTarget() throws Exception
     {
         String name = "Test Transfer Target " + GUID.generate();
@@ -270,6 +254,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testCreateTargetSyntax2() throws Exception
     {
         String name = "Test Transfer Target " + GUID.generate();
@@ -345,6 +330,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testGetTransferTargets() throws Exception
     {
         String nameA = "Test Transfer Target " + GUID.generate();
@@ -379,6 +365,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testALF6565() throws Exception
     {
         String nameA = GUID.generate();
@@ -423,6 +410,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * Test of Get All Transfer Targets By Group
      */
     //TODO Test not complete - can't yet put targets in different groups
+    @Test
     public void testGetAllTransferTargetsByGroup() throws Exception
     {
         String getMe = "Test Transfer Target " + GUID.generate();
@@ -461,6 +449,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * 
      */
+    @Test
     public void testUpdateTransferTarget() throws Exception
     {
         String updateMe = "Test Transfer Target " + GUID.generate();
@@ -565,6 +554,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * 
      */
+    @Test
     public void testDeleteTransferTarget() throws Exception
     {
         String deleteMe = "deleteMe";
@@ -613,6 +603,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
 
     }
     
+    @Test
     public void testEnableTransferTarget() throws Exception
     {
         String targetName = "enableMe";
@@ -676,6 +667,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testTransferOneNode() throws Exception
     {
         final String CONTENT_TITLE = "ContentTitle";
@@ -1040,6 +1032,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      *  
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testMoveNode() throws Exception
     {
         final String CONTENT_TITLE = "ContentTitle";
@@ -1228,6 +1221,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to he same instance of alfresco.
      */
+    @Test
     public void testManyNodes() throws Exception
     {        
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -1488,9 +1482,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testPathBasedUpdate() throws Exception
     {
-        endTransaction();
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
         final String CONTENT_TITLE = "ContentTitle";
@@ -1654,6 +1648,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testAsyncCallback() throws Exception
     {
         final int MAX_SLEEPS = 5;
@@ -1860,6 +1855,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testAsyncCancel() throws Exception
     {
         final int MAX_SLEEPS = 5;
@@ -1872,7 +1868,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         final String targetName = "testAsyncCallback";
         final NodeRef guestHome = repositoryHelper.getGuestHome();
 
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+//        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
         class TestContext
         {
@@ -1941,7 +1937,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             } 
         };
 
-        final TestContext testContext = tran.doInTransaction(setupCB); 
+        final TestContext testContext = transactionService.getRetryingTransactionHelper().doInTransaction(setupCB, false, true);
 
         /**
          * The transfer report is a plain report of the transfer - no async shenanigans to worry about
@@ -2062,7 +2058,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        tran.doInTransaction(transferAsyncCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(transferAsyncCB);
 
 
         /**
@@ -2120,6 +2116,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * Turn it on by turning debug logging on for this class or by changing the "runTest" value;
      */
+    @Test
     public void testTransferOneNodeWithBigContent() throws Exception
     { 
         /**
@@ -2262,6 +2259,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testEmptyContent() throws Exception
     {
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -2529,9 +2527,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testRepeatUpdateOfContent() throws Exception
     {
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN; 
         final String CONTENT_ENCODING = "UTF-8";
@@ -2598,7 +2596,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             } 
         };
         
-        final TestContext testContext = tran.doInTransaction(setupCB); 
+        final TestContext testContext = transactionService.getRetryingTransactionHelper().doInTransaction(setupCB, false, true);
         
         RetryingTransactionCallback<Void> updateContentCB = new RetryingTransactionCallback<Void>() {
 
@@ -2654,9 +2652,9 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         {
             logger.debug("testRepeatUpdateContent - iteration:" + i);
             testContext.contentString = String.valueOf(i);
-            tran.doInTransaction(updateContentCB);
-            tran.doInTransaction(transferCB); 
-            tran.doInTransaction(checkTransferCB); 
+            transactionService.getRetryingTransactionHelper().doInTransaction(updateContentCB);
+            transactionService.getRetryingTransactionHelper().doInTransaction(transferCB);
+            transactionService.getRetryingTransactionHelper().doInTransaction(checkTransferCB);
         }
     } // test repeat update content
 
@@ -2674,6 +2672,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Test
     public void testReplaceNode() throws Exception
     {
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -3052,6 +3051,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testPeerAssocs() throws Exception
     {
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -3259,6 +3259,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * @throws Exception
      */
+    @Test
     public void testExistingNodes() throws Exception
     {
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -3430,6 +3431,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
     @Category(RedundantTests.class)
+    @Test
     public void testCategoriesAndTags() throws Exception
     {
         final String CONTENT_TITLE = "ContentTitle";
@@ -3440,8 +3442,6 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         final String targetName = "testCategoriesAndTags";
         final String TAG_1_NAME = "tag1";
         final String TAG_2_NAME = "tag2";
-
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
         class TestContext
         {
@@ -3492,7 +3492,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 return ctx;
             } 
         };
-        final TestContext testContext = tran.doInTransaction(setupCB); 
+        final TestContext testContext = transactionService.getRetryingTransactionHelper().doInTransaction(setupCB);
 
         /**
          * Step 1: Transfer our which has a tag
@@ -3511,7 +3511,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 return null;
             }
         };
-        tran.doInTransaction(transferCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(transferCB);
         
         RetryingTransactionCallback<Void> validateStep1CB = new RetryingTransactionCallback<Void>() {
 
@@ -3527,8 +3527,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 
                 List<String> tags = taggingService.getTags(testContext.contentNodeRef);
                 assertNotNull(tags);
-                assertTrue(tags.size() == 1);
-                assertTrue(tags.contains(TAG_1_NAME));
+                assertEquals(1, tags.size());
+                    assertTrue(tags.contains(TAG_1_NAME));
                 
                 // Now add another tag for step number 2
                 taggingService.addTag(testContext.contentNodeRef, TAG_2_NAME);
@@ -3536,14 +3536,14 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
            
             }
         };
-        tran.doInTransaction(validateStep1CB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateStep1CB);
         
         /**
          * Step 2:
          * Transfer our node again - With another tag 
          */
         logger.debug("Second transfer - add a second tag");
-        tran.doInTransaction(transferCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(transferCB);
      
         RetryingTransactionCallback<Void> validateStep2CB = new RetryingTransactionCallback<Void>() {
 
@@ -3566,7 +3566,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             }
         };
 
-        tran.doInTransaction(validateStep2CB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateStep2CB);
         
         /**
          * Step 3 - delete a tag
@@ -3582,11 +3582,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             }
         };
 
-        tran.doInTransaction(deleteTagCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(deleteTagCB);
 
        
         logger.debug("Transfer again - this is to delete a tag");
-        tran.doInTransaction(transferCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(transferCB);
         
         // should probably be in contentModel
         final QName ASPECT_GENERAL_CLASSIFIABLE = ContentModel.ASPECT_GEN_CLASSIFIABLE;
@@ -3608,7 +3608,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             }
         };
 
-        tran.doInTransaction(validateStep3CB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateStep3CB);
         
         /**
          * Step 4 - update to add a category that already exists
@@ -3666,11 +3666,11 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
              }
          };
 
-        tran.doInTransaction(step4WriteContentCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(step4WriteContentCB);
 
-        tran.doInTransaction(transferCB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(transferCB);
 
-        tran.doInTransaction(validateStep4CB);
+        transactionService.getRetryingTransactionHelper().doInTransaction(validateStep4CB);
 
      } // testCategoriesAndTags
     

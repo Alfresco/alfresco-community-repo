@@ -65,6 +65,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -82,6 +83,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     public static final String ACTIVITI_TEST_TIMER_BPMN20_XML = "activiti/testTimer.bpmn20.xml";
     public static final String ACTIVITI_TEST_WITH_SUB_PROCESS_XML = "activiti/testWorkflowWithSubprocess.xml";
 
+    @Test
     public void testOutcome() throws Exception
     {
         WorkflowDefinition definition = deployDefinition("alfresco/workflow/review.bpmn20.xml");
@@ -121,6 +123,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("Approve", outcome);
     }
 
+    @Test
     public void testStartTaskEndsAutomatically()
     {
         // Deploy the test workflow definition which uses the 
@@ -146,6 +149,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
      * tasks are defaulted to a priority of 50 (which is invalid).  I'm testing that the code I wrote decides this is an
      * invalid number and sets it to the default value (2).
      */
+    @Test
     public void testPriorityIsValid()
     {
         WorkflowDefinition definition = deployDefinition("activiti/testCustomActiviti.bpmn20.xml");
@@ -171,6 +175,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         }
     }
 
+    @Test
     public void testReviewAndPooledNotModifiedDate()
     {
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -212,6 +217,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals(lastModifiedDate, nodeService.getProperty(addedNodeRef, ContentModel.PROP_MODIFIED));
     }
     
+    @Test
     public void testGetWorkflowTaskDefinitionsWithMultiInstanceTask()
     {
     	// Test added to validate fix for ALF-14224
@@ -226,6 +232,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     }
 
     // Added after MNT-17601. Failed to find any completed tasks when the workflow had a sub process.
+    @Test
     public void testCompletedTaskInWorkflowWithSubProcess()
     {
         WorkflowDefinition definition = deployDefinition(ACTIVITI_TEST_WITH_SUB_PROCESS_XML);
@@ -236,6 +243,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("Alfresco User Task",   taskDefs.get(1).getNode().getTitle());
     }
 
+    @Test
     public void testAccessStartTaskAsAssigneeFromTaskPartOfProcess()
     {
         // Test added to validate fix for CLOUD-1929 - start-task can be accesses by assignee of a task
@@ -305,6 +313,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     /**
      * Test to validate fix for ALF-19822
      */
+    @Test
     public void testMultiInstanceListenersCalled() throws Exception
     {
         // start pooled review and approve workflow
@@ -348,6 +357,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     /**
      * Test to validate fix for WOR-107
      */
+    @Test
     public void testLongTextValues() throws Exception
     {
         String veryLongTextValue = getLongString(10000);
@@ -380,6 +390,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     /**
      * Test for MNT-11247
      */
+    @Test
     public void testAssignmentListener()
     {
         WorkflowDefinition definition = deployDefinition(getAssignmentListenerDefinitionPath());
@@ -411,6 +422,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     /**
      * Test for MNT-14366
      */
+    @Test
     public void testWorkflowRecreatedUser()
     {
         WorkflowDefinition definition = deployDefinition("alfresco/workflow/review.bpmn20.xml");
@@ -515,6 +527,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     }
 
     @Category(RedundantTests.class)
+    @Test
     public void testStartWorkflowFromTaskListener() throws Exception
     {
         WorkflowDefinition testDefinition = deployDefinition("activiti/testStartWfFromListener.bpmn20.xml");
@@ -548,6 +561,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         }
     }
 
+    @Test
     public void testWorkflowWithNodes() throws Exception
     {
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -608,6 +622,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertTrue(multi);
     }
 
+    @Test
     public void testWorkflowVarious() throws Exception
     {
         WorkflowDefinition definition = deployDefinition(getTestDefinitionPath());
@@ -640,6 +655,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
 
     }
 
+    @Test
     public void testWorkflowQueries() throws Exception
     {
         WorkflowDefinition definition = deployDefinition(getTestDefinitionPath());
@@ -662,6 +678,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNotNull(completed);
     }
 
+    @Test
     public void testBuildWorkflowWithNoUserTasks() throws Exception 
     {
         // Deploy a definition containing only a service task
@@ -683,6 +700,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNotNull(historicProcessInstance);
     }
     
+    @Test
     public void testNonAdminCannotDeployWorkflowBySwitchingNodeType()
     {
         // Test precondition
@@ -700,6 +718,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNull("Workflow should not be deployed", workflowDef);
     }
     
+    @Test
     public void testNonAdminCannotDeployWorkflowBySwitchingNodeTypeEvenInCorrectLocation()
     {
         // Test precondition
@@ -722,6 +741,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         }
     }
     
+    @Test
     public void testAdminCanDeployBySwitchingContentTypeToWorkflow()
     {
         // This test should pass, as the workflow is in the correct location
@@ -753,6 +773,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertTrue(path.isActive());
     }
     
+    @Test
     public void testAdminCannotDeployBySwitchingContentTypeToWorkflowWhenLocationIsNotValid()
     {
         // This should fail to deploy the workflow as it is in the wrong location.

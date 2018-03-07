@@ -45,7 +45,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 
@@ -53,6 +57,8 @@ import org.junit.experimental.categories.Category;
  * @author Roy Wetherall
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
+@ContextConfiguration({ "classpath:org/alfresco/repo/jscript/test-context.xml" })
 public class ScriptBehaviourTest extends BaseSpringTest 
 {
 	private ServiceRegistry serviceRegistry;
@@ -62,18 +68,9 @@ public class ScriptBehaviourTest extends BaseSpringTest
 	private StoreRef storeRef;
 	private NodeRef folderNodeRef;
 	
-	protected String[] getConfigLocations()
+    @Before
+    public void before() throws Exception
     {
-        return new String[] { "classpath:org/alfresco/repo/jscript/test-context.xml" };
-    }
-	
-	/**
-	 * On setup in transaction implementation
-	 */
-	@Override
-	protected void onSetUpInTransaction() 
-		throws Exception 
-	{
 		// Get the required services
 		this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
 		this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
@@ -98,7 +95,8 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		this.folderNodeRef = childAssocRef.getChildRef();
 	}
 	
-	public void test1EnableDisableBehaviour()
+	@Test
+    public void test1EnableDisableBehaviour()
 	{
 		// Register the onCreateNode behaviour script
 		ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/jscript/test_onCreateNode_cmContent.js");
@@ -135,7 +133,8 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		assertTrue(this.nodeService.hasAspect(childAssoc2.getChildRef(), ContentModel.ASPECT_TITLED));		
 	}
 	
-	public void test2ClasspathLocationBehaviour()
+	@Test
+    public void test2ClasspathLocationBehaviour()
 	{
 		// Register the onCreateNode behaviour script
 		ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/jscript/test_onCreateNode_cmContent.js");
@@ -160,7 +159,8 @@ public class ScriptBehaviourTest extends BaseSpringTest
 		assertTrue(this.nodeService.hasAspect(childAssoc.getChildRef(), ContentModel.ASPECT_TITLED));
 	}
 	
-	public void test3SpringConfiguredBehaviour()
+	@Test
+    public void test3SpringConfiguredBehaviour()
 	{
 		this.nodeService.addAspect(this.folderNodeRef, ContentModel.ASPECT_COUNTABLE, null);
 		assertTrue(this.nodeService.hasAspect(this.folderNodeRef, ContentModel.ASPECT_TITLED));

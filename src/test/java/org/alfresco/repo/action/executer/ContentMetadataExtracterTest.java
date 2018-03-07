@@ -67,7 +67,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test of the ActionExecuter for extracting metadata. Note: This test makes
@@ -76,6 +79,7 @@ import org.junit.experimental.categories.Category;
  * @author Jesper Steen Møller
  */
 @Category(BaseSpringTestsCategory.class)
+@Transactional
 public class ContentMetadataExtracterTest extends BaseSpringTest
 {
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
@@ -92,8 +96,8 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
 
     private final static String ID = GUID.generate();
 
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
@@ -125,6 +129,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     /**
      * Test execution of the extraction itself
      */
+    @Test
     public void testFromBlanks()
     {
         // Test that the action writes properties when they don't exist or are
@@ -181,6 +186,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         }
     }
     
+    @Test
     public void testUnknownProperties()
     {
         MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
@@ -238,6 +244,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
      * when running with {@link ContentMetadataExtracter#setCarryAspectProperties(boolean)}
      * set to <tt>false</tt>.
      */
+    @Test
     public void testNullExtractedValues_ALF1823()
     {
         MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
@@ -285,6 +292,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
     /**
      * Test execution of the pragmatic approach
      */
+    @Test
     public void testFromPartial()
     {
         // Test that the action does not overwrite properties that are already

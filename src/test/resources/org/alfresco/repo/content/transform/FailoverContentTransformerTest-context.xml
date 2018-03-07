@@ -1,7 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
- 
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
    <bean id="transformer.Test-PdfToText-AlwaysFails"
          class="org.alfresco.repo.content.transform.DummyTestContentTransformer"
          parent="baseContentTransformer" >
@@ -45,8 +47,7 @@
    </bean>
    
    <bean id="transformer.Test-TriggeredFlag"
-         class="org.alfresco.repo.content.transform.TestHtml2PdfTriggeredFlag"
-         singleton="true" />
+         class="org.alfresco.repo.content.transform.TestHtml2PdfTriggeredFlag" />
    
    <bean id="transformer.Test-Html2Pdf-ShoulNotBeTriggered"
          class="org.alfresco.repo.content.transform.DummyTestComplexSubtransformer"

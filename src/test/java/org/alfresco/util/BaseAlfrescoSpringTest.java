@@ -42,6 +42,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Base Alfresco test.
@@ -52,6 +55,7 @@ import org.alfresco.service.transaction.TransactionService;
  * 
  * @author Roy Wetherall
  */
+@Transactional
 public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
 {
     /** The node service */
@@ -75,15 +79,10 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
 
     protected AuthenticationComponent authenticationComponent;
 
-    /**
-     * On setup in transaction override
-     */
     @SuppressWarnings("deprecation")
-    @Override
-    protected void onSetUpInTransaction() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.onSetUpInTransaction();
-
         // Get a reference to the node service
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
@@ -101,12 +100,10 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onTearDownInTransaction() throws Exception
+    @After
+    public void after() throws Exception
     {
         authenticationService.clearCurrentSecurityContext();
-        super.onTearDownInTransaction();
     }
 
     protected NodeRef createNode(NodeRef parentNode, String name, QName type)

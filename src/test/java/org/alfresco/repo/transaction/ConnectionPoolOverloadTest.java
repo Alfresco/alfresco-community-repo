@@ -44,8 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
-import com.sun.star.auth.InvalidArgumentException;
-
 /**
  * A test designed to catch ConnectionPoolException
  * 
@@ -80,7 +78,7 @@ public class ConnectionPoolOverloadTest
         }
         else
         {
-            throw new InvalidArgumentException("The db.pool.max property is not valid.");
+            throw new IllegalArgumentException("The db.pool.max property is not valid.");
         }
         
         String dbPoolWaitMaxProp = properties.getProperty("db.pool.wait.max");
@@ -90,7 +88,7 @@ public class ConnectionPoolOverloadTest
         }
         else
         {
-            throw new InvalidArgumentException("The db.pool.wait.max property is not valid.");
+            throw new IllegalArgumentException("The db.pool.wait.max property is not valid.");
         }
         
         dbPoolWaitMax = dbPoolWaitMax == -1 ? 100 : dbPoolWaitMax;

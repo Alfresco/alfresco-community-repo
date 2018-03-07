@@ -1,38 +1,34 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<beans>
     <!--
         Job definition to import people and groups from one or more external user registries in the authentication chain
         (e.g. LDAP directory)
     -->
 
-    <bean id="syncTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail">
-            <bean id="ldapPeopleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-                <property name="jobClass">
-                    <value>org.alfresco.repo.security.sync.UserRegistrySynchronizerJob</value>
-                </property>
-                <property name="jobDataAsMap">
-                    <map>
-                        <entry key="userRegistrySynchronizer">
-                            <ref bean="userRegistrySynchronizer" />
-                        </entry>
-                        <entry key="synchronizeChangesOnly">
-                            <value>${synchronization.synchronizeChangesOnly}</value>
-                        </entry>
-                    </map>
-                </property>
-            </bean>
-        </property>
-        <property name="cronExpression">
-            <value>${synchronization.import.cron}</value>
-        </property>
-        <property name="scheduler">
-            <ref bean="schedulerFactory" />
-        </property>
-        <property name="startDelayMinutes">
-            <value>${system.cronJob.startDelayMinutes}</value>
+    <bean id="ldapSyncSchedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <bean id="syncTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="cronExpression" value="${synchronization.import.cron}"/>
+                    <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                            <property name="jobClass" value="org.alfresco.repo.security.sync.UserRegistrySynchronizerJob"/>
+                            <property name="jobDataAsMap">
+                                <map>
+                                    <entry key="userRegistrySynchronizer" value-ref="userRegistrySynchronizer"/>
+                                    <entry key="synchronizeChangesOnly" value="${synchronization.synchronizeChangesOnly}"/>
+                                </map>
+                            </property>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
         </property>
     </bean>
 

@@ -488,39 +488,40 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
     private CollectionWithPagingInfo<SiteMembershipRequest> createPagedSiteMembershipRequests(List<SiteMembershipRequest> siteMembershipRequests, Paging paging)
     {
-		int skipCount = paging.getSkipCount();
-		int maxItems = paging.getMaxItems();
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
         int max = skipCount + maxItems + 1; // to detect hasMoreItems
 
-		// unfortunately, need to sort in memory because there's no way to get site membership requests sorted by title from
-		// the workflow apis
-		Collections.sort(siteMembershipRequests);
+        // unfortunately, need to sort in memory because there's no way to get site
+        // membership requests sorted by title from
+        // the workflow apis
+        Collections.sort(siteMembershipRequests);
 
-		int totalItems = siteMembershipRequests.size();
+        int totalItems = siteMembershipRequests.size();
 
-		if(skipCount >= totalItems)
-		{
-			List<SiteMembershipRequest> empty = Collections.emptyList();
-			return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
-		}
-		else
-		{
-			int end = Math.min(max - 1, totalItems);
-			boolean hasMoreItems = totalItems > end;
+        if (skipCount >= totalItems)
+        {
+            List<SiteMembershipRequest> empty = Collections.emptyList();
+            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+        }
+        else
+        {
+            int end = Math.min(max - 1, totalItems);
+            boolean hasMoreItems = totalItems > end;
 
-			siteMembershipRequests = siteMembershipRequests.subList(skipCount, end);
-			return CollectionWithPagingInfo.asPaged(paging, siteMembershipRequests, hasMoreItems, totalItems);
-		}
+            siteMembershipRequests = siteMembershipRequests.subList(skipCount, end);
+            return CollectionWithPagingInfo.asPaged(paging, siteMembershipRequests, hasMoreItems, totalItems);
+        }
     }
 
     @Override
-	public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String personId, Paging paging)
-	{
-    	personId = people.validatePerson(personId, true);
+    public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String personId, Paging paging)
+    {
+        personId = people.validatePerson(personId, true);
 
-		List<Invitation> invitations = getSiteInvitations(personId);
-		return createPagedSiteMembershipRequests(toSiteMembershipRequests(invitations), paging);
-	}
+        List<Invitation> invitations = getSiteInvitations(personId);
+        return createPagedSiteMembershipRequests(toSiteMembershipRequests(invitations), paging);
+    }
 
     @Override
     public CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(final Parameters parameters)

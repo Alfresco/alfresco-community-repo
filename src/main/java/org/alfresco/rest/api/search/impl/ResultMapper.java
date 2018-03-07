@@ -71,7 +71,6 @@ import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleEntry;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -642,11 +641,11 @@ public class ResultMapper
 
         return null;
     }
-    public CollectionWithPagingInfo<TupleList> toCollectionWithPagingInfo(JSONArray docs, SearchSQLQuery searchQuery) throws JSONException
+    public CollectionWithPagingInfo<TupleList> toCollectionWithPagingInfo(JSONArray docs) throws JSONException
     {
         if(docs == null)
         {
-            throw new RuntimeException("Solr response is required instead of docs:" + docs);
+            throw new RuntimeException("Solr response is required instead of JSONArray docs was null" );
         }
         List<TupleList> entries = new ArrayList<TupleList>();
         for(int i = 0; i < docs.length() -1; i++)

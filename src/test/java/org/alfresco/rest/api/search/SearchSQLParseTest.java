@@ -48,7 +48,13 @@ public class SearchSQLParseTest
         SearchSQLQuery searchQuery = parse(query);
         assertEquals("select cm_name from alfresco", searchQuery.getStmt());
     }
-    
+    @Test
+    public void testSQLDeserializeSelectQuery() throws IOException
+    {
+        String query = "{\"stmt\": \"select SITE from alfresco\"}";
+        SearchSQLQuery searchQuery = parse(query);
+        assertEquals("select SITE from alfresco", searchQuery.getStmt());
+    }
     private SearchSQLQuery parse(String json) throws IOException
     {
         return (SearchSQLQuery) helper.searchSQLQueryFromJson(json, SearchSQLQuery.class);

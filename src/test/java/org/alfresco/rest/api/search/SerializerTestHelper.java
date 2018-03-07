@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Repository
+ * Alfresco Remote API
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
@@ -127,16 +127,12 @@ public class SerializerTestHelper implements RequestReader
         });
         return out.toString();
     }
-    public <T> Object extractFromJson(String json, Class<?> clasz) throws IOException
-    {
-        Content content = mock(Content.class);
-        when(content.getReader()).thenReturn(new StringReader(json));
-        WebScriptRequest request = mock(WebScriptRequest.class);
-        when(request.getContent()).thenReturn(content);
-        return extractJsonContent(request, jsonHelper, clasz);
-    }
     public Object searchSQLQueryFromJson(String query, Class<?> classz) throws IOException
     {
-        return extractFromJson(query, classz);
+        Content content = mock(Content.class);
+        when(content.getReader()).thenReturn(new StringReader(query));
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getContent()).thenReturn(content);
+        return extractJsonContent(request, jsonHelper, classz);
     }
 }

@@ -79,7 +79,6 @@ import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -107,8 +106,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-
-import junit.framework.Assert;
 
 /**
  * Tests the ResultMapper class
@@ -855,19 +852,19 @@ public class ResultMapperTests
     {
         JSONObject response = new JSONObject("{\"docs\":[{\"SITE\":\"_REPOSITORY_\"},{\"SITE\":\"surf-config\"},{\"SITE\":\"swsdp\"},{\"EOF\":true,\"RESPONSE_TIME\":96}]}");
         JSONArray docs = response.getJSONArray("docs");
-        CollectionWithPagingInfo<TupleList> info = mapper.toCollectionWithPagingInfo(docs, null);
+        CollectionWithPagingInfo<TupleList> info = mapper.toCollectionWithPagingInfo(docs);
         assertEquals(1000, info.getPaging().getMaxItems());
         assertEquals(0, info.getPaging().getSkipCount());
         assertEquals(false, info.getCollection().isEmpty());
         assertEquals(3, info.getCollection().size());
-        info = mapper.toCollectionWithPagingInfo(new JSONArray(), null);
+        info = mapper.toCollectionWithPagingInfo(new JSONArray());
         assertEquals(1000, info.getPaging().getMaxItems());
         assertEquals(0, info.getPaging().getSkipCount());
         assertEquals(true, info.getCollection().isEmpty());
         assertEquals(0, info.getCollection().size());
         try 
         {
-            mapper.toCollectionWithPagingInfo(null, null);
+            mapper.toCollectionWithPagingInfo(null);
         }
         catch (Exception e) 
         {

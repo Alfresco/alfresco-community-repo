@@ -6,6 +6,16 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService" />
       </property>
+      <property name="remoteTransformerClient">
+         <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+            <constructor-arg>
+               <value>Alfresco-PDF-Renderer</value>
+            </constructor-arg>
+            <constructor-arg>
+               <value>${alfresco-pdf-renderer.url}</value>
+            </constructor-arg>
+         </bean>
+      </property>
       <property name="executer">
          <bean name="transformer.alfresco-pdf-renderer.command" class="org.alfresco.util.exec.RuntimeExec">
             <property name="commandsAndArguments">

@@ -59,6 +59,16 @@
       <property name="transformerDebug">
          <ref bean="transformerDebug" />
       </property>
+       <property name="remoteTransformerClient">
+           <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+               <constructor-arg>
+                   <value>LibreOffice</value>
+               </constructor-arg>
+               <constructor-arg>
+                   <value>${jodconverter.url}</value>
+               </constructor-arg>
+           </bean>
+       </property>
    </bean>
 
 </beans>

@@ -33,6 +33,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformerHelper;
 import org.alfresco.repo.content.transform.ContentTransformerWorker;
+import org.alfresco.repo.content.transform.RemoteTransformerClient;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -79,6 +80,23 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         this.available = available;
     }
 
+    protected RemoteTransformerClient remoteTransformerClient;
+
+    /**
+     * Sets the optional remote transformer client which will be used in preference to a local command if available.
+     *
+     * @param remoteTransformerClient may be null;
+     */
+    public void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient)
+    {
+        this.remoteTransformerClient = remoteTransformerClient;
+    }
+
+    protected boolean remoteTransformerClientConfigured()
+    {
+        return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
+    }
+
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
      * {@link #transformInternal(File, String , File, java.lang.String, TransformationOptions) transformation method} to check
@@ -92,50 +110,53 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         {
             throw new AlfrescoRuntimeException("MimetypeMap not present");
         }
-        try
+        if (!remoteTransformerClientConfigured())
         {
-            // load, into memory the sample gif
-            String resourcePath = "org/alfresco/repo/content/transform/magick/alfresco.gif";
-            InputStream imageStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
-            if (imageStream == null)
+            try
             {
-                throw new AlfrescoRuntimeException("Sample image not found: " + resourcePath);
+                // load, into memory the sample gif
+                String resourcePath = "org/alfresco/repo/content/transform/magick/alfresco.gif";
+                InputStream imageStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
+                if (imageStream == null)
+                {
+                    throw new AlfrescoRuntimeException("Sample image not found: " + resourcePath);
+                }
+                // dump to a temp file
+                File inputFile = TempFileProvider.createTempFile(
+                        getClass().getSimpleName() + "_init_source_",
+                        ".gif");
+                FileContentWriter writer = new FileContentWriter(inputFile);
+                writer.putContent(imageStream);
+
+                // create the output file
+                File outputFile = TempFileProvider.createTempFile(
+                        getClass().getSimpleName() + "_init_target_",
+                        ".png");
+
+                // execute it
+                transformInternal(
+                        inputFile, MimetypeMap.MIMETYPE_IMAGE_GIF,
+                        outputFile, MimetypeMap.MIMETYPE_IMAGE_PNG,
+                        new TransformationOptions());
+
+                // check that the file exists
+                if (!outputFile.exists() || outputFile.length() == 0)
+                {
+                    throw new Exception("Image conversion failed: \n" +
+                            "   from: " + inputFile + "\n" +
+                            "   to: " + outputFile);
+                }
+                // we can be sure that it works
+                setAvailable(true);
             }
-            // dump to a temp file
-            File inputFile = TempFileProvider.createTempFile(
-                    getClass().getSimpleName() + "_init_source_",
-                    ".gif");
-            FileContentWriter writer = new FileContentWriter(inputFile);
-            writer.putContent(imageStream);
-            
-            // create the output file
-            File outputFile = TempFileProvider.createTempFile(
-                    getClass().getSimpleName() + "_init_target_",
-                    ".png");
-            
-            // execute it
-            transformInternal(
-                    inputFile, MimetypeMap.MIMETYPE_IMAGE_GIF, 
-                    outputFile, MimetypeMap.MIMETYPE_IMAGE_PNG, 
-                    new TransformationOptions());
-            
-            // check that the file exists
-            if (!outputFile.exists() || outputFile.length() == 0)
+            catch (Throwable e)
             {
-                throw new Exception("Image conversion failed: \n" +
-                        "   from: " + inputFile + "\n" +
-                        "   to: " + outputFile);
+                logger.error(
+                        getClass().getSimpleName() + " not available: " +
+                                (e.getMessage() != null ? e.getMessage() : ""));
+                // debug so that we can trace the issue if required
+                logger.debug(e);
             }
-            // we can be sure that it works
-            setAvailable(true);            
-        }
-        catch (Throwable e)
-        {
-            logger.error(
-                    getClass().getSimpleName() + " not available: " +
-                    (e.getMessage() != null ? e.getMessage() : ""));
-            // debug so that we can trace the issue if required
-            logger.debug(e);
         }
     }
     
@@ -265,31 +286,16 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
                     "   target mimetype: " + targetMimetype + "\n" +
                     "   target extension: " + targetExtension);
         }
-        
-        // create required temp files
-        File sourceFile = TempFileProvider.createTempFile(
-                getClass().getSimpleName() + "_source_",
-                "." + sourceExtension);
-        File targetFile = TempFileProvider.createTempFile(
-                getClass().getSimpleName() + "_target_",
-                "." + targetExtension);
-        
-        // pull reader file into source temp file
-        reader.getContent(sourceFile);
-        
-        // For most target mimetypes, it only makes sense to read the first page of the
-        // source, as the target is a single page, so set the pageLimit automatically.
-        // However for others, such as PDF (see ALF-7278) all pages should be read.
-        // transform the source temp file to the target temp file
-        transformInternal(sourceFile, sourceMimetype, targetFile, targetMimetype, options);
-        
-        // check that the file was created
-        if (!targetFile.exists() || targetFile.length() == 0)
+
+        if (remoteTransformerClientConfigured())
         {
-            throw new ContentIOException("JMagick transformation failed to write output file");
+            transformRemote(reader, writer, options, sourceMimetype, targetMimetype, sourceExtension, targetExtension);
         }
-        // upload the output image
-        writer.putContent(targetFile);
+        else
+        {
+            transformLocal(reader, writer, options, sourceMimetype, targetMimetype, sourceExtension, targetExtension);
+        }
+
         // done
         if (logger.isDebugEnabled())
         {
@@ -299,10 +305,40 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
                     "   options: " + options);
         }
     }
-    
+
+    private void transformLocal(ContentReader reader, ContentWriter writer, TransformationOptions options, String sourceMimetype, String targetMimetype, String sourceExtension, String targetExtension) throws Exception
+    {
+        // create required temp files
+        File sourceFile = TempFileProvider.createTempFile(
+                getClass().getSimpleName() + "_source_",
+                "." + sourceExtension);
+        File targetFile = TempFileProvider.createTempFile(
+                getClass().getSimpleName() + "_target_",
+                "." + targetExtension);
+
+        // pull reader file into source temp file
+        reader.getContent(sourceFile);
+
+        // For most target mimetypes, it only makes sense to read the first page of the
+        // source, as the target is a single page, so set the pageLimit automatically.
+        // However for others, such as PDF (see ALF-7278) all pages should be read.
+        // transform the source temp file to the target temp file
+        transformInternal(sourceFile, sourceMimetype, targetFile, targetMimetype, options);
+
+        // check that the file was created
+        if (!targetFile.exists() || targetFile.length() == 0)
+        {
+            throw new ContentIOException("ImageMagick transformation failed to write output file");
+        }
+        // upload the output image
+        writer.putContent(targetFile);
+    }
+
+    protected abstract void transformRemote(ContentReader reader, ContentWriter writer, TransformationOptions options, String sourceMimetype, String targetMimetype, String sourceExtension, String targetExtension) throws IllegalAccessException;
+
     /**
      * Transform the image content from the source file to the target file
-     * 
+     *
      * @param sourceFile the source of the transformation
      * @param sourceMimetype the mimetype of the source of the transformation
      * @param targetFile the target of the transformation

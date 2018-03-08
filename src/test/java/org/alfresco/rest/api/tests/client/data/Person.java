@@ -84,7 +84,8 @@ public class Person
                   String description,
                   org.alfresco.rest.api.model.Company company,
                   Map<String, Object> properties,
-                  List<String> aspectNames)
+                  List<String> aspectNames,
+                  Map<String, Boolean> capabilities)
     {
         super(userName,
                 enabled,
@@ -109,6 +110,7 @@ public class Person
         this.id = userName;
         this.properties = properties;
         this.aspectNames = aspectNames;
+        this.capabilities = capabilities;
     }
 
     public String getId()
@@ -176,6 +178,7 @@ public class Person
             personJson.put("emailNotificationsEnabled", isEmailNotificationsEnabled());
             personJson.put("properties", getProperties());
             personJson.put("aspectNames", getAspectNames());
+            personJson.put("capabilities", getCapabilities());
         }
         return personJson;
     }
@@ -229,6 +232,7 @@ public class Person
         Boolean emailNotificationsEnabled = (Boolean) jsonObject.get("emailNotificationsEnabled");
         List<String> aspectNames = (List<String>) jsonObject.get("aspectNames");
         Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
+        Map<String, Boolean> capabilities = (Map<String, Boolean>) jsonObject.get("capabilities");
         
         Person person = new Person(
                 userId,
@@ -252,7 +256,8 @@ public class Person
                 description,
                 company,
                 properties,
-                aspectNames
+                aspectNames,
+                capabilities
         );
         return person;
     }

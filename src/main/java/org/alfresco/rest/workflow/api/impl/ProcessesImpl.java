@@ -453,7 +453,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             else
             {
                 throw new InvalidArgumentException("sort " + sortColumn.column + 
-                        " is not supported, supported items are " + PROCESS_COLLECTION_SORT_PROPERTIES.toArray());
+                        " is not supported, supported items are " + Arrays.toString(PROCESS_COLLECTION_SORT_PROPERTIES.toArray()));
             }
             
             if (sortColumn.asc)

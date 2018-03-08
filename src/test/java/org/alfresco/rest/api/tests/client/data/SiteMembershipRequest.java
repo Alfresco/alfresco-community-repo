@@ -51,6 +51,7 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
     private Date modifiedAt;
     private String title;
     private Site site;
+    private Person person;
     
     public SiteMembershipRequest()
     {
@@ -116,6 +117,14 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
 		this.message = message;
 	}
 
+	public Person getPerson() {
+		return person;
+	}
+
+	public void setPerson(Person person) {
+		this.person = person;
+	}
+
 	@SuppressWarnings("unchecked")
 	public JSONObject toJSON()
 	{
@@ -125,13 +134,14 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
 		return siteMembershipRequestJson;
 	}
 
-	public static SiteMembershipRequest parseSiteMembershipRequest(String username, JSONObject jsonObject) throws ParseException
+	public static SiteMembershipRequest parseSiteMembershipRequest(JSONObject jsonObject) throws ParseException
 	{
 		String id = (String)jsonObject.get("id");
 		String createdAt = (String)jsonObject.get("createdAt");
 		String message = (String)jsonObject.get("message");
 		String modifiedAt = (String)jsonObject.get("modifiedAt");
 		JSONObject siteJSON = (JSONObject)jsonObject.get("site");
+		JSONObject personJSON = (JSONObject)jsonObject.get("person");
 		
 		SiteMembershipRequest siteMembershipRequest = new SiteMembershipRequest();
 		siteMembershipRequest.setId(id);
@@ -146,11 +156,16 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
 			Site site = SiteImpl.parseSite(siteJSON);
 			siteMembershipRequest.setSite(site);
 		}
+		if (personJSON != null)
+		{
+			Person person = Person.parsePerson(personJSON);
+			siteMembershipRequest.setPerson(person);
+		}
 
 		return siteMembershipRequest;
 	}
 
-	public static ListResponse<SiteMembershipRequest> parseSiteMembershipRequests(String username, JSONObject jsonObject) throws ParseException
+	public static ListResponse<SiteMembershipRequest> parseSiteMembershipRequests(JSONObject jsonObject) throws ParseException
 	{
 		List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>();
 
@@ -164,11 +179,11 @@ public class SiteMembershipRequest implements ExpectedComparison, Comparable<Sit
 		{
 			JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
 			JSONObject entry = (JSONObject)jsonEntry.get("entry");
-			siteMembershipRequests.add(SiteMembershipRequest.parseSiteMembershipRequest(username, entry));
+			siteMembershipRequests.add(SiteMembershipRequest.parseSiteMembershipRequest(entry));
 		}
 
 		ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
-		return new ListResponse<SiteMembershipRequest>(paging, siteMembershipRequests);
+		return new ListResponse<>(paging, siteMembershipRequests);
 	}
 	
 	@Override

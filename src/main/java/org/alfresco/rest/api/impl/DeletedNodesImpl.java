@@ -43,6 +43,7 @@ import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTargetAssoc;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
@@ -54,7 +55,6 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -169,11 +169,24 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     }
 
     @Override
-    public Node restoreArchivedNode(String archivedId)
+    public Node restoreArchivedNode(String archivedId, NodeTargetAssoc nodeTargetAssoc)
     {
         //First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
-        RestoreNodeReport restored = nodeArchiveService.restoreArchivedNode(validatedNodeRef);
+
+        RestoreNodeReport restored = null;
+
+        if (nodeTargetAssoc != null)
+        {
+            NodeRef targetNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeTargetAssoc.getTargetParentId());
+            QName assocType = nodes.getAssocType(nodeTargetAssoc.getAssocType());
+            restored = nodeArchiveService.restoreArchivedNode(validatedNodeRef, targetNodeRef, assocType, null);
+        }
+        else
+        {
+            restored = nodeArchiveService.restoreArchivedNode(validatedNodeRef);
+        }
+
         switch (restored.getStatus())
         {
         case SUCCESS:

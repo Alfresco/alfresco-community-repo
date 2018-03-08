@@ -69,14 +69,14 @@ public class AuditApplicationsAuditEntriesRelation implements RelationshipResour
     @WebApiDescription(title = "Return audit entry id for audit app id")
     public AuditEntry readById(String auditAppId, String auditEntryId, Parameters parameters) throws RelationshipResourceNotFoundException
     {
-        return audit.getAuditEntry(auditAppId, new Long(auditEntryId), parameters);
+        return audit.getAuditEntry(auditAppId, Long.valueOf(auditEntryId), parameters);
     }
 
     @Override
     @WebApiDescription(title = "Delete audit entry id for audit app id")
     public void delete(String auditAppId, String auditEntryId, Parameters parameters) throws RelationshipResourceNotFoundException
     {
-        audit.deleteAuditEntry(auditAppId, new Long(auditEntryId), parameters);
+        audit.deleteAuditEntry(auditAppId, Long.valueOf(auditEntryId), parameters);
     }
 
     @Override

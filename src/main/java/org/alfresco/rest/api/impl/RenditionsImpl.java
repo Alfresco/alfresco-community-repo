@@ -376,7 +376,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                     {
                         LOGGER.error("Couldn't load the placeholder." + ex.getMessage());
                     }
-                    new ApiException("Couldn't load the placeholder.");
+                    throw new ApiException("Couldn't load the placeholder.");
                 }
             }
         }

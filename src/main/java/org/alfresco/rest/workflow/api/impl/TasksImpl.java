@@ -1463,7 +1463,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             else
             {
                 throw new InvalidArgumentException("sort " + sortColumn.column + 
-                        " is not supported, supported items are " + TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray());
+                        " is not supported, supported items are " + Arrays.toString(TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray()));
             }
             
             if (sortColumn.asc)
@@ -1539,7 +1539,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             else
             {
                 throw new InvalidArgumentException("sort " + sortColumn.column + 
-                        " is not supported, supported items are " + TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray());
+                        " is not supported, supported items are " + Arrays.toString(TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray()));
             }
             
             if (sortColumn.asc)

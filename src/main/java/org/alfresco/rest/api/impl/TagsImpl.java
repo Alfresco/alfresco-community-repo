@@ -27,7 +27,9 @@ package org.alfresco.rest.api.impl;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
@@ -58,7 +60,8 @@ import org.alfresco.util.TypeConstraint;
  */
 public class TagsImpl implements Tags
 {
-	private Nodes nodes;
+	private static final Object PARAM_INCLUDE_COUNT = "count";
+    private Nodes nodes;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	
@@ -125,20 +128,38 @@ public class TagsImpl implements Tags
     	taggingService.removeTag(nodeRef, tagValue);
     }
 
-    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Paging paging)
+    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
-    	PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging));
-    	Integer totalItems = results.getTotalResultCount().getFirst();
-    	List<Pair<NodeRef, String>> page = results.getPage();
-    	List<Tag> tags = new ArrayList<Tag>(page.size());
-    	for(Pair<NodeRef, String> pair : page)
-    	{
-    		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
-    	}
+        Paging paging = params.getPaging();
+        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging));
+        taggingService.getPagedTags(storeRef, 0, paging.getMaxItems());
+        Integer totalItems = results.getTotalResultCount().getFirst();
+        List<Pair<NodeRef, String>> page = results.getPage();
+        List<Tag> tags = new ArrayList<Tag>(page.size());
+        List<Pair<String, Integer>> tagsByCount = null;
+        Map<String, Integer> tagsByCountMap = new HashMap<String, Integer>();
 
-    	return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+        if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
+        {
+            tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
+            if (tagsByCount != null)
+            {
+                for (Pair<String, Integer> tagByCountElem : tagsByCount)
+                {
+                    tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
+                }
+            }
+        }
+        for (Pair<NodeRef, String> pair : page)
+        {
+            Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
+            selectedTag.setCount(tagsByCountMap.get(selectedTag.getTag()));
+            tags.add(selectedTag);
+        }
+
+        return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
-    
+
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);

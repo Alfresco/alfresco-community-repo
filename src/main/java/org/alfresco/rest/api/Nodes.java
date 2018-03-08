@@ -367,6 +367,7 @@ public interface Nodes
     String PARAM_INCLUDE_ISLOCKED = "isLocked";
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = "allowableOperations";
     String PARAM_INCLUDE_PERMISSIONS = "permissions";
+    String PARAM_INCLUDE_ISFAVORITE = "isFavorite";
 
     String PARAM_INCLUDE_ASSOCIATION = "association";
 

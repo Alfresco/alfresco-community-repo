@@ -25,9 +25,12 @@
  */
 package org.alfresco.rest.api;
 
+import org.alfresco.rest.api.model.SiteMembershipApproval;
+import org.alfresco.rest.api.model.SiteMembershipRejection;
 import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 /**
  * Public REST API: centralises access to site membership requests and maps between representations.
@@ -37,6 +40,9 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
  */
 public interface SiteMembershipRequests
 {
+    String PARAM_SITE_ID = "siteId";
+    String PARAM_PERSON_ID = "personId";
+
 	/**
 	 * Create a site membership request for the user 'inviteeId'
 	 * @param inviteeId the site inviteee id
@@ -78,4 +84,10 @@ public interface SiteMembershipRequests
 	 * @return a paged list of site membership requests
 	 */
 	CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String inviteeId, Paging paging);
+
+    CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(final Parameters parameters);
+
+    void approveSiteMembershipRequest(String siteId, String inviteeId, SiteMembershipApproval siteMembershipApproval);
+
+    void rejectSiteMembershipRequest(String siteId, String inviteeId, SiteMembershipRejection siteMembershipRejection);
 }

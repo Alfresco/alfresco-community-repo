@@ -303,7 +303,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         List<QuickShareLink> result = new ArrayList<>(nodeIds.size());
 
-        List<String> includeParam = parameters.getInclude();
+        List<String> includeParam = parameters != null ? parameters.getInclude() : Collections.<String> emptyList();
 
         for (QuickShareLink qs : nodeIds)
         {
@@ -525,7 +525,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         results.close();
 
-        return CollectionWithPagingInfo.asPaged(paging, qsLinks, results.hasMore(), new Long(results.getNumberFound()).intValue());
+        return CollectionWithPagingInfo.asPaged(paging, qsLinks, results.hasMore(), Long.valueOf(results.getNumberFound()).intValue());
     }
 
     private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> includeParam)

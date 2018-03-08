@@ -413,7 +413,8 @@ public class PeopleImpl implements People
         personId = validatePerson(personId);
         List<String> include = Arrays.asList(
                 PARAM_INCLUDE_ASPECTNAMES,
-                PARAM_INCLUDE_PROPERTIES);
+                PARAM_INCLUDE_PROPERTIES,
+                PARAM_INCLUDE_CAPABILITIES);
         Person person = getPersonWithProperties(personId, include);
 
         return person;
@@ -521,6 +522,15 @@ public class PeopleImpl implements People
                 // Expose aspect names
                 Set<QName> aspects = nodeService.getAspects(personNode);
                 person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
+            }
+            if (include.contains(PARAM_INCLUDE_CAPABILITIES))
+            {
+                // Expose capabilities
+                Map<String, Boolean> capabilities = new HashMap<>(3);
+                capabilities.put("isAdmin", isAdminAuthority(personId));
+                capabilities.put("isGuest", isGuestAuthority(personId));
+                capabilities.put("isMutable", isMutableAuthority(personId));
+                person.setCapabilities(capabilities);               
             }
             
             // get avatar information
@@ -933,5 +943,27 @@ public class PeopleImpl implements People
         checkRequiredField("password", data.getPassword());
         checkRequiredField("id", data.getId());
         checkRequiredField("key", data.getKey());
+    }
+
+    private boolean isGuestAuthority(String authorityName)
+    {
+        return authorityService.isGuestAuthority(authorityName);
+    }
+
+    private boolean isMutableAuthority(String authorityName)
+    {
+        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+        // Check whether the account is mutable according to the authentication service
+        if (!mutableAuthenticationService.isAuthenticationMutable(authorityName))
+        {
+            return false;
+        }
+        // Only allow non-admin users to mutate their own accounts
+        String currentUser = mutableAuthenticationService.getCurrentUserName();
+        if (currentUser.equals(authorityName) || authorityService.isAdminAuthority(currentUser))
+        {
+            return true;
+        }
+        return false;
     }
 }

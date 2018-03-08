@@ -23,22 +23,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api;
+package org.alfresco.rest.api.model;
 
-import java.util.List;
-
-import org.alfresco.rest.api.model.Tag;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.StoreRef;
-
-public interface Tags
+public class NodeTargetAssoc extends Assoc
 {
-    public List<Tag> addTags(String nodeId, List<Tag> tags);
-    public Tag getTag(StoreRef storeRef, String tagId);
-    public void deleteTag(String nodeId, String tagId);
-    public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params);
-    public Tag changeTag(StoreRef storeRef, String tagId, Tag tag);
-    public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params);
+    private String targetParentId;
+
+    public NodeTargetAssoc()
+    {
+    }
+
+    public NodeTargetAssoc(String targetParentId, String prefixAssocTypeQName)
+    {
+        super(prefixAssocTypeQName);
+
+        this.targetParentId = targetParentId;
+    }
+
+    public String getTargetParentId()
+    {
+        return targetParentId;
+    }
+
+    public void setTargetParentId(String targetParentId)
+    {
+        this.targetParentId = targetParentId;
+    }
 }

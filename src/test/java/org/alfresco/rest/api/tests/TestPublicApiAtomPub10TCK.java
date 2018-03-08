@@ -35,7 +35,6 @@ import org.alfresco.opencmis.OpenCMISClientContext;
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
-import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
@@ -52,7 +51,6 @@ import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningTestGroup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.dialect.Dialect;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,9 +70,10 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
 	@Before
 	public void before() throws Exception
 	{
-        //see REPO-1524	
-        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-        assumeFalse(dialect instanceof AlfrescoOracle9Dialect);
+        // see REPO-1524
+        // the tests are always run on PostgreSQL only
+//        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+//        assumeFalse(dialect instanceof Oracle9Dialect);
 
 		int port = getTestFixture().getJettyComponent().getPort();
 		TestNetwork network = getTestFixture().getRandomNetwork();

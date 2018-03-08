@@ -70,7 +70,7 @@ public class SimpleMappingExceptionResolver implements ExceptionResolver<Excepti
     private Integer matchException(Class<? extends Exception> ex)
     {
         Integer statusCode = exceptionMappings.get(ex.getName());
-        if (statusCode == null && !(Exception.class.getName().equals(ex.getName())))
+        if (statusCode == null && !(ex.isAssignableFrom(Exception.class)))
         {
             statusCode = matchException((Class<? extends Exception>) ex.getSuperclass());
         }

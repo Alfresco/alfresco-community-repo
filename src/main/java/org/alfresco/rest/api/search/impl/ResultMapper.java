@@ -307,6 +307,11 @@ public class ResultMapper
         SpellCheckContext spellCheckContext = null;
         List<FacetFieldContext> ffcs = new ArrayList<FacetFieldContext>();
 
+        if (searchQuery == null)
+        {
+            throw new IllegalArgumentException("searchQuery can't be null");
+        }
+
         //Facet queries
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
@@ -323,7 +328,7 @@ public class ResultMapper
                 for (Entry<String, Integer> fq:facetQueries.entrySet())
                 {
                     String filterQuery = null;
-                    if (searchQuery != null && searchQuery.getFacetQueries() != null)
+                    if (searchQuery.getFacetQueries() != null)
                     {
                         Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
                         filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();

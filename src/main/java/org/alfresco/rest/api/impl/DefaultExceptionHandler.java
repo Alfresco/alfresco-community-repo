@@ -40,12 +40,7 @@ public class DefaultExceptionHandler implements ExceptionHandler
 	@Override
 	public boolean handle(Throwable t)
 	{
-		if(t instanceof AccessDeniedException)
-		{
-			// Note: security, no message to indicate why
-			throw new NotFoundException();
-		}
-		else if(t instanceof PermissionDeniedException)
+		if(t instanceof AccessDeniedException || t instanceof PermissionDeniedException)
 		{
 			// Note: security, no message to indicate why
 			throw new NotFoundException();

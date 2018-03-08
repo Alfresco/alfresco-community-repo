@@ -43,20 +43,19 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.api.tests.client.data.Action;
-import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
+import org.alfresco.rest.api.tests.client.data.Action;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
+import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.tests.client.data.CMISNode;
 import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.ContentData;
@@ -106,6 +105,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A client for interacting with the public api and returning Java objects.
@@ -1138,32 +1139,47 @@ public class PublicApiClient
         public SiteMembershipRequest getSiteMembershipRequest(String personId, String siteId) throws PublicApiException, ParseException
         {
             HttpResponse response = getSingle("people", personId, "site-membership-requests", siteId, "Failed to get siteMembershipRequest");
-            return SiteMembershipRequest.parseSiteMembershipRequest(personId, (JSONObject)response.getJsonResponse().get("entry"));
+            return SiteMembershipRequest.parseSiteMembershipRequest((JSONObject) response.getJsonResponse().get("entry"));
         }
 
         public ListResponse<SiteMembershipRequest> getSiteMembershipRequests(String personId, Map<String, String> params) throws PublicApiException, ParseException
         {
             HttpResponse response = getAll("people", personId, "site-membership-requests", null, params, "Failed to get siteMembershipRequests");
-            return SiteMembershipRequest.parseSiteMembershipRequests(personId, response.getJsonResponse());
+            return SiteMembershipRequest.parseSiteMembershipRequests(response.getJsonResponse());
         }
 
         public SiteMembershipRequest createSiteMembershipRequest(String personId, SiteMembershipRequest siteMembershipRequest) throws PublicApiException, ParseException
         {
             HttpResponse response = create("people", personId, "site-membership-requests", null, siteMembershipRequest.toJSON().toString(), "Failed to create siteMembershipRequest");
-            SiteMembershipRequest ret = SiteMembershipRequest.parseSiteMembershipRequest(personId, (JSONObject)response.getJsonResponse().get("entry"));
+            SiteMembershipRequest ret = SiteMembershipRequest.parseSiteMembershipRequest((JSONObject) response.getJsonResponse().get("entry"));
             return ret;
         }
 
         public SiteMembershipRequest updateSiteMembershipRequest(String personId, SiteMembershipRequest siteMembershipRequest) throws PublicApiException, ParseException
         {
             HttpResponse response = update("people", personId, "site-membership-requests", siteMembershipRequest.getId(), siteMembershipRequest.toJSON().toString(), "Failed to update siteMembershipRequest");
-            SiteMembershipRequest ret = SiteMembershipRequest.parseSiteMembershipRequest(personId, (JSONObject)response.getJsonResponse().get("entry"));
+            SiteMembershipRequest ret = SiteMembershipRequest.parseSiteMembershipRequest((JSONObject) response.getJsonResponse().get("entry"));
             return ret;
         }
 
         public void cancelSiteMembershipRequest(String personId, String siteMembershipRequestId) throws PublicApiException
         {
             remove("people", personId, "site-membership-requests", siteMembershipRequestId, "Failed to cancel siteMembershipRequest");
+        }
+
+        public ListResponse<SiteMembershipRequest> getSiteMembershipRequests(Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("site-membership-requests", null, null, null, params, errorMessage, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return SiteMembershipRequest.parseSiteMembershipRequests(response.getJsonResponse());
+                }
+            }
+            return null;
         }
     }
 

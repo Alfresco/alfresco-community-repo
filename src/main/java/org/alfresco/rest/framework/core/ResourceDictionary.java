@@ -44,7 +44,7 @@ public class ResourceDictionary
     private final Map<Api,Map<String, ResourceWithMetadata>> allResources = new HashMap<Api,Map<String, ResourceWithMetadata>>();
     private final SortedSet<Api> publicApis = new TreeSet<Api>();
     private final SortedSet<Api> privateApis  = new TreeSet<Api>();
-    private final String NEW_LINE = "\n";
+    private static final String NEW_LINE = "\n";
     
     protected ResourceDictionary()
     {

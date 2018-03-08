@@ -35,8 +35,8 @@ import org.alfresco.rest.framework.Operation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.BridgeMethodResolver;
-import org.springframework.core.GenericCollectionTypeResolver;
 import org.springframework.core.GenericTypeResolver;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 
 /**
@@ -74,7 +74,7 @@ public class ResourceInspectorUtil
             Class returnType = GenericTypeResolver.resolveReturnType(resolvedMethod, resource);
             if (List.class.isAssignableFrom(returnType))
             {
-                return GenericCollectionTypeResolver.getCollectionReturnType(method);
+                return ResolvableType.forMethodReturnType(method).asCollection().getGeneric(0).resolve();
             }
             return returnType;
         }

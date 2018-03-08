@@ -32,6 +32,8 @@
    <properties>
       <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
       <dependency.surf.version>6.8</dependency.surf.version>
+
+      <java.compiler.version>1.8</java.compiler.version>
    </properties>
 
    <dependencies>
@@ -229,6 +231,15 @@
                </execution>
             </executions>
          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>3.6.0</version>
+              <configuration>
+                  <source>${java.compiler.version}</source>
+                  <target>${java.compiler.version}</target>
+              </configuration>
+          </plugin>
       </plugins>
    </build>
 

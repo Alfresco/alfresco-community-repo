@@ -71,8 +71,12 @@ import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.api.search.model.SearchSQLQuery;
+import org.alfresco.rest.api.search.model.TupleEntry;
+import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -88,6 +92,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -639,5 +646,36 @@ public class ResultMapper
         }
 
         return null;
+    }
+    public CollectionWithPagingInfo<TupleList> toCollectionWithPagingInfo(JSONArray docs, SearchSQLQuery searchQuery) throws JSONException
+    {
+        if(docs == null )
+        {
+            throw new RuntimeException("Solr response is required instead of JSONArray docs was null" );
+        }
+        if(searchQuery == null )
+        {
+            throw new RuntimeException("SearchSQLQuery is required" );
+        }
+        List<TupleList> entries = new ArrayList<TupleList>();
+        for(int i = 0; i < docs.length() -1; i++)
+        {
+            List<TupleEntry> row = new ArrayList<TupleEntry>();
+            JSONObject docObj = (JSONObject) docs.get(i);
+            docObj.keys().forEachRemaining(action -> {
+                try
+                {
+                    String value = docObj.get(action.toString()).toString();
+                    row.add(new TupleEntry(action.toString(), value));
+                } 
+                catch (JSONException e)
+                {
+                    throw new RuntimeException("Unable to parse SQL response. " + e);
+                }
+            });
+            entries.add(new TupleList(row));
+        }
+        Paging paging  = Paging.valueOf(0, searchQuery.getItemLimit());
+        return CollectionWithPagingInfo.asPaged(paging, entries);
     }
 }

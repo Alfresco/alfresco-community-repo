@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Remote API
  * %%
@@ -126,5 +126,13 @@ public class SerializerTestHelper implements RequestReader
             }
         });
         return out.toString();
+    }
+    public Object searchSQLQueryFromJson(String query, Class<?> classz) throws IOException
+    {
+        Content content = mock(Content.class);
+        when(content.getReader()).thenReturn(new StringReader(query));
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getContent()).thenReturn(content);
+        return extractJsonContent(request, jsonHelper, classz);
     }
 }

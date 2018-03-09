@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>full-community-packaging</artifactId>
+        <artifactId>acs-community-packaging</artifactId>
         <version>6.0.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -19,6 +19,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-content-services-community-distribution</artifactId>
+            <version>${project.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>

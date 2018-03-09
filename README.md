@@ -1,11 +1,17 @@
-# Full Community Packaging for Alfresco Content Services
+
+# Alfresco Content Services Community Packaging
+This project is producing packaging for [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+
+The SNAPSHOT version of the artifacts is **never** published.
+
+### Contributing guide
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
 
 This project contains the code for packaging the entire Alfresco Content Services product Community edition.
 
 ## General
 ### Build:
 * ```mvn clean install``` in the root of the project will build everything.
-Note: It is not easy to build the full installer locally (and impossible on Windows) so, most likely you don't want to create the installer locally. Comment out the <module>installer</module> in the root pom.xml in order to avoid building the installer locally.
 
 ## Docker-compose & Kubernetes
 Build and start Alfresco Content Services Community using docker-compose or Kubernetes, containing:
@@ -68,7 +74,6 @@ helm install alfresco-incubator/alfresco-content-services \
 
 ## Docker images
 These images are used to build the images used by the docker-compose.yml project to bring up an ACS Community, similar to what the installer did/does.  
-The images are based on *pure* _content services_ and _share_ images done by the _acs-packaging_ and _share_ projects and adds the amps and settings necessary for running the images in a similar fashion to what the ACS deployment with the installer did/does.
 
 ### Docker Alfresco
 1. Go to docker-alfreco folder
@@ -87,6 +92,4 @@ The images are based on *pure* _content services_ and _share_ images done by the
 
 In this folder the distribution zip is build. It contains all the war files, libraries, certificates and settings files you need to deploy alfresco on the supported application servers.
 
-## Installer
 
-In this folder the installer binaries are built for all the supported platforms.

@@ -49,7 +49,7 @@ public class SolrSuggesterServiceImpl implements SuggesterService
 
     private boolean enabled;
     
-    SolrQueryHTTPClient solrQueryHTTPClient;
+    SolrQueryClient solrQueryHTTPClient;
 
 
     public void setEnabled(boolean isEnabled)
@@ -67,7 +67,7 @@ public class SolrSuggesterServiceImpl implements SuggesterService
     /**
      * @param solrQueryHTTPClient the solrQueryHTTPClient to set
      */
-    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
         this.solrQueryHTTPClient = solrQueryHTTPClient;
     }
@@ -94,7 +94,7 @@ public class SolrSuggesterServiceImpl implements SuggesterService
             }
             params.put("wt", "json");
 
-            JSONObject response = solrQueryHTTPClient.execute(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SUGGEST_HANDLER, params);
+            JSONObject response = ((SolrQueryHTTPClient)solrQueryHTTPClient).execute(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SUGGEST_HANDLER, params);
             return new SolrSuggesterResult(response);
         }
         catch (Exception e)

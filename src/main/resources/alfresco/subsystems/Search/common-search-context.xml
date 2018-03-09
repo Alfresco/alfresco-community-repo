@@ -66,10 +66,10 @@
     </bean>
     
     <bean id="search.fts.alfresco.switching" class="org.alfresco.repo.search.impl.solr.DbOrIndexSwitchingQueryLanguage" >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>fts-alfresco</value>
@@ -85,8 +85,8 @@
         </property>
         <property name="solrDao" ref="solrDAO"/>
         <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
-    </bean>
-    
+    </bean> 
+
     <bean id="search.fts.alfresco.db" class="org.alfresco.repo.search.impl.solr.DbAftsQueryLanguage" >
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="namespaceService" ref="namespaceService" />

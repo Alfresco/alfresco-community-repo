@@ -37,11 +37,11 @@ import org.alfresco.service.cmr.search.StatsResultSet;
  */
 public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
 {
-    private SolrQueryHTTPClient solrQueryHTTPClient;
+    private SolrQueryClient solrQueryHTTPClient;
 
     
     
-    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
         this.solrQueryHTTPClient = solrQueryHTTPClient;
     }
@@ -49,7 +49,7 @@ public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters)
     {
-       return solrQueryHTTPClient.executeQuery(searchParameters, getName());
+        return solrQueryHTTPClient.executeQuery(searchParameters, getName());
     }
     
     /**
@@ -60,7 +60,6 @@ public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters)
     {
        return solrQueryHTTPClient.executeStatsQuery( searchParameters);
-
     }
 
 }

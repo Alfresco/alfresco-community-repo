@@ -26,13 +26,31 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static org.alfresco.util.SearchDateConversion.parseDateInterval;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.index.shard.Floc;
-import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
@@ -74,10 +92,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -88,31 +103,12 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
 
 /**
  * @author Andy
  */
-public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
+public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements SolrQueryClient
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
@@ -147,8 +143,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     private boolean anyDenyDenies;
     
     private boolean useDynamicShardRegistration = false;
-	
-    public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     
     private int defaultUnshardedFacetLimit = 100;
     
@@ -297,9 +291,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
          
         try 
         { 
-            StoreRef store = extractStoreRef(searchParameters);            
-            SolrStoreMappingWrapper mapping = extractMapping(store);
-            Locale locale = extractLocale(searchParameters);
+            StoreRef store = SolrClientUtil.extractStoreRef(searchParameters);
+            SolrStoreMappingWrapper mapping = 
+                    SolrClientUtil.extractMapping(store, 
+                                                  mappingLookup,
+                                                  shardRegistry, 
+                                                  useDynamicShardRegistration,
+                                                  beanFactory);
+            
+            Locale locale = SolrClientUtil.extractLocale(searchParameters);
             
             Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
             HttpClient httpClient = httpClientAndBaseUrl.getFirst();
@@ -339,7 +339,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     {
         URLCodec encoder = new URLCodec();
         StringBuilder url = new StringBuilder();
-        String languageUrlFragment = extractLanguageFragment(searchParameters.getLanguage());
+        String languageUrlFragment = SolrClientUtil.extractLanguageFragment(languageMappings, searchParameters.getLanguage());
         
         url.append(baseUrl);
         url.append("/").append(languageUrlFragment);
@@ -374,7 +374,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         boolean requiresSeparator = false;
         for(StoreRef storeRef : storeRefs)
         {
-            SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+            SolrStoreMappingWrapper storeMapping = SolrClientUtil.extractMapping(storeRef, mappingLookup, shardRegistry, requiresSeparator, beanFactory);
 
             if(requiresSeparator)
             {
@@ -406,17 +406,21 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         return body;
     }
     
-    public ResultSet executeQuery(final SearchParameters searchParameters, String language)
-    {   
-	    if(repositoryState.isBootstrapping())
-	    {
-	        throw new AlfrescoRuntimeException("SOLR queries can not be executed while the repository is bootstrapping");
-	    }
-	    
+    public ResultSet executeQuery(final BasicSearchParameters searchParameters, String language)
+    {
+        if(repositoryState.isBootstrapping())
+        {
+            throw new AlfrescoRuntimeException("SOLR queries can not be executed while the repository is bootstrapping");
+        }
         try
         {
-            StoreRef store = extractStoreRef(searchParameters);
-            SolrStoreMappingWrapper mapping = extractMapping(store);
+            StoreRef store = SolrClientUtil.extractStoreRef(searchParameters);
+            SolrStoreMappingWrapper mapping = SolrClientUtil.extractMapping(store, 
+                                                                            mappingLookup,
+                                                                            shardRegistry,
+                                                                            useDynamicShardRegistration,
+                                                                            beanFactory);
+            
             Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
             HttpClient httpClient = httpClientAndBaseUrl.getFirst();
 
@@ -424,7 +428,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             StringBuilder url = new StringBuilder();
             url.append(httpClientAndBaseUrl.getSecond());
          
-            String languageUrlFragment = extractLanguageFragment(language);
+            String languageUrlFragment = SolrClientUtil.extractLanguageFragment(languageMappings, language);
             if(!url.toString().endsWith("/"))
             {
                 url.append("/");
@@ -440,19 +444,20 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             // Emulate old limiting behaviour and metadata
             final LimitBy limitBy;
             int maxResults = -1;
-            if (searchParameters.getMaxItems() >= 0)
+            SearchParameters searchParams = (SearchParameters)searchParameters;
+            if (searchParams.getMaxItems() >= 0)
             {
-                maxResults = searchParameters.getMaxItems();
+                maxResults = searchParams.getMaxItems();
                 limitBy = LimitBy.FINAL_SIZE;
             }
-            else if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE && searchParameters.getLimit() >= 0)
+            else if(searchParams.getLimitBy() == LimitBy.FINAL_SIZE && searchParams.getLimit() >= 0)
             {
-                maxResults = searchParameters.getLimit();
+                maxResults = searchParams.getLimit();
                 limitBy = LimitBy.FINAL_SIZE;
             }
             else
             {
-                maxResults = searchParameters.getMaxPermissionChecks();
+                maxResults = searchParams.getMaxPermissionChecks();
                 if (maxResults < 0)
                 {
                     maxResults = maximumResultsFromUnlimitedQuery;
@@ -467,7 +472,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append("&shards=");
                 for(StoreRef storeRef : searchParameters.getStores())
                 {
-                    SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+                    SolrStoreMappingWrapper storeMapping =
+                            SolrClientUtil.extractMapping(storeRef, 
+                                                          mappingLookup, shardRegistry, 
+                                                          requiresSeparator, beanFactory);
 
                     if(requiresSeparator)
                     {
@@ -483,11 +491,11 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
             }
 
-            buildUrlParameters(searchParameters, mapping.isSharded(), encoder, url);
+            buildUrlParameters(searchParams, mapping.isSharded(), encoder, url);
 
-            final String searchTerm = searchParameters.getSearchTerm();
+            final String searchTerm = searchParams.getSearchTerm();
             String spellCheckQueryStr = null;
-            if (searchTerm != null && searchParameters.isSpellCheck())
+            if (searchTerm != null && searchParams.isSpellCheck())
             {
                 StringBuilder builder = new StringBuilder();
                 builder.append("&spellcheck.q=").append(encoder.encode(searchTerm, "UTF-8"));
@@ -539,33 +547,33 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             body.put("locales", locales);
 
             JSONArray templates = new JSONArray();
-            for (String templateName : searchParameters.getQueryTemplates().keySet())
+            for (String templateName : searchParams.getQueryTemplates().keySet())
             {
                 JSONObject template = new JSONObject();
                 template.put("name", templateName);
-                template.put("template", searchParameters.getQueryTemplates().get(templateName));
+                template.put("template", searchParams.getQueryTemplates().get(templateName));
                 templates.put(template);
             }
             body.put("templates", templates);
 
             JSONArray allAttributes = new JSONArray();
-            for (String attribute : searchParameters.getAllAttributes())
+            for (String attribute : searchParams.getAllAttributes())
             {
                 allAttributes.put(attribute);
             }
             body.put("allAttributes", allAttributes);
 
-            body.put("defaultFTSOperator", searchParameters.getDefaultFTSOperator());
-            body.put("defaultFTSFieldOperator", searchParameters.getDefaultFTSFieldOperator());
-            body.put("queryConsistency", searchParameters.getQueryConsistency());
-            if (searchParameters.getMlAnalaysisMode() != null)
+            body.put("defaultFTSOperator", searchParams.getDefaultFTSOperator());
+            body.put("defaultFTSFieldOperator", searchParams.getDefaultFTSFieldOperator());
+            body.put("queryConsistency", searchParams.getQueryConsistency());
+            if (searchParams.getMlAnalaysisMode() != null)
             {
-                body.put("mlAnalaysisMode", searchParameters.getMlAnalaysisMode().toString());
+                body.put("mlAnalaysisMode", searchParams.getMlAnalaysisMode().toString());
             }
-            body.put("defaultNamespace", searchParameters.getNamespace());
+            body.put("defaultNamespace", searchParams.getNamespace());
 
             JSONArray textAttributes = new JSONArray();
-            for (String attribute : searchParameters.getTextAttributes())
+            for (String attribute : searchParams.getTextAttributes())
             {
                 textAttributes.put(attribute);
             }
@@ -575,7 +583,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             
             return (ResultSet) postSolrQuery(httpClient, url.toString(), body, json ->
             {
-                return new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maximumResults);
+                return new SolrJSONResultSet(json, searchParams, nodeService, nodeDAO, limitBy, maximumResults);
             }, spellCheckQueryStr);
         }
         catch (UnsupportedEncodingException e)
@@ -607,7 +615,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     public void buildUrlParameters(SearchParameters searchParameters, boolean isSharded, URLCodec encoder, StringBuilder url)
                 throws UnsupportedEncodingException
     {
-        Locale locale = extractLocale(searchParameters);
+        Locale locale = SolrClientUtil.extractLocale(searchParameters);
         url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
         url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
 
@@ -1129,55 +1137,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             return results;
     }
 
-    protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
-                IOException, HttpException, URIException, JSONException
-    {
-        PostMethod post = new PostMethod(url);
-        if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
-        {
-            post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-        }
-        post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
-
-        try
-        {
-            httpClient.executeMethod(post);
-
-            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
-            {
-                Header locationHeader = post.getResponseHeader("location");
-                if (locationHeader != null)
-                {
-                    String redirectLocation = locationHeader.getValue();
-                    post.setURI(new URI(redirectLocation, true));
-                    httpClient.executeMethod(post);
-                }
-            }
-
-            if (post.getStatusCode() != HttpServletResponse.SC_OK)
-            {
-                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
-            }
-
-            Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
-            // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-            JSONObject json = new JSONObject(new JSONTokener(reader));
-
-            if (json.has("status"))
-            {
-                JSONObject status = json.getJSONObject("status");
-                if (status.getInt("code") != HttpServletResponse.SC_OK)
-                {
-                    throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
-                }
-            }
-            return json;
-        }
-        finally
-        {
-            post.releaseConnection();
-        }
-    }
+    
 
     private StringBuffer buildSortParameters(BasicSearchParameters searchParameters, URLCodec encoder)
                 throws UnsupportedEncodingException
@@ -1221,67 +1181,9 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         return sortBuffer;
     }
 
-    private Locale extractLocale(BasicSearchParameters searchParameters)
-    {
-        Locale locale = I18NUtil.getLocale();
-        if (searchParameters.getLocales().size() > 0)
-        {
-            locale = searchParameters.getLocales().get(0);
-        }
-        return locale;
-    }
+   
 
-    private String extractLanguageFragment(String language)
-    {
-        String languageUrlFragment = languageMappings.get(language);
-        if (languageUrlFragment == null)
-        {
-            throw new AlfrescoRuntimeException("No solr query support for language " + language);
-        }
-        return languageUrlFragment;
-    }
 
-    private SolrStoreMappingWrapper extractMapping(StoreRef store)
-    {
-        if((shardRegistry != null) && useDynamicShardRegistration)
-        {
-            SearchParameters sp = new SearchParameters();
-            sp.addStore(store);
-            List<ShardInstance> slice = shardRegistry.getIndexSlice(sp);
-            if((slice == null) || (slice.size() == 0))
-            {
-                s_logger.error("No available shards for solr query of store " + store + " - trying non-dynamic configuration");
-                SolrStoreMappingWrapper mappings = mappingLookup.get(store);
-                if (mappings == null)
-                {
-                    throw new LuceneQueryParserException("No solr query support for store " + store);
-                }
-                return mappings;
-            }
-            return DynamicSolrStoreMappingWrapperFactory.wrap(slice, beanFactory);
-        }
-        else
-        {
-            SolrStoreMappingWrapper mappings = mappingLookup.get(store);
-
-            if (mappings == null)
-            {
-                throw new LuceneQueryParserException("No solr query support for store " + store);
-            }
-            return mappings;
-        }
-    }
-
-    private StoreRef extractStoreRef(BasicSearchParameters searchParameters)
-    {
-        if (searchParameters.getStores().size() == 0)
-        {
-            throw new AlfrescoRuntimeException("No store for query");
-        }
-        
-        StoreRef store = searchParameters.getStores().get(0);
-        return store;
-    }
 
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
@@ -1315,7 +1217,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     {       
         try
         {
-            SolrStoreMappingWrapper mapping = extractMapping(storeRef);
+            SolrStoreMappingWrapper mapping = SolrClientUtil.extractMapping(storeRef, mappingLookup, shardRegistry, useDynamicShardRegistration, beanFactory);
             
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
@@ -1438,4 +1340,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         }
         
     }
+
+
+
 }

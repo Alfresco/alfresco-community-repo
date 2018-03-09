@@ -34,6 +34,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformerHelper;
 import org.alfresco.repo.content.transform.ContentTransformerWorker;
+import org.alfresco.repo.content.transform.RemoteTransformerClient;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
@@ -71,6 +73,8 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     /** the output from the check command */
     private String versionString;
 
+    private RemoteTransformerClient remoteTransformerClient;
+
     private boolean available;
 
     public AlfrescoPdfRendererContentTransformerWorker()
@@ -97,6 +101,21 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     }
 
     /**
+     * Sets the optional remote transformer client which will be used in preference to a local command if available.
+     *
+     * @param remoteTransformerClient may be null;
+     */
+    public void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient)
+    {
+        this.remoteTransformerClient = remoteTransformerClient;
+    }
+
+    private boolean remoteTransformerClientConfigured()
+    {
+        return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
+    }
+
+    /**
      * Sets the command that must be executed in order to retrieve version information from the executable
      * and thus test that the executable itself is present.
      * 
@@ -116,17 +135,19 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
         // check availability
         try
         {
-            ExecutionResult result = this.checkCommand.execute();
-            if(result.getSuccess())
+            Pair<Boolean, String> result = remoteTransformerClientConfigured()
+                ? remoteTransformerClient.checkCommand(logger)
+                : remoteTransformerClient.checkCommand(checkCommand);
+            if(result.getFirst())
             {
-                this.versionString = result.getStdOut().trim();
+                versionString = result.getSecond();
                 setAvailable(true);
                 logger.info("Using PDF Renderer: "+this.versionString);
             }
             else
             {
                 setAvailable(false);
-                logger.error("Alfresco-PDF-Renderer is not available for transformations.\n"+result.toString());
+                logger.error("Alfresco-PDF-Renderer is not available for transformations.\n"+result.getSecond());
             }
         }
         catch (Throwable e)
@@ -202,24 +223,15 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
                 "   target extension: " + targetExtension);
         }
 
-        // create required temp files
-        File sourceFile = TempFileProvider.createTempFile(getClass().getSimpleName() + "_source_", "." + sourceExtension);
-        File targetFile = TempFileProvider.createTempFile(getClass().getSimpleName() + "_target_", "." + targetExtension);
-
-        // pull reader file into source temp file
-        reader.getContent(sourceFile);
-
-        transformInternal(sourceFile, sourceMimetype, targetFile, targetMimetype, options);
-
-        // check that the file was created
-        if (!targetFile.exists() || targetFile.length() == 0)
+        if (remoteTransformerClientConfigured())
         {
-            throw new ContentIOException("alfresco-pdf-renderer transformation failed to write output file");
+            transformRemote(reader, writer, options, sourceMimetype, targetMimetype, sourceExtension, targetExtension);
         }
-        
-        // upload the output image
-        writer.putContent(targetFile);
-        
+        else
+        {
+            transformLocal(reader, writer, options, sourceMimetype, targetMimetype, sourceExtension, targetExtension);
+        }
+
         // done
         if (logger.isDebugEnabled())
         {
@@ -231,12 +243,17 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
 
     }
 
-    /**
-     * Transform the pdf content from the source file to the target file
-     */
-
-    private void transformInternal(File sourceFile, String sourceMimetype, File targetFile, String targetMimetype, TransformationOptions options) throws Exception
+    private void transformLocal(ContentReader reader, ContentWriter writer, TransformationOptions options,
+                                String sourceMimetype, String targetMimetype,
+                                String sourceExtension, String targetExtension) throws Exception
     {
+        // create required temp files
+        File sourceFile = TempFileProvider.createTempFile(getClass().getSimpleName() + "_source_", "." + sourceExtension);
+        File targetFile = TempFileProvider.createTempFile(getClass().getSimpleName() + "_target_", "." + targetExtension);
+
+        // pull reader file into source temp file
+        reader.getContent(sourceFile);
+
         Map<String, String> properties = new HashMap<String, String>(5);
         // set properties
         if (options instanceof ImageTransformationOptions)
@@ -250,22 +267,22 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
             }
             if(resizeOptions != null)
             {
-	            if (resizeOptions.getHeight() > -1)
-	            {
-	                commandOptions += " --height=" + resizeOptions.getHeight();
-	            }
-	            if (resizeOptions.getWidth() > -1)
-	            {
-	                commandOptions += " --width=" + resizeOptions.getHeight();
-	            }
-	            if (resizeOptions.getAllowEnlargement())
-	            {
-	                commandOptions += " --allow-enlargement";
-	            }
-	            if (resizeOptions.isMaintainAspectRatio())
-	            {
-	                commandOptions += " --maintain-aspect-ratio";
-	            }
+                if (resizeOptions.getHeight() > -1)
+                {
+                    commandOptions += " --height=" + resizeOptions.getHeight();
+                }
+                if (resizeOptions.getWidth() > -1)
+                {
+                    commandOptions += " --width=" + resizeOptions.getWidth();
+                }
+                if (resizeOptions.getAllowEnlargement())
+                {
+                    commandOptions += " --allow-enlargement";
+                }
+                if (resizeOptions.isMaintainAspectRatio())
+                {
+                    commandOptions += " --maintain-aspect-ratio";
+                }
             }
             commandOptions += " --page=" + getSourcePageRange(imageOptions, sourceMimetype, targetMimetype);
 
@@ -287,6 +304,65 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
         {
             logger.debug("alfresco-pdf-renderer executed successfully: \n" + executer);
         }
+
+        // check that the file was created
+        if (!targetFile.exists() || targetFile.length() == 0)
+        {
+            throw new ContentIOException("alfresco-pdf-renderer transformation failed to write output file");
+        }
+
+        // upload the output image
+        writer.putContent(targetFile);
+    }
+
+    /**
+     * Transform the pdf content using a remote transformer
+     */
+    private void transformRemote(ContentReader reader, ContentWriter writer, TransformationOptions options,
+                                 String sourceMimetype, String targetMimetype,
+                                 String sourceExtension, String targetExtension) throws Exception
+    {
+        String page = null;
+        String width = null;
+        String height = null;
+        String allowEnlargement = null;
+        String maintainAspectRatio = null;
+
+        if (options instanceof ImageTransformationOptions)
+        {
+            ImageTransformationOptions imageOptions = (ImageTransformationOptions) options;
+            ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
+            if(resizeOptions != null)
+            {
+                if (resizeOptions.getWidth() > -1)
+                {
+                    width = Integer.toString(resizeOptions.getWidth());
+                }
+                if (resizeOptions.getHeight() > -1)
+                {
+                    height = Integer.toString(resizeOptions.getHeight());
+                }
+                if (resizeOptions.getAllowEnlargement())
+                {
+                    allowEnlargement = Boolean.TRUE.toString();
+                }
+                if (resizeOptions.isMaintainAspectRatio())
+                {
+                    maintainAspectRatio = Boolean.TRUE.toString();
+                }
+            }
+            page = getSourcePageRange(imageOptions, sourceMimetype, targetMimetype);
+        }
+
+        long timeoutMs = options.getTimeoutMs();
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger,
+
+                "page", page,
+                "width", width,
+                "height", height,
+                "allowEnlargement", allowEnlargement,
+                "maintainAspectRatio", maintainAspectRatio);
     }
 
     @Override

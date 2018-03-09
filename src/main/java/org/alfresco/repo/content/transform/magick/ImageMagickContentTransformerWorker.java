@@ -33,10 +33,9 @@ import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.CropSourceOptions;
-import org.alfresco.service.cmr.repository.PagedSourceOptions;
-import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.repo.content.transform.RemoteTransformerClient;
+import org.alfresco.service.cmr.repository.*;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
 import org.alfresco.util.exec.RuntimeExec;
@@ -97,7 +96,6 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
                 "MAGICK_TMPDIR", TempFileProvider.getTempDir().getAbsolutePath());
         this.executer = executer;
     }
-    
 
     /**
      * Sets the command that must be executed in order to retrieve version information from the converting executable
@@ -134,24 +132,40 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             throw new AlfrescoRuntimeException("System runtime executer not set");
         }
         super.afterPropertiesSet();
-        if (isAvailable())
+        if (!remoteTransformerClientConfigured())
         {
-            try
+            if (isAvailable())
             {
-                // On some platforms / versions, the -version command seems to return an error code whilst still
-                // returning output, so let's not worry about the exit code!
-                ExecutionResult result = this.checkCommand.execute();
-                this.versionString = result.getStdOut().trim();
+                try
+                {
+                    // On some platforms / versions, the -version command seems to return an error code whilst still
+                    // returning output, so let's not worry about the exit code!
+                    ExecutionResult result = this.checkCommand.execute();
+                    this.versionString = result.getStdOut().trim();
+                }
+                catch (Throwable e)
+                {
+                    setAvailable(false);
+                    logger.error(getClass().getSimpleName() + " not available: "
+                            + (e.getMessage() != null ? e.getMessage() : ""));
+                    // debug so that we can trace the issue if required
+                    logger.debug(e);
+                }
             }
-            catch (Throwable e)
+        }
+        else
+        {
+            Pair<Boolean, String> result = remoteTransformerClient.checkCommand(logger);
+            if (result.getFirst())
+            {
+                setAvailable(true);
+                versionString = result.getSecond().trim();
+            }
+            else
             {
                 setAvailable(false);
-                logger.error(getClass().getSimpleName() + " not available: "
-                        + (e.getMessage() != null ? e.getMessage() : ""));
-                // debug so that we can trace the issue if required
-                logger.debug(e);
+                versionString = "unknown";
             }
-            
         }
     }
     
@@ -204,13 +218,155 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         {
             throw new ContentIOException("Failed to perform ImageMagick transformation: \n" + result);
         }
+
         // success
         if (logger.isDebugEnabled())
         {
             logger.debug("ImageMagick executed successfully: \n" + executer);
         }
     }
-    
+
+    protected void transformRemote(ContentReader reader, ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype, String targetMimetype,
+                                   String sourceExtension, String targetExtension) throws IllegalAccessException
+    {
+        String startPage = null;
+        String endPage = null;
+
+        String alphaRemove = null;
+        String autoOrient = null;
+
+        String cropGravity = null;
+        String cropWidth = null;
+        String cropHeight = null;
+        String cropPercentage = null;
+        String cropXOffset = null;
+        String cropYOffset = null;
+
+        String thumbnail = null;
+        String resizeWidth = null;
+        String resizeHeight = null;
+        String resizePercentage = null;
+        String allowEnlargement = null;
+        String maintainAspectRatio = null;
+
+
+        if (options instanceof ImageTransformationOptions)
+        {
+            ImageTransformationOptions imageOptions = (ImageTransformationOptions)options;
+            CropSourceOptions cropOptions = imageOptions.getSourceOptions(CropSourceOptions.class);
+            ImageResizeOptions resizeOptions = imageOptions.getResizeOptions();
+
+            // MNT-10882 :  JPEG File Format, does not save the alpha (transparency) channel.
+            if (MimetypeMap.MIMETYPE_IMAGE_JPEG.equalsIgnoreCase(targetMimetype) && isAlphaOptionSupported())
+            {
+                alphaRemove = Boolean.TRUE.toString();
+            }
+            if (imageOptions.isAutoOrient())
+            {
+                autoOrient = Boolean.TRUE.toString();
+            }
+            if (cropOptions != null)
+            {
+                cropGravity = cropOptions.getGravity();
+                int width = cropOptions.getWidth();
+                if (width > -1)
+                {
+                    cropWidth = Integer.toString(width);
+                }
+
+                int height = cropOptions.getHeight();
+                if (height > -1)
+                {
+                    cropHeight = Integer.toString(height);
+                }
+
+                if (cropOptions.isPercentageCrop())
+                {
+                    cropPercentage = Boolean.TRUE.toString();
+                }
+                cropXOffset = Integer.toString(cropOptions.getXOffset());
+                cropYOffset = Integer.toString(cropOptions.getYOffset());
+            }
+            if (resizeOptions != null)
+            {
+                if (resizeOptions.isResizeToThumbnail())
+                {
+                    thumbnail = Boolean.TRUE.toString();
+                }
+                if (resizeOptions.getWidth() > -1)
+                {
+                    resizeWidth = Integer.toString(resizeOptions.getWidth());
+                }
+                if (resizeOptions.getHeight() > -1)
+                {
+                    resizeHeight = Integer.toString(resizeOptions.getHeight());
+                }
+                if (resizeOptions.isPercentResize() == true)
+                {
+                    resizePercentage = Boolean.TRUE.toString();
+                }
+                if (resizeOptions.getAllowEnlargement())
+                {
+                    allowEnlargement = Boolean.TRUE.toString();
+                }
+                if (resizeOptions.isMaintainAspectRatio())
+                {
+                    maintainAspectRatio = Boolean.TRUE.toString();
+                }
+            }
+        }
+
+        // Page range
+        if (options instanceof ImageTransformationOptions)
+        {
+            ImageTransformationOptions imageOptions = (ImageTransformationOptions) options;
+            PagedSourceOptions pagedSourceOptions = imageOptions.getSourceOptions(PagedSourceOptions.class);
+            if (pagedSourceOptions != null)
+            {
+                if (pagedSourceOptions.getStartPageNumber() != null)
+                {
+                    startPage = Integer.toString(pagedSourceOptions.getStartPageNumber() - 1);
+                }
+                if (pagedSourceOptions.getEndPageNumber() != null)
+                {
+                    endPage   = Integer.toString(pagedSourceOptions.getEndPageNumber() - 1);
+                }
+            }
+        }
+        else
+        {
+            if (options.getPageLimit() == 1 || isSingleSourcePageRangeRequired(sourceMimetype, targetMimetype))
+            {
+                startPage = "0";
+            }
+        }
+
+        long timeoutMs = options.getTimeoutMs();
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger,
+
+                "startPage", startPage,
+                "endPage", endPage,
+
+                "alphaRemove", alphaRemove,
+                "autoOrient", autoOrient,
+
+                "cropGravity", cropGravity,
+                "cropWidth", cropWidth,
+                "cropHeight",  cropHeight,
+                "cropPercentage", cropPercentage,
+                "cropXOffset", cropXOffset,
+                "cropYOffset", cropYOffset,
+
+                "thumbnail", thumbnail,
+                "resizeWidth", resizeWidth,
+                "resizeHeight", resizeHeight,
+                "resizePercentage", resizePercentage,
+                "allowEnlargement", allowEnlargement,
+                "maintainAspectRatio", maintainAspectRatio);
+    }
+
     protected String getImageMagickVersionNumber()
     {
         Pattern verisonNumPattern = Pattern.compile("Version: ImageMagick ((\\d|\\.)+)(-.*){0,1}");

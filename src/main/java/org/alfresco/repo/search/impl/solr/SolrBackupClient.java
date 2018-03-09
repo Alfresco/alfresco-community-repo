@@ -63,7 +63,7 @@ public class SolrBackupClient implements InitializingBean
 
     private SOLRAdminClient solrAdminClient;
     
-    private SolrQueryHTTPClient solrQueryHTTPClient;
+    private SolrQueryClient solrQueryHTTPClient;
     
     
     /**
@@ -94,7 +94,7 @@ public class SolrBackupClient implements InitializingBean
         this.remoteBackupLocation = remoteBackupLocation;
     }
     
-    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
         this.solrQueryHTTPClient = solrQueryHTTPClient;
     }

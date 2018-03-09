@@ -40,8 +40,7 @@ commons-jxpath  http://jakarta.apache.org/commons/
 commons-lang    http://jakarta.apache.org/commons/ 
 commons-lang3   http://jakarta.apache.org/commons/ 
 commons-logging http://jakarta.apache.org/commons/ 
-commons-modeler http://jakarta.apache.org/commons/ 
-commons-net http://jakarta.apache.org/commons/ 
+commons-net http://jakarta.apache.org/commons/
 commons-pool    http://jakarta.apache.org/commons/ 
 commons-validator   http://jakarta.apache.org/commons/ 
 ConcurrentLinkedHashMap     http://code.google.com/p/concurrentlinkedhashmap/

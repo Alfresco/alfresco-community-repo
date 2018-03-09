@@ -64,7 +64,7 @@
             <ref bean="solr6.store.mappings" />
         </property>
         <property name="includeGroupsForRoleAdmin">
-        	<value>${solr.query.includeGroupsForRoleAdmin}</value>
+            <value>${solr.query.includeGroupsForRoleAdmin}</value>
         </property>
         <property name="maximumResultsFromUnlimitedQuery">
             <value>${solr.query.maximumResultsFromUnlimitedQuery}</value>
@@ -190,11 +190,11 @@
     </bean>
     
 
-	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+    <bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>lucene</value>
@@ -206,10 +206,10 @@
     </bean>
     
     <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>solr-alfresco</value>
@@ -222,12 +222,12 @@
    
     <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.solr.SolrXPathQueryLanguage" >
         <property name="solrQueryLanguage" >
-	        <ref bean="search.fts.alfresco.index" />
-	    </property>
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+            <ref bean="search.fts.alfresco.index" />
+        </property>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>xpath</value>
@@ -235,10 +235,10 @@
     </bean>
 
     <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>solr-fts-alfresco</value>
@@ -262,10 +262,10 @@
         </property>
     </bean>
     <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>solr-cmis</value>
@@ -344,14 +344,6 @@
         <property name="queryFetchSize">
             <value>${category.queryFetchSize}</value>
         </property>
-    </bean>
-    
-     <bean
-         id="search.indexRecoveryComponent"
-         class="org.alfresco.repo.search.impl.solr.SolrIndexRecovery" >
-   </bean>
-   
-	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
     </bean>
     
    <bean id="search.statsService" class="org.alfresco.repo.search.impl.solr.SolrStatsService">

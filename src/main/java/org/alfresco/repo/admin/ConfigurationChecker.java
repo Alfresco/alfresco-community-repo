@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ImporterBootstrap;
-import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -52,19 +51,13 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Component to perform a bootstrap check of the alignment of the
- * database, Lucene indexes and content store.
+ * database and content store.
  * <p>
  * The algorithm is:
  * <ul>
- *   <li>Get all stores from the NodeService</li>
- *   <li>Get each root node</li>
- *   <li>Perform a Lucene query for each root node</li>
- *   <li>Query Lucene for a small set of content nodes</li>
- *   <li>Get content readers for each node</li>
+ *   <li>Checks that an absolute path is used</li>
+ *   <li>Ensures that the system descriptor content is available (created at bootstrap)</li>
  * </ul>
- * If any of the steps fail then the bootstrap bean will fail, except if
- * the indexes are marked for full recovery.  In this case, the Lucene
- * checks are not required as the indexes will be due for a rebuild.  
  * 
  * @author Derek Hulley
  */
@@ -74,14 +67,11 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     
     private static final String WARN_RELATIVE_DIR_ROOT = "system.config_check.warn.dir_root";
     private static final String MSG_DIR_ROOT = "system.config_check.msg.dir_root";
-    static final String ERR_MISSING_INDEXES = "system.config_check.err.missing_index";
     private static final String ERR_MISSING_CONTENT = "system.config_check.err.missing_content";
     static final String ERR_FIX_DIR_ROOT = "system.config_check.err.fix_dir_root";
-    static final String MSG_HOWTO_INDEX_RECOVER = "system.config_check.msg.howto_index_recover";
     static final String WARN_STARTING_WITH_ERRORS = "system.config_check.warn.starting_with_errors";
 
     private boolean strict;
-    private RecoveryMode indexRecoveryMode;
     private String dirRoot;
 
     private ImporterBootstrap systemBootstrap;
@@ -90,7 +80,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     private NodeService nodeService;
     private SearchService searchService;
     private ContentService contentService;
-    private IndexConfigurationChecker indexConfigurationChecker;
     
     public ConfigurationChecker()
     {
@@ -100,9 +89,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     public String toString()
     {
         StringBuilder sb = new StringBuilder(50);
-        sb.append("ConfigurationChecker")
-          .append("[indexRecoveryMode=").append(indexRecoveryMode)
-          .append("]");
+        sb.append("ConfigurationChecker");
         return sb.toString();
     }
 
@@ -117,19 +104,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     public void setStrict(boolean strict)
     {
         this.strict = strict;
-    }
-
-    /**
-     * Set the index recovery mode.  If this is
-     * {@link org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode#VALIDATE FULL}
-     * then the index checks are ignored as the indexes will be scheduled for a rebuild
-     * anyway.
-     * 
-     * @see org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode
-     */
-    public void setIndexRecoveryMode(String indexRecoveryMode)
-    {
-        this.indexRecoveryMode = RecoveryMode.valueOf(indexRecoveryMode);
     }
 
     public void setDirRoot(String dirRoot)
@@ -167,11 +141,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         this.contentService = contentService;
     }
     
-    public void setIndexConfigurationChecker(IndexConfigurationChecker indexConfigurationChecker)
-    {
-        this.indexConfigurationChecker = indexConfigurationChecker;
-    }
-
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -213,7 +182,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
         String msgDirRoot = I18NUtil.getMessage(MSG_DIR_ROOT, dirRootFile);
         logger.info(msgDirRoot);
 
-        List<StoreRef> missingIndexStoreRefs = indexConfigurationChecker.checkIndexConfiguration();
         // check for the system version properties content snippet
         boolean versionPropertiesContentAvailable = true;
         NodeRef descriptorNodeRef = getSystemDescriptor();
@@ -232,23 +200,8 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             }
         }
             
-        // check for missing indexes
-        int missingStoreIndexes = missingIndexStoreRefs.size();
-        if (missingStoreIndexes > 0)
-        {
-            String msg = I18NUtil.getMessage(ERR_MISSING_INDEXES, missingStoreIndexes);
-            logger.error(msg);
-            
-            for (StoreRef missingIndexStoreRef : missingIndexStoreRefs)
-            {
-                logger.error("---> "+missingIndexStoreRef);
-            }
-            
-            String msgRecover = I18NUtil.getMessage(MSG_HOWTO_INDEX_RECOVER);
-            logger.info(msgRecover);
-        }
-        // handle either content or indexes missing
-        if (missingStoreIndexes > 0 || !versionPropertiesContentAvailable)
+        // handle content missing
+        if (!versionPropertiesContentAvailable)
         {
             String msg = I18NUtil.getMessage(ERR_FIX_DIR_ROOT, dirRootFile);
             logger.error(msg);
@@ -265,8 +218,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             }
         }
     }
-
-    
     
     /**
      * @return Returns the system descriptor node or null

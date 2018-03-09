@@ -30,16 +30,12 @@ import java.util.Date;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAO;
-import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
@@ -60,6 +56,8 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * Base CMIS test

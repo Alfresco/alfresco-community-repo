@@ -63,7 +63,6 @@ import org.alfresco.repo.domain.permissions.AccessControlListDAO;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.usage.UsageDAO;
-import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -145,8 +144,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     private LocaleDAO localeDAO;
     private UsageDAO usageDAO;
 
-    private NodeIndexer nodeIndexer; 
-    
     private int cachingThreshold = 10;
 
     /**
@@ -307,14 +304,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     /**
-     * @param nodeIndexer used when making changes that affect indexes
-     */
-    public void setNodeIndexer(NodeIndexer nodeIndexer)
-    {
-        this.nodeIndexer = nodeIndexer;
-    }
-
-    /**
      * Set the cache that maintains the Store root node data
      * 
      * @param cache                 the cache
@@ -428,7 +417,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "localeDAO", localeDAO);
         PropertyCheck.mandatory(this, "usageDAO", usageDAO);
-        PropertyCheck.mandatory(this, "nodeIndexer", nodeIndexer);
 
         this.nodePropertyHelper = new NodePropertyHelper(dictionaryService, qnameDAO, localeDAO, contentDataDAO);
         this.parentAssocsCache = new ParentAssocsCache(this.parentAssocsCacheSize, this.parentAssocsCacheLimitFactor);
@@ -3996,11 +3984,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         boolean isStoreRoot = false;
         ParentAssocsInfo parentAssocInfo = new ParentAssocsInfo(isRoot, isStoreRoot, assoc);
         setParentAssocsCached(childNodeId, parentAssocInfo);
-        
-        // Account for index impact; remove the orphan committed to the index
-        nodeIndexer.indexUpdateChildAssociation(
-                new ChildAssociationRef(null, null, null, lostNodeRef),
-                assoc.getRef(qnameDAO));
         
         /*
         // Update ACLs for moved tree - note: actually a NOOP if oldParentAclId is null

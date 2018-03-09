@@ -48,7 +48,6 @@ import org.alfresco.repo.lock.mem.LockableAspectInterceptor;
 import org.alfresco.repo.lock.traitextender.LockServiceExtension;
 import org.alfresco.repo.lock.traitextender.LockServiceTrait;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -76,10 +75,10 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -117,8 +116,6 @@ public class LockServiceImpl implements LockService,
     /** Class policy delegate's */
     private ClassPolicyDelegate<BeforeLock> beforeLock;
 
-    private NodeIndexer nodeIndexer;
-    
     private int ephemeralExpiryThreshold;
 
     private final ExtendedTrait<LockServiceTrait> lockServiceTrait;
@@ -409,8 +406,6 @@ public class LockServiceImpl implements LockService,
                 // it to be reverted to this state on rollback.
                 TransactionalResourceHelper.getMap(KEY_MODIFIED_NODES).put(nodeRef, currentLockInfo);
                 AlfrescoTransactionSupport.bindListener(this);
-                
-                nodeIndexer.indexUpdateNode(nodeRef);
             }
             else
             {
@@ -549,7 +544,6 @@ public class LockServiceImpl implements LockService,
             {
                 // Remove the ephemeral lock.
                 lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
-                nodeIndexer.indexUpdateNode(nodeRef);
             }
             else
             {
@@ -977,11 +971,6 @@ public class LockServiceImpl implements LockService,
     public BehaviourFilter getBehaviourFilter()
     {
         return behaviourFilter;
-    }
-
-    public void setNodeIndexer(NodeIndexer nodeIndexer)
-    {
-        this.nodeIndexer = nodeIndexer;
     }
 
     @Override

@@ -59,11 +59,10 @@ public class LuceneCmisStrictSqlQueryLanguage extends AbstractLuceneQueryLanguag
         this.cmisQueryService = cmisQueryService;
     }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_STRICT);
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(cmisQueryService.query(options));
     }
-
 }

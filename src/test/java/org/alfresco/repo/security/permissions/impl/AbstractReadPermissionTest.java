@@ -32,15 +32,12 @@ import java.util.Random;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.permissions.AccessControlListDAO;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.search.IndexerAndSearcher;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
@@ -69,6 +66,8 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 @Category(LuceneTests.class)
 public class AbstractReadPermissionTest extends TestCase
@@ -109,8 +108,6 @@ public class AbstractReadPermissionTest extends TestCase
     
     protected AclDAO aclDaoComponent;
 
-    protected ADMLuceneIndexer admLuceneIndexer;
-    
     protected RetryingTransactionHelper retryingTransactionHelper;
 
     protected TransactionService transactionService;

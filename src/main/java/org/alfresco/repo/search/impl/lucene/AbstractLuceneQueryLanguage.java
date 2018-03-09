@@ -40,9 +40,6 @@ public abstract class AbstractLuceneQueryLanguage implements LuceneQueryLanguage
     
     private List<IndexerAndSearcher> factories;
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI#setFactories(java.util.List)
-     */
     @Override
     final public void setFactories(List<IndexerAndSearcher> factories)
     {
@@ -56,7 +53,6 @@ public abstract class AbstractLuceneQueryLanguage implements LuceneQueryLanguage
         {
             factory.registerQueryLanguage(this);
         }
-        
     }
 
     public final String getName()
@@ -73,7 +69,4 @@ public abstract class AbstractLuceneQueryLanguage implements LuceneQueryLanguage
     {
         return factories;
     }
-    
-    
-
 }

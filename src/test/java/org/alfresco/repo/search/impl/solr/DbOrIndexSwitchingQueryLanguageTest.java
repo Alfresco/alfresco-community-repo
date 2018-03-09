@@ -27,19 +27,17 @@ package org.alfresco.repo.search.impl.solr;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
@@ -66,7 +64,6 @@ public class DbOrIndexSwitchingQueryLanguageTest
 {
     private DbOrIndexSwitchingQueryLanguage queryLang;
     private SearchParameters searchParameters;
-    private ADMLuceneSearcherImpl admLuceneSearcher;
     private @Mock LuceneQueryLanguageSPI dbQueryLang;
     private @Mock LuceneQueryLanguageSPI indexQueryLang;
     private @Mock SolrJSONResultSet indexResults;
@@ -91,9 +88,9 @@ public class DbOrIndexSwitchingQueryLanguageTest
     @Test
     public void hybridSearch()
     {
-        when(indexQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(null)), eq(admLuceneSearcher))).thenReturn(indexResults);
+        when(indexQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(null)))).thenReturn(indexResults);
         when(indexResults.getLastIndexedTxId()).thenReturn(80L);
-        when(dbQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(80L)), eq(admLuceneSearcher))).thenReturn(dbResults);
+        when(dbQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(80L)))).thenReturn(dbResults);
         when(solrDAO.getNodes(argThat(isNodeParamsFromTxnId(81L)), eq(null))).thenReturn(changedNodes);
         
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
@@ -121,7 +118,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         changedNodes.add(node("Car4")); // Deleted node - not in the DB query results.
         
         // Execute the hybrid query.
-        ResultSet results = queryLang.executeQuery(searchParameters, admLuceneSearcher);
+        ResultSet results = queryLang.executeQuery(searchParameters);
         
         // Check that the results have come back and that the are merged/de-duped.
         assertEquals(5, results.length());
@@ -142,7 +139,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         queryLang.setIndexQueryLanguage(null);
         queryLang.setDbQueryLanguage(null);
         
-        queryLang.executeQuery(searchParameters, admLuceneSearcher);
+        queryLang.executeQuery(searchParameters);
     }
     
     @Test(expected=QueryModelException.class)
@@ -151,7 +148,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
         queryLang.setDbQueryLanguage(null);
         
-        queryLang.executeQuery(searchParameters, admLuceneSearcher);
+        queryLang.executeQuery(searchParameters);
     }
     
     @Test(expected=QueryModelException.class)
@@ -160,7 +157,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
         queryLang.setIndexQueryLanguage(null);
         
-        queryLang.executeQuery(searchParameters, admLuceneSearcher);
+        queryLang.executeQuery(searchParameters);
     }
 
     @Test(expected=DisabledFeatureException.class)
@@ -168,7 +165,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
     {
         queryLang.setHybridEnabled(false);
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
-        queryLang.executeQuery(searchParameters, admLuceneSearcher);
+        queryLang.executeQuery(searchParameters);
     }
 
 

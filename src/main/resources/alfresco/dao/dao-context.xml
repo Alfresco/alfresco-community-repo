@@ -131,7 +131,6 @@
       <property name="contentDataDAO" ref="contentDataDAO"/>
       <property name="localeDAO" ref="localeDAO"/>
       <property name="usageDAO" ref="usageDAO"/>
-      <property name="nodeIndexer" ref="nodeIndexer"/>
       <property name="rootNodesCache" ref="node.rootNodesCache"/>
       <property name="allRootNodesCache" ref="node.allRootNodesCache"/>
       <property name="nodesCache" ref="node.nodesCache"/>

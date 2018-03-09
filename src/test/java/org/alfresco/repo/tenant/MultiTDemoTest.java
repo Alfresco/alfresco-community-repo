@@ -38,18 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
-import org.alfresco.repo.node.index.FullIndexRecoveryComponent;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -97,7 +93,8 @@ import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * @author janv
@@ -132,7 +129,6 @@ public class MultiTDemoTest extends TestCase
     private TransactionService transactionService;
     private FileFolderService fileFolderService;
     private Repository repositoryHelper;
-    private FullIndexRecoveryComponent indexRecoverer;
     
     public static int NUM_TENANTS = 2;
     
@@ -303,54 +299,6 @@ public class MultiTDemoTest extends TestCase
                 }
             }, tenantAdminName, tenantDomain);
         }
-    }
-
-    /**
-     * The test is ignored, see MNT-15976
-     */
-    // note: needs to come before test10CreateCategories & test15COCIandSearch ?
-    public synchronized void ignoreTest00_ALF_17681() throws Exception
-    {
-        // The issue was found on Lucene
-        final String tenantDomain = TEST_RUN+".alf17681";
-        final String query = "PATH:\"/app:company_home/app:dictionary\"";
-        
-        // Create tenant
-        createTenant(tenantDomain);
-        
-        final String tenantAdminName = tenantService.getDomainUser(AuthenticationUtil.getAdminUserName(), tenantDomain);
-        // Search for Data dictionary by tenant admin
-        int count = searchForDataDictionary(tenantAdminName, query);
-        
-        assertEquals("Data dictionary should be found for tenant. ", 1, count);
-        
-        indexRecoverer.setRecoveryMode(FullIndexRecoveryComponent.RecoveryMode.FULL.name());
-        
-        // reindex
-        Thread reindexThread = new Thread()
-        {
-            @Override
-            public void run()
-            {
-                indexRecoverer.reindex();
-            }
-        };
-        
-        reindexThread.start();
-        
-        // must allow the rebuild to complete or the test after this one will fail to validate their indexes 
-        // - as they now will be deleted.
-        reindexThread.join();
-        
-        // wait a bit and then terminate
-        wait(20000);
-        indexRecoverer.setShutdown(true);
-        wait(20000);
-        
-        // Search for Data dictionary by tenant admin
-        int countAfter = searchForDataDictionary(tenantAdminName, query);
-        
-        assertEquals("Data dictionary should be found for tenant after FULL reindex. ", 1, countAfter);
     }
     
     /*

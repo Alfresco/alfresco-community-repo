@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.search.SearchParameters;
  * Support for sql-cmis-strict in the search service
  * 
  * @author andyh
- * 
  */
 public class LuceneOpenCMISAlfrescoSqlQueryLanguage extends AbstractLuceneQueryLanguage
 {
@@ -59,7 +58,7 @@ public class LuceneOpenCMISAlfrescoSqlQueryLanguage extends AbstractLuceneQueryL
         this.cmisQueryService = cmisQueryService;
     }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);

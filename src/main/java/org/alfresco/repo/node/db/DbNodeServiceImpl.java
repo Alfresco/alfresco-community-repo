@@ -53,7 +53,6 @@ import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.db.NodeHierarchyWalker.VisitedNode;
 import org.alfresco.repo.node.db.traitextender.NodeServiceExtension;
 import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
-import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -119,7 +118,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     private NodeDAO nodeDAO;
     private PermissionService permissionService;
     private StoreArchiveMap storeArchiveMap;
-    private NodeIndexer nodeIndexer;
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
     private final ExtendedTrait<NodeServiceTrait> nodeServiceTrait;
@@ -148,15 +146,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     public void setStoreArchiveMap(StoreArchiveMap storeArchiveMap)
     {
         this.storeArchiveMap = storeArchiveMap;
-    }
-
-    /**
-     * @param nodeIndexer       the indexer that will be notified of node additions,
-     *                          modifications and deletions
-     */
-    public void setNodeIndexer(NodeIndexer nodeIndexer)
-    {
-        this.nodeIndexer = nodeIndexer;
     }
 
     /**
@@ -270,10 +259,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // invoke policies
         invokeOnCreateStore(rootNodeRef);
         
-        // Index
-        ChildAssociationRef assocRef = new ChildAssociationRef(null, null, null, rootNodeRef);
-        nodeIndexer.indexCreateNode(assocRef);
-        
         // Done
         return storeRef;
     }
@@ -284,8 +269,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
     public void deleteStore(StoreRef storeRef) throws InvalidStoreRefException
     {
-        // Delete the index
-        nodeIndexer.indexDeleteStore(storeRef);
         // Cannot delete the root node but we can delete, without archive, all immediate children
         NodeRef rootNodeRef = nodeDAO.getRootNode(storeRef).getSecond();
         List<ChildAssociationRef> childAssocRefs = getChildAssocs(rootNodeRef);
@@ -443,9 +426,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 childAssocRef.getChildRef(),
                 propertiesBefore,
                 propertiesAfter);
-        
-        // Index
-        nodeIndexer.indexCreateNode(childAssocRef);
         
         // Ensure that the parent node has the required aspects
         addAspectsAndPropertiesAssoc(parentNodePair, assocTypeQName, null, null, null, null, false);
@@ -783,9 +763,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // Invoke policies
             invokeOnUpdateNode(nodeRef);
             invokeOnSetType(nodeRef, oldType, typeQName);
-            
-            // Index
-            nodeIndexer.indexUpdateNode(nodeRef);
         }
     }
     
@@ -839,8 +816,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {                                
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
-            // Index
-            nodeIndexer.indexUpdateNode(nodeRef);
         }
     }
 
@@ -1025,9 +1000,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             invokeOnRemoveAspect(nodeRef, aspectTypeQName);
         }
-
-        // Index
-        nodeIndexer.indexUpdateNode(nodeRef);
     }
 
     /**
@@ -1285,7 +1257,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
                 nodeDAO.deleteChildAssoc(secondaryChildAssocPair.getFirst());
                 invokeOnDeleteChildAssociation(secondaryChildAssocPair.getSecond());
-                nodeIndexer.indexDeleteChildAssociation(secondaryChildAssocPair.getSecond());
             }
             // Secondary parent associations
             for (Pair<Long, ChildAssociationRef> secondaryParentAssocPair : nodeToDelete.secondaryParentAssocs)
@@ -1296,7 +1267,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
                 nodeDAO.deleteChildAssoc(secondaryParentAssocPair.getFirst());
                 invokeOnDeleteChildAssociation(secondaryParentAssocPair.getSecond());
-                nodeIndexer.indexDeleteChildAssociation(secondaryParentAssocPair.getSecond());
             }
             QName childNodeTypeQName = nodeDAO.getNodeType(nodeToDelete.id);
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
@@ -1306,7 +1276,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);
-            nodeIndexer.indexDeleteNode(nodeToDelete.primaryParentAssocPair.getSecond());
         }
         
         // Clear out the list of nodes pending delete
@@ -1370,12 +1339,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         for (Pair<Long, NodeRef> parentNodePair : parentNodePairs)
         {
             addAspectsAndPropertiesAssoc(parentNodePair, assocTypeQName, null, null, null, null, false);
-        }
-
-        // Index
-        for (ChildAssociationRef childAssocRef : childAssociationRefs)
-        {
-            nodeIndexer.indexCreateChildAssociation(childAssocRef);
         }
 
         return childAssociationRefs;
@@ -1453,9 +1416,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             invokeBeforeDeleteChildAssociation(assocRef);
             nodeDAO.deleteChildAssoc(assocId);
             invokeOnDeleteChildAssociation(assocRef);
-
-            // Index
-            nodeIndexer.indexDeleteChildAssociation(assocRef);
         }
 
         // Done
@@ -1495,8 +1455,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             invokeBeforeDeleteChildAssociation(childAssocRef);
             nodeDAO.deleteChildAssoc(assocId);
             invokeOnDeleteChildAssociation(childAssocRef);
-            // Index
-            nodeIndexer.indexDeleteChildAssociation(childAssocRef);
             // Done
             return true;
         }
@@ -1533,8 +1491,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         invokeBeforeDeleteChildAssociation(childAssocRef);
         nodeDAO.deleteChildAssoc(assocId);
         invokeOnDeleteChildAssociation(childAssocRef);
-        // Index
-        nodeIndexer.indexDeleteChildAssociation(childAssocRef);
         // Done
         return true;
     }
@@ -1673,8 +1629,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             // Invoke policy behaviour
             invokeOnUpdateNode(nodeRef);
-            // Index
-            nodeIndexer.indexUpdateNode(nodeRef);
         }
     }
     
@@ -1707,8 +1661,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
-            // Index
-            nodeIndexer.indexUpdateNode(nodeRef);
         }
     }
     
@@ -1730,8 +1682,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
-            // Index
-            nodeIndexer.indexUpdateNode(nodeRef);
         }
     }
     
@@ -1763,9 +1713,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(nodePair);
         invokeOnUpdateNode(nodeRef);
         invokeOnUpdateProperties(nodeRef, propertiesBefore, propertiesAfter);
-        
-        // Index
-        nodeIndexer.indexUpdateNode(nodeRef);
     }
 
     public Collection<NodeRef> getParents(NodeRef nodeRef) throws InvalidNodeRefException
@@ -2633,7 +2580,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             
             // Invoke behaviours
-            nodeIndexer.indexCreateNode(archivePrimaryParentAssocRef);
             invokeOnCreateNode(archivePrimaryParentAssocRef);
 
             firstNode = false;
@@ -2826,10 +2772,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             movedNodePairs.put(nodeToMoveRef, moveNodeResult.getSecond());
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
             
-            // Index
-            nodeIndexer.indexDeleteNode(oldParentAssocRef);
-            nodeIndexer.indexCreateNode(newParentAssocRef);
-
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
@@ -2873,10 +2815,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 movedNodePairs.put(oldChildNodeRef, moveNodeResult.getSecond());
                 ChildAssociationRef newChildAssoc = newParentAssocPair.getSecond();
                 
-                // Index
-                nodeIndexer.indexDeleteNode(oldChildAssoc);
-                nodeIndexer.indexCreateNode(newChildAssoc);
-
                 // Propagate timestamps
                 propagateTimeStamps(newChildAssoc);
 
@@ -2914,9 +2852,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     assocQName);
             Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
-
-            // The node is in the same store and is just having its child association modified
-            nodeIndexer.indexUpdateChildAssociation(oldParentAssocRef, newParentAssocRef);
 
             // Propagate timestamps (watch out for moves within the same folder)
             if (!oldParentAssocRef.getParentRef().equals(newParentAssocRef.getParentRef()))
@@ -3274,8 +3209,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     {
                         // Invoke policy behaviour
                         invokeOnUpdateNode(parentNodeRef);
-                        // Index
-                        nodeIndexer.indexUpdateNode(parentNodeRef);
                     }
 
                     return null;

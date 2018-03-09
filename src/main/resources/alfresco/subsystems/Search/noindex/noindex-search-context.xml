@@ -100,19 +100,11 @@
         </property>
     </bean>
     
-    <bean
-         id="search.indexRecoveryComponent"
-         class="org.alfresco.repo.search.impl.noindex.NoIndexIndexRecovery" >
-    </bean>
-   
-	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
-    </bean>
-    
     <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.solr.NoIndexQueryLanguage" >
         <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>solr-fts-alfresco</value>
@@ -120,10 +112,10 @@
     </bean>
     
     <bean id="search.cmis.alfresco.index" class="org.alfresco.repo.search.impl.solr.NoIndexQueryLanguage"  >
-	    <property name="factories">
-			<list>
-			    <ref bean="search.indexerAndSearcherFactory" />
-			</list>
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
         </property>
         <property name="name">
             <value>solr-cmis</value>

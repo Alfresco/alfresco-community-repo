@@ -452,7 +452,6 @@
         <property name="authenticationService" ref="authenticationService" />
         <property name="searchService" ref="admSearchService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
-        <property name="nodeIndexer" ref="nodeIndexer"/>
         <property name="ephemeralExpiryThreshold" value="${alfresco.ephemeralLock.expiryThresh}"/>
     </bean>
 
@@ -1264,53 +1263,6 @@
       </property>
    </bean>
 
-    <bean id="indexRecoveryComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.indexRecoveryComponent</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.node.index.IndexRecovery</value>
-         </list>
-      </property>
-   </bean>
-
-   <!-- only required for lucene index test support -->
-
-   <bean id="LuceneFullTextSearchIndexer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.luceneFullTextSearchIndexer</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer</value>
-         </list>
-      </property>
-   </bean>
-
-
-   <bean id="ftsIndexerTrigger" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.ftsIndexerTrigger</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.util.TriggerBeanSPI</value>
-            <value>org.springframework.beans.factory.InitializingBean</value>
-            <value>org.springframework.beans.factory.DisposableBean</value>
-         </list>
-      </property>
-   </bean>
-
    <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1321,20 +1273,6 @@
       <property name="interfaces">
          <list>
             <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
-         </list>
-      </property>
-   </bean>
-
-    <bean id="indexConfigurationChecker" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.indexConfigurationChecker</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.admin.IndexConfigurationChecker</value>
          </list>
       </property>
    </bean>

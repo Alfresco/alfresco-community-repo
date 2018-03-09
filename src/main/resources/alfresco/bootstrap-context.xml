@@ -103,13 +103,6 @@
        <property name="keyStoreChecker" ref="keyStoreChecker"/>
     </bean>
 
-    <!-- node indexing for ADM -->
-    <bean id="nodeIndexer" class="org.alfresco.repo.node.index.NodeIndexer">
-        <property name="disabled">
-            <value>${index.tracking.disableInTransactionIndexing}</value>
-        </property>
-    </bean>
-
     <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
         <property name="enabled" value="${encryption.bootstrap.reencrypt}"/>
         <property name="reEncryptor" ref="reEncryptor"/>
@@ -328,9 +321,6 @@
        <property name="dirRoot">
            <value>${dir.root}</value>
        </property>
-       <property name="indexRecoveryMode">
-           <value>${index.recovery.mode}</value>
-       </property>
        <!-- helper beans -->
        <property name="transactionService">
            <ref bean="transactionService"/>
@@ -350,9 +340,6 @@
        <property name="contentService">
            <ref bean="contentService"/>
        </property>
-       <property name="indexConfigurationChecker">
-           <ref bean="indexConfigurationChecker"/>
-        </property>
     </bean>
 
 

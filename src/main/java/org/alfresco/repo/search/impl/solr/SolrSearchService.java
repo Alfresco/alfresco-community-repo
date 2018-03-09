@@ -39,7 +39,6 @@ import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.search.impl.lucene.QueryParameterisationException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -352,7 +351,7 @@ public class SolrSearchService implements SearchService
         LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
         if (language != null)
         {
-            return language.executeQuery(searchParameters, null);
+            return language.executeQuery(searchParameters);
         }
         else
         {
@@ -360,12 +359,6 @@ public class SolrSearchService implements SearchService
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef,
-     * java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[],
-     * org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
-     */
     @Override
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
@@ -373,12 +366,6 @@ public class SolrSearchService implements SearchService
         return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef,
-     * java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[],
-     * org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)
-     */
     @Override
     public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
@@ -388,12 +375,6 @@ public class SolrSearchService implements SearchService
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef,
-     * java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[],
-     * org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
-     */
     @Override
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
@@ -402,39 +383,20 @@ public class SolrSearchService implements SearchService
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef,
-     * java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[],
-     * org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)
-     */
     @Override
     public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
             boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
     {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
         return nodeSearcher.selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
-
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#contains(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.namespace.QName, java.lang.String)
-     */
     @Override
     public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern) throws InvalidNodeRefException
     {
         return contains(nodeRef, propertyQName, googleLikePattern, SearchParameters.Operator.OR);
-
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#contains(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.namespace.QName, java.lang.String,
-     * org.alfresco.service.cmr.search.SearchParameters.Operator)
-     */
     @Override
     public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, Operator defaultOperator) throws InvalidNodeRefException
     {
@@ -478,11 +440,6 @@ public class SolrSearchService implements SearchService
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#like(org.alfresco.service.cmr.repository.NodeRef,
-     * org.alfresco.service.namespace.QName, java.lang.String, boolean)
-     */
     @Override
     public boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS) throws InvalidNodeRefException
     {
@@ -545,5 +502,4 @@ public class SolrSearchService implements SearchService
             }
         }
     }
-
 }

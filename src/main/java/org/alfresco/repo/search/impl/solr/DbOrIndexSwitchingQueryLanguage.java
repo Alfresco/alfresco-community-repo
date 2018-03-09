@@ -33,7 +33,6 @@ import java.util.regex.Matcher;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.solr.SOLRDAO;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -78,8 +77,6 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.dbQueryLanguage = dbQueryLanguage;
     }
 
-
-
     /**
      * @param indexQueryLanguage the indexQueryLanguage to set
      */
@@ -88,8 +85,6 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.indexQueryLanguage = indexQueryLanguage;
     }
 
-
-
     /**
      * @param queryConsistency the queryConsistency to set
      */
@@ -97,8 +92,6 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     {
         this.queryConsistency = queryConsistency;
     }
-
-
 
     /**
      * @param nodeService the nodeService to set
@@ -118,7 +111,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.hybridEnabled = hybridEnabled;
     }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
+    public ResultSet executeQuery(SearchParameters searchParameters)
     {
         QueryConsistency consistency = searchParameters.getQueryConsistency();
         if(consistency == QueryConsistency.DEFAULT)
@@ -137,7 +130,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 }
                 StopWatch stopWatch = new StopWatch("index only");
                 stopWatch.start();
-                ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                ResultSet results = indexQueryLanguage.executeQuery(searchParameters);
                 stopWatch.stop();
                 if (logger.isDebugEnabled())
                 {
@@ -159,7 +152,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 }
                 StopWatch stopWatch = new StopWatch("database only");
                 stopWatch.start();
-                ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters), admLuceneSearcher);
+                ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters));
                 stopWatch.stop();
                 if (logger.isDebugEnabled())
                 {
@@ -177,7 +170,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             {
                 throw new DisabledFeatureException("Hybrid query is disabled.");
             }
-            return executeHybridQuery(searchParameters, admLuceneSearcher);
+            return executeHybridQuery(searchParameters);
         case DEFAULT:
         case TRANSACTIONAL_IF_POSSIBLE:
         default:
@@ -192,7 +185,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         logger.debug("Trying db query for "+dbQueryLanguage.getName()+" for "+searchParameters);
                     }
                     stopWatch.start();
-                    ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters), admLuceneSearcher);
+                    ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters));
                     stopWatch.stop();
                     if (logger.isDebugEnabled())
                     {
@@ -221,7 +214,8 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         }
                         stopWatch.start();
 
-                        ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                        ResultSet results = indexQueryLanguage.executeQuery(searchParameters);
+                        
                         stopWatch.stop();
                         if (logger.isDebugEnabled())
                         {
@@ -241,7 +235,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         logger.debug("(No DB QL) Using SOLR query: "+"dbQueryLanguage==null"+" for "+searchParameters);
                     }
                     stopWatch.start();
-                    ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    ResultSet results = indexQueryLanguage.executeQuery(searchParameters);
                     stopWatch.stop();
                     if (logger.isDebugEnabled())
                     {
@@ -285,8 +279,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         }
     }
 
-    private ResultSet executeHybridQuery(SearchParameters searchParameters,
-                                         ADMLuceneSearcherImpl admLuceneSearcher)
+    private ResultSet executeHybridQuery(SearchParameters searchParameters)
     {        
         if (indexQueryLanguage == null || dbQueryLanguage == null)
         {
@@ -300,7 +293,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             logger.debug("Hybrid search, using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
         }
         stopWatch.start("index query");
-        ResultSet indexResults = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        ResultSet indexResults = indexQueryLanguage.executeQuery(searchParameters);
         stopWatch.stop();
         if (logger.isDebugEnabled())
         {
@@ -326,7 +319,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             logger.debug("Hybrid search, using DB query: "+dbQueryLanguage.getName()+" for "+searchParameters);
         }
         stopWatch.start("database query");
-        ResultSet dbResults = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+        ResultSet dbResults = dbQueryLanguage.executeQuery(searchParameters);
         stopWatch.stop();
         if (logger.isDebugEnabled())
         {

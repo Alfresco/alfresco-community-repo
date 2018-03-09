@@ -69,7 +69,6 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.node.db.NodeHierarchyWalker;
 import org.alfresco.repo.node.db.NodeHierarchyWalker.VisitedNode;
-import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Policy;
@@ -133,7 +132,6 @@ public class NodeServiceTest
     
     private static ServiceRegistry serviceRegistry;
     private static NodeService nodeService;
-    private static NodeIndexer nodeIndexer;
     private static NodeDAO nodeDAO;
     private static TransactionService txnService;
     private static PolicyComponent policyComponent;
@@ -154,7 +152,6 @@ public class NodeServiceTest
 
         serviceRegistry = (ServiceRegistry) APP_CONTEXT_INIT.getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
-        nodeIndexer = (NodeIndexer) APP_CONTEXT_INIT.getApplicationContext().getBean("nodeIndexer");
         nodeDAO = (NodeDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("nodeDAO");
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent");
@@ -1436,36 +1433,27 @@ public class NodeServiceTest
         }
 
         // forcefully delete the root, a random connecting one, and a random leaf
-        // We'll need to disable indexing to do this or the transaction will be thrown out
-        nodeIndexer.setDisabled(true);
-        try
+        txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            @Override
+            public Void execute() throws Throwable
             {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    Long nodeId = (Long) nodeService.getProperty(nodeRefs[0], ContentModel.PROP_NODE_DBID);
-                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
-                    nodeDAO.removeNodeAspects(nodeId);
-                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
-                    nodeId = (Long) nodeService.getProperty(nodeRefs[2], ContentModel.PROP_NODE_DBID);
-                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
-                    nodeDAO.removeNodeAspects(nodeId);
-                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
-                    nodeId = (Long) nodeService.getProperty(childNodeRefs.get(childNodeRefs.size() - 1),
-                            ContentModel.PROP_NODE_DBID);
-                    nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
-                    nodeDAO.removeNodeAspects(nodeId);
-                    nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
-                    return null;
-                }
-            });
-        }
-        finally
-        {
-            nodeIndexer.setDisabled(false);
-        }
+                Long nodeId = (Long) nodeService.getProperty(nodeRefs[0], ContentModel.PROP_NODE_DBID);
+                nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                nodeDAO.removeNodeAspects(nodeId);
+                nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                nodeId = (Long) nodeService.getProperty(nodeRefs[2], ContentModel.PROP_NODE_DBID);
+                nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                nodeDAO.removeNodeAspects(nodeId);
+                nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                nodeId = (Long) nodeService.getProperty(childNodeRefs.get(childNodeRefs.size() - 1),
+                        ContentModel.PROP_NODE_DBID);
+                nodeDAO.updateNode(nodeId, ContentModel.TYPE_DELETED, null);
+                nodeDAO.removeNodeAspects(nodeId);
+                nodeDAO.removeNodeProperties(nodeId, nodeDAO.getNodeProperties(nodeId).keySet());
+                return null;
+            }
+        });
 
         // Now need to identify the problem nodes
         final List<Long> childNodeIds = getChildNodesWithDeletedParentNode(params, nodesWithDeletedParents.size());
@@ -1607,25 +1595,16 @@ public class NodeServiceTest
             
             // forcefully remove the primary parent assoc
             final Long childNodeId = (Long)nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
-            // We'll need to disable indexing to do this or the transaction will be thrown out
-            nodeIndexer.setDisabled(true);
-            try
+            txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
             {
-                txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                @Override
+                public Void execute() throws Throwable
                 {
-                    @Override
-                    public Void execute() throws Throwable
-                    {
-                        Pair<Long, ChildAssociationRef> assocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
-                        nodeDAO.deleteChildAssoc(assocPair.getFirst());
-                        return null;
-                    }
-                });
-            }
-            finally
-            {
-                nodeIndexer.setDisabled(false);
-            }
+                    Pair<Long, ChildAssociationRef> assocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
+                    nodeDAO.deleteChildAssoc(assocPair.getFirst());
+                    return null;
+                }
+            });
         }
         
         // Now need to identify the problem nodes

@@ -53,6 +53,7 @@ import org.alfresco.rest.api.model.SiteMembershipRejection;
 import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -62,6 +63,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
+import org.alfresco.service.cmr.invitation.InvitationExceptionForbidden;
 import org.alfresco.service.cmr.invitation.InvitationExceptionNotFound;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
 import org.alfresco.service.cmr.invitation.InvitationService;
@@ -586,7 +588,14 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
             throw new RelationshipResourceNotFoundException(siteId, inviteeId);
         }
 
-        invitationService.approve(invitation.getInviteId(), "");
+        try
+        {
+            invitationService.approve(invitation.getInviteId(), "");
+        }
+        catch (InvitationExceptionForbidden ex)
+        {
+            throw new PermissionDeniedException();
+        }
 
         if (siteMembershipApproval != null && !(siteMembershipApproval.getRole() == null || siteMembershipApproval.getRole().isEmpty()))
         {
@@ -646,7 +655,14 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
             reason = siteMembershipRejection.getComment();
         }
 
-        invitationService.reject(invitation.getInviteId(), reason);
+        try
+        {
+            invitationService.reject(invitation.getInviteId(), reason);
+        }
+        catch (InvitationExceptionForbidden ex)
+        {
+            throw new PermissionDeniedException();
+        }
     }
 
     /**

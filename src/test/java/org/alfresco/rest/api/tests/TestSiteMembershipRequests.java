@@ -1707,13 +1707,46 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
             // Site private so not found error.
             approve(tempSite.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
         }
-		
-		// User tries to approve his own request.
+
+		// User tries to approve another user request without having permissions.
 		{
-			publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+			publicApiClient.setRequestContext(new RequestContext(networkId, person2.getId()));
 
 			approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
 		}
+
+        // User from same site tries to approve another user request without having
+        // permissions.
+        {
+            TestPerson person3 = network1.createUser();
+
+            // Create site membership request
+            publicApiClient.setRequestContext(new RequestContext("-default-", person3.getId()));
+            ret = createSiteMembershipRequest(site.getSiteId(), person3.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            approve(site.getSiteId(), person3.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_OK, null);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, person3.getId()));
+
+            MemberOfSite memberOfSite = publicApiClient.sites().getPersonSite(person3.getId(), site.getSiteId());
+            assertNotNull(memberOfSite);
+            assertEquals(SiteRole.SiteConsumer, memberOfSite.getRole());
+
+            approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
+        }
+
+        // User tries to approve his own request.
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
+
+            approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_FORBIDDEN, null);
+
+            // null body (see REPO-3344 for details)
+            approve(site.getSiteId(), person1.getId(), null, HttpServletResponse.SC_FORBIDDEN, null);
+        }
 
         // Valid request.
         {
@@ -1730,7 +1763,7 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
 
         // Approve again.
 		approve(site.getSiteId(), person1.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_NOT_FOUND, null);
-        
+
 		{
 			TestSite tempSite = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>() {
 				@Override
@@ -1835,8 +1868,41 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(networkId, person1.getId()));
 
-			reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+			reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_FORBIDDEN, null);
+
+			// null body (see REPO-3344 for details)
+			reject(site.getSiteId(), person1.getId(), null, HttpServletResponse.SC_FORBIDDEN, null);
 		}
+
+        // User tries to reject another user request without having permissions.
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkId, person2.getId()));
+
+            reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+        }
+
+        // User from same site tries to reject another user request without having
+        // permissions.
+        {
+            TestPerson person3 = network1.createUser();
+
+            // Create site membership request
+            publicApiClient.setRequestContext(new RequestContext("-default-", person3.getId()));
+            ret = createSiteMembershipRequest(site.getSiteId(), person3.getId());
+            assertNotNull(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, siteManager.getId()));
+
+            approve(site.getSiteId(), person3.getId(), new SiteMembershipApproval(), HttpServletResponse.SC_OK, null);
+
+            publicApiClient.setRequestContext(new RequestContext(networkId, person3.getId()));
+
+            MemberOfSite memberOfSite = publicApiClient.sites().getPersonSite(person3.getId(), site.getSiteId());
+            assertNotNull(memberOfSite);
+            assertEquals(SiteRole.SiteConsumer, memberOfSite.getRole());
+
+            reject(site.getSiteId(), person1.getId(), new SiteMembershipRejection(), HttpServletResponse.SC_NOT_FOUND, null);
+        }
 
         // Valid request.
         {
@@ -1879,7 +1945,7 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
     {
         String scope = "public";
         String url = getMembershipRequestApprovalUrl(siteId, inviteeId);
-        String body = RestApiUtil.toJsonAsString(siteMembershipApproval);
+        String body = siteMembershipApproval != null ? RestApiUtil.toJsonAsString(siteMembershipApproval) : null;
 
         HttpResponse response = publicApiClient.post(scope, url, null, null, null, body);
         checkStatus(expectedStatus, response.getStatusCode());
@@ -1889,7 +1955,7 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
     {
         String scope = "public";
         String url = getMembershipRequestRejectionUrl(siteId, inviteeId);
-        String body = RestApiUtil.toJsonAsString(siteMembershipRejection);
+        String body = siteMembershipRejection != null ? RestApiUtil.toJsonAsString(siteMembershipRejection) : null;
 
         HttpResponse response = publicApiClient.post(scope, url, null, null, null, body);
         checkStatus(expectedStatus, response.getStatusCode());

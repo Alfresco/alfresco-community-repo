@@ -32,6 +32,8 @@ import org.alfresco.rest.api.model.SiteMembershipApproval;
 import org.alfresco.rest.api.model.SiteMembershipRejection;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
@@ -56,6 +58,7 @@ public class SiteMembershipRequestsRelation implements InitializingBean
     }
 
     @Operation("approve")
+    @WebApiParam(name = "siteMembershipApproval", title = "Site membership approval", description = "Site membership approval", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Approve a site membership request.", description = "Approve a site membership request.", successStatus = HttpServletResponse.SC_OK)
     public void approve(String siteId, String invitationId, SiteMembershipApproval siteMembershipApproval, Parameters parameters, WithResponse withResponse)
     {
@@ -63,6 +66,7 @@ public class SiteMembershipRequestsRelation implements InitializingBean
     }
 
     @Operation("reject")
+    @WebApiParam(name = "siteMembershipRejection", title = "Site membership rejection", description = "Site membership rejection", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Reject a site membership request.", description = "Reject a site membership request.", successStatus = HttpServletResponse.SC_OK)
     public void reject(String siteId, String invitationId, SiteMembershipRejection siteMembershipRejection, Parameters parameters, WithResponse withResponse)
     {

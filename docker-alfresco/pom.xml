@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>content-services-community-full-docker-alfresco</artifactId>
+    <name>ACS Community full Docker image builder for Alfresco</name>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>full-community-packaging</artifactId>
+        <version>6.0.4-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-share-services</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>amp</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.aos-module</groupId>
+            <artifactId>alfresco-aos-module</artifactId>
+            <version>${alfresco.aos-module.version}</version>
+            <type>amp</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.aos-module</groupId>
+            <artifactId>alfresco-vti-bin</artifactId>
+            <version>${alfresco.aos-module.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.integrations</groupId>
+            <artifactId>alfresco-googledocs-repo</artifactId>
+            <version>${alfresco.googledocs.version}</version>
+            <type>amp</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-share-services</artifactId>
+                                    <version>${alfresco.share.version}</version>
+                                    <type>amp</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/amps</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.aos-module</groupId>
+                                    <artifactId>alfresco-aos-module</artifactId>
+                                    <version>${alfresco.aos-module.version}</version>
+                                    <type>amp</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/amps</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.integrations</groupId>
+                                    <artifactId>alfresco-googledocs-repo</artifactId>
+                                    <version>${alfresco.googledocs.version}</version>
+                                    <type>amp</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/amps</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>

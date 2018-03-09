@@ -89,8 +89,7 @@ public class ConfigurationChecker extends AbstractLifecycleBean
     public String toString()
     {
         StringBuilder sb = new StringBuilder(50);
-        sb.append("ConfigurationChecker")
-          .append("]");
+        sb.append("ConfigurationChecker");
         return sb.toString();
     }
 

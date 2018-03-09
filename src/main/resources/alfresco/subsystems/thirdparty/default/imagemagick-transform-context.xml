@@ -6,6 +6,16 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService" />
       </property>
+      <property name="remoteTransformerClient">
+         <bean class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+            <constructor-arg>
+               <value>ImageMagick</value>
+            </constructor-arg>
+            <constructor-arg>
+               <value>${img.url}</value>
+            </constructor-arg>
+         </bean>
+      </property>
       <property name="executer">
          <bean name="transformer.ImageMagick.Command" class="org.alfresco.util.exec.RuntimeExec">
             <property name="commandsAndArguments">

@@ -69,6 +69,8 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     protected TransformerDebug transformerDebug;
     private static final int JODCONVERTER_TRANSFORMATION_ERROR_CODE = 3088;
 
+    private RemoteTransformerClient remoteTransformerClient;
+
     /**
      * Set a non-default location from which to load the document format mappings.
      * 
@@ -96,6 +98,21 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
+    }
+
+    /**
+     * Sets the optional remote transformer client which will be used in preference to a local command if available.
+     *
+     * @param remoteTransformerClient may be null;
+     */
+    public void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient)
+    {
+        this.remoteTransformerClient = remoteTransformerClient;
+    }
+
+    private boolean remoteTransformerClientConfigured()
+    {
+        return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -332,14 +349,6 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
                     "   writer: " + writer);
         }
 
-        // create temporary files to convert from and to
-        File tempFromFile = TempFileProvider.createTempFile(
-                getTempFilePrefix()+"-source-",
-                "." + sourceExtension);
-        File tempToFile = TempFileProvider.createTempFile(
-                getTempFilePrefix()+"-target-",
-                "." + targetExtension);
-        
         // There is a bug (reported in ALF-219) whereby JooConverter (the Alfresco Community Edition's 3rd party
         // OpenOffice connector library) struggles to handle zero-size files being transformed to pdf.
         // For zero-length .html files, it throws NullPointerExceptions.
@@ -351,67 +360,89 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         final long documentSize = reader.getSize();
         if (documentSize == 0L || temporaryMsFile(options))
         {
+            File tempToFile = TempFileProvider.createTempFile(
+                    getTempFilePrefix()+"-target-",
+                    "." + targetExtension);
             produceEmptyPdfFile(tempToFile);
+            writer.putContent(tempToFile);
         }
         else
         {
-            // download the content from the source reader
-            saveContentInFile(sourceMimetype, reader, tempFromFile);
-            
-            // We have some content, so we'll use OpenOffice to render the pdf document.
-            // Currently, OpenOffice does a better job of rendering documents into PDF and so
-            // it is preferred over PDFBox.
-            try
+            if (remoteTransformerClientConfigured())
             {
-                convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
+                transformRemote(reader, writer, options, sourceMimetype, sourceExtension, targetExtension);
             }
-            catch (OfficeException e)
+            else
             {
-                throw new ContentIOException("OpenOffice server conversion failed: \n" +
-                        "   reader: " + reader + "\n" +
-                        "   writer: " + writer + "\n" +
-                        "   from file: " + tempFromFile + "\n" +
-                        "   to file: " + tempToFile,
-                        e);
-            }
-            catch (Throwable throwable)
-            {
-                // Because of the known bug with empty Spreadsheets in JodConverter try to catch exception and produce empty pdf file
-                if (throwable.getCause() instanceof ErrorCodeIOException &&
-                        ((ErrorCodeIOException) throwable.getCause()).ErrCode == JODCONVERTER_TRANSFORMATION_ERROR_CODE)
-                {
-                    getLogger().warn("Transformation failed: \n" +
-                                             "from file: " + tempFromFile + "\n" +
-                                             "to file: " + tempToFile +
-                                             "Source file " + tempFromFile + " has no content");
-                    produceEmptyPdfFile(tempToFile);
-                }
-				else
-				{
-                    throw throwable;
-				}
+                transformLocal(reader, writer, options, sourceMimetype,
+                        sourceExtension, targetExtension, sourceFormat, targetFormat);
             }
         }
-
-        if (getLogger().isDebugEnabled())
-        {
-                StringBuilder msg = new StringBuilder();
-                msg.append("transforming ")
-                    .append(tempFromFile.getName())
-                    .append(" to ")
-                    .append(tempToFile.getName());
-                getLogger().debug(msg.toString());
-        }
-        
-        // upload the temp output to the writer given us
-        writer.putContent(tempToFile);
 
         if (getLogger().isDebugEnabled())
         {
             getLogger().debug("transformation successful");
         }
     }
-    
+
+    protected void transformLocal(ContentReader reader, ContentWriter writer, TransformationOptions options,
+                                  String sourceMimetype, String sourceExtension, String targetExtension,
+                                  DocumentFormat sourceFormat, DocumentFormat targetFormat)
+    {
+        // create temporary files to convert from and to
+        File tempFromFile = TempFileProvider.createTempFile(
+                getTempFilePrefix()+"-source-",
+                "." + sourceExtension);
+        File tempToFile = TempFileProvider.createTempFile(
+                getTempFilePrefix()+"-target-",
+                "." + targetExtension);
+
+        // download the content from the source reader
+        saveContentInFile(sourceMimetype, reader, tempFromFile);
+
+        try
+        {
+            convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
+            writer.putContent(tempToFile);
+        }
+        catch (OfficeException e)
+        {
+            throw new ContentIOException("OpenOffice server conversion failed: \n" +
+                    "   reader: " + reader + "\n" +
+                    "   writer: " + writer + "\n" +
+                    "   from file: " + tempFromFile + "\n" +
+                    "   to file: " + tempToFile,
+                    e);
+        }
+        catch (Throwable throwable)
+        {
+            // Because of the known bug with empty Spreadsheets in JodConverter try to catch exception and produce empty pdf file
+            if (throwable.getCause() instanceof ErrorCodeIOException &&
+                    ((ErrorCodeIOException) throwable.getCause()).ErrCode == JODCONVERTER_TRANSFORMATION_ERROR_CODE)
+            {
+                getLogger().warn("Transformation failed: \n" +
+                        "from file: " + tempFromFile + "\n" +
+                        "to file: " + tempToFile +
+                        "Source file " + tempFromFile + " has no content");
+                produceEmptyPdfFile(tempToFile);
+            }
+            else
+            {
+                throw throwable;
+            }
+        }
+    }
+
+    protected void transformRemote(ContentReader reader, ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype,
+                                   String sourceExtension, String targetExtension) throws IllegalAccessException
+    {
+        long timeoutMs = options.getTimeoutMs();
+        Log logger = getLogger();
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger);
+    }
+
     private boolean temporaryMsFile(TransformationOptions options)
     {
         String fileName = transformerDebug == null ? null : transformerDebug.getFileName(options, true, -1);

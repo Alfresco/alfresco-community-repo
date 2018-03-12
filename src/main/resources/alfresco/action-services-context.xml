@@ -518,6 +518,9 @@
         <property name="sourceApplicationContextFactory">
             <ref bean="OutboundSMTP" />
         </property>
+        <property name="sourceBeanName">
+            <value>mail</value>
+        </property>
         <property name="interfaces">
             <list>
                 <value>org.alfresco.repo.action.executer.ActionExecuter</value>

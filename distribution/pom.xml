@@ -12,7 +12,6 @@
 
     <!-- To replace in share-config-custom.xml -->
     <properties>
-        <BITROCK_TOMCAT_PORT>8080</BITROCK_TOMCAT_PORT>
     </properties>
 
     <dependencies>

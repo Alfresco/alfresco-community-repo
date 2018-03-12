@@ -174,7 +174,7 @@
                         <image>
                             <name>alfresco-content-services-community</name>
 
-                            <registry>quay.io/alfresco</registry>
+                            <registry>quay.io/alfresco/</registry>
                             <build>
                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
                                 <tags>

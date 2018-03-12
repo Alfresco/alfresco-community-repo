@@ -169,7 +169,7 @@
                 <configuration>
                     <images>
                         <image>
-                            <name>alfresco/alfresco-content-services-community</name>
+                            <name>aepure/alfresco-content-services-community</name>
                             <registry>quay.io</registry>
                             <build>
                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
@@ -189,6 +189,34 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-maven-plugin</artifactId>
+            <version>3.5.37</version>
+            <configuration>
+                <images>
+                    <image>
+                        <name>alfresco/alfresco-content-services-community</name>
+                        <registry>registry.hub.docker.com</registry>
+                        <build>
+                            <dockerFileDir>${project.basedir}/</dockerFileDir>
+                            <tags>
+                                <tag>${bamboo.inject.tag}</tag>
+                            </tags>
+                        </build>
+                    </image>
+                </images>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>build</id>
+                    <goals>
+                        <goal>push</goal>
+                    </goals>
+                </execution>
+            </executions>
             </plugin>
         </plugins>
 

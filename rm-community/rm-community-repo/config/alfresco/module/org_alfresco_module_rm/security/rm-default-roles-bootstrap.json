@@ -74,7 +74,8 @@
           "FileUnfiledRecords",
           "RejectRecords",
           "LinkToRecords",
-          "ManageAccessControls"
+          "ManageAccessControls",
+        "AddExemption"
       ]
    },
    {
@@ -219,7 +220,8 @@
           "FileHoldReport",
           "DeleteHold",
           "EditHold",
-          "EndRetention"
+          "EndRetention",
+        "AddExemption"
       ]
    }
 ]

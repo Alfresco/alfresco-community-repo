@@ -597,6 +597,8 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
             throw new PermissionDeniedException();
         }
 
+        // Workflow doesn't allow changing the role, so a new update may be required if
+        // approval role differs from default one.
         if (siteMembershipApproval != null && !(siteMembershipApproval.getRole() == null || siteMembershipApproval.getRole().isEmpty()))
         {
             String role = siteMembershipApproval.getRole();

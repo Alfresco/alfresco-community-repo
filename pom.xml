@@ -11,14 +11,30 @@
         <version>9</version>
     </parent>
 
-    <modules>
-        <module>war</module>
-        <module>zip</module>
-        <module>distribution</module>
-        <module>public-javadoc</module>
-        <module>docker-alfresco</module>
-        <module>docker-share</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>bat</id>
+            <modules>
+                <module>war</module>
+                <module>docker-alfresco</module>
+                <module>docker-share</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>fullBuild</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>war</module>
+                <module>zip</module>
+                <module>distribution</module>
+                <module>public-javadoc</module>
+                <module>docker-alfresco</module>
+                <module>docker-share</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <scm>
         <connection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</connection>

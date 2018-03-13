@@ -42,6 +42,7 @@
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
         <version.edition>Community</version.edition>
         <bamboo.inject.tag>latest</bamboo.inject.tag>
+        <bamboo.dockerhub.password></bamboo.dockerhub.password>
 
         <dependency.alfresco-repository.version>6.28</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.19</dependency.alfresco-remote-api.version>

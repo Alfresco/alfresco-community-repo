@@ -925,4 +925,10 @@
       <property name="capability" value="MoveDmRecords"/>
    </bean>
 
+   <bean id="jsonConversionComponent.addExemption"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="addExemption" />
+      <property name="capability" value="AddExemption" />
+   </bean>
+
 </beans>

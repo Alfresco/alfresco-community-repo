@@ -199,10 +199,6 @@
                                     </build>
                                 </image>
                             </images>
-                            <authConfig>
-                                <username>alfrescosystem</username>
-                                <password>${bamboo.dockerhub.password}</password>
-                            </authConfig>
                         </configuration>
                         <executions>
                             <execution>

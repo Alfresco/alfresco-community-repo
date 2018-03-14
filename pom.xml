@@ -81,6 +81,7 @@
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.f</alfresco.share.version>
+        <alfresco.alfresco-share-services.version>6.0.0-test</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.4.2</alfresco.googledocs.version>
@@ -396,7 +397,7 @@
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-share-services</artifactId>
-                <version>${alfresco.share.version}</version>
+                <version>${alfresco.alfresco-share-services.version}</version>
                 <type>amp</type>
             </dependency>
             <dependency>

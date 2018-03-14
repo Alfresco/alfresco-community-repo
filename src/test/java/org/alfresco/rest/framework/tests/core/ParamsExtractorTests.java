@@ -238,23 +238,24 @@ public class ParamsExtractorTests
             assertNotNull(uoe);  //Must throw this exception
         }
         testExtractOperationParams(templateVars, request, extractor);
-
+        
         templateVars.clear();
         Method aMethod = ResourceInspector.findMethod(EntityResourceAction.Create.class, GrassEntityResource.class);
         ResourceOperation op = ResourceInspector.inspectOperation(GrassEntityResource.class, aMethod, HttpMethod.POST);
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(GrassEntityResource.class);
         assertNotNull(op);
-        assertTrue(op.getTitle().startsWith("Create some grass"));
         assertTrue("Create method should have two params", op.getParameters().size() == 2);
         ResourceParameter singleParam = op.getParameters().get(0);
         assertTrue(ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(singleParam.getParamType()));
         assertFalse("Create grass does not support multiple grass creations", singleParam.isAllowMultiple());
         assertFalse(singleParam.isRequired());
 
+        // Test context when the request body is null and 'required' webApiParam is false
         when(request.getHeader("content-length")).thenReturn("0");
         params = extractor.extractParams(metainfo.get(0), request);
         assertNotNull(params);
 
+        // Test context when the request body is provided and 'required' property is false
         when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.GRASS_JSON));
         params = extractor.extractParams(metainfo.get(0), request);
         assertNotNull(params);

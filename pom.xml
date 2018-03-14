@@ -40,7 +40,7 @@
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
         <version.edition>Community</version.edition>
 
-        <dependency.alfresco-repository.version>6.28</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>6.32</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.19</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-core.version>7.0</dependency.alfresco-core.version>

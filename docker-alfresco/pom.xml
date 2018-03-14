@@ -189,7 +189,7 @@
                                 </image>
                                 <image>
                                     <name>alfresco/alfresco-content-services-community</name>
-                                    <!--<registry>docker.io</registry>-->
+                                    <registry>registry.hub.docker.com</registry>
                                     <build>
                                     	<dockerFileDir>${project.basedir}/</dockerFileDir>
                                         <tags>

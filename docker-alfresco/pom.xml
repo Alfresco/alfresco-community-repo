@@ -167,7 +167,41 @@
 
     <profiles>
         <profile>
-            <id>dockerImages</id>
+            <id>communityDocker</id> <!-- local build only -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>fabric8-maven-plugin</artifactId>
+                        <version>3.5.37</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>local/alfresco-content-services-community</name>
+                                    <build>
+                                        <dockerFile>${project.basedir}/Dockerfile</dockerFile>
+                                        <tags>
+                                            <tag>latest</tag>
+                                        </tags>
+                                    </build>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>dockerImages</id> <!-- includes docker push -->
             <build>
                 <plugins>
                     <plugin>
@@ -191,7 +225,7 @@
                                     <name>alfresco-content-services-community</name>
                                     <registry>registry.hub.docker.com/alfresco</registry>
                                     <build>
-                                    	<dockerFileDir>${project.basedir}/</dockerFileDir>
+                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
                                         <tags>
                                             <!--<tag>${bamboo.inject.tag}</tag>-->
                                             <tag>testing-rc2</tag>
@@ -213,6 +247,7 @@
                 </plugins>
             </build>
         </profile>
+
     </profiles>
 
 </project>

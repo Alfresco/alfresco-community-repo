@@ -13,7 +13,13 @@
 
     <profiles>
         <profile>
-            <id>bat</id>
+            <id>community</id>
+            <modules>
+                <module>war</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>communityDocker</id>
             <modules>
                 <module>war</module>
                 <module>docker-alfresco</module>

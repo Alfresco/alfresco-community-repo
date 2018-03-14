@@ -173,11 +173,12 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>fabric8-maven-plugin</artifactId>
-                        <version>3.5.37</version>
+                        <version>${dependency.fabric8.version}</version>
                         <configuration>
                             <images>
                                 <image>
-                                    <name>local/alfresco-content-services-community</name>
+                                    <name>alfresco/alfresco-content-services-community</name>
+                                    <registry>quay.io</registry>
                                     <build>
                                         <dockerFile>${project.basedir}/Dockerfile</dockerFile>
                                         <tags>
@@ -207,7 +208,7 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>fabric8-maven-plugin</artifactId>
-                        <version>3.5.37</version>
+                        <version>${dependency.fabric8.version}</version>
                         <configuration>
                             <images>
                                 <image>

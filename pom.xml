@@ -78,6 +78,7 @@
 
         <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
 
          <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.f</alfresco.share.version>

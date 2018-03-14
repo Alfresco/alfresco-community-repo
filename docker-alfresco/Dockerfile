@@ -12,19 +12,19 @@ ENV IMAGEMAGICK_LIB_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x8
 
 RUN wget $ALFRESCO_PDF_RENDERER_LIB_RPM_URL && \
     tar xf alfresco-pdf-renderer-*-linux.tgz -C /usr/bin && \
-	rm -f alfresco-pdf-renderer-*-linux.tgz && \
-	\
+    rm -f alfresco-pdf-renderer-*-linux.tgz && \
+    \
     yum install -y cairo cups-libs libSM && \
     wget $LIBREOFFICE_RPM_URL && \
     tar xzf LibreOffice_*_Linux_x86-64_rpm.tar.gz && \
     yum localinstall -y LibreOffice*/RPMS/*.rpm && \
     rm -rf LibreOffice_*_Linux_x86-64_rpm.tar.gz LibreOffice_*_Linux_x86-64_rpm && \
-	\
+    \
     wget $IMAGEMAGICK_RPM_URL && \
     wget $IMAGEMAGICK_LIB_RPM_URL && \
     yum localinstall -y ImageMagick-*.x86_64.rpm && \
     rm -f ImageMagick-*.x86_64.rpm && \
-	\
+    \
     yum clean all
 
 RUN mkdir -p /usr/local/tomcat/shared/classes && \

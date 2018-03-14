@@ -1,7 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>content-services-community-docker-alfresco</artifactId>
-    <name>ACS Community Docker image builder for Alfresco</name>
+    <name>ACS Community Docker Image Builder for Alfresco Community</name>
     <packaging>pom</packaging>
 
     <parent>
@@ -161,54 +162,46 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-maven-plugin</artifactId>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>alfresco/alfresco-content-services</name>
+                            <registry>quay.io</registry>
+                            <build>
+                                <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                <tags>
+                                    <tag>${project.version}</tag>
+                                </tags>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>deploy</phase>
+                        <id>buildAndPush</id>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
-
     <profiles>
         <profile>
-            <id>communityDocker</id> <!-- local build only -->
+            <id>dockerImages</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>fabric8-maven-plugin</artifactId>
-                        <version>${dependency.fabric8.version}</version>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>alfresco/alfresco-content-services-community</name>
-                                    <registry>quay.io</registry>
-                                    <build>
-                                        <dockerFile>${project.basedir}/Dockerfile</dockerFile>
-                                        <tags>
-                                            <tag>latest</tag>
-                                        </tags>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>build</id>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>dockerImages</id> <!-- includes docker push -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>fabric8-maven-plugin</artifactId>
-                        <version>${dependency.fabric8.version}</version>
                         <configuration>
                             <images>
                                 <image>
@@ -217,19 +210,7 @@
                                     <build>
                                         <dockerFileDir>${project.basedir}/</dockerFileDir>
                                         <tags>
-                                            <!--<tag>${bamboo.inject.tag}</tag>-->
-                                            <tag>testing-rc1</tag>
-                                        </tags>
-                                    </build>
-                                </image>
-                                <image>
-                                    <name>alfresco-content-services-community</name>
-                                    <registry>registry.hub.docker.com/alfresco</registry>
-                                    <build>
-                                        <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                        <tags>
-                                            <!--<tag>${bamboo.inject.tag}</tag>-->
-                                            <tag>testing-rc2</tag>
+                                            <tag>${project.version}</tag>
                                         </tags>
                                     </build>
                                 </image>
@@ -237,6 +218,7 @@
                         </configuration>
                         <executions>
                             <execution>
+                                <phase>install</phase>
                                 <id>buildAndPush</id>
                                 <goals>
                                     <goal>build</goal>
@@ -248,7 +230,6 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 
 </project>

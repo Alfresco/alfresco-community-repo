@@ -70,7 +70,7 @@ public class GroupMembersRelation
 
     @Override
     @WebApiDescription(title = "Create group membership.")
-    @WebApiParam(name = "entity", title = "A single group member", description = "A single group member, multiple groups members are not supported.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false)
+    @WebApiParam(name = "entity", title = "A single group member", description = "A single group member, multiple groups members are not supported.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false, required = true)
     public List<GroupMember> create(String groupId, List<GroupMember> entity, Parameters params)
     {
         List<GroupMember> result = new ArrayList<>(1);

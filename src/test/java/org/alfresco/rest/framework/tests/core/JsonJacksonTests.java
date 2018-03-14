@@ -65,6 +65,7 @@ public class JsonJacksonTests
     static JacksonHelper jsonHelper = null;
 
     public static final String FARMER_JSON = "{\"name\":\"Giles\",\"created\":\"2012-03-23T15:56:18.552+0000\",\"age\":54,\"id\":\"1234A3\",\"farm\":\"LARGE\"}";
+    public static final String GRASS_JSON = "{\"id\":\"grass\",\"color\":\"green\"}";
     public static final String COLLECTION_START = "[ ";
     public static final String COLLECTION_END = " ]";
     public static final String FARMERS_COLLECTION_JSON = COLLECTION_START + FARMER_JSON + "," + FARMER_JSON + "," + FARMER_JSON + COLLECTION_END;

@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.framework.tests.core;
 
-import static org.hamcrest.CoreMatchers.any;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -40,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +48,20 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
+import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceOperation;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
+import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.webscripts.ParamsExtractor;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete;
@@ -234,6 +238,26 @@ public class ParamsExtractorTests
             assertNotNull(uoe);  //Must throw this exception
         }
         testExtractOperationParams(templateVars, request, extractor);
+
+        templateVars.clear();
+        Method aMethod = ResourceInspector.findMethod(EntityResourceAction.Create.class, GrassEntityResource.class);
+        ResourceOperation op = ResourceInspector.inspectOperation(GrassEntityResource.class, aMethod, HttpMethod.POST);
+        List<ResourceMetadata> metainfo = ResourceInspector.inspect(GrassEntityResource.class);
+        assertNotNull(op);
+        assertTrue(op.getTitle().startsWith("Create some grass"));
+        assertTrue("Create method should have two params", op.getParameters().size() == 2);
+        ResourceParameter singleParam = op.getParameters().get(0);
+        assertTrue(ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(singleParam.getParamType()));
+        assertFalse("Create grass does not support multiple grass creations", singleParam.isAllowMultiple());
+        assertFalse(singleParam.isRequired());
+
+        when(request.getHeader("content-length")).thenReturn("0");
+        params = extractor.extractParams(metainfo.get(0), request);
+        assertNotNull(params);
+
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.GRASS_JSON));
+        params = extractor.extractParams(metainfo.get(0), request);
+        assertNotNull(params);
     }
 
     private Params testExtractOperationParams(Map<String, String> templateVars, WebScriptRequest request, ParamsExtractor extractor)

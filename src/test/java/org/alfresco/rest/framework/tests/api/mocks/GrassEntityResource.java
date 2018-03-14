@@ -39,7 +39,7 @@ import org.springframework.extensions.webscripts.Status;
 import java.util.List;
 
 @EntityResource(name = "grass", title="Grass")
-public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>, EntityResourceAction.Create<Grass>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet {
+public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>, EntityResourceAction.Create<Grass>, EntityResourceAction.CreateWithResponse<Grass>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet {
 
     @Override
     @WebApiDescription(title = "Gets grass by id")
@@ -64,11 +64,20 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
 
     @Override
     @WebApiDescription(title = "Create some grass")
+    @WebApiParam(name = "entity", title = "The grass.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required=false, allowMultiple = false)
     public List<Grass> create(List<Grass> entity, Parameters parameters)
     {
         return entity;
     }
 
+    @Override
+    @WebApiDescription(title = "Create grass")
+    @WebApiParam(name = "entity", title = "The grass.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required=true, allowMultiple = false)
+    public List<Grass> create(List<Grass> entity, Parameters parameters, WithResponse withResponse)
+    {
+        return entity;
+    }
+    
     @Override
     public void delete(String id, Parameters parameters)
     {

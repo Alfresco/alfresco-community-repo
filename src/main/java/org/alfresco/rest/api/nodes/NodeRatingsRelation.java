@@ -73,7 +73,7 @@ RelationshipResourceAction.Create<NodeRating>, InitializingBean
 	@Override
     @WebApiDescription(title="Rate a node for 'nodeId'.")
 	@WebApiParam(name="ratingEntity", title="A single rating", description="A single node rating, multiple ratings are not supported.", 
-	             kind=ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+	             kind=ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
 	public List<NodeRating> create(String nodeId, List<NodeRating> ratingEntity, Parameters parameters)
 	{
 	    //There will always be 1 value because allowMultiple=false

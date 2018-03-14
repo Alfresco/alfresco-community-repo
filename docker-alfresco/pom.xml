@@ -188,8 +188,8 @@
                                     </build>
                                 </image>
                                 <image>
-                                    <name>alfresco/alfresco-content-services-community</name>
-                                    <registry>index.docker.io/v1</registry>
+                                    <name>alfresco-content-services-community</name>
+                                    <registry>registry.hub.docker.com/alfresco</registry>
                                     <build>
                                     	<dockerFileDir>${project.basedir}/</dockerFileDir>
                                         <tags>

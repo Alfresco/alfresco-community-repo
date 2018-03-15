@@ -197,7 +197,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 String[] authorizationParts = authorization.split(" ");
                 if (!authorizationParts[0].equalsIgnoreCase("basic"))
                 {
-                    throw new WebScriptException("Authorization '" + authorizationParts[0] + "' not supported.");
+                    throw new WebScriptException(401, "Authorization '" + authorizationParts[0] + "' not supported.");
                 }
                 
                 String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));

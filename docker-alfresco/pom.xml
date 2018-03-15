@@ -207,13 +207,11 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>alfresco/alfresco-content-services-community</name>
+                                    <name>alfresco/alfresco-content-services-community:${bamboo.branch.name}-${project.version}</name>
                                     <registry>quay.io</registry>
                                     <build>
                                         <dockerFileDir>${project.basedir}/</dockerFileDir>
-                                        <tags>
-                                            <tag>${project.version}</tag>
-                                        </tags>
+
                                     </build>
                                 </image>
                             </images>

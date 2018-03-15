@@ -1,13 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-content-services-community-distribution</artifactId>
+    <name>Alfresco Content Services Community zip (WAR Installation)</name>
     <packaging>jar</packaging>
-    <name>Alfresco Content Services Community WAR Installation</name>
 
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>acs-community-packaging</artifactId>
-        <version>6.0.0-SNAPSHOT</version>
+        <version>6.0.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,18 +22,6 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-server-root</artifactId>
-            <type>war</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-mmt</artifactId>
-        </dependency>
-
-        <!-- JAR files, to extract alfresco/extension -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
         </dependency>
         <dependency>
@@ -41,18 +30,19 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>content-services-community</artifactId>
-            <version>${project.version}</version>
-            <classifier>classes</classifier>
+            <artifactId>alfresco-server-root</artifactId>
+            <type>war</type>
         </dependency>
-
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-mmt</artifactId>
+        </dependency>
         <!-- 3rd party libs -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${dependency.postgresql.version}</version>
         </dependency>
-
         <!-- Alfresco Pdf Renderer -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -118,7 +108,7 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-                    
+
                     <!-- Copy ROOT.war -->
                     <execution>
                         <id>copy-resources</id>
@@ -137,8 +127,8 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
-                    </execution>                    
-                    
+                    </execution>
+
                 </executions>
             </plugin>
 
@@ -161,25 +151,6 @@
                 </configuration>
             </plugin>
 
-            <plugin>
-                <!-- Package distribution assembly descriptor, to be reused by Enterprise -->
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>create-assembly-descriptor</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>assembly</classifier>
-                            <classesDirectory>${basedir}/src</classesDirectory>
-                            <includes>
-                                <include>assemblies/*</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>

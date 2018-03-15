@@ -44,7 +44,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -93,8 +92,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    
    protected List<String> excludedWorkflows;
    protected List<String> invitationWorkflows;
-   protected List<String> publishingWorkflows;
-   
+
    transient private WorkflowService workflowService;
    transient private InvitationService invitationService;
    transient private BehaviourFilter policyBehaviourFilter;
@@ -601,7 +599,6 @@ public class StartWorkflowWizard extends BaseWizardBean
       this.workflows = new HashMap<String, WorkflowDefinition>(4);
       
       List<String> configuredInvitationWorkflows = this.getInvitationServiceWorkflowNames();
-      List<String> publishingWorkflows = this.getPublishingWorkflowNames();
       List<String> excludedWorkflows = this.getExcludedWorkflows();
       
       List<WorkflowDefinition> workflowDefs =  this.getWorkflowService().getDefinitions();
@@ -610,7 +607,6 @@ public class StartWorkflowWizard extends BaseWizardBean
          String name = workflowDef.name;
          
          if (configuredInvitationWorkflows.contains(name) == false &&
-        	 publishingWorkflows.contains(name) == false &&
         	 excludedWorkflows.contains(name) == false)
          {
             // add the workflow if it is not a WCM specific workflow
@@ -806,23 +802,6 @@ public class StartWorkflowWizard extends BaseWizardBean
          }
       }
       return invitationWorkflows;
-   }
-   
-   /**
-    * Get the names of the publishing workflows
-    * 
-    * @return The names of the publishing workflows
-    */
-   protected List<String> getPublishingWorkflowNames()   
-   {
-      if (publishingWorkflows == null)
-      {
-         publishingWorkflows = new ArrayList<String>(2);
-         
-         publishingWorkflows.add(ActivitiConstants.ENGINE_ID + "$" + PublishingEventHelper.WORKFLOW_DEFINITION_NAME);
-      }
-      
-      return publishingWorkflows;
    }
 
    public void setInvitationService(InvitationService invitationService) 

@@ -1,0 +1,13 @@
+name: alfresco-content-services
+version: 0.0.1
+description: A Helm chart for deploying Alfresco Content Services
+keywords:
+- content
+- content services
+- alfresco
+- community
+- alfresco community
+home: https://www.alfresco.com
+sources:
+- https://github.com/Alfresco/acs-community-full-packaging/tree/master/helm
+icon: https://avatars0.githubusercontent.com/u/391127?s=200&v=4

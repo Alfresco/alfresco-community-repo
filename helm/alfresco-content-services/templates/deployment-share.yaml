@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "content-services.fullname" . }}-share
+  labels:
+    app: {{ template "content-services.fullname" . }}-share
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.share.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "content-services.fullname" . }}-share
+        release: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.registryPullSecrets }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.share.image.repository }}:{{ .Values.share.image.tag }}"
+          imagePullPolicy: {{ .Values.share.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.share.image.internalPort }}
+          resources:
+{{ toYaml .Values.share.resources | indent 12 }}
+          envFrom:
+          - configMapRef:
+              name: {{ template "content-services.fullname" . }}-share-configmap

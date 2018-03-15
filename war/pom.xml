@@ -12,9 +12,6 @@
     </parent>
 
     <properties>
-        <build-number>0</build-number>
-        <build-key>BUILD-KEY</build-key>
-        <build-name>Build-Name</build-name>
         <scm-path>local/development/workspace</scm-path>
         <scm-revision>${buildNumber}</scm-revision>
 
@@ -24,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-trashcan-cleaner</artifactId>
+            <artifactId>alfresco-repository</artifactId>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -32,7 +29,11 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-repository</artifactId>
+            <artifactId>alfresco-trashcan-cleaner</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.services</groupId>
+            <artifactId>alfresco-messaging-repo</artifactId>
         </dependency>
         <dependency>
             <groupId>xalan</groupId>
@@ -68,7 +69,6 @@
             <artifactId>standard</artifactId>
             <version>1.1.2</version>
         </dependency>
-
         <!-- 'provided' dependencies, not packaged in war -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -88,19 +88,12 @@
             <version>2.0</version>
             <scope>provided</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.alfresco.services</groupId>
-            <artifactId>alfresco-messaging-repo</artifactId>
-        </dependency>
-
         <!-- CORS Filter Libraries -->
         <dependency>
             <groupId>com.thetransactioncompany</groupId>
             <artifactId>cors-filter</artifactId>
             <version>2.5</version>
         </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>

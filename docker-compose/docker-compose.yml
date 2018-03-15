@@ -2,7 +2,7 @@ version: "3"
 
 services:
     alfresco:
-        image: quay.io/alfresco/alfresco-content-services-community:${ALFRESCO_TAG}
+        image: ${REPO}alfresco/alfresco-content-services-community:${ALFRESCO_TAG}
         environment:
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
@@ -19,7 +19,7 @@ services:
             - 8082:8080 #Browser port
 
     share:
-        image: quay.io/alfresco/alfresco-full-share:${SHARE_TAG}
+        image: ${REPO}alfresco/alfresco-full-share:${SHARE_TAG}
         environment:
             - REPO_HOST=alfresco
             - REPO_PORT=8080

@@ -230,6 +230,7 @@
                 <artifactId>commons-collections</artifactId>
                 <version>3.2.2</version>
             </dependency>
+            <!-- Use 2.1 version as a newer dependency for commons-validator -->
             <dependency>
                 <groupId>commons-digester</groupId>
                 <artifactId>commons-digester</artifactId>

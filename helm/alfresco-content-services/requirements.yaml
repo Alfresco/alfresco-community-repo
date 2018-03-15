@@ -4,7 +4,3 @@ dependencies:
   version: 0.8.5
   repository: https://kubernetes-charts.storage.googleapis.com/
   condition: postgresql.enabled
-- name: nginx-ingress
-  version: ^0.8.21
-  repository: https://kubernetes-charts.storage.googleapis.com
-  condition: alfresco-content-services.nginx-ingress.enabled

@@ -28,3 +28,11 @@ spec:
             - containerPort: {{ .Values.solr.image.internalPort }}
           resources:
 {{ toYaml .Values.solr.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.persistence.solr.data.mountPath }}
+            subPath: {{ .Values.persistence.solr.data.subPath }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim }}

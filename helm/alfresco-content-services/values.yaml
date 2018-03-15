@@ -51,7 +51,7 @@ solr:
   image:
     repository: quay.io/alfresco/search-services
     tag: "1.2.0-SNAPSHOT"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     internalPort: 8983
   service:
     name: solr
@@ -61,11 +61,23 @@ solr:
     path: /solr
   environment:
     SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
+    SOLR_OPTS: "-Dsolr.content.dir=/opt/alfresco-search-services/data/contentstore"
   resources:
     requests:
       memory: "250Mi"
     limits:
       memory: "500Mi"
+
+persistence:
+  existingClaim: "alfresco-volume-claim"
+  repository:
+    data:
+      mountPath: "/usr/local/tomcat/alf_data"
+      subPath: "alfresco-content-services/repository-data"
+  solr:
+    data:
+      mountPath: "/opt/alfresco-search-services/data"
+      subPath: "alfresco-content-services/solr-data"
 
 database:
   type: postgresql

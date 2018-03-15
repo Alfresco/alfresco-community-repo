@@ -28,7 +28,15 @@ spec:
             - containerPort: {{ .Values.repository.image.internalPort }}
           resources:
 {{ toYaml .Values.repository.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.persistence.repository.data.mountPath }}
+            subPath: {{ .Values.persistence.repository.data.subPath }}
       initContainers:
         - name: init-db
           image: busybox
           command: ['sh', '-c', 'until nc -w1 {{ template "database.hostname" . }} {{ template "database.port" . }}; do echo "waiting for {{ .Values.database.type }}"; sleep 2; done;']
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim }}

@@ -7,7 +7,7 @@ registryPullSecrets: quay-registry-secret
 repository:
   replicaCount: 1
   image:
-    repository: quay.io/alfresco/alfresco-full-content-services-community
+    repository: quay.io/alfresco/alfresco-content-services-community
     tag: "latest"
     pullPolicy: Always
     internalPort: 8080

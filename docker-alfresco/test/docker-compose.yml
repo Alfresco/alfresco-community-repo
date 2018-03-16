@@ -19,6 +19,7 @@ services:
                 -Dftp.enabled=true
                 -Dftp.dataPortFrom=30000
                 -Dftp.dataPortTo=30099
+                -Dcifs.enabled=true
                 "
         ports:
             - 8080:8080

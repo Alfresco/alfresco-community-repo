@@ -41,7 +41,7 @@
         <dependency.alfresco-data-model.version>8.1</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-        <dependency.alfresco-hb-data-sender.version>1.0.5</dependency.alfresco-hb-data-sender.version>
+        <dependency.alfresco-hb-data-sender.version>1.0.6</dependency.alfresco-hb-data-sender.version>
 
 
         <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>

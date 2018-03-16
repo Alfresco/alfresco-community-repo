@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -33,13 +33,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.keycloak.adapters.servlet.ServletHttpFacade;
 
 /**
- * Keycloak HttpFacade wrapper so we can re-use Keycloak authenticator classes.
+ * HttpFacade wrapper so we can re-use Keycloak authenticator classes.
  *
  * @author Gavin Cornwell
  */
-public class AlfrescoKeycloakHttpFacade extends ServletHttpFacade
+public class IdentityServiceHttpFacade extends ServletHttpFacade
 {
-    public AlfrescoKeycloakHttpFacade(HttpServletRequest request)
+    public IdentityServiceHttpFacade(HttpServletRequest request)
     {
         super(request, null);
     }

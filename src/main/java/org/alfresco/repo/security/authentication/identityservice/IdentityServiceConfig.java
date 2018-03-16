@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Map;
 import java.util.Properties;
@@ -34,12 +34,17 @@ import org.apache.commons.logging.LogFactory;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.springframework.beans.factory.InitializingBean;
 
-public class AlfrescoKeycloakAdapterConfig extends AdapterConfig implements InitializingBean
+/**
+ * Class to hold configuration for the Identity Service.
+ *
+ * @author Gavin Cornwell
+ */
+public class IdentityServiceConfig extends AdapterConfig implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(AlfrescoKeycloakAdapterConfig.class);
+    private static Log logger = LogFactory.getLog(IdentityServiceConfig.class);
     
-    private static final String CREDENTIALS_SECRET = "keycloak.credentials.secret";
-    private static final String CREDENTIALS_PROVIDER = "keycloak.credentials.provider";
+    private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
+    private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
     
     private Properties globalProperties;
     

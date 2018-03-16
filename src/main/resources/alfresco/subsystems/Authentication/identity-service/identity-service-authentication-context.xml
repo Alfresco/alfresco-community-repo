@@ -70,139 +70,139 @@
       </property>
    </bean>
 
-   <bean name="keycloakAdpapterConfig" class="org.alfresco.repo.security.authentication.token.AlfrescoKeycloakAdapterConfig">
+   <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
       <property name="globalProperties">
          <ref bean="global-properties" />
       </property>
       <property name="realm">
-         <value>${keycloak.realm}</value>
+         <value>${identity-service.realm}</value>
       </property>
       <property name="realmKey">
-         <value>${keycloak.realm-public-key:#{null}}</value>
+         <value>${identity-service.realm-public-key:#{null}}</value>
       </property>
       <property name="authServerUrl">
-         <value>${keycloak.auth-server-url}</value>
+         <value>${identity-service.auth-server-url}</value>
       </property>
       <property name="sslRequired">
-         <value>${keycloak.ssl-required:external}</value>
+         <value>${identity-service.ssl-required:external}</value>
       </property>
       <property name="confidentialPort">
-         <value>${keycloak.confidential-port:0}</value>
+         <value>${identity-service.confidential-port:0}</value>
       </property>
       <property name="resource">
-         <value>${keycloak.resource}</value>
+         <value>${identity-service.resource}</value>
       </property>
       <property name="useResourceRoleMappings">
-         <value>${keycloak.use-resource-role-mappings:false}</value>
+         <value>${identity-service.use-resource-role-mappings:false}</value>
       </property>
       <property name="cors">
-         <value>${keycloak.enable-cors:false}</value>
+         <value>${identity-service.enable-cors:false}</value>
       </property>
       <property name="corsMaxAge">
-         <value>${keycloak.cors-max-age:-1}</value>
+         <value>${identity-service.cors-max-age:-1}</value>
       </property>
       <property name="corsAllowedHeaders">
-         <value>${keycloak.cors-allowed-headers:#{null}}</value>
+         <value>${identity-service.cors-allowed-headers:#{null}}</value>
       </property>
       <property name="corsAllowedMethods">
-         <value>${keycloak.cors-allowed-methods:#{null}}</value>
+         <value>${identity-service.cors-allowed-methods:#{null}}</value>
       </property>
       <property name="corsExposedHeaders">
-         <value>${keycloak.cors-exposed-headers:#{null}}</value>
+         <value>${identity-service.cors-exposed-headers:#{null}}</value>
       </property>
       <property name="exposeToken">
-         <value>${keycloak.expose-token:false}</value>
+         <value>${identity-service.expose-token:false}</value>
       </property>
       <property name="bearerOnly">
-         <value>${keycloak.bearer-only:false}</value>
+         <value>${identity-service.bearer-only:false}</value>
       </property>
       <property name="autodetectBearerOnly">
-         <value>${keycloak.autodetect-bearer-only:false}</value>
+         <value>${identity-service.autodetect-bearer-only:false}</value>
       </property>
       <property name="enableBasicAuth">
-         <value>${keycloak.enable-basic-auth:false}</value>
+         <value>${identity-service.enable-basic-auth:false}</value>
       </property>
       <property name="publicClient">
-         <value>${keycloak.public-client:false}</value>
+         <value>${identity-service.public-client:false}</value>
       </property>
       <property name="allowAnyHostname">
-         <value>${keycloak.allow-any-hostname:false}</value>
+         <value>${identity-service.allow-any-hostname:false}</value>
       </property>
       <property name="disableTrustManager">
-         <value>${keycloak.disable-trust-manager:false}</value>
+         <value>${identity-service.disable-trust-manager:false}</value>
       </property>
       <property name="truststore">
-         <value>${keycloak.truststore:#{null}}</value>
+         <value>${identity-service.truststore:#{null}}</value>
       </property>
       <property name="truststorePassword">
-         <value>${keycloak.truststore-password:#{null}}</value>
+         <value>${identity-service.truststore-password:#{null}}</value>
       </property>
       <property name="clientKeystore">
-         <value>${keycloak.client-keystore:#{null}}</value>
+         <value>${identity-service.client-keystore:#{null}}</value>
       </property>
       <property name="clientKeystorePassword">
-         <value>${keycloak.client-keystore-password:#{null}}</value>
+         <value>${identity-service.client-keystore-password:#{null}}</value>
       </property>
       <property name="clientKeyPassword">
-         <value>${keycloak.client-key-password:#{null}}</value>
+         <value>${identity-service.client-key-password:#{null}}</value>
       </property>
       <property name="connectionPoolSize">
-         <value>${keycloak.connection-pool-size:20}</value>
+         <value>${identity-service.connection-pool-size:20}</value>
       </property>
       <property name="alwaysRefreshToken">
-         <value>${keycloak.always-refresh-token:false}</value>
+         <value>${identity-service.always-refresh-token:false}</value>
       </property>
       <property name="registerNodeAtStartup">
-         <value>${keycloak.register-node-at-startup:false}</value>
+         <value>${identity-service.register-node-at-startup:false}</value>
       </property>
       <property name="registerNodePeriod">
-         <value>${keycloak.register-node-period:-1}</value>
+         <value>${identity-service.register-node-period:-1}</value>
       </property>
       <property name="tokenStore">
-         <value>${keycloak.token-store:#{null}}</value>
+         <value>${identity-service.token-store:#{null}}</value>
       </property>
       <property name="principalAttribute">
-         <value>${keycloak.principal-attribute:#{null}}</value>
+         <value>${identity-service.principal-attribute:#{null}}</value>
       </property>
       <property name="turnOffChangeSessionIdOnLogin">
-         <value>${keycloak.turn-off-change-session-id-on-login:false}</value>
+         <value>${identity-service.turn-off-change-session-id-on-login:false}</value>
       </property>
       <property name="tokenMinimumTimeToLive">
-         <value>${keycloak.token-minimum-time-to-live:0}</value>
+         <value>${identity-service.token-minimum-time-to-live:0}</value>
       </property>
       <property name="minTimeBetweenJwksRequests">
-         <value>${keycloak.min-time-between-jwks-requests:10}</value>
+         <value>${identity-service.min-time-between-jwks-requests:10}</value>
       </property>
       <property name="publicKeyCacheTtl">
-         <value>${keycloak.public-key-cache-ttl:86400}</value>
+         <value>${identity-service.public-key-cache-ttl:86400}</value>
       </property>
       <property name="pkce">
-         <value>${keycloak.enable-pkce:false}</value>
+         <value>${identity-service.enable-pkce:false}</value>
       </property>
       <property name="ignoreOAuthQueryParameter">
-         <value>${keycloak.ignore-oauth-query-parameter:false}</value>
+         <value>${identity-service.ignore-oauth-query-parameter:false}</value>
       </property>
    </bean>
 
-   <bean name="keycloakDeployment" class="org.alfresco.repo.security.authentication.token.AlfrescoKeycloakDeploymentFactoryBean">
-      <property name="adapterConfig">
-         <ref bean="keycloakAdpapterConfig" />
+   <bean name="identityServiceDeployment" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceDeploymentFactoryBean">
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
       </property>
    </bean>
    
    <!-- Enable control over mapping between request and user ID -->
-   <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.token.TokenRemoteUserMapper">
+   <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">
       <property name="active">
-         <value>${token.authentication.enabled}</value>
+         <value>${identity-service.authentication.enabled}</value>
       </property>
       <property name="validationFailureSilent">
-         <value>${token.authentication.validation.failure.silent}</value>
+         <value>${identity-service.authentication.validation.failure.silent}</value>
       </property>
       <property name="personService">
          <ref bean="PersonService" />
       </property>
-      <property name="keycloakDeployment">
-         <ref bean="keycloakDeployment" />
+      <property name="identityServiceDeployment">
+         <ref bean="identityServiceDeployment" />
       </property>
    </bean>
 

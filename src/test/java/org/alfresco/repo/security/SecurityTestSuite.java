@@ -37,8 +37,8 @@ import org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest;
 import org.alfresco.repo.security.authentication.UpgradePasswordHashTest;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest;
 import org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest;
 import org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest;
-import org.alfresco.repo.security.authentication.token.TokenRemoteUserMapperTest;
 import org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
 import org.alfresco.repo.security.authority.DuplicateAuthorityTest;
@@ -101,7 +101,7 @@ public class SecurityTestSuite extends TestSuite
 		suite.addTestSuite(FixedAclUpdaterTest.class);
 
 		suite.addTestSuite(DefaultRemoteUserMapperTest.class);
-		suite.addTestSuite(TokenRemoteUserMapperTest.class);
+		suite.addTestSuite(IdentityServiceRemoteUserMapperTest.class);
 		suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
 		suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
 

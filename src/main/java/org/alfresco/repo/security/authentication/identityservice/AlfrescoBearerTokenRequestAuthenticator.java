@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import org.keycloak.adapters.BearerTokenRequestAuthenticator;
 import org.keycloak.adapters.KeycloakDeployment;

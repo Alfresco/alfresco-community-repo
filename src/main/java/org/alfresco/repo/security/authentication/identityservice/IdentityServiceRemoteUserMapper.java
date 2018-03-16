@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -41,13 +41,14 @@ import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.representations.AccessToken;
 
 /**
- * A {@link RemoteUserMapper} implementation that detects and validates JWTs.
+ * A {@link RemoteUserMapper} implementation that detects and validates JWTs
+ * issued by the Alfresco Identity Service.
  * 
  * @author Gavin Cornwell
  */
-public class TokenRemoteUserMapper implements RemoteUserMapper, ActivateableBean
+public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
-    private static Log logger = LogFactory.getLog(TokenRemoteUserMapper.class);
+    private static Log logger = LogFactory.getLog(IdentityServiceRemoteUserMapper.class);
     
     /** Is the mapper enabled */
     private boolean isEnabled;
@@ -92,7 +93,7 @@ public class TokenRemoteUserMapper implements RemoteUserMapper, ActivateableBean
         this.personService = personService;
     }
     
-    public void setKeycloakDeployment(KeycloakDeployment deployment)
+    public void setIdentityServiceDeployment(KeycloakDeployment deployment)
     {
         this.keycloakDeployment = deployment;
     }
@@ -149,7 +150,7 @@ public class TokenRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     {
         String userName = null;
         
-        AlfrescoKeycloakHttpFacade facade = new AlfrescoKeycloakHttpFacade(request);
+        IdentityServiceHttpFacade facade = new IdentityServiceHttpFacade(request);
         
         // try authenticating with bearer token first
         if (logger.isDebugEnabled())

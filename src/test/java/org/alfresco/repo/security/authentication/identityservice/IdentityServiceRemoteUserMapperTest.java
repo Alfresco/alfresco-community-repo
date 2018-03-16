@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -43,6 +43,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -57,14 +58,15 @@ import org.keycloak.representations.AccessToken;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Tests the token based authentication subsystem.
+ * Tests the Identity Service based authentication subsystem.
  * 
  * @author Gavin Cornwell
  */
-public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
+public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsystemTest
 {
     private static final String REMOTE_USER_MAPPER_BEAN_NAME = "remoteUserMapper";
-    private static final String KEYCLOAK_DEPLOYMENT_BEAN_NAME = "keycloakDeployment";
+    private static final String DEPLOYMENT_BEAN_NAME = "identityServiceDeployment";
+    private static final String CONFIG_BEAN_NAME = "identityServiceConfig";
     
     private static final String TEST_USER_USERNAME = "testuser";
     private static final String TEST_USER_EMAIL = "testuser@mail.com";
@@ -73,7 +75,7 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String BASIC_PREFIX = "Basic ";
     
-    private static final String CONFIG_SILENT_ERRORS = "token.authentication.validation.failure.silent";
+    private static final String CONFIG_SILENT_ERRORS = "identity-service.authentication.validation.failure.silent";
     
     private static final String PASSWORD_GRANT_RESPONSE = "{" +
             "\"access_token\": \"%s\"," +
@@ -89,7 +91,7 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
     ChildApplicationContextFactory childApplicationContextFactory;
     
     private KeyPair keyPair;
-    private AlfrescoKeycloakAdapterConfig keycloakAdapterConfig;
+    private IdentityServiceConfig identityServiceConfig;
 
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -100,18 +102,18 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // switch authentication to use token auth
         childApplicationContextManager = (DefaultChildApplicationContextManager) ctx.getBean("Authentication");
         childApplicationContextManager.stop();
-        childApplicationContextManager.setProperty("chain", "token1:token");
-        childApplicationContextFactory = getChildApplicationContextFactory(childApplicationContextManager, "token1");
+        childApplicationContextManager.setProperty("chain", "identity-service1:identity-service");
+        childApplicationContextFactory = getChildApplicationContextFactory(childApplicationContextManager, "identity-service1");
         
         // generate keys for test
         this.keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
         
-        // hardcode the realm public key in the Keycloak deployment bean to stop it fetching keys
+        // hardcode the realm public key in the deployment bean to stop it fetching keys
         applyHardcodedPublicKey(this.keyPair.getPublic());
         
         // extract config
-        this.keycloakAdapterConfig = (AlfrescoKeycloakAdapterConfig)childApplicationContextFactory.
-                    getApplicationContext().getBean("keycloakAdpapterConfig");
+        this.identityServiceConfig = (IdentityServiceConfig)childApplicationContextFactory.
+                    getApplicationContext().getBean(CONFIG_BEAN_NAME);
     }
     
     /* (non-Javadoc)
@@ -128,13 +130,13 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
     public void testKeycloakConfig() throws Exception
     {
         // check string overrides
-        assertEquals("keycloak.auth-server-url", "http://192.168.0.1:8180/auth", 
-                    this.keycloakAdapterConfig.getAuthServerUrl());
+        assertEquals("identity-service.auth-server-url", "http://192.168.0.1:8180/auth", 
+                    this.identityServiceConfig.getAuthServerUrl());
         
-        assertEquals("keycloak.realm", "test", 
-                    this.keycloakAdapterConfig.getRealm());
+        assertEquals("identity-service.realm", "test", 
+                    this.identityServiceConfig.getRealm());
         
-        assertEquals("keycloak.realm-public-key", 
+        assertEquals("identity-service.realm-public-key", 
                     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvWLQxipXNe6cLnVPGy7l" +
                     "BgyR51bDiK7Jso8Rmh2TB+bmO4fNaMY1ETsxECSM0f6NTV0QHks9+gBe+pB6JNeM" +
                     "uPmaE/M/MsE9KUif9L2ChFq3zor6s2foFv2DTiTkij+1aQF9fuIjDNH4FC6L252W" +
@@ -142,117 +144,117 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
                     "P6W8xMP0PoEJNAAp79anz2jk2HP2PvC2qdjVsphdTk3JG5qQMB0WJUh4Kjgabd4j" +
                     "QJ77U8gTRswKgNHRRPWhruiIcmmkP+zI0ozNW6rxH3PF4L7M9rXmfcmUcBcKf+Yx" +
                     "jwIDAQAB", 
-                    this.keycloakAdapterConfig.getRealmKey());
+                    this.identityServiceConfig.getRealmKey());
         
-        assertEquals("keycloak.ssl-required", "external", 
-                    this.keycloakAdapterConfig.getSslRequired());
+        assertEquals("identity-service.ssl-required", "external", 
+                    this.identityServiceConfig.getSslRequired());
         
-        assertEquals("keycloak.resource", "test", 
-                    this.keycloakAdapterConfig.getResource());
+        assertEquals("identity-service.resource", "test", 
+                    this.identityServiceConfig.getResource());
         
-        assertEquals("keycloak.cors-allowed-headers", "Authorization", 
-                    this.keycloakAdapterConfig.getCorsAllowedHeaders());
+        assertEquals("identity-service.cors-allowed-headers", "Authorization", 
+                    this.identityServiceConfig.getCorsAllowedHeaders());
         
-        assertEquals("keycloak.cors-allowed-methods", "POST, PUT, DELETE, GET", 
-                    this.keycloakAdapterConfig.getCorsAllowedMethods());
+        assertEquals("identity-service.cors-allowed-methods", "POST, PUT, DELETE, GET", 
+                    this.identityServiceConfig.getCorsAllowedMethods());
         
-        assertEquals("keycloak.cors-exposed-headers", "WWW-Authenticate, My-custom-exposed-Header", 
-                    this.keycloakAdapterConfig.getCorsExposedHeaders());
+        assertEquals("identity-service.cors-exposed-headers", "WWW-Authenticate, My-custom-exposed-Header", 
+                    this.identityServiceConfig.getCorsExposedHeaders());
         
-        assertEquals("keycloak.truststore", 
-                    "classpath:/alfresco/subsystems/tokenAuthentication/keystore.jks", 
-                    this.keycloakAdapterConfig.getTruststore());
+        assertEquals("identity-service.truststore", 
+                    "classpath:/alfresco/subsystems/identityServiceAuthentication/keystore.jks", 
+                    this.identityServiceConfig.getTruststore());
         
-        assertEquals("keycloak.truststore-password", "password", 
-                    this.keycloakAdapterConfig.getTruststorePassword());
+        assertEquals("identity-service.truststore-password", "password", 
+                    this.identityServiceConfig.getTruststorePassword());
         
-        assertEquals("keycloak.client-keystore", 
-                    "classpath:/alfresco/subsystems/tokenAuthentication/keystore.jks", 
-                    this.keycloakAdapterConfig.getClientKeystore());
+        assertEquals("identity-service.client-keystore", 
+                    "classpath:/alfresco/subsystems/identityServiceAuthentication/keystore.jks", 
+                    this.identityServiceConfig.getClientKeystore());
         
-        assertEquals("keycloak.client-keystore-password", "password", 
-                    this.keycloakAdapterConfig.getClientKeystorePassword());
+        assertEquals("identity-service.client-keystore-password", "password", 
+                    this.identityServiceConfig.getClientKeystorePassword());
         
-        assertEquals("keycloak.client-key-password", "password", 
-                    this.keycloakAdapterConfig.getClientKeyPassword());
+        assertEquals("identity-service.client-key-password", "password", 
+                    this.identityServiceConfig.getClientKeyPassword());
         
-        assertEquals("keycloak.token-store", "SESSION", 
-                    this.keycloakAdapterConfig.getTokenStore());
+        assertEquals("identity-service.token-store", "SESSION", 
+                    this.identityServiceConfig.getTokenStore());
         
-        assertEquals("keycloak.principal-attribute", "preferred_username", 
-                    this.keycloakAdapterConfig.getPrincipalAttribute());
+        assertEquals("identity-service.principal-attribute", "preferred_username", 
+                    this.identityServiceConfig.getPrincipalAttribute());
         
         // check number overrides
-        assertEquals("keycloak.confidential-port", 100, 
-                    this.keycloakAdapterConfig.getConfidentialPort());
+        assertEquals("identity-service.confidential-port", 100, 
+                    this.identityServiceConfig.getConfidentialPort());
         
-        assertEquals("keycloak.cors-max-age", 1000, 
-                    this.keycloakAdapterConfig.getCorsMaxAge());
+        assertEquals("identity-service.cors-max-age", 1000, 
+                    this.identityServiceConfig.getCorsMaxAge());
         
-        assertEquals("keycloak.connection-pool-size", 5, 
-                    this.keycloakAdapterConfig.getConnectionPoolSize());
+        assertEquals("identity-service.connection-pool-size", 5, 
+                    this.identityServiceConfig.getConnectionPoolSize());
         
-        assertEquals("keycloak.register-node-period", 50, 
-                    this.keycloakAdapterConfig.getRegisterNodePeriod());
+        assertEquals("identity-service.register-node-period", 50, 
+                    this.identityServiceConfig.getRegisterNodePeriod());
         
-        assertEquals("keycloak.token-minimum-time-to-live", 10, 
-                    this.keycloakAdapterConfig.getTokenMinimumTimeToLive());
+        assertEquals("identity-service.token-minimum-time-to-live", 10, 
+                    this.identityServiceConfig.getTokenMinimumTimeToLive());
         
-        assertEquals("keycloak.min-time-between-jwks-requests", 60, 
-                    this.keycloakAdapterConfig.getMinTimeBetweenJwksRequests());
+        assertEquals("identity-service.min-time-between-jwks-requests", 60, 
+                    this.identityServiceConfig.getMinTimeBetweenJwksRequests());
         
-        assertEquals("keycloak.public-key-cache-ttl", 3600, 
-                    this.keycloakAdapterConfig.getPublicKeyCacheTtl());
+        assertEquals("identity-service.public-key-cache-ttl", 3600, 
+                    this.identityServiceConfig.getPublicKeyCacheTtl());
         
         // check boolean overrides
-        assertFalse("keycloak.public-client", 
-                    this.keycloakAdapterConfig.isPublicClient());
+        assertFalse("identity-service.public-client", 
+                    this.identityServiceConfig.isPublicClient());
         
-        assertTrue("keycloak.use-resource-role-mappings", 
-                    this.keycloakAdapterConfig.isUseResourceRoleMappings());
+        assertTrue("identity-service.use-resource-role-mappings", 
+                    this.identityServiceConfig.isUseResourceRoleMappings());
         
-        assertTrue("keycloak.enable-cors", 
-                    this.keycloakAdapterConfig.isCors());
+        assertTrue("identity-service.enable-cors", 
+                    this.identityServiceConfig.isCors());
         
-        assertTrue("keycloak.expose-token", 
-                    this.keycloakAdapterConfig.isExposeToken());
+        assertTrue("identity-service.expose-token", 
+                    this.identityServiceConfig.isExposeToken());
         
-        assertTrue("keycloak.bearer-only", 
-                    this.keycloakAdapterConfig.isBearerOnly());
+        assertTrue("identity-service.bearer-only", 
+                    this.identityServiceConfig.isBearerOnly());
         
-        assertTrue("keycloak.autodetect-bearer-only", 
-                    this.keycloakAdapterConfig.isAutodetectBearerOnly());
+        assertTrue("identity-service.autodetect-bearer-only", 
+                    this.identityServiceConfig.isAutodetectBearerOnly());
         
-        assertTrue("keycloak.enable-basic-auth", 
-                    this.keycloakAdapterConfig.isEnableBasicAuth());
+        assertTrue("identity-service.enable-basic-auth", 
+                    this.identityServiceConfig.isEnableBasicAuth());
         
-        assertTrue("keycloak.allow-any-hostname", 
-                    this.keycloakAdapterConfig.isAllowAnyHostname());
+        assertTrue("identity-service.allow-any-hostname", 
+                    this.identityServiceConfig.isAllowAnyHostname());
         
-        assertTrue("keycloak.disable-trust-manager", 
-                    this.keycloakAdapterConfig.isDisableTrustManager());
+        assertTrue("identity-service.disable-trust-manager", 
+                    this.identityServiceConfig.isDisableTrustManager());
         
-        assertTrue("keycloak.always-refresh-token", 
-                    this.keycloakAdapterConfig.isAlwaysRefreshToken());
+        assertTrue("identity-service.always-refresh-token", 
+                    this.identityServiceConfig.isAlwaysRefreshToken());
         
-        assertTrue("keycloak.register-node-at-startup", 
-                    this.keycloakAdapterConfig.isRegisterNodeAtStartup());
+        assertTrue("identity-service.register-node-at-startup", 
+                    this.identityServiceConfig.isRegisterNodeAtStartup());
         
-        assertTrue("keycloak.enable-pkce", 
-                    this.keycloakAdapterConfig.isPkce());
+        assertTrue("identity-service.enable-pkce", 
+                    this.identityServiceConfig.isPkce());
         
-        assertTrue("keycloak.ignore-oauth-query-parameter", 
-                    this.keycloakAdapterConfig.isIgnoreOAuthQueryParameter());
+        assertTrue("identity-service.ignore-oauth-query-parameter", 
+                    this.identityServiceConfig.isIgnoreOAuthQueryParameter());
         
-        assertTrue("keycloak.turn-off-change-session-id-on-login", 
-                    this.keycloakAdapterConfig.getTurnOffChangeSessionIdOnLogin());    
+        assertTrue("identity-service.turn-off-change-session-id-on-login", 
+                    this.identityServiceConfig.getTurnOffChangeSessionIdOnLogin());    
         
         // check credentials overrides
-        Map<String, Object> credentials = this.keycloakAdapterConfig.getCredentials();
+        Map<String, Object> credentials = this.identityServiceConfig.getCredentials();
         assertNotNull("Expected a credentials map", credentials);
         assertFalse("Expected to retrieve a populated credentials map", credentials.isEmpty());
-        assertEquals("keycloak.credentials.secret", "11111", credentials.get("secret"));
-        assertEquals("keycloak.credentials.provider", "secret", credentials.get("provider"));
+        assertEquals("identity-service.credentials.secret", "11111", credentials.get("secret"));
+        assertEquals("identity-service.credentials.provider", "secret", credentials.get("provider"));
     }
     
     public void testValidToken() throws Exception
@@ -390,7 +392,7 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
         
         // override the http client on the keycloak deployment
         KeycloakDeployment deployment  = (KeycloakDeployment)childApplicationContextFactory.getApplicationContext().
-                    getBean(KEYCLOAK_DEPLOYMENT_BEAN_NAME);
+                    getBean(DEPLOYMENT_BEAN_NAME);
         deployment.setClient(mockHttpClient);
         
         // validate correct user was found
@@ -474,7 +476,7 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
      */
     private String generateToken(boolean expired) throws Exception
     {
-        String issuerUrl = this.keycloakAdapterConfig.getAuthServerUrl() + "/realms/" + this.keycloakAdapterConfig.getRealm();
+        String issuerUrl = this.identityServiceConfig.getAuthServerUrl() + "/realms/" + this.identityServiceConfig.getRealm();
         
         AccessToken token = new AccessToken();
         token.type("Bearer");
@@ -505,7 +507,7 @@ public class TokenRemoteUserMapperTest extends AbstractChainedSubsystemTest
     private void applyHardcodedPublicKey(PublicKey publicKey)
     {
         KeycloakDeployment deployment  = (KeycloakDeployment)childApplicationContextFactory.getApplicationContext().
-                    getBean(KEYCLOAK_DEPLOYMENT_BEAN_NAME);
+                    getBean(DEPLOYMENT_BEAN_NAME);
         HardcodedPublicKeyLocator publicKeyLocator = new HardcodedPublicKeyLocator(publicKey);
         deployment.setPublicKeyLocator(publicKeyLocator);
     }

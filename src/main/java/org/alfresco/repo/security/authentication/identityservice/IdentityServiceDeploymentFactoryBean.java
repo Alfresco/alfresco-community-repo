@@ -23,35 +23,34 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.token;
+package org.alfresco.repo.security.authentication.identityservice;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
-import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
- * Creates an instance of a KeycloakDeployment object.
+ * Creates an instance of a KeycloakDeployment object for communicating with the Identity Service.
  *
  * @author Gavin Cornwell
  */
-public class AlfrescoKeycloakDeploymentFactoryBean implements FactoryBean<KeycloakDeployment>
+public class IdentityServiceDeploymentFactoryBean implements FactoryBean<KeycloakDeployment>
 {
-    private static Log logger = LogFactory.getLog(AlfrescoKeycloakDeploymentFactoryBean.class);
+    private static Log logger = LogFactory.getLog(IdentityServiceDeploymentFactoryBean.class);
     
-    private AdapterConfig keycloakAdapterConfig;
+    private IdentityServiceConfig identityServiceConfig;
     
-    public void setAdapterConfig(AdapterConfig adapterConfig)
+    public void setIdentityServiceConfig(IdentityServiceConfig config)
     {
-        this.keycloakAdapterConfig = adapterConfig;
+        this.identityServiceConfig = config;
     }
     
     @Override
     public KeycloakDeployment getObject() throws Exception
     {
-        KeycloakDeployment deployment = KeycloakDeploymentBuilder.build(this.keycloakAdapterConfig);
+        KeycloakDeployment deployment = KeycloakDeploymentBuilder.build(this.identityServiceConfig);
         
         if (logger.isInfoEnabled())
         {

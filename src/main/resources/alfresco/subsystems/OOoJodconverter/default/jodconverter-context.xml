@@ -2,8 +2,11 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
    <bean id="jodconverter.shared.instance" class="org.alfresco.repo.content.JodConverterSharedInstance">
+       <property name="url">
+           <value>${jodconverter.url}</value>
+       </property>
        <property name="officeHome">
-          <value>${jodconverter.officeHome}</value>
+           <value>${jodconverter.officeHome}</value>
        </property>
        <property name="maxTasksPerProcess">
           <value>${jodconverter.maxTasksPerProcess}</value>

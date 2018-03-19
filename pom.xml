@@ -67,6 +67,7 @@
         <dependency.alfresco-data-model.version>8.2</dependency.alfresco-data-model.version>
         <dependency.alfresco-repository.version>6.36</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.21</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-hb-data-sender.version>1.0.6</dependency.alfresco-hb-data-sender.version>
 
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
@@ -148,6 +149,11 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-trashcan-cleaner</artifactId>
                 <version>${dependency.alfresco-trashcan-cleaner.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-heartbeat-data-sender</artifactId>
+                <version>${dependency.alfresco-hb-data-sender.version}</version>
             </dependency>
             <dependency>
                 <groupId>xalan</groupId>

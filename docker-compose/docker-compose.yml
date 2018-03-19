@@ -19,7 +19,7 @@ services:
             - 8082:8080 #Browser port
 
     share:
-        image: ${REPO}alfresco/alfresco-full-share:${SHARE_TAG}
+        image: ${REPO}alfresco/alfresco-share:${SHARE_TAG}
         environment:
             - REPO_HOST=alfresco
             - REPO_PORT=8080

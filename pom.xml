@@ -23,7 +23,6 @@
             <modules>
                 <module>war</module>
                 <module>docker-alfresco</module>
-                <module>docker-share</module>
             </modules>
         </profile>
         <profile>
@@ -37,7 +36,6 @@
                 <module>distribution</module>
                 <module>public-javadoc</module>
                 <module>docker-alfresco</module>
-                <module>docker-share</module>
             </modules>
         </profile>
     </profiles>

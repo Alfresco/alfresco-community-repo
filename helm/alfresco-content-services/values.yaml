@@ -30,8 +30,8 @@ repository:
 share:
   replicaCount: 1
   image:
-    repository: quay.io/alfresco/alfresco-full-share
-    tag: "5.2.X"
+    repository: quay.io/alfresco/alfresco-share
+    tag: "6.0"
     pullPolicy: Always
     internalPort: 8080
   service:

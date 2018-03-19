@@ -80,7 +80,7 @@ public class GroupsEntityResource implements EntityResourceAction.Read<Group>, E
     @Override
     @WebApiDescription(title="Create group", description="Create group")
     @WebApiParam(name="entity", title="A single group", description="A single group, multiple groups are not supported.",
-            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
     public List<Group> create(List<Group> entity, Parameters parameters)
     {
         List<Group> result = new ArrayList<>(1);

@@ -64,11 +64,12 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
 
     @Override
     @WebApiDescription(title = "Create some grass")
+    @WebApiParam(name = "entity", title = "The grass.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, required=false, allowMultiple = false)
     public List<Grass> create(List<Grass> entity, Parameters parameters)
     {
         return entity;
     }
-
+    
     @Override
     public void delete(String id, Parameters parameters)
     {

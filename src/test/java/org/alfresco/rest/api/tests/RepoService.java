@@ -63,7 +63,6 @@ import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
-import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -201,7 +200,6 @@ public class RepoService
 	protected InvitationService invitationService;
 	protected LockService lockService;
 	protected CMISConnector cmisConnector;
-	protected NodeIndexer nodeIndexer;
 	protected HiddenAspect hiddenAspect;
 	protected NetworksService networksService;
 	protected NamespaceService namespaceService;
@@ -257,7 +255,6 @@ public class RepoService
     	this.invitationService = (InvitationService)applicationContext.getBean("InvitationService");
     	this.lockService = (LockService)applicationContext.getBean("LockService");
     	this.cmisConnector = (CMISConnector)applicationContext.getBean("CMISConnector");
-    	this.nodeIndexer = (NodeIndexer)applicationContext.getBean("nodeIndexer");
     	this.activities = (Activities)applicationContext.getBean("activities");
     	this.hiddenAspect = (HiddenAspect)applicationContext.getBean("hiddenAspect");
     	this.networksService = (NetworksService)applicationContext.getBean("networksService");
@@ -315,11 +312,6 @@ public class RepoService
 		return allPeople.get(username.toLowerCase());
 	}
 	
-    public void disableInTxnIndexing()
-    {
-        nodeIndexer.setDisabled(true);
-    }
-    
     public int getClientVisibilityMask(Client client, Visibility visibility)
     {
         return hiddenAspect.getClientVisibilityMask(client, visibility);

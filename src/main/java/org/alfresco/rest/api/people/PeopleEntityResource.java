@@ -100,8 +100,8 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
 
     @Override
     @WebApiDescription(title="Create person", description="Create a person")
-    @WebApiParam(name="entity", title="A single person", description="A single person, multiple people are not supported.",
-            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+    @WebApiParam(name="persons", title="A single person", description="A single person, multiple people are not supported.",
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
     public List<Person> create(List<Person> persons, Parameters parameters)
     {
         Person p = persons.get(0);

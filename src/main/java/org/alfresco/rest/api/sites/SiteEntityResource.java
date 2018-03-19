@@ -112,7 +112,7 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     @Override
     @WebApiDescription(title="Create site", description="Create the default/functional Share site")
     @WebApiParam(name="entity", title="A single site", description="A single site, multiple sites are not supported.",
-            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
     public List<Site> create(List<Site> entity, Parameters parameters)
     {
         List<Site> result = new ArrayList<>(1);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,14 +36,27 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.*;
 
 /**
- * This class collects repository info data for HeartBeat.
- * <br>
- * <b>Collector ID:</b> acs.repository.info
- * <br>
- * <b>Data points:</b> repoName, version, schema, edition
- * <br>
- * <b>Version points:</b> full, servicePack, major, minor, patch, hotfix
- *
+ * A collector of data related to the meta-data for the Alfresco stack.
+ * <ul>
+ *  <li>Collector ID: <b>acs.repository.info</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>repoName:</b> Int number of active models. {@link Descriptor#getName()}</li>
+ *          <li><b>version: Object which contains version information:</b>
+ *              <ul>
+ *                  <li>full: String - The full version number. {@link Descriptor#getVersion()}</li>
+ *                  <li>servicePack: String - The full version number. {@link Descriptor#getVersionNumber()}</li>
+ *                  <li>major: String - The major version number, e.g. <u>1</u>.2.3. {@link Descriptor#getVersionMajor()}</li>
+ *                  <li>minor: String - The minor version number, e.g. 1.<u>2</u>.3. {@link Descriptor#getVersionMinor()}</li>
+ *                  <li>patch: String - The version revision number, e.g. 1.2.<u>3</u>. {@link Descriptor#getVersionRevision()}</li>
+ *                  <li>hotfix: String - The version label. {@link Descriptor#getVersionLabel()}</li>
+ *              </ul>
+ *          </li>
+ *          <li><b>schema:</b> Int - The schema number. {@link Descriptor#getSchema()}</li>
+ *          <li><b>edition:</b> String - The edition. {@link Descriptor#getEdition()}</li>
+ *      </ul>
+ *  </li>
+ * </ul>
  */
 public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean
 {

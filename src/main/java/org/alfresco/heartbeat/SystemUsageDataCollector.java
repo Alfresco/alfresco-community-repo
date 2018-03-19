@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,6 +34,23 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
+/**
+ * A collector of data related the <code>Runtime</code> data of the system. Every Java application has a single instance of class
+ * <code>Runtime</code> that allows the application to interface with the environment in which the application is running.
+ * <ul>
+ *  <li>Collector ID: <b>acs.repository.usage.system</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>memFree:</b> Long - The amount of free memory in the Java Virtual Machine. {@link Runtime#freeMemory()}</li>
+ *          <li><b>memMax:</b> Long -T he maximum amount of memory that the Java virtual machine will
+ * attempt to use. {@link Runtime#maxMemory()}</li>
+ *          <li><b>memTotal:</b> Long - The total amount of memory in the Java virtual machine. {@link Runtime#totalMemory()}</li>
+ *      </ul>
+ *  </li>
+ * </ul>
+ *
+ * @author eknizat
+ */
 public class SystemUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */

@@ -58,6 +58,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest.class,
     org.alfresco.repo.domain.permissions.FixedAclUpdaterTest.class,
     org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest.class,
+    org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest.class,
     org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest.class,
     org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest.class,
     org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,

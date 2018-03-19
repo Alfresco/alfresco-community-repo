@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,6 +41,8 @@ import org.artofsolving.jodconverter.office.OfficeManager;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+///////// THIS FILE IS A COPY OF THE CODE IN alfresco-docker-transformers /////////////
+
 /**
  * Makes use of the JodConverter library and an installed
  * OpenOffice application to perform OpenOffice-driven conversions.
@@ -67,6 +69,7 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
     //      "${jodconverter.maxTasksPerProcess}" will be injected.
 
     private Integer maxTasksPerProcess;
+    private String url;
     private String officeHome;
     private int[] portNumbers;
     private Long taskExecutionTimeout;
@@ -87,7 +90,12 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
             this.maxTasksPerProcess = l.intValue();
         }
     }
-    
+
+    public void setUrl(String url)
+    {
+        this.url = url == null ? null : url.trim();
+    }
+
     public void setOfficeHome(String officeHome)
     {
         this.officeHome = officeHome == null ? "" : officeHome.trim();
@@ -275,7 +283,7 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
      */
     public boolean isAvailable()
     {
-        final boolean result = isAvailable && officeManager != null;
+        final boolean result = isAvailable && (officeManager != null || (url != null && !url.isEmpty()));
 		return result;
     }
 
@@ -306,6 +314,7 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
             logger.debug("  jodconverter.taskExecutionTimeout = " + taskExecutionTimeout);
             logger.debug("  jodconverter.taskQueueTimeout = " + taskQueueTimeout);
             logger.debug("  jodconverter.connectTimeout = " + connectTimeout);
+            logger.debug("  jodconverter.url = " + url);
         }
 
         // Only start the JodConverter instance(s) if the subsystem is enabled.
@@ -314,71 +323,75 @@ public class JodConverterSharedInstance implements InitializingBean, DisposableB
             return;
         }
 
-        logAllSofficeFilesUnderOfficeHome();
-        
-        try
+        if (url == null || url.isEmpty())
         {
-            DefaultOfficeManagerConfiguration defaultOfficeMgrConfig = new DefaultOfficeManagerConfiguration();
-            if (maxTasksPerProcess != null && maxTasksPerProcess > 0)
+
+            logAllSofficeFilesUnderOfficeHome();
+
+            try
             {
-                defaultOfficeMgrConfig.setMaxTasksPerProcess(maxTasksPerProcess);
+                DefaultOfficeManagerConfiguration defaultOfficeMgrConfig = new DefaultOfficeManagerConfiguration();
+                if (maxTasksPerProcess != null && maxTasksPerProcess > 0)
+                {
+                    defaultOfficeMgrConfig.setMaxTasksPerProcess(maxTasksPerProcess);
+                }
+                if (officeHome != null && officeHome.length() != 0)
+                {
+                    defaultOfficeMgrConfig.setOfficeHome(officeHome);
+                }
+                if (portNumbers != null && portNumbers.length != 0)
+                {
+                    defaultOfficeMgrConfig.setPortNumbers(portNumbers);
+                }
+                if (taskExecutionTimeout != null && taskExecutionTimeout > 0)
+                {
+                    defaultOfficeMgrConfig.setTaskExecutionTimeout(taskExecutionTimeout);
+                }
+                if (taskQueueTimeout != null && taskQueueTimeout > 0)
+                {
+                    defaultOfficeMgrConfig.setTaskQueueTimeout(taskQueueTimeout);
+                }
+                if (templateProfileDir != null)
+                {
+                    defaultOfficeMgrConfig.setTemplateProfileDir(templateProfileDir);
+                }
+                if (connectTimeout != null)
+                {
+                    defaultOfficeMgrConfig.setConnectTimeout(connectTimeout);
+                }
+                // Try to configure and start the JodConverter library.
+                officeManager = defaultOfficeMgrConfig.buildOfficeManager();
+                officeManager.start();
             }
-            if (officeHome != null)
+            catch (IllegalStateException isx)
             {
-                defaultOfficeMgrConfig.setOfficeHome(officeHome);
+                if (logger.isErrorEnabled())
+                {
+                    logger.error("Unable to pre-initialise JodConverter library. "
+                            + "The following error is shown for informational purposes only.", isx);
+                }
+                return;
             }
-            if (portNumbers != null && portNumbers.length != 0)
+            catch (OfficeException ox)
             {
-                defaultOfficeMgrConfig.setPortNumbers(portNumbers);
+                if (logger.isErrorEnabled())
+                {
+                    logger.error("Unable to start JodConverter library. "
+                            + "The following error is shown for informational purposes only.", ox);
+                }
+
+                // We need to let it continue (comment-out return statement) even if an error occurs. See MNT-13706 and associated issues.
+                //return;
             }
-            if (taskExecutionTimeout != null && taskExecutionTimeout > 0)
+            catch (Exception x)
             {
-                defaultOfficeMgrConfig.setTaskExecutionTimeout(taskExecutionTimeout);
+                if (logger.isErrorEnabled())
+                {
+                    logger.error("Unexpected error in configuring or starting the JodConverter library."
+                            + "The following error is shown for informational purposes only.", x);
+                }
+                return;
             }
-            if (taskQueueTimeout != null && taskQueueTimeout > 0)
-            {
-                defaultOfficeMgrConfig.setTaskQueueTimeout(taskQueueTimeout);
-            }
-            if (templateProfileDir != null)
-            {
-                defaultOfficeMgrConfig.setTemplateProfileDir(templateProfileDir);
-            }
-            if (connectTimeout != null)
-            {
-            	defaultOfficeMgrConfig.setConnectTimeout(connectTimeout);
-            }
-            // Try to configure and start the JodConverter library.
-            officeManager = defaultOfficeMgrConfig.buildOfficeManager();
-            officeManager.start();
-        }
-        catch (IllegalStateException isx)
-        {
-            if (logger.isErrorEnabled())
-            {
-                logger.error("Unable to pre-initialise JodConverter library. "
-                        + "The following error is shown for informational purposes only.", isx);
-            }
-            return;
-        }
-        catch (OfficeException ox)
-        {
-            if (logger.isErrorEnabled())
-            {
-                logger.error("Unable to start JodConverter library. "
-                        + "The following error is shown for informational purposes only.", ox);
-            }
-            
-            // We need to let it continue (comment-out return statement) even if an error occurs. See MNT-13706 and associated issues.
-            //return;
-        }
-        catch (Exception x)
-        {
-            if (logger.isErrorEnabled())
-            {
-                logger.error("Unexpected error in configuring or starting the JodConverter library."
-                                + "The following error is shown for informational purposes only.",x);
-            }
-            return;
         }
 
         // If any exceptions are thrown in the above code, then isAvailable

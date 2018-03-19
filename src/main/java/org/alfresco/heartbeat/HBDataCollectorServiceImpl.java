@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,6 +45,11 @@ import org.quartz.SchedulerException;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 
+/**
+ * HBDataCollectorService implementation. This service manages multiple collectors. The collectors containing cron expression
+ * which will be used to create time scheduled jobs for executing the tasks from the collector
+ *
+ */
 public class HBDataCollectorServiceImpl implements HBDataCollectorService, LicenseChangeHandler
 {
     /** The logger. */
@@ -145,6 +150,11 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         }
     }
 
+    /**
+     * Deregister data collector. Before the collector will be removed the collector job will be unscheduled
+     *
+     * @param collector
+     */
     public void deregisterCollector(final HBBaseDataCollector collector)
     {
         if (collectors.remove(collector))

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,7 +34,22 @@ import org.alfresco.util.PropertyCheck;
 /**
  *
  * This class is to be extended by HeartBeat data collectors.
-  *
+ * Every new collector needs to provide details of the data it collects. As good examples use one
+ * of the existing collectors {@link AuthoritiesDataCollector}, {@link ConfigurationDataCollector},
+ * {@link InfoDataCollector}, {@link ModelUsageDataCollector}, {@link SystemUsageDataCollector}.
+ * They are all following this layout:
+ *
+ * <ul>
+ *  <li>Collector ID: <b>a.collector.id</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>dataP1:</b> data type - description</li>
+ *          <li><b>dataP2:</b> data type - description</li>
+ *          ...
+ *      </ul>
+ *  </li>
+ * </ul>
+ *
  * @author eknizat
  */
 public abstract class HBBaseDataCollector
@@ -48,6 +63,12 @@ public abstract class HBBaseDataCollector
      */
     private HBDataCollectorService hbDataCollectorService;
 
+    /**
+     *
+     * @param collectorId Unique name of the collector e.g.: acs.repository.info
+     * @param collectorVersion Version of the collector e.g.: 1.0
+     * @param cronExpression Cron expression for frequently time scheduling e.g.: "0 0 0 ? * SUN" (Weekly)
+     */
     public HBBaseDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
         PropertyCheck.mandatory(this, "collectorId", collectorId);
@@ -88,6 +109,9 @@ public abstract class HBBaseDataCollector
         hbDataCollectorService.registerCollector(this);
     }
 
+    /**
+     * This method is called by Spring at initialisation and will deregister this collector with the provided {@link HBDataCollectorService}
+     */
     public void deregister()
     {
         PropertyCheck.mandatory(this, "hbDataCollectorService", hbDataCollectorService);

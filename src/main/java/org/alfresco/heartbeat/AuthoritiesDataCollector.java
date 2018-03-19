@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -37,11 +37,16 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.*;
 
 /**
- * This class collects authorities data for HBDataCollectorService.
- * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
- * <br>
- * <b>Data points:</b> numUsers, numGroups
+ * A collector of data related authorities. The AuthorityService encapsulates authorities granted to users.
+ * <ul>
+ *  <li>Collector ID: <b>acs.repository.usage.authorities</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>numUsers:</b> Integer - The total number of users in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
+ *          <li><b>numGroups:</b> Integer - The total number of groups in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
+ *      </ul>
+ *  </li>
+ * </ul>
  *
  * @author eknizat
  */

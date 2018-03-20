@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acs-community-packaging</artifactId>
     <name>Alfresco Content Services Community Packaging</name>
@@ -50,7 +51,7 @@
     <distributionManagement>
         <repository>
             <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-releases</url>
         </repository>
         <snapshotRepository>
             <id>alfresco-internal-snapshots</id>
@@ -61,7 +62,7 @@
     <properties>
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
         <version.edition>Community</version.edition>
-        <bamboo.tag.name></bamboo.tag.name>
+        <image.tag>local</image.tag>
 
         <dependency.alfresco-core.version>7.1</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.2</dependency.alfresco-data-model.version>

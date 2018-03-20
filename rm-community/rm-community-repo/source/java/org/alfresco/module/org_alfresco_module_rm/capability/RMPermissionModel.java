@@ -134,6 +134,4 @@ public interface RMPermissionModel
     String CREATE_HOLD = "CreateHold";
     String ADD_TO_HOLD = "AddToHold";
     String REMOVE_FROM_HOLD = "RemoveFromHold";
-
-    String ADD_EXEMPTIONS = "AddExemptions";
 }

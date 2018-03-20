@@ -1494,7 +1494,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             try
             {
-                logger.info("AUDIT ENTRY" + entry.toString());
                 JSONObject json = new JSONObject();
 
                 json.put("timestamp", entry.getTimestampString());
@@ -1515,17 +1514,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     json.put("nodeName", userName == null ? "": userName);
                     json.put("createPerson", true);
                 }
-                else if(entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
-                {
-                    entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
-                    String userName = null;
-                    if (entry.getBeforeProperties()!= null)
-                    {
-                        userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);;
-                    }
-                    json.put("nodeName", userName == null ? "" : userName);
-                    json.put("deletePerson", true);
-                }
                 else
                 {
                     json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
@@ -1535,6 +1523,11 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 if (entry.getEvent().equals("Delete RM Object"))
                 {
                     json.put("deleteObject", true);
+                }
+
+                if (entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
+                {
+                    json.put("deletePerson", true);
                 }
 
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
@@ -1579,7 +1572,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
 
                 json.put("changedValues", changedValues);
-                logger.info("Json valuse " + json.toString());
                 writer.write(json.toString());
             }
             catch (JSONException je)

@@ -26,16 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Audits person deletion.
@@ -46,16 +41,14 @@ import org.alfresco.service.namespace.QName;
 @BehaviourBean
 public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
 {
-
+/*
     private NodeService nodeService;
 
-    /**
-     * @param nodeService
-     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
+    */
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
@@ -69,8 +62,8 @@ public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNo
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         //audit the property values before the delete event
-        Map<QName, Serializable> before = nodeService.getProperties(nodeRef);
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), before, null, true, false);
+       // Map<QName, Serializable> before = nodeService.getProperties(nodeRef);
+        recordsManagementAuditService.auditEvent(nodeRef, getName(), null, null, true, false);
     }
 
 

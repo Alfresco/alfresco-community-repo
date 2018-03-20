@@ -1494,6 +1494,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         {
             try
             {
+                logger.info("AUDIT ENTRY" + entry.toString());
                 JSONObject json = new JSONObject();
 
                 json.put("timestamp", entry.getTimestampString());
@@ -1513,6 +1514,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     }
                     json.put("nodeName", userName == null ? "": userName);
                     json.put("createPerson", true);
+                }
+                else if(entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
+                {
+                    entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
+                    String userName = null;
+                    if (entry.getBeforeProperties()!= null)
+                    {
+                        userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);;
+                    }
+                    json.put("nodeName", userName == null ? "" : userName);
+                    json.put("deletePerson", true);
                 }
                 else
                 {
@@ -1567,7 +1579,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
 
                 json.put("changedValues", changedValues);
-
+                logger.info("Json valuse " + json.toString());
                 writer.write(json.toString());
             }
             catch (JSONException je)

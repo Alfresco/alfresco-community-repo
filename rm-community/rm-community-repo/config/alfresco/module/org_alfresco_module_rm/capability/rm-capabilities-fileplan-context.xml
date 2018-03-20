@@ -20,16 +20,6 @@
       <property name="index" value="30" />
    </bean>
 
-   <bean id="rmAddExemptionsCapability"
-         parent="declarativeCapability">
-      <property name="name" value="AddExemption" />
-      <property name="permission" value="AddExemption" />
-      <property name="group">
-         <ref bean="configGroup" />
-      </property>
-      <property name="index" value="100" />
-   </bean>
-
    <!--  Unassignable Capabilities -->
 
    <bean id="rmCreateRootRecordCategoryCapability"

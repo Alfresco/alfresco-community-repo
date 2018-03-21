@@ -1514,6 +1514,16 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     json.put("nodeName", userName == null ? "": userName);
                     json.put("createPerson", true);
                 }
+                else if (entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
+                {
+                    String userName = null;
+                    if (entry.getBeforeProperties() != null)
+                    {
+                        userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
+                    }
+                    json.put("nodeName", userName == null ? "" : userName);
+                    json.put("deletePerson", true);
+                }
                 else
                 {
                     json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
@@ -1523,11 +1533,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 if (entry.getEvent().equals("Delete RM Object"))
                 {
                     json.put("deleteObject", true);
-                }
-
-                if (entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
-                {
-                    json.put("deletePerson", true);
                 }
 
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());

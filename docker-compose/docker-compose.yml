@@ -2,7 +2,7 @@ version: "3"
 
 services:
     alfresco:
-        image: ${REPO}alfresco/alfresco-content-services-community:${ALFRESCO_TAG}
+        image: alfresco/alfresco-content-services-community:6.0.4-ea
         environment:
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
@@ -19,7 +19,7 @@ services:
             - 8082:8080 #Browser port
 
     share:
-        image: ${REPO}alfresco/alfresco-share:${SHARE_TAG}
+        image: alfresco/alfresco-share:6.0.a
         environment:
             - REPO_HOST=alfresco
             - REPO_PORT=8080
@@ -27,7 +27,7 @@ services:
             - 8080:8080
 
     postgres:
-        image: docker.io/library/postgres:9.4.12
+        image: postgres:9.4.12
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
@@ -36,7 +36,7 @@ services:
             - 5432:5432
 
     solr6:
-        image: quay.io/alfresco/search-services:1.2.0-SNAPSHOT
+        image: alfresco/alfresco-search-services:1.1.0
         environment:
             #Solr needs to know how to register itself with Alfresco
             - SOLR_ALFRESCO_HOST=alfresco

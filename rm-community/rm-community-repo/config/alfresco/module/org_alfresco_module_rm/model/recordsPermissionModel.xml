@@ -97,9 +97,6 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditHold"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EndRetention"/>
 
-
-           <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddExemptions" />
-
         </permissionGroup>
 
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
@@ -191,13 +188,9 @@
         <permissionGroup name="EndRetention" expose="false" allowFullControl="false"/>
 
 
-       <permissionGroup name="AddExemptions" expose="false" allowFullControl="false" />
 
         <!--  End -->
 
-       <permission name="_AddExemptions" expose="false">
-          <grantedToGroup permissionGroup="AddExemptions" />
-       </permission>
 
         <permission name="_ReadRecords" expose="false">
             <grantedToGroup permissionGroup="ReadRecords"/>

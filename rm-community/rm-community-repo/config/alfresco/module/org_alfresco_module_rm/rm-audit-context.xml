@@ -59,7 +59,6 @@
 
    <bean id="audit-event.delete-person" parent="audit-event"
          class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeletePersonAuditEvent">
-      <property name="dictionaryService" ref="dictionaryService" />
       <property name="nodeService" ref="nodeService" />
       <property name="name" value="Delete Person" />
       <property name="label" value="rm.audit.delete-person" />

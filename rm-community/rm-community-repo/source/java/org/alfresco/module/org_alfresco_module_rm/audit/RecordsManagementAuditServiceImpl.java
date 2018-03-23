@@ -1516,12 +1516,11 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
                 else if (entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
                 {
-                    String userName = null;
                     if (entry.getBeforeProperties() != null)
                     {
-                        userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
+                        String userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
+                        json.put("nodeName", userName == null ? "" : userName);
                     }
-                    json.put("nodeName", userName == null ? "" : userName);
                     json.put("deletePerson", true);
                 }
                 else

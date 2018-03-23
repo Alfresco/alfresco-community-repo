@@ -465,7 +465,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
      * Given I have deleted a user
      * When I will get the RM audit filter by delete user event
      * Then there will be an entry for the deleted user
-     * And the audit entry has the properties specific to cm:person type audited
+     * And the audit entry has the username property value audited
      * @throws Exception
      */
     @org.junit.Test
@@ -476,7 +476,6 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             final static String DELETE_USER_AUDIT_EVENT = "Delete Person";
             String userName = "auditDeleteUser";
             NodeRef user;
-            long nrOfPropertiesAudited;
             List<RecordsManagementAuditEntry> entry;
 
             @Override
@@ -484,10 +483,6 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             {
                 // create a user
                 user = createPerson(userName);
-                // count the cm:person properties with non null values
-                nrOfPropertiesAudited = dictionaryService.getPropertyDefs(ContentModel.TYPE_PERSON).keySet()
-                                                         .stream().filter(prop -> nodeService.getProperty(user, prop) != null)
-                                                         .count();
                 personService.deletePerson(userName);
             }
 
@@ -500,7 +495,6 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
                 // get the audit events for "Delete Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
-
             }
 
             @Override
@@ -509,7 +503,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 assertEquals("Delete user event is not audited.", DELETE_USER_AUDIT_EVENT, entry.get(0).getEvent());
                 assertEquals(user.getId(), entry.get(0).getNodeName());
                 assertEquals("Unexpected nr of properties audited for cm:person type when deleting a user.",
-                        nrOfPropertiesAudited, entry.get(0).getBeforeProperties().size());
+                        1, entry.get(0).getBeforeProperties().size());
                 assertEquals("Wrong value for username property is  audited",
                         userName, entry.get(0).getBeforeProperties().get(ContentModel.PROP_USERNAME));
             }

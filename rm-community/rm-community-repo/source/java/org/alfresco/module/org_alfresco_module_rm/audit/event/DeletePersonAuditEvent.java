@@ -29,14 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -50,25 +48,24 @@ import org.alfresco.service.namespace.QName;
 @BehaviourBean
 public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
 {
-
+    /** Node Service*/
     private NodeService nodeService;
 
-    private DictionaryService dictionaryService;
-
+    /**
+     * Sets the node service
+     *
+     * @param nodeService nodeService to set
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     * Behaviour that will audit cm:person type when the user is deletedF
+     * @param  nodeRef the node to be deleted
+     *
      */
-
     @Override
     @Behaviour
     (
@@ -77,21 +74,12 @@ public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNo
     )
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        //get the cm:person properties
-        Set<QName> properties = dictionaryService.getPropertyDefs(ContentModel.TYPE_PERSON).keySet();
-        //retrive the properties and the values
-        Map<QName, Serializable> result = new HashMap<>();
-        for (QName property : properties)
-        {
-            Serializable values = nodeService.getProperty(nodeRef, property);
-            if (values != null)
-            {
-                result.put(property, values);
-            }
-        }
+        //retrieve the username property to be audited
+        Map<QName, Serializable> userName = new HashMap<>();
+        userName.put(ContentModel.PROP_USERNAME, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
 
         //audit the property values before the delete event
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), result, null, true, false);
+        recordsManagementAuditService.auditEvent(nodeRef, getName(), userName, null, true, false);
     }
 
 

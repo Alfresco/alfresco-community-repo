@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <image.name>alfresco/alfresco-content-services-community</image.name>
+        <image.name>alfresco/alfresco-content-repository-community</image.name>
         <image.registry>quay.io</image.registry>
         <public.image.registry>registry.hub.docker.com</public.image.registry>
     </properties>

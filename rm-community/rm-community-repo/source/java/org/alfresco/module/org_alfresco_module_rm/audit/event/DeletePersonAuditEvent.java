@@ -62,10 +62,12 @@ public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNo
     }
 
     /**
-     * Behaviour that will audit cm:person type when the user is deletedF
+     * Behaviour that will audit user deletion
+     *
      * @param  nodeRef the node to be deleted
      *
      */
+
     @Override
     @Behaviour
     (

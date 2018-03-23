@@ -101,7 +101,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         this.scheduler = scheduler;
     }
 
-    public boolean isEnabled()
+    public synchronized boolean isEnabled()
     {
         return this.enabled;
     }
@@ -120,7 +120,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
      * @param collector collector to register
      */
     @Override
-    public void registerCollector(final HBBaseDataCollector collector)
+    public synchronized void registerCollector(final HBBaseDataCollector collector)
     {
         // Check collector with the same ID does't already exist
         for (HBBaseDataCollector col : collectors)
@@ -155,7 +155,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
      *
      * @param collector
      */
-    public void deregisterCollector(final HBBaseDataCollector collector)
+    public synchronized void deregisterCollector(final HBBaseDataCollector collector)
     {
         if (collectors.remove(collector))
         {
@@ -188,7 +188,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
      * Start or stop the HertBeat jobs for all registered collectors
      * depending on whether the heartbeat is enabled or not
      */
-    private synchronized void scheduleCollector(final HBBaseDataCollector collector) throws ParseException, SchedulerException
+    private void scheduleCollector(final HBBaseDataCollector collector) throws ParseException, SchedulerException
     {
         final String jobName = "heartbeat-" + collector.getCollectorId();
         final String triggerName = jobName + "-Trigger";

@@ -10,7 +10,9 @@ ENV LIBREOFFICE_RPM_URL=http://download.documentfoundation.org/libreoffice/stabl
 ENV IMAGEMAGICK_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-7.0.7-27.x86_64.rpm
 ENV IMAGEMAGICK_LIB_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-libs-7.0.7-27.x86_64.rpm
 
-RUN wget $ALFRESCO_PDF_RENDERER_LIB_RPM_URL && \
+RUN yum install wget -y && \
+	\
+	wget $ALFRESCO_PDF_RENDERER_LIB_RPM_URL && \
     tar xf alfresco-pdf-renderer-*-linux.tgz -C /usr/bin && \
     rm -f alfresco-pdf-renderer-*-linux.tgz && \
     \
@@ -25,7 +27,9 @@ RUN wget $ALFRESCO_PDF_RENDERER_LIB_RPM_URL && \
     yum localinstall -y ImageMagick-*.x86_64.rpm && \
     rm -f ImageMagick-*.x86_64.rpm && \
     \
-    yum clean all
+    yum clean all &&\
+	\
+	yum remove wget -y
 
 RUN mkdir -p /usr/local/tomcat/shared/classes && \
     mkdir /usr/local/tomcat/alfresco-mmt
@@ -57,6 +61,7 @@ img.exe=/usr/bin/convert\n\
 RUN mkdir -p /usr/local/tomcat/amps
 
 COPY target/amps /usr/local/tomcat/amps
+
 
 RUN java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
               /usr/local/tomcat/amps /usr/local/tomcat/webapps/alfresco -directory -nobackup -force

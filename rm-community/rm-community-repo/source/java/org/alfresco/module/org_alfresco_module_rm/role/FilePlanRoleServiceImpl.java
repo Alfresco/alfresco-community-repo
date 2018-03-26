@@ -45,6 +45,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.FileUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -273,7 +274,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         {
                             throw new AlfrescoRuntimeException("Could not load default bootstrap roles configuration");
                         }
-                        array = new JSONArray(convertStreamToString(is));
+                        array = new JSONArray(FileUtils.convertStreamToString(is));
                     }
                     catch (IOException ioe)
                     {
@@ -368,47 +369,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Helper method to convert a stream to a string.
-     *
-     * @param is    input stream
-     * @return {@link String}   string
-     * @throws IOException
-     */
-    public String convertStreamToString(InputStream is) throws IOException
-    {
-        /*
-        * To convert the InputStream to String we use the BufferedReader.readLine()
-        * method. We iterate until the BufferedReader return null which means
-        * there's no more data to read. Each line will appended to a StringBuilder
-        * and returned as String.
-        */
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-        StringBuilder sb = new StringBuilder();
-
-        String line = null;
-        try
-        {
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
-            }
-        }
-        finally
-        {
-            try
-            {
-                is.close();
-            }
-            catch (IOException e)
-            {
-                LOGGER.debug("Ignoring failed attempt to close stream.", e);
-            }
-        }
-
-        return sb.toString();
     }
 
     /**

@@ -1,4 +1,4 @@
-FROM quay.io/alfresco/alfresco-base-tomcat:8.5.27-java-8-oracle-centos-7-33f95a9ab753
+FROM quay.io/alfresco/alfresco-base-tomcat:8.5.28-java-8-oracle-centos-7-f7b1278cc0eb
 
 # Base ACS Repository Image includes transformation commands:
 #   /usr/bin/alfresco-pdf-renderer      - alfresco-pdf-renderer
@@ -7,8 +7,8 @@ FROM quay.io/alfresco/alfresco-base-tomcat:8.5.27-java-8-oracle-centos-7-33f95a9
 
 ENV ALFRESCO_PDF_RENDERER_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
 ENV LIBREOFFICE_RPM_URL=http://download.documentfoundation.org/libreoffice/stable/5.4.5/rpm/x86_64/LibreOffice_5.4.5_Linux_x86-64_rpm.tar.gz
-ENV IMAGEMAGICK_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-7.0.7-27.x86_64.rpm
-ENV IMAGEMAGICK_LIB_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-libs-7.0.7-27.x86_64.rpm
+ENV IMAGEMAGICK_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-7.0.7-28.x86_64.rpm
+ENV IMAGEMAGICK_LIB_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-libs-7.0.7-28.x86_64.rpm
 
 RUN yum install wget -y && \
 	\

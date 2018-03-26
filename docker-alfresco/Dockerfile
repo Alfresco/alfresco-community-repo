@@ -6,9 +6,9 @@ FROM quay.io/alfresco/alfresco-base-tomcat:8.5.27-java-8-oracle-centos-7-33f95a9
 #   /opt/libreoffice5.4/program/soffice - LibreOffice
 
 ENV ALFRESCO_PDF_RENDERER_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
-ENV LIBREOFFICE_RPM_URL=http://download.documentfoundation.org/libreoffice/stable/5.4.5/rpm/x86_64/LibreOffice_5.4.5_Linux_x86-64_rpm.tar.gz
-ENV IMAGEMAGICK_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-7.0.7-27.x86_64.rpm
-ENV IMAGEMAGICK_LIB_RPM_URL=https://www.imagemagick.org/download/linux/CentOS/x86_64/ImageMagick-libs-7.0.7-27.x86_64.rpm
+ENV LIBREOFFICE_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/libreoffice/libreoffice-dist/5.4.6/libreoffice-dist-5.4.6-linux.gz
+ENV IMAGEMAGICK_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/imagemagick/imagemagick-distribution/7.0.7-27/imagemagick-distribution-7.0.7-27-linux.rpm
+ENV IMAGEMAGICK_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/imagemagick/imagemagick-distribution/7.0.7-27/imagemagick-distribution-7.0.7-27-libs-linux.rpm
 
 RUN yum install wget -y && \
 	\
@@ -18,14 +18,14 @@ RUN yum install wget -y && \
     \
     yum install -y cairo cups-libs libSM && \
     wget $LIBREOFFICE_RPM_URL && \
-    tar xzf LibreOffice_*_Linux_x86-64_rpm.tar.gz && \
+    tar xzf libreoffice-dist-*-linux.gz && \
     yum localinstall -y LibreOffice*/RPMS/*.rpm && \
-    rm -rf LibreOffice_*_Linux_x86-64_rpm.tar.gz LibreOffice_*_Linux_x86-64_rpm && \
+    rm -rf libreoffice-dist-*-linux.gz LibreOffice_*_Linux_x86-64_rpm && \
     \
     wget $IMAGEMAGICK_RPM_URL && \
     wget $IMAGEMAGICK_LIB_RPM_URL && \
-    yum localinstall -y ImageMagick-*.x86_64.rpm && \
-    rm -f ImageMagick-*.x86_64.rpm && \
+    yum localinstall -y imagemagick-distribution-*-linux.rpm && \
+    rm -f imagemagick-distribution-*-linux.rpm && \
     \
     yum clean all &&\
 	\

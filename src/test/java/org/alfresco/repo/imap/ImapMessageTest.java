@@ -438,8 +438,8 @@ public class ImapMessageTest extends TestCase
         // Following method returns the address with quoted personal aka <["�?р�?ений Ковальчук"] <ars.kov@gmail.com>>
         // NOTE! This should be coincided with RFC822MetadataExtracter. Would 'addresses' be quoted or not? 
         // String decodedAddress = address.toUnicodeString();
-        // So, just using decode, for now
-        String decodedAddress = MimeUtility.decodeText(address.toString());
+        // Starting from javax.mail 1.5.6 the address is folded at linear whitespace so that each line is no longer than 76 characters, if possible.
+        String decodedAddress = MimeUtility.decodeText(MimeUtility.fold(6, address.toString()));
         
         // InternetAddress.toString(new Address[] {address}) - is used in the RFC822MetadataExtracter
         // So, compare with that

@@ -28,7 +28,6 @@ Build and start Alfresco Content Services Community using docker-compose or Kube
 ### Docker Compose Instructions:
 #### Prerequisite: 
 * Docker installed locally 
-* Access to docker-internal.alfresco.com and quay.io repositories - Platform Services team is working on getting the images in [Docker Hub](https://hub.docker.com/u/alfresco/) registry.
 
 #### Steps
 1. Go to **docker-compose** folder
@@ -43,7 +42,6 @@ Build and start Alfresco Content Services Community using docker-compose or Kube
 ### Kubernetes Instructions:
 #### Prerequisite: 
 * Deploy the infrastructure chart as specified in https://github.com/Alfresco/alfresco-infrastructure-deployment
-* Access to docker-internal.alfresco.com and quay.io repositories - Platform Services team is working on getting the images in [Docker Hub](https://hub.docker.com/u/alfresco/) registry.
 * A kubernetes secret (quay-registry-secret) with the above mentioned credentials created in your cluster.
 
 **Note!** You do not need to pull this repo in order to deploy Alfresco Content Services in Kubernetes

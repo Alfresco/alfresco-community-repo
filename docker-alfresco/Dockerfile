@@ -5,25 +5,37 @@ FROM quay.io/alfresco/alfresco-base-tomcat:8.5.28-java-8-oracle-centos-7-f7b1278
 #   /usr/bin/convert                    - imagemagick
 #   /opt/libreoffice5.4/program/soffice - LibreOffice
 
+# alfresco-pdf-renderer uses the PDFium library from Google Inc. See the license at https://pdfium.googlesource.com/pdfium/+/master/LICENSE or in /pdfium.txt
+# ImageMagick is from ImageMagick Studio LLC. See the license at http://www.imagemagick.org/script/license.php or in /ImageMagick-license.txt
+# LibreOffice is from The Document Foundation. See the license at https://www.libreoffice.org/download/license/ or in /libreoffice.txt
+
 ENV ALFRESCO_PDF_RENDERER_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
+ENV PDFIUM_LICENSE_FILE=https://github.com/Alfresco/acs-community-packaging/blob/master/zip/src/main/resources/licenses/3rd-party/pdfium.txt
+
 ENV LIBREOFFICE_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/libreoffice/libreoffice-dist/5.4.6/libreoffice-dist-5.4.6-linux.gz
+ENV LIBREOFFICE_LICENSE_FILE=https://github.com/Alfresco/acs-community-packaging/blob/master/zip/src/main/resources/licenses/3rd-party/libreoffice.txt
+
 ENV IMAGEMAGICK_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/imagemagick/imagemagick-distribution/7.0.7-27/imagemagick-distribution-7.0.7-27-linux.rpm
 ENV IMAGEMAGICK_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/imagemagick/imagemagick-distribution/7.0.7-27/imagemagick-distribution-7.0.7-27-libs-linux.rpm
+ENV IMAGEMAGICK_LICENSE_FILE=https://github.com/Alfresco/acs-community-packaging/blob/master/zip/src/main/resources/licenses/3rd-party/ImageMagick-license.txt
 
 RUN yum install wget -y && \
 	\
 	wget $ALFRESCO_PDF_RENDERER_LIB_RPM_URL && \
+    wget -P /. $PDFIUM_LICENSE_FILE && \
     tar xf alfresco-pdf-renderer-*-linux.tgz -C /usr/bin && \
     rm -f alfresco-pdf-renderer-*-linux.tgz && \
     \
     yum install -y cairo cups-libs libSM && \
     wget $LIBREOFFICE_RPM_URL && \
+    wget -P /. $LIBREOFFICE_LICENSE_FILE && \
     tar xzf libreoffice-dist-*-linux.gz && \
     yum localinstall -y LibreOffice*/RPMS/*.rpm && \
     rm -rf libreoffice-dist-*-linux.gz LibreOffice_*_Linux_x86-64_rpm && \
     \
     wget $IMAGEMAGICK_RPM_URL && \
     wget $IMAGEMAGICK_LIB_RPM_URL && \
+    wget -P /. $IMAGEMAGICK_LICENSE_FILE && \
     yum localinstall -y imagemagick-distribution-*-linux.rpm && \
     rm -f imagemagick-distribution-*-linux.rpm && \
     \

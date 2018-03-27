@@ -65,6 +65,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
@@ -176,6 +177,21 @@ public class BaseRMRestTest extends RestTest
             // Verify the status code
             assertStatusCode(CREATED);
         }
+    }
+
+    /**
+     * Helper method to delete the RM site if exists and to create a new one
+     */
+    public void createRMSite(RMSite rmSiteModel) throws Exception
+    {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        if (rmSiteAPI.existsRMSite())
+        {
+            rmSiteAPI.deleteRMSite();
+        }
+
+        rmSiteAPI.createRMSite(rmSiteModel);
+        assertStatusCode(CREATED);
     }
 
     /**

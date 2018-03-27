@@ -96,7 +96,7 @@
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
 
-        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
 
     </properties>
 

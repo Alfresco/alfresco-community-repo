@@ -27,7 +27,7 @@ services:
             - 8080:8080
 
     postgres:
-        image: postgres:9.4.12
+        image: postgres:10.1
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco

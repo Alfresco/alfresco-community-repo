@@ -1,4 +1,4 @@
-FROM quay.io/alfresco/alfresco-base-tomcat:8.5.27-java-8-oracle-centos-7-33f95a9ab753
+FROM quay.io/alfresco/alfresco-base-tomcat:8.5.28-java-8-oracle-centos-7-f7b1278cc0eb
 
 # Base ACS Repository Image includes transformation commands:
 #   /usr/bin/alfresco-pdf-renderer      - alfresco-pdf-renderer

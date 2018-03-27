@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
@@ -457,6 +459,63 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             }
         }
         assertTrue("Expected to hit successful login attempt for Charles Dickons (cdickons)", found);
+    }
+
+    /**
+     * Given I have deleted a user
+     * When I will get the RM audit filter by delete user event
+     * Then there will be an entry for the deleted user
+     * And the audit entry has the username property value audited
+     * @throws Exception
+     */
+    @org.junit.Test
+    public void testAuditForDeletedUser() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String DELETE_USER_AUDIT_EVENT = "Delete Person";
+            String userName = "auditDeleteUser";
+            NodeRef user;
+            List<RecordsManagementAuditEntry> entry;
+
+            @Override
+            public void given() throws Exception
+            {
+                // create a user
+                user = createPerson(userName);
+                personService.deletePerson(userName);
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                // set the audit wuery param
+                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+                params.setEvent(DELETE_USER_AUDIT_EVENT);
+
+                // get the audit events for "Delete Person"
+                entry = getAuditTrail(params, 1, ADMIN_USER);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertEquals("Delete user event is not audited.", DELETE_USER_AUDIT_EVENT, entry.get(0).getEvent());
+                assertEquals(user.getId(), entry.get(0).getNodeName());
+                assertEquals("Unexpected nr of properties audited for cm:person type when deleting a user.",
+                        1, entry.get(0).getBeforeProperties().size());
+                assertEquals("Wrong value for username property is  audited",
+                        userName, entry.get(0).getBeforeProperties().get(ContentModel.PROP_USERNAME));
+            }
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+
+        });
     }
 
     /** === Helper methods === */

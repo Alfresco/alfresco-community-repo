@@ -24,33 +24,15 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.rm.community.model.user;
 
 /**
- * Constants for RM user roles
+ * Constants for RM user capabilities
  *
- * @author Kristijan Conkas
- * @since 2.6
+ * @author Rodica Sutu
+ * @since 2.7
  */
-public enum UserRoles
+public class UserCapabilities
 {
-
-    ROLE_RM_ADMIN("Administrator","Records Management Administrator"),
-    ROLE_RM_MANAGER ("RecordsManager","Records Management Manager"),
-    ROLE_RM_POWER_USER ("PowerUser","Records Management Power User"),
-    ROLE_RM_SECURITY_OFFICER ("SecurityOfficer", "Records Management Security Officer"),
-    ROLE_RM_USER ("User", "Records Management User");
-
-
-    public final String roleId;
-    public final String displayName;
-
-    UserRoles(String roleId, String displayName)
-    {
-        this.roleId = roleId;
-        this.displayName = displayName;
-    }
-
 
 }

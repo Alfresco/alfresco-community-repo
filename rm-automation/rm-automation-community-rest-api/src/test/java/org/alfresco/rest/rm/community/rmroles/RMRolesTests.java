@@ -31,7 +31,7 @@ import static java.util.Collections.singleton;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import static org.alfresco.rest.rm.community.model.user.UserRoles.RM_ROLES;
+import static org.alfresco.rest.rm.community.base.TestData.RM_ROLES;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.junit.Assert.assertEquals;
@@ -76,7 +76,8 @@ public class RMRolesTests extends BaseRMRestTest
     public void checkCapabilitiesForUser()
     {
         Set<String> capabilities = rmRolesAndActionsAPI
-                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), ROLE_RM_USER);
+                    .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), ROLE_RM_USER
+                            .roleId);
         assertEquals("Unexpected capabilities found for RM User.", capabilities, CAPABILITIES);
     }
 

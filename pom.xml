@@ -44,7 +44,7 @@
         <dependency.webscripts.version>6.13</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
-        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
         <dependency.mysql.version>5.1.40</dependency.mysql.version>
     </properties>
 

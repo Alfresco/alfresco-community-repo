@@ -27,7 +27,6 @@
 package org.alfresco.rest.v0.service;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.alfresco.rest.rm.community.model.user.UserRoles;
@@ -57,7 +56,7 @@ public class RoleService
      * @param role         role to be updated
      * @param capabilities list of capabilities to be added
      */
-    public void addCapabilitiesToRole(UserRoles role, List<String> capabilities)
+    public void addCapabilitiesToRole(UserRoles role, Set<String> capabilities)
     {
         Set<String> roleCapabilities = new HashSet<>();
         roleCapabilities.addAll(rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
@@ -74,7 +73,7 @@ public class RoleService
      * @param role         role to be updated
      * @param capabilities list of capabilities to be removed
      */
-    public void removeCapabilitiesFromRole(UserRoles role, List<String> capabilities)
+    public void removeCapabilitiesFromRole(UserRoles role, Set<String> capabilities)
     {
         Set<String> roleCapabilities = rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
                 dataUser.getAdminUser().getPassword(), role.roleId);

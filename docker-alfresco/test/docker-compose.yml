@@ -29,7 +29,7 @@ services:
             - "30000-30099:30000-30099"
 
     postgres:
-        image: docker.io/library/postgres:9.4.12
+        image: docker.io/library/postgres:10.1
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco

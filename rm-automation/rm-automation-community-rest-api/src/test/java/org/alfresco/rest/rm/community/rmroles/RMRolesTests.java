@@ -40,6 +40,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.user.UserCapabilities;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
@@ -52,12 +53,8 @@ import org.testng.annotations.Test;
  */
 public class RMRolesTests extends BaseRMRestTest
 {
-    /** The id of the view records capability. */
-    public static final String VIEW_RECORDS_CAP = "ViewRecords";
-    /** The id of the declare records capability. */
-    public static final String DECLARE_RECORDS_CAP = "DeclareRecords";
     /** A list of capabilities. */
-    private static final java.util.HashSet<String> CAPABILITIES = newHashSet(VIEW_RECORDS_CAP, DECLARE_RECORDS_CAP);
+    private static final java.util.HashSet<String> CAPABILITIES = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
     /** The API for managing RM roles and capabilities. */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -102,14 +99,14 @@ public class RMRolesTests extends BaseRMRestTest
     {
         String roleName = generateTestPrefix(RMRolesTests.class) + "Name";
         rmRolesAndActionsAPI.createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName, "Label",
-                    singleton(VIEW_RECORDS_CAP));
+                    singleton(UserCapabilities.VIEW_RECORDS_CAP));
 
         // Call the endpoint under test.
         rmRolesAndActionsAPI.updateRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName,
-                    "Updated Label", singleton(DECLARE_RECORDS_CAP));
+                    "Updated Label", singleton(UserCapabilities.DECLARE_RECORDS_CAP));
 
         Set<String> actualCapabilities = rmRolesAndActionsAPI
                     .getCapabilitiesForRole(getAdminUser().getUsername(), getAdminUser().getPassword(), roleName);
-        assertEquals("Unexpected capabilities for edited RM User.", actualCapabilities, singleton(DECLARE_RECORDS_CAP));
+        assertEquals("Unexpected capabilities for edited RM User.", actualCapabilities, singleton(UserCapabilities.DECLARE_RECORDS_CAP));
     }
 }

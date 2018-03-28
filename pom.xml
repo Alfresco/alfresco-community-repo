@@ -61,7 +61,7 @@
     <properties>
         <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
         <version.edition>Community</version.edition>
-        <image.tag>local</image.tag>
+        <image.tag>latest</image.tag>
 
         <dependency.alfresco-core.version>7.1</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.2</dependency.alfresco-data-model.version>

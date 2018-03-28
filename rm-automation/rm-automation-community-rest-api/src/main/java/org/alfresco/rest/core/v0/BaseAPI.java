@@ -355,7 +355,7 @@ public abstract class BaseAPI
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("PUT request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
+            assertEquals("PUT request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)

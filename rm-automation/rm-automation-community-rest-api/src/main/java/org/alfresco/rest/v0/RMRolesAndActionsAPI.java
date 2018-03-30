@@ -117,7 +117,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
     {
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES).getJSONObject("data");
+        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
         assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
         return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
     }

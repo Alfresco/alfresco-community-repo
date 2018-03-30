@@ -35,7 +35,7 @@ package org.alfresco.rest.rm.community.model.user;
  */
 public enum UserRoles
 {
-
+    IN_PLACE_WRITERS("ExtendedWriters","In-Place Writers"),
     ROLE_RM_ADMIN("Administrator","Records Management Administrator"),
     ROLE_RM_MANAGER ("RecordsManager","Records Management Manager"),
     ROLE_RM_POWER_USER ("PowerUser","Records Management Power User"),

@@ -32,6 +32,14 @@ spec:
           - name: data
             mountPath: {{ .Values.persistence.solr.data.mountPath }}
             subPath: {{ .Values.persistence.solr.data.subPath }}
+      initContainers:
+        - name: init-db
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 {{ .Values.persistence.solr.data.mountPath }}"]
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.persistence.solr.data.mountPath }}
+            subPath: {{ .Values.persistence.solr.data.subPath }}
       volumes:
       - name: data
         persistentVolumeClaim:

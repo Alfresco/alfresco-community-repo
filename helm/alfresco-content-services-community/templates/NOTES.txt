@@ -1,7 +1,7 @@
 
 {{ if .Values.dnsaddress }}
 
-You can access all components of Alfresco Content Services using the same root address, but different paths as follows:
+You can access all components of Alfresco Content Services Community using the same root address, but different paths as follows:
 
   Content: {{ .Values.dnsaddress }}/alfresco
   Share: {{ .Values.dnsaddress }}/share

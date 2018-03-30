@@ -7,8 +7,8 @@ registryPullSecrets: quay-registry-secret
 repository:
   replicaCount: 1
   image:
-    repository: quay.io/alfresco/alfresco-content-services-community
-    tag: "latest"
+    repository: alfresco/alfresco-content-repository-community
+    tag: "6.0.4-ea"
     pullPolicy: Always
     internalPort: 8080
   service:
@@ -30,8 +30,8 @@ repository:
 share:
   replicaCount: 1
   image:
-    repository: quay.io/alfresco/alfresco-share
-    tag: "6.0"
+    repository: alfresco/alfresco-share
+    tag: "6.0.a"
     pullPolicy: Always
     internalPort: 8080
   service:
@@ -49,8 +49,8 @@ share:
 solr:
   replicaCount: 1
   image:
-    repository: quay.io/alfresco/search-services
-    tag: "1.2.0-SNAPSHOT"
+    repository: alfresco/alfresco-search-services
+    tag: "1.1.0"
     pullPolicy: Always
     internalPort: 8983
   service:

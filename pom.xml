@@ -207,7 +207,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Dependency on Alfresco patched version of Rhino available in artfifact.alfresco.com -->
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>

@@ -62,6 +62,7 @@
             <groupId>org.alfresco.integrations</groupId>
             <artifactId>alfresco-googledocs-repo</artifactId>
             <version>${alfresco.googledocs.version}</version>
+            <classifier>community</classifier>
             <type>amp</type>
         </dependency>
     </dependencies>
@@ -158,6 +159,7 @@
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledocs-repo</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
+                                    <classifier>community</classifier>
                                     <type>amp</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/amps</outputDirectory>

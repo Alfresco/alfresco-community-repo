@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -50,12 +51,15 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.version.Version2Model;
+import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -74,7 +78,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                             NodeServicePolicies.BeforeDeleteNodePolicy,
                                             NodeServicePolicies.OnDeleteNodePolicy,
                                             NodeServicePolicies.OnCreateNodePolicy,
-                                            NodeServicePolicies.OnRemoveAspectPolicy
+                                            NodeServicePolicies.OnRemoveAspectPolicy,
+                                            NodeServicePolicies.OnSetNodeTypePolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryModelType.class);
@@ -122,6 +127,12 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     /** Validation marker */
     private boolean doValidation = true;
+
+    private RepositoryLocation repositoryModelsLocation;
+
+    private SearchService searchService;
+
+    private NamespaceService namespaceService;
     
     /**
      * Set the dictionary DAO
@@ -194,6 +205,21 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     	this.doValidation = doValidation;
     }    
     
+    public void setRepositoryModelsLocation(RepositoryLocation repositoryModelsLocation)
+    {
+        this.repositoryModelsLocation = repositoryModelsLocation;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     /**
      * The initialise method
      */
@@ -239,6 +265,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onCreateNode"));
         
+        // Register interest in the onSetNodeType policy for the dictionary
+        // model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"), 
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                new JavaBehaviour(this, "onSetNodeType"));
+
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
     }
@@ -434,6 +467,37 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 queueModel(nodeRef);
             }
         }
+    }
+    
+    /**
+     * Validate that the definition node is a child of the correct model
+     * location node, e.g. "/Company Home/Data Dictionary/Models"
+     */
+    private boolean isValidLocation(NodeRef definitionNode)
+    {
+        StoreRef storeRef = repositoryModelsLocation.getStoreRef();
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repositoryModelsLocation.getPath(), null, namespaceService, false);
+
+        if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
+        {
+            throw new IllegalStateException(
+                    "Incorrect number of nodes (" + nodeRefs.size() + ")" + " found for workflow location: " + repositoryModelsLocation.getPath());
+        }
+
+        NodeRef modelParent = nodeRefs.get(0);
+
+        for (ChildAssociationRef assoc : nodeService.getParentAssocs(definitionNode))
+        {
+            if (assoc.getParentRef().equals(modelParent))
+            {
+                // The model definition is contained in the correct location
+                return true;
+            }
+        }
+
+        // Invalid location
+        return false;
     }
 
     /**
@@ -702,4 +766,14 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             }
         }
     }
+
+    @Override
+    public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
+    {
+        if (!isValidLocation(nodeRef))
+        {
+            throw new InvalidTypeException(newType);
+        }
+    }
+        
 }

@@ -187,7 +187,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), SiteCollaborator);
 
         // Add RM role to user
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER.roleId);
         assertStatusCode(OK);
 
         // Try to delete newRecord
@@ -218,7 +218,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         logger.info("Test user: " + username);
 
         // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER.roleId);
         assertStatusCode(OK);
 
         // Create random folder

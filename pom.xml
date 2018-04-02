@@ -32,7 +32,6 @@
             </activation>
             <modules>
                 <module>war</module>
-                <module>zip</module>
                 <module>distribution</module>
                 <module>public-javadoc</module>
                 <module>docker-alfresco</module>

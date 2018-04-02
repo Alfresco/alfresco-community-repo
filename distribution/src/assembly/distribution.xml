@@ -1,6 +1,8 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-    <id>warinstallation</id>
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>distribution</id>
+
+
     <formats>
         <format>zip</format>
     </formats>
@@ -29,13 +31,36 @@
                 <include>*.dll</include>
             </includes>
         </fileSet>
-        <!-- Empty endorsed folder -->
+
+        <!-- Solr4 Distribution -->
         <fileSet>
-            <directory>src/assembly</directory>
-            <outputDirectory>web-server/endorsed</outputDirectory>
+            <directory>${project.build.directory}/dependency/solr4</directory>
+            <outputDirectory>solr4</outputDirectory>
             <excludes>
-                <exclude>*</exclude>
+                <exclude>solr4.war</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/solr4</directory>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <includes>
+                <include>solr4.war</include>
+            </includes>
+        </fileSet>
+
+        <!-- Share -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-share-distribution-${alfresco.share.version}</directory>
+            <outputDirectory/>
+            <includes>
+                <include>web-server/**</include>
+                <include>modules/**</include>
+                <include>amps/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-share-distribution-${alfresco.share.version}/web-extension-samples</directory>
+            <outputDirectory>web-server/shared/classes/alfresco/web-extension</outputDirectory>
         </fileSet>
     </fileSets>
 

@@ -25,7 +25,10 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -128,9 +131,38 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         
     }
     
+    @Test
+    public void testCreateDicTypeExceptionLocation()
+    {
+        final QName modelName = QName.createQName("{http://www.alfresco.org/test/testmodel" + "D" + "/1.0}testModel" + "D");
+        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+        contentProps.put(ContentModel.PROP_NAME, modelName);
+
+        final NodeRef model1 = nodeService
+                .createNode(findModelParent(), ContentModel.ASSOC_CONTAINS, modelName, ContentModel.TYPE_DICTIONARY_MODEL, contentProps)
+                .getChildRef();
+
+        // Check that the node's type has now been changed
+        assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(model1));
+
+        try
+        {
+            nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, modelName, ContentModel.TYPE_DICTIONARY_MODEL, contentProps)
+                    .getChildRef();
+
+            fail("the creation should throw InvalidTypeException");
+        }
+        catch (InvalidTypeException ex)
+        {
+
+        }
+
+    }
+    
     /**
      * Test execution
      */
+    @Test
     public void testChangeDicTypeExecution()
     {
         // Check the type of the node

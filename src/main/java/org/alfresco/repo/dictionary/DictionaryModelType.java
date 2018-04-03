@@ -79,7 +79,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                             NodeServicePolicies.OnDeleteNodePolicy,
                                             NodeServicePolicies.OnCreateNodePolicy,
                                             NodeServicePolicies.OnRemoveAspectPolicy,
-                                            NodeServicePolicies.OnSetNodeTypePolicy
+                                            NodeServicePolicies.OnSetNodeTypePolicy,
+                                            NodeServicePolicies.BeforeCreateNodePolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryModelType.class);
@@ -271,6 +272,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"), 
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onSetNodeType"));
+        
+        // Register interest in the beforeCreateNode policy for the dictionary
+        // model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode"), 
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                new JavaBehaviour(this, "beforeCreateNode"));
 
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
@@ -496,6 +504,28 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             }
         }
 
+        // Invalid location
+        return false;
+    }
+    
+    private boolean isValidLocationOfParentNode(NodeRef parentRef){
+        StoreRef storeRef = repositoryModelsLocation.getStoreRef();
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repositoryModelsLocation.getPath(), null, namespaceService, false);
+
+        if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
+        {
+            throw new IllegalStateException(
+                    "Incorrect number of nodes (" + nodeRefs.size() + ")" + " found for workflow location: " + repositoryModelsLocation.getPath());
+        }
+
+        NodeRef modelParent = nodeRefs.get(0);
+        
+        if (parentRef.equals(modelParent))
+        {
+            return true;
+        }
+        
         // Invalid location
         return false;
     }
@@ -774,6 +804,17 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
         {
             throw new InvalidTypeException(newType);
         }
+    }
+
+    @Override
+    public void beforeCreateNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName)
+    {   
+
+        if (!isValidLocationOfParentNode(parentRef))
+        {
+            throw new InvalidTypeException(nodeTypeQName);
+        }
+
     }
         
 }

@@ -32,3 +32,4 @@ alf_data/
 
 helm/alfresco-content-services-community/charts/*
 helm/alfresco-content-services-community/requirements.lock
+helm/alfresco-content-services-community*.tgz

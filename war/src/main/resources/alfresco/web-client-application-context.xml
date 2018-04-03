@@ -7,11 +7,6 @@
    <!-- Web Script Beans                      -->
    <!-- ===================================== -->
 
-   <!--  Alfresco Web Client Authenticator (Servlet based - Session) -->
-   <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
-   
-   <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true"/>
-
    <bean id="globalAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
     
    <bean id="GlobalAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
@@ -132,43 +127,7 @@
          </bean>
       </property>
    </bean>
-   
-   <bean id="sharepointAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
-   
-   <bean id="SharepointAuthenticationHandler" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.webdav.auth.AuthenticationDriver</value>
-         </list>
-      </property>
-      <property name="sourceBeanName">
-         <value>sharepointAuthenticationHandler</value>
-      </property>
-      <!-- Fall back to the default alfresco implementation -->
-      <property name="defaultTarget">
-         <bean class="org.alfresco.web.sharepoint.auth.BasicAuthenticationHandler">
-            <property name="authenticationService">
-               <ref bean="AuthenticationService" />
-            </property>
-            <property name="authenticationListener">
-               <ref bean="sharepointAuthenticationListener" />
-            </property>
-            <property name="personService">
-               <ref bean="PersonService" />
-            </property>
-            <property name="remoteUserMapper">
-               <ref bean="RemoteUserMapper" />
-            </property>
-            <property name="authenticationComponent">
-               <ref bean="AuthenticationComponent" />
-            </property>			
-         </bean>
-      </property>
-   </bean>
-   
+
    <bean id="PublicAPIAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter" />
    
 </beans>

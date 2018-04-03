@@ -162,6 +162,19 @@ public class RMRolesAndActionsAPI extends BaseAPI
         doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES_ROLE, roleName);
     }
 
+    /** Delete a created RM role.
+     *
+     * @param adminUser The username of the admin user.
+     * @param adminPassword The password for the admin user.
+     * @param roleName The name of the role to be deleted.
+     */
+    public void deleteRole(String adminUser, String adminPassword, String roleName)
+    {
+        doDeleteRequest(adminUser, adminPassword, MessageFormat.format(RM_ROLES_ROLE, "{0}",roleName));
+        boolean success = !getConfiguredRoles(adminUser, adminPassword).contains(roleName);
+        assertTrue("Failed to delete role " + roleName + " with " + adminUser, success);
+    }
+
     /**
      * create user and assign to records management role
      */

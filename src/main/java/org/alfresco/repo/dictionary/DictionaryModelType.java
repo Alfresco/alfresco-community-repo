@@ -102,6 +102,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     
     private static final String MODEL_IN_USE = "cmm.service.model_in_use";
     
+    public static final String ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = "ALFRESCO_MODEL_ADMINISTRATORS";
+    public static final String GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
+                + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
+    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
     
@@ -133,7 +137,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     private boolean doValidation = true;
     
     /** Provides information about custom models */
-    private CustomModelService customModelService;
+    private AuthorityService authorityService;
     
     /**
      * Set the dictionary DAO
@@ -206,9 +210,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     	this.doValidation = doValidation;
     }  
     
-    public void setCustomModelService(CustomModelService customModelService)
+    public void setAuthorityService(AuthorityService authorityService)
     {
-        this.customModelService = customModelService;
+        this.authorityService = authorityService;
     }
    
     /**
@@ -739,7 +743,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         
-        if (!customModelService.isModelAdmin(userName))
+        if (!isModelAdmin(userName))
         {
             throw new InvalidTypeException(newType);
         }
@@ -750,10 +754,20 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        if (!customModelService.isModelAdmin(userName))
+        if (!isModelAdmin(userName))
         {
             throw new InvalidTypeException(nodeTypeQName);
         }
+    }
+    
+    private boolean isModelAdmin(String userName)
+    {
+        if (userName == null)
+        {
+            return false;
+        }
+        return this.authorityService.isAdminAuthority(userName)
+                    || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY);
     }
         
 }

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app">
-
-<container-descriptor>
-<show-archived-real-path-enabled>true</show-archived-real-path-enabled>
-</container-descriptor>
-
-</weblogic-web-app>

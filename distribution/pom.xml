@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-content-services-community-full-distribution</artifactId>
-    <name>Alfresco Content Services Community Full Distribution zip</name>
+    <artifactId>alfresco-content-services-community-distribution</artifactId>
+    <name>Alfresco Content Services Community Distribution zip</name>
     <packaging>jar</packaging>
 
     <parent>
@@ -12,18 +12,50 @@
     </parent>
 
     <dependencies>
+        <!-- WAR files -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-services-community-distribution</artifactId>
+            <artifactId>content-services-community</artifactId>
             <version>${project.version}</version>
-            <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+            <type>war</type>
         </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-server-root</artifactId>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-mmt</artifactId>
+        </dependency>
+        <!-- 3rd party libs -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${dependency.postgresql.version}</version>
+        </dependency>
+        <!-- Alfresco Pdf Renderer -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-pdf-renderer</artifactId>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-pdf-renderer</artifactId>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+        <!-- SOLR Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4-distribution</artifactId>
@@ -35,6 +67,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- SHARE Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-content-services-share-distribution</artifactId>
@@ -49,7 +82,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}-${installer.version.name}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -68,11 +101,13 @@
                         </goals>
                         <configuration>
                             <artifactItems>
+                                <!-- Extract keystore from alfresco-repository -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-content-services-community-distribution</artifactId>
-                                    <type>zip</type>
+                                    <artifactId>alfresco-repository</artifactId>
+                                    <includes>alfresco/keystore/**</includes>
                                 </artifactItem>
+
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4-distribution</artifactId>
@@ -83,6 +118,43 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-content-services-share-distribution</artifactId>
                                     <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>extract-jlan-dll</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-jlan-embed</artifactId>
+                                    <classifier>windll</classifier>
+                                    <includes>*.dll</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- Copy ROOT.war -->
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-server-root</artifactId>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.outputDirectory}/web-server/webapps</outputDirectory>
+                                    <destFileName>ROOT.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -102,7 +174,7 @@
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
-                                <descriptor>src/assembly/full-distribution.xml</descriptor>
+                                <descriptor>src/assembly/distribution.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>

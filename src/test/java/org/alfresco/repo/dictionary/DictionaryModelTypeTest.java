@@ -45,6 +45,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -394,9 +395,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 
         // Authenticate as the system user
-        authenticationComponent = (AuthenticationComponent) this.applicationContext
-                .getBean("authenticationComponent");
-        authenticationComponent.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+    
 
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

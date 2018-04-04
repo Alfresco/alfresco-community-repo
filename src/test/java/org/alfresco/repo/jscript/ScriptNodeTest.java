@@ -509,6 +509,9 @@ public class ScriptNodeTest
     public void testVersioningPropsDefaultChanged()
     {
         setUpBootstrap();
+        
+        // Authenticate as the system user
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {

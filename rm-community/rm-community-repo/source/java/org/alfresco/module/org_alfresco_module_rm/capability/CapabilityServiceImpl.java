@@ -282,4 +282,24 @@ public class CapabilityServiceImpl implements CapabilityService
 
         groups.remove(group.getId());
     }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#hasCapability(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     */
+    @Override
+    public boolean hasCapability(NodeRef nodeRef, String capabilityName)
+    {
+        Capability capability = getCapability(capabilityName);
+        if (capability != null)
+        {
+            AccessStatus accessStatus = getCapabilityAccessState(nodeRef, capabilityName);
+
+            if (accessStatus.equals(AccessStatus.ALLOWED))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

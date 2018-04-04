@@ -25,17 +25,13 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.dictionary.RepositoryLocation;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -69,10 +65,7 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
      */
     private final static String ID = GUID.generate();
     
-    private NodeRef nodeRefDicType;
-    
-    private ServiceRegistry serviceRegistry;
-
+    private NodeRef nodeRefTest;
     
     /**
      * Called at the begining of all tests
@@ -81,30 +74,34 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     public void before() throws Exception
     {
         super.before();
-
-        this.serviceRegistry = (ServiceRegistry) applicationContext.getBean("ServiceRegistry");
-
+        
         // Create the node used for tests
-        this.nodeRef = this.nodeService
-                .createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT)
-                .getChildRef();
-
-        // Create the node used for tests in
-        // (/app:company_home/app:dictionary/app:models)
-        this.nodeRefDicType = this.nodeService
-                .createNode(findModelParent(), ContentModel.ASSOC_CHILDREN, QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT)
-                .getChildRef();
-
-        // Get the executer instance
-        this.executer = (SpecialiseTypeActionExecuter) this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
+        this.nodeRef = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testnode"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        
+        // Get the executer instance 
+        this.executer = (SpecialiseTypeActionExecuter)this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
+    
+        // Create the node used for tests
+        this.nodeRefTest = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testnode"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+    
     }
-
+    
     /**
      * Test execution
      */
     @Test
     public void testExecution()
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
         // Check the type of the node
         assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRef));
         
@@ -116,39 +113,37 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         // Check that the node's type has not been changed since it would not be a specialisation
         assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRef));
         
-        try
-        {
-            // Execute the action again and will fail is not in the correct
-            // location (/app:company_home/app:dictionary/app:models)
-            action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
-            this.executer.execute(action, this.nodeRef);
-            fail("the executer should throw InvalidTypeException");
-        }
-        catch (InvalidTypeException ex)
-        {
-
-        }
+        // Execute the action agian
+        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
+        this.executer.execute(action, this.nodeRef);
         
-    }
-    
-    @Test
-    public void testCreateDicTypeExceptionLocation()
-    {
-        final QName modelName = QName.createQName("{http://www.alfresco.org/test/testmodel" + "D" + "/1.0}testModel" + "D");
-        Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-        contentProps.put(ContentModel.PROP_NAME, modelName);
-
-        final NodeRef model1 = nodeService
-                .createNode(findModelParent(), ContentModel.ASSOC_CONTAINS, modelName, ContentModel.TYPE_DICTIONARY_MODEL, contentProps)
-                .getChildRef();
-
         // Check that the node's type has now been changed
-        assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(model1));
-
+        assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(this.nodeRef));
+        
+        //Create user as coordinator without administrator writes
+        String userName = "bob" + GUID.generate();
+        createUser(userName);
+        PermissionService permissionService = (PermissionService)applicationContext.getBean("PermissionService");
+        permissionService.setPermission(nodeRefTest, userName, PermissionService.COORDINATOR, true);
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(userName);
+        
+        // Check the type of the node
+        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefTest));
+        
+        // Execute the action
+        action = new ActionImpl(null, ID, SpecialiseTypeActionExecuter.NAME, null);
+        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
+        this.executer.execute(action, this.nodeRefTest);
+        
+        // Check that the node's type has not been changed since it would not be a specialisation
+        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefTest));
+        
         try
         {
-            nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, modelName, ContentModel.TYPE_DICTIONARY_MODEL, contentProps)
-                    .getChildRef();
+            // Execute the action again
+            action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
+            this.executer.execute(action, this.nodeRefTest);
 
             fail("the creation should throw InvalidTypeException");
         }
@@ -156,52 +151,7 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         {
 
         }
-
     }
     
-    /**
-     * Test execution
-     */
-    @Test
-    public void testChangeDicTypeExecution()
-    {
-        // Check the type of the node
-        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefDicType));
-        this.nodeService.getParentAssocs(this.nodeRefDicType);
-
-        // Execute the action
-        ActionImpl action = new ActionImpl(null, ID, SpecialiseTypeActionExecuter.NAME, null);
-        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
-        this.executer.execute(action, this.nodeRefDicType);
-
-        // Check that the node's type has not been changed since it would not be
-        // a specialisation
-        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefDicType));
-
-        // Execute the action agian
-        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
-        this.executer.execute(action, this.nodeRefDicType);
-        
-        // Check that the node's type has now been changed
-        assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(this.nodeRefDicType));
-    }
-
-    private NodeRef findModelParent()
-    {
-        RepositoryLocation modelLocation = (RepositoryLocation) applicationContext.getBean("customModelsRepositoryLocation");
-        NodeRef rootNode = nodeService.getRootNode(modelLocation.getStoreRef());
-        List<NodeRef> modelParents = serviceRegistry.getSearchService().selectNodes(rootNode, modelLocation.getPath(), null,
-                serviceRegistry.getNamespaceService(), false);
-        if (modelParents.size() == 0)
-        {
-            throw new IllegalStateException("Unable to find model location: " + modelLocation.getPath());
-        }
-        if (modelParents.size() > 1)
-        {
-            throw new IllegalStateException("More than one model location? [" + modelLocation.getPath() + "]");
-        }
-
-        return modelParents.get(0);
-    }
-
+   
 }

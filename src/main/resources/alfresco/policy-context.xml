@@ -68,9 +68,7 @@
       <property name="modelValidator" ref="modelValidator"/>
       <property name="transactionService" ref="TransactionService"/>
       <property name="jobLockService" ref="jobLockService"/>
-      <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="namespaceService" ref="NamespaceService"/>
+	  <property name="customModelService" ref="customModelService"/>
     </bean>
     
     <bean id="policyIgnoreUtil" class="org.alfresco.util.PolicyIgnoreUtil">

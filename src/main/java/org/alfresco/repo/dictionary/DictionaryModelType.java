@@ -51,6 +51,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.version.Version2Model;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -60,6 +61,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -128,12 +131,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     /** Validation marker */
     private boolean doValidation = true;
-
-    private RepositoryLocation repositoryModelsLocation;
-
-    private SearchService searchService;
-
-    private NamespaceService namespaceService;
+    
+    /** Provides information about custom models */
+    private CustomModelService customModelService;
     
     /**
      * Set the dictionary DAO
@@ -204,23 +204,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     public void setDoValidation(boolean doValidation)
     {
     	this.doValidation = doValidation;
-    }    
+    }  
     
-    public void setRepositoryModelsLocation(RepositoryLocation repositoryModelsLocation)
+    public void setCustomModelService(CustomModelService customModelService)
     {
-        this.repositoryModelsLocation = repositoryModelsLocation;
+        this.customModelService = customModelService;
     }
-
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
+   
     /**
      * The initialise method
      */
@@ -475,59 +465,6 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 queueModel(nodeRef);
             }
         }
-    }
-    
-    /**
-     * Validate that the definition node is a child of the correct model
-     * location node, e.g. "/Company Home/Data Dictionary/Models"
-     */
-    private boolean isValidLocation(NodeRef definitionNode)
-    {
-        StoreRef storeRef = repositoryModelsLocation.getStoreRef();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repositoryModelsLocation.getPath(), null, namespaceService, false);
-
-        if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
-        {
-            throw new IllegalStateException(
-                    "Incorrect number of nodes (" + nodeRefs.size() + ")" + " found for workflow location: " + repositoryModelsLocation.getPath());
-        }
-
-        NodeRef modelParent = nodeRefs.get(0);
-
-        for (ChildAssociationRef assoc : nodeService.getParentAssocs(definitionNode))
-        {
-            if (assoc.getParentRef().equals(modelParent))
-            {
-                // The model definition is contained in the correct location
-                return true;
-            }
-        }
-
-        // Invalid location
-        return false;
-    }
-    
-    private boolean isValidLocationOfParentNode(NodeRef parentRef){
-        StoreRef storeRef = repositoryModelsLocation.getStoreRef();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        List<NodeRef> nodeRefs = searchService.selectNodes(rootNode, repositoryModelsLocation.getPath(), null, namespaceService, false);
-
-        if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
-        {
-            throw new IllegalStateException(
-                    "Incorrect number of nodes (" + nodeRefs.size() + ")" + " found for workflow location: " + repositoryModelsLocation.getPath());
-        }
-
-        NodeRef modelParent = nodeRefs.get(0);
-        
-        if (parentRef.equals(modelParent))
-        {
-            return true;
-        }
-        
-        // Invalid location
-        return false;
     }
 
     /**
@@ -800,7 +737,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     @Override
     public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
     {
-        if (!isValidLocation(nodeRef))
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        if (!customModelService.isModelAdmin(userName))
         {
             throw new InvalidTypeException(newType);
         }
@@ -808,13 +747,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     @Override
     public void beforeCreateNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName)
-    {   
+    {
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        if (!isValidLocationOfParentNode(parentRef))
+        if (!customModelService.isModelAdmin(userName))
         {
             throw new InvalidTypeException(nodeTypeQName);
         }
-
     }
         
 }

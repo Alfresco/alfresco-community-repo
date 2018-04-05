@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -50,12 +51,18 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.version.Version2Model;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -74,7 +81,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                             NodeServicePolicies.BeforeDeleteNodePolicy,
                                             NodeServicePolicies.OnDeleteNodePolicy,
                                             NodeServicePolicies.OnCreateNodePolicy,
-                                            NodeServicePolicies.OnRemoveAspectPolicy
+                                            NodeServicePolicies.OnRemoveAspectPolicy,
+                                            NodeServicePolicies.OnSetNodeTypePolicy,
+                                            NodeServicePolicies.BeforeCreateNodePolicy
 {
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryModelType.class);
@@ -92,6 +101,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "DictionaryModelType");
     
     private static final String MODEL_IN_USE = "cmm.service.model_in_use";
+    
+    public static final String ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = "ALFRESCO_MODEL_ADMINISTRATORS";
+    public static final String GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
+                + ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY;
     
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
@@ -122,6 +135,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
 
     /** Validation marker */
     private boolean doValidation = true;
+    
+    /** Provides information about custom models */
+    private AuthorityService authorityService;
     
     /**
      * Set the dictionary DAO
@@ -192,8 +208,13 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     public void setDoValidation(boolean doValidation)
     {
     	this.doValidation = doValidation;
-    }    
+    }  
     
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+   
     /**
      * The initialise method
      */
@@ -239,6 +260,20 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 ContentModel.TYPE_DICTIONARY_MODEL,
                 new JavaBehaviour(this, "onCreateNode"));
         
+        // Register interest in the onSetNodeType policy for the dictionary
+        // model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"), 
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                new JavaBehaviour(this, "onSetNodeType"));
+        
+        // Register interest in the beforeCreateNode policy for the dictionary
+        // model type
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateNode"), 
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                new JavaBehaviour(this, "beforeCreateNode"));
+
         // Create the transaction listener
         this.transactionListener = new DictionaryModelTypeTransactionListener(this.nodeService, this.contentService);
     }
@@ -702,4 +737,37 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             }
         }
     }
+
+    @Override
+    public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
+    {
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        if (!isModelAdmin(userName))
+        {
+            throw new InvalidTypeException(newType);
+        }
+    }
+
+    @Override
+    public void beforeCreateNode(NodeRef parentRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName)
+    {
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        if (!isModelAdmin(userName))
+        {
+            throw new InvalidTypeException(nodeTypeQName);
+        }
+    }
+    
+    private boolean isModelAdmin(String userName)
+    {
+        if (userName == null)
+        {
+            return false;
+        }
+        return this.authorityService.isAdminAuthority(userName)
+                    || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY);
+    }
+        
 }

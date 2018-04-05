@@ -64,6 +64,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -132,7 +133,8 @@ public class UserUsageTest extends TestCase
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        //Authenticate as the admin user
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // get default store (as configured for content usage service)
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
@@ -234,6 +236,8 @@ public class UserUsageTest extends TestCase
                 return null;
             }
         }, true, true);
+        
+       AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     protected void runAs(String userName)
@@ -1053,5 +1057,11 @@ public class UserUsageTest extends TestCase
     private void takeOwnership(NodeRef nodeRef)
     {
         ownableService.takeOwnership(nodeRef);
+    }
+    
+    @After
+    public void after() throws Exception
+    {
+        AuthenticationUtil.popAuthentication();
     }
 }

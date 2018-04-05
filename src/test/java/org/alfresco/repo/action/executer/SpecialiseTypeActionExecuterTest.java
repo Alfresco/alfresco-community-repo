@@ -27,7 +27,11 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -61,6 +65,8 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
      */
     private final static String ID = GUID.generate();
     
+    private NodeRef nodeRefTest;
+    
     /**
      * Called at the begining of all tests
      */
@@ -78,6 +84,14 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         
         // Get the executer instance 
         this.executer = (SpecialiseTypeActionExecuter)this.applicationContext.getBean(SpecialiseTypeActionExecuter.NAME);
+    
+        // Create the node used for tests
+        this.nodeRefTest = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testnode"),
+                ContentModel.TYPE_CONTENT).getChildRef();
+    
     }
     
     /**
@@ -86,6 +100,8 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
     @Test
     public void testExecution()
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
         // Check the type of the node
         assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRef));
         
@@ -103,5 +119,39 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
         
         // Check that the node's type has now been changed
         assertEquals(ContentModel.TYPE_DICTIONARY_MODEL, this.nodeService.getType(this.nodeRef));
+        
+        //Create user as coordinator without administrator writes
+        String userName = "bob" + GUID.generate();
+        createUser(userName);
+        PermissionService permissionService = (PermissionService)applicationContext.getBean("PermissionService");
+        permissionService.setPermission(nodeRefTest, userName, PermissionService.COORDINATOR, true);
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(userName);
+        
+        // Check the type of the node
+        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefTest));
+        
+        // Execute the action
+        action = new ActionImpl(null, ID, SpecialiseTypeActionExecuter.NAME, null);
+        action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_FOLDER);
+        this.executer.execute(action, this.nodeRefTest);
+        
+        // Check that the node's type has not been changed since it would not be a specialisation
+        assertEquals(ContentModel.TYPE_CONTENT, this.nodeService.getType(this.nodeRefTest));
+        
+        try
+        {
+            // Execute the action again
+            action.setParameterValue(SpecialiseTypeActionExecuter.PARAM_TYPE_NAME, ContentModel.TYPE_DICTIONARY_MODEL);
+            this.executer.execute(action, this.nodeRefTest);
+
+            fail("the creation should throw InvalidTypeException");
+        }
+        catch (InvalidTypeException ex)
+        {
+
+        }
     }
+    
+   
 }

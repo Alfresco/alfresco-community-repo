@@ -83,7 +83,7 @@
         <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->
-        <alfresco.googledocs.version>3.0.4.2</alfresco.googledocs.version>
+        <alfresco.googledocs.version>3.1.0-RC1</alfresco.googledocs.version>
 
         <!-- Alfresco Office Services Module -->
         <alfresco.aos-module.version>1.1.7</alfresco.aos-module.version>
@@ -428,12 +428,14 @@
                 <groupId>org.alfresco.integrations</groupId>
                 <artifactId>alfresco-googledocs-repo</artifactId>
                 <version>${alfresco.googledocs.version}</version>
+                <classifier>community</classifier>
                 <type>amp</type>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.integrations</groupId>
                 <artifactId>alfresco-googledocs-share</artifactId>
                 <version>${alfresco.googledocs.version}</version>
+                <classifier>community</classifier>
                 <type>amp</type>
             </dependency>
 

@@ -200,7 +200,6 @@ public class ScriptNodeTest
     @Before public void createTestContent()
     {  
         excludedOnUpdateProps = VERSIONABLE_ASPECT.getExcludedOnUpdateProps();
-        
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         // Create the store and get the root node
         storeRef = NODE_SERVICE.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -509,14 +508,15 @@ public class ScriptNodeTest
     public void testVersioningPropsDefaultChanged()
     {
         setUpBootstrap();
-        
-        // Authenticate as the system user
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
+                
+                // Authenticate as the system user
+                AuthenticationUtil.pushAuthentication();
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 log.debug("Adding new model.");
 
                 // Create a model node
@@ -534,6 +534,8 @@ public class ScriptNodeTest
                 InputStream cmStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
                 contentWriter.putContent(IOUtils.toString(cmStream));
                 cmStream.close();
+                
+                AuthenticationUtil.popAuthentication();
                 return null;
             }
         });

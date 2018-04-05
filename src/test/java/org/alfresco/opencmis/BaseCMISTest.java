@@ -55,6 +55,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.After;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -194,5 +195,7 @@ public abstract class BaseCMISTest extends TestCase
             testTX.rollback();
         }
         super.tearDown();
+    
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 }

@@ -394,7 +394,7 @@ public class DictionaryModelTypeTest extends BaseSpringTest
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 
-        // Authenticate as the admin user
+        // Authenticate as the admin user for dictionaryModelType
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     
 
@@ -448,7 +448,7 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @After
     public void after() throws Exception
     {
-        authenticationService.clearCurrentSecurityContext();
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     /**

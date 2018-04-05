@@ -79,6 +79,22 @@ persistence:
       mountPath: "/opt/alfresco-search-services/data"
       subPath: "alfresco-content-services/solr-data"
 
+alfresco-content-services:
+  alfresco-infrastructure:
+    enabled: true
+
+alfresco-infrastructure:
+  rabbitmq-ha:
+    enabled: false
+  activemq:
+    enabled: false
+  alfresco-keycloak:
+    enabled: false
+  alfresco-activiti-cloud-registry:
+    enabled: false
+  alfresco-api-gateway:
+    enabled: false
+
 database:
   type: postgresql
 

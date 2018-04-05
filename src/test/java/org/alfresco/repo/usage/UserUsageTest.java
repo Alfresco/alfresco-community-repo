@@ -132,7 +132,7 @@ public class UserUsageTest extends TestCase
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // get default store (as configured for content usage service)
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");

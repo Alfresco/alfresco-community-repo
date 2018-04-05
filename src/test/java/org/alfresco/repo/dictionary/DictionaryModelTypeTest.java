@@ -394,7 +394,7 @@ public class DictionaryModelTypeTest extends BaseSpringTest
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 
-        // Authenticate as the system user
+        // Authenticate as the admin user
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     
 

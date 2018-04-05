@@ -36,6 +36,7 @@ import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.service.ServiceRegistry;
@@ -156,7 +157,8 @@ public abstract class BaseCMISTest extends TestCase
 
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        // Authenticate as the admin user
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         String storeName = "CMISTest-" + getStoreName() + "-" + (new Date().getTime());
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, storeName);

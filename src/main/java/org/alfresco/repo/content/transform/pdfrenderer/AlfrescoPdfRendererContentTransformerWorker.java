@@ -47,7 +47,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
-import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -128,26 +127,35 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
         PropertyCheck.mandatory(this, "executer", executer);
-        PropertyCheck.mandatory(this, "checkCommand", checkCommand);
+        PropertyCheck.mandatory(this, "isAvailable", checkCommand);
         // check availability
         try
         {
             Pair<Boolean, String> result = remoteTransformerClientConfigured()
-                ? remoteTransformerClient.checkCommand(logger)
-                : remoteTransformerClient.checkCommand(checkCommand);
-            if(result.getFirst())
+                ? remoteTransformerClient.check(logger)
+                : remoteTransformerClient.check(checkCommand);
+            Boolean isAvailable = result.getFirst();
+            if (isAvailable != null && isAvailable)
             {
                 versionString = result.getSecond();
                 setAvailable(true);
-                logger.info("Using PDF Renderer: "+this.versionString);
+                logger.info("Using Alfresco PDF Renderer: "+versionString);
             }
             else
             {
                 setAvailable(false);
-                logger.error("Alfresco-PDF-Renderer is not available for transformations.\n"+result.getSecond());
+                String message = "Alfresco PDF Renderer is not available for transformations. " + result.getSecond();
+                if (isAvailable == null)
+                {
+                    logger.debug(message);
+                }
+                else
+                {
+                    logger.error(message);
+                }
             }
         }
         catch (Throwable e)
@@ -165,6 +173,11 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     @Override
     public boolean isAvailable()
     {
+        if (remoteTransformerClientConfigured() && !remoteTransformerClient.isAvailable())
+        {
+            afterPropertiesSet();
+        }
+
         return available;
     }
 

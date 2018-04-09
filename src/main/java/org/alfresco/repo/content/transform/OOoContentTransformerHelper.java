@@ -25,23 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-
 import com.sun.star.task.ErrorCodeIOException;
-import org.artofsolving.jodconverter.document.DefaultDocumentFormatRegistry;
-import org.artofsolving.jodconverter.document.DocumentFamily;
-import org.artofsolving.jodconverter.document.DocumentFormat;
-import org.artofsolving.jodconverter.document.DocumentFormatRegistry;
-import org.artofsolving.jodconverter.document.JsonDocumentFormatRegistry;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -54,9 +38,13 @@ import org.apache.commons.logging.Log;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.artofsolving.jodconverter.document.*;
 import org.artofsolving.jodconverter.office.OfficeException;
+import org.json.JSONException;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.FileCopyUtils;
+
+import java.io.*;
 
 /**
  * A class providing basic OOo-related functionality shared by both
@@ -69,7 +57,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     protected TransformerDebug transformerDebug;
     private static final int JODCONVERTER_TRANSFORMATION_ERROR_CODE = 3088;
 
-    private RemoteTransformerClient remoteTransformerClient;
+    protected RemoteTransformerClient remoteTransformerClient;
 
     /**
      * Set a non-default location from which to load the document format mappings.
@@ -110,33 +98,42 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         this.remoteTransformerClient = remoteTransformerClient;
     }
 
-    private boolean remoteTransformerClientConfigured()
+    protected boolean remoteTransformerClientConfigured()
     {
         return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
     }
 
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
         // load the document conversion configuration
-        if (documentFormatsConfiguration != null)
+        if (formatRegistry == null)
         {
-            DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
-            try
+            if (documentFormatsConfiguration != null)
             {
-                InputStream is = resourceLoader.getResource(this.documentFormatsConfiguration).getInputStream();
-                formatRegistry = new JsonDocumentFormatRegistry(is);
-                // We do not need to explicitly close this InputStream as it is closed for us within the XmlDocumentFormatRegistry
+                DefaultResourceLoader resourceLoader = new DefaultResourceLoader();
+                try
+                {
+                    InputStream is = resourceLoader.getResource(this.documentFormatsConfiguration).getInputStream();
+                    formatRegistry = new JsonDocumentFormatRegistry(is);
+                    // We do not need to explicitly close this InputStream as it is closed for us within the XmlDocumentFormatRegistry
+                }
+                catch (IOException e)
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Unable to load document formats configuration file: "
+                                    + this.documentFormatsConfiguration);
+                }
+                catch (JSONException e)
+                {
+                    throw new AlfrescoRuntimeException(
+                            "Unable to read document formats configuration file: "
+                                    + this.documentFormatsConfiguration);
+                }
             }
-            catch (IOException e)
+            else
             {
-                throw new AlfrescoRuntimeException(
-                        "Unable to load document formats configuration file: "
-                        + this.documentFormatsConfiguration);
+                formatRegistry = new DefaultDocumentFormatRegistry();
             }
-        }
-        else
-        {
-            formatRegistry = new DefaultDocumentFormatRegistry();
         }
     }
 

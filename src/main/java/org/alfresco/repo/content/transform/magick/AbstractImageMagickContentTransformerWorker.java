@@ -68,6 +68,11 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
      */
     public boolean isAvailable()
     {
+        if (remoteTransformerClientConfigured() && !remoteTransformerClient.isAvailable())
+        {
+            afterPropertiesSet();
+        }
+
         return available;
     }
 

@@ -70,6 +70,11 @@ img.config=/usr/lib64/ImageMagick-7.0.7/config-Q16HDRI\n\
 img.exe=/usr/bin/convert\n\
 ' >> /usr/local/tomcat/shared/classes/alfresco-global.properties
 
+# Add debug for testing
+# RUN echo -e '\n\
+# log4j.logger.org.alfresco.repo.content.transform.TransformerDebug=debug\n\
+# ' >> /usr/local/tomcat/shared/classes/alfresco/extension/custom-log4j.properties
+
 RUN mkdir -p /usr/local/tomcat/amps
 
 COPY target/amps /usr/local/tomcat/amps
@@ -77,3 +82,7 @@ COPY target/amps /usr/local/tomcat/amps
 
 RUN java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
               /usr/local/tomcat/amps /usr/local/tomcat/webapps/alfresco -directory -nobackup -force
+
+# To remote debug into this image add: EXPOSE 8000
+# Changes are also required to the docker-compose/docker-compose.yml file.
+# EXPOSE 8000

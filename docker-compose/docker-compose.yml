@@ -1,9 +1,17 @@
 version: "3"
 
+# The acs-community-deployment project contains the product version of docker-compose.
+#
+# This version is for testing and development use. For testing and debug we need to have a more open version.
+# For remote debug we need the CATALINA_OPTS and to expose port 8000.
+
 services:
     alfresco:
         image: alfresco/alfresco-content-repository-community:${ALFRESCO_TAG}
         environment:
+            CATALINA_OPTS : "
+                -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
+                "
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -17,6 +25,7 @@ services:
                 "
         ports:
             - 8082:8080 #Browser port
+            - 8000:8000 #Debug port
 
     share:
         image: alfresco/alfresco-share:${SHARE_TAG}

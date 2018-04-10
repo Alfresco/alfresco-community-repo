@@ -100,6 +100,9 @@ public class RMSearchGet extends DeclarativeWebScript
     /** Person data cache */
     private Map<String, String> personDataCache = null;
 
+    /** Utility class for record categories */
+    private RecordCategoryUtil recordCategoryUtil;
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -146,6 +149,14 @@ public class RMSearchGet extends DeclarativeWebScript
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    /**
+     * @param recordCategoryUtil utility class for record categories
+     */
+    public void setRecordCategoryUtil(RecordCategoryUtil recordCategoryUtil)
+    {
+        this.recordCategoryUtil = recordCategoryUtil;
     }
 
     /**
@@ -247,6 +258,7 @@ public class RMSearchGet extends DeclarativeWebScript
         private String createdBy;
         private Map<QName, Serializable> nodeProperties;
         private Map<String, Serializable> properties;
+        private String recordCategoryId;
 
         public Item(NodeRef parent, NodeRef nodeRef)
         {
@@ -340,6 +352,7 @@ public class RMSearchGet extends DeclarativeWebScript
                     properties.put(prefixName, entry.getValue());
                 }
             }
+            properties.put("rma_recordCategoryIdentifier", recordCategoryUtil.getCategoryIdFromNodeId(nodeRef, false));
         }
 
         private String getDisplayName(String userName)
@@ -444,6 +457,16 @@ public class RMSearchGet extends DeclarativeWebScript
         public Map<String, Serializable> getProperties()
         {
             return properties;
+        }
+
+        public String getRecordCategoryId()
+        {
+            return recordCategoryId;
+        }
+
+        public void setRecordCategoryId(String recordCategoryId)
+        {
+            this.recordCategoryId = recordCategoryId;
         }
     }
 }

@@ -43,7 +43,7 @@ RUN yum install wget -y && \
 	\
 	yum remove wget -y
 
-RUN mkdir -p /usr/local/tomcat/shared/classes && \
+RUN mkdir -p /usr/local/tomcat/shared/classes/alfresco/extension && \
     mkdir /usr/local/tomcat/alfresco-mmt
 
 RUN touch /usr/local/tomcat/shared/classes/alfresco-global.properties

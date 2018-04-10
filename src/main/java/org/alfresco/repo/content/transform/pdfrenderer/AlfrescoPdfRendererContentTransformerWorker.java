@@ -200,7 +200,7 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     @Override
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (!available)
+        if (!isAvailable())
         {
             return false;
         }

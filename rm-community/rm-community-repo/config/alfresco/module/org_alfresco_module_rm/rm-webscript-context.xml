@@ -466,6 +466,11 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="personService" ref="PersonService" />
+      <property name="recordCategoryUtil" ref="RecordCategoryUtil" />
+   </bean>
+
+   <bean id="RecordCategoryUtil" class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordCategoryUtil">
+      <property name="nodeService" ref="NodeService"/>
    </bean>
 
    <bean

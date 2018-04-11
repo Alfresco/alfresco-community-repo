@@ -74,8 +74,6 @@ public class RecordCategoryUtilUnitTest
 
     private NodeRef categoryNodeRef;
 
-    private NodeRef otherNodeRef;
-
     @Before
     public void setUp()
     {
@@ -83,7 +81,6 @@ public class RecordCategoryUtilUnitTest
         recordNodeRef = new NodeRef("test://recordNode/");
         recordFolderNodeRef = new NodeRef("test://recordFolderNode/");
         categoryNodeRef = new NodeRef("test://categoryNode/");
-        otherNodeRef = new NodeRef("test://otherNode/");
         path = new Path();
         path.append(element);
         when(nodeService.getType(recordFolderNodeRef)).thenReturn(TYPE_RECORD_FOLDER);

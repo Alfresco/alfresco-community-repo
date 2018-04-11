@@ -155,6 +155,22 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
+     * @return the filePlanService
+     */
+    protected FilePlanService getFileplanService()
+    {
+        return this.filePlanService;
+    }
+
+    /**
+     * @return the capabilityService
+     */
+    protected CapabilityService getCapabilityService()
+    {
+        return this.capabilityService;
+    }
+
+    /**
      * @param dictionaryService dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)

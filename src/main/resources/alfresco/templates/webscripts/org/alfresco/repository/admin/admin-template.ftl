@@ -617,7 +617,7 @@ Admin.addEventListener(window, 'load', function() {
    </div>
    
    <div class="footer">
-      Alfresco Software, Inc. &copy; 2005-2017 All rights reserved.
+      Alfresco Software, Inc. &copy; 2005-${.now?string('yyyy')} All rights reserved.
    </div>
    
 <#else>

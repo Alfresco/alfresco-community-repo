@@ -28,6 +28,7 @@ import org.alfresco.events.types.NodeContentGetEvent;
 import org.alfresco.events.types.NodeContentPutEvent;
 import org.alfresco.events.types.NodeFavouritedEvent;
 import org.alfresco.events.types.NodeLikedEvent;
+import org.alfresco.events.types.NodeLockedEvent;
 import org.alfresco.events.types.NodeMovedEvent;
 import org.alfresco.events.types.NodeRemovedEvent;
 import org.alfresco.events.types.NodeRenamedEvent;
@@ -35,6 +36,7 @@ import org.alfresco.events.types.NodeTaggedEvent;
 import org.alfresco.events.types.NodeUnFavouritedEvent;
 import org.alfresco.events.types.NodeUnLikedEvent;
 import org.alfresco.events.types.NodeUnTaggedEvent;
+import org.alfresco.events.types.NodeUnlockedEvent;
 import org.alfresco.events.types.NodeUpdatedEvent;
 import org.alfresco.events.types.Property;
 import org.alfresco.events.types.authority.AuthorityAddedToGroupEvent;
@@ -1033,6 +1035,44 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
                               .aspects(nodeInfo.getAspectsAsStrings())
                               .nodeProperties(nodeInfo.getProperties())
                               .build();
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void nodeLocked(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeLockedEvent.EVENT_TYPE);
+
+        if (nodeInfo.checkNodeInfo())
+        {
+            NodeLockedEvent event = new NodeLockedEvent(nextSequenceNumber(), nodeInfo.getName(),
+                    AlfrescoTransactionSupport.getTransactionId(), System.currentTimeMillis(),
+                    TenantUtil.getCurrentDomain(), nodeInfo.getSiteId(), nodeInfo.getNodeId(),
+                    nodeInfo.getType().toPrefixString(namespaceService), nodeInfo.getPaths(),
+                    nodeInfo.getParentNodeIds(), AuthenticationUtil.getFullyAuthenticatedUser(),
+                    nodeInfo.getModificationTimestamp(), getAlfrescoClient(nodeInfo.getClient()),
+                    nodeInfo.getAspectsAsStrings(), nodeInfo.getProperties());
+
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void nodeUnlocked(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeUnlockedEvent.EVENT_TYPE);
+
+        if (nodeInfo.checkNodeInfo())
+        {
+            NodeUnlockedEvent event = new NodeUnlockedEvent(nextSequenceNumber(), nodeInfo.getName(),
+                    AlfrescoTransactionSupport.getTransactionId(), System.currentTimeMillis(),
+                    TenantUtil.getCurrentDomain(), nodeInfo.getSiteId(), nodeInfo.getNodeId(),
+                    nodeInfo.getType().toPrefixString(namespaceService), nodeInfo.getPaths(),
+                    nodeInfo.getParentNodeIds(), AuthenticationUtil.getFullyAuthenticatedUser(),
+                    nodeInfo.getModificationTimestamp(), getAlfrescoClient(nodeInfo.getClient()),
+                    nodeInfo.getAspectsAsStrings(), nodeInfo.getProperties());
+
             sendEvent(event);
         }
     }

@@ -23,8 +23,10 @@ import org.alfresco.events.types.NodeCheckedInEvent;
 import org.alfresco.events.types.NodeCheckedOutEvent;
 import org.alfresco.events.types.NodeContentGetEvent;
 import org.alfresco.events.types.NodeContentPutEvent;
+import org.alfresco.events.types.NodeLockedEvent;
 import org.alfresco.events.types.NodeMovedEvent;
 import org.alfresco.events.types.NodeRemovedEvent;
+import org.alfresco.events.types.NodeUnlockedEvent;
 import org.alfresco.events.types.NodeUpdatedEvent;
 import org.alfresco.events.types.Property;
 import org.alfresco.events.types.authority.AuthorityAddedToGroupEvent;
@@ -45,6 +47,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
@@ -85,7 +88,10 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     private static final QName POLICY_ON_UPDATE_SECURITY_MARKS = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateContentSecurityMarks");
     private static final QName POLICY_ON_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");    
     private static final QName POLICY_ON_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordRejection");
-    
+    // LockService policies
+    private static final QName POLICY_BEFORE_LOCK = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeLock");
+    private static final QName POLICY_BEFORE_UNLOCK = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUnlock");
+
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
@@ -152,10 +158,14 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         
         bindAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, NodeAddedEvent.EVENT_TYPE);
         
-        //Bind to Records Management policies
+        // Bind to Records Management policies
         bindClassPolicy(POLICY_ON_UPDATE_SECURITY_MARKS);
         bindClassPolicy(POLICY_ON_RECORD_DECLARATION, RecordCreatedEvent.EVENT_TYPE);
         bindClassPolicy(POLICY_ON_RECORD_REJECTION, RecordRejectedEvent.EVENT_TYPE);
+
+        // Bind to Lock Service policies:
+        bindClassPolicy(POLICY_BEFORE_LOCK, NodeLockedEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_BEFORE_UNLOCK, NodeUnlockedEvent.EVENT_TYPE);
 	}
 
     private DataType getPropertyType(QName propertyName)
@@ -481,5 +491,26 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     public void beforeRecordRejection(NodeRef nodeRef)
     {
         eventsService.recordRejected(nodeRef);
+    }
+
+    /**
+     * Called before an attempt to lock the given node is made.
+     *
+     * @param nodeRef NodeRef
+     * @param lockType LockType
+     */
+    public void beforeLock(NodeRef nodeRef, LockType lockType)
+    {
+        eventsService.nodeLocked(nodeRef);
+    }
+
+    /**
+     * Called before an attempt to unlock the given node is made.
+     *
+     * @param nodeRef NodeRef
+     */
+    public void beforeUnlock(NodeRef nodeRef)
+    {
+        eventsService.nodeUnlocked(nodeRef);
     }
 }

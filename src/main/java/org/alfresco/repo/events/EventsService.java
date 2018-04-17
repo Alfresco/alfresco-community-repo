@@ -234,4 +234,18 @@ public interface EventsService
      * @param nodeRef the node being declared as a record
      */
     void recordCreated(NodeRef nodeRef);
+
+	/**
+	 * Generate an event when a node is locked
+	 *
+	 * @param nodeRef
+	 */
+	void nodeLocked(NodeRef nodeRef);
+
+	/**
+	 * Generate an event when a node is unlocked
+	 *
+	 * @param nodeRef
+	 */
+	void nodeUnlocked(NodeRef nodeRef);
 }

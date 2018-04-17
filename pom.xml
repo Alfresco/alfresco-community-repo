@@ -63,10 +63,10 @@
         <image.tag>latest</image.tag>
 
         <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>8.3</dependency.alfresco-data-model.version>
-        <dependency.alfresco-repository.version>6.42</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.28</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-hb-data-sender.version>1.0.7</dependency.alfresco-hb-data-sender.version>
+        <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
+        <dependency.alfresco-repository.version>6.44</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.29</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>
 
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
@@ -79,8 +79,8 @@
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>6.0.a</alfresco.share.version>
-        <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
+        <alfresco.share.version>6.0.0-rc1</alfresco.share.version>
+        <alfresco.alfresco-share-services.version>6.0.0-rc1</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.1.0-RC1</alfresco.googledocs.version>

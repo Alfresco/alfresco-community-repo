@@ -218,12 +218,6 @@
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 
-   <!--  JSR-168 Authenticator (Portal based) -->
-   <bean id="webscripts.authenticator.jsr168" class="org.alfresco.repo.web.scripts.portlet.JSR168PortletAuthenticatorFactory" lazy-init="true">
-      <property name="unprotAuthenticationService" ref="authenticationService" />
-      <property name="transactionService" ref="TransactionService" />
-   </bean>
-
 
    <!--            -->
    <!--  API Beans -->

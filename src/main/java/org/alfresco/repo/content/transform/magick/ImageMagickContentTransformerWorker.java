@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.RemoteTransformerClient;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
@@ -127,7 +126,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     @Override
     public void afterPropertiesSet()
     {
-        if (executer == null)
+        if (!remoteTransformerClientConfigured() && executer == null)
         {
             throw new AlfrescoRuntimeException("System runtime executer not set");
         }
@@ -155,16 +154,27 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         }
         else
         {
-            Pair<Boolean, String> result = remoteTransformerClient.checkCommand(logger);
-            if (result.getFirst())
+            Pair<Boolean, String> result = remoteTransformerClient.check(logger);
+            Boolean isAvailable = result.getFirst();
+            if (isAvailable != null && isAvailable)
             {
                 setAvailable(true);
                 versionString = result.getSecond().trim();
+                logger.info("Using ImageMagick: "+versionString);
             }
             else
             {
                 setAvailable(false);
                 versionString = "unknown";
+                String message = "ImageMagick is not available for transformations. " + result.getSecond();
+                if (isAvailable == null)
+                {
+                    logger.debug(message);
+                }
+                else
+                {
+                    logger.error(message);
+                }
             }
         }
     }

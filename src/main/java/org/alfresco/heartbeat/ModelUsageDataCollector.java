@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -37,6 +37,21 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
+/**
+ * A collector of data related to the data models being used.
+ * <ul>
+ *  <li>Collector ID: <b>acs.repository.usage.model</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>numOfActiveModels:</b> Int - Number of active models. {@link CustomModelsInfo#getNumberOfActiveModels()}</li>
+ *          <li><b>numOfActiveTypes:</b> Int - Number of active types. {@link CustomModelsInfo#getNumberOfActiveTypes()}</li>
+ *          <li><b>numOfActiveAspects:</b> Int - Number of active aspects. {@link CustomModelsInfo#getNumberOfActiveAspects()}</li>
+ *      </ul>
+ *  </li>
+ * </ul>
+ *
+ * @author eknizat
+ */
 public class ModelUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */

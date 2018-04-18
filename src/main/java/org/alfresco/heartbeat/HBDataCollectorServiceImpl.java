@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,6 +45,11 @@ import org.quartz.SchedulerException;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
 
+/**
+ * HBDataCollectorService implementation. This service manages multiple collectors. The collectors containing cron expression
+ * which will be used to create time scheduled jobs for executing the tasks from the collector
+ *
+ */
 public class HBDataCollectorServiceImpl implements HBDataCollectorService, LicenseChangeHandler
 {
     /** The logger. */
@@ -96,7 +101,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         this.scheduler = scheduler;
     }
 
-    public boolean isEnabled()
+    public synchronized boolean isEnabled()
     {
         return this.enabled;
     }
@@ -115,7 +120,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
      * @param collector collector to register
      */
     @Override
-    public void registerCollector(final HBBaseDataCollector collector)
+    public synchronized void registerCollector(final HBBaseDataCollector collector)
     {
         // Check collector with the same ID does't already exist
         for (HBBaseDataCollector col : collectors)
@@ -145,7 +150,12 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         }
     }
 
-    public void deregisterCollector(final HBBaseDataCollector collector)
+    /**
+     * Deregister data collector. Before the collector will be removed the collector job will be unscheduled
+     *
+     * @param collector
+     */
+    public synchronized void deregisterCollector(final HBBaseDataCollector collector)
     {
         if (collectors.remove(collector))
         {
@@ -178,7 +188,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
      * Start or stop the HertBeat jobs for all registered collectors
      * depending on whether the heartbeat is enabled or not
      */
-    private synchronized void scheduleCollector(final HBBaseDataCollector collector) throws ParseException, SchedulerException
+    private void scheduleCollector(final HBBaseDataCollector collector) throws ParseException, SchedulerException
     {
         final String jobName = "heartbeat-" + collector.getCollectorId();
         final String triggerName = jobName + "-Trigger";

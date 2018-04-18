@@ -68,6 +68,11 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
      */
     public boolean isAvailable()
     {
+        if (remoteTransformerClientConfigured() && !remoteTransformerClient.isAvailable())
+        {
+            afterPropertiesSet();
+        }
+
         return available;
     }
 
@@ -211,7 +216,7 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        if (!available)
+        if (!isAvailable())
         {
             return false;
         }

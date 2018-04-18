@@ -200,7 +200,6 @@ public class ScriptNodeTest
     @Before public void createTestContent()
     {  
         excludedOnUpdateProps = VERSIONABLE_ASPECT.getExcludedOnUpdateProps();
-        
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         // Create the store and get the root node
         storeRef = NODE_SERVICE.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -514,23 +513,34 @@ public class ScriptNodeTest
         {
             public Void execute() throws Throwable
             {
-                log.debug("Adding new model.");
+                try
+                {
+                    // Authenticate as the system user
+                    AuthenticationUtil.pushAuthentication();
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                    log.debug("Adding new model.");
 
-                // Create a model node
-                PropertyMap properties = new PropertyMap(1);
-                properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+                    // Create a model node
+                    PropertyMap properties = new PropertyMap(1);
+                    properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
 
-                final NodeRef modelNode = NODE_SERVICE.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
-                        ContentModel.TYPE_DICTIONARY_MODEL, properties).getChildRef();
-                assertNotNull(modelNode);
+                    final NodeRef modelNode = NODE_SERVICE.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                            QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"), ContentModel.TYPE_DICTIONARY_MODEL, properties)
+                            .getChildRef();
+                    assertNotNull(modelNode);
 
-                // Add the model content to the model node
-                ContentWriter contentWriter = CONTENT_SERVICE.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
-                contentWriter.setEncoding("UTF-8");
-                contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
-                InputStream cmStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
-                contentWriter.putContent(IOUtils.toString(cmStream));
-                cmStream.close();
+                    // Add the model content to the model node
+                    ContentWriter contentWriter = CONTENT_SERVICE.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+                    contentWriter.setEncoding("UTF-8");
+                    contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+                    InputStream cmStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
+                    contentWriter.putContent(IOUtils.toString(cmStream));
+                    cmStream.close();
+                }
+                finally
+                {
+                    AuthenticationUtil.popAuthentication();
+                }
                 return null;
             }
         });

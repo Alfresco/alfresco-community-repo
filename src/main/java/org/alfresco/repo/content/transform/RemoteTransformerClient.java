@@ -31,7 +31,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -46,8 +45,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.StringJoiner;
 
 /**
@@ -62,10 +59,21 @@ public class RemoteTransformerClient
     private final String name;
     private final String baseUrl;
 
+    // The length of time to wait after a connection problem before checking availability again.
+    private long startupRetryPeriod = 15000;
+
+    // When to check availability.
+    protected long checkAvailabilityAfter = 0L;
+
     public RemoteTransformerClient(String name, String baseUrl)
     {
         this.name = name;
         this.baseUrl = baseUrl == null || baseUrl.trim().isEmpty() ? null : baseUrl.trim();
+    }
+
+    public void setStartupRetryPeriodSeconds(int startupRetryPeriodSeconds)
+    {
+        startupRetryPeriod = startupRetryPeriodSeconds*1000;
     }
 
     public String getBaseUrl()
@@ -81,10 +89,18 @@ public class RemoteTransformerClient
             throw new IllegalAccessException("There should be a value for each request property");
         }
 
+        StringJoiner sj = new StringJoiner(" ");
+        HttpEntity reqEntity = getRequestEntity(reader, sourceMimetype, sourceExtension, targetExtension, timeoutMs, args, sj);
+
+        request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
+    }
+
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension,
+                                        String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
+    {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         ContentType contentType = ContentType.create(sourceMimetype);
         builder.addBinaryBody("file", reader.getContentInputStream(), contentType, "tmp."+sourceExtension);
-        StringJoiner sj = new StringJoiner(" ");
         builder.addTextBody("targetExtension", targetExtension);
         sj.add("targetExtension" + '=' + targetExtension);
         for (int i=0; i< args.length; i+=2)
@@ -102,166 +118,213 @@ public class RemoteTransformerClient
             builder.addTextBody("timeout", timeoutMsString);
             sj.add("timeout=" + timeoutMsString);
         }
-        HttpEntity reqEntity = builder.build();
+        return builder.build();
+    }
 
+    void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)
+    {
         String url = baseUrl + "/transform";
         HttpPost httppost = new HttpPost(url);
         httppost.setEntity(reqEntity);
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Remote "+name+' '+sourceExtension+' '+targetExtension+' '+url+' '+sj.toString());
+            logger.debug("Remote "+name+' '+sourceExtension+' '+targetExtension+' '+url+' '+args);
         }
 
-        try (CloseableHttpClient httpclient = HttpClients.createDefault())
+        try
         {
-            try (CloseableHttpResponse response = httpclient.execute(httppost))
+            try (CloseableHttpClient httpclient = HttpClients.createDefault())
             {
-                StatusLine statusLine = response.getStatusLine();
-                if (statusLine == null)
+                try (CloseableHttpResponse response = execute(httpclient, httppost))
                 {
-                    throw new AlfrescoRuntimeException("Remote "+name+" returned no status " + url + ' ' + sj.toString());
-                }
-                HttpEntity resEntity = response.getEntity();
-                if (resEntity != null)
-                {
-                    int statusCode = statusLine.getStatusCode();
-                    if (statusCode == 200)
+                    StatusLine statusLine = response.getStatusLine();
+                    if (statusLine == null)
                     {
-                        try
+                        throw new AlfrescoRuntimeException("Remote "+name+" returned no status " + url + ' ' + args);
+                    }
+                    HttpEntity resEntity = response.getEntity();
+                    if (resEntity != null)
+                    {
+                        int statusCode = statusLine.getStatusCode();
+                        if (statusCode == 200)
                         {
-                            if (logger.isDebugEnabled())
+                            try
                             {
-                                long responseContentLength = resEntity.getContentLength();
-                                Header responseContentEncoding = resEntity.getContentEncoding();
-                                Header responseContentType = resEntity.getContentType();
-                                logger.debug("Remote " + name + ' ' + sourceExtension + ' ' + targetExtension +
-                                        " returned. length=" + responseContentLength +
-                                        " type=" + responseContentType +
-                                        " encoding=" + responseContentEncoding);
-                            }
+                                if (logger.isDebugEnabled())
+                                {
+                                    long responseContentLength = resEntity.getContentLength();
+                                    Header responseContentEncoding = resEntity.getContentEncoding();
+                                    Header responseContentType = resEntity.getContentType();
+                                    logger.debug("Remote " + name + ' ' + sourceExtension + ' ' + targetExtension +
+                                            " returned. length=" + responseContentLength +
+                                            " type=" + responseContentType +
+                                            " encoding=" + responseContentEncoding);
+                                }
 
-                            writer.putContent(resEntity.getContent());
-                            EntityUtils.consume(resEntity);
+                                writer.putContent(resEntity.getContent());
+                                EntityUtils.consume(resEntity);
+                            }
+                            catch (IOException e)
+                            {
+                                throw new AlfrescoRuntimeException("Remote " + name + " failed to read the returned content", e);
+                            }
                         }
-                        catch (IOException e)
+                        else
                         {
-                            throw new AlfrescoRuntimeException("Remote " + name + " failed to read the returned content", e);
+                            String message = getErrorMessage(resEntity);
+                            String msg = ("Remote " + name + " returned a " + statusCode + " status " + message +
+                                    ' ' + url + ' ' + args).trim();
+                            if (statusCode == 401)
+                            {
+                                throw new UnsupportedTransformationException(msg);
+                            }
+                            else if (statusCode == 402)
+                            {
+                                throw new UnimportantTransformException(msg);
+                            }
+                            else
+                            {
+                                throw new AlfrescoRuntimeException(msg);
+                            }
                         }
                     }
                     else
                     {
-                        String message = getErrorMessage(resEntity);
-                        String msg = "Remote " + name + " returned a " + statusCode + " status " + message +
-                                ' ' + url + ' ' + sj.toString();
-                        if (statusCode == 401)
-                        {
-                            throw new UnsupportedTransformationException(msg);
-                        }
-                        else if (statusCode == 402)
-                        {
-                            throw new UnimportantTransformException(msg);
-                        }
-                        else
-                        {
-                            throw new AlfrescoRuntimeException(msg);
-                        }
+                        throw new AlfrescoRuntimeException("Remote " + name + " did not return an entity " + url);
                     }
                 }
-                else
+                catch (IOException e)
                 {
-                    throw new AlfrescoRuntimeException("Remote " + name + " did not return an entity " + url);
+                    // In the case of transform requests, unlike version checks, it is only the failure to connect that
+                    // forces a wait before trying again.
+                    connectionFailed();
+                    throw new AlfrescoRuntimeException("Remote " + name + " failed to connect or to read the response", e);
                 }
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Remote " + name + " failed to read the returned content", e);
+                throw new AlfrescoRuntimeException("Remote " + name + " failed to create an HttpClient", e);
             }
         }
-        catch (IOException e)
+        catch (AlfrescoRuntimeException e)
         {
-            throw new AlfrescoRuntimeException("Remote " + name + " failed to create an HttpClient", e);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(e.getMessage());
+            }
+            throw e;
         }
     }
 
-    public Pair<Boolean, String> checkCommand(Log logger)
+    public Pair<Boolean, String> check(Log logger)
     {
-        // TODO Have a long retry and give up after a few goes and return "unknown".
+        if (!isTimeToCheckAvailability())
+        {
+            logger.debug("Remote "+name+' '+" too early to check availability");
+            return new Pair<>(null, null);
+        }
 
         String url = baseUrl + "/version";
         HttpGet httpGet = new HttpGet(url);
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Remote "+name+' '+" check command" +url);
+            logger.debug("Remote "+name+' '+" check" +url);
         }
 
-        try (CloseableHttpClient httpclient = HttpClients.createDefault())
+        try
         {
-            try (CloseableHttpResponse response = httpclient.execute(httpGet))
+            try (CloseableHttpClient httpclient = HttpClients.createDefault())
             {
-                StatusLine statusLine = response.getStatusLine();
-                if (statusLine == null)
+                try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {
-                    throw new AlfrescoRuntimeException("Remote "+name+" check command returned no status " + url);
-                }
-                HttpEntity resEntity = response.getEntity();
-                if (resEntity != null)
-                {
-                    int statusCode = statusLine.getStatusCode();
-                    if (statusCode == 200)
+                    StatusLine statusLine = response.getStatusLine();
+                    if (statusLine == null)
                     {
-                        try
+                        throw new AlfrescoRuntimeException("Remote "+name+" check returned no status " + url);
+                    }
+                    HttpEntity resEntity = response.getEntity();
+                    if (resEntity != null)
+                    {
+                        int statusCode = statusLine.getStatusCode();
+                        if (statusCode == 200)
                         {
-                            String version = EntityUtils.toString(resEntity);
-
-                            if (logger.isDebugEnabled())
+                            try
                             {
-                                long responseContentLength = resEntity.getContentLength();
-                                Header responseContentType = resEntity.getContentType();
-                                Header responseContentEncoding = resEntity.getContentEncoding();
-                                logger.debug("Remote " + name +
-                                        " check command returned. length=" + responseContentLength +
-                                        " type=" + responseContentType +
-                                        " encoding=" + responseContentEncoding+
-                                        " content="+version);
-                            }
+                                String version = getContent(resEntity);
 
-                            EntityUtils.consume(resEntity);
-                            return new Pair<>(true, version);
+                                if (logger.isDebugEnabled())
+                                {
+                                    long responseContentLength = resEntity.getContentLength();
+                                    Header responseContentType = resEntity.getContentType();
+                                    Header responseContentEncoding = resEntity.getContentEncoding();
+                                    logger.debug("Remote " + name +
+                                            " check returned. length=" + responseContentLength +
+                                            " type=" + responseContentType +
+                                            " encoding=" + responseContentEncoding+
+                                            " content="+version);
+                                }
+
+                                EntityUtils.consume(resEntity);
+                                connectionSuccess();
+                                return new Pair<>(true, version);
+                            }
+                            catch (IOException e)
+                            {
+                                throw new AlfrescoRuntimeException("Remote " + name + " check failed to read the returned content", e);
+                            }
                         }
-                        catch (IOException e)
+                        else
                         {
-                            throw new AlfrescoRuntimeException("Remote " + name + " check command failed to read the returned content", e);
+                            String message = getErrorMessage(resEntity);
+                            throw new AlfrescoRuntimeException("Remote " + name + " check returned a " + statusCode + " status " + message + ' ' + url);
                         }
                     }
                     else
                     {
-                        String message = getErrorMessage(resEntity);
-                        throw new AlfrescoRuntimeException("Remote " + name + " check command returned a " + statusCode + " status " + message + ' ' + url);
+                        throw new AlfrescoRuntimeException("Remote " + name + " check did not return an entity " + url);
                     }
                 }
-                else
+                catch (IOException e)
                 {
-                    throw new AlfrescoRuntimeException("Remote " + name + " check command did not return an entity " + url);
+                    throw new AlfrescoRuntimeException("Remote " + name + " check failed to connect or to read the response", e);
                 }
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Remote " + name + " check command failed to read the returned content", e);
+                throw new AlfrescoRuntimeException("Remote " + name + " check failed to create an HttpClient", e);
             }
         }
-        catch (IOException e)
+        catch (AlfrescoRuntimeException e)
         {
-            throw new AlfrescoRuntimeException("Remote " + name + " check command failed to create an HttpClient", e);
+            // In the case of version checks, unlike transform requests, any failure forces a wait before trying again.
+            connectionFailed();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(e.getMessage());
+            }
+            return new Pair<>(false, e.getMessage());
         }
     }
 
+    // Tests mock the return values
+    CloseableHttpResponse execute(CloseableHttpClient httpclient, HttpPost httppost) throws IOException
+    {
+        return httpclient.execute(httppost);
+    }
+
+    // Tests mock the return values
+    CloseableHttpResponse execute(CloseableHttpClient httpclient, HttpGet httpGet) throws IOException
+    {
+        return httpclient.execute(httpGet);
+    }
+
+    // Strip out just the error message in the response
     private String getErrorMessage(HttpEntity resEntity) throws IOException
     {
         String message = "";
-        String content = EntityUtils.toString(resEntity);
-        System.out.println("Response content: " + content);
+        String content = getContent(resEntity);
         int i = content.indexOf("\"message\":\"");
         if (i != -1)
         {
@@ -274,14 +337,40 @@ public class RemoteTransformerClient
         return message;
     }
 
+    // Tests mock the return values
+    String getContent(HttpEntity resEntity) throws IOException
+    {
+        return EntityUtils.toString(resEntity);
+    }
+
     /**
-     * Helper method that returns the same result type as {@link #checkCommand(Log)} given a local checkCommand.
+     * Helper method that returns the same result type as {@link #check(Log)} given a local checkCommand.
      */
-    public static Pair<Boolean,String> checkCommand(RuntimeExec checkCommand)
+    public static Pair<Boolean,String> check(RuntimeExec checkCommand)
     {
         ExecutionResult result = checkCommand.execute();
         Boolean success = result.getSuccess();
         String output = success ? result.getStdOut().trim() : result.toString();
         return new Pair<>(success, output);
+    }
+
+    void connectionFailed()
+    {
+        checkAvailabilityAfter = System.currentTimeMillis() + startupRetryPeriod;
+    }
+
+    void connectionSuccess()
+    {
+        checkAvailabilityAfter = Long.MAX_VALUE;
+    }
+
+    private boolean isTimeToCheckAvailability()
+    {
+        return System.currentTimeMillis() > checkAvailabilityAfter;
+    }
+
+    public boolean isAvailable()
+    {
+        return checkAvailabilityAfter == Long.MAX_VALUE;
     }
 }

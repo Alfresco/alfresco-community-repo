@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -40,12 +40,16 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This class collects repository configuration data for HeartBeat.
- * <br>
- * <b>Collector ID:</b> acs.repository.configuration
- * <br>
- * <b>Data points:</b> smartFoldersEnabled
- *
+ * A collector of data related to repository configuration data for HeartBeat.
+ * <ul>
+ *  <li>Collector ID: <b>acs.repository.configuration</b></li>
+ *  <li>Data:
+ *      <ul>
+ *          <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link SpringExtensionBundle#isEnabled()}</li>
+ *      </ul>
+ *  </li>
+ * </ul>
+
  * @author mpopa
  */
 public class ConfigurationDataCollector extends HBBaseDataCollector implements InitializingBean

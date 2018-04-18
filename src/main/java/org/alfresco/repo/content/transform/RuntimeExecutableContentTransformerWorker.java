@@ -179,7 +179,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
      */
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        return available;
+        return isAvailable();
     }
     
     @Override

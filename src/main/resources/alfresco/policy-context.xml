@@ -68,6 +68,7 @@
       <property name="modelValidator" ref="modelValidator"/>
       <property name="transactionService" ref="TransactionService"/>
       <property name="jobLockService" ref="jobLockService"/>
+	  <property name="authorityService" ref="authorityService"/>
     </bean>
     
     <bean id="policyIgnoreUtil" class="org.alfresco.util.PolicyIgnoreUtil">

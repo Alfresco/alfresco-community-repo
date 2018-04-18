@@ -36,8 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.el.MethodNotFoundException;
-
 import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -237,7 +235,6 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                     }
                     PropertyUtils.setProperty(options, key, value);
                  } 
-                 catch(MethodNotFoundException mnfe) {}
                  catch(NoSuchMethodException nsme) {}
                  catch(InvocationTargetException ite) {}
                  catch(IllegalAccessException iae) {}

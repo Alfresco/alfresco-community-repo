@@ -25,17 +25,15 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.File;
-
-import org.artofsolving.jodconverter.document.DocumentFormat;
-
 import org.alfresco.repo.content.JodConverter;
-import org.alfresco.repo.content.transform.ContentTransformerWorker;
-import org.alfresco.repo.content.transform.OOoContentTransformerHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.artofsolving.jodconverter.OfficeDocumentConverter;
+import org.artofsolving.jodconverter.document.DocumentFormat;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.io.File;
 
 /**
  * Makes use of the {@link http://code.google.com/p/jodconverter/} library and an installed
@@ -65,11 +63,46 @@ public class JodContentTransformer extends OOoContentTransformerHelper implement
     {
         return "JodContentTransformer";
     }
-    
+
     @Override
     public boolean isAvailable()
     {
-    	return jodconverter.isAvailable();
+        if (remoteTransformerClientConfigured() && !remoteTransformerClient.isAvailable())
+        {
+            afterPropertiesSet();
+        }
+
+        return remoteTransformerClientConfigured()
+            ? remoteTransformerClient.isAvailable()
+            : jodconverter.isAvailable();
+    }
+
+    @Override
+    public void afterPropertiesSet()
+    {
+        super.afterPropertiesSet();
+        if (remoteTransformerClientConfigured())
+        {
+            Pair<Boolean, String> result = remoteTransformerClient.check(logger);
+            Boolean isAvailable = result.getFirst();
+            if (isAvailable != null && isAvailable)
+            {
+                String versionString = result.getSecond().trim();
+                logger.info("Using JodCoverter: "+versionString);
+            }
+            else
+            {
+                String message = "JodConverter is not available for transformations. " + result.getSecond();
+                if (isAvailable == null)
+                {
+                    logger.debug(message);
+                }
+                else
+                {
+                    logger.error(message);
+                }
+            }
+        }
     }
 
     @Override

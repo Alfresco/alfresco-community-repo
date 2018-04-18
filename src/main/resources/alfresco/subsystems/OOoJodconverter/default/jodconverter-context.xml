@@ -70,6 +70,9 @@
                <constructor-arg>
                    <value>${jodconverter.url}</value>
                </constructor-arg>
+               <property name="startupRetryPeriodSeconds">
+                   <value>${jodconverter.startupRetryPeriodSeconds}</value>
+               </property>
            </bean>
        </property>
    </bean>

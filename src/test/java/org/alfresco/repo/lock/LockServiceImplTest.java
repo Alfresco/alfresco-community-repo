@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,9 @@
 package org.alfresco.repo.lock;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -39,6 +42,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.lock.mem.LockStore;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SearcherComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -104,6 +111,33 @@ public class LockServiceImplTest extends BaseSpringTest
     NodeRef rootNodeRef;
     private StoreRef storeRef;
 
+    private PolicyComponent policyComponent;
+
+
+    private class LockServicePoliciesImpl implements LockServicePolicies.BeforeLock,
+            LockServicePolicies.BeforeUnlock
+    {
+        @Override
+        public void beforeLock(NodeRef nodeRef, LockType lockType)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Invoked beforeLock() for nodeRef: " + nodeRef +
+                        lockType != null ? (" and lockType: " + lockType) : "");
+            }
+        }
+
+        @Override
+        public void beforeUnlock(NodeRef nodeRef)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Invoked beforeUnlock() for nodeRef: " + nodeRef);
+            }
+        }
+    }
+
+
     @Before
     public void before() throws Exception
     {
@@ -115,6 +149,8 @@ public class LockServiceImplTest extends BaseSpringTest
         
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         this.cociService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
+
+        this.policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
         
         // Set the authentication
         AuthenticationComponent authComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
@@ -199,7 +235,33 @@ public class LockServiceImplTest extends BaseSpringTest
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
     }
-    
+
+    @Test
+    public void testLockServicePolicies()
+    {
+        LockServicePoliciesImpl mockedLockServicePoliciesImpl = mock(LockServicePoliciesImpl.class);
+
+        BehaviourDefinition<ClassBehaviourBinding> lockDef =
+                this.policyComponent.bindClassBehaviour(LockServicePolicies.BeforeLock.QNAME, ContentModel.TYPE_BASE,
+                        new JavaBehaviour(mockedLockServicePoliciesImpl, "beforeLock"));
+
+        BehaviourDefinition<ClassBehaviourBinding> unlockDef =
+                this.policyComponent.bindClassBehaviour(LockServicePolicies.BeforeUnlock.QNAME, ContentModel.TYPE_BASE,
+                        new JavaBehaviour(mockedLockServicePoliciesImpl, "beforeUnlock"));
+
+        this.lockService.lock(this.parentNode, LockType.WRITE_LOCK);
+
+        verify(mockedLockServicePoliciesImpl, times(1)).beforeLock(this.parentNode, LockType.WRITE_LOCK);
+
+        this.lockService.unlock(this.parentNode);
+
+        verify(mockedLockServicePoliciesImpl, times(1)).beforeUnlock(this.parentNode);
+
+        // cleanup:
+        this.policyComponent.removeClassDefinition(lockDef);
+        this.policyComponent.removeClassDefinition(unlockDef);
+    }
+
     /**
      * Test lock
      */

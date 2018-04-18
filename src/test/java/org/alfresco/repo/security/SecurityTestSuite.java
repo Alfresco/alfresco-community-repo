@@ -25,10 +25,6 @@
  */
 package org.alfresco.repo.security;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.alfresco.repo.domain.permissions.FixedAclUpdaterTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactoryTest;
@@ -41,6 +37,7 @@ import org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest;
 import org.alfresco.repo.security.authentication.UpgradePasswordHashTest;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest;
 import org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest;
 import org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest;
 import org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
@@ -56,6 +53,10 @@ import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSetTest;
 import org.alfresco.repo.security.permissions.impl.model.PermissionModelTest;
 import org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest;
 import org.alfresco.repo.security.person.PersonTest;
+
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author Andy Hind
@@ -100,6 +101,7 @@ public class SecurityTestSuite extends TestSuite
 		suite.addTestSuite(FixedAclUpdaterTest.class);
 
 		suite.addTestSuite(DefaultRemoteUserMapperTest.class);
+		suite.addTestSuite(IdentityServiceRemoteUserMapperTest.class);
 		suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
 		suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
 

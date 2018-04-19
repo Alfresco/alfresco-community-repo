@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.repo.deployment.DeploymentMethodProvider;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.util.PropertyCheck;
@@ -54,6 +55,7 @@ import java.util.*;
  *          </li>
  *          <li><b>schema:</b> Int - The schema number. {@link Descriptor#getSchema()}</li>
  *          <li><b>edition:</b> String - The edition. {@link Descriptor#getEdition()}</li>
+ *          <li><b>deploymentMethod:</b> String - The deployment method used to deploy this Alfresco instance. {@link DeploymentMethodProvider#getDeploymentMethod()}</li>
  *      </ul>
  *  </li>
  * </ul>
@@ -68,6 +70,8 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
     /** DAO for current descriptor. */
     private DescriptorDAO serverDescriptorDAO;
+
+    private DeploymentMethodProvider deploymentMethodProvider;
 
     public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
@@ -84,11 +88,17 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
         this.serverDescriptorDAO = serverDescriptorDAO;
     }
 
+    public void setDeploymentMethodProvider(DeploymentMethodProvider deploymentMethodProvider)
+    {
+        this.deploymentMethodProvider = deploymentMethodProvider;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+        PropertyCheck.mandatory(this, "deploymentMethodProvider", deploymentMethodProvider);
     }
 
     @Override
@@ -115,6 +125,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
         infoValues.put("version", version);
         infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
         infoValues.put("edition", serverDescriptor.getEdition());
+        infoValues.put("deploymentMethod", deploymentMethodProvider.getDeploymentMethod().toString());
 
         HBData infoData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),

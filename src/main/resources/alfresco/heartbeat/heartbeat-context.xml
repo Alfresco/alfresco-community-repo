@@ -17,6 +17,7 @@
     <!-- HeartBeat data collector service -->
     <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
         <constructor-arg value="${heartbeat.enabled}" />
+        <property name="testMode" value="${heartbeat.collectors.testMode}"/>
         <property name="hbDataSenderService" ref="hbDataSenderService" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="jobLockService" ref="jobLockService" />

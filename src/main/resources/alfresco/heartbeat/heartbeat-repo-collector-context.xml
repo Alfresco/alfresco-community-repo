@@ -11,6 +11,7 @@
         <constructor-arg name="cronExpression"      value="0 0 0 ? * SUN"/> <!-- Weekly -->
         <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
         <property name="serverDescriptorDAO"        ref="serverDescriptorDAO"/>
+        <property name="deploymentMethodProvider"   ref="deploymentMethodProvider"/>
     </bean>
 
     <!-- HeartBeat repository usage model data collector -->

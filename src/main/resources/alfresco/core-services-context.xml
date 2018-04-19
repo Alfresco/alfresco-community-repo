@@ -1352,4 +1352,11 @@
       <property name="policyComponent" ref="policyComponent" />
       <property name="namespaceService" ref="namespaceService" />
    </bean>
+
+   <bean id="deploymentMethodProvider" class="org.alfresco.repo.deployment.DeploymentMethodProviderImpl" >
+       <property name="deploymentMethod">
+           <value>${deployment.method}</value>
+       </property>
+   </bean>
+
 </beans>

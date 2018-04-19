@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -52,22 +52,9 @@ public interface LockServicePolicies
          * @param nodeRef NodeRef
          * @param lockType LockType
          */
-        void beforeLock(NodeRef nodeRef, LockType lockType);
-    }
-
-    /**
-     * Policy for behavior before an unlock is made.
-     */
-    public interface BeforeUnlock extends ClassPolicy
-    {
-        static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeUnlock");
-
-        /**
-         * Called before an attempt to unlock the given node is made.
-         *
-         * @param nodeRef NodeRef
-         */
-        void beforeUnlock(NodeRef nodeRef);
+        void beforeLock(
+                NodeRef nodeRef, 
+                LockType lockType);
     }
 
 }

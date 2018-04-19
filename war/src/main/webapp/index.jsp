@@ -33,6 +33,7 @@
 <%@ page import="org.alfresco.service.cmr.module.ModuleService" %>
 <%@ page import="org.alfresco.service.cmr.module.ModuleDetails" %>
 <%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
+<%@ page import="java.util.Calendar" %>
 
 <!-- Enterprise index-jsp placeholder -->
 <%
@@ -122,7 +123,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
       <div class="push"></div>
    </div>
    <div class="footer">
-      Alfresco Software, Inc. &copy; 2005-2017 All rights reserved.
+       Alfresco Software, Inc. &copy; 2005-<%=Calendar.getInstance().get(Calendar.YEAR)%> All rights reserved.
    </div>
 </body>
 </html>

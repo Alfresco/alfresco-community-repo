@@ -357,17 +357,6 @@
         </property>
     </bean>
     
-    <bean id="patch.db-V4.0-Activiti-task-id-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V4.0-Activiti-task-id-indexes" />
-        <property name="description" value="patch.schemaUpgradeScript.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="6003" />
-        <property name="targetSchema" value="6004" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/ActivitiTaskIdIndexes.sql</value>
-        </property>
-    </bean>
-    
     <bean id="patch.db-V4.0-TenantTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.0-TenantTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -510,17 +499,6 @@
             <value>alfresco/templates/content/examples/show_audit.ftl</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V4.1-increase-column-size-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V4.1-increase-column-size-activiti" />
-        <property name="description" value="patch.increaseColumnSizeActiviti.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="6012" />
-        <property name="targetSchema" value="6013" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/increase-column-size-activiti.sql</value>
-        </property>
-    </bean>
     
     <bean id="patch.updateMimetypesSVG" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypesSVG</value></property>
@@ -615,28 +593,6 @@
         <property name="fixesToSchema"><value>6016</value></property>
         <property name="targetSchema"><value>6017</value></property>
     </bean>
-    
-    <bean id="patch.db-V4.1-remove-column-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V4.1-remove-column-activiti" />
-        <property name="description" value="patch.removeColumnActiviti.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="6017" />
-        <property name="targetSchema" value="6018" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/remove-column-activiti.sql</value>
-        </property>
-    </bean>
-    
-    <bean id="patch.db-V4.2-upgrade-to-activiti-5.10" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.10</value></property>
-        <property name="description"><value>patch.upgradeToActiviti5-10.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6018</value></property>
-        <property name="targetSchema"><value>6019</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-10.sql</value>
-        </property>
-    </bean>
       
     <bean id="patch.emailAliasableAspect" class="org.alfresco.repo.admin.patch.impl.AliasableAspectPatch" parent="basePatch">
         <property name="id"><value>patch.emailAliasableAspect</value></property>
@@ -658,39 +614,6 @@
         </property>
         <property name="behaviourFilter" >
             <ref bean="policyBehaviourFilter"/>
-        </property>
-    </bean>
-    
-    <bean id="patch.db-V4.1-rename-constraint-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.1-rename-constraint-activiti</value></property>
-        <property name="description"><value>patch.renameConstraintActiviti.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6020</value></property>
-        <property name="targetSchema"><value>6021</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/rename-constraint-activiti.sql</value>
-        </property>
-    </bean>
-
-    <bean id="patch.db-V4.2-add-activti-index-historic-activity" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V4.2-add-activti-index-historic-activity" />
-        <property name="description" value="patch.addActivtiIndexHistoricActivity.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="6021" />
-        <property name="targetSchema" value="6022" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/add-activti-index-historic-activity.sql</value>
-        </property>
-    </bean>
-    
-     <bean id="patch.db-V4.2-upgrade-to-activiti-5.11" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.11</value></property>
-        <property name="description"><value>patch.upgradeToActiviti5-11.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6022</value></property>
-        <property name="targetSchema"><value>6023</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-11.sql</value>
         </property>
     </bean>
     
@@ -809,28 +732,6 @@
                     <prop key="mimetype">text/xml</prop>
                </props>
             </list>
-        </property>
-    </bean>
-    
-     <bean id="patch.db-V4.2-upgrade-to-activiti-5.13" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.13</value></property>
-        <property name="description"><value>patch.upgradeToActiviti5-13.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6028</value></property>
-        <property name="targetSchema"><value>6029</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/activiti-upgrade-5-13.sql</value>
-        </property>
-    </bean>
-
-    <bean id="patch.db-V4.2-remove-old-index-act" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.2-remove-old-index-act</value></property>
-        <property name="description"><value>patch.db-V4.2-remove-old-index-act.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6027</value></property>
-        <property name="targetSchema"><value>6028</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/remove-old-index-act.sql</value>
         </property>
     </bean>
 
@@ -1396,17 +1297,6 @@
                 </property>
             </bean>
           </list>
-        </property>
-    </bean>
-
-    <bean id="patch.db-v4.2-migrate-activiti-workflows" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-v4.2-migrate-activiti-workflows</value></property>
-        <property name="description"><value>patch.db-v4.2-migrate-activiti-workflows.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10000</value></property>
-        <property name="targetSchema"><value>10001</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/migrate-activiti-workflows.sql</value>
         </property>
     </bean>
     

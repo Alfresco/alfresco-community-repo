@@ -131,6 +131,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String ERR_FORCED_STOP = "schema.update.err.forced_stop";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
+    private static final String ERR_UPDATE_IN_PROGRESS_ON_ANOTHER_NODE = "schema.update.err.upgrade_in_progress_on_another_node";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String ERR_UPDATE_FAILED = "schema.update.err.update_failed";
     private static final String ERR_VALIDATION_FAILED = "schema.update.err.validation_failed";
@@ -792,6 +793,36 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             try { stmt.close(); } catch (Throwable e) {}
         }
     }
+
+    /**
+     * Used to identify the case where one of the nodes (!maybe even this one!)
+     * has created the alf_bootstrap_lock table - This table indicates that a schema initialization
+     * or schema DB update is in progress.
+     *
+     * Advice: Do not consider this locking system as bullet proof!
+     *
+     * @return true if the alf_bootstrap_lock exists; false otherwise
+     *
+     */
+    private synchronized boolean isBootstrapInProgress(Connection connection) throws Exception
+    {
+        Statement stmt = connection.createStatement();
+        try
+        {
+            stmt.executeQuery("select * from alf_bootstrap_lock");
+            // Success
+            return true;
+        }
+        catch (Throwable e)
+        {
+            // The exception will be thrown if the table does not exist.
+            return false;
+        }
+        finally
+        {
+            try { stmt.close(); } catch (Throwable e) {}
+        }
+    }
     
     /**
      * Records that the bootstrap process has finished
@@ -956,6 +987,19 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // and patches will not have been applied yet
             return;
         }
+
+        if (executedStatementsThreadLocal.get()== null && isBootstrapInProgress(connection))
+        {
+            // This means that there is a bootstrap in progress and this node has NOT executed any queries
+            // therefore this node is NOT the one doing the schema initialization/upgrade
+            // we should therefore wait for the other node to finish and then continue the checks
+            logger.info("Another cluster node is doing a DB schema initialization or DB update. "
+                + "Waiting for the other node to finish...");
+
+            // We throw a well-known exception to be handled by retrying code if required
+            throw new LockFailedException();
+        }
+
         // Retrieve the first installed schema number
         int installedSchema = getInstalledSchemaNumber(connection);
 
@@ -1605,7 +1649,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 if (!updatedSchema)
                 {
                     // The retries were exceeded
-                    throw new AlfrescoRuntimeException(ERR_PREVIOUS_FAILED_BOOTSTRAP);
+                    throw new AlfrescoRuntimeException(ERR_UPDATE_IN_PROGRESS_ON_ANOTHER_NODE);
                 }
                 
                 // Copy the executed statements to the output file

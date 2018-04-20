@@ -66,16 +66,6 @@
         </property>
         <property name="updateActivitiScriptPatches">
             <list>
-                <ref bean="patch.db-V4.0-Activiti-task-id-indexes" />
-                <ref bean="patch.db-V4.1-increase-column-size-activiti" />
-                <ref bean="patch.db-V4.1-remove-column-activiti" />
-                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.10" />
-                <ref bean="patch.db-V4.1-rename-constraint-activiti" />
-                <ref bean="patch.db-V4.2-add-activti-index-historic-activity" />
-                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.11" />
-                <ref bean="patch.db-v4.2-migrate-activiti-workflows" />
-                <ref bean="patch.db-V4.2-remove-old-index-act" />
-                <ref bean="patch.db-V4.2-upgrade-to-activiti-5.13" />
                 <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
                 <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.4" />
                 <ref bean="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" />

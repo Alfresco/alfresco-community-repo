@@ -64,6 +64,18 @@
       <property name="label" value="rm.audit.delete-person" />
    </bean>
 
+   <bean id="audit-event.create-userGroup" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateUserGroupAuditEvent">
+      <property name="name" value="Create User Group"/>
+      <property name="label" value="rm.audit.create-userGroup"/>
+   </bean>
+
+   <bean id="audit-event.delete-userGroup" parent="audit-event"
+         class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeleteUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Delete User Group" />
+      <property name="label" value="rm.audit.delete-userGroup" />
+   </bean>
+
    <bean id="audit-event.login-success" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent">
       <property name="name" value="Login.Success"/>
       <property name="label" value="rm.audit.login-succeeded"/>

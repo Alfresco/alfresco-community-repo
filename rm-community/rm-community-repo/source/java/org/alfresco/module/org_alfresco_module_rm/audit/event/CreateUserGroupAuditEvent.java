@@ -26,11 +26,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Audits user group creation.
@@ -41,10 +48,27 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 @BehaviourBean
 public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNodePolicy
 {
+    /** Node Service */
+    private NodeService nodeService;
+
+    /**
+     * Sets the node service
+     *
+     * @param nodeService nodeService to set
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());
+        Map<QName, Serializable> auditProperties = new HashMap<>();
+        auditProperties.put(ContentModel.PROP_AUTHORITY_NAME,
+                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_NAME));
+
+        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
     }
 }

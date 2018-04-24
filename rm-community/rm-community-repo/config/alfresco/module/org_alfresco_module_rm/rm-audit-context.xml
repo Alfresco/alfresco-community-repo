@@ -53,6 +53,7 @@
    </bean>
 
    <bean id="audit-event.create-person" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreatePersonAuditEvent">
+      <property name="nodeService" ref="nodeService" />
       <property name="name" value="Create Person"/>
       <property name="label" value="rm.audit.create-person"/>
    </bean>
@@ -65,6 +66,7 @@
    </bean>
 
    <bean id="audit-event.create-userGroup" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
       <property name="name" value="Create User Group"/>
       <property name="label" value="rm.audit.create-userGroup"/>
    </bean>

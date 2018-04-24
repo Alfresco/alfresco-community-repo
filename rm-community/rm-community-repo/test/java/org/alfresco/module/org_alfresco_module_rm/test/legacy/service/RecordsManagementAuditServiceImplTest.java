@@ -518,6 +518,59 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given I have created a user
+     * When I will get the RM audit filter by create user event
+     * Then there will be an entry for the created user
+     *
+     * @throws Exception
+     */
+    @org.junit.Test
+    public void testAuditForCreateUser() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String CREATE_USER_AUDIT_EVENT = "Create Person";
+            String userName = "auditCreateUser";
+            NodeRef user;
+            List<RecordsManagementAuditEntry> entry;
+
+            @Override
+            public void given() throws Exception
+            {
+                // create a user
+                user = createPerson(userName);
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                // set the audit query param
+                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+                params.setEvent(CREATE_USER_AUDIT_EVENT);
+
+                // get the audit events for "Create Person"
+                entry = getAuditTrail(params, 1, ADMIN_USER);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertEquals("Create user event is not audited.",
+                        CREATE_USER_AUDIT_EVENT, entry.get(0).getEvent());
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+
+        });
+    }
+
     /** === Helper methods === */
 
     private List<RecordsManagementAuditEntry> getAuditTrail(String asUser)

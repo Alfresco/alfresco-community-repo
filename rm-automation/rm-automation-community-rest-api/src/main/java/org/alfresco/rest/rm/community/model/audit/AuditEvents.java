@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.model.audit;
 
 /**
  * Enumerates the list of events audited
+ *
  * @author  Rodica Sutu
  * @since 2.7
  *
@@ -36,6 +37,7 @@ public enum AuditEvents
 {
     CREATE_PERSON("Create Person","Create User"),
     DELETE_PERSON("Delete Person","Delete User");
+
     /** event audited */
     public final String event;
 

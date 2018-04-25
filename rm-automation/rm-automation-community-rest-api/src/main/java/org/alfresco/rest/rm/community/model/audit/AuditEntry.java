@@ -34,13 +34,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
+/**
+ * POJO for audit entry
+ *
+ * @author Rodica Sutu
+ * @since 2.7
+ */
 @Builder
 @Data
-@EqualsAndHashCode (callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties (ignoreUnknown = true)

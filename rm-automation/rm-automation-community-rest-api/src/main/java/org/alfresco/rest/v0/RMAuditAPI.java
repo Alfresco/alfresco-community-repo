@@ -43,20 +43,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * The v0 REST API for copy-to (which supports multi-item copy).
+ * The v0 REST API for rm audit logs
  *
- * @author Tom Page
- * @since 2.6
+ * @author Rodica Sutu
+ * @since 2.7
  */
 @Component
 public class RMAuditAPI extends BaseAPI
 {
     /** Logger for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(RMAuditAPI.class);
+
     /** The URI for the audit API. */
-    /**
-     * The URI for the copy-to API.
-     */
     private static final String RM_AUDIT_API = "{0}rma/admin/rmauditlog";
     private static final String RM_AUDIT_LOG_API = RM_AUDIT_API + "?{1}";
 
@@ -66,8 +64,8 @@ public class RMAuditAPI extends BaseAPI
      * @param user The username of the user to use.
      * @param password The password of the user.
      * @param size Maximum number of log entries to return
-     * @param event Only return log entries matching this event
-     * @return return the A
+     * @param event The name of audit event to be retrieved
+     * @return return Only return log entries matching this event
      */
     public List<AuditEntry> getRMAuditLog(String user, String password, final int size, final String event)
     {
@@ -89,9 +87,9 @@ public class RMAuditAPI extends BaseAPI
     /**
      * Clear the list of audit entries audit of Records Management events. .
      *
-     * @param username  The username of the user to use.
+     * @param username The username of the user to use.
      * @param password The password of the user.
-     * @throws AssertionError If the API call didn't return a 200 response.
+     * @throws AssertionError If the API call didn't clear the audit log.
      */
     public void clearAuditLog(String username, String password)
     {

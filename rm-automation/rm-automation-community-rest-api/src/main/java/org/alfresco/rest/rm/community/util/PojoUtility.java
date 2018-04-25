@@ -103,8 +103,8 @@ public class PojoUtility
     /**
      * Converting json to  java object
      *
-     * @param json  The json object to convert
-     * @param classz    Class  for the java object
+     * @param json   The json object to convert
+     * @param classz Class  for the java object
      * @return The converted java object
      * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
@@ -112,7 +112,9 @@ public class PojoUtility
     {
         mandatoryObject("model", classz);
         mandatoryObject("jsonObject", json);
+
         ObjectMapper mapper = new ObjectMapper();
+
         T obj = null;
         try
         {
@@ -123,7 +125,7 @@ public class PojoUtility
             LOGGER.error("Unable to convert the json into a java object.", e.toString());
         }
 
-        return (T) obj;
+        return obj;
     }
 
     /**

@@ -59,12 +59,12 @@ public class RMAuditAPI extends BaseAPI
     private static final String RM_AUDIT_LOG_API = RM_AUDIT_API + "?{1}";
 
     /**
-     * Returns a list of audit entries audit of Records Management events. .
+     * Returns a list of rm audit entries .
      *
-     * @param user The username of the user to use.
+     * @param user     The username of the user to use.
      * @param password The password of the user.
-     * @param size Maximum number of log entries to return
-     * @param event The name of audit event to be retrieved
+     * @param size     Maximum number of log entries to return
+     * @param event    The name of audit event to be retrieved
      * @return return Only return log entries matching this event
      */
     public List<AuditEntry> getRMAuditLog(String user, String password, final int size, final String event)
@@ -72,7 +72,7 @@ public class RMAuditAPI extends BaseAPI
         String parameters = null;
         try
         {
-            parameters = "size=" + size + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8"): null );
+            parameters = "size=" + size + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8"):"");
         }
         catch (UnsupportedEncodingException e)
         {
@@ -85,7 +85,7 @@ public class RMAuditAPI extends BaseAPI
     }
 
     /**
-     * Clear the list of audit entries audit of Records Management events. .
+     * Clear the list of audit entries.
      *
      * @param username The username of the user to use.
      * @param password The password of the user.
@@ -96,7 +96,7 @@ public class RMAuditAPI extends BaseAPI
         JSONObject deleteStatus = doDeleteRequest(username, password, RM_AUDIT_API);
 
         assertTrue(deleteStatus != null
-                //audit clear and audit login returned
+                //audit clear and login events are returned
                 && getRMAuditLog(username, password, 100, null).size() == 2);
     }
 

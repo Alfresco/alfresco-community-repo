@@ -27,8 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
+import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.PARENT_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -1602,14 +1604,36 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 case "Create User Group":
                     if (entry.getAfterProperties() != null)
                     {
-                        nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                        nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                        if (isBlank(nodeName))
+                        {
+                            nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                        }
                     }
                     break;
 
                 case "Delete User Group":
                     if (entry.getBeforeProperties() != null)
                     {
-                        nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                        nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+                        if (isBlank(nodeName))
+                        {
+                            nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_AUTHORITY_NAME);
+                        }
+                    }
+                    break;
+
+                case "Add To User Group":
+                    if (entry.getAfterProperties() != null)
+                    {
+                        nodeName = (String) entry.getAfterProperties().get(PARENT_GROUP);
+                    }
+                    break;
+
+                case "Remove From User Group":
+                    if (entry.getBeforeProperties() != null)
+                    {
+                        nodeName = (String) entry.getBeforeProperties().get(PARENT_GROUP);
                     }
                     break;
 

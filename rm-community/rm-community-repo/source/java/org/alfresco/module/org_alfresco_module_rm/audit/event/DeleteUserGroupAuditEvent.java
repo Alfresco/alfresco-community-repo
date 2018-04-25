@@ -73,8 +73,8 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
     {
         // Retrieve the authority name property to be audited
         Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_NAME,
-                    nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_NAME));
+        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
+                    nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
 
         //audit the property values before the delete event
         recordsManagementAuditService.auditEvent(nodeRef, getName(), auditProperties, null, true, false);

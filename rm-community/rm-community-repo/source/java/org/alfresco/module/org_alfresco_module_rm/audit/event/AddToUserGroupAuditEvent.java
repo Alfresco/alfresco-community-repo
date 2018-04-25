@@ -27,13 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.makePropertiesMap;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -69,15 +68,7 @@ public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChil
     @Behaviour(kind = BehaviourKind.ASSOCIATION, notificationFrequency = EVERY_EVENT, assocType = "cm:member")
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_NAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_NAME));
-        auditProperties.put(ContentModel.PROP_USERNAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
-        // (Ab)use link destination property here, as it vaguely sounds like where the authority ends up.
-        auditProperties.put(ContentModel.PROP_LINK_DESTINATION,
-                    nodeService.getProperty(childAssocRef.getParentRef(), ContentModel.PROP_AUTHORITY_NAME));
-
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
+        Map<QName, Serializable> auditProperties = makePropertiesMap(childAssocRef, nodeService);
+        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties, true);
     }
 }

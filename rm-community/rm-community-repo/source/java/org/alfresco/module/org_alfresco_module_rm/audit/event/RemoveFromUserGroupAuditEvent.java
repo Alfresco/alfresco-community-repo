@@ -24,14 +24,16 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.makePropertiesMap;
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
+
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -40,13 +42,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Audits user group creation.
+ * Remove an authority from a user group.
  *
  * @author Tom Page
  * @since 2.7
  */
-@BehaviourBean
-public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNodePolicy
+@BehaviourBean(defaultType = "cm:authorityContainer")
+public class RemoveFromUserGroupAuditEvent extends AuditEvent implements OnDeleteChildAssociationPolicy
 {
     /** Node Service */
     private NodeService nodeService;
@@ -61,15 +63,12 @@ public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNod
         this.nodeService = nodeService;
     }
 
-    /** Behaviour to audit user group creation. */
+    /** Behaviour to audit removing an authority from a user group. */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    @Behaviour(kind = BehaviourKind.ASSOCIATION, notificationFrequency = EVERY_EVENT, assocType = "cm:member")
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
-
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
+        Map<QName, Serializable> auditProperties = makePropertiesMap(childAssocRef, nodeService);
+        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), auditProperties, null, true);
     }
 }

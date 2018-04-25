@@ -24,14 +24,17 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
+
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -40,13 +43,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Audits user group creation.
+ * Add an authority to a user group.
  *
  * @author Tom Page
  * @since 2.7
  */
-@BehaviourBean
-public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNodePolicy
+@BehaviourBean(defaultType = "cm:authorityContainer")
+public class AddToUserGroupAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy
 {
     /** Node Service */
     private NodeService nodeService;
@@ -61,14 +64,19 @@ public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNod
         this.nodeService = nodeService;
     }
 
-    /** Behaviour to audit user group creation. */
+    /** Behaviour to audit adding an authority to a user group. */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    @Behaviour(kind = BehaviourKind.ASSOCIATION, notificationFrequency = EVERY_EVENT, assocType = "cm:member")
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
         auditProperties.put(ContentModel.PROP_AUTHORITY_NAME,
                     nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_NAME));
+        auditProperties.put(ContentModel.PROP_USERNAME,
+                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
+        // (Ab)use link destination property here, as it vaguely sounds like where the authority ends up.
+        auditProperties.put(ContentModel.PROP_LINK_DESTINATION,
+                    nodeService.getProperty(childAssocRef.getParentRef(), ContentModel.PROP_AUTHORITY_NAME));
 
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
     }

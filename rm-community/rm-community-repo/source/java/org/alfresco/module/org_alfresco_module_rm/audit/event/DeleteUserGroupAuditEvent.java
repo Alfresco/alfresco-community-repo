@@ -63,7 +63,7 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
     }
 
     /**
-     * Behaviour that will audit user deletion
+     * Behaviour that will audit user group deletion
      *
      * @param nodeRef the node to be deleted
      */

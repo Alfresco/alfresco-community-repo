@@ -101,10 +101,10 @@ public class PojoUtility
     }
 
     /**
-     * Converting json to object
+     * Converting json to  java object
      *
-     * @param json   The json object to convert
-     * @param classz    Class (or interface) whose annotations to effectively override
+     * @param json  The json object to convert
+     * @param classz    Class  for the java object
      * @return The converted java object
      * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
@@ -126,6 +126,14 @@ public class PojoUtility
         return (T) obj;
     }
 
+    /**
+     * Converting json array into a list of java objects
+     *
+     * @param json   The json array to convert
+     * @param classz Class  for the java object
+     * @return The list of converted java objects
+     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     */
     public static <T> List<T> jsonToObject(JSONArray json, Class<T> classz)
     {
 

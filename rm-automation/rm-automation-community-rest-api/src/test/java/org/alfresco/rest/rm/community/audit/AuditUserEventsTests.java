@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.audit;
 
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_PERSON;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
@@ -67,12 +68,15 @@ public class AuditUserEventsTests extends BaseRMRestTest
     @AlfrescoTest(jira = "RM-6223")
     public void createUserEventIsAudited() throws Exception
     {
+        STEP("Create a new user.");
         String userName = "auditCreateUser" + PREFIX;
-        
         createUser = getDataUser().createUser(userName);
+
+        STEP("Get the list of audit entries for the create person event.");
         List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getPassword(),
                 getAdminUser().getPassword(), 100, CREATE_PERSON.event);
 
+        STEP("Check the audit log contains only the entries for the created user.");
         assertTrue("The list of events is not filtered by " + CREATE_PERSON.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(CREATE_PERSON.eventDisplayName)));
 

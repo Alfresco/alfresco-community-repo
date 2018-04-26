@@ -55,18 +55,6 @@
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
-        <!-- SOLR Distribution -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-solr4-distribution</artifactId>
-            <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- SHARE Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -108,12 +96,6 @@
                                     <includes>alfresco/keystore/**</includes>
                                 </artifactItem>
 
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/dependency/solr4</outputDirectory>
-                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-content-services-share-distribution</artifactId>

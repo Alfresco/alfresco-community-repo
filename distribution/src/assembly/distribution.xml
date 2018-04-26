@@ -32,22 +32,6 @@
             </includes>
         </fileSet>
 
-        <!-- Solr4 Distribution -->
-        <fileSet>
-            <directory>${project.build.directory}/dependency/solr4</directory>
-            <outputDirectory>solr4</outputDirectory>
-            <excludes>
-                <exclude>solr4.war</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}/dependency/solr4</directory>
-            <outputDirectory>web-server/webapps</outputDirectory>
-            <includes>
-                <include>solr4.war</include>
-            </includes>
-        </fileSet>
-
         <!-- Share -->
         <fileSet>
             <directory>${project.build.directory}/dependency/alfresco-content-services-share-distribution-${alfresco.share.version}</directory>

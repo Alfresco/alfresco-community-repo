@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
+import static org.alfresco.model.ContentModel.PROP_AUTHORITY_DISPLAY_NAME;
+import static org.alfresco.model.ContentModel.PROP_AUTHORITY_NAME;
+import static org.alfresco.model.ContentModel.PROP_USERNAME;
 import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.PARENT_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
@@ -1580,61 +1583,35 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             switch (entry.getEvent())
             {
                 case "Create Person":
-                    if (entry.getAfterProperties() != null)
-                    {
-                        nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_USERNAME);
-                    }
+                    nodeName = getNodeName(entry.getAfterProperties(), PROP_USERNAME);
                     // This is needed as older audit events (pre-2.7) were created without PROP_USERNAME being set.
                     NodeRef nodeRef = entry.getNodeRef();
                     if (nodeName == null && nodeService.exists(nodeRef))
                     {
-                        nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
+                        nodeName = (String) nodeService.getProperty(nodeRef, PROP_USERNAME);
                     }
                     json.put("createPerson", true);
                     break;
 
                 case "Delete Person":
-                    if (entry.getBeforeProperties() != null)
-                    {
-                        nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
-                    }
+                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
                     json.put("deletePerson", true);
                     break;
 
                 case "Create User Group":
-                    if (entry.getAfterProperties() != null)
-                    {
-                        nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
-                        if (isBlank(nodeName))
-                        {
-                            nodeName = (String) entry.getAfterProperties().get(ContentModel.PROP_AUTHORITY_NAME);
-                        }
-                    }
+                    nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
                     break;
 
                 case "Delete User Group":
-                    if (entry.getBeforeProperties() != null)
-                    {
-                        nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
-                        if (isBlank(nodeName))
-                        {
-                            nodeName = (String) entry.getBeforeProperties().get(ContentModel.PROP_AUTHORITY_NAME);
-                        }
-                    }
+                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
                     break;
 
                 case "Add To User Group":
-                    if (entry.getAfterProperties() != null)
-                    {
-                        nodeName = (String) entry.getAfterProperties().get(PARENT_GROUP);
-                    }
+                    nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
                     break;
 
                 case "Remove From User Group":
-                    if (entry.getBeforeProperties() != null)
-                    {
-                        nodeName = (String) entry.getBeforeProperties().get(PARENT_GROUP);
-                    }
+                    nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
                     break;
 
                 default:
@@ -1643,6 +1620,26 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             }
         }
         json.put("nodeName", nodeName == null ? "" : nodeName);
+    }
+
+    /**
+     * Get a node name using the first non-blank value from a properties object using a list of property names.
+     *
+     * @param properties The properties object.
+     * @param propertyNames The names of the properties to use. Return the first value that is not empty.
+     * @return The value of the property, or null if it's not there.
+     */
+    private String getNodeName(Map<QName, Serializable> properties, QName... propertyNames)
+    {
+        for (QName propertyName : propertyNames)
+        {
+            String nodeName = (properties != null ? (String) properties.get(propertyName) : null);
+            if (!isBlank(nodeName))
+            {
+                return nodeName;
+            }
+        }
+        return null;
     }
 
     /**

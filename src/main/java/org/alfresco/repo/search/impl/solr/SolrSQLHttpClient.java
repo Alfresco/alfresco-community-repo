@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.search.StatsResultSet;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -139,7 +140,9 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
                 url.append("/");
             }
             url.append("sql?stmt=" + encoder.encode(searchParameters.getQuery()));
-
+            SearchParameters sp = (SearchParameters) searchParameters;
+            url.append("&includeMetadata=" + sp.isIncludeMetadata());
+            url.append("&aggregationMode=facet");
             url.append("&alfresco.shards=");
             /*
              * When sharded we pass array of shard instances otherwise we pass the local instance url which

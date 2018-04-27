@@ -88,9 +88,6 @@
         <!-- Alfresco Office Services Module -->
         <alfresco.aos-module.version>1.2.0-RC2</alfresco.aos-module.version>
 
-        <!-- Deprecated SOLR4 app, still packaged for downward compatibility -->
-        <alfresco.solr4.version>6.7</alfresco.solr4.version>
-
         <installer.version.name>${project.version}</installer.version.name>
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
@@ -418,12 +415,6 @@
                 <artifactId>share</artifactId>
                 <version>${alfresco.share.version}</version>
                 <type>war</type>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-solr4-distribution</artifactId>
-                <version>${alfresco.solr4.version}</version>
-                <type>zip</type>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>

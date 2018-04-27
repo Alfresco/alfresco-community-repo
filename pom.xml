@@ -38,7 +38,7 @@
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-core.version>7.1</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.6</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>

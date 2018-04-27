@@ -196,6 +196,8 @@ public class SearchParameters implements BasicSearchParameters
     private List<StatsRequestParameters> stats;
     
     private List<RangeParameters> ranges;
+    
+    private boolean includeMetadata;
 
     private String timezone;
     
@@ -1629,5 +1631,16 @@ public class SearchParameters implements BasicSearchParameters
         int max = (maxRawResultSetSizeForInMemorySort == null) ? maxRawResultSetSizeForInMemorySortDefault :  maxRawResultSetSizeForInMemorySort.intValue();
         return use && (length <= max);
     }
+
+    public boolean isIncludeMetadata()
+    {
+        return includeMetadata;
+    }
+
+    public void setIncludeMetadata(boolean includeMetadata)
+    {
+        this.includeMetadata = includeMetadata;
+    }
+    
 
 }

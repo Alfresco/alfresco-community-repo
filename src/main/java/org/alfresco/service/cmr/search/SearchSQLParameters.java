@@ -43,12 +43,14 @@ public class SearchSQLParameters implements BasicSearchParameters
     private final String query;
     private List<StoreRef> stores = new ArrayList<>();
     private List<Locale> locales = new ArrayList<>();
+    private boolean includeMetadata;
     
-    public SearchSQLParameters(String query, String language, List<Locale> locales)
+    public SearchSQLParameters(String query, String language, List<Locale> locales, boolean includeMetadata)
     {
         this.query = query;
         this.language = language;
         this.locales = locales;
+        this.includeMetadata = includeMetadata;
     }
     
     @Override
@@ -99,6 +101,11 @@ public class SearchSQLParameters implements BasicSearchParameters
                .append(", locales=").append(this.locales).append("]");
         return builder.toString();
         
+    }
+
+    public boolean isIncludeMetadata()
+    {
+        return includeMetadata;
     }
 
 }

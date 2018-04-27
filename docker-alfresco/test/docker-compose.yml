@@ -38,7 +38,7 @@ services:
             - 5432:5432
 
     solr6:
-        image: quay.io/alfresco/search-services:1.2.0-SNAPSHOT
+        image: quay.io/alfresco/search-services:${SOLR6_TAG}
         environment:
             #Solr needs to know how to register itself with Alfresco
             - SOLR_ALFRESCO_HOST=alfresco

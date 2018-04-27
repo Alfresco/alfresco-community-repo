@@ -35,8 +35,12 @@ package org.alfresco.rest.rm.community.model.audit;
  */
 public enum AuditEvents
 {
-    CREATE_PERSON("Create Person","Create User"),
-    DELETE_PERSON("Delete Person","Delete User");
+    CREATE_PERSON("Create Person", "Create User"),
+    DELETE_PERSON("Delete Person", "Delete User"),
+    CREATE_USER_GROUP("Create User Group", "Create User Group"),
+    DELETE_USER_GROUP("Delete User Group", "Delete User Group"),
+    ADD_TO_USER_GROUP("Add To User Group", "Add To User Group"),
+    REMOVE_FROM_USER_GROUP("Remove From User Group", "Remove From User Group");
 
     /** event audited */
     public final String event;

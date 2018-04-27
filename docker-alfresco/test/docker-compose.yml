@@ -1,9 +1,17 @@
 version: "3"
 
+# The acs-community-deployment project contains the product version of docker-compose.
+#
+# This version is for testing and development use. For testing and debug we need to have a more open version.
+# For remote debug we need the CATALINA_OPTS and to expose port 8000.
+
 services:
     alfresco:
-        image: quay.io/alfresco/alfresco-content-repository-community:${ALFRESCO_TAG}
+        image: ${REGISTRY}alfresco/alfresco-content-repository-community:${ALFRESCO_TAG}
         environment:
+            CATALINA_OPTS : "
+                -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
+                "
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver
                 -Ddb.username=alfresco
@@ -22,14 +30,23 @@ services:
                 -Dcifs.enabled=true
                 "
         ports:
-            - 8080:8080
+            - 8082:8080
+            - 8000:8000
             - 445:445
             - 143:143
             - "21:21"
             - "30000-30099:30000-30099"
 
+    share:
+        image: alfresco/alfresco-share:${SHARE_TAG}
+        environment:
+            - REPO_HOST=alfresco
+            - REPO_PORT=8080
+        ports:
+            - 8080:8080
+
     postgres:
-        image: docker.io/library/postgres:10.1
+        image: library/postgres:${POSTGRES_TAG}
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
@@ -38,7 +55,7 @@ services:
             - 5432:5432
 
     solr6:
-        image: quay.io/alfresco/search-services:${SOLR6_TAG}
+        image: alfresco/alfresco-search-services:${SOLR6_TAG}
         environment:
             #Solr needs to know how to register itself with Alfresco
             - SOLR_ALFRESCO_HOST=alfresco

@@ -64,10 +64,10 @@
 
         <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
-        <dependency.alfresco-repository.version>6.46</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>6.47</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.29</dependency.alfresco-remote-api.version>
         <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>
-
+        <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
@@ -195,6 +195,21 @@
                 <groupId>org.alfresco.services</groupId>
                 <artifactId>alfresco-events</artifactId>
                 <version>1.2.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-surf-core-configservice</artifactId>
+                <version>${dependency.alfresco-spring-webscripts.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-webscripts</artifactId>
+                <version>${dependency.alfresco-spring-webscripts.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.surf</groupId>
+                <artifactId>spring-webscripts-api</artifactId>
+                <version>${dependency.alfresco-spring-webscripts.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>

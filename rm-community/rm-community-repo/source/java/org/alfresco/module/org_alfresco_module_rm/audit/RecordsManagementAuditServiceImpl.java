@@ -1107,7 +1107,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
         else if (params.getEvent() != null)
         {
-            auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
+            if (params.getEvent().equalsIgnoreCase(RM_AUDIT_EVENT_LOGIN_SUCCESS))
+            {
+                auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_FULLNAME, null);
+            }
+            else if (params.getEvent().equalsIgnoreCase(RM_AUDIT_EVENT_LOGIN_FAILURE))
+                {
+                    auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_ERROR, null);
+                }
+            else
+            {
+                auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
+            }
         }
 
         // Get audit entries

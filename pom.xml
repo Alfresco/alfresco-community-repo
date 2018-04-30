@@ -73,7 +73,7 @@
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
-        <dependency.alfresco-messaging-repo.version>1.2.8</dependency.alfresco-messaging-repo.version>
+        <dependency.alfresco-messaging-repo.version>1.2.9</dependency.alfresco-messaging-repo.version>
 
         <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
@@ -194,7 +194,7 @@
             <dependency>
                 <groupId>org.alfresco.services</groupId>
                 <artifactId>alfresco-events</artifactId>
-                <version>1.2.5</version>
+                <version>1.2.12</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco.surf</groupId>

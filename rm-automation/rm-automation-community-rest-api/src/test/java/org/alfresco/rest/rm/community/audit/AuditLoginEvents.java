@@ -26,8 +26,7 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
-import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_PERSON;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_UNSUCCESSFUL;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -39,51 +38,20 @@ import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * This class contains the tests that check the user events are audited
+ * This class contains the tests that check the login events are audited
  *
- * @author Rodica Sutu
+ * @author Claudia Agache
  * @since 2.7
  */
-public class AuditUserEventsTests extends BaseRMRestTest
+@AlfrescoTest (jira = "RM-5234")
+public class AuditLoginEvents extends BaseRMRestTest
 {
-    private final String PREFIX = generateTestPrefix(AuditUserEventsTests.class);
-
-    private UserModel createUser;
     @Autowired
     private RMAuditAPI rmAuditAPI;
-
-    /**
-     * Given I have created a new user
-     * When I view the RM audit
-     * Then there is an entry showing that I created a user
-     *
-     * @throws Exception
-     */
-    @Test
-    @AlfrescoTest(jira = "RM-6223")
-    public void createUserEventIsAudited() throws Exception
-    {
-        STEP("Create a new user.");
-        String userName = "auditCreateUser" + PREFIX;
-        createUser = getDataUser().createUser(userName);
-
-        STEP("Get the list of audit entries for the create person event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, CREATE_PERSON.event);
-
-        STEP("Check the audit log contains only the entries for the created user.");
-        assertTrue("The list of events is not filtered by " + CREATE_PERSON.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(CREATE_PERSON.eventDisplayName)));
-
-        assertTrue("The username value for the user created is not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(CREATE_PERSON.eventDisplayName))
-                            .allMatch(auditEntry -> auditEntry.getNodeName().equals(userName)));
-    }
 
     @BeforeClass (alwaysRun = true)
     public void cleanAuditLogs()
@@ -92,10 +60,23 @@ public class AuditUserEventsTests extends BaseRMRestTest
         rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
     }
 
-    @AfterClass (alwaysRun = true)
-    public void cleanUp()
+    /**
+     * Given I have tried to login using invalid credentials
+     * When I view the RM audit filtered by Login unsuccessful event
+     * Then the audit log contains only the entries for the Login unsuccessful event
+     */
+    @Test
+    public void filterByLoginUnsuccessful() throws Exception
     {
-        //delete the created user
-        getDataUser().deleteUser(createUser);
+        restClient.authenticateUser(new UserModel(getAdminUser().getUsername(), "InvalidPassword"));
+        restClient.withCoreAPI().getSites();
+
+        STEP("Get the list of audit entries for the login unsuccessful event.");
+        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
+                getAdminUser().getPassword(), 100, LOGIN_UNSUCCESSFUL.event);
+
+        STEP("Check the audit log contains only the entries for the login unsuccessful event.");
+        assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
+                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_UNSUCCESSFUL.eventDisplayName)));
     }
 }

@@ -455,7 +455,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
         // Set the actions array
         setActions(rmNodeValues, nodeRef);
-
+        //((HashMap)rmNodeValues.get("properties")).put("declassificationEvent",nodeService.getProperties(nodeRef))
         return rmNodeValues;
     }
 

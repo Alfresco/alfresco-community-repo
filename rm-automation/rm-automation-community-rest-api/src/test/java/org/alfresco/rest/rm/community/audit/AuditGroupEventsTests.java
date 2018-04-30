@@ -66,7 +66,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
     public void cleanAuditLogs()
     {
         //clean audit logs
-        rmAuditAPI.clearAuditLog(getAdminUser().getPassword(), getAdminUser().getPassword());
+        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
     }
 
     /**
@@ -80,7 +80,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         testGroup = dataGroup.createRandomGroup();
 
         STEP("Get the list of audit entries for the create group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getPassword(),
+        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), 100, CREATE_USER_GROUP.event);
 
         STEP("Check the audit log contains only the entries for the created group.");
@@ -105,7 +105,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         dataGroup.usingUser(testUser).addUserToGroup(testGroup);
 
         STEP("Get the list of audit entries for the add user to group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getPassword(),
+        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), 100, ADD_TO_USER_GROUP.event);
 
         STEP("Check the audit log contains only the entries for the add user to group event.");
@@ -133,7 +133,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         dataGroup.removeUserFromGroup(testGroup, testUser);
 
         STEP("Get the list of audit entries for the add user to group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getPassword(),
+        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), 100, REMOVE_FROM_USER_GROUP.event);
 
         STEP("Check the audit log contains only the entries for the remove user from group event.");
@@ -159,7 +159,7 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         dataGroup.deleteGroup(testGroup);
 
         STEP("Get the list of audit entries for the delete group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getPassword(),
+        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), 100, DELETE_USER_GROUP.event);
 
         STEP("Check the audit log contains only the entries for the created group.");

@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
 import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_RS_DISPOSITION_EVENTS;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 
 import java.util.ArrayList;
@@ -38,6 +39,9 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -98,6 +102,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** site service */
     private SiteService siteService;
+
+    /**
+     * Disposition service
+     */
+    private DispositionService dispositionService;
 
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
@@ -228,6 +237,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void setJsonConversionComponentCache(SimpleCache<String, Object> jsonConversionComponentCache)
     {
         this.jsonConversionComponentCache = jsonConversionComponentCache;
+    }
+
+    /**
+     * @param dispositionService the disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
     }
 
     /**
@@ -455,7 +472,21 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
         // Set the actions array
         setActions(rmNodeValues, nodeRef);
-        //((HashMap)rmNodeValues.get("properties")).put("declassificationEvent",nodeService.getProperties(nodeRef))
+
+
+        //Add details of the next incomplete event in the disposition schedule
+        if(dispositionService.getNextDispositionAction(nodeRef) != null)
+        {
+            for(EventCompletionDetails details: dispositionService.getNextDispositionAction(nodeRef).getEventCompletionDetails())
+            {
+                if(!details.isEventComplete())
+                {
+                    ((HashMap) rmNodeValues.get("properties")).put("incompleteDispositionEvent", details.getEventName());
+                    break;
+                }
+            }
+        }
+
         return rmNodeValues;
     }
 

@@ -96,7 +96,6 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
      *
      * @param actionDef The action definition to update
      * @param json The JSON to use to create the action definition
-     * @param schedule The DispositionSchedule the action definition belongs to
      * @return The updated DispositionActionDefinition
      */
     protected DispositionActionDefinition updateActionDefinition(DispositionActionDefinition actionDef,
@@ -132,11 +131,11 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
                         json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
         }
 
-//        if (json.has("evaluatorCombination"))
-//        {
-//            props.put(RecordsManagementModel.PROP_DISPOSITION_EVALUATOR_COMBINATION,
-//                    json.getBoolean("evaluatorCombination") ? "and" : "or");
-//        }
+        if (json.has("combineDispositionStepConditions"))
+        {
+            props.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+                    json.getBoolean("combineDispositionStepConditions"));
+        }
 
         if (json.has("location"))
         {

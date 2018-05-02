@@ -41,16 +41,19 @@ public class SearchSQLQuery
     private Integer itemLimit;
     private final String format;
     private List<String> locales;
+    private boolean includeMetadata;
     
     public SearchSQLQuery(@JsonProperty("stmt") String stmt,
                           @JsonProperty("format") String format,
                           @JsonProperty("locales") List<String> locales,
-                          @JsonProperty("limit") Integer itemLimit)
+                          @JsonProperty("limit") Integer itemLimit,
+                          @JsonProperty("includeMetadata") boolean includeMetadata)
     {
         this.stmt = stmt;
         this.format = format != null ? format : "default";
         this.locales = locales != null ? locales : Collections.emptyList();
         this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
+        this.includeMetadata = includeMetadata;
     }
 
     public String getStmt()
@@ -71,6 +74,11 @@ public class SearchSQLQuery
     public List<String> getLocales()
     {
         return locales;
+    }
+
+    public boolean isIncludeMetadata()
+    {
+        return includeMetadata;
     }
     
 

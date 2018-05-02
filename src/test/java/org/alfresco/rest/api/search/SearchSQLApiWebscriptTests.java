@@ -47,17 +47,18 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParams() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false);
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
+        assertEquals(false, sparams.isIncludeMetadata());
         assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
     }
     @Test
     public void testSearchQueryNullStmt() throws Exception
     {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null, false);
         try
         {
             webscript.buildSearchParameters(searchQuery);
@@ -67,18 +68,6 @@ public class SearchSQLApiWebscriptTests
             assertEquals(true, e.getMessage().contains("Required stmt parameter is missing."));
         }
     }
-    @Test
-    public void testSearchSQLQueryAgainstNonInsight() throws Exception
-    {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), 1000);
-        try
-        {
-            webscript.buildSearchParameters(searchQuery);
-        }
-        catch (Exception e) 
-        {
-            assertEquals(true, e.getMessage().contains("Required stmt parameter is missing."));
-        }
-    }
+
 
 }

@@ -31,7 +31,6 @@ import static junit.framework.TestCase.assertNotNull;
 import java.util.Collections;
 
 import org.alfresco.rest.api.search.model.SearchSQLQuery;
-import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.junit.Test;
 
@@ -54,7 +53,6 @@ public class SearchSQLApiWebscriptTests
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(false, sparams.isIncludeMetadata());
-        assertEquals(Collections.emptyList(), sparams.getLocales());
         assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
     }
     @Test

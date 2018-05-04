@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.Module;
@@ -52,10 +51,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Helper Class for outputting Jackson content, makes use of the
- * RestJsonModule (main Jackson config).
- * Default settings : Date format is ISO8601, only serializes
- * non-empty / non-null values.
+ * Helper Class for outputting Jackson content, makes use of the RestJsonModule (main Jackson config).
+ * Default settings : Date format is ISO8601, only serializes non-empty / non-null values.
  *
  * @author Gethin James
  */
@@ -63,7 +60,7 @@ public class JacksonHelper implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(JacksonHelper.class);  
     
-    Module module;
+    private Module module;
     private ObjectMapper objectMapper = null;
     private JsonEncoding encoding = JsonEncoding.UTF8;
     public static final String DEFAULT_FILTER_NAME = "defaultFilterName";
@@ -85,10 +82,9 @@ public class JacksonHelper implements InitializingBean
         //Configure the objectMapper ready for use
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);  //or NON_EMPTY?
-        // this is deprecated in jackson 2.9 and there is no straight replacement
-        // https://github.com/FasterXML/jackson-databind/issues/1547
-        objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.configOverride(java.util.Map.class)
+                        .setInclude(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, null));
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         DATE_FORMAT_ISO8601.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -106,16 +102,16 @@ public class JacksonHelper implements InitializingBean
     {
         try
         {
-            JsonGenerator generator = objectMapper.getJsonFactory().createJsonGenerator(outStream, encoding);
+            JsonGenerator generator = objectMapper.getFactory().createGenerator(outStream, encoding);
             writer.writeContents(generator, objectMapper);
         }
         catch (JsonMappingException error)
         {
-            logger.error("Failed to write Json output",error);
+            logger.error("Failed to write Json output", error);
         } 
         catch (JsonGenerationException generror)
         {
-            logger.error("Failed to write Json output",generror);
+            logger.error("Failed to write Json output", generror);
         }
     }
        
@@ -126,15 +122,15 @@ public class JacksonHelper implements InitializingBean
      */
     public <T> T construct(Reader content, Class<T> requiredType)
     {
-            ObjectReader reader = objectMapper.readerFor(requiredType);
-            try
-            {
-                return reader.readValue(content);
-            }
-            catch (IOException error)
-            {
-                throw new InvalidArgumentException("Could not read content from HTTP request body: "+error.getMessage());
-            }
+        ObjectReader reader = objectMapper.readerFor(requiredType);
+        try
+        {
+            return reader.readValue(content);
+        }
+        catch (IOException error)
+        {
+            throw new InvalidArgumentException("Could not read content from HTTP request body: "+error.getMessage());
+        }
     }
     
     /**

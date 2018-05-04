@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -165,7 +164,10 @@ public class RestApiUtil
     {
         assertNotNull(object);
         ObjectMapper om = new ObjectMapper();
-        om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        om.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+        // keep null values in maps (like 'properties' for example) since these are part of the partial update/delete payload
+        om.configOverride(java.util.Map.class)
+                .setIncludeAsProperty(JsonInclude.Value.construct(JsonInclude.Include.ALWAYS, JsonInclude.Include.ALWAYS));
         return om.writeValueAsString(object);
     }
 }

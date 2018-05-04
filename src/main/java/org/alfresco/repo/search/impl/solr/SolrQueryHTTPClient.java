@@ -406,7 +406,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         return body;
     }
     
-    public ResultSet executeQuery(final BasicSearchParameters searchParameters, String language)
+    public ResultSet executeQuery(final SearchParameters searchParameters, String language)
     {
         if(repositoryState.isBootstrapping())
         {
@@ -444,20 +444,19 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
             // Emulate old limiting behaviour and metadata
             final LimitBy limitBy;
             int maxResults = -1;
-            SearchParameters searchParams = (SearchParameters)searchParameters;
-            if (searchParams.getMaxItems() >= 0)
+            if (searchParameters.getMaxItems() >= 0)
             {
-                maxResults = searchParams.getMaxItems();
+                maxResults = searchParameters.getMaxItems();
                 limitBy = LimitBy.FINAL_SIZE;
             }
-            else if(searchParams.getLimitBy() == LimitBy.FINAL_SIZE && searchParams.getLimit() >= 0)
+            else if(searchParameters.getLimitBy() == LimitBy.FINAL_SIZE && searchParameters.getLimit() >= 0)
             {
-                maxResults = searchParams.getLimit();
+                maxResults = searchParameters.getLimit();
                 limitBy = LimitBy.FINAL_SIZE;
             }
             else
             {
-                maxResults = searchParams.getMaxPermissionChecks();
+                maxResults = searchParameters.getMaxPermissionChecks();
                 if (maxResults < 0)
                 {
                     maxResults = maximumResultsFromUnlimitedQuery;
@@ -491,11 +490,11 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
                 }
             }
 
-            buildUrlParameters(searchParams, mapping.isSharded(), encoder, url);
+            buildUrlParameters(searchParameters, mapping.isSharded(), encoder, url);
 
-            final String searchTerm = searchParams.getSearchTerm();
+            final String searchTerm = searchParameters.getSearchTerm();
             String spellCheckQueryStr = null;
-            if (searchTerm != null && searchParams.isSpellCheck())
+            if (searchTerm != null && searchParameters.isSpellCheck())
             {
                 StringBuilder builder = new StringBuilder();
                 builder.append("&spellcheck.q=").append(encoder.encode(searchTerm, "UTF-8"));
@@ -547,33 +546,33 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
             body.put("locales", locales);
 
             JSONArray templates = new JSONArray();
-            for (String templateName : searchParams.getQueryTemplates().keySet())
+            for (String templateName : searchParameters.getQueryTemplates().keySet())
             {
                 JSONObject template = new JSONObject();
                 template.put("name", templateName);
-                template.put("template", searchParams.getQueryTemplates().get(templateName));
+                template.put("template", searchParameters.getQueryTemplates().get(templateName));
                 templates.put(template);
             }
             body.put("templates", templates);
 
             JSONArray allAttributes = new JSONArray();
-            for (String attribute : searchParams.getAllAttributes())
+            for (String attribute : searchParameters.getAllAttributes())
             {
                 allAttributes.put(attribute);
             }
             body.put("allAttributes", allAttributes);
 
-            body.put("defaultFTSOperator", searchParams.getDefaultFTSOperator());
-            body.put("defaultFTSFieldOperator", searchParams.getDefaultFTSFieldOperator());
-            body.put("queryConsistency", searchParams.getQueryConsistency());
-            if (searchParams.getMlAnalaysisMode() != null)
+            body.put("defaultFTSOperator", searchParameters.getDefaultFTSOperator());
+            body.put("defaultFTSFieldOperator", searchParameters.getDefaultFTSFieldOperator());
+            body.put("queryConsistency", searchParameters.getQueryConsistency());
+            if (searchParameters.getMlAnalaysisMode() != null)
             {
-                body.put("mlAnalaysisMode", searchParams.getMlAnalaysisMode().toString());
+                body.put("mlAnalaysisMode", searchParameters.getMlAnalaysisMode().toString());
             }
-            body.put("defaultNamespace", searchParams.getNamespace());
+            body.put("defaultNamespace", searchParameters.getNamespace());
 
             JSONArray textAttributes = new JSONArray();
-            for (String attribute : searchParams.getTextAttributes())
+            for (String attribute : searchParameters.getTextAttributes())
             {
                 textAttributes.put(attribute);
             }
@@ -583,7 +582,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
             
             return (ResultSet) postSolrQuery(httpClient, url.toString(), body, json ->
             {
-                return new SolrJSONResultSet(json, searchParams, nodeService, nodeDAO, limitBy, maximumResults);
+                return new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maximumResults);
             }, spellCheckQueryStr);
         }
         catch (UnsupportedEncodingException e)

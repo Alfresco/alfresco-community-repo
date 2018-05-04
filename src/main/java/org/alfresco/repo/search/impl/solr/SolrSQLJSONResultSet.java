@@ -64,7 +64,7 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
     private JSONArray docs;
     private long numberFound;
     
-    public SolrSQLJSONResultSet(JSONObject json, BasicSearchParameters searchParameters)
+    public SolrSQLJSONResultSet(JSONObject json, SearchParameters searchParameters)
     {
         try
         {
@@ -83,7 +83,14 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
                 {
                     throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
                 }
-                throw new RuntimeException("Unable to execute the query, error caused by: " + error);
+                if(searchParameters.getExtraParameters().containsKey("format"))
+                {
+                    
+                }
+                else
+                {
+                    throw new RuntimeException("Unable to execute the query, error caused by: " + error);
+                }
             }
             //Check if it has an error
             this.length = docs.length();

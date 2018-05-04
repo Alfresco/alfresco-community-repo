@@ -99,6 +99,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_PERIOD_PROPERTY = QName.createQName(RM_URI, "dispositionPeriodProperty");
     QName PROP_DISPOSITION_EVENT = QName.createQName(RM_URI, "dispositionEvent");
     QName PROP_DISPOSITION_EVENT_COMBINATION = QName.createQName(RM_URI, "dispositionEventCombination");
+    QName PROP_COMBINE_DISPOSITION_STEP_CONDITIONS = QName.createQName(RM_URI, "combineDispositionStepConditions");
     QName PROP_DISPOSITION_LOCATION = QName.createQName(RM_URI, "dispositionLocation");
     QName PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY = QName.createQName(RM_URI, "dispositionActionGhostOnDestroy");
 
@@ -239,6 +240,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_DISPOSITION_ACTION_AS_OF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
     QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
     QName PROP_RS_DISPOSITION_EVENTS = QName.createQName(RM_URI, "recordSearchDispositionEvents");
+    QName PROP_DISPOSITION_EVENTS = QName.createQName(RM_URI, "dispositionEvents");
     QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
     QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
     QName PROP_RS_DISPOSITION_PERIOD = QName.createQName(RM_URI, "recordSearchDispositionPeriod");

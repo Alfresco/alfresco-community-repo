@@ -242,6 +242,12 @@
 			   </index>
             </property>
 
+            <property name="rma:combineDispositionStepConditions">
+               <title>Disposition Evaluator Combination</title>
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+            </property>
+
          </properties>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>

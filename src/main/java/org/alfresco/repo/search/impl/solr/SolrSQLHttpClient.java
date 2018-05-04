@@ -108,7 +108,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         PropertyCheck.mandatory(this, "TenantService", tenantService);
     }
     
-    public ResultSet executeQuery(BasicSearchParameters searchParameters, String language) 
+    public ResultSet executeQuery(SearchParameters searchParameters, String language) 
     {
         if(repositoryState.isBootstrapping())
         {
@@ -309,5 +309,4 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
     {
         this.tenantService = tenantService;
     }
-
 }

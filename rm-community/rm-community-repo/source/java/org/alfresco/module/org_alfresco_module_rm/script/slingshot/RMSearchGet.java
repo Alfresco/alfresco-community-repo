@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
+import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil.REASONS_KEY;
+import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationSourcesUtil.SOURCES_KEY;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -103,6 +106,12 @@ public class RMSearchGet extends DeclarativeWebScript
     /** Utility class for record categories */
     private RecordCategoryUtil recordCategoryUtil;
 
+    /** Utility class for classification reasons (enterprise only) */
+    private ClassificationReasonsUtil classificationReasonsUtil;
+
+    /** Utility class for classification sources (enterprise only) */
+    private ClassificationSourcesUtil classificationSourcesUtil;
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -159,6 +168,16 @@ public class RMSearchGet extends DeclarativeWebScript
         this.recordCategoryUtil = recordCategoryUtil;
     }
 
+    public void setClassificationReasonsUtil(ClassificationReasonsUtil classificationReasonsUtil)
+    {
+        this.classificationReasonsUtil = classificationReasonsUtil;
+    }
+
+    public void setClassificationSourcesUtil(ClassificationSourcesUtil classificationSourcesUtil)
+    {
+        this.classificationSourcesUtil = classificationSourcesUtil;
+    }
+
     /**
      * @param personService person service
      */
@@ -197,6 +216,19 @@ public class RMSearchGet extends DeclarativeWebScript
 
             String filters = req.getParameter(PARAM_FILTERS);
             // TODO this is optional
+
+            //Replace any plain text reason ids with the appropriate node reference
+            if(query.contains(REASONS_KEY))
+            {
+                query = classificationReasonsUtil.replaceReasonWithNodeRef(query);
+            }
+
+            //replace any plain test other source titles with appropriate node ref
+            if(query.contains(SOURCES_KEY))
+            {
+                query = classificationSourcesUtil.replaceSourceNameWithNodeRef(query);
+            }
+
 
             // Convert into a rm search parameter object
             RecordsManagementSearchParameters searchParameters =

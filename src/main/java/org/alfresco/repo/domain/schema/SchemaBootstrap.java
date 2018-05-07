@@ -933,7 +933,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // verify that all Activiti patches have been applied correctly
             checkSchemaPatchScripts(connection, updateActivitiScriptPatches, false);
         }
-        
+
+        if (!create)
+        {
+            // verify that all patches have been applied correctly
+            checkSchemaPatchScripts(connection, preUpdateScriptPatches, false);       // check scripts
+            checkSchemaPatchScripts(connection, postUpdateScriptPatches, false);      // check scripts
+        }
+
         return create;
     }
     
@@ -1642,6 +1649,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     }
                     catch (LockFailedException e)
                     {
+                        logger.info("DB lock failed on schema bootstrap. Attempt: " + i);
                         try { this.wait(schemaUpdateLockRetryWaitSeconds * 1000L); } catch (InterruptedException ee) {}
                     }
                 }
@@ -1651,57 +1659,15 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     // The retries were exceeded
                     throw new AlfrescoRuntimeException(ERR_UPDATE_IN_PROGRESS_ON_ANOTHER_NODE);
                 }
-                
-                // Copy the executed statements to the output file
-                File schemaOutputFile = null;
-                if (schemaOuputFilename != null)
-                {
-                    schemaOutputFile = new File(schemaOuputFilename);
-                }
-                else
-                {
-                    schemaOutputFile = TempFileProvider.createTempFile(
-                            "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-All_Statements-",
-                            ".sql");
-                }
-                
-                StringBuilder executedStatements = executedStatementsThreadLocal.get();
-                if (executedStatements == null)
-                {
-                    LogUtil.info(logger, MSG_NO_CHANGES);
-                }
-                else
-                {
-                    FileContentWriter writer = new FileContentWriter(schemaOutputFile);
-                    writer.setEncoding("UTF-8");
-                    String executedStatementsStr = executedStatements.toString();
-                    writer.putContent(executedStatementsStr);
-                    LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
-                }
-                
-                if (! createdSchema)
-                {
-                    // verify that all patches have been applied correctly 
-                    checkSchemaPatchScripts(connection, preUpdateScriptPatches, false);       // check scripts
-                    checkSchemaPatchScripts(connection, postUpdateScriptPatches, false);      // check scripts
-                }
-                
-                if (executedStatements != null)
+
+                writeLogsWithDBStatementExecuted();
+
+                if (executedStatementsThreadLocal.get() != null)
                 {
                     // Remove the flag indicating a running bootstrap
                     setBootstrapCompleted(connection);
                 }
-                
-                
-                // Report normalized dumps
-                if (executedStatements != null)
-                {
-                    // Validate the schema, post-upgrade
-                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-", null);
-                    
-                    // 4.0+ schema dump
-                    dumpSchema("post-upgrade");
-                }
+                reportNormalizedDumps();
             }
             else
             {
@@ -1754,7 +1720,48 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
         }
     }
-    
+
+    private void reportNormalizedDumps()
+    {
+        if (executedStatementsThreadLocal.get() != null)
+        {
+            // Validate the schema, post-upgrade
+            validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-", null);
+            // 4.0+ schema dump
+            dumpSchema("post-upgrade");
+        }
+    }
+
+    private void writeLogsWithDBStatementExecuted()
+    {
+        // Copy the executed statements to the output file
+        File schemaOutputFile = null;
+        if (schemaOuputFilename != null)
+        {
+            schemaOutputFile = new File(schemaOuputFilename);
+        }
+        else
+        {
+            schemaOutputFile = TempFileProvider.createTempFile(
+                    "AlfrescoSchema-" + this.dialect.getClass().getSimpleName() + "-All_Statements-",
+                    ".sql");
+        }
+
+        StringBuilder executedStatements = executedStatementsThreadLocal.get();
+        if (executedStatements == null)
+        {
+            LogUtil.info(logger, MSG_NO_CHANGES);
+        }
+        else
+        {
+            FileContentWriter writer = new FileContentWriter(schemaOutputFile);
+            writer.setEncoding("UTF-8");
+            String executedStatementsStr = executedStatements.toString();
+            writer.putContent(executedStatementsStr);
+            LogUtil.info(logger, MSG_ALL_STATEMENTS, schemaOutputFile.getPath());
+        }
+    }
+
     /**
      * Collate differences and validation problems with the schema with respect to an appropriate
      * reference schema.

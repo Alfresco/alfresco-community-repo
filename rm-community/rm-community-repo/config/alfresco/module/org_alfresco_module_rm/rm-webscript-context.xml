@@ -468,7 +468,6 @@
       <property name="personService" ref="PersonService" />
       <property name="recordCategoryUtil" ref="RecordCategoryUtil" />
       <property name="classificationReasonsUtil" ref="ClassificationReasonsUtil" />
-      <property name="classificationSourcesUtil" ref="ClassificationSourcesUtil" />
    </bean>
 
    <bean id="RecordCategoryUtil" class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordCategoryUtil">
@@ -479,10 +478,6 @@
       <property name="nodeService" ref="NodeService" />
    </bean>
 
-   <bean id="ClassificationSourcesUtil"
-         class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationSourcesUtil">
-      <property name="nodeService" ref="NodeService" />
-   </bean>
 
    <bean
       id="webscript.org.alfresco.slingshot.rmsearch.rmsearchproperties.get"

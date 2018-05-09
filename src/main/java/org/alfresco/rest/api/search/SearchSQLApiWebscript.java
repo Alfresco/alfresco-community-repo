@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.solr.SolrSQLJSONResultSet;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.rest.api.search.impl.ResultMapper;
@@ -50,6 +51,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
@@ -80,6 +82,10 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             //Turn JSON into a Java object representation
             SearchSQLQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchSQLQuery.class);
             SearchParameters sparams = buildSearchParameters(searchQuery);
+            if(searchQuery.getFormat().equalsIgnoreCase("solr"))
+            {
+                sparams.addExtraParameter("format", "solr");
+            }
             ResultSet results = searchService.query(sparams);
             FilteringResultSet frs = (FilteringResultSet) results;
             SolrSQLJSONResultSet ssjr = (SolrSQLJSONResultSet) frs.getUnFilteredResultSet();
@@ -97,7 +103,14 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
         }
         catch (Exception exception) 
         {
-            renderException(exception,res,assistant);
+            if (exception instanceof LuceneQueryParserException)
+            {
+                renderException(exception,res,assistant);
+            }
+            else
+            {
+                renderException(new WebScriptException(400, exception.getMessage()), res, assistant);
+            }
         }
     }
     @Override

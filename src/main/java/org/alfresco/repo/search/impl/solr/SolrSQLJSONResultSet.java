@@ -83,10 +83,6 @@ public class SolrSQLJSONResultSet implements ResultSet, JSONResult
                 {
                     throw new RuntimeException("Unable to execute the query, this API requires InsightEngine.");
                 }
-                if(searchParameters.getExtraParameters().containsKey("format"))
-                {
-                    
-                }
                 else
                 {
                     throw new RuntimeException("Unable to execute the query, error caused by: " + error);

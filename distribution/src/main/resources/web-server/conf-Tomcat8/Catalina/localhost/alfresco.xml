@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context crossContext="true">
+  <Resources>
+    <PostResources base="${catalina.base}/../modules/platform"
+                   className="org.apache.catalina.webresources.DirResourceSet"
+                   webAppMount="/WEB-INF/lib"/>
+  </Resources>
+</Context>

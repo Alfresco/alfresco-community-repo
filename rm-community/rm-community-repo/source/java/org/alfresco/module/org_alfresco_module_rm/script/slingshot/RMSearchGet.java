@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
 import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil.REASONS_KEY;
-import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationSourcesUtil.SOURCES_KEY;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -109,9 +108,6 @@ public class RMSearchGet extends DeclarativeWebScript
     /** Utility class for classification reasons (enterprise only) */
     private ClassificationReasonsUtil classificationReasonsUtil;
 
-    /** Utility class for classification sources (enterprise only) */
-    private ClassificationSourcesUtil classificationSourcesUtil;
-
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -173,11 +169,6 @@ public class RMSearchGet extends DeclarativeWebScript
         this.classificationReasonsUtil = classificationReasonsUtil;
     }
 
-    public void setClassificationSourcesUtil(ClassificationSourcesUtil classificationSourcesUtil)
-    {
-        this.classificationSourcesUtil = classificationSourcesUtil;
-    }
-
     /**
      * @param personService person service
      */
@@ -222,13 +213,6 @@ public class RMSearchGet extends DeclarativeWebScript
             {
                 query = classificationReasonsUtil.replaceReasonWithNodeRef(query);
             }
-
-            //replace any plain test other source titles with appropriate node ref
-            if(query.contains(SOURCES_KEY))
-            {
-                query = classificationSourcesUtil.replaceSourceNameWithNodeRef(query);
-            }
-
 
             // Convert into a rm search parameter object
             RecordsManagementSearchParameters searchParameters =

@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import java.io.Serializable;
@@ -41,13 +40,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Audits person creation.
+ * Audits user group creation.
  *
- * @author Roy Wetherall
- * @since 2.1
+ * @author Tom Page
+ * @since 2.7
  */
 @BehaviourBean
-public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePolicy
+public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNodePolicy
 {
     /** Node Service */
     private NodeService nodeService;
@@ -62,16 +61,14 @@ public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePo
         this.nodeService = nodeService;
     }
 
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
+    /** Behaviour to audit user group creation. */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:person")
+    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_USERNAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
+        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
+                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
 
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
     }

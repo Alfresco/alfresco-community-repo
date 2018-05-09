@@ -27,8 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
+import static org.alfresco.model.ContentModel.PROP_AUTHORITY_DISPLAY_NAME;
+import static org.alfresco.model.ContentModel.PROP_AUTHORITY_NAME;
+import static org.alfresco.model.ContentModel.PROP_USERNAME;
+import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.PARENT_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -1102,7 +1107,18 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
         else if (params.getEvent() != null)
         {
-            auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
+            if (params.getEvent().equalsIgnoreCase(RM_AUDIT_EVENT_LOGIN_SUCCESS))
+            {
+                auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_FULLNAME, null);
+            }
+            else if (params.getEvent().equalsIgnoreCase(RM_AUDIT_EVENT_LOGIN_FAILURE))
+                {
+                    auditQueryParams.addSearchKey(RM_AUDIT_DATA_LOGIN_ERROR, null);
+                }
+            else
+            {
+                auditQueryParams.addSearchKey(RM_AUDIT_DATA_EVENT_NAME, params.getEvent());
+            }
         }
 
         // Get audit entries
@@ -1503,31 +1519,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
 
-                // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Create Person") && entry.getNodeRef() != null)
-                {
-                    NodeRef nodeRef = entry.getNodeRef();
-                    String userName = null;
-                    if(nodeService.exists(nodeRef))
-                    {
-                        userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-                    }
-                    json.put("nodeName", userName == null ? "": userName);
-                    json.put("createPerson", true);
-                }
-                else if (entry.getEvent().equals("Delete Person") && entry.getNodeRef() != null)
-                {
-                    if (entry.getBeforeProperties() != null)
-                    {
-                        String userName = (String) entry.getBeforeProperties().get(ContentModel.PROP_USERNAME);
-                        json.put("nodeName", userName == null ? "" : userName);
-                    }
-                    json.put("deletePerson", true);
-                }
-                else
-                {
-                    json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
-                }
+                setNodeName(entry, json);
 
                 // TODO: Find another way for checking the event
                 if (entry.getEvent().equals("Delete RM Object"))
@@ -1584,6 +1576,81 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 writer.write("{}");
             }
         }
+    }
+
+    /**
+     * Update a JSON object with a node name for an audit event.
+     *
+     * @param entry The audit event.
+     * @param json The object to update.
+     * @throws JSONException If there is a problem updating the JSON.
+     */
+    private void setNodeName(RecordsManagementAuditEntry entry, JSONObject json) throws JSONException
+    {
+        String nodeName = null;
+        if (entry.getNodeRef() != null)
+        {
+            // TODO: Find another way for checking the event
+            switch (entry.getEvent())
+            {
+                case "Create Person":
+                    nodeName = getNodeName(entry.getAfterProperties(), PROP_USERNAME);
+                    // This is needed as older audit events (pre-2.7) were created without PROP_USERNAME being set.
+                    NodeRef nodeRef = entry.getNodeRef();
+                    if (nodeName == null && nodeService.exists(nodeRef))
+                    {
+                        nodeName = (String) nodeService.getProperty(nodeRef, PROP_USERNAME);
+                    }
+                    json.put("createPerson", true);
+                    break;
+
+                case "Delete Person":
+                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
+                    json.put("deletePerson", true);
+                    break;
+
+                case "Create User Group":
+                    nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    break;
+
+                case "Delete User Group":
+                    nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    break;
+
+                case "Add To User Group":
+                    nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
+                    break;
+
+                case "Remove From User Group":
+                    nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                    break;
+
+                default:
+                    nodeName = entry.getNodeName();
+                    break;
+            }
+        }
+        json.put("nodeName", nodeName == null ? "" : nodeName);
+    }
+
+    /**
+     * Get a node name using the first non-blank value from a properties object using a list of property names.
+     *
+     * @param properties The properties object.
+     * @param propertyNames The names of the properties to use. Return the first value that is not empty.
+     * @return The value of the property, or null if it's not there.
+     */
+    private String getNodeName(Map<QName, Serializable> properties, QName... propertyNames)
+    {
+        for (QName propertyName : propertyNames)
+        {
+            String nodeName = (properties != null ? (String) properties.get(propertyName) : null);
+            if (!isBlank(nodeName))
+            {
+                return nodeName;
+            }
+        }
+        return null;
     }
 
     /**

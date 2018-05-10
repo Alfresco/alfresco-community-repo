@@ -183,7 +183,7 @@ public class SolrQueryHTTPClientTest
         StringBuilder urlBuilder = new StringBuilder();
         client.buildUrlParameters(params, false, encoder, urlBuilder);
         String url = urlBuilder.toString();
-        assertFalse(url.contains("&TZ"));;
+        assertFalse(url.contains("&TZ"));
 
         params.setTimezone("bob");
         urlBuilder = new StringBuilder();

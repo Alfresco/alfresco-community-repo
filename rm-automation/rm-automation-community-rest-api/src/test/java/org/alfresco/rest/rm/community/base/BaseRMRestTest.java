@@ -77,6 +77,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
@@ -113,7 +114,11 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter(value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-    
+
+    @Autowired
+    @Getter(value = PROTECTED)
+    private SearchAPI searchApi;
+
     /**
      * Asserts the given status code
      *
@@ -505,7 +510,7 @@ public class BaseRMRestTest extends RestTest
     {
         return getFilePlanAsUser(getAdminUser(), componentId);
     }
-    
+
     /**
      * Recursively delete a folder
      *
@@ -661,6 +666,46 @@ public class BaseRMRestTest extends RestTest
             waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return names;
+    }
+
+    /**
+     * Returns records search results for the given search term
+     *
+     * @param user
+     * @param term
+     * @return
+     * @throws Exception
+     */
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String expectedResult) throws Exception
+    {
+        List<String> results = new ArrayList<>();
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 6000;
+        while (counter < 3)
+        {
+            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term);
+            if ((results != null && !results.isEmpty() && results.contains(expectedResult)))
+            {
+                break;
+            } else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                } catch (InterruptedException e)
+                {
+                }
+            }
+
+        }
+        return results;
     }
 
     /**

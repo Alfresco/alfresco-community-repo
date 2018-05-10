@@ -42,18 +42,21 @@ public class SearchSQLQuery
     private final String format;
     private List<String> locales;
     private boolean includeMetadata;
+    private String timezone;
     
     public SearchSQLQuery(@JsonProperty("stmt") String stmt,
                           @JsonProperty("format") String format,
                           @JsonProperty("locales") List<String> locales,
                           @JsonProperty("limit") Integer itemLimit,
-                          @JsonProperty("includeMetadata") boolean includeMetadata)
+                          @JsonProperty("includeMetadata") boolean includeMetadata,
+                          @JsonProperty("timezone") String timezone)
     {
         this.stmt = stmt;
         this.format = format != null ? format : "default";
         this.locales = locales != null ? locales : Collections.emptyList();
         this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
         this.includeMetadata = includeMetadata;
+        this.timezone = timezone;
     }
 
     public String getStmt()
@@ -80,6 +83,9 @@ public class SearchSQLQuery
     {
         return includeMetadata;
     }
-    
 
+    public String getTimezone()
+    {
+        return timezone;
+    }
 }

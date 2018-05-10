@@ -82,10 +82,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             //Turn JSON into a Java object representation
             SearchSQLQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchSQLQuery.class);
             SearchParameters sparams = buildSearchParameters(searchQuery);
-            if(searchQuery.getFormat().equalsIgnoreCase("solr"))
-            {
-                sparams.addExtraParameter("format", "solr");
-            }
+
             ResultSet results = searchService.query(sparams);
             FilteringResultSet frs = (FilteringResultSet) results;
             SolrSQLJSONResultSet ssjr = (SolrSQLJSONResultSet) frs.getUnFilteredResultSet();
@@ -131,6 +128,14 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
         if(StringUtils.isEmpty(searchQuery.getStmt()))
         {
             throw new AlfrescoRuntimeException("Required stmt parameter is missing.");
+        }
+        if(searchQuery.getFormat().equalsIgnoreCase("solr"))
+        {
+            sparams.addExtraParameter("format", "solr");
+        }
+        if(!StringUtils.isEmpty(searchQuery.getTimezone()))
+        {
+            sparams.setTimezone(searchQuery.getTimezone());
         }
         sparams.setQuery(searchQuery.getStmt());
         searchQuery.getLocales().forEach(action->{

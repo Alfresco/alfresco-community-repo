@@ -673,10 +673,10 @@ public class BaseRMRestTest extends RestTest
      *
      * @param user
      * @param term
+     * @param sortby
      * @return
-     * @throws Exception
      */
-    public List<String> searchForRMContentAsUser(UserModel user, String term, String expectedResult) throws Exception
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby)
     {
         List<String> results = new ArrayList<>();
         // wait for solr indexing
@@ -684,16 +684,6 @@ public class BaseRMRestTest extends RestTest
         int waitInMilliSeconds = 6000;
         while (counter < 3)
         {
-            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term);
-            if ((results != null && !results.isEmpty() && results.contains(expectedResult)))
-            {
-                break;
-            } else
-            {
-                counter++;
-            }
-            // double wait time to not overdo solr search
-            waitInMilliSeconds = (waitInMilliSeconds * 2);
             synchronized (this)
             {
                 try
@@ -703,7 +693,17 @@ public class BaseRMRestTest extends RestTest
                 {
                 }
             }
-
+            
+            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby);
+            if ((results != null && !results.isEmpty()))
+            {
+                break;
+            } else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return results;
     }

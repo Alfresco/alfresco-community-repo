@@ -674,9 +674,10 @@ public class BaseRMRestTest extends RestTest
      * @param user
      * @param term
      * @param sortby
+     * @param expectedResults
      * @return
      */
-    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby)
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, List<String> expectedResults)
     {
         List<String> results = new ArrayList<>();
         // wait for solr indexing
@@ -695,7 +696,7 @@ public class BaseRMRestTest extends RestTest
             }
             
             results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby);
-            if ((results != null && !results.isEmpty()))
+            if ((results != null && !results.isEmpty()) && results.containsAll(expectedResults))
             {
                 break;
             } else

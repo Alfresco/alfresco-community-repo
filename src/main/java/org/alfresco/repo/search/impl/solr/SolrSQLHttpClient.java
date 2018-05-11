@@ -143,6 +143,10 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
             SearchParameters sp = (SearchParameters) searchParameters;
             url.append("&includeMetadata=" + sp.isIncludeMetadata());
             url.append("&aggregationMode=facet");
+            if(searchParameters.getTimezone() != null && !searchParameters.getTimezone().isEmpty())
+            {
+                url.append("&TZ=").append(encoder.encode(searchParameters.getTimezone(), "UTF-8"));
+            }
             url.append("&alfresco.shards=");
             /*
              * When sharded we pass array of shard instances otherwise we pass the local instance url which

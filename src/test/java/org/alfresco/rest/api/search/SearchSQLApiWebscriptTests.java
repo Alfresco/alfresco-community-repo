@@ -47,18 +47,58 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParams() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false, "");
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(false, sparams.isIncludeMetadata());
         assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
+        assertEquals("solr",sparams.getExtraParameters().get("format"));
+        assertEquals(null, sparams.getTimezone());
+    }
+    @Test
+    public void testSearchQueryParamsTimezone() throws Exception
+    {
+        String query = "select SITE from alfresco";
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false, "Israel");
+        SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
+        
+        assertNotNull(sparams);
+        assertEquals(query, sparams.getQuery());
+        assertEquals(false, sparams.isIncludeMetadata());
+        assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
+        assertEquals("solr", sparams.getExtraParameters().get("format"));
+        assertEquals("Israel", sparams.getTimezone());
+    }
+    @Test
+    public void testSearchQueryParamsFormatNull() throws Exception
+    {
+        String query = "select SITE from alfresco";
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "", Collections.emptyList(), 1000, false, "");
+        SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
+        
+        assertNotNull(sparams);
+        assertEquals(query, sparams.getQuery());
+        assertEquals(false, sparams.isIncludeMetadata());
+        assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
+        assertEquals(null, sparams.getExtraParameters().get("format"));
+        assertEquals(null, sparams.getTimezone());
+        
+        searchQuery = new SearchSQLQuery(query, null, Collections.emptyList(), 1000, true, "");
+        sparams = webscript.buildSearchParameters(searchQuery);
+        
+        assertNotNull(sparams);
+        assertEquals(query, sparams.getQuery());
+        assertEquals(true, sparams.isIncludeMetadata());
+        assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
+        assertEquals(null, sparams.getExtraParameters().get("format"));
+        assertEquals(null, sparams.getTimezone());
     }
     @Test
     public void testSearchQueryNullStmt() throws Exception
     {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null, false);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null, false, null);
         try
         {
             webscript.buildSearchParameters(searchQuery);

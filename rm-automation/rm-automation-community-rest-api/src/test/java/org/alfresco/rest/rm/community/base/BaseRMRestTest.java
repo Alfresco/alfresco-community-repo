@@ -658,7 +658,8 @@ public class BaseRMRestTest extends RestTest
                     names.add(childNode.onModel().getName());
                 });
                 break;
-            } else
+            }
+            else
             {
                 counter++;
             }
@@ -696,10 +697,11 @@ public class BaseRMRestTest extends RestTest
             }
             
             results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby);
-            if ((results != null && !results.isEmpty()) && results.containsAll(expectedResults))
+            if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;
-            } else
+            }
+            else
             {
                 counter++;
             }

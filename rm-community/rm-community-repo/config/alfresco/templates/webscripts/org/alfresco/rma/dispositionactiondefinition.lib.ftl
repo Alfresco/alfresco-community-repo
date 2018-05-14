@@ -37,6 +37,7 @@
 		<#if action.period??>"period": "${action.period}",</#if>
 		<#if action.periodProperty??>"periodProperty": "${action.periodProperty}",</#if>
 		<#if action.location??>"location": "${action.location}",</#if>
+        <#if action.combineDispositionStepConditions??>"combineDispositionStepConditions": "${action.combineDispositionStepConditions?string}",</#if>
 		<#if action.events??>"events": [<#list action.events as event>"${event}"<#if event_has_next>,</#if></#list>],</#if>
 		"eligibleOnFirstCompleteEvent": ${action.eligibleOnFirstCompleteEvent?string}
 	}

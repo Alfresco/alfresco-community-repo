@@ -99,6 +99,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_PERIOD_PROPERTY = QName.createQName(RM_URI, "dispositionPeriodProperty");
     QName PROP_DISPOSITION_EVENT = QName.createQName(RM_URI, "dispositionEvent");
     QName PROP_DISPOSITION_EVENT_COMBINATION = QName.createQName(RM_URI, "dispositionEventCombination");
+    QName PROP_COMBINE_DISPOSITION_STEP_CONDITIONS = QName.createQName(RM_URI, "combineDispositionStepConditions");
     QName PROP_DISPOSITION_LOCATION = QName.createQName(RM_URI, "dispositionLocation");
     QName PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY = QName.createQName(RM_URI, "dispositionActionGhostOnDestroy");
 

@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +51,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class DispositionAbstractBase extends AbstractRmWebScript
 {
+
+    public final static String COMBINE_DISPOSITION_STEP_CONDITIONS =  "combineDispositionStepConditions";
     /**
      * Parses the request and providing it's valid returns the DispositionSchedule object.
      *
@@ -163,6 +167,11 @@ public class DispositionAbstractBase extends AbstractRmWebScript
                 eventNames.add(event.getName());
             }
             model.put("events", eventNames);
+        }
+
+        if(getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        {
+            model.put("combineDispositionStepConditions", getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
 
         return model;

@@ -482,8 +482,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             {
                 if(!details.isEventComplete())
                 {
-                    ((HashMap) rmNodeValues.get("properties")).put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
-                    ((HashMap) rmNodeValues.get("properties")).put("incompleteDispositionEvent", details.getEventName());
+                    HashMap properties = ((HashMap) rmNodeValues.get("properties"));
+                    properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+                    properties.put("incompleteDispositionEvent", details.getEventName());
                     break;
                 }
             }

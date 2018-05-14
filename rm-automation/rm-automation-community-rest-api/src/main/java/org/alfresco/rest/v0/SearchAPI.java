@@ -91,6 +91,7 @@ public class SearchAPI extends BaseAPI
      * @param site
      * @param query
      * @param filters
+     * @param sortby
      * @return search results (see API reference for more details), null for any errors
      */
     public JSONObject rmSearch(
@@ -98,11 +99,16 @@ public class SearchAPI extends BaseAPI
         String password,
         String site,
         String query,
-        String filters)
+        String filters,
+        String sortby)
     {
         List<BasicNameValuePair> searchParameters = new ArrayList<BasicNameValuePair>();
         searchParameters.add(new BasicNameValuePair("query", query));
         searchParameters.add(new BasicNameValuePair("filters", filters));
+        if (sortby != null)
+        {
+            searchParameters.add(new BasicNameValuePair("sortby", sortby));
+        }
 
         String requestURL = MessageFormat.format(
             RM_SEARCH_ENDPOINT,
@@ -114,20 +120,23 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-     * Search as a user for records on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS
+     * Search as a user for records on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
+     * by sortby
      * <br>
      * If more fine-grained control of search parameters is required, use rmSearch() directly.
      * @param username
      * @param password
      * @param query
+     * @param sortby
      * @return list of record names
      */
     public List<String> searchForRecordsAsUser(
         String username,
         String password,
-        String query)
+        String query,
+        String sortby)
     {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_RECORD_FILTERS));
+        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_RECORD_FILTERS, sortby));
     }
 
     /**

@@ -4,15 +4,16 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
          http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-   <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <ref bean="scheduledDispositionLifecyceleJobDetail" />
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <property name="cronExpression">
-         <value>0/30 * * * * ?</value>
+   <bean id="scheduledDispositionLifecyceleSchedulerAccessor"
+         class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <bean id="scheduledDispositionLifecyceleJobTrigger"
+               class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+            <property name="jobDetail" ref="scheduledDispositionLifecyceleJobDetail" />
+            <!-- <value>0/30 * * * * ?</value> -->
+            <property name="cronExpression" value="0/30 * * * *?" />
+         </bean>
       </property>
    </bean>
 

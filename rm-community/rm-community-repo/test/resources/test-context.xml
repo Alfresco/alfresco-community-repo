@@ -116,15 +116,19 @@
    </bean>
 
    <!--  Make sure the job doesn't fire during the test -->
-   <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <ref bean="scheduledPublishUpdatesJobDetail" />
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <property name="cronExpression">
-         <value>0 30 3 * * ?</value>
+   <bean id="scheduledPublishUpdatesSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <list>
+            <bean id="scheduledPublishUpdatesJobTrigger"
+                  class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
+               <property name="cronExpression">
+                  <!-- <value>0 30 3 * * ?</value> -->
+                  <value>0 30 3 * * ?</value>
+               </property>
+            </bean>
+         </list>
       </property>
    </bean>
 

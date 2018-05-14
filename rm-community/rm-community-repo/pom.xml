@@ -25,12 +25,12 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
-      <api.explorer.version>1.4</api.explorer.version>
+      <api.explorer.version>6.0.4-ea</api.explorer.version>
 
       <!-- 6.0 changes !-->
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
-      <dependency.alfresco-repository.version>6.48</dependency.alfresco-repository.version>
+      <dependency.alfresco-repository.version>6.49</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.31</dependency.alfresco-remote-api.version>
       <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>
       <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>

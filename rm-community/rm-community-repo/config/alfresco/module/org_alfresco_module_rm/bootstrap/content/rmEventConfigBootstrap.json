@@ -70,7 +70,12 @@
          "eventType" : "rmEventType.simple",
          "eventName" : "case_complete",
          "eventDisplayLabel" : "rmevent.case_complete"
-      }
+      },
+     {
+       "eventType": "rmEventType.simple",
+       "eventName": "declassification_review",
+       "eventDisplayLabel": "rmevent.declassification_review"
+     }
    ]
 }
 

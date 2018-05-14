@@ -133,6 +133,12 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
                         json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
         }
 
+        if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS))
+        {
+            props.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+                    json.getBoolean(COMBINE_DISPOSITION_STEP_CONDITIONS));
+        }
+
         if (json.has("location"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,

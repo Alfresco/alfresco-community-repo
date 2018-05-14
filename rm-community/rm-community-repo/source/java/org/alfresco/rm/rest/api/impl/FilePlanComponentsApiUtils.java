@@ -39,12 +39,14 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -108,9 +110,6 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.social.InternalServerErrorException;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Utility class that handles common api endpoint tasks
@@ -611,7 +610,7 @@ public class FilePlanComponentsApiUtils
         else
         {
             // Throw internal error as this method should not be called for other types
-            throw new InternalServerErrorException("Creating relative path of type '" + nodesType + "' not suported for this endpoint");
+            throw new InvalidArgumentException("Creating relative path of type '" + nodesType + "' not suported for this endpoint");
         }
 
         return lastNodeRef;
@@ -968,7 +967,10 @@ public class FilePlanComponentsApiUtils
                     if (permissionService.hasPermission(childNodeRef, PermissionService.READ) == AccessStatus.ALLOWED)
                     {
                         Serializable nameProp = nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                        pathElements.add(0, new ElementInfo(childNodeRef.getId(), nameProp.toString()));
+                        String type = nodeService.getType(childNodeRef).toPrefixString();
+                        Set < QName > aspects = nodeService.getAspects(childNodeRef);
+                        List < String > aspectNames = nodes.mapFromNodeAspects(aspects, Collections.emptyList(), Collections.emptyList());
+                        pathElements.add(0, new ElementInfo(childNodeRef.getId(), nameProp.toString(),type, aspectNames));
                     }
                     else
                     {

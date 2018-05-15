@@ -43,6 +43,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Parent class for records search utilities
+ *
  * @author Ross Gale
  * @since 2.7
  */
@@ -55,6 +56,7 @@ public class SearchUtil
 
     /**
      * Setter for node service
+     *
      * @param nodeService Node service
      */
     public void setNodeService(NodeService nodeService)
@@ -64,6 +66,7 @@ public class SearchUtil
 
     /**
      * Use a container node ref and return the nodeIds of the contents
+     *
      * @param nodeRef container
      * @return list of nodeIds
      */
@@ -84,13 +87,15 @@ public class SearchUtil
         NodeRef rootNodeRef = nodeService.getRootNode(STORE_REF_WORKSPACE_SPACESSTORE);
         List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(rootNodeRef, ASSOC_CHILDREN, container);
 
-        if (assocRefs.size() == 0)
+        if (assocRefs.isEmpty())
         {
             return nodeService.createNode(rootNodeRef, ASSOC_CHILDREN, container, TYPE_CONTAINER).getChildRef();
-        } else if (assocRefs.size() != 1)
+        }
+        else if (assocRefs.size() != 1)
         {
             throw new AlfrescoRuntimeException("Only one container is allowed.");
-        } else
+        }
+        else
         {
             return assocRefs.iterator().next().getChildRef();
         }

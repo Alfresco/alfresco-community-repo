@@ -187,7 +187,7 @@
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
                            <artifactId>alfresco-share-services</artifactId>
-                           <version>${share.version}</version>
+                           <version>${alfresco.alfresco-share-services.version}</version>
                            <type>amp</type>
                         </artifactItem>
                      </artifactItems>
@@ -244,7 +244,7 @@
                   <phase>prepare-package</phase>
                   <configuration>
                      <backup>true</backup>
-                     <ampLocation>${project.build.directory}/alfresco-share-services-${share.version}.amp</ampLocation>
+                     <ampLocation>${project.build.directory}/alfresco-share-services-${alfresco.alfresco-share-services.version}.amp</ampLocation>
                      <warLocation>${app.amp.client.war.folder}</warLocation>
                   </configuration>
                </execution>
@@ -537,9 +537,12 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>${alfresco.groupId}</groupId>
-                                 <artifactId>${alfresco.repo.artifactId}</artifactId>
+                                 <!--<artifactId>${alfresco.repo.artifactId}</artifactId>-->
+                                 <artifactId>content-services-community</artifactId>
                                  <type>war</type>
-                                 <version>${alfresco.version}</version>
+                                 <!--<version>${alfresco.version}</version>-->
+                                 <!--<version>6.0.0-RC4</version>-->
+                                 <version>6.0.5-ea</version>
                               </artifactItem>
                            </artifactItems>
                         </configuration>

@@ -65,7 +65,7 @@
     <!-- Note: ff the context evaluates to null (e.g. doing an exists test on a node     -->
     <!-- that does not exist) then access will be allowed.                               -->
 
-    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.RMACLEntryVoter" abstract="false"  lazy-init="default" autowire="default" dependency-check="default">
+    <bean id="aclEntryVoter" class="org.alfresco.repo.security.permissions.impl.acegi.RMACLEntryVoter" abstract="false"  lazy-init="default" autowire="default">
         <property name="permissionService">
             <ref bean="permissionService"></ref>
         </property>
@@ -128,7 +128,8 @@
     <!-- Post method call application of security -->
     <!-- ======================================== -->
 
-    <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider" abstract="false" lazy-init="default" autowire="default" dependency-check="default">
+    <bean id="afterAcl" class="org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationProvider"
+          abstract="false" lazy-init="default" autowire="default" >
         <property name="permissionService">
             <ref bean="permissionServiceImpl"></ref>
         </property>

@@ -1132,11 +1132,11 @@
 		          <tokenised>false</tokenised>
 		       </index>
             </property>
-            <property name="rma:recordSearchDeclassificationReviewCompletedAt">
+            <property name="rma:declassificationReviewCompletedAt">
                <type>d:date</type>
                <protected>true</protected>
             </property>
-            <property name="rma:recordSearchDeclassificationReviewCompletedBy">
+            <property name="rma:declassificationReviewCompletedBy">
                <type>d:text</type>
                <protected>true</protected>
                <index enabled="true">

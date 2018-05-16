@@ -35,7 +35,6 @@ import java.util.Map;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -126,34 +125,11 @@ public class RecordCategoriesAPI extends BaseAPI
         addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
         addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
         addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
-        addPropertyToRequest(requestParams, "events", properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
-        addPropertyToRequest(requestParams, "combineDispositionStepConditions", properties, RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS);
-        addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
-
-        return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
-    }
-
-    /**
-     * Creates a retention schedule for a given category with added event
-
-     * @param user
-     * @param password
-     * @param categoryName
-     * @param properties
-     * @param events
-     * @return The HTTP Response.
-     */
-    public HttpResponse addDispositionScheduleSteps(String user, String password, String categoryName, Map<RETENTION_SCHEDULE, String> properties, String events)
-    {
-        String catNodeRef = NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
-
-        JSONObject requestParams = new JSONObject();
-        addPropertyToRequest(requestParams, "name", properties, RETENTION_SCHEDULE.NAME);
-        addPropertyToRequest(requestParams, "description", properties, RETENTION_SCHEDULE.DESCRIPTION);
-        addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
-        addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
-        addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
-        requestParams.append("events", events);
+        String events = getPropertyValue(properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
+        if(!events.equals(""))
+        {
+            requestParams.append("events", events);
+        }
         addPropertyToRequest(requestParams, "combineDispositionStepConditions", properties, RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS);
         addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
 

@@ -662,7 +662,7 @@ public abstract class BaseAPI
         RETENTION_GHOST,
         RETENTION_ELIGIBLE_FIRST_EVENT,
         RETENTION_EVENTS,
-
+        COMBINE_DISPOSITION_STEP_CONDITIONS
     }
 
     /**

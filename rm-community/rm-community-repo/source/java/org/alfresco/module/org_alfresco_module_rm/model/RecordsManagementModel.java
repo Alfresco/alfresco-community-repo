@@ -247,6 +247,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
     QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT = QName.createQName(RM_URI, "recordSearchDeclassificationReviewCompletedAt");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY = QName.createQName(RM_URI, "recordSearchDeclassificationReviewCompletedBy");
     /** @depreacted as of 2.2, because disposable items can now be in multiple holds */
     @Deprecated
     QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");

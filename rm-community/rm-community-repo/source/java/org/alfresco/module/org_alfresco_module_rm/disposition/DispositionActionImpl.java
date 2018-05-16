@@ -35,11 +35,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RMSearchGet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -328,6 +330,11 @@ public class DispositionActionImpl implements DispositionAction,
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, completedByValue);
                     services.getNodeService().setProperties(eventNodeRef, props);
 
+                    if (eventName.equals("declassification_review"))
+                    {
+                        setDeclassificationReview(eventNodeRef, completedAtValue, completedByValue);
+                    }
+
                     // Check to see if the events eligible property needs to be updated
                     updateEventEligible();
 
@@ -517,5 +524,38 @@ public class DispositionActionImpl implements DispositionAction,
         services.getNodeService().setProperty(getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE, eligible);
 
         return eligible;
+    }
+
+    /**
+     * Sets declassification review authority and date on records and record folder
+     *
+     * @param eventNodeRef Declassification review event node ref
+     * @param completedAtValue Declassification review authority
+     * @param completedByValue Declassification review date
+     */
+    private void setDeclassificationReview(NodeRef eventNodeRef, Date completedAtValue, String completedByValue)
+    {
+        NodeRef nextDispositionActionNodeRef = services.getNodeService().getPrimaryParent(eventNodeRef).getParentRef();
+        NodeRef nodeRef = services.getNodeService().getPrimaryParent(nextDispositionActionNodeRef).getParentRef();
+
+        Map<QName, Serializable> nodeProps = services.getNodeService().getProperties(nodeRef);
+        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT, completedAtValue);
+        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY, completedByValue);
+        services.getNodeService().setProperties(nodeRef, nodeProps);
+
+        // check if the node is a record folder then set the declassification review on the records also
+        if (services.getNodeService().getType(nodeRef).equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
+        {
+            // get all the records inside the record folder
+            List<ChildAssociationRef> records = services.getNodeService().getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef child : records)
+            {
+                NodeRef recordNodeRef = child.getChildRef();
+                Map<QName, Serializable> recordProps = services.getNodeService().getProperties(recordNodeRef);
+                recordProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT, completedAtValue);
+                recordProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY, completedByValue);
+                services.getNodeService().setProperties(recordNodeRef, recordProps);
+            }
+        }
     }
 }

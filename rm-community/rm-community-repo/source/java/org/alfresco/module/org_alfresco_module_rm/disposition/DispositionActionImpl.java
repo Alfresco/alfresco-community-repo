@@ -330,6 +330,7 @@ public class DispositionActionImpl implements DispositionAction,
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, completedByValue);
                     services.getNodeService().setProperties(eventNodeRef, props);
 
+                    // check a specific event from rmEventConfigBootstrap.json
                     if (eventName.equals("declassification_review"))
                     {
                         setDeclassificationReview(eventNodeRef, completedAtValue, completedByValue);
@@ -537,11 +538,7 @@ public class DispositionActionImpl implements DispositionAction,
     {
         NodeRef nextDispositionActionNodeRef = services.getNodeService().getPrimaryParent(eventNodeRef).getParentRef();
         NodeRef nodeRef = services.getNodeService().getPrimaryParent(nextDispositionActionNodeRef).getParentRef();
-
-        Map<QName, Serializable> nodeProps = services.getNodeService().getProperties(nodeRef);
-        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT, completedAtValue);
-        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY, completedByValue);
-        services.getNodeService().setProperties(nodeRef, nodeProps);
+        setPropsOnContent(nodeRef, completedAtValue, completedByValue);
 
         // check if the node is a record folder then set the declassification review on the records also
         if (services.getNodeService().getType(nodeRef).equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
@@ -551,11 +548,16 @@ public class DispositionActionImpl implements DispositionAction,
             for (ChildAssociationRef child : records)
             {
                 NodeRef recordNodeRef = child.getChildRef();
-                Map<QName, Serializable> recordProps = services.getNodeService().getProperties(recordNodeRef);
-                recordProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT, completedAtValue);
-                recordProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY, completedByValue);
-                services.getNodeService().setProperties(recordNodeRef, recordProps);
+                setPropsOnContent(recordNodeRef, completedAtValue, completedByValue);
             }
         }
+    }
+
+    private void setPropsOnContent(NodeRef nodeRef, Date completedAtValue, String completedByValue)
+    {
+        Map<QName, Serializable> nodeProps = services.getNodeService().getProperties(nodeRef);
+        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT, completedAtValue);
+        nodeProps.put(PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY, completedByValue);
+        services.getNodeService().setProperties(nodeRef, nodeProps);
     }
 }

@@ -591,6 +591,17 @@ public class BaseRMRestTest extends RestTest
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
         recordFolderAPI.deleteRecordFolder(recordFolderId);
     }
+    
+    /**
+     * Delete a record 
+     *
+     * @param recordId the id of the record to delete
+     */
+    public void deleteRecord(String recordId)
+    {
+        RecordsAPI recordsAPI = restAPIFactory.getRecordsAPI();
+        recordsAPI.deleteRecord(recordId);
+    }
 
     /**
      * Delete a record category

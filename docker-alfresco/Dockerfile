@@ -96,6 +96,13 @@ RUN java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
 
 # Docker CMD from parent image starts the server
 
+# Unpack ROOT.war
+RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT && jar -xvf /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war && \
+# Add catalina.policy to ROOT.war and alfresco.war
+# Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
+# Grant only deployXmlPermission to ROOT webapp.
+    sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" /usr/local/tomcat/conf/catalina.policy
+
 # To remote debug into this image add: EXPOSE 8000
 # Changes are also required to the docker-compose/docker-compose.yml file.
 # EXPOSE 8000

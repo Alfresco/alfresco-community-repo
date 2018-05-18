@@ -325,9 +325,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /**
      * Perform an action on the record folder
      *
-     * @param user        the user closing the folder
+     * @param user        the user executing the action
      * @param password    the user's password
-     * @param contentName the record folder name
+     * @param contentName the content name
      * @param date        the date to be updated
      * @return The HTTP response.
      */
@@ -346,6 +346,56 @@ public class RMRolesAndActionsAPI extends BaseAPI
                                 )
                              );
         }
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    }
+
+    /**
+     * Complete an event on the record/record folder
+     *
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @param event       the event to be completed
+     * @param date        the date to be updated
+     * @return The HTTP response.
+     */
+    public HttpResponse completeEvent(String user, String password, String contentName, RM_EVENTS event, ZonedDateTime date)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", RM_ACTIONS.COMPLETE_EVENT.getAction());
+        requestParams.put("nodeRef", recNodeRef);
+        date = (date != null) ? date : ZonedDateTime.now();
+        String formattedDate = date.format(DateTimeFormatter.ISO_INSTANT);
+        requestParams.put("params", new JSONObject()
+                        .put("eventName", event.getEventName())
+                        .put("eventCompletedBy", user)
+                        .put("eventCompletedAt", new JSONObject()
+                                .put("iso8601", formattedDate)
+                            )
+                         );
+
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    }
+
+    /**
+     * Undo an event on the record/record folder
+     *
+     * @param user        the user executing the action
+     * @param password    the user's password
+     * @param contentName the content name
+     * @param event       the event to be completed
+     * @return The HTTP response.
+     */
+    public HttpResponse undoEvent(String user, String password, String contentName, RM_EVENTS event)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", RM_ACTIONS.UNDO_EVENT.getAction());
+        requestParams.put("nodeRef", recNodeRef);
+        requestParams.put("params", new JSONObject()
+                        .put("eventName", event.getEventName()));
+
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 

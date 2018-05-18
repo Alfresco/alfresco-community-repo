@@ -674,6 +674,8 @@ public abstract class BaseAPI
         CUT_OFF("cutoff"),
         UNDO_CUT_OFF("undoCutoff"),
         TRANSFER("transfer"),
+        COMPLETE_EVENT("completeEvent"),
+        UNDO_EVENT("undoEvent"),
         DESTROY("destroy");
         String action;
 
@@ -685,6 +687,35 @@ public abstract class BaseAPI
         public String getAction()
         {
             return action;
+        }
+    }
+
+    public enum RM_EVENTS
+    {
+        ABOLISHED("abolished", "Abolished"),
+        ALL_ALLOWANCES_GRANTED_ARE_TERMINATED("all_allowances_granted_are_terminated", "All Allowances Granted are Terminated"),
+        CASE_CLOSED("case_closed", "Case Closed"),
+        DECLASSIFICATION_REVIEW("declassification_review", "Declassification Review"),
+        OBSOLETE("obsolete", "Obsolete"),
+        NO_LONGER_NEEDED("no_longer_needed", "No Longer Needed"),
+        STUDY_COMPLETE("study_complete", "Study Complete");
+        String eventName;
+        String eventDisplayLabel;
+
+        RM_EVENTS(String eventName, String eventDisplayLabel)
+        {
+            this.eventName = eventName;
+            this.eventDisplayLabel = eventDisplayLabel;
+        }
+
+        public String getEventName()
+        {
+            return eventName;
+        }
+
+        public String getEventDisplayLabel()
+        {
+            return eventDisplayLabel;
         }
     }
 

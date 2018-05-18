@@ -66,6 +66,9 @@ public class SearchAPI extends BaseAPI
     /** RM document search filters */
     private static final String RM_DEFAULT_RECORD_FILTERS =
         "records/true,undeclared/true,vital/false,folders/false,categories/false,frozen/false,cutoff/false";
+    /** RM all content search filters */
+    private static final String RM_DEFAULT_CONTENT_FILTERS =
+        "records/true,undeclared/true,vital/false,folders/true,categories/true,frozen/false,cutoff/false";
 
     /**
      * Perform search request on search endpoint as a user.
@@ -137,6 +140,26 @@ public class SearchAPI extends BaseAPI
         String sortby)
     {
         return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_RECORD_FILTERS, sortby));
+    }
+
+    /**
+     * Search as a user for content on site "rm" matching query, using SearchAPI.RM_DEFAULT_CONTENT_FILTERS and sorted
+     * by sortby
+     * <br>
+     * If more fine-grained control of search parameters is required, use rmSearch() directly.
+     * @param username
+     * @param password
+     * @param query
+     * @param sortby
+     * @return list of record names
+     */
+    public List<String> searchForRmContentAsUser(
+        String username,
+        String password,
+        String query,
+        String sortby)
+    {
+        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_CONTENT_FILTERS, sortby));
     }
 
     /**

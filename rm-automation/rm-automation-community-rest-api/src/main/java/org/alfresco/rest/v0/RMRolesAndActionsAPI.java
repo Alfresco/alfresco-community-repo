@@ -384,7 +384,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param user        the user executing the action
      * @param password    the user's password
      * @param contentName the content name
-     * @param event       the event to be completed
+     * @param event       the event to be undone
      * @return The HTTP response.
      */
     public HttpResponse undoEvent(String user, String password, String contentName, RM_EVENTS event)

@@ -678,7 +678,8 @@ public class BaseRMRestTest extends RestTest
      * @param expectedResults
      * @return
      */
-    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, List<String> expectedResults)
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, Boolean includeFolders,
+                Boolean includeCategories, List<String> expectedResults)
     {
         List<String> results = new ArrayList<>();
         // wait for solr indexing
@@ -691,12 +692,13 @@ public class BaseRMRestTest extends RestTest
                 try
                 {
                     this.wait(waitInMilliSeconds);
-                } catch (InterruptedException e)
+                }
+                catch (InterruptedException e)
                 {
                 }
             }
-            
-            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby);
+            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby,
+                        includeFolders, includeCategories);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;

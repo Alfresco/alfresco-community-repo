@@ -35,6 +35,7 @@ import static org.testng.AssertJUnit.fail;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.core.v0.RMEvents;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
@@ -354,19 +356,19 @@ public class RMRolesAndActionsAPI extends BaseAPI
      *
      * @param user        the user executing the action
      * @param password    the user's password
-     * @param contentName the content name
+     * @param nodeName    the node name
      * @param event       the event to be completed
      * @param date        the date to be updated
      * @return The HTTP response.
      */
-    public HttpResponse completeEvent(String user, String password, String contentName, RM_EVENTS event, ZonedDateTime date)
+    public HttpResponse completeEvent(String user, String password, String nodeName, RMEvents event, Instant date)
     {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, nodeName);
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", RM_ACTIONS.COMPLETE_EVENT.getAction());
         requestParams.put("nodeRef", recNodeRef);
-        date = (date != null) ? date : ZonedDateTime.now();
-        String formattedDate = date.format(DateTimeFormatter.ISO_INSTANT);
+        date = (date != null) ? date : Instant.now();
+        String formattedDate = DateTimeFormatter.ISO_INSTANT.format(date);
         requestParams.put("params", new JSONObject()
                         .put("eventName", event.getEventName())
                         .put("eventCompletedBy", user)
@@ -387,7 +389,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param event       the event to be undone
      * @return The HTTP response.
      */
-    public HttpResponse undoEvent(String user, String password, String contentName, RM_EVENTS event)
+    public HttpResponse undoEvent(String user, String password, String contentName, RMEvents event)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
         JSONObject requestParams = new JSONObject();

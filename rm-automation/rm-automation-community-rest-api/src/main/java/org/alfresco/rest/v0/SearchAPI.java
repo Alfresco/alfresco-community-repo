@@ -66,8 +66,8 @@ public class SearchAPI extends BaseAPI
     /** RM document search filters */
     private static final String RM_DEFAULT_RECORD_FILTERS =
         "records/true,undeclared/true,vital/false,folders/false,categories/false,frozen/false,cutoff/false";
-    /** RM all content search filters */
-    private static final String RM_DEFAULT_CONTENT_FILTERS =
+    /** RM all nodes search filters */
+    private static final String RM_DEFAULT_NODES_FILTERS =
         "records/true,undeclared/true,vital/false,folders/true,categories/true,frozen/false,cutoff/false";
 
     /**
@@ -143,7 +143,7 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-     * Search as a user for content on site "rm" matching query, using SearchAPI.RM_DEFAULT_CONTENT_FILTERS and sorted
+     * Search as a user for content on site "rm" matching query, using SearchAPI.RM_DEFAULT_NODES_FILTERS and sorted
      * by sortby
      * <br>
      * If more fine-grained control of search parameters is required, use rmSearch() directly.
@@ -159,7 +159,7 @@ public class SearchAPI extends BaseAPI
         String query,
         String sortby)
     {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_CONTENT_FILTERS, sortby));
+        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_NODES_FILTERS, sortby));
     }
 
     /**

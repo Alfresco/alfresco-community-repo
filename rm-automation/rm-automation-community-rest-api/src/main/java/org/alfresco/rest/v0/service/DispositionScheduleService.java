@@ -86,7 +86,7 @@ public class DispositionScheduleService extends BaseAPI
     }
 
     /**
-     * Helper method for accession step properties
+     * Helper method for adding an accession step
      *
      * @param timeOrEvent
      * @param events

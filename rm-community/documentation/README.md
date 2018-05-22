@@ -27,3 +27,5 @@
 	* Governance Rules
 * Core Module Services
 	* [RM Patch Service](./PatchService.md)
+* Build and Release
+    * [Build](./build)

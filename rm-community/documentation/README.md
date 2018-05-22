@@ -17,8 +17,8 @@
 		* Retention Schedules and Events
 		* Transfer and Accession
 * Security
-	* [Extended permission service](extendedPermissionService.md)
-	* Roles, Capabilities and Permissions
+	* [Extended permission service](security/extendedPermissionService.md)
+	* [Roles and Capabilities](security/rolesAndCapabilities.md)
 * Discovery
 	* Governance Search
 	* Legal Holds

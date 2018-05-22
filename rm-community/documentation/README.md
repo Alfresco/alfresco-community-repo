@@ -11,7 +11,7 @@
 		* Easy Access Records
 		* Physical Records
 		* Record Import and Export
-		* Version Records
+		* [Version Records](./versionRecords)
 	* Retention
 		* [Destruction](./destruction)
 		* Retention Schedules and Events

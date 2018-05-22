@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -823,10 +823,81 @@ public class FTPServerTest extends TestCase
             ftp.disconnect();
         }    
     }  // test set time
-    
-    
-    
-    
+
+    /**
+     * Test for Passive Mode -> FTPCommand.Pasv command with external address functionality.
+     * see MNT-16433
+     */
+    public void testFTPConnectExternalAddressSet() throws Exception
+    {
+        logger.debug("Start testFTPConnectExternalAddressSet");
+        try
+        {
+            // use a highly improbable IP to tests Passive Mode -> FTPCommand.Pasv command
+            // this is supposed to be the address of a proxy in front of Alfrsco FTP server
+            String improbableIPAddress = "127.255.255.42";
+            ftpConfigSection.setFTPExternalAddress(improbableIPAddress);
+            FTPClient ftp = connectClient();
+            try
+            {
+                int reply = ftp.getReplyCode();
+
+                if (!FTPReply.isPositiveCompletion(reply))
+                {
+                    fail("FTP server refused connection.");
+                }
+                boolean login = ftp.login(USER_ADMIN, PASSWORD_ADMIN);
+                assertTrue("admin login not successful", login);
+
+                // activate passive mode
+                boolean sucess = ftp.enterRemotePassiveMode();
+                assertTrue(sucess);
+
+                assertTrue("Client should be in passive mode now", ftp.getDataConnectionMode() == FTPClient.PASSIVE_REMOTE_DATA_CONNECTION_MODE);
+
+                reply = ftp.getReplyCode();
+                //see https://www.ietf.org/rfc/rfc959.txt
+                assertTrue("reply code should be 227", reply == 227);
+
+                String replyLine = ftp.getReplyString();
+                assertTrue(replyLine != null);
+                String encodedImprobableIPAddress = improbableIPAddress.replaceAll("\\.", ",");
+                assertTrue("Pasv command should contain the set external address encoded", replyLine.contains(encodedImprobableIPAddress));
+
+                // now attempt to list the files and check that the command does not succeed
+                FTPFile[] files = ftp.listFiles();
+                assertNotNull(files);
+                assertTrue("list command should not succeed", files.length == 0);
+
+                assertTrue("The passive host should be the one set earlier.", improbableIPAddress.equals(ftp.getPassiveHost()));
+            }
+            finally
+            {
+                safeDisconnect(ftp);
+            }
+        }
+        finally
+        {
+            //always revert back to default, or the other tests will fail
+            ftpConfigSection.setFTPExternalAddress(null);
+        }
+    }
+
+    private void safeDisconnect(FTPClient ftp) throws IOException
+    {
+        try
+        {
+            if (ftp != null)
+            {
+                ftp.disconnect();
+            }
+        }
+        catch (Exception e)
+        {
+            logger.error("Could not gracefully disconnect the ftp client.", e);
+        }
+    }
+
     /**
      * Create a user with a small quota.
      * 

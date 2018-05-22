@@ -226,7 +226,11 @@
 	  <property name="dataPortTo">
 		  <value>${ftp.dataPortTo}</value>
 	  </property>
-	   
+
+       <property name="externalAddress">
+           <value>${ftp.externalAddress}</value>
+       </property>
+
 	 <!-- FTPS support -->
 	 <property name="keyStorePath">
 		 <value>${ftp.keyStore}</value>

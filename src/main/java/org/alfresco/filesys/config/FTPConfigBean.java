@@ -69,7 +69,10 @@ public class FTPConfigBean
     
     private int dataPortFrom;
     private int dataPortTo;
-    
+
+    // Externally seen IP address
+    private String externalAddress;
+
     // FTPS configuration
     //
     // Keystore/truststore details
@@ -332,7 +335,23 @@ public class FTPConfigBean
     public void setDataPortTo(int toPort) {
     	dataPortTo = toPort;
     }
-    
+
+    /**
+     * Return the IP Address to use in NAT setup
+     */
+    public String getExternalAddress()
+    {
+        return externalAddress;
+    }
+
+    /**
+     * Set the IP Address to use in NAT setup
+     */
+    public void setExternalAddress(String externalAddress)
+    {
+        this.externalAddress = externalAddress;
+    }
+
     /**
      * Return the key store path
      * 

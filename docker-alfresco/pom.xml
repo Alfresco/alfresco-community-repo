@@ -161,14 +161,6 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/amps</outputDirectory>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-share-community</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <type>amp</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/amps_share</outputDirectory>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

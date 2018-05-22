@@ -27,7 +27,7 @@
       <dependencies>
          <dependency>
             <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-parent</artifactId>
+            <artifactId>acs-community-packaging</artifactId>
             <version>${alfresco.version}</version>
             <type>pom</type>
             <scope>import</scope>
@@ -43,7 +43,7 @@
    </dependencyManagement>
 
    <properties>
-      <alfresco.version>5.2.g</alfresco.version>
+      <alfresco.version>6.0.5-ea</alfresco.version>
 
       <share.version>6.0.a</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->

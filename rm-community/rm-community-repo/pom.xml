@@ -14,7 +14,7 @@
 
    <properties>
       <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
-      <alfresco.db.hibernate.dialect>org.hibernate.dialect.H2Dialect</alfresco.db.hibernate.dialect>
+      <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
       <alfresco.db.name>alfresco</alfresco.db.name>
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.db.password>alfresco</alfresco.db.password>
@@ -56,6 +56,7 @@
       <alfresco.package.name>alfresco-community</alfresco.package.name>
       <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
       <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
+      <dependency.mysql.version>5.1.40</dependency.mysql.version>
    </properties>
 
    <build>
@@ -205,7 +206,8 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>${alfresco.groupId}</groupId>
-                           <artifactId>${app.amp.client.war.artifactId}</artifactId>
+                           <!--<artifactId>${app.amp.client.war.artifactId}</artifactId> -->
+                           <artifactId>content-services-community</artifactId>
                            <type>war</type>
                            <version>${alfresco.version}</version>
                         </artifactItem>
@@ -334,6 +336,30 @@
       </dependency>
 !-->
       <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-data-model</artifactId>
+         <version>${dependency.alfresco-data-model.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <version>2.9.5</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-annotations</artifactId>
+         <version>2.9.5</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.datatype</groupId>
+         <artifactId>jackson-datatype-joda</artifactId>
+         <version>2.9.5</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-aop</artifactId>
          <version>${dependency.spring.version}</version>
@@ -419,12 +445,14 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
+         <version>6.13</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.mockito</groupId>
          <artifactId>mockito-all</artifactId>
+         <version>1.10.19</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -432,6 +460,19 @@
          <artifactId>spring-test</artifactId>
          <version>5.0.4.RELEASE</version>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-core</artifactId>
+         <version>${dependency.alfresco-core.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-core</artifactId>
+         <version>${dependency.alfresco-core.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
@@ -456,8 +497,10 @@
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
+         <version>${dependency.mysql.version}</version>
          <scope>test</scope>
       </dependency>
+      <!--
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
@@ -471,6 +514,7 @@
          </exclusions>
          <scope>test</scope>
       </dependency>
+      -->
       <dependency>
           <groupId>org.reflections</groupId>
           <artifactId>reflections</artifactId>
@@ -481,16 +525,22 @@
       <dependency>
          <groupId>io.swagger</groupId>
          <artifactId>swagger-parser</artifactId>
-         <version>1.0.23</version>
+         <version>1.0.35</version>
          <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
-      <dependency>
+     <dependency>
          <groupId>com.github.fge</groupId>
          <artifactId>json-schema-validator</artifactId>
          <version>2.2.6</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.dataformat</groupId>
+         <artifactId>jackson-dataformat-yaml</artifactId>
+         <version>2.9.5</version>
+      </dependency>
+
    </dependencies>
 
    <profiles>
@@ -499,7 +549,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.master.url>
             <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
@@ -511,7 +561,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.repo.alfresco..dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
@@ -560,7 +610,7 @@
                                  <artifactId>alfresco-solr4</artifactId>
                                  <groupId>${alfresco.groupId}</groupId>
                                  <classifier>config</classifier>
-                                 <version>${alfresco.version}</version>
+                                 <version>${alfresco.solr4.version}</version>
                                  <type>zip</type>
                               </artifactItem>
                            </artifactItems>
@@ -675,7 +725,7 @@
                               <webapp>
                                  <groupId>${alfresco.groupId}</groupId>
                                  <artifactId>alfresco-solr4</artifactId>
-                                 <version>${alfresco.version}</version>
+                                 <version>${alfresco.solr4.version}</version>
                                  <type>war</type>
                                  <asWebapp>true</asWebapp>
                                  <contextPath>/solr4</contextPath>
@@ -712,6 +762,7 @@
                         <artifactId>mysql-connector-java</artifactId>
                         <version>${alfresco.mysql.version}</version>
                      </dependency>
+                     <!--
                      <dependency>
                         <groupId>${alfresco.groupId}</groupId>
                         <artifactId>alfresco-repository</artifactId>
@@ -724,6 +775,7 @@
                            </exclusion>
                         </exclusions>
                      </dependency>
+                     -->
                   </dependencies>
                </plugin>
             </plugins>

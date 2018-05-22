@@ -58,6 +58,8 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME = "rma:recordSearchDispositionActionName";
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE = "rma:recordSearchDispositionEventsEligible";
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS = "rma:recordSearchDispositionInstructions";
+    public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_BY = "rma:declassificationReviewCompletedBy";
+    public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_AT = "rma:declassificationReviewCompletedAt";
     
 
     /** File plan properties */

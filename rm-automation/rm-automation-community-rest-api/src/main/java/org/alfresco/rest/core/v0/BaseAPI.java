@@ -674,6 +674,8 @@ public abstract class BaseAPI
         CUT_OFF("cutoff"),
         UNDO_CUT_OFF("undoCutoff"),
         TRANSFER("transfer"),
+        COMPLETE_EVENT("completeEvent"),
+        UNDO_EVENT("undoEvent"),
         DESTROY("destroy");
         String action;
 

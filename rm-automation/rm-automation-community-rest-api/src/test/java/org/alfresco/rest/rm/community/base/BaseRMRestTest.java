@@ -678,8 +678,8 @@ public class BaseRMRestTest extends RestTest
      * @param expectedResults
      * @return
      */
-    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, Boolean includeFolders,
-                Boolean includeCategories, List<String> expectedResults)
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, boolean includeFolders,
+                boolean includeCategories, List<String> expectedResults)
     {
         List<String> results = new ArrayList<>();
         // wait for solr indexing

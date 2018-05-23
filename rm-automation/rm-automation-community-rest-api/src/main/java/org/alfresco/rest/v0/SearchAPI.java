@@ -135,28 +135,8 @@ public class SearchAPI extends BaseAPI
         String query, String sortby,
         boolean includeCategories, boolean includeFolders)
     {
-        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders), Boolean.toString(includeCategories));  
+        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders), Boolean.toString(includeCategories));
         return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
-    }
-
-    /**
-     * Search as a user for content on site "rm" matching query, using SearchAPI.RM_DEFAULT_NODES_FILTERS and sorted
-     * by sortby
-     * <br>
-     * If more fine-grained control of search parameters is required, use rmSearch() directly.
-     * @param username
-     * @param password
-     * @param query
-     * @param sortby
-     * @return list of record names
-     */
-    public List<String> searchForRmContentAsUser(
-        String username,
-        String password,
-        String query,
-        String sortby)
-    {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_NODES_FILTERS, sortby));
     }
 
     /**

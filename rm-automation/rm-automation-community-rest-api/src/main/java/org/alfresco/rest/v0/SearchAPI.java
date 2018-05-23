@@ -63,12 +63,9 @@ public class SearchAPI extends BaseAPI
     /** RM search URL template */
     private static final String RM_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/{1}?{2}";
 
-    /** RM document search filters */
-    private static final String RM_DEFAULT_RECORD_FILTERS =
-        "records/true,undeclared/true,vital/false,folders/false,categories/false,frozen/false,cutoff/false";
     /** RM all nodes search filters */
     private static final String RM_DEFAULT_NODES_FILTERS =
-        "records/true,undeclared/true,vital/false,folders/true,categories/true,frozen/false,cutoff/false";
+                "records/true,undeclared/true,vital/false,folders/{0},categories/{1},frozen/false,cutoff/false";
 
     /**
      * Perform search request on search endpoint as a user.
@@ -123,7 +120,7 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-     * Search as a user for records on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
+     * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
      * by sortby
      * <br>
      * If more fine-grained control of search parameters is required, use rmSearch() directly.
@@ -134,12 +131,12 @@ public class SearchAPI extends BaseAPI
      * @return list of record names
      */
     public List<String> searchForRecordsAsUser(
-        String username,
-        String password,
-        String query,
-        String sortby)
+        String username, String password,
+        String query, String sortby,
+        boolean includeCategories, boolean includeFolders)
     {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_RECORD_FILTERS, sortby));
+        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders), Boolean.toString(includeCategories));
+        return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
     }
 
     /**

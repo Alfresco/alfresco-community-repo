@@ -467,11 +467,17 @@
       <property name="permissionService" ref="PermissionService" />
       <property name="personService" ref="PersonService" />
       <property name="recordCategoryUtil" ref="RecordCategoryUtil" />
+      <property name="classificationReasonsUtil" ref="ClassificationReasonsUtil" />
    </bean>
 
    <bean id="RecordCategoryUtil" class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordCategoryUtil">
       <property name="nodeService" ref="NodeService"/>
    </bean>
+
+   <bean id="ClassificationReasonsUtil" class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil">
+      <property name="nodeService" ref="NodeService" />
+   </bean>
+
 
    <bean
       id="webscript.org.alfresco.slingshot.rmsearch.rmsearchproperties.get"

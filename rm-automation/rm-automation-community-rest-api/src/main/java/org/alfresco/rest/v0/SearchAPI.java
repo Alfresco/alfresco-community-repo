@@ -140,26 +140,6 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-     * Search as a user for content on site "rm" matching query, using SearchAPI.RM_DEFAULT_NODES_FILTERS and sorted
-     * by sortby
-     * <br>
-     * If more fine-grained control of search parameters is required, use rmSearch() directly.
-     * @param username
-     * @param password
-     * @param query
-     * @param sortby
-     * @return list of record names
-     */
-    public List<String> searchForRmContentAsUser(
-        String username,
-        String password,
-        String query,
-        String sortby)
-    {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_NODES_FILTERS, sortby));
-    }
-
-    /**
      * Generic faceted search.
      * @param username
      * @param password

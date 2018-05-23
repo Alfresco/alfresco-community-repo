@@ -395,8 +395,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
 
         // Authenticate as the admin user for dictionaryModelType
+        // "System" user should also be allowed to create models
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-    
 
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
@@ -457,6 +457,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @Test
     public void testCreateAndUpdateDictionaryModelNodeContent() throws Exception
     {
+        // just to make sure we don't regress ACE-5852, some tests should run as System
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         try
         {
             // Check that the model has not yet been loaded into the dictionary
@@ -607,6 +609,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @Test
     public void testUpdateDictionaryModelPropertyDelete() throws Exception
     {
+        // just to make sure we don't regress ACE-5852, some tests should run as System
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         try
         {
             // Check that the model has not yet been loaded into the dictionary
@@ -1100,8 +1104,10 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @Test
     public void testImportingSameNamespaceFails() throws Exception
     {
-        // Create model
+        // just to make sure we don't regress ACE-5852, some tests should run as System
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
+        // Create model
         final NodeRef modelNode = createActiveModel("dictionary/testModel.xml");
         TestTransaction.flagForCommit();
         TestTransaction.end();

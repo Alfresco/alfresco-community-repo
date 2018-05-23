@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -51,7 +50,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -59,8 +57,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -743,7 +739,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         
-        if (!isModelAdmin(userName))
+        if (!isUserNameAModelAdminAuthority(userName))
         {
             throw new InvalidTypeException(newType);
         }
@@ -754,20 +750,22 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     {
         String userName = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        if (!isModelAdmin(userName))
+        if (!isUserNameAModelAdminAuthority(userName))
         {
             throw new InvalidTypeException(nodeTypeQName);
         }
     }
-    
-    private boolean isModelAdmin(String userName)
+
+    private boolean isUserNameAModelAdminAuthority(String userName)
     {
         if (userName == null)
         {
             return false;
         }
+        // this also allows the AuthenticationUtil.SYSTEM_USER_NAME ("System") user
         return this.authorityService.isAdminAuthority(userName)
-                    || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY);
+               || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY)
+               || AuthenticationUtil.isRunAsUserTheSystemUser();
     }
         
 }

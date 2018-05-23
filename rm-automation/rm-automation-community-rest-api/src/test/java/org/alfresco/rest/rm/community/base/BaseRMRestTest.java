@@ -707,7 +707,7 @@ public class BaseRMRestTest extends RestTest
                 }
             }
             
-            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby);
+            results = searchApi.searchForRmContentAsUser(user.getUsername(), user.getPassword(), term, sortby);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;

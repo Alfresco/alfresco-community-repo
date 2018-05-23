@@ -238,7 +238,7 @@
          <value>Search</value>
       </property>
       <property name="sourceBeanName">
-         <value>buildonly</value>
+         <value>noindex</value>
       </property>
       <property name="instancePath">
          <list>

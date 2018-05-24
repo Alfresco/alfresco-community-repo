@@ -238,7 +238,7 @@
          <value>Search</value>
       </property>
       <property name="sourceBeanName">
-         <value>noindex</value>
+         <value>${index.subsystem.name}</value>
       </property>
       <property name="instancePath">
          <list>

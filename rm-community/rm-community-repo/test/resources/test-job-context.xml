@@ -12,7 +12,7 @@
                class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
             <property name="jobDetail" ref="scheduledDispositionLifecyceleJobDetail" />
             <!-- <value>0/30 * * * * ?</value> -->
-            <property name="cronExpression" value="0/30 * * * *?" />
+            <property name="cronExpression" value="0/30 * * * * ?" />
          </bean>
       </property>
    </bean>

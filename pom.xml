@@ -171,7 +171,8 @@
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
-      <alfresco.min.version>6.0.0</alfresco.min.version>
+      <alfresco.min.version>1.1.0</alfresco.min.version>
+      <dependency.jackson.version>2.9.5</dependency.jackson.version>
    </properties>
 
    <dependencyManagement>
@@ -189,6 +190,29 @@
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <version>4.12</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-core</artifactId>
+         <version>${dependency.jackson.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-annotations</artifactId>
+         <version>${dependency.jackson.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <version>${dependency.jackson.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>com.fasterxml.jackson.datatype</groupId>
+         <artifactId>jackson-datatype-joda</artifactId>
+         <version>${dependency.jackson.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

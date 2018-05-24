@@ -46,7 +46,7 @@ import java.util.*;
  *          <li><b>version: Object which contains version information:</b>
  *              <ul>
  *                  <li>full: String - The full version number. {@link Descriptor#getVersion()}</li>
- *                  <li>servicePack: String - The full version number. {@link Descriptor#getVersionNumber()}</li>
+ *                  <li>servicePack: String - The major and minor version, e.g. <u>1.2</u>.3</li>
  *                  <li>major: String - The major version number, e.g. <u>1</u>.2.3. {@link Descriptor#getVersionMajor()}</li>
  *                  <li>minor: String - The minor version number, e.g. 1.<u>2</u>.3. {@link Descriptor#getVersionMinor()}</li>
  *                  <li>patch: String - The version revision number, e.g. 1.2.<u>3</u>. {@link Descriptor#getVersionRevision()}</li>
@@ -113,7 +113,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         Map<String, Object> version = new HashMap<>();
         version.put("full", serverDescriptor.getVersion());
-        version.put("servicePack", serverDescriptor.getVersionNumber().toString());
+        version.put("servicePack", serverDescriptor.getVersionMajor() + "." + serverDescriptor.getVersionMinor());
         version.put("major", serverDescriptor.getVersionMajor());
         version.put("minor", serverDescriptor.getVersionMinor());
         version.put("patch", serverDescriptor.getVersionRevision());

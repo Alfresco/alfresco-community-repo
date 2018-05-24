@@ -114,7 +114,7 @@ public class InfoDataCollectorTest
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
         assertEquals("5.1.2 (.4)", version.get("full"));
-        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
         assertEquals("2", version.get("patch"));
@@ -137,7 +137,7 @@ public class InfoDataCollectorTest
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
         assertEquals("5.1.2 (4)", version.get("full"));
-        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
         assertEquals("2", version.get("patch"));
@@ -160,7 +160,7 @@ public class InfoDataCollectorTest
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
         assertEquals("5.1.2", version.get("full"));
-        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
         assertEquals("2", version.get("patch"));

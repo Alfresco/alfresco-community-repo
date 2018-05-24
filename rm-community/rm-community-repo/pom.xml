@@ -30,7 +30,7 @@
       <!-- 6.0 changes !-->
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
-      <dependency.alfresco-repository.version>6.49</dependency.alfresco-repository.version>
+      <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.31</dependency.alfresco-remote-api.version>
       <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>
       <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
@@ -339,24 +339,6 @@
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-data-model</artifactId>
          <version>${dependency.alfresco-data-model.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>com.fasterxml.jackson.core</groupId>
-         <artifactId>jackson-databind</artifactId>
-         <version>2.9.5</version>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.fasterxml.jackson.core</groupId>
-         <artifactId>jackson-annotations</artifactId>
-         <version>2.9.5</version>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.fasterxml.jackson.datatype</groupId>
-         <artifactId>jackson-datatype-joda</artifactId>
-         <version>2.9.5</version>
-         <scope>test</scope>
       </dependency>
 
       <dependency>

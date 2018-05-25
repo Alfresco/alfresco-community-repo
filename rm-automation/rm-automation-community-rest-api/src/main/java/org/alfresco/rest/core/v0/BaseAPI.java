@@ -122,6 +122,37 @@ public abstract class BaseAPI
     }
 
     /**
+     * Helper method to extract the property value for the given nodeRef and property name
+     * 
+     * @param result
+     * @param nodeRef
+     * @param propertyName
+     * @return
+     */
+    protected String getPropertyValue(JSONObject result, String nodeRef, String propertyName)
+    {
+        String propertValue = "";
+        try
+        {
+            JSONArray items = result.getJSONArray("items");
+            for (int i = 0; i < items.length(); i++)
+            {
+                JSONObject item = items.getJSONObject(i);
+                if(nodeRef.equals(item.getString("nodeRef")))
+                {
+                    propertValue = item.getJSONObject("properties").getString(propertyName);
+                }
+            }
+        }
+        catch (JSONException error)
+        {
+            throw new RuntimeException("Unable to parse result", error);
+        }
+
+        return propertValue;
+    }
+    
+    /**
      * Helper method to extract property values from request result and put them in map as a list that corresponds to a unique property value.
      *
      * @param requestResult the request response

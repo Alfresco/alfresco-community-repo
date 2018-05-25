@@ -681,13 +681,15 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Returns records search results for the given search term
-     *
+     * Returns the list of node names returned by search results for the given search term
+     * 
      * @param user
      * @param term
      * @param sortby
+     * @param includeFolders
+     * @param includeCategories
      * @param expectedResults
-     * @return
+     * @return List<String>
      */
     public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, boolean includeFolders,
                 boolean includeCategories, List<String> expectedResults)
@@ -708,8 +710,8 @@ public class BaseRMRestTest extends RestTest
                 {
                 }
             }
-            results = searchApi.searchForRecordsAsUser(user.getUsername(), user.getPassword(), term, sortby,
-                        includeFolders, includeCategories);
+                results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
+                            includeFolders, includeCategories);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;
@@ -722,6 +724,54 @@ public class BaseRMRestTest extends RestTest
             waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return results;
+    }
+
+    /**
+     * Returns the property value for the given property name and nodeRef of the search results
+     * 
+     * @param user
+     * @param term
+     * @param nodeRef
+     * @param propertyName
+     * @param sortby
+     * @param includeFolders
+     * @param includeCategories
+     * @param expectedResults
+     * @return String
+     */
+    public String searchForRMContentAsUser(UserModel user, String term, String nodeRef, String propertyName,
+                String sortby, boolean includeFolders, boolean includeCategories, String expectedResults)
+    {
+        String result = "";
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 6000;
+        while (counter < 3)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+            result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,
+                        propertyName, term, sortby, includeFolders, includeCategories);
+            if (!result.isEmpty() && result.contains(expectedResults))
+            {
+                break;
+            }
+            else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
+        }
+        return result;
     }
 
     /**

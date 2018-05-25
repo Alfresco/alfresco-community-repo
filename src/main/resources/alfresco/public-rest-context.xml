@@ -133,7 +133,7 @@
     </bean>
     <bean id="webScriptExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.WebScriptExceptionResolver">
     </bean>
-    <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
+    <bean id="simpleMappingExceptionResolverParent" abstract="true" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
         <property name="exceptionMappings">
             <map>
                 <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
@@ -172,6 +172,7 @@
             </map>
         </property>
     </bean>
+    <bean id="simpleMappingExceptionResolver" parent="simpleMappingExceptionResolverParent" />
     <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
         <property name="jsonHelper" ref="jsonHelper" />
         <property name="resolver" ref="simpleMappingExceptionResolver" />

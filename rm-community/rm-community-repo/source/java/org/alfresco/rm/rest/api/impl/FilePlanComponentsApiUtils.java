@@ -948,59 +948,6 @@ public class FilePlanComponentsApiUtils
         return allowableOperations;
     }
 
-    protected PathInfo lookupPathInfo(NodeRef nodeRefIn)
-    {
-        List<ElementInfo> pathElements = new ArrayList<>();
-        Boolean isComplete = Boolean.TRUE;
-        final Path nodePath = nodeService.getPath(nodeRefIn);;
-        final int pathIndex = 2;
-
-        for (int i = nodePath.size() - pathIndex; i >= 0; i--)
-        {
-            Element element = nodePath.get(i);
-            if (element instanceof Path.ChildAssocElement)
-            {
-                ChildAssociationRef elementRef = ((Path.ChildAssocElement) element).getRef();
-                if (elementRef.getParentRef() != null)
-                {
-                    NodeRef childNodeRef = elementRef.getChildRef();
-                    if (permissionService.hasPermission(childNodeRef, PermissionService.READ) == AccessStatus.ALLOWED)
-                    {
-                        Serializable nameProp = nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                        String type = nodeService.getType(childNodeRef).toPrefixString();
-                        Set < QName > aspects = nodeService.getAspects(childNodeRef);
-                        List < String > aspectNames = nodes.mapFromNodeAspects(aspects, Collections.emptyList(), Collections.emptyList());
-                        pathElements.add(0, new ElementInfo(childNodeRef.getId(), nameProp.toString(),type, aspectNames));
-                    }
-                    else
-                    {
-                        // Just return the pathInfo up to the location where the user has access
-                        isComplete = Boolean.FALSE;
-                        break;
-                    }
-                }
-            }
-        }
-
-        String pathStr = null;
-        if (!pathElements.isEmpty())
-        {
-            StringBuilder sb = new StringBuilder(120);
-            for (PathInfo.ElementInfo e : pathElements)
-            {
-                sb.append("/").append(e.getName());
-            }
-            pathStr = sb.toString();
-        }
-        else
-        {
-            // There is no path element, so set it to null in order to be
-            // ignored by Jackson during serialisation
-            isComplete = null;
-        }
-        return new PathInfo(pathStr, isComplete, pathElements);
-    }
-
     /**
      * Helper method to obtain file plan type or null if the rm site does not exist.
      *

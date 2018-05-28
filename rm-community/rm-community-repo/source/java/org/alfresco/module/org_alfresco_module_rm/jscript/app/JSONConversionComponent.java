@@ -29,7 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
 import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_RS_DISPOSITION_EVENTS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 
 import java.util.ArrayList;
@@ -485,6 +485,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     HashMap properties = ((HashMap) rmNodeValues.get("properties"));
                     properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
                     properties.put("incompleteDispositionEvent", details.getEventName());
+                    properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
                     break;
                 }
             }

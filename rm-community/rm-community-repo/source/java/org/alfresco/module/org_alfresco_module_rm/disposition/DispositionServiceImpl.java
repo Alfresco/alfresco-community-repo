@@ -814,28 +814,43 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
-        NodeRef nextDa = getNextDispositionActionNodeRef(nodeRef);
+        NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
+        DispositionAction nextDa = getNextDispositionAction(nodeRef);
         if (di != null &&
             this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
             nextDa != null)
         {
+            Boolean combineSteps = null;
+            if (nextDa.getName().equals("accession"))
+            {
+                combineSteps = (Boolean)nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+            }
+
             // If it has an asOf date and it is greater than now the action is eligible
-            Date asOf = (Date)this.nodeService.getProperty(nextDa, PROP_DISPOSITION_AS_OF);
+            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
             if (asOf != null &&
                 asOf.before(new Date()))
             {
                 result = true;
+                if (combineSteps == null || !combineSteps)
+                {
+                    return true;
+                }
+            }
+            else if(combineSteps != null && combineSteps)
+            {
+                return false;
             }
 
-            if (!result)
+            if (!result || (result && combineSteps))
             {
-                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
+                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
                 DispositionActionDefinition dad = da.getDispositionActionDefinition();
                 if (dad != null)
                 {
                     boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
 
-                    List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                    List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
                     for (ChildAssociationRef assoc : assocs)
                     {
                         NodeRef eventExecution = assoc.getChildRef();

@@ -814,7 +814,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
-        NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
         DispositionAction nextDa = getNextDispositionAction(nodeRef);
         if (di != null &&
             this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
@@ -823,6 +822,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             Boolean combineSteps = null;
             if (nextDa.getName().equals("accession"))
             {
+                NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
                 combineSteps = (Boolean)nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
             }
 

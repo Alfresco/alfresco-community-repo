@@ -80,7 +80,7 @@
         <dependency.jackson.version>2.9.5</dependency.jackson.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>6.0.a</alfresco.share.version>
+        <alfresco.share.version>6.0.0-rc2</alfresco.share.version>
         <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->

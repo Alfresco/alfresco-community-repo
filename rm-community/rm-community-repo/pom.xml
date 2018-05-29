@@ -30,7 +30,7 @@
 
       <!-- 6.0 changes !-->
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
-      <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
+      <dependency.alfresco-data-model.version>8.7</dependency.alfresco-data-model.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.31</dependency.alfresco-remote-api.version>
       <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>

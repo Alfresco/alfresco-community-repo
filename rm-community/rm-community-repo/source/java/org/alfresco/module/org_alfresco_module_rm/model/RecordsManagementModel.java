@@ -240,7 +240,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_DISPOSITION_ACTION_AS_OF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
     QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
     QName PROP_RS_DISPOSITION_EVENTS = QName.createQName(RM_URI, "recordSearchDispositionEvents");
-    QName PROP_DISPOSITION_EVENTS = QName.createQName(RM_URI, "dispositionEvents");
     QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
     QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
     QName PROP_RS_DISPOSITION_PERIOD = QName.createQName(RM_URI, "recordSearchDispositionPeriod");
@@ -248,6 +247,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
     QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT = QName.createQName(RM_URI, "declassificationReviewCompletedAt");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY = QName.createQName(RM_URI, "declassificationReviewCompletedBy");
     /** @depreacted as of 2.2, because disposable items can now be in multiple holds */
     @Deprecated
     QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");

@@ -662,7 +662,7 @@ public abstract class BaseAPI
         RETENTION_GHOST,
         RETENTION_ELIGIBLE_FIRST_EVENT,
         RETENTION_EVENTS,
-
+        COMBINE_DISPOSITION_STEP_CONDITIONS
     }
 
     /**
@@ -674,6 +674,8 @@ public abstract class BaseAPI
         CUT_OFF("cutoff"),
         UNDO_CUT_OFF("undoCutoff"),
         TRANSFER("transfer"),
+        COMPLETE_EVENT("completeEvent"),
+        UNDO_EVENT("undoEvent"),
         DESTROY("destroy");
         String action;
 

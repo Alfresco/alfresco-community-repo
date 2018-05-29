@@ -11,14 +11,14 @@
 		* Easy Access Records
 		* Physical Records
 		* Record Import and Export
-		* Version Records
+		* [Version Records](./versionRecords)
 	* Retention
 		* [Destruction](./destruction)
 		* Retention Schedules and Events
 		* Transfer and Accession
 * Security
-	* [Extended permission service](extendedPermissionService.md)
-	* Roles, Capabilities and Permissions
+	* [Extended permission service](security/extendedPermissionService.md)
+	* [Roles and Capabilities](security/rolesAndCapabilities.md)
 * Discovery
 	* Governance Search
 	* Legal Holds
@@ -27,3 +27,5 @@
 	* Governance Rules
 * Core Module Services
 	* [RM Patch Service](./PatchService.md)
+* Build and Release
+    * [Build](./build)

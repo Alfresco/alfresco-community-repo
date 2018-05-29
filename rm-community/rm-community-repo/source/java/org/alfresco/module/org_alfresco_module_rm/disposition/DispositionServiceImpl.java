@@ -811,7 +811,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
         boolean result = false;
-
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
         DispositionAction nextDa = getNextDispositionAction(nodeRef);
@@ -819,70 +818,69 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
             nextDa != null)
         {
-            Boolean combineSteps = null;
+            // for accession step we can have also AND between step conditions
+            Boolean combineSteps = false;
             if (nextDa.getName().equals("accession"))
             {
                 NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
-                combineSteps = (Boolean)nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
-            }
-
-            // If it has an asOf date and it is greater than now the action is eligible
-            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
-            if (asOf != null &&
-                asOf.before(new Date()))
-            {
-                result = true;
-                if (combineSteps == null || !combineSteps)
-                {
-                    return true;
+                if (accessionNodeRef != null) {
+                    if (this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+                    {
+                        combineSteps = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                    }
                 }
             }
-            else if(combineSteps != null && combineSteps)
+            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
+            Boolean asOfDateInPast = false;
+            if (asOf != null)
+            {
+                asOfDateInPast = ((Date) this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF)).before(new Date());
+            }
+            if (asOfDateInPast && !combineSteps)
+            {
+                return true;
+            }
+            else if(!asOfDateInPast && combineSteps)
             {
                 return false;
             }
-
-            if (!result || (result && combineSteps))
+            DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
+            DispositionActionDefinition dad = da.getDispositionActionDefinition();
+            if (dad != null)
             {
-                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
-                DispositionActionDefinition dad = da.getDispositionActionDefinition();
-                if (dad != null)
+                boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
+
+                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
                 {
-                    boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
-
-                    List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : assocs)
+                    NodeRef eventExecution = assoc.getChildRef();
+                    Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                    boolean isComplete = false;
+                    if (isCompleteValue != null)
                     {
-                        NodeRef eventExecution = assoc.getChildRef();
-                        Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                        boolean isComplete = false;
-                        if (isCompleteValue != null)
-                        {
-                            isComplete = isCompleteValue.booleanValue();
+                        isComplete = isCompleteValue.booleanValue();
 
-                            // implement AND and OR combination of event completions
-                            if (isComplete)
+                        // implement AND and OR combination of event completions
+                        if (isComplete)
+                        {
+                            result = true;
+                            if (firstComplete)
                             {
-                                result = true;
-                                if (firstComplete)
-                                {
-                                    break;
-                                }
+                                break;
                             }
-                            else
+                        }
+                        else
+                        {
+                            result = false;
+                            if (!firstComplete)
                             {
-                                result = false;
-                                if (!firstComplete)
-                                {
-                                    break;
-                                }
+                                break;
                             }
                         }
                     }
                 }
             }
         }
-
         return result;
     }
 

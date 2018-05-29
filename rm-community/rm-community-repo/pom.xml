@@ -13,6 +13,7 @@
    </parent>
 
    <properties>
+
       <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
       <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
       <alfresco.db.name>alfresco</alfresco.db.name>
@@ -21,7 +22,7 @@
       <alfresco.db.host>localhost</alfresco.db.host>
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-      <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
+      <alfresco.mysql.version>5.1.40</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
@@ -32,29 +33,14 @@
       <dependency.alfresco-data-model.version>8.5</dependency.alfresco-data-model.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.31</dependency.alfresco-remote-api.version>
-      <dependency.alfresco-hb-data-sender.version>1.0.8</dependency.alfresco-hb-data-sender.version>
-      <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
-      <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-      <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
-      <dependency.alfresco-jlan.version>7.0</dependency.alfresco-jlan.version>
-      <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
-      <dependency.alfresco-messaging-repo.version>1.2.8</dependency.alfresco-messaging-repo.version>
-      <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
-      <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
+      <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
       <!--  Alfresco Share version  -->
       <alfresco.share.version>6.0.a</alfresco.share.version>
       <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
-      <!--  Alfresco GoogleDocs integration version  -->
-      <alfresco.googledocs.version>3.1.0-RC1</alfresco.googledocs.version>
-      <!--  Alfresco Office Services Module  -->
-      <alfresco.aos-module.version>1.2.0-RC2</alfresco.aos-module.version>
       <!--
        Deprecated SOLR4 app, still packaged for downward compatibility
       -->
       <alfresco.solr4.version>6.7</alfresco.solr4.version>
-      <installer.version.name>${project.version}</installer.version.name>
-      <alfresco.package.name>alfresco-community</alfresco.package.name>
-      <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
       <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
       <dependency.mysql.version>5.1.40</dependency.mysql.version>
    </properties>
@@ -327,91 +313,28 @@
    </build>
 
    <dependencies>
-      <!-- changes for 3.0
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>acs-community-packaging</artifactId>
-         <version>6.0.5-ea</version>
-         <scope>provided</scope>
-      </dependency>
-!-->
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-data-model</artifactId>
-         <version>${dependency.alfresco-data-model.version}</version>
-      </dependency>
-
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-aop</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-beans</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-context</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-context-support</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-core</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-expression</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-jdbc</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-jms</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-orm</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-tx</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-web</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-webmvc</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
          <version>${dependency.alfresco-remote-api.version}</version>
          <scope>provided</scope>
       </dependency>
-
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-data-model</artifactId>
+         <version>${dependency.alfresco-data-model.version}</version>
+      </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.surf</groupId>
+         <artifactId>spring-webscripts</artifactId>
+         <version>${dependency.alfresco-spring-webscripts.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>io.takari.junit</groupId>
@@ -422,25 +345,6 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco.surf</groupId>
-         <artifactId>spring-webscripts</artifactId>
-         <version>6.13</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <version>1.10.19</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-test</artifactId>
-         <version>5.0.4.RELEASE</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -482,21 +386,6 @@
          <version>${dependency.mysql.version}</version>
          <scope>test</scope>
       </dependency>
-      <!--
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>h2scripts</classifier>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
-         <scope>test</scope>
-      </dependency>
-      -->
       <dependency>
           <groupId>org.reflections</groupId>
           <artifactId>reflections</artifactId>

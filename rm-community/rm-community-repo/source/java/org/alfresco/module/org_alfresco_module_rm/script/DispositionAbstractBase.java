@@ -51,6 +51,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class DispositionAbstractBase extends AbstractRmWebScript
 {
+
+    public final static String COMBINE_DISPOSITION_STEP_CONDITIONS =  "combineDispositionStepConditions";
     /**
      * Parses the request and providing it's valid returns the DispositionSchedule object.
      *

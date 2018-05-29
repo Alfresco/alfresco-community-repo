@@ -131,7 +131,7 @@ public abstract class BaseAPI
      */
     protected String getPropertyValue(JSONObject result, String nodeRef, String propertyName)
     {
-        String propertValue = "";
+        String propertyValue = "";
         try
         {
             JSONArray items = result.getJSONArray("items");
@@ -140,7 +140,7 @@ public abstract class BaseAPI
                 JSONObject item = items.getJSONObject(i);
                 if(nodeRef.equals(item.getString("nodeRef")))
                 {
-                    propertValue = item.getJSONObject("properties").getString(propertyName);
+                    propertyValue = item.getJSONObject("properties").getString(propertyName);
                 }
             }
         }
@@ -149,7 +149,7 @@ public abstract class BaseAPI
             throw new RuntimeException("Unable to parse result", error);
         }
 
-        return propertValue;
+        return propertyValue;
     }
     
     /**

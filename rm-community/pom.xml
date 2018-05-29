@@ -44,10 +44,8 @@
 
    <properties>
       <alfresco.version>6.0.5-ea</alfresco.version>
-
       <share.version>6.0.a</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->
       <app.filtering.enabled>true</app.filtering.enabled>
-
    </properties>
 </project>

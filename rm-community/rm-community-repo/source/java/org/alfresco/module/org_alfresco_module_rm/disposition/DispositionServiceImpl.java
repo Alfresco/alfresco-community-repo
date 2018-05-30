@@ -824,9 +824,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             {
                 NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
                 if (accessionNodeRef != null) {
-                    if (this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+                    Boolean combineStepsProp = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                    if (combineStepsProp != null)
                     {
-                        combineSteps = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                        combineSteps = combineStepsProp;
                     }
                 }
             }
@@ -834,7 +835,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             Boolean asOfDateInPast = false;
             if (asOf != null)
             {
-                asOfDateInPast = ((Date) this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF)).before(new Date());
+                asOfDateInPast = asOf.before(new Date());
             }
             if (asOfDateInPast && !combineSteps)
             {

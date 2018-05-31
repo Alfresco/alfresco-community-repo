@@ -124,7 +124,6 @@
                   class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
                <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
                <property name="cronExpression">
-                  <!-- <value>0 30 3 * * ?</value> -->
                   <value>0 30 3 * * ?</value>
                </property>
             </bean>
@@ -232,7 +231,7 @@
     
    <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
       <property name="autoStart">
-         <value>false</value>
+         <value>start</value>
       </property>
       <property name="category">
          <value>Search</value>

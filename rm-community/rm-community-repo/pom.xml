@@ -22,13 +22,12 @@
       <alfresco.db.host>localhost</alfresco.db.host>
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-      <alfresco.mysql.version>5.1.40</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
-      <api.explorer.version>6.0.4-ea</api.explorer.version>
 
       <!-- 6.0 changes !-->
+      <api.explorer.version>6.0.4-ea</api.explorer.version>
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-data-model.version>8.7</dependency.alfresco-data-model.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
@@ -41,8 +40,6 @@
        Deprecated SOLR4 app, still packaged for downward compatibility
       -->
       <alfresco.solr4.version>6.7</alfresco.solr4.version>
-      <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
-      <dependency.mysql.version>5.1.40</dependency.mysql.version>
    </properties>
 
    <build>
@@ -192,7 +189,6 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>${alfresco.groupId}</groupId>
-                           <!--<artifactId>${app.amp.client.war.artifactId}</artifactId> -->
                            <artifactId>content-services-community</artifactId>
                            <type>war</type>
                            <version>${alfresco.version}</version>
@@ -489,16 +485,6 @@
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
-         <artifactId>spring-web</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-webmvc</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
          <artifactId>spring-test</artifactId>
          <version>${dependency.spring.version}</version>
          <scope>test</scope>
@@ -549,12 +535,9 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>${alfresco.groupId}</groupId>
-                                 <!--<artifactId>${alfresco.repo.artifactId}</artifactId>-->
                                  <artifactId>content-services-community</artifactId>
                                  <type>war</type>
-                                 <!--<version>${alfresco.version}</version>-->
-                                 <!--<version>6.0.0-RC4</version>-->
-                                 <version>6.0.5-ea</version>
+                                 <version>${alfresco.version}</version>
                               </artifactItem>
                            </artifactItems>
                         </configuration>
@@ -722,22 +705,8 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
-                     <!--
-                     <dependency>
-                        <groupId>${alfresco.groupId}</groupId>
-                        <artifactId>alfresco-repository</artifactId>
-                        <version>${alfresco.version}</version>
-                        <classifier>h2scripts</classifier>
-                        <exclusions>
-                           <exclusion>
-                              <groupId>*</groupId>
-                              <artifactId>*</artifactId>
-                           </exclusion>
-                        </exclusions>
-                     </dependency>
-                     -->
                   </dependencies>
                </plugin>
             </plugins>
@@ -767,7 +736,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>

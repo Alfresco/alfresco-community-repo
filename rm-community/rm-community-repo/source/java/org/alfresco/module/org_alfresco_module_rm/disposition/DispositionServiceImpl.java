@@ -811,63 +811,77 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
         boolean result = false;
-
         // Get the disposition instructions
         DispositionSchedule di = getDispositionSchedule(nodeRef);
-        NodeRef nextDa = getNextDispositionActionNodeRef(nodeRef);
+        DispositionAction nextDa = getNextDispositionAction(nodeRef);
         if (di != null &&
             this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
             nextDa != null)
         {
-            // If it has an asOf date and it is greater than now the action is eligible
-            Date asOf = (Date)this.nodeService.getProperty(nextDa, PROP_DISPOSITION_AS_OF);
-            if (asOf != null &&
-                asOf.before(new Date()))
+            // for accession step we can have also AND between step conditions
+            Boolean combineSteps = false;
+            if (nextDa.getName().equals("accession"))
             {
-                result = true;
-            }
-
-            if (!result)
-            {
-                DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa);
-                DispositionActionDefinition dad = da.getDispositionActionDefinition();
-                if (dad != null)
-                {
-                    boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
-
-                    List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa, ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : assocs)
+                NodeRef accessionNodeRef = di.getDispositionActionDefinitionByName("accession").getNodeRef();
+                if (accessionNodeRef != null) {
+                    Boolean combineStepsProp = (Boolean)this.nodeService.getProperty(accessionNodeRef, PROP_COMBINE_DISPOSITION_STEP_CONDITIONS);
+                    if (combineStepsProp != null)
                     {
-                        NodeRef eventExecution = assoc.getChildRef();
-                        Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                        boolean isComplete = false;
-                        if (isCompleteValue != null)
-                        {
-                            isComplete = isCompleteValue.booleanValue();
+                        combineSteps = combineStepsProp;
+                    }
+                }
+            }
+            Date asOf = (Date)this.nodeService.getProperty(nextDa.getNodeRef(), PROP_DISPOSITION_AS_OF);
+            Boolean asOfDateInPast = false;
+            if (asOf != null)
+            {
+                asOfDateInPast = asOf.before(new Date());
+            }
+            if (asOfDateInPast && !combineSteps)
+            {
+                return true;
+            }
+            else if(!asOfDateInPast && combineSteps)
+            {
+                return false;
+            }
+            DispositionAction da = new DispositionActionImpl(serviceRegistry, nextDa.getNodeRef());
+            DispositionActionDefinition dad = da.getDispositionActionDefinition();
+            if (dad != null)
+            {
+                boolean firstComplete = dad.eligibleOnFirstCompleteEvent();
 
-                            // implement AND and OR combination of event completions
-                            if (isComplete)
+                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nextDa.getNodeRef(), ASSOC_EVENT_EXECUTIONS, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
+                {
+                    NodeRef eventExecution = assoc.getChildRef();
+                    Boolean isCompleteValue = (Boolean)this.nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
+                    boolean isComplete = false;
+                    if (isCompleteValue != null)
+                    {
+                        isComplete = isCompleteValue.booleanValue();
+
+                        // implement AND and OR combination of event completions
+                        if (isComplete)
+                        {
+                            result = true;
+                            if (firstComplete)
                             {
-                                result = true;
-                                if (firstComplete)
-                                {
-                                    break;
-                                }
+                                break;
                             }
-                            else
+                        }
+                        else
+                        {
+                            result = false;
+                            if (!firstComplete)
                             {
-                                result = false;
-                                if (!firstComplete)
-                                {
-                                    break;
-                                }
+                                break;
                             }
                         }
                     }
                 }
             }
         }
-
         return result;
     }
 

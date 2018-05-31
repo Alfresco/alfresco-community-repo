@@ -141,7 +141,6 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-
      * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
      * by sortby and returns the property value for the given nodeRef and property name
      * 
@@ -162,7 +161,6 @@ public class SearchAPI extends BaseAPI
     }
     
     /**
-
      * Generic faceted search.
      * @param username
      * @param password

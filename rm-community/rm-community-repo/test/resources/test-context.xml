@@ -231,7 +231,7 @@
     
    <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
       <property name="autoStart">
-         <value>start</value>
+         <value>false</value>
       </property>
       <property name="category">
          <value>Search</value>

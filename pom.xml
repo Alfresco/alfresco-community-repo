@@ -171,10 +171,11 @@
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
-      <alfresco.min.version>6.0.0</alfresco.min.version>
       <dependency.jackson.version>2.9.5</dependency.jackson.version>
       <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
       <dependency.mockito.version>1.10.19</dependency.mockito.version>
+      <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
+      <dependency.mysql.version>5.1.40</dependency.mysql.version>
    </properties>
 
    <dependencyManagement>
@@ -231,7 +232,7 @@
                      <regexPropertySettings>
                         <regexPropertySetting>
                            <name>rm.module.repo.version.min</name>
-                           <value>${alfresco.min.version}</value>
+                           <value>${alfresco.version}</value>
                             <regex>(\d+)\.(\d+).*</regex>
                             <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>

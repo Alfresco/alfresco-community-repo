@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,6 +62,7 @@ public class TransferContainer
     {
     }
 
+    @JsonProperty ("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

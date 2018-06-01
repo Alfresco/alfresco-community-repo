@@ -28,10 +28,8 @@
 
       <!-- 6.0 changes !-->
       <api.explorer.version>6.0.4-ea</api.explorer.version>
-      <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
-      <dependency.alfresco-data-model.version>8.7</dependency.alfresco-data-model.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>6.31</dependency.alfresco-remote-api.version>
+      <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
       <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
       <!--  Alfresco Share version  -->
       <alfresco.share.version>6.0.a</alfresco.share.version>
@@ -316,9 +314,24 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-data-model</artifactId>
-         <version>${dependency.alfresco-data-model.version}</version>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-remote-api</artifactId>
+         <version>${dependency.alfresco-remote-api.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
@@ -341,33 +354,6 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-core</artifactId>
-         <version>${dependency.alfresco-core.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-core</artifactId>
-         <version>${dependency.alfresco-core.version}</version>
-         <scope>provided</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${dependency.alfresco-repository.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-         <version>${dependency.alfresco-remote-api.version}</version>
-         <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -412,76 +398,31 @@
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
          <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
          <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
          <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-joda</artifactId>
          <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.dataformat</groupId>
          <artifactId>jackson-dataformat-yaml</artifactId>
          <version>${dependency.jackson.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-aop</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-beans</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-context</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-context-support</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-core</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-expression</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-jdbc</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-jms</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-orm</artifactId>
-         <version>${dependency.spring.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-tx</artifactId>
-         <version>${dependency.spring.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>

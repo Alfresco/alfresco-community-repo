@@ -28,6 +28,7 @@
 
       <!-- 6.0 changes !-->
       <api.explorer.version>6.0.4-ea</api.explorer.version>
+      <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
       <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
@@ -330,6 +331,13 @@
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
          <version>${dependency.alfresco-remote-api.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-core</artifactId>
+         <version>${dependency.alfresco-core.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>

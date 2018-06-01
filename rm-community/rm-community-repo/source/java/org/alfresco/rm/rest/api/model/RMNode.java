@@ -31,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
@@ -103,6 +105,7 @@ public abstract class RMNode
 
     }
 
+    @JsonProperty ("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

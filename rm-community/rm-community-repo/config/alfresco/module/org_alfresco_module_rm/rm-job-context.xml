@@ -1,9 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/util
+          http://www.springframework.org/schema/util/spring-util.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context.xsd">
 
-<beans>
-
-	<bean id="baseRMJobExecuter" abstract="true">
+   <bean id="baseRMJobExecuter" abstract="true">
 		<property name="repositoryState" ref="repositoryState" />
         <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
 	</bean>
@@ -13,19 +19,26 @@
     <!-- Notify Of Records Due For Review Job
     Sends out emails of records due for review
     -->
-   <bean id="scheduledNotifyOfRecordsDueForReviewJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-      <property name="jobClass">
-         <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
+   <bean id="scheduledNotifyOfRecordsDueForReviewSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers" >
+         <list>
+            <bean id="scheduledNotifyOfRecordsDueForReviewJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref="scheduledNotifyOfRecordsDueForReviewJobDetail" />
+               <property name="cronExpression" value="${rm.notifyOfRecordsDueForReview.cronExpression}"/>
+            </bean>
+         </list>
       </property>
+   </bean>
+
+   <bean id="scheduledNotifyOfRecordsDueForReviewJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value ="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob" />
+
       <property name="jobDataAsMap">
          <map>
             <entry key="jobName" value="scheduledNotifyOfRecordsDueForReview"/>
-            <entry key="jobLockService">
-               <ref bean="jobLockService" />
-            </entry>
-            <entry key="jobExecuter">
-               <ref bean="scheduledNotifyOfRecordsDueForReviewJobExecuter" />
-            </entry>
+            <entry key="jobLockService" value-ref="jobLockService" />
+            <entry key="jobExecuter" value-ref="scheduledNotifyOfRecordsDueForReviewJobExecuter" />
          </map>
       </property>
    </bean>
@@ -38,35 +51,15 @@
       <property name="recordsManagementNotificationHelper" ref="recordsManagementNotificationHelper" />
    </bean>
 
-   <bean id="scheduledNotifyOfRecordsDueForReviewJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <ref bean="scheduledNotifyOfRecordsDueForReviewJobDetail" />
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <property name="cronExpression">
-         <!-- <value>0 30 2 * * ?</value> -->
-         <value>${rm.notifyOfRecordsDueForReview.cronExpression}</value>
-      </property>
-   </bean>
-
 	<!-- Disposition Lifecycle Job -->
-	<bean id="scheduledDispositionLifecyceleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-
-		<property name="jobClass">
-			<value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
-		</property>
+	<bean id="scheduledDispositionLifecyceleJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob"/>
 		<property name="jobDataAsMap">
 			<map>
 				<entry key="jobName" value="dispositionLifecycle" />
 				<entry key="runAuditAs" value="${audit.rm.runas}" />
-				<entry key="jobLockService">
-					<ref bean="jobLockService" />
-				</entry>
-				<entry key="jobExecuter">
-					<ref bean="dispositionLifecycleJobExecuter" />
-				</entry>
+				<entry key="jobLockService" value-ref="jobLockService" />
+				<entry key="jobExecuter" value-ref="dispositionLifecycleJobExecuter" />
  			</map>
 		</property>
 	</bean>
@@ -89,45 +82,42 @@
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
 
-   <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <ref bean="scheduledDispositionLifecyceleJobDetail" />
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <property name="cronExpression">
-
-         <!-- run at 3am -->
-         <!-- <value>0 30 3 * * ?</value> -->
-         <!-- <value>0/30 * * * * ?</value> -->
-         <value>${rm.dispositionlifecycletrigger.cronexpression}</value>
-      </property>
+   <bean id="scheduledDispositionLifecyceleSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref ="scheduledDispositionLifecyceleJobDetail" />
+               <!-- run at 3am -->
+               <!-- <value>0 30 3 * * ?</value> -->
+               <!-- <value>0/30 * * * * ?</value> -->
+               <property name="cronExpression" value="${rm.dispositionlifecycletrigger.cronexpression}"/>
+         </bean>
+      </property >
    </bean>
 
-	<bean id="scheduledPublishUpdatesJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-      <property name="jobClass">
-         <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
-      </property>
+   <bean id="scheduledPublishUpdatesJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+      <property name="jobClass" value="org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob" />
       <property name="jobDataAsMap">
          <map>
-            <entry key="jobName" value="publishUpdates"/>
-            <entry key="jobLockService">
-               <ref bean="jobLockService" />
-            </entry>
-            <entry key="jobExecuter">
-               <ref bean="publishUpdatesJobExecuter" />
-            </entry>
+            <entry key="jobName" value="publishUpdates" />
+            <entry key="jobLockService" value-ref="jobLockService" />
+            <entry key="jobExecuter" value-ref="publishUpdatesJobExecuter" />
          </map>
       </property>
    </bean>
 
-   <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
+   <bean id="scheduledPublishUpdatesSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
       <property name="scheduler" ref="schedulerFactory" />
-      <property name="cronExpression">
-         <!-- <value>0 30 3 * * ?</value> -->
-         <value>0/30 * * * * ?</value>
+      <property name="triggers">
+         <list>
+            <bean id="scheduledPublishUpdatesJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                     <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
+                     <property name="cronExpression">
+                        <!-- <value>0 30 3 * * ?</value> -->
+                        <value>0/30 * * * * ?</value>
+                     </property>
+            </bean>
+         </list>
       </property>
    </bean>
 

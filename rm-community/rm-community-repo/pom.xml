@@ -13,19 +13,32 @@
    </parent>
 
    <properties>
+
       <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
-      <alfresco.db.hibernate.dialect>org.hibernate.dialect.H2Dialect</alfresco.db.hibernate.dialect>
+      <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
       <alfresco.db.name>alfresco</alfresco.db.name>
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.db.password>alfresco</alfresco.db.password>
       <alfresco.db.host>localhost</alfresco.db.host>
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-      <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
-      <api.explorer.version>1.4</api.explorer.version>
+
+      <!-- 6.0 changes !-->
+      <api.explorer.version>6.0.4-ea</api.explorer.version>
+      <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
+      <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
+      <!--  Alfresco Share version  -->
+      <alfresco.share.version>6.0.a</alfresco.share.version>
+      <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
+      <!--
+       Deprecated SOLR4 app, still packaged for downward compatibility
+      -->
+      <alfresco.solr4.version>6.7</alfresco.solr4.version>
    </properties>
 
    <build>
@@ -157,7 +170,7 @@
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
                            <artifactId>alfresco-share-services</artifactId>
-                           <version>${share.version}</version>
+                           <version>${alfresco.alfresco-share-services.version}</version>
                            <type>amp</type>
                         </artifactItem>
                      </artifactItems>
@@ -175,7 +188,7 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>${alfresco.groupId}</groupId>
-                           <artifactId>${app.amp.client.war.artifactId}</artifactId>
+                           <artifactId>content-services-community</artifactId>
                            <type>war</type>
                            <version>${alfresco.version}</version>
                         </artifactItem>
@@ -214,7 +227,7 @@
                   <phase>prepare-package</phase>
                   <configuration>
                      <backup>true</backup>
-                     <ampLocation>${project.build.directory}/alfresco-share-services-${share.version}.amp</ampLocation>
+                     <ampLocation>${project.build.directory}/alfresco-share-services-${alfresco.alfresco-share-services.version}.amp</ampLocation>
                      <warLocation>${app.amp.client.war.folder}</warLocation>
                   </configuration>
                </execution>
@@ -298,13 +311,47 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.version}</version>
+         <version>${dependency.alfresco-remote-api.version}</version>
          <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-remote-api</artifactId>
+         <version>${dependency.alfresco-remote-api.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-core</artifactId>
+         <version>${dependency.alfresco-core.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.surf</groupId>
+         <artifactId>spring-webscripts</artifactId>
+         <version>${dependency.alfresco-spring-webscripts.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>io.takari.junit</groupId>
@@ -318,37 +365,6 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.alfresco.surf</groupId>
-         <artifactId>spring-webscripts</artifactId>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-test</artifactId>
-         <version>2.5</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
          <version>${alfresco.postgres.version}</version>
@@ -357,19 +373,7 @@
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>h2scripts</classifier>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
+         <version>${dependency.mysql.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -382,14 +386,56 @@
       <dependency>
          <groupId>io.swagger</groupId>
          <artifactId>swagger-parser</artifactId>
-         <version>1.0.23</version>
+         <version>1.0.35</version>
          <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
-      <dependency>
+     <dependency>
          <groupId>com.github.fge</groupId>
          <artifactId>json-schema-validator</artifactId>
          <version>2.2.6</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <version>${dependency.mockito.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-core</artifactId>
+         <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-annotations</artifactId>
+         <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.datatype</groupId>
+         <artifactId>jackson-datatype-joda</artifactId>
+         <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.dataformat</groupId>
+         <artifactId>jackson-dataformat-yaml</artifactId>
+         <version>${dependency.jackson.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-test</artifactId>
+         <version>${dependency.spring.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
@@ -400,7 +446,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.master.url>
             <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
@@ -412,7 +458,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.repo.alfresco..dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
@@ -438,7 +484,7 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>${alfresco.groupId}</groupId>
-                                 <artifactId>${alfresco.repo.artifactId}</artifactId>
+                                 <artifactId>content-services-community</artifactId>
                                  <type>war</type>
                                  <version>${alfresco.version}</version>
                               </artifactItem>
@@ -458,7 +504,7 @@
                                  <artifactId>alfresco-solr4</artifactId>
                                  <groupId>${alfresco.groupId}</groupId>
                                  <classifier>config</classifier>
-                                 <version>${alfresco.version}</version>
+                                 <version>${alfresco.solr4.version}</version>
                                  <type>zip</type>
                               </artifactItem>
                            </artifactItems>
@@ -573,7 +619,7 @@
                               <webapp>
                                  <groupId>${alfresco.groupId}</groupId>
                                  <artifactId>alfresco-solr4</artifactId>
-                                 <version>${alfresco.version}</version>
+                                 <version>${alfresco.solr4.version}</version>
                                  <type>war</type>
                                  <asWebapp>true</asWebapp>
                                  <contextPath>/solr4</contextPath>
@@ -608,19 +654,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
-                     </dependency>
-                     <dependency>
-                        <groupId>${alfresco.groupId}</groupId>
-                        <artifactId>alfresco-repository</artifactId>
-                        <version>${alfresco.version}</version>
-                        <classifier>h2scripts</classifier>
-                        <exclusions>
-                           <exclusion>
-                              <groupId>*</groupId>
-                              <artifactId>*</artifactId>
-                           </exclusion>
-                        </exclusions>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
                   </dependencies>
                </plugin>
@@ -651,7 +685,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
+                        <version>${dependency.mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>

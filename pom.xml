@@ -163,19 +163,23 @@
 
    <properties>
       <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
+
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
+
+      <jackson.version>2.9.5</jackson.version>
+      <spring.version>5.0.4.RELEASE</spring.version>
+      <mockito.version>1.10.19</mockito.version>
+      <postgresql.version>42.2.1</postgresql.version>
+      <mysql.version>5.1.40</mysql.version>
+
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
-      <dependency.jackson.version>2.9.5</dependency.jackson.version>
-      <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
-      <dependency.mockito.version>1.10.19</dependency.mockito.version>
-      <dependency.postgresql.version>42.2.1</dependency.postgresql.version>
-      <dependency.mysql.version>5.1.40</dependency.mysql.version>
    </properties>
 
    <dependencyManagement>

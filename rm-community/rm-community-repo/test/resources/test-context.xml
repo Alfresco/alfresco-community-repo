@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!--  test model -->
    <bean id="org_alfresco_module_rm_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="org_alfresco_module_rm_dictionaryBootstrap">
@@ -115,15 +116,18 @@
    </bean>
 
    <!--  Make sure the job doesn't fire during the test -->
-   <bean id="scheduledPublishUpdatesJobTrigger" class="org.alfresco.util.CronTriggerBean">
-      <property name="jobDetail">
-         <ref bean="scheduledPublishUpdatesJobDetail" />
-      </property>
-      <property name="scheduler">
-         <ref bean="schedulerFactory" />
-      </property>
-      <property name="cronExpression">
-         <value>0 30 3 * * ?</value>
+   <bean id="scheduledPublishUpdatesSchedulerAccessor" class="org.alfresco.schedule.AlfrescoSchedulerAccessorBean">
+      <property name="scheduler" ref="schedulerFactory" />
+      <property name="triggers">
+         <list>
+            <bean id="scheduledPublishUpdatesJobTrigger"
+                  class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+               <property name="jobDetail" ref="scheduledPublishUpdatesJobDetail" />
+               <property name="cronExpression">
+                  <value>0 30 3 * * ?</value>
+               </property>
+            </bean>
+         </list>
       </property>
    </bean>
 
@@ -188,9 +192,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="TestService_transaction"/>
+                <idref bean="TestService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="TestService_security"/>
+                <idref bean="TestService_security"/>
             </list>
         </property>
     </bean>
@@ -233,7 +237,7 @@
          <value>Search</value>
       </property>
       <property name="sourceBeanName">
-         <value>buildonly</value>
+         <value>${index.subsystem.name}</value>
       </property>
       <property name="instancePath">
          <list>

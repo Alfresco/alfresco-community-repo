@@ -160,7 +160,6 @@ public class SearchAPI extends BaseAPI
     }
     
     /**
->>>>>>> remotes/origin/feature/RM-6310_securityMarksSearchNotProperlyUpdated_AutomationTests
      * Generic faceted search.
      * @param username
      * @param password

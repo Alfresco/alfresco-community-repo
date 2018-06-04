@@ -30,7 +30,6 @@
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
-      <dependency.alfresco-spring-webscripts.version>6.17</dependency.alfresco-spring-webscripts.version>
       <!--  Alfresco Share version  -->
       <alfresco.share.version>6.0.a</alfresco.share.version>
       <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
@@ -344,7 +343,6 @@
       <dependency>
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
-         <version>${dependency.alfresco-spring-webscripts.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
@@ -362,13 +360,11 @@
       <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>${alfresco.postgres.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
-         <version>${dependency.mysql.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -394,43 +390,36 @@
       <dependency>
          <groupId>org.mockito</groupId>
          <artifactId>mockito-all</artifactId>
-         <version>${dependency.mockito.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>${dependency.jackson.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>${dependency.jackson.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>${dependency.jackson.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-joda</artifactId>
-         <version>${dependency.jackson.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.dataformat</groupId>
          <artifactId>jackson-dataformat-yaml</artifactId>
-         <version>${dependency.jackson.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-test</artifactId>
-         <version>${dependency.spring.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

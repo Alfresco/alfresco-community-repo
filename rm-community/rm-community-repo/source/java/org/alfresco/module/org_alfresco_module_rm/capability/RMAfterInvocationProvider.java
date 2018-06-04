@@ -485,6 +485,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                                 returnedObject.getResultSetMetaData().getLimitedBy(),
                                 PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setNumberFound(returnedObject.getNumberFound());
                 return filteringResultSet;
             }
             else
@@ -498,6 +499,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                                 returnedObject.getResultSetMetaData().getLimitedBy(),
                                 PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
+                filteringResultSet.setNumberFound(returnedObject.getNumberFound());
                 return filteringResultSet;
             }
         }

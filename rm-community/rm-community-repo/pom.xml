@@ -24,9 +24,8 @@
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
-      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
 
-      <!-- 6.0 changes !-->
+      <!-- 6.0 changes -->
       <api.explorer.version>6.0.4-ea</api.explorer.version>
       <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
       <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
@@ -35,10 +34,6 @@
       <!--  Alfresco Share version  -->
       <alfresco.share.version>6.0.a</alfresco.share.version>
       <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
-      <!--
-       Deprecated SOLR4 app, still packaged for downward compatibility
-      -->
-      <alfresco.solr4.version>6.7</alfresco.solr4.version>
    </properties>
 
    <build>
@@ -491,25 +486,6 @@
                            </artifactItems>
                         </configuration>
                      </execution>
-                     <execution>
-                        <id>unpack-alfresco-config</id>
-                        <goals>
-                           <goal>unpack</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                           <outputDirectory>${alfresco.solr.home}</outputDirectory>
-                           <artifactItems>
-                              <artifactItem>
-                                 <artifactId>alfresco-solr4</artifactId>
-                                 <groupId>${alfresco.groupId}</groupId>
-                                 <classifier>config</classifier>
-                                 <version>${alfresco.solr4.version}</version>
-                                 <type>zip</type>
-                              </artifactItem>
-                           </artifactItems>
-                        </configuration>
-                     </execution>
                   </executions>
                </plugin>
                <plugin>
@@ -526,74 +502,6 @@
                   </executions>
                   <configuration>
                      <includeWebResources>false</includeWebResources>
-                  </configuration>
-               </plugin>
-               <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>build-helper-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>regex-property</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                           <goal>regex-property</goal>
-                        </goals>
-                        <configuration>
-                           <name>solrHomePath</name>
-                           <value>${alfresco.solr.home}</value>
-                           <regex>\\</regex>
-                           <replacement>\\\\</replacement>
-                           <failIfNoMatch>false</failIfNoMatch>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>com.google.code.maven-replacer-plugin</groupId>
-                  <artifactId>replacer</artifactId>
-                  <executions>
-                     <execution>
-                        <id>setup-solr-config</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                           <goal>replace</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <regex>false</regex>
-                     <includes>
-                        <include>${alfresco.solr.home}/context.xml</include>
-                        <include>${alfresco.solr.home}/archive-SpacesStore/conf/solrcore.properties</include>
-                        <include>${alfresco.solr.home}/workspace-SpacesStore/conf/solrcore.properties</include>
-                        <include>${app.amp.client.war.folder}/WEB-INF/web.xml</include>
-                     </includes>
-                     <replacements>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_DIR@@</token>
-                           <value>${solrHomePath}/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_MODEL_DIR@@</token>
-                           <value>${solrHomePath}/alfrescoModels/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_CONTENT_DIR@@</token>
-                           <value>${solrHomePath}/data/content/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_DATA_DIR@@</token>
-                           <value>${solrHomePath}/data/index/</value>
-                        </replacement>
-                        <replacement>
-                           <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
-                           <value><![CDATA[<!--]]></value>
-                        </replacement>
-                        <replacement>
-                           <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
-                           <value><![CDATA[-->]]></value>
-                        </replacement>
-                     </replacements>
                   </configuration>
                </plugin>
                <plugin>
@@ -616,15 +524,6 @@
                            <delegate>false</delegate>
                            <contextFile>${project.basedir}/tomcat/context.xml</contextFile>
                            <webapps>
-                              <webapp>
-                                 <groupId>${alfresco.groupId}</groupId>
-                                 <artifactId>alfresco-solr4</artifactId>
-                                 <version>${alfresco.solr4.version}</version>
-                                 <type>war</type>
-                                 <asWebapp>true</asWebapp>
-                                 <contextPath>/solr4</contextPath>
-                                 <contextFile>${alfresco.solr.home}/context.xml</contextFile>
-                              </webapp>
                               <webapp>
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>api-explorer</artifactId>

@@ -28,6 +28,7 @@
 package org.alfresco.rm.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Abstract class carrying information for an unfiled container or unfiled record folder child
@@ -43,6 +44,7 @@ public abstract class UnfiledChild extends RMNode
     protected Boolean isUnfiledRecordFolder;
     protected Boolean isRecord;
 
+    @JsonProperty (PARAM_IS_UNFILED_RECORD_FOLDER)
     public Boolean getIsUnfiledRecordFolder()
     {
         return isUnfiledRecordFolder;
@@ -54,6 +56,7 @@ public abstract class UnfiledChild extends RMNode
         this.isUnfiledRecordFolder = isUnfiledRecordFolder;
     }
 
+    @JsonProperty (PARAM_IS_RECORD)
     public Boolean getIsRecord()
     {
         return isRecord;

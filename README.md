@@ -31,4 +31,6 @@ In this folder the distribution zip is build. It contains all the war files, lib
 
 ## How to
 
-* [Create a custom Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/how-to/create-custom-image.md)
+* [Create a custom Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image.md)
+* [Creating customized Docker images using an existing Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image-using-existing-docker-image.md)
+* [Verifying that AMPs have been applied](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image-using-existing-docker-image.md)

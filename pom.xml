@@ -930,13 +930,6 @@
                <groupId>org.apache.tomcat.maven</groupId>
                <artifactId>tomcat7-maven-plugin</artifactId>
                <version>2.2</version>
-               <dependencies>
-                  <dependency>
-                     <groupId>com.h2database</groupId>
-                     <artifactId>h2</artifactId>
-                     <version>1.4.185</version>
-                  </dependency>
-               </dependencies>
                <configuration>
                   <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
                </configuration>

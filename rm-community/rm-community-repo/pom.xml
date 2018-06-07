@@ -27,12 +27,12 @@
 
       <!-- 6.0 changes -->
       <api.explorer.version>6.0.4-ea</api.explorer.version>
-      <dependency.alfresco-core.version>7.2</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>6.50</dependency.alfresco-repository.version>
+      <dependency.alfresco-core.version>7.3</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>6.51</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
       <!--  Alfresco Share version  -->
-      <alfresco.share.version>6.0.a</alfresco.share.version>
-      <alfresco.alfresco-share-services.version>6.0.a</alfresco.alfresco-share-services.version>
+      <alfresco.share.version>6.0.0-rc5</alfresco.share.version>
+      <alfresco.alfresco-share-services.version>6.0.0-rc5</alfresco.alfresco-share-services.version>
    </properties>
 
    <build>
@@ -542,7 +542,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${dependency.mysql.version}</version>
+                        <version>${mysql.version}</version>
                      </dependency>
                   </dependencies>
                </plugin>
@@ -573,7 +573,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${dependency.mysql.version}</version>
+                        <version>${mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>

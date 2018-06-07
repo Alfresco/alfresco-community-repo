@@ -117,30 +117,6 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    public void testSearch()
-    {
-        // Full text search
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                String query = "keywords:\"elephant\"";
-                RecordsManagementSearchParameters params = new RecordsManagementSearchParameters();
-                params.setIncludeUndeclaredRecords(true);
-                List<Pair<NodeRef, NodeRef>> results = rmSearchService.search(siteId, query, params);
-                assertNotNull(results);
-                assertEquals(2, results.size());
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        // Property search
-
-        //
-    }
-
     public void testSaveSearch()
     {
         // Add some saved searches (as admin user)

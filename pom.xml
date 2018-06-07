@@ -170,10 +170,13 @@
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
 
       <jackson.version>2.9.5</jackson.version>
+      <fabric8.version>0.25.0</fabric8.version>
       <spring.version>5.0.4.RELEASE</spring.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>
+      <postgres.port>5432</postgres.port>
       <mysql.version>5.1.40</mysql.version>
+      <mysql.port>3306</mysql.port>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

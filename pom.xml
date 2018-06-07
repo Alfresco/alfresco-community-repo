@@ -368,7 +368,6 @@
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
 
-      <app.amp.client.war.artifactId>alfresco</app.amp.client.war.artifactId>
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
       <app.amp.folder>src/main/amp</app.amp.folder>
       <app.amp.output.folder>../${project.build.finalName}</app.amp.output.folder>

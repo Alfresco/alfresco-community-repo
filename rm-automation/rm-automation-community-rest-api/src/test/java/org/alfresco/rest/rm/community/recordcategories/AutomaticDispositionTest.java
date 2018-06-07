@@ -54,7 +54,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
 
     /**
      * Given there is a complete record eligible for cut off
-     * When the correct frequency of time passes
+     * When the correct duration of time passes
      * Then the record will be automatically cut off
      */
     @Test
@@ -71,8 +71,8 @@ public class AutomaticDispositionTest extends BaseRMRestTest
         RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName
                 ("recordFolder"));
 
-        STEP("Complete the record and wait upon to 5 minutes for automatic job to execute");
         Record record = createElectronicRecord(recordFolder.getId(), getRandomName("elRecord"));
+        STEP("Complete the record and wait upon to 5 minutes for automatic job to execute");
         completeRecord(record.getId());
 
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();

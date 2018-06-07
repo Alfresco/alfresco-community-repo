@@ -136,7 +136,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         }
     }
 
-    protected RepositoryInfo getRepositoryInfo()
+    public RepositoryInfo getRepositoryInfo()
     {
         LicenseInfo licenseInfo = null;
         if(descriptorService.getLicenseDescriptor() != null)

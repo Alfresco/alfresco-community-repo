@@ -169,6 +169,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
                 <entry key="org.alfresco.repo.security.authentication.AuthenticationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNAUTHORIZED}" />
                 <entry key="org.springframework.http.InvalidMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException" value="503" />
             </map>
         </property>
     </bean>
@@ -1036,6 +1037,10 @@
         <property name="assistant" ref="apiAssistant" />
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
+    </bean>
+
+    <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">
+        <property name="discovery" ref="webscript.org.alfresco.api.DiscoveryApiWebscript.get" />
     </bean>
 
     <!-- OpenCMIS -->

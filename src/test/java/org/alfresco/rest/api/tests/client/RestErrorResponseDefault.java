@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,6 +35,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
+import org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.InvalidSelectException;
@@ -55,7 +56,8 @@ public enum RestErrorResponseDefault {
     CONSTRAINT_VIOLATED_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException", Status.STATUS_CONFLICT,ConstraintViolatedException.DEFAULT_MESSAGE_ID),
     STALE_ENTITY_EXCEPTION("org.alfresco.rest.framework.core.exceptions.StaleEntityException",Status.STATUS_CONFLICT,StaleEntityException.DEFAULT_MESSAGE_ID ),
     REQUEST_ENTITY_TOO_LARGE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException", Status.STATUS_REQUEST_ENTITY_TOO_LARGE, RequestEntityTooLargeException.DEFAULT_MESSAGE_ID),
-    UNSUPPORTED_MEDIA_TYPE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException", Status.STATUS_UNSUPPORTED_MEDIA_TYPE,UnsupportedMediaTypeException.DEFAULT_MESSAGE_ID);
+    UNSUPPORTED_MEDIA_TYPE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException", Status.STATUS_UNSUPPORTED_MEDIA_TYPE,UnsupportedMediaTypeException.DEFAULT_MESSAGE_ID),
+    SERVICE_UNAVAILABLE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException", Status.STATUS_SERVICE_UNAVAILABLE,ServiceUnavailableException.DEFAULT_MESSAGE_ID);
 
     private String exceptionClass;
     private int statusCode;

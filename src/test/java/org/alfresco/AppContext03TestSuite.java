@@ -51,6 +51,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.SharedLinkApiTest.class,
     org.alfresco.rest.api.tests.RenditionsTest.class,
     org.alfresco.rest.api.tests.TestPeople.class,
+    org.alfresco.rest.api.tests.ProbeApiTest.class,
 })
 public class AppContext03TestSuite
 {

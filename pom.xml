@@ -341,6 +341,8 @@
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
       <alfresco-spring-webscripts.version>6.17</alfresco-spring-webscripts.version>
+      <!-- Set this here and override it in the community and enterprise modules. -->
+      <alfresco.version>0.0</alfresco.version>
 
       <share.client.contextPath>/share</share.client.contextPath>
 
@@ -474,7 +476,6 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
-            <version>1.9.1</version>
             <executions>
                <execution>
                   <id>regex-properties</id>
@@ -483,6 +484,13 @@
                   </goals>
                   <configuration>
                      <regexPropertySettings>
+                        <regexPropertySetting>
+                           <name>rm.module.repo.version.min</name>
+                           <value>${alfresco.version}</value>
+                           <regex>(\d+)\.(\d+).*</regex>
+                           <replacement>$1.$2</replacement>
+                           <failIfNoMatch>false</failIfNoMatch>
+                        </regexPropertySetting>
                         <regexPropertySetting>
                            <name>rm.module.version</name>
                            <value>${project.version}</value>

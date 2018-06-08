@@ -474,7 +474,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
                     SolrStoreMappingWrapper storeMapping =
                             SolrClientUtil.extractMapping(storeRef, 
                                                           mappingLookup, shardRegistry, 
-                                                          requiresSeparator, beanFactory);
+                                                          useDynamicShardRegistration, beanFactory);
 
                     if(requiresSeparator)
                     {

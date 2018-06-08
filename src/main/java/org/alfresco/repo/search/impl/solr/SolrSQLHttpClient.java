@@ -27,6 +27,7 @@ package org.alfresco.repo.search.impl.solr;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +43,6 @@ import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.StatsParameters;
@@ -205,10 +205,15 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
                 return new SolrSQLJSONResultSet(json, searchParameters);
             });
         }
+        catch (ConnectException ce)
+        {
+            throw new LuceneQueryParserException("Unable to reach InsightEngine", ce);
+        }
         catch (JSONException | IOException | EncoderException e)
         {
             throw new LuceneQueryParserException("Unable to parse the solr response ", e);
         }
+        
     }
 
     protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, 

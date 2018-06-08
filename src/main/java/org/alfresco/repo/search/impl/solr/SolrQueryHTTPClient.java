@@ -374,7 +374,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
         boolean requiresSeparator = false;
         for(StoreRef storeRef : storeRefs)
         {
-            SolrStoreMappingWrapper storeMapping = SolrClientUtil.extractMapping(storeRef, mappingLookup, shardRegistry, useDynamicShardRegistration, beanFactory);
+            SolrStoreMappingWrapper storeMapping = SolrClientUtil.extractMapping(storeRef, mappingLookup, shardRegistry, requiresSeparator, beanFactory);
 
             if(requiresSeparator)
             {
@@ -474,7 +474,7 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
                     SolrStoreMappingWrapper storeMapping =
                             SolrClientUtil.extractMapping(storeRef, 
                                                           mappingLookup, shardRegistry, 
-                                                          useDynamicShardRegistration, beanFactory);
+                                                          requiresSeparator, beanFactory);
 
                     if(requiresSeparator)
                     {

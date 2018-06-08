@@ -355,8 +355,6 @@
       <maven.resources.version>2.7</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.9.5</jackson.version>
-      <spring.version>5.0.4.RELEASE</spring.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>
       <mysql.version>5.1.40</mysql.version>
@@ -397,36 +395,6 @@
             <artifactId>spring-webscripts</artifactId>
             <version>${alfresco-spring-webscripts.version}</version>
             <classifier>tests</classifier>
-         </dependency>
-         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-joda</artifactId>
-            <version>${jackson.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
          </dependency>
          <dependency>
             <groupId>postgresql</groupId>

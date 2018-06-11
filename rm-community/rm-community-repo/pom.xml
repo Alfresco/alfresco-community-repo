@@ -139,7 +139,7 @@
                      <name>postgres:9.4.12</name>
                      <run>
                         <ports>
-                           <port>database.port:${postgresql.port}</port>
+                           <port>database.port:$5433</port>
                         </ports>
                         <env>
                            <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>

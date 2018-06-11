@@ -355,9 +355,7 @@
       <maven.resources.version>2.7</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.9.5</jackson.version>
       <fabric8.version>0.25.0</fabric8.version>
-      <spring.version>5.0.4.RELEASE</spring.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>
       <postgres.port>5432</postgres.port>

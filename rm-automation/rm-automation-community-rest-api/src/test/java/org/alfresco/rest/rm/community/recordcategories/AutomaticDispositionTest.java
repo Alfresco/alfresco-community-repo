@@ -57,7 +57,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
      * When the correct duration of time passes
      * Then the record will be automatically cut off
      */
-    @Test
+    @Test(enabled = false)
     public void testAutomaticCutOff() throws Exception
     {
         STEP("Create record category with retention schedule and apply it to records.");
@@ -70,8 +70,8 @@ public class AutomaticDispositionTest extends BaseRMRestTest
         STEP("Create a record folder with a record");
         RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName
                 ("recordFolder"));
-
         Record record = createElectronicRecord(recordFolder.getId(), getRandomName("elRecord"));
+
         STEP("Complete the record and wait upon to 5 minutes for automatic job to execute");
         completeRecord(record.getId());
 
@@ -85,7 +85,6 @@ public class AutomaticDispositionTest extends BaseRMRestTest
             count++;
             aspects = recordsAPI.getRecord(record.getId()).getAspectNames();
         }
-        aspects = recordsAPI.getRecord(record.getId()).getAspectNames();
         assertTrue(aspects.contains(CUT_OFF_ASPECT), "Record should now be cut off");
     }
 

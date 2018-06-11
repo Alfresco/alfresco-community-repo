@@ -358,7 +358,7 @@
       <fabric8.version>0.25.0</fabric8.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>
-      <postgresql.port>5433</postgresql.port>
+      <postgresql.port>32000</postgresql.port>
       <mysql.version>5.1.40</mysql.version>
       <mysql.port>3306</mysql.port>
 

@@ -35,8 +35,6 @@ import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearch
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 
 /**
  * Search service implementation unit test.
@@ -45,22 +43,12 @@ import org.alfresco.util.Pair;
  */
 public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
 {
-    @Override
-    protected boolean isMultiHierarchyTest()
-    {
-        return true;
-    }
-
     private static final String SEARCH1 = "search1";
     private static final String SEARCH2 = "search2";
     private static final String SEARCH3 = "search3";
     private static final String SEARCH4 = "search4";
 
     private String user;
-
-    private NodeRef folderLevelRecordFolder;
-    private NodeRef recordLevelRecordFolder;
-
     private int numberOfReports;
 
     /**
@@ -87,58 +75,6 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupMultiHierarchyTestData()
-     */
-    @Override
-    protected void setupMultiHierarchyTestData()
-    {
-        super.setupMultiHierarchyTestData();
-
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                folderLevelRecordFolder = mhRecordFolder42;
-                recordLevelRecordFolder = mhRecordFolder43;
-
-                utils.createRecord(folderLevelRecordFolder, "recordOne.txt", null, "record one - folder level - elephant");
-                utils.createRecord(folderLevelRecordFolder, "recordTwo.txt", null, "record two - folder level - snake");
-                utils.createRecord(folderLevelRecordFolder, "recordThree.txt", null, "record three - folder level - monkey");
-                utils.createRecord(recordLevelRecordFolder, "recordFour.txt", null, "record four - record level - elephant");
-                utils.createRecord(recordLevelRecordFolder, "recordFive.txt", null, "record five - record level - snake");
-                utils.createRecord(recordLevelRecordFolder, "recordSix.txt", null, "record six - record level - monkey");
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    public void testSearch()
-    {
-        // Full text search
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                String query = "keywords:\"elephant\"";
-                RecordsManagementSearchParameters params = new RecordsManagementSearchParameters();
-                params.setIncludeUndeclaredRecords(true);
-                List<Pair<NodeRef, NodeRef>> results = rmSearchService.search(siteId, query, params);
-                assertNotNull(results);
-                assertEquals(2, results.size());
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        // Property search
-
-        //
     }
 
     public void testSaveSearch()

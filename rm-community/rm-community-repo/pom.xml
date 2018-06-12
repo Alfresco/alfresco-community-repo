@@ -139,7 +139,7 @@
                      <name>postgres:9.4.12</name>
                      <run>
                         <ports>
-                           <port>${postgresql.port}:5432</port>
+                           <port>${database.port}:${postgresql.port}</port>
                         </ports>
                         <env>
                            <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
@@ -181,7 +181,7 @@
                <systemPropertyVariables>
                   <db.name>${alfresco.test.db.name}</db.name>
                   <db.driver>org.postgresql.Driver</db.driver>
-                  <db.url>jdbc:postgresql://localhost:${postgresql.port}/${alfresco.test.db.name}</db.url>
+                  <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
                   <dir.root>${project.build.directory}/alf-data-test</dir.root>
                </systemPropertyVariables>
             </configuration>

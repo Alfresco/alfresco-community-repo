@@ -497,7 +497,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.repo.alfresco.domain.</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.repo.alfresco.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>

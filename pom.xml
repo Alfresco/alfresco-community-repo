@@ -361,6 +361,7 @@
       <postgresql.port>5432</postgresql.port>
       <mysql.version>5.1.40</mysql.version>
       <mysql.port>3306</mysql.port>
+      <!--This prevents a clash when postgres is already running natively on the machine.-->
       <database.port>5431</database.port>
 
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

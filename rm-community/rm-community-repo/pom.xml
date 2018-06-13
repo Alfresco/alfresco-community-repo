@@ -177,22 +177,20 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <configuration>
-               <systemPropertyVariables>
-                  <db.name>${alfresco.test.db.name}</db.name>
-                  <db.driver>org.postgresql.Driver</db.driver>
-                  <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
-                  <dir.root>${project.build.directory}/alf-data-test</dir.root>
-               </systemPropertyVariables>
-            </configuration>
             <executions>
                <execution>
                   <id>integration-tests</id>
+                  <phase>integration-test</phase>
                   <goals>
                      <goal>integration-test</goal>
-                     <goal>verify</goal>
                   </goals>
                   <configuration>
+                     <systemPropertyVariables>
+                        <db.name>${alfresco.test.db.name}</db.name>
+                        <db.driver>org.postgresql.Driver</db.driver>
+                        <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
+                        <dir.root>${project.build.directory}/alf-data-test</dir.root>
+                     </systemPropertyVariables>
                      <skipTests>${skip.integrationtests}</skipTests>
                      <includes>
                         <include>**/AllTestSuite.class</include>
@@ -497,7 +495,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.repo.alfresco.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>

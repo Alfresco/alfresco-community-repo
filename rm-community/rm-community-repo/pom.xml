@@ -24,7 +24,6 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
-      <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <skip.integrationtests>true</skip.integrationtests>
 
       <!-- 6.0 changes -->

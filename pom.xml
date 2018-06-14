@@ -88,6 +88,36 @@
       <module>rm-automation</module>
    </modules>
 
+   <profiles>
+      <profile>
+         <id>enterprise-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-enterprise</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
+      <profile>
+         <id>hotfix-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-hotfix</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/hotfix-releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
+      <profile>
+         <id>community-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-community</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
+   </profiles>
+
    <properties>
       <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>

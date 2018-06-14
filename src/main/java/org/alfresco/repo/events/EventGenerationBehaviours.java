@@ -184,7 +184,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         // Bind to Lock Service policies:
         bindClassPolicy(POLICY_BEFORE_LOCK, NodeLockedEvent.EVENT_TYPE);
         bindClassPolicy(POLICY_BEFORE_UNLOCK, NodeUnlockedEvent.EVENT_TYPE);
-	}
+    }
 
     private DataType getPropertyType(QName propertyName)
     {

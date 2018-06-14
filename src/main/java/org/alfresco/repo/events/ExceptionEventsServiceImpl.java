@@ -38,40 +38,40 @@ public class ExceptionEventsServiceImpl extends AbstractEventsService implements
     private static Log logger = LogFactory.getLog(ExceptionEventsServiceImpl.class);
 
     private MessageProducer messageProducer;
-	private boolean enabled;
-	
-	public void setEnabled(boolean enabled)
-	{
-		this.enabled = enabled;
-	}
+    private boolean enabled;
 
-	public void setMessageProducer(MessageProducer messageProducer)
-	{
-		this.messageProducer = messageProducer;
-	}
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
 
-	public void init()
-	{
-	}
+    public void setMessageProducer(MessageProducer messageProducer)
+    {
+        this.messageProducer = messageProducer;
+    }
 
-	@Override
-	public void exceptionGenerated(String txnId, Throwable t)
-	{
-		if(enabled)
-		{
-			try
-			{
-				long timestamp = System.currentTimeMillis();
-				String networkId = TenantUtil.getCurrentDomain();
-				String username = AuthenticationUtil.getFullyAuthenticatedUser();
-				ExceptionGeneratedEvent event = new ExceptionGeneratedEvent(nextSequenceNumber(), txnId, timestamp,
-						networkId, t, username);
-				messageProducer.send(event);
-			}
-			catch(MessagingException e)
-			{
-				logger.error(e);
-			}
-		}
-	}
+    public void init()
+    {
+    }
+
+    @Override
+    public void exceptionGenerated(String txnId, Throwable t)
+    {
+        if(enabled)
+        {
+            try
+            {
+                long timestamp = System.currentTimeMillis();
+                String networkId = TenantUtil.getCurrentDomain();
+                String username = AuthenticationUtil.getFullyAuthenticatedUser();
+                ExceptionGeneratedEvent event = new ExceptionGeneratedEvent(nextSequenceNumber(), txnId, timestamp,
+                        networkId, t, username);
+                messageProducer.send(event);
+            }
+            catch(MessagingException e)
+            {
+                logger.error(e);
+            }
+        }
+    }
 }

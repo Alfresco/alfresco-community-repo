@@ -37,7 +37,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 @ManagedResource
 public class EventsManager
 {
-	public EventsManager()
-	{
-	}
+    public EventsManager()
+    {
+    }
 }

@@ -47,63 +47,63 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractEventGenerationBehaviours
 {
-	protected static Log logger = LogFactory.getLog(AbstractEventGenerationBehaviours.class);
+    protected static Log logger = LogFactory.getLog(AbstractEventGenerationBehaviours.class);
 
-	protected Set<String> includeEventTypes;
-	protected PolicyComponent policyComponent;
+    protected Set<String> includeEventTypes;
+    protected PolicyComponent policyComponent;
 
-	protected List<BehaviourDefinition<ClassBehaviourBinding>> behaviours = new LinkedList<>();
+    protected List<BehaviourDefinition<ClassBehaviourBinding>> behaviours = new LinkedList<>();
 
-	protected void addBehaviour(BehaviourDefinition<ClassBehaviourBinding> binding)
-	{
-		behaviours.add(binding);
+    protected void addBehaviour(BehaviourDefinition<ClassBehaviourBinding> binding)
+    {
+        behaviours.add(binding);
 
-		logger.debug("Added policy binding " + binding);
-	}
-	
-	protected void removeBehaviour(BehaviourDefinition<ClassBehaviourBinding> binding)
-	{
-		removeBehaviourImpl(binding);
+        logger.debug("Added policy binding " + binding);
+    }
 
-		behaviours.remove(binding);
-	}
+    protected void removeBehaviour(BehaviourDefinition<ClassBehaviourBinding> binding)
+    {
+        removeBehaviourImpl(binding);
 
-	protected void removeBehaviourImpl(BehaviourDefinition<ClassBehaviourBinding> binding)
-	{
-		this.policyComponent.removeClassDefinition(binding);
+        behaviours.remove(binding);
+    }
 
-		logger.debug("Removed policy binding " + binding);
-	}
+    protected void removeBehaviourImpl(BehaviourDefinition<ClassBehaviourBinding> binding)
+    {
+        this.policyComponent.removeClassDefinition(binding);
 
-	public void cleanUp()
-	{
-		for(BehaviourDefinition<ClassBehaviourBinding> binding : behaviours)
-		{
-			removeBehaviourImpl(binding);
-		}
-	}
+        logger.debug("Removed policy binding " + binding);
+    }
 
-	public void setIncludeEventTypes(String includeEventTypesStr)
-	{
-		StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
-		this.includeEventTypes = new HashSet<String>();
-		while(st.hasMoreTokens())
-		{
-			String eventType = st.nextToken().trim();
-			this.includeEventTypes.add(eventType);
-		}
-	}
+    public void cleanUp()
+    {
+        for(BehaviourDefinition<ClassBehaviourBinding> binding : behaviours)
+        {
+            removeBehaviourImpl(binding);
+        }
+    }
 
-	public void setPolicyComponent(PolicyComponent policyComponent)
-	{
-		this.policyComponent = policyComponent;
-	}
-	
-	protected boolean includeEventType(String eventType)
-	{
-		return includeEventTypes.contains(eventType);
-	}
-	
+    public void setIncludeEventTypes(String includeEventTypesStr)
+    {
+        StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
+        this.includeEventTypes = new HashSet<String>();
+        while(st.hasMoreTokens())
+        {
+            String eventType = st.nextToken().trim();
+            this.includeEventTypes.add(eventType);
+        }
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    protected boolean includeEventType(String eventType)
+    {
+        return includeEventTypes.contains(eventType);
+    }
+
 
     /**
      * Bind a class policy to a JavaBehaviour if a specific event type is enabled

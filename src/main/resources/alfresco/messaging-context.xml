@@ -2,22 +2,6 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
-    <bean id="messagingProperties"
-        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="ignoreUnresolvablePlaceholders">
-            <value>true</value>
-        </property>
-        <property name="locations">
-            <list>
-                <value>classpath:alfresco/extension/messaging-subsystem.properties</value>
-            </list>
-        </property>
-        <property name="searchSystemEnvironment">
-            <value>false</value>
-        </property>
-    </bean>
-
     <bean id="Messaging" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>${messaging.subsystem.autoStart}</value>

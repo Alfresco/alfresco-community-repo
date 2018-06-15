@@ -41,4 +41,6 @@
     <import resource="classpath:alfresco/heartbeat/heartbeat-repo-collector-context.xml"/>
     <import resource="classpath*:alfresco/enterprise/heartbeat/heartbeat-enterprise-repo-collector-context.xml" />
     <import resource="classpath*:alfresco/deprecated-model-bootstrap-context.xml" />
+    <import resource="classpath*:alfresco/events-context.xml" />
+    <import resource="classpath*:alfresco/messaging-context.xml" />
 </beans>

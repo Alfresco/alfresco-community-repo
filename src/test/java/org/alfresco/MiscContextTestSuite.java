@@ -138,7 +138,10 @@ import org.springframework.context.ApplicationContext;
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
     // [ibatis/hierarchy-test/hierarchy-test-context.xml]
-    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class
+    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class,
+
+    // [classpath:/test-messaging-context.xml]
+    org.alfresco.messaging.camel.CamelRoutesTest.class
 })
 public class MiscContextTestSuite
 {

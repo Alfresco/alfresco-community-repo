@@ -216,7 +216,7 @@
       <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
     </bean>
 
-   <!-- Extend restJsonModule to add the list of custom serializers for formatting the LocalDate and DateTime from
+   <!-- Extend restJsonModule to include the custom serializers for formatting the LocalDate and DateTime from
    joda-->
    <bean id="rm.restJsonModule" parent="restJsonModule">
       <property name="jsonSerializers">

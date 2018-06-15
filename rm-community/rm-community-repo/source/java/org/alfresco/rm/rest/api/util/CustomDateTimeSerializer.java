@@ -58,7 +58,7 @@ public class CustomDateTimeSerializer extends StdScalarSerializer<DateTime>
     }
 
     /**
-     * Custom serialize to convert the org.joda.time.DateTime into string value  using the DATE_TIME_FORMAT
+     * Custom serialize method to convert the org.joda.time.DateTime into string value using the DATE_TIME_FORMAT
      *
      * @param value datetime value
      * @param jgen

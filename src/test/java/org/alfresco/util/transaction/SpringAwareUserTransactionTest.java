@@ -19,6 +19,7 @@
 package org.alfresco.util.transaction;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
@@ -319,6 +320,86 @@ public class SpringAwareUserTransactionTest extends TestCase
                 TransactionDefinition.ISOLATION_DEFAULT,
                 TransactionDefinition.PROPAGATION_REQUIRED,
                 TransactionDefinition.TIMEOUT_DEFAULT);
+    }
+    
+    public void testTransactionListenerOrder() throws Throwable
+    {
+        testNoTxnStatus();
+        try
+        {
+            txn.begin();
+            StringBuffer buffer = new StringBuffer();
+            TransactionSupportUtil.bindListener(new TestTransactionListener("5x", buffer), 5);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("0a", buffer), 0);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("0e", buffer), 0);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("0d", buffer), 0);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("0b", buffer), 0);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("0c", buffer), 0);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("4x", buffer), 4);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("1x", buffer), -1);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("3a", buffer), 3);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("3e", buffer), 3);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("3d", buffer), 3);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("3b", buffer), 3);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("3c", buffer), 3);
+            TransactionSupportUtil.bindListener(new TestTransactionListener("2x", buffer), -2);
+            txn.commit();
+            assertEquals("0a0e0d0b0c2x1x3a3e3d3b3c4x5x", buffer.toString());
+        }
+        catch (Exception e)
+        {
+            try
+            {
+                txn.rollback();
+            }
+            catch (Exception ee)
+            {
+                e.addSuppressed(ee);
+            }
+            throw e;
+        }
+        checkNoStatusOnThread();
+    }
+    
+    private static class TestTransactionListener extends TransactionListenerAdapter
+    {
+        private final String name;
+        private final StringBuffer buffer;
+        
+        public TestTransactionListener(String name, StringBuffer buffer)
+        {
+            Objects.requireNonNull(name);
+            Objects.requireNonNull(buffer);
+            this.name = name;
+            this.buffer = buffer;
+        }
+        
+        @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            buffer.append(name);
+        }
+        
+        public String getName()
+        {
+            return name;
+        }
+        
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj instanceof TestTransactionListener)
+            {
+                return name.equals(((TestTransactionListener) obj).getName());
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            return name.hashCode();
+        }
     }
     
     /**

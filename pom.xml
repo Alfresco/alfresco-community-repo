@@ -103,7 +103,7 @@
          <id>enterprise-release</id>
          <distributionManagement>
             <repository>
-               <id>alfresco-enterprise</id>
+               <id>alfresco-internal</id>
                <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
             </repository>
          </distributionManagement>
@@ -112,7 +112,7 @@
          <id>hotfix-release</id>
          <distributionManagement>
             <repository>
-               <id>alfresco-hotfix</id>
+               <id>alfresco-internal</id>
                <url>https://artifacts.alfresco.com/nexus/content/repositories/hotfix-releases/</url>
             </repository>
          </distributionManagement>
@@ -121,7 +121,7 @@
          <id>community-release</id>
          <distributionManagement>
             <repository>
-               <id>alfresco-community</id>
+               <id>alfresco-internal</id>
                <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
             </repository>
          </distributionManagement>

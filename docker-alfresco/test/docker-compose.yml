@@ -28,6 +28,7 @@ services:
                 -Dftp.dataPortFrom=30000
                 -Dftp.dataPortTo=30099
                 -Dcifs.enabled=true
+                -Dshare.host=localhost
                 "
         ports:
             - 8082:8080

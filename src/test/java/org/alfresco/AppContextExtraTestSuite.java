@@ -62,6 +62,7 @@ import org.junit.runners.Suite;
 
     org.alfresco.repo.search.impl.solr.facet.SolrFacetQueriesDisplayHandlersTest.class,
     org.alfresco.repo.search.impl.solr.facet.SolrFacetServiceImplTest.class,
+    org.alfresco.repo.search.SolrSearchContextTest.class,
     org.alfresco.repo.invitation.InvitationCleanupTest.class,
     org.alfresco.repo.quickshare.QuickShareServiceIntegrationTest.class,
     org.alfresco.repo.remotecredentials.RemoteCredentialsServicesTest.class,

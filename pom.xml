@@ -752,9 +752,9 @@
 
         <!-- Events dependencies -->
         <dependency>
-            <groupId>org.alfresco.services</groupId>
-            <artifactId>alfresco-events</artifactId>
-            <version>1.2.12</version>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository-events</artifactId>
+            <version>1.2.13</version>
         </dependency>
         <dependency>
             <groupId>org.gytheio</groupId>

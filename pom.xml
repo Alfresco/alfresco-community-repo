@@ -193,11 +193,6 @@
                 <type>war</type>
             </dependency>
             <dependency>
-                <groupId>org.alfresco.services</groupId>
-                <artifactId>alfresco-events</artifactId>
-                <version>1.2.12</version>
-            </dependency>
-            <dependency>
                 <groupId>org.alfresco.surf</groupId>
                 <artifactId>spring-surf-core-configservice</artifactId>
                 <version>${dependency.alfresco-spring-webscripts.version}</version>

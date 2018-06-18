@@ -3216,10 +3216,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             return null;
         }
 
+        int bufferSize = 40 * 1024;
         File result = null;
         try
         {
-            result = TempFileProvider.createTempFile(contentStream.getStream(), "cmis", "content");
+            InputStream in = null;
+            if (contentStream.getStream() != null)
+            {
+                in = new BufferedInputStream(contentStream.getStream(), bufferSize);
+            }
+
+            result = TempFileProvider.createTempFile(in, "cmis", "content");
         }
         catch (Exception e)
         {

@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -42,7 +42,7 @@ import org.joda.time.format.DateTimeFormatter;
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomDateTimeSerializer extends StdScalarSerializer<DateTime>
+public class CustomDateTimeSerializer extends StdSerializer<DateTime>
 {
     /** Date time format */
     private final static DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");

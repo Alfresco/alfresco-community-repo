@@ -26,48 +26,61 @@
  */
 package org.alfresco.rm.rest.api.util;
 
-import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
- * Custom Local Date serializer for formatting org.joda.time.LocalDate
+ * Custom Local Date deserializer for converting a string value with time into a org.joda.time.LocalDate value
  *
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomLocalDateSerializer extends StdSerializer<LocalDate>
+public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate>
 {
     /** Local date format */
-    private final static DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd");
+    private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-    public CustomLocalDateSerializer()
+
+    public CustomLocalDateDeserializer()
     {
         super(LocalDate.class);
     }
-
-    protected CustomLocalDateSerializer(Class<LocalDate> t)
+    protected CustomLocalDateDeserializer(Class<LocalDate> vc)
     {
-        super(t);
+        super(vc);
     }
 
     /**
-     * Custom serialize method to convert the org.joda.time.LocalDate into string value using the DATE_FORMAT
+     * Custom deserialize method to convert a string value into a org.joda.time.LocalDate value using the DATE_FORMAT
      *
-     * @param value local date value
-     * @param jgen
-     * @param provider
+     * @param p   local date value
+     * @param ctx
      * @throws IOException
      */
     @Override
-    public void serialize(LocalDate value, JsonGenerator jgen, SerializerProvider provider) throws IOException
+    public LocalDate deserialize(JsonParser p, DeserializationContext ctx) throws IOException
     {
-        jgen.writeString(DATE_FORMAT.print(value));
+        Date date = null;
+        try
+        {
+            // convert the string with time into a date value using the format DATE_FORMAT
+            date = DATE_FORMAT.parse(p.getText());
+        }
+        catch (ParseException e)
+        {
+            e.printStackTrace();
+        }
+        // convert the date into a LocalDate
+        return LocalDate.fromDateFields(date);
     }
 }

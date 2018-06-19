@@ -215,4 +215,20 @@
       <property name="beanName" value="simpleMappingExceptionResolverParent"/>
       <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
     </bean>
+
+   <!-- Extend restJsonModule to include the custom serializers for formatting the LocalDate and DateTime from
+   joda-->
+   <bean id="rm.restJsonModule" parent="restJsonModule">
+      <property name="jsonSerializers">
+         <list merge="true">
+            <bean class="org.alfresco.rm.rest.api.util.CustomLocalDateSerializer" />
+            <bean class="org.alfresco.rm.rest.api.util.CustomDateTimeSerializer" />
+         </list>
+      </property>
+   </bean>
+
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="restJsonModule" />
+      <property name="extendingBeanName" value="rm.restJsonModule" />
+   </bean>
 </beans>

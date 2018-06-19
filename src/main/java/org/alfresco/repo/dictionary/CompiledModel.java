@@ -112,9 +112,8 @@ public class CompiledModel implements ModelQuery
             // Phase 3: Resolve inheritance of values within class hierachy
             NamespacePrefixResolver localPrefixes = createLocalPrefixResolver(model, namespaceDAO);
             resolveInheritance(query, localPrefixes, constraints);
-            
-            // Phase 4: Resolve constraint dependencies
 
+            // Phase 4: Resolve constraint dependencies
             for (ConstraintDefinition def : constraints.values())
             {
                 ((M2ConstraintDefinition)def).resolveDependencies(query, enableConstraintClassLoading);
@@ -123,6 +122,10 @@ public class CompiledModel implements ModelQuery
         }
         catch(Exception e)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Failed to compile model: " + model.getName(), e);
+            }
             throw new DictionaryException(ERR_COMPILE_MODEL_FAILURE, e, model.getName());
         }
     }

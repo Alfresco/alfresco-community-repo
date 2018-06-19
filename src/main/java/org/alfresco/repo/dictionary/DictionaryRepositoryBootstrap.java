@@ -368,16 +368,26 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
             logger.debug("Model count: before="+modelsBeforeCnt+", load/update="+loadedModels.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"] "+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
     }
-    
+
     public void notifyDynamicModelLoaded(DynamicModelInfo entry)
     {
-           if(onLoadDynamicModelDelegate == null)
+        if (onLoadDynamicModelDelegate == null)
         {
             onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
         }
- 
+
         DynamicModelPolicies.OnLoadDynamicModel policy = onLoadDynamicModelDelegate.get(ContentModel.TYPE_CONTENT);
-        policy.onLoadDynamicModel(entry.model, entry.nodeRef);
+        try
+        {
+            policy.onLoadDynamicModel(entry.model, entry.nodeRef);
+        }
+        catch (RuntimeException e)
+        {
+            // similar to "loadModel" method
+            // note: skip with warning - to allow server to start, and hence allow the possibility of fixing the broken model(s)
+            // do print the stacktrace so there is some information about what went wrong, in order to fix it
+            logger.warn("Failed to notify dynamic model loaded'" + (entry.model != null ? entry.model.getName() : "null") + "' : " + e, e);
+        }
     }
 
     public void initMessages()
@@ -578,7 +588,8 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
             catch (AlfrescoRuntimeException e)
             {
                 // note: skip with warning - to allow server to start, and hence allow the possibility of fixing the broken model(s)
-                logger.warn("Failed to load model '" + modelName + "' : " + e);
+                // do print the stacktrace so there is some information about what went wrong, in order to fix it
+                logger.warn("Failed to load model '" + modelName + "' : " + e, e);
             }
         }
     }

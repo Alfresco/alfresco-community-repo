@@ -33,9 +33,6 @@
       <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
       <alfresco.alfresco-share-services.version>6.0.0-rc5</alfresco.alfresco-share-services.version>
       <image.name>alfresco/ags-repo-community</image.name>
-      <image.registry>quay.io</image.registry>
-      <image.tag>latest</image.tag>
-      <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
 
    </properties>
 
@@ -159,13 +156,6 @@
                         </wait>
                      </run>
                   </image>
-                  <image>
-                      <name>${image.name}</name>
-                      <build>
-                          <dockerFileDir>${project.basedir}/</dockerFileDir>
-                      </build>
-                  </image>
-
                </images>
                <skip>${skip.integrationtests}</skip>
             </configuration>

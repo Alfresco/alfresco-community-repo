@@ -33,8 +33,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * Custom Local Date serializer for formatting org.joda.time.LocalDate
@@ -44,8 +44,8 @@ import org.joda.time.format.DateTimeFormatter;
  */
 public class CustomLocalDateSerializer extends StdSerializer<LocalDate>
 {
-    /** Local date format */
-    private final static DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("yyyy-MM-dd");
+    /** Local date format yyyy-MM-dd*/
+    private final static DateTimeFormatter DATE_FORMAT = ISODateTimeFormat.date();
 
     public CustomLocalDateSerializer()
     {

@@ -155,6 +155,7 @@
                      </run>
                   </image>
                </images>
+               <skip>${skip.integrationtests}</skip>
             </configuration>
             <executions>
                <execution>

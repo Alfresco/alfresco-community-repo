@@ -327,6 +327,166 @@
             </plugins>
          </build>
       </profile>
+      <!--Docker profiles-->
+      <!-- Profile used only to build docker images-->
+      <profile>
+         <id>buildDockerImage</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>fabric8-maven-plugin</artifactId>
+                     <version>${fabric8.maven.version}</version>
+                     <configuration>
+                        <images>
+                           <image>
+                              <name>${image.name}</name>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                        </images>
+                     </configuration>
+                     <executions>
+                        <execution>
+                           <id>build-image</id>
+                           <phase>install</phase>
+                           <goals>
+                              <goal>build</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+
+      <!-- Profile used to build docker images with given tag and push them to the given image registry (quay.io) -->
+      <profile>
+         <id>internal</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>fabric8-maven-plugin</artifactId>
+                     <version>${fabric8.maven.version}</version>
+                     <configuration>
+                        <images>
+                           <image>
+                              <name>${image.name}:${image.tag}</name>
+                              <registry>${image.registry}</registry>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                        </images>
+                     </configuration>
+                     <executions>
+                        <execution>
+                           <id>build-push-image</id>
+                           <phase>install</phase>
+                           <goals>
+                              <goal>build</goal>
+                              <goal>push</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+
+      <!-- Profile used to build and push docker images with latest tag to the given image registry (quay.io) and
+       hub.docker -->
+      <profile>
+         <id>master</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>fabric8-maven-plugin</artifactId>
+                     <version>${fabric8.maven.version}</version>
+                     <configuration>
+                        <images>
+                           <image>
+                              <name>${image.name}</name>
+                              <registry>${image.registry}</registry>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                           <image>
+                              <name>${image.name}</name>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                        </images>
+                     </configuration>
+                     <executions>
+                        <execution>
+                           <id>build-push-image</id>
+                           <phase>install</phase>
+                           <goals>
+                              <goal>build</goal>
+                              <goal>push</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+
+      <!-- Profile used to build and push docker images with project.version tag to the given image registry (quay.io) and
+       hub.docker -->
+      <profile>
+         <id>release</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>fabric8-maven-plugin</artifactId>
+                     <version>${fabric8.maven.version}</version>
+                     <configuration>
+                        <images>
+                           <image>
+                              <name>${image.name}:${project.version}</name>
+                              <registry>${image.registry}</registry>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                           <image>
+                              <name>${image.name}:${project.version}</name>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                        </images>
+                     </configuration>
+                     <executions>
+                        <execution>
+                           <id>build-push-image</id>
+                           <phase>deploy</phase>
+                           <goals>
+                              <goal>build</goal>
+                              <goal>push</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
    </profiles>
 
    <properties>
@@ -355,7 +515,7 @@
       <maven.resources.version>2.7</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <fabric8.version>0.25.0</fabric8.version>
+      <fabric8.docker.version>0.25.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>
       <postgresql.port>5432</postgresql.port>
@@ -381,6 +541,11 @@
       <app.properties.folder>src/main/properties/local</app.properties.folder>
       <app.properties.test.include>**</app.properties.test.include>
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
+
+      <fabric8.maven.version>3.5.37</fabric8.maven.version>
+      <image.name>imageNameNotSet</image.name>
+      <image.tag>latest</image.tag>
+      <image.registry>quay.io</image.registry>
    </properties>
 
    <dependencyManagement>

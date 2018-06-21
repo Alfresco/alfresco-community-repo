@@ -32,6 +32,8 @@
       <dependency.alfresco-repository.version>6.51</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.35</dependency.alfresco-remote-api.version>
       <alfresco.alfresco-share-services.version>6.0.0-rc5</alfresco.alfresco-share-services.version>
+      <image.name>alfresco/ags-repo-community</image.name>
+
    </properties>
 
    <build>
@@ -602,7 +604,6 @@
             </plugins>
          </build>
       </profile>
-
       <profile>
          <id>wipeDB</id>
          <build>
@@ -655,5 +656,50 @@
             </plugins>
          </build>
       </profile>
+       <!--Docker profiles used to build specific docker images for community repo, defined in parent pom -->
+       <profile>
+           <id>buildDockerImage</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>internal</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>master</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>release</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
    </profiles>
 </project>

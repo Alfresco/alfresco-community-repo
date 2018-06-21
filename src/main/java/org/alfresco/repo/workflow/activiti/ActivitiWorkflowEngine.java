@@ -264,7 +264,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             WorkflowInstance result =  typeConverter.convert(deletedInstance);
             
             // Delete the historic process instance
-            historyService.deleteHistoricProcessInstance(deletedInstance.getId());
+            //MNT-15498
+            if(!activitiUtil.isRetentionHistoricProcessInstanceEnabled()){
+                historyService.deleteHistoricProcessInstance(deletedInstance.getId());
+            }
             
             return result;
         } 

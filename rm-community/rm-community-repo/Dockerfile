@@ -1,6 +1,10 @@
+
+
 FROM alfresco/alfresco-content-repository-community:latest
 
-COPY target/alfresco-rm-community-repo-*.amp /usr/local/tomcat/amps/
+ARG TOMCAT_DIR=/usr/local/tomcat
 
-RUN java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
-              /usr/local/tomcat/amps/alfresco-rm-community-repo-*.amp /usr/local/tomcat/webapps/alfresco -nobackup
+COPY target/alfresco-rm-community-repo-*.amp $TOMCAT_DIR/amps/
+
+RUN java -jar $TOMCAT_DIR/alfresco-mmt/alfresco-mmt*.jar install \
+              $TOMCAT_DIR/amps/alfresco-rm-community-repo-*.amp $TOMCAT_DIR/webapps/alfresco -nobackup

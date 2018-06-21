@@ -188,7 +188,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private HistoryService historyService;
     private ManagementService managementService;
     private FormService formService;
-    private ActivitiUtil activitiUtil;
+    protected ActivitiUtil activitiUtil;
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;

@@ -394,7 +394,7 @@
                      <executions>
                         <execution>
                            <id>build-push-image</id>
-                           <phase>install</phase>
+                           <phase>deploy</phase>
                            <goals>
                               <goal>build</goal>
                               <goal>push</goal>

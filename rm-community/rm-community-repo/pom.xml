@@ -656,6 +656,7 @@
             </plugins>
          </build>
       </profile>
+       <!--Docker profiles used to build specific docker images for community repo, defined in parent pom -->
        <profile>
            <id>buildDockerImage</id>
            <build>

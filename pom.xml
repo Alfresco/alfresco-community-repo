@@ -204,6 +204,13 @@
                               <goal>build</goal>
                            </goals>
                         </execution>
+                        <execution>
+                           <id>build-image-verify</id>
+                           <phase>verify</phase>
+                           <goals>
+                              <goal>build</goal>
+                           </goals>
+                        </execution>
                      </executions>
                   </plugin>
                </plugins>
@@ -235,7 +242,7 @@
                      <executions>
                         <execution>
                            <id>build-push-image</id>
-                           <phase>install</phase>
+                           <phase>deploy</phase>
                            <goals>
                               <goal>build</goal>
                               <goal>push</goal>
@@ -279,7 +286,7 @@
                      <executions>
                         <execution>
                            <id>build-push-image</id>
-                           <phase>install</phase>
+                           <phase>deploy</phase>
                            <goals>
                               <goal>build</goal>
                               <goal>push</goal>

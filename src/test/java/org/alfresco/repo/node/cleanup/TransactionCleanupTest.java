@@ -57,7 +57,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.After;
@@ -71,12 +71,12 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Derek Hulley
  * @since 4.0
  */
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class, DBTests.class })
 public class TransactionCleanupTest
 {
     private static Log logger = LogFactory.getLog(TransactionCleanupTest.class);
     
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private TransactionService transactionService;
     private NodeService nodeService;
@@ -92,6 +92,8 @@ public class TransactionCleanupTest
     private NodeRef nodeRef4;
     private NodeRef nodeRef5;
     private RetryingTransactionHelper helper;
+
+    private long fromCustomCommitTime = -1;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -175,7 +177,35 @@ public class TransactionCleanupTest
 
 		return txnIds;
     }
-    
+
+    private Map<NodeRef, List<String>> createTransactionsForNodePurgeTest()
+    {
+        Map<NodeRef, List<String>> txnIds = new HashMap<NodeRef, List<String>>();
+        DeleteNode deleteNode4 = new DeleteNode(nodeRef4);
+        DeleteNode deleteNode5 = new DeleteNode(nodeRef5);
+        List<String> txnIds4 = new ArrayList<String>();
+        List<String> txnIds5 = new ArrayList<String>();
+        txnIds.put(nodeRef4, txnIds4);
+        txnIds.put(nodeRef5, txnIds5);
+
+        String txnId4 = helper.doInTransaction(deleteNode4, false, true);
+        txnIds4.add(txnId4);
+        try
+        {
+            Thread.sleep(500);
+        }
+        catch (Exception e)
+        {
+            // not a problem
+        }
+        fromCustomCommitTime = System.currentTimeMillis();
+
+        String txnId5 = helper.doInTransaction(deleteNode5, false, true);
+        txnIds5.add(txnId5);
+
+        return txnIds;
+    }
+
     private boolean containsTransaction(List<Transaction> txns, String txnId)
     {
     	boolean found = false;
@@ -295,7 +325,40 @@ public class TransactionCleanupTest
     	assertNull("Node 4 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef4));
         assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
-    
+
+    @Test public void testPurgeNodeUseTransactionCommitTime() throws Exception
+    {
+        // make sure we clean up all the other nodes that may require purging
+        worker.setPurgeSize(7200000);// 2 hours
+        worker.doClean();
+        // delete the node 4 and node 5 with a half a second delay between the events
+        createTransactionsForNodePurgeTest();
+
+        // Double-check that n4 and n5 are present in deleted form
+        nodesCache.clear();
+
+        assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
+        assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
+
+        // run the transaction cleaner
+        worker.setPurgeSize(5); // small purge size
+        // we want to clean all the transactions starting with the fromCustomCommitTime
+        worker.setFromCustomCommitTime(fromCustomCommitTime);
+        List<String> reports = worker.doClean();
+        for (String report : reports)
+        {
+            logger.debug(report);
+        }
+
+        // only node 5 should be purged,
+        // node 4 should still be present as the transaction happened before fromCustomCommitTime
+        nodesCache.clear();
+
+        assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
+
+        assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
+    }
+
     @After
     public void after()
     {

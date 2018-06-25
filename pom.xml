@@ -175,6 +175,49 @@
          </build>
       </profile>
 
+      <!--
+        The following 2 profiles adds the /properties directories as resource directories in the project.
+        This means we can filter the property files in these directories.
+        The presence of this /properties directory also activates these profiles.
+        -->
+      <profile>
+         <id>enable-test-properties-filtering</id>
+         <activation>
+            <file>
+               <!-- No properties allowed here. Only hardcoded values are properly interpreted -->
+               <exists>src/test/properties</exists>
+            </file>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>build-helper-maven-plugin</artifactId>
+                  <version>${maven.buildhelper.version}</version>
+                  <executions>
+                     <execution>
+                        <id>add-env-test-properties</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                           <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                           <resources>
+                              <resource>
+                                 <directory>${app.properties.test.folder}</directory>
+                                 <includes>
+                                    <include>${app.properties.test.include}</include>
+                                 </includes>
+                                 <filtering>${app.filtering.enabled}</filtering>
+                              </resource>
+                           </resources>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
       <!--Docker profiles-->
       <!-- Profile used only to build docker images-->
       <profile>

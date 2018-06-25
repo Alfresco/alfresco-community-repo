@@ -176,7 +176,7 @@
       </profile>
 
       <!--
-        The following 2 profiles adds the /properties directories as resource directories in the project.
+        The following profile adds the /properties directories as resource directories in the project.
         This means we can filter the property files in these directories.
         The presence of this /properties directory also activates these profiles.
         -->

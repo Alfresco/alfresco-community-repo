@@ -480,6 +480,7 @@
    </dependencies>
 
    <profiles>
+
       <profile>
          <id>use-mysql</id>
          <properties>

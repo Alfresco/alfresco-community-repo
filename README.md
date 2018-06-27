@@ -138,3 +138,33 @@ Unzip it and change to the "solr" folder within it. Start the Solr server using 
 solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
 ```
 Start your repository
+
+## Build Docker images for RM Repo and Share
+A first step is checking that you have installed a working version of Docker that can be downloaded from here:
+[https://docs.docker.com/install/]
+
+The second step, in case you already have Docker installed, the current running images must be checked in order to be sure that they are not occupying any of the ports that
+Alfresco and Share use.
+
+To kill and clean all the images and containers the following command can be used:
+
+```
+docker system prune --volumes
+```
+ `Note that this will also remove all the stopped containers, containers, networks, volumes and build cache.`
+
+Depending on which version of AGS you want to start, Community or Enterprise, `you must first build the docker images.`
+From the root folder of the project you can create both the Repo and the Share images for Community and Enterprise.
+To build all the images use the following command:
+```
+mvn install -PbuildDockerImages
+```
+If only the Community or Enterprise images need to be built than the same command as the above must be run either in the rm-community or rm-enterprise modules.
+
+## Start the Docker images
+
+The Docker images can be started one by one by running the following command from the folder which contains the docker-compose.yml file:
+```
+docker-compose up
+```
+eg: In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run first in the rm-enterprise-repo folder and then in rm-enterprise-share after the images have been built.

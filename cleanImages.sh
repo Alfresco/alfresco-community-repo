@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo $IMAGES_TO_BE_DELETED
 echo "List all images:"

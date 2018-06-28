@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
 
+echo $imagesToBeDeleted
 echo "List all images:"
 docker images -a
 

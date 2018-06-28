@@ -43,6 +43,8 @@ import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+///////// THIS FILE IS A COPY OF THE CODE IN alfresco-docker-tika /////////////
+
 /**
  * <a href="http://tika.apache.org/Apache Tika">Apache Tika</a> assumes that
  *  you either know exactly what your content is, or that

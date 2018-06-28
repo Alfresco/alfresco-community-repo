@@ -27,6 +27,8 @@ package org.alfresco.repo.content.transform;
 
 import java.util.ArrayList;
 
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -134,5 +136,30 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
           context.set(Parser.class, new EmptyParser());
       }
       return context;
+    }
+
+    @Override
+    protected String getTransform()
+    {
+        return "Archive";
+    }
+
+    @Override
+    protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
+                                   ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype, String targetMimetype,
+                                   String sourceExtension, String targetExtension,
+                                   String targetEncoding) throws Exception
+    {
+        String transform = getTransform();
+        long timeoutMs = options.getTimeoutMs();
+        boolean recurse = includeContents;
+        if(options.getIncludeEmbedded() != null)
+        {
+            recurse = options.getIncludeEmbedded();
+        }
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger, "transform", transform, "includeContents", Boolean.toString(recurse),
+                "targetMimetype", targetMimetype, "targetEncoding", targetEncoding);
     }
 }

@@ -46,6 +46,7 @@ public class PoiContentTransformerTest extends AbstractContentTransformerTest
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
+        transformer.afterPropertiesSet();
     }
     
     /**

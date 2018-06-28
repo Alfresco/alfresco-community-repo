@@ -60,6 +60,7 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
+        transformer.afterPropertiesSet();
 
         registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
     }

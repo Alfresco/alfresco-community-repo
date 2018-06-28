@@ -1198,6 +1198,11 @@ public class TransformerDebug
                 : transformer.getClass().getSimpleName();
         
         String type =
+                ((transformer instanceof AbstractRemoteContentTransformer &&
+                  ((AbstractRemoteContentTransformer)transformer).remoteTransformerClientConfigured()) ||
+                 (transformer instanceof ProxyContentTransformer &&
+                  ((ProxyContentTransformer)transformer).remoteTransformerClientConfigured())
+                ? "Remote" : "")+
                 (transformer instanceof ComplexContentTransformer
                 ? "Complex"
                 : transformer instanceof FailoverContentTransformer

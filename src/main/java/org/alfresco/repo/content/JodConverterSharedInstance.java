@@ -41,7 +41,7 @@ import org.artofsolving.jodconverter.office.OfficeManager;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
-///////// THIS FILE IS A COPY OF THE CODE IN alfresco-docker-transformers /////////////
+///////// THIS FILE IS A COPY OF THE CODE IN alfresco-docker-libreoffice /////////////
 
 /**
  * Makes use of the JodConverter library and an installed

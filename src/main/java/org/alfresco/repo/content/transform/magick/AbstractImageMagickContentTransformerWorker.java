@@ -25,24 +25,20 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
-import java.io.File;
-import java.io.InputStream;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformerHelper;
 import org.alfresco.repo.content.transform.ContentTransformerWorker;
 import org.alfresco.repo.content.transform.RemoteTransformerClient;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.io.File;
+import java.io.InputStream;
 
 /**
  * Abstract helper for transformations based on <b>ImageMagick</b>
@@ -97,7 +93,7 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         this.remoteTransformerClient = remoteTransformerClient;
     }
 
-    protected boolean remoteTransformerClientConfigured()
+    public boolean remoteTransformerClientConfigured()
     {
         return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
     }

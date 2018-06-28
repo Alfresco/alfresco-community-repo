@@ -160,13 +160,13 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             {
                 setAvailable(true);
                 versionString = result.getSecond().trim();
-                logger.info("Using ImageMagick: "+versionString);
+                logger.info("Using remote ImageMagick: "+versionString);
             }
             else
             {
                 setAvailable(false);
                 versionString = "unknown";
-                String message = "ImageMagick is not available for transformations. " + result.getSecond();
+                String message = "Remote ImageMagick is not available for transformations. " + result.getSecond();
                 if (isAvailable == null)
                 {
                     logger.debug(message);

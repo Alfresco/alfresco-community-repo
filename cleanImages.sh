@@ -1,7 +1,6 @@
 #!/bin/bash
 set -x
 
-imagesToBeDeleted="alfresco-content-repository\|ags-repo-enterprise\|ags-share-enterprise\|alfresco-share"
 echo "List all images:"
 docker images -a
 

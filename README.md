@@ -144,16 +144,16 @@ A first step is checking that you have installed a working version of Docker tha
 [https://docs.docker.com/install/]
 
 The second step, in case you already have Docker installed, the current running images must be checked in order to be sure that they are not occupying any of the ports that
-Alfresco and Share use.
+ACS and Share use.
 
 To kill and clean all the images and containers the following command can be used:
 
 ```
 docker system prune --volumes
 ```
- `Note that this will also remove all the stopped containers, containers, networks, volumes and build cache.`
+ > Note that this will also remove all the stopped containers, containers, networks, volumes and build cache.
 
-Depending on which version of AGS you want to start, Community or Enterprise, `you must first build the docker images.`
+Depending on which version of AGS you want to start, Community or Enterprise, **you must first build the docker images**.
 From the root folder of the project you can create both the Repo and the Share images for Community and Enterprise.
 To build all the images use the following command:
 ```
@@ -167,4 +167,4 @@ The Docker images can be started one by one by running the following command fro
 ```
 docker-compose up
 ```
-eg: In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run first in the rm-enterprise-repo folder and then in rm-enterprise-share after the images have been built.
+e.g. In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run first in the rm-enterprise-repo folder and then in rm-enterprise-share after the images have been built.

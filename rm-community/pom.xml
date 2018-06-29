@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm</artifactId>
-      <version>2.7.1-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
    </parent>
 
    <licenses>
@@ -27,7 +27,7 @@
       <dependencies>
          <dependency>
             <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-parent</artifactId>
+            <artifactId>acs-community-packaging</artifactId>
             <version>${alfresco.version}</version>
             <type>pom</type>
             <scope>import</scope>
@@ -39,11 +39,46 @@
             <type>pom</type>
             <scope>import</scope>
          </dependency>
+         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
    <properties>
-      <alfresco.version>5.2.g</alfresco.version>
-      <share.version>5.2.f</share.version>
+      <jackson.version>2.9.5</jackson.version>
+      <spring.version>5.0.4.RELEASE</spring.version>
+
+      <alfresco.version>6.0.7-ga</alfresco.version>
+      <share.version>6.0.b</share.version>
+      <!-- The properties app.amp.* need to be set for share to work. -->
+      <app.filtering.enabled>true</app.filtering.enabled>
    </properties>
 </project>

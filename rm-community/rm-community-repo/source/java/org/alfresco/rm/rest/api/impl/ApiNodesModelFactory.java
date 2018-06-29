@@ -237,7 +237,7 @@ public class ApiNodesModelFactory
         }
         if (includeParam.contains(RMNode.PARAM_PATH))
         {
-            rmNode.setPath(apiUtils.lookupPathInfo(info.getNodeRef()));
+            rmNode.setPath(nodes.lookupPathInfo(info.getNodeRef(), null));
         }
         if (isMinimalInfo && includeParam.contains(RMNode.PARAM_ASPECT_NAMES))
         {

@@ -136,6 +136,7 @@ public class SearchAPI extends BaseAPI
     {
         String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
                     Boolean.toString(includeCategories));
+
         return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
     }
 

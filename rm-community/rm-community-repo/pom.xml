@@ -9,23 +9,30 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-community</artifactId>
-      <version>2.7.1-SNAPSHOT</version>
+      <version>3.0.0-SNAPSHOT</version>
    </parent>
 
    <properties>
+
       <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
-      <alfresco.db.hibernate.dialect>org.hibernate.dialect.H2Dialect</alfresco.db.hibernate.dialect>
+      <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
       <alfresco.db.name>alfresco</alfresco.db.name>
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.db.password>alfresco</alfresco.db.password>
       <alfresco.db.host>localhost</alfresco.db.host>
+      <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-      <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
-      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
-      <api.explorer.version>1.4</api.explorer.version>
+
+      <!-- 6.0 changes -->
+      <dependency.alfresco-core.version>7.3</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>6.55</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>6.38</dependency.alfresco-remote-api.version>
+      <alfresco.alfresco-share-services.version>6.0.b</alfresco.alfresco-share-services.version>
+      <image.name>alfresco/ags-repo-community</image.name>
+
    </properties>
 
    <build>
@@ -120,17 +127,71 @@
                </includes>
             </configuration>
          </plugin>
+         <!--Docker Maven Plugin-->
+         <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>${fabric8.docker.version}</version>
+            <configuration>
+               <images>
+                  <image>
+                     <alias>test-database</alias>
+                     <name>postgres:9.4.12</name>
+                     <run>
+                        <ports>
+                           <port>${database.port}:${postgresql.port}</port>
+                        </ports>
+                        <env>
+                           <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
+                           <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
+                           <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
+                        </env>
+                        <cmd>
+                           <shell>-c max_connections=300</shell>
+                        </cmd>
+                        <wait>
+                           <log>database system is ready to accept connections</log>
+                           <time>20000</time>
+                        </wait>
+                     </run>
+                  </image>
+               </images>
+               <skip>${skip.integrationtests}</skip>
+            </configuration>
+            <executions>
+               <execution>
+                  <id>start</id>
+                  <phase>pre-integration-test</phase>
+                  <goals>
+                     <goal>start</goal>
+                  </goals>
+               </execution>
+               <execution>
+                  <id>stop</id>
+                  <phase>post-integration-test</phase>
+                  <goals>
+                     <goal>stop</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
                <execution>
                   <id>integration-tests</id>
+                  <phase>integration-test</phase>
                   <goals>
                      <goal>integration-test</goal>
-                     <goal>verify</goal>
                   </goals>
                   <configuration>
+                     <systemPropertyVariables>
+                        <db.name>${alfresco.test.db.name}</db.name>
+                        <db.driver>org.postgresql.Driver</db.driver>
+                        <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
+                        <dir.root>${project.build.directory}/alf-data-test</dir.root>
+                     </systemPropertyVariables>
                      <skipTests>${skip.integrationtests}</skipTests>
                      <includes>
                         <include>**/AllTestSuite.class</include>
@@ -157,7 +218,7 @@
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
                            <artifactId>alfresco-share-services</artifactId>
-                           <version>${share.version}</version>
+                           <version>${alfresco.alfresco-share-services.version}</version>
                            <type>amp</type>
                         </artifactItem>
                      </artifactItems>
@@ -175,7 +236,7 @@
                      <artifactItems>
                         <artifactItem>
                            <groupId>${alfresco.groupId}</groupId>
-                           <artifactId>${app.amp.client.war.artifactId}</artifactId>
+                           <artifactId>content-services-community</artifactId>
                            <type>war</type>
                            <version>${alfresco.version}</version>
                         </artifactItem>
@@ -214,7 +275,7 @@
                   <phase>prepare-package</phase>
                   <configuration>
                      <backup>true</backup>
-                     <ampLocation>${project.build.directory}/alfresco-share-services-${share.version}.amp</ampLocation>
+                     <ampLocation>${project.build.directory}/alfresco-share-services-${alfresco.alfresco-share-services.version}.amp</ampLocation>
                      <warLocation>${app.amp.client.war.folder}</warLocation>
                   </configuration>
                </execution>
@@ -298,13 +359,46 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.version}</version>
+         <version>${dependency.alfresco-remote-api.version}</version>
          <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${dependency.alfresco-repository.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-remote-api</artifactId>
+         <version>${dependency.alfresco-remote-api.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-core</artifactId>
+         <version>${dependency.alfresco-core.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.surf</groupId>
+         <artifactId>spring-webscripts</artifactId>
+         <classifier>tests</classifier>
+         <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>io.takari.junit</groupId>
@@ -318,58 +412,13 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.alfresco.surf</groupId>
-         <artifactId>spring-webscripts</artifactId>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-test</artifactId>
-         <version>2.5</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>${alfresco.postgres.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>${alfresco.groupId}</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
-         <classifier>h2scripts</classifier>
-         <exclusions>
-            <exclusion>
-               <groupId>*</groupId>
-               <artifactId>*</artifactId>
-            </exclusion>
-         </exclusions>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -382,25 +431,61 @@
       <dependency>
          <groupId>io.swagger</groupId>
          <artifactId>swagger-parser</artifactId>
-         <version>1.0.23</version>
+         <version>1.0.35</version>
          <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
-      <dependency>
+     <dependency>
          <groupId>com.github.fge</groupId>
          <artifactId>json-schema-validator</artifactId>
          <version>2.2.6</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-core</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-annotations</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.datatype</groupId>
+         <artifactId>jackson-datatype-joda</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.dataformat</groupId>
+         <artifactId>jackson-dataformat-yaml</artifactId>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-test</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <profiles>
+
       <profile>
          <id>use-mysql</id>
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.master.url>
             <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
@@ -412,7 +497,7 @@
          <properties>
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
-            <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
@@ -438,28 +523,9 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>${alfresco.groupId}</groupId>
-                                 <artifactId>${alfresco.repo.artifactId}</artifactId>
+                                 <artifactId>content-services-community</artifactId>
                                  <type>war</type>
                                  <version>${alfresco.version}</version>
-                              </artifactItem>
-                           </artifactItems>
-                        </configuration>
-                     </execution>
-                     <execution>
-                        <id>unpack-alfresco-config</id>
-                        <goals>
-                           <goal>unpack</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                           <outputDirectory>${alfresco.solr.home}</outputDirectory>
-                           <artifactItems>
-                              <artifactItem>
-                                 <artifactId>alfresco-solr4</artifactId>
-                                 <groupId>${alfresco.groupId}</groupId>
-                                 <classifier>config</classifier>
-                                 <version>${alfresco.version}</version>
-                                 <type>zip</type>
                               </artifactItem>
                            </artifactItems>
                         </configuration>
@@ -483,74 +549,6 @@
                   </configuration>
                </plugin>
                <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>build-helper-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>regex-property</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                           <goal>regex-property</goal>
-                        </goals>
-                        <configuration>
-                           <name>solrHomePath</name>
-                           <value>${alfresco.solr.home}</value>
-                           <regex>\\</regex>
-                           <replacement>\\\\</replacement>
-                           <failIfNoMatch>false</failIfNoMatch>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>com.google.code.maven-replacer-plugin</groupId>
-                  <artifactId>replacer</artifactId>
-                  <executions>
-                     <execution>
-                        <id>setup-solr-config</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                           <goal>replace</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <regex>false</regex>
-                     <includes>
-                        <include>${alfresco.solr.home}/context.xml</include>
-                        <include>${alfresco.solr.home}/archive-SpacesStore/conf/solrcore.properties</include>
-                        <include>${alfresco.solr.home}/workspace-SpacesStore/conf/solrcore.properties</include>
-                        <include>${app.amp.client.war.folder}/WEB-INF/web.xml</include>
-                     </includes>
-                     <replacements>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_DIR@@</token>
-                           <value>${solrHomePath}/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_MODEL_DIR@@</token>
-                           <value>${solrHomePath}/alfrescoModels/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_CONTENT_DIR@@</token>
-                           <value>${solrHomePath}/data/content/</value>
-                        </replacement>
-                        <replacement>
-                           <token>@@ALFRESCO_SOLR4_DATA_DIR@@</token>
-                           <value>${solrHomePath}/data/index/</value>
-                        </replacement>
-                        <replacement>
-                           <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
-                           <value><![CDATA[<!--]]></value>
-                        </replacement>
-                        <replacement>
-                           <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
-                           <value><![CDATA[-->]]></value>
-                        </replacement>
-                     </replacements>
-                  </configuration>
-               </plugin>
-               <plugin>
                   <groupId>org.apache.tomcat.maven</groupId>
                   <artifactId>tomcat7-maven-plugin</artifactId>
                   <executions>
@@ -570,15 +568,6 @@
                            <delegate>false</delegate>
                            <contextFile>${project.basedir}/tomcat/context.xml</contextFile>
                            <webapps>
-                              <webapp>
-                                 <groupId>${alfresco.groupId}</groupId>
-                                 <artifactId>alfresco-solr4</artifactId>
-                                 <version>${alfresco.version}</version>
-                                 <type>war</type>
-                                 <asWebapp>true</asWebapp>
-                                 <contextPath>/solr4</contextPath>
-                                 <contextFile>${alfresco.solr.home}/context.xml</contextFile>
-                              </webapp>
                               <webapp>
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>api-explorer</artifactId>
@@ -608,26 +597,13 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
-                     </dependency>
-                     <dependency>
-                        <groupId>${alfresco.groupId}</groupId>
-                        <artifactId>alfresco-repository</artifactId>
-                        <version>${alfresco.version}</version>
-                        <classifier>h2scripts</classifier>
-                        <exclusions>
-                           <exclusion>
-                              <groupId>*</groupId>
-                              <artifactId>*</artifactId>
-                           </exclusion>
-                        </exclusions>
+                        <version>${mysql.version}</version>
                      </dependency>
                   </dependencies>
                </plugin>
             </plugins>
          </build>
       </profile>
-
       <profile>
          <id>wipeDB</id>
          <build>
@@ -651,7 +627,7 @@
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
+                        <version>${mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>
@@ -680,5 +656,50 @@
             </plugins>
          </build>
       </profile>
+       <!--Docker profiles used to build specific docker images for community repo, defined in parent pom -->
+       <profile>
+           <id>buildDockerImage</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>internal</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>master</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
+       <profile>
+           <id>release</id>
+           <build>
+               <plugins>
+                   <plugin>
+                       <groupId>io.fabric8</groupId>
+                       <artifactId>fabric8-maven-plugin</artifactId>
+                   </plugin>
+               </plugins>
+           </build>
+       </profile>
    </profiles>
 </project>

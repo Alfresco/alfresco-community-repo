@@ -2,8 +2,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
      <bean id="rm.quickShareLinks" parent="quickShareLinks">
         <property name="nodes" ref="nodes"/>
@@ -202,7 +202,7 @@
    </bean>
 
    <!-- Map RM exceptions to HTML status codes -->
-   <bean id="rm.simpleMappingExceptionResolver" abstract="true" parent="simpleMappingExceptionResolver">
+   <bean id="rm.simpleMappingExceptionResolver" abstract="true" parent="simpleMappingExceptionResolverParent">
        <property name="exceptionMappings">
             <map merge="true">
                 <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
@@ -212,7 +212,23 @@
         </property>
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
-      <property name="beanName" value="simpleMappingExceptionResolver"/>
+      <property name="beanName" value="simpleMappingExceptionResolverParent"/>
       <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
     </bean>
+
+   <!-- Extend restJsonModule to include the custom serializers for formatting the LocalDate and DateTime from
+   joda-->
+   <bean id="rm.restJsonModule" parent="restJsonModule">
+      <property name="jsonSerializers">
+         <list merge="true">
+            <bean class="org.alfresco.rm.rest.api.util.CustomLocalDateSerializer" />
+            <bean class="org.alfresco.rm.rest.api.util.CustomDateTimeSerializer" />
+         </list>
+      </property>
+   </bean>
+
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="restJsonModule" />
+      <property name="extendingBeanName" value="rm.restJsonModule" />
+   </bean>
 </beans>

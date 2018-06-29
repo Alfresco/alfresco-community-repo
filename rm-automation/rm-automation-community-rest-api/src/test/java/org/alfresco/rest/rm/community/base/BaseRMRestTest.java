@@ -710,6 +710,7 @@ public class BaseRMRestTest extends RestTest
                 {
                 }
             }
+
                 results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
                             includeFolders, includeCategories);
             if (!results.isEmpty() && results.containsAll(expectedResults))

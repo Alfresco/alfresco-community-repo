@@ -1,0 +1,196 @@
+@startuml
+
+class RecordCategory {
+}
+
+class Record {
+}
+
+class NonElectronicRecord {
+}
+
+class FilePlanComponent {
+}
+
+class Transfer {
+	location : String
+	pdfIndicator : boolean
+}
+
+note bottom of Transfer {
+	A holding pen for records 
+	that are being transferred 
+	out of the system 
+}
+
+class Hold {
+}
+
+class EasyAccessRecord {
+}
+
+class RetentionSchedule {
+}
+
+class SecurityGroup {
+	enum groupType 
+		{HIERARCHICAL, 
+		USER_REQUIRES_ANY, 
+		USER_REQUIRES_ALL}
+	unmarkedMark: SecurityMark
+}
+
+class SecurityMark {
+}
+
+class SecurityClassification {
+}
+
+class Event {
+}
+
+class Role {
+}
+
+class Capability {
+	name:String
+}
+
+class RmSite {
+}
+
+class FilePlan {
+}
+
+class UnfiledRecordContainer {
+}
+
+class UnfiledRecordFolder {
+}
+
+class HoldContainer {
+}
+
+class TransferContainer {
+}
+
+class RecordsManagementContainer {
+}
+
+class RecordFolder {
+}
+
+class ClassificationReason {
+}
+
+class ClassificationExemption {
+}
+
+class Content {
+}
+
+class Folder {
+}
+
+class File {
+}
+
+class User {
+}
+
+class Group {
+}
+
+class ClassificationInfo {
+	classification: SecurityClassification
+	reason:ClassificationReason[]
+	classifiedBy: String
+	agency:String
+}
+
+class SourceReference {
+	name:String
+	originatingOrg:String
+	publicationDate:Date
+}
+
+class DowngradeSchedule {
+	date:Date
+	event:String
+	instructions:String
+}
+
+class DeclassificationSchedule {
+	date:Date
+	event:String
+	exemption:Exemption[]
+}
+
+class ClassificationGuide <<Enterprise>> {
+}
+
+class DeclassificationTimeframe {
+}
+
+
+ClassificationInfo *-- "*" SourceReference
+ClassificationInfo *-- "0..1" DowngradeSchedule
+
+Folder <|-- RecordFolder
+
+FilePlanComponent <|-- RecordsManagementContainer
+FilePlanComponent <|-- RecordFolder
+FilePlanComponent <|-- NonElectronicRecord
+FilePlanComponent <|-- Record
+RecordsManagementContainer <|-- Hold
+RecordsManagementContainer <|-- UnfiledRecordContainer
+RecordsManagementContainer <|-- HoldContainer
+RecordsManagementContainer <|-- TransferContainer
+RecordsManagementContainer <|-- FilePlan
+RecordsManagementContainer <|-- RecordCategory
+
+Hold "*" o- "*" FilePlanComponent : contains
+
+SecurityGroup "1" *- "*" SecurityMark
+
+Content o-- "*" SecurityMark : securityControls
+User o-- "*" SecurityMark : clearance 
+Group o-- "*" SecurityMark : clearance
+
+RecordCategory "1" *- "*" RecordFolder
+RecordCategory *- "*" RecordCategory
+
+note bottom of RecordCategory {
+	A RecordCategory may contain either RecordFolders or 
+	RecordCategories but not both. A RecordCategory may only exist
+	as the child of either another RecordCategory or the FilePlan
+}
+
+FilePlan *- "*" RecordsManagementContainer
+HoldContainer *- "*" Hold
+UnfiledRecordContainer *-- "*" UnfiledRecordFolder
+UnfiledRecordFolder *-- "*" Record
+RecordFolder *- "*" Record : contains
+RecordFolder *-- "*" NonElectronicRecord : contains
+
+File <|-- Record
+
+TransferContainer *- "*" Transfer
+Transfer *- "*" Record
+
+Role o- "*" Capability
+User o- "*" Role
+Group o- "*" Role
+
+SecurityMark <|-- SecurityClassification
+Content o- "0..1" SecurityClassification
+
+Record <|- EasyAccessRecord
+Folder "1" o-- "*" EasyAccessRecord 
+
+Content <|-- Folder
+Content <|-- File
+
+(Content, SecurityClassification) .. ClassificationInfo
+
+@enduml

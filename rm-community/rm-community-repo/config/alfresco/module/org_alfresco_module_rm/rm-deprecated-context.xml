@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-<beans>
+
 
 	<!-- Records Management Security Service -->
 	<!-- @deprecated As of release 2.1       -->
@@ -22,9 +25,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="RecordsManagementSecurityService_transaction"/>
+                <idref bean="RecordsManagementSecurityService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="RecordsManagementSecurityService_security"/>
+                <idref bean="RecordsManagementSecurityService_security"/>
             </list>
         </property>
     </bean>
@@ -76,9 +79,9 @@
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="RecordsManagementService_transaction"/>
+                <idref bean="RecordsManagementService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="RecordsManagementService_security"/>
+                <idref bean="RecordsManagementService_security"/>
             </list>
         </property>
     </bean>

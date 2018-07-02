@@ -159,12 +159,14 @@ To build all the images use the following command:
 ```
 mvn install -PbuildDockerImages
 ```
-If only the Community or Enterprise images need to be built than the same command as the above must be run either in the rm-community or rm-enterprise modules.
+If only the Community or Enterprise images need to be built than the same command as above must be run either in the rm-community or rm-enterprise modules.
 
 ## Start the Docker images
 
-The Docker images can be started one by one by running the following command from the folder which contains the docker-compose.yml file:
+The Docker images of the repo can be started independently from share running the following command in the rm-repo-enterprise or rm-repo-community folder which contains the docker-compose.yml file:
 ```
 docker-compose up
 ```
-e.g. In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run first in the rm-enterprise-repo folder and then in rm-enterprise-share after the images have been built.
+> Be aware of the fact that the share images can not be started independently from repo
+
+e.g. In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run in rm-enterprise-share after the images have been built.

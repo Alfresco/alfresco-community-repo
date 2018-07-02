@@ -163,10 +163,10 @@ If only the Community or Enterprise images need to be built than the same comman
 
 ## Start the Docker images
 
-The Docker images of the repo can be started independently from share running the following command in the rm-repo-enterprise or rm-repo-community folder which contains the docker-compose.yml file:
+The Docker images of the Repo can be started independently from Share running the following command in the rm-repo-enterprise or rm-repo-community folder which contains the Docker-compose.yml file:
 ```
 docker-compose up
 ```
-> Be aware of the fact that the share images can not be started independently from repo
+> Be aware of the fact that the Share images can not be started independently from Repo
 
 e.g. In order to start an instance of rm-enterprise-repo and rm-enterprise-share, the above command must be run in rm-enterprise-share after the images have been built.

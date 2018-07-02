@@ -1602,47 +1602,50 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         String authAfter = DefaultTypeConverter.INSTANCE.convert(String.class, after.get(idProp));
         if (!EqualsHelper.nullSafeEquals(authBefore, authAfter))
         {
-            if (AlfrescoTransactionSupport.getResource(PersonServiceImpl.KEY_ALLOW_UID_UPDATE) == null)
+            if (AlfrescoTransactionSupport.getResource(PersonServiceImpl.KEY_ALLOW_UID_UPDATE) != null || authBefore.equalsIgnoreCase(authAfter))
             {
-                throw new UnsupportedOperationException("The name of an authority can not be changed");
-            }
-            if (isAuthority)
-            {
-                if (authBefore != null)
+                if (isAuthority)
                 {
-                    // Fix any ACLs
-                    aclDao.renameAuthority(authBefore, authAfter);
-                }
-
-                // Fix primary association local name
-                QName newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
-                ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-                nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
-
-                // Fix other non-case sensitive parent associations
-                QName oldAssocQName = QName.createQName("cm", authBefore, namespacePrefixResolver);
-                newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
-                for (ChildAssociationRef parent : nodeService.getParentAssocs(nodeRef))
-                {
-                    if (!parent.isPrimary() && parent.getQName().equals(oldAssocQName))
+                    if (authBefore != null)
                     {
-                        nodeService.removeChildAssociation(parent);
-                        nodeService.addChild(parent.getParentRef(), parent.getChildRef(), parent.getTypeQName(),
-                                newAssocQName);
+                        // Fix any ACLs
+                        aclDao.renameAuthority(authBefore, authAfter);
                     }
-                }
-                authorityLookupCache.clear();
-                authorityBridgeTableCache.refresh();
 
-                // Cache is out of date
-                userAuthorityCache.clear();
+                    // Fix primary association local name
+                    QName newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
+                    ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+                    nodeService.moveNode(nodeRef, assoc.getParentRef(), assoc.getTypeQName(), newAssocQName);
+
+                    // Fix other non-case sensitive parent associations
+                    QName oldAssocQName = QName.createQName("cm", authBefore, namespacePrefixResolver);
+                    newAssocQName = QName.createQName("cm", authAfter, namespacePrefixResolver);
+                    for (ChildAssociationRef parent : nodeService.getParentAssocs(nodeRef))
+                    {
+                        if (!parent.isPrimary() && parent.getQName().equals(oldAssocQName))
+                        {
+                            nodeService.removeChildAssociation(parent);
+                            nodeService.addChild(parent.getParentRef(), parent.getChildRef(), parent.getTypeQName(),
+                                    newAssocQName);
+                        }
+                    }
+                    authorityLookupCache.clear();
+                    authorityBridgeTableCache.refresh();
+                    
+                    // Cache is out of date
+                    userAuthorityCache.clear();
+                }
+                else
+                {
+                    userAuthorityCache.remove(authBefore);
+                }
+                // Remove cache entires for the parents.  No need to lock because the data has already been updated.
+                removeParentsFromChildAuthorityCache(nodeRef, false);
             }
             else
             {
-                userAuthorityCache.remove(authBefore);
+                throw new UnsupportedOperationException("The name of an authority can not be changed");
             }
-            // Remove cache entires for the parents.  No need to lock because the data has already been updated.
-            removeParentsFromChildAuthorityCache(nodeRef, false);
         }
     }
 

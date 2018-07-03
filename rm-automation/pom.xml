@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm</artifactId>
-      <version>AGSCommunity3.0.0_test</version>
+      <version>3.0.1_test-SNAPSHOT</version>
    </parent>
 
    <licenses>

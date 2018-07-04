@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-set -e  # exit if commands fails
-set -x  # trace what gets exe
-
-docker info
-docker-compose --version
-echo "Starting Alfresco with AGS amps applied in Docker container"
-docker-compose ps
-docker-compose up -d
 
 WAIT_INTERVAL=1
 COUNTER=0

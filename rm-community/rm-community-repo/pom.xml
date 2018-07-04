@@ -700,13 +700,23 @@
        <profile>
            <id>release</id>
            <build>
-               <plugins>
-                   <plugin>
-                       <groupId>io.fabric8</groupId>
-                       <artifactId>fabric8-maven-plugin</artifactId>
-                   </plugin>
-               </plugins>
-           </build>
-       </profile>
+            <plugins>
+               <plugin>
+                  <groupId>io.fabric8</groupId>
+                  <artifactId>fabric8-maven-plugin</artifactId>
+                  <configuration>
+                     <images>
+                        <image>
+                           <name>${image.name}:${project.version}</name>
+                           <build>
+                              <dockerFileDir>${project.basedir}/</dockerFileDir>
+                           </build>
+                        </image>
+                     </images>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
    </profiles>
 </project>

@@ -9,7 +9,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-community</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.1_test-SNAPSHOT</version>
    </parent>
 
    <properties>

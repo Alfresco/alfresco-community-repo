@@ -343,10 +343,10 @@
          </build>
       </profile>
 
-      <!-- Profile used to build and push docker images with project.version tag to the given image registry (quay.io) and
-       hub.docker -->
+
+      <!-- Profile used to build and push docker images with project.version tag to hub.docker when the community deploy goal encounters-->
       <profile>
-         <id>release</id>
+         <id>release-enterprise</id>
          <build>
             <pluginManagement>
                <plugins>
@@ -363,6 +363,52 @@
                                  <dockerFileDir>${project.basedir}/</dockerFileDir>
                               </build>
                            </image>
+                        </images>
+                     </configuration>
+                     <executions>
+                        <execution>
+                           <id>build-push-image</id>
+                           <phase>deploy</phase>
+                           <goals>
+                              <goal>build</goal>
+                              <goal>push</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+
+      <!-- Profile used to build and push docker images with project.version tag to both image registries quay.io and hub.docker when
+      the enterprise deploy goal encounters-->
+      <profile>
+         <id>release-community</id>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>fabric8-maven-plugin</artifactId>
+                     <version>${fabric8.maven.version}</version>
+                     <configuration>
+                        <images>
+                           <image>
+                              <name>${image.name}:${project.version}</name>
+                              <registry>${image.registry}</registry>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                           <images>
+                              <image>
+                                 <name>${image.name}:${project.version}</name>
+                                 <build>
+                                    <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                 </build>
+                              </image>
+                           </images>
                         </images>
                      </configuration>
                      <executions>

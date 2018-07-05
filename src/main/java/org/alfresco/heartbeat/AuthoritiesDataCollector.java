@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -62,9 +63,10 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
     /** The authority service. */
     private AuthorityService authorityService;
 
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression,
+                                    HeartBeatJobScheduler hbJobScheduler)
     {
-        super(collectorId, collectorVersion, cronExpression);
+        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)

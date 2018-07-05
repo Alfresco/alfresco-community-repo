@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -56,12 +57,14 @@ public class ModelUsageDataCollectorTest
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
     private List<HBData> collectedData;
+    private HeartBeatJobScheduler mockScheduler;
 
     @Before
     public void setUp()
     {
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
+        mockScheduler = mock(HeartBeatJobScheduler.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
@@ -76,7 +79,7 @@ public class ModelUsageDataCollectorTest
         when(mockRetryingTransactionHelper.doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean())).thenReturn(mockCustomModelsInfo);
         when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
-        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *" );
+        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *", mockScheduler);
 
         usageModelCollector.setHbDataCollectorService(mockCollectorService);
         usageModelCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);

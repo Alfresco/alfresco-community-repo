@@ -188,7 +188,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.lucene.analysis.PathTokenFilterTest.class,
     
     org.alfresco.heartbeat.HBDataCollectorServiceImplTest.class,
-    org.alfresco.heartbeat.HeartBeatJobTest.class,
+    org.alfresco.heartbeat.jobs.LockingJobTest.class,
+    org.alfresco.heartbeat.jobs.QuartzJobSchedulerTest.class,
     org.alfresco.heartbeat.AuthoritiesDataCollectorTest.class,
     org.alfresco.heartbeat.ConfigurationDataCollectorTest.class,
     org.alfresco.heartbeat.InfoDataCollectorTest.class,

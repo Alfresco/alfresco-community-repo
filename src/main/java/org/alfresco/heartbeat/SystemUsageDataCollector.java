@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -59,9 +60,10 @@ public class SystemUsageDataCollector extends HBBaseDataCollector implements Ini
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    public SystemUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public SystemUsageDataCollector(String collectorId, String collectorVersion, String cronExpression,
+                                    HeartBeatJobScheduler hbJobScheduler)
     {
-        super(collectorId, collectorVersion, cronExpression);
+        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)

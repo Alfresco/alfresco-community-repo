@@ -23,10 +23,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.heartbeat;
+package org.alfresco.heartbeat.jobs;
 
+import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.heartbeat.jobs.LockingJob;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
@@ -55,17 +57,19 @@ import static org.mockito.Mockito.when;
 /**
  * Created by mmuller on 27/10/2017.
  */
-public class HeartBeatJobTest
+public class LockingJobTest
 {
 
     private HBDataSenderService mockDataSenderService;
     private JobLockService mockJobLockService;
+    private HeartBeatJobScheduler mockScheduler;
 
     @Before
     public void setUp()
     {
         mockDataSenderService = mock(HBDataSenderService.class);
         mockJobLockService = mock(JobLockService.class);
+        mockScheduler = mock(HeartBeatJobScheduler.class);
     }
 
     private class SimpleHBDataCollector extends HBBaseDataCollector
@@ -73,7 +77,7 @@ public class HeartBeatJobTest
 
         public SimpleHBDataCollector(String collectorId)
         {
-            super(collectorId,"1.0","0 0 0 ? * *");
+            super(collectorId,"1.0","0 0 0 ? * *", mockScheduler);
         }
 
         public List<HBData> collectData()
@@ -97,7 +101,7 @@ public class HeartBeatJobTest
         jobDataMap.put("jobLockService", mockJobLockService);
         JobDetail jobDetail = JobBuilder.newJob()
                 .setJobData(jobDataMap)
-                .ofType(HeartBeatJob.class)
+                .ofType(LockingJob.class)
                 .build();
         when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
 
@@ -111,7 +115,7 @@ public class HeartBeatJobTest
             when(mockJobLockService.getLock(isA(QName.class), anyLong())).thenReturn(lockToken).thenThrow(new LockAcquisitionException("", ""));
             try
             {
-                new HeartBeatJob().execute(mockJobExecutionContext);
+                new LockingJob().execute(mockJobExecutionContext);
             }
             catch (JobExecutionException e)
             {
@@ -127,7 +131,7 @@ public class HeartBeatJobTest
         {
             try
             {
-                new HeartBeatJob().execute(mockJobExecutionContext);
+                new LockingJob().execute(mockJobExecutionContext);
             }
             catch (JobExecutionException e)
             {
@@ -170,7 +174,7 @@ public class HeartBeatJobTest
         jobDataMap.put("jobLockService", mockJobLockService);
         JobDetail jobDetail = JobBuilder.newJob()
                 .setJobData(jobDataMap)
-                .ofType(HeartBeatJob.class)
+                .ofType(LockingJob.class)
                 .build();
         when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
 
@@ -181,8 +185,8 @@ public class HeartBeatJobTest
                 .thenThrow(new LockAcquisitionException("", ""));         // second job doesn't get the lock
 
         // Run two heart beat jobs
-        new HeartBeatJob().execute(mockJobExecutionContext);
-        new HeartBeatJob().execute(mockJobExecutionContext);
+        new LockingJob().execute(mockJobExecutionContext);
+        new LockingJob().execute(mockJobExecutionContext);
 
         // Verify that the collector only collects data once, since only one job got the lock
         verify(simpleCollector, Mockito.times(1)).collectData();

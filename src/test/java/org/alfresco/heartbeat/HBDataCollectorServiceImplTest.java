@@ -27,20 +27,14 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
-import org.alfresco.repo.scheduler.AlfrescoSchedulerFactory;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.junit.Before;
 import org.junit.Test;
-import org.quartz.CronTrigger;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.TriggerKey;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-import org.junit.rules.ExpectedException;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -55,20 +49,16 @@ public class HBDataCollectorServiceImplTest
 {
 
     private final String VALID_CRON = "0 0/2 * * * ?";
-    private final String INVALID_CRON = "0 no no * * ?";
     private final HBBaseDataCollector validCollector1 = new SimpleHBDataCollector("validCollector1", VALID_CRON);
     private final HBBaseDataCollector validCollector2 = new SimpleHBDataCollector("validCollector2", VALID_CRON);
-    private Scheduler scheduler;
+
+    List<HBBaseDataCollector> scheduledCollectors = new LinkedList<>();
 
     @Before
     public void before() throws Exception
     {
-        // Create fresh scheduler
-        SchedulerFactoryBean sfb = new SchedulerFactoryBean();
-        sfb.setSchedulerFactoryClass(AlfrescoSchedulerFactory.class);
-        sfb.setAutoStartup(false);
-        sfb.afterPropertiesSet();
-        scheduler = sfb.getScheduler();
+        scheduledCollectors = new LinkedList<>();
+
     }
 
     @Test
@@ -86,14 +76,13 @@ public class HBDataCollectorServiceImplTest
     {
         // Enable heartbeat by setting the default enabled state ( as if set in prop file)
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
 
         // Check that the jobs are scheduled for all collectors when heartbeat is enabled
         assertTrue(collectorService.isEnabled());
-        assertCollectorJobsScheduled("Job was not scheduled but HB is enabled", scheduler);
+        assertCollectorJobsScheduled("Job was not scheduled but HB is enabled");
     }
 
     @Test
@@ -101,14 +90,13 @@ public class HBDataCollectorServiceImplTest
     {
         // Disable heartbeat by setting the default enabled state ( as if set in prop file)
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(false);
-        collectorService.setScheduler(scheduler);
 
         // Register collectors
         registerValidCollectors(collectorService);
 
         // Check that the jobs are not scheduled for any collectors when heartbeat is disabled
         assertFalse(collectorService.isEnabled());
-        assertCollectorJobsNotScheduled("Job was scheduled but HB is disabled", scheduler);
+        assertCollectorJobsNotScheduled("Job was scheduled but HB is disabled");
     }
 
     @Test
@@ -117,26 +105,25 @@ public class HBDataCollectorServiceImplTest
     {
         // Enable heartbeat by setting the default enabled state ( as if set in prop file)
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
 
         // Check that the jobs are scheduled for all collectors when heartbeat is enabled
         assertTrue(collectorService.isEnabled());
-        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
-        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector1));
+        assertTrue("Job was not scheduled",            isJobScheduledForCollector(validCollector2));
 
         collectorService.deregisterCollector(validCollector1);
 
-        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
-        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector1));
+        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector2));
 
         collectorService.registerCollector(validCollector1);
         collectorService.deregisterCollector(validCollector2);
 
-        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
-        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+        assertTrue( "Job was not scheduled",           isJobScheduledForCollector(validCollector1));
+        assertFalse("Job should have be unregistered", isJobScheduledForCollector(validCollector2));
     }
 
     /**
@@ -149,7 +136,6 @@ public class HBDataCollectorServiceImplTest
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
         final HBDataSenderService sender = mock( HBDataSenderService.class);
         collectorService.setHbDataSenderService(sender);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
@@ -159,7 +145,7 @@ public class HBDataCollectorServiceImplTest
 
         // Check heart beat is disabled and all collector jobs are unscheduled
         assertFalse(collectorService.isEnabled());
-        assertCollectorJobsNotScheduled("Job was scheduled but HB is disabled", scheduler);
+        assertCollectorJobsNotScheduled("Job was scheduled but HB is disabled");
 
         // Also check sender is updated
         verify(sender).enable(false);
@@ -175,7 +161,6 @@ public class HBDataCollectorServiceImplTest
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(false);
         final HBDataSenderService sender = mock( HBDataSenderService.class);
         collectorService.setHbDataSenderService(sender);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
@@ -185,7 +170,7 @@ public class HBDataCollectorServiceImplTest
 
         // Check heart beat is enabled and all collector jobs are scheduled
         assertTrue(collectorService.isEnabled());
-        assertCollectorJobsScheduled("Job was not scheduled but HB is enabled", scheduler);
+        assertCollectorJobsScheduled("Job was not scheduled but HB is enabled");
 
         // Also check sender is updated
         verify(sender).enable(true);
@@ -199,7 +184,6 @@ public class HBDataCollectorServiceImplTest
     {
         // Enable heartbeat by setting the default enabled state ( as if set in prop file)
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
@@ -212,7 +196,7 @@ public class HBDataCollectorServiceImplTest
 
         // Check heartbeat state reverts to default enabled state and jobs are scheduled
         assertTrue(collectorService.isEnabled());
-        assertCollectorJobsScheduled("Job should be unscheduled.", scheduler);
+        assertCollectorJobsScheduled("Job should be unscheduled.");
     }
 
     /**
@@ -223,7 +207,6 @@ public class HBDataCollectorServiceImplTest
     {
         // Disable heartbeat by setting the default enabled state ( as if set in prop file)
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(false);
-        collectorService.setScheduler(scheduler);
 
         // Register few collectors
         registerValidCollectors(collectorService);
@@ -236,65 +219,14 @@ public class HBDataCollectorServiceImplTest
 
         // Check heartbeat is disabled and job unscheduled
         assertFalse(collectorService.isEnabled());
-        assertCollectorJobsNotScheduled("Job should be unscheduled.",scheduler);
+        assertCollectorJobsNotScheduled("Job should be unscheduled.");
     }
 
-    /**
-     * Test scheduling job for collector with invalid cron expression
-     */
-    @Test(expected=RuntimeException.class)
-    public void testInvalidCronExpression() throws Exception
-    {
-        final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
-
-        // Register collector with invalid cron expression
-        SimpleHBDataCollector c2 = new SimpleHBDataCollector("c2", INVALID_CRON);
-        collectorService.registerCollector(c2);
-    }
-
-    /**
-     *
-     * Jobs are scheduled with cron expressions provided by collectors
-     *
-     */
-    @Test
-    public void testJobsScheduledWithDifferentCronExpressions() throws Exception
-    {
-        final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
-
-        final String cron1 = "0 0/1 * * * ?";
-        final String cron2 = "0 0/2 * * * ?";
-        final String cron3 = "0 0/3 * * * ?";
-
-        final HBBaseDataCollector c1 = new SimpleHBDataCollector("c1", cron1);
-        final HBBaseDataCollector c2 = new SimpleHBDataCollector("c2", cron2);
-        final HBBaseDataCollector c3 = new SimpleHBDataCollector("c3", cron3);
-
-        final String triggerName1 = "heartbeat-" + c1.getCollectorId() + "-Trigger";
-        final String triggerName2 = "heartbeat-" + c2.getCollectorId() + "-Trigger";
-        final String triggerName3 = "heartbeat-" + c3.getCollectorId() + "-Trigger";
-
-        // Register 3 collectors with 3 different cron expressions
-        collectorService.registerCollector(c1);
-        collectorService.registerCollector(c2);
-        collectorService.registerCollector(c3);
-
-        String testCron1 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName1, Scheduler.DEFAULT_GROUP))).getCronExpression();
-        String testCron2 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName2, Scheduler.DEFAULT_GROUP))).getCronExpression();
-        String testCron3 = ((CronTrigger) scheduler.getTrigger(new TriggerKey(triggerName3, Scheduler.DEFAULT_GROUP))).getCronExpression();
-
-        assertEquals("Cron expression doesn't match", cron1, testCron1);
-        assertEquals("Cron expression doesn't match", cron2, testCron2);
-        assertEquals("Cron expression doesn't match", cron3, testCron3);
-    }
 
     @Test(expected=IllegalArgumentException.class)
     public void testRegisterSameCollectorTwice() throws Exception
     {
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
-        collectorService.setScheduler(scheduler);
 
         HBBaseDataCollector c1 = new SimpleHBDataCollector("c1", VALID_CRON);
 
@@ -310,16 +242,16 @@ public class HBDataCollectorServiceImplTest
         collectorService.registerCollector(validCollector2);
     }
 
-    private void assertCollectorJobsScheduled(String message, Scheduler scheduler) throws Exception
+    private void assertCollectorJobsScheduled(String message) throws Exception
     {
-        assertTrue(message, isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
-        assertTrue(message, isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+        assertTrue(message, isJobScheduledForCollector(validCollector1));
+        assertTrue(message, isJobScheduledForCollector(validCollector2));
     }
 
-    private void assertCollectorJobsNotScheduled(String message, Scheduler scheduler) throws Exception
+    private void assertCollectorJobsNotScheduled(String message) throws Exception
     {
-        assertFalse(message, isJobScheduledForCollector(validCollector1.getCollectorId(), scheduler));
-        assertFalse(message, isJobScheduledForCollector(validCollector2.getCollectorId(), scheduler));
+        assertFalse(message, isJobScheduledForCollector(validCollector1));
+        assertFalse(message, isJobScheduledForCollector(validCollector2));
     }
 
     private void enabledHbInLicense(HBDataCollectorServiceImpl collectorService, boolean activate)
@@ -329,25 +261,37 @@ public class HBDataCollectorServiceImplTest
         collectorService.onLicenseChange(mockLicenseDescriptor);
     }
 
-    private boolean isJobScheduledForCollector(String collectorId, Scheduler scheduler) throws Exception
+    private boolean isJobScheduledForCollector(HBBaseDataCollector collector) throws Exception
     {
-        String jobName = "heartbeat-" + collectorId;
-        String triggerName = jobName + "-Trigger";
-        return scheduler.checkExists(new JobKey(jobName, Scheduler.DEFAULT_GROUP))
-                && scheduler.checkExists(new TriggerKey(triggerName, Scheduler.DEFAULT_GROUP));
+        return scheduledCollectors.contains(collector);
     }
 
     private class SimpleHBDataCollector extends HBBaseDataCollector
     {
         public SimpleHBDataCollector(String collectorId, String cron)
         {
-            super(collectorId,"1.0",cron);
+            super(collectorId,"1.0",cron, new SimpleHBJobScheduler());
         }
 
         public List<HBData> collectData()
         {
             List<HBData> result = new LinkedList<>();
             return result;
+        }
+    }
+
+    private class SimpleHBJobScheduler implements HeartBeatJobScheduler
+    {
+        @Override
+        public void scheduleJob(HBBaseDataCollector collector)
+        {
+            scheduledCollectors.add(collector);
+        }
+
+        @Override
+        public void unscheduleJob(HBBaseDataCollector collector)
+        {
+            scheduledCollectors.remove(collector);
         }
     }
 }

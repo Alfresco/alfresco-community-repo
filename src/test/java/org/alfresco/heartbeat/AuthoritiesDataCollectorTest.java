@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -46,19 +47,21 @@ public class AuthoritiesDataCollectorTest
 {
     private AuthoritiesDataCollector authorityDataCollector;
     private List<HBData> collectedData;
+    private HeartBeatJobScheduler mockScheduler;
 
     @Before
     public void setUp()
     {
         HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
         AuthorityService authorityService = mock(AuthorityService.class);
+        mockScheduler = mock(HeartBeatJobScheduler.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
         DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
         when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities", "1.0", "0 0 0 ? * *");
+        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities", "1.0", "0 0 0 ? * *", mockScheduler);
         authorityDataCollector.setAuthorityService(authorityService);
         authorityDataCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
         authorityDataCollector.setHbDataCollectorService(mockCollectorService);

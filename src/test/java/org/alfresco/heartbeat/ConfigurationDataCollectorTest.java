@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
@@ -52,6 +53,7 @@ public class ConfigurationDataCollectorTest
     private DescriptorDAO mockDescriptorDAO;
     private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
+    private HeartBeatJobScheduler mockScheduler;
 
     @Before
     public void setUp()
@@ -60,13 +62,14 @@ public class ConfigurationDataCollectorTest
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockServerDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
+        mockScheduler = mock(HeartBeatJobScheduler.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        configurationCollector = new ConfigurationDataCollector("acs.repository.configuration", "1.0", "0 0 0 ? * SUN");
+        configurationCollector = new ConfigurationDataCollector("acs.repository.configuration", "1.0", "0 0 0 ? * SUN", mockScheduler);
         configurationCollector.setHbDataCollectorService(mockCollectorService);
         configurationCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         configurationCollector.setSmartFoldersBundle(smartFoldersBundle);

@@ -30,6 +30,7 @@
         <constructor-arg name="collectorVersion"    value="1.0"/> <!-- Collector version -->
         <constructor-arg name="cronExpression"      value="0 0 0 ? * *"/> <!-- Daily -->
         <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
+        <property name="hbJobScheduler"             ref="hbNonLockingJobScheduler"/> <!--Schedule a non locking job for this collector -->
     </bean>
 
     <!-- HeartBeat authority data collector -->

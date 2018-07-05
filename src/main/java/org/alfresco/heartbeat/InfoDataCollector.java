@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.deployment.DeploymentMethodProvider;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.descriptor.Descriptor;
@@ -73,9 +74,10 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
     private DeploymentMethodProvider deploymentMethodProvider;
 
-    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression,
+                             HeartBeatJobScheduler hbJobScheduler)
     {
-        super(collectorId, collectorVersion, cronExpression);
+        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
@@ -136,5 +138,4 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         return Arrays.asList(infoData);
     }
-
 }

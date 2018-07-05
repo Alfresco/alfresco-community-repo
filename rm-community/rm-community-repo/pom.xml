@@ -697,9 +697,9 @@
                </plugins>
            </build>
        </profile>
-       <profile>
-           <id>release</id>
-           <build>
+      <profile>
+         <id>release-community</id>
+         <build>
             <plugins>
                <plugin>
                   <groupId>io.fabric8</groupId>
@@ -708,12 +708,31 @@
                      <images>
                         <image>
                            <name>${image.name}:${project.version}</name>
+                           <registry>${image.registry}</registry>
                            <build>
                               <dockerFileDir>${project.basedir}/</dockerFileDir>
                            </build>
                         </image>
+                        <images>
+                           <image>
+                              <name>${image.name}:${project.version}</name>
+                              <build>
+                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
+                              </build>
+                           </image>
+                        </images>
                      </images>
                   </configuration>
+                  <executions>
+                     <execution>
+                        <id>build-push-image</id>
+                        <phase>deploy</phase>
+                        <goals>
+                           <goal>build</goal>
+                           <goal>push</goal>
+                        </goals>
+                     </execution>
+                  </executions>
                </plugin>
             </plugins>
          </build>

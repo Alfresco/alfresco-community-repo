@@ -501,7 +501,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 txnReadState == TxnReadState.TXN_READ_WRITE)
             {
                 // We create missing people AND are in a read-write txn
-                return createMissingPerson(userName, true);
+                return createMissingPersonAsSystem(userName, true);
             }
             else
             {
@@ -823,7 +823,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             if (createMissingPeople())
             {
-                personNode = createMissingPerson(userName, autoCreateHomeFolder);
+                personNode = createMissingPersonAsSystem(userName, autoCreateHomeFolder);
             }
             else
             {
@@ -865,19 +865,26 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return true;
     }
     
-    private NodeRef createMissingPerson(String userName, boolean autoCreateHomeFolder)
+    private NodeRef createMissingPersonAsSystem(final String userName, final boolean autoCreateHomeFolder)
     {
-        HashMap<QName, Serializable> properties = getDefaultProperties(userName);
-        NodeRef person = createPerson(properties);
-        
-        // The home folder will ONLY exist after the the person is created if
-        // homeFolderCreationEager == true
-        if (autoCreateHomeFolder && homeFolderCreationEager == false)
+        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<NodeRef>()
         {
-            makeHomeFolderIfRequired(person);                
-        }
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                HashMap<QName, Serializable> properties = getDefaultProperties(userName);
+                NodeRef person = createPerson(properties);
 
-        return person;
+                // The home folder will ONLY exist after the the person is created if
+                // homeFolderCreationEager == true
+                if (autoCreateHomeFolder && homeFolderCreationEager == false)
+                {
+                    makeHomeFolderIfRequired(person);
+                }
+
+                return person;
+            }
+        });
     }
     
     private void makeHomeFolderIfRequired(NodeRef person)

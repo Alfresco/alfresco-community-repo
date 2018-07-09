@@ -157,7 +157,7 @@ Depending on which version of AGS you want to start, Community or Enterprise, **
 From the root folder of the project you can create both the Repo and the Share images for Community and Enterprise.
 To build all the images use the following command:
 ```
-mvn install -PbuildDockerImages
+mvn install -PbuildDockerImage
 ```
 If only the Community or Enterprise images need to be built than the same command as above must be run either in the rm-community or rm-enterprise modules.
 

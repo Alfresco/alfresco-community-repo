@@ -344,7 +344,7 @@
       </profile>
 
 
-      <!-- Profile used to build and push docker images with project.version tag to hub.docker when the community deploy goal encounters-->
+      <!-- Profile used to build and push docker images with project.version tag to hub.docker when the enterprise deploy goal encounters-->
       <profile>
          <id>release-enterprise</id>
          <build>
@@ -382,7 +382,7 @@
       </profile>
 
       <!-- Profile used to build and push docker images with project.version tag to both image registries quay.io and hub.docker when
-      the enterprise deploy goal encounters-->
+      the community deploy goal encounters-->
       <profile>
          <id>release-community</id>
          <build>

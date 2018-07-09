@@ -38,13 +38,11 @@ public class CMISUtils
     public static <T> T copy(T source)
     {
         T target = null;
-        try
+        try ( CopyOutputStream cos = new CopyOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(cos) )
         {
-            CopyOutputStream cos = new CopyOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(cos);
             out.writeObject(source);
             out.flush();
-            out.close();
 
             ObjectInputStream in = new ObjectInputStream(cos.getInputStream());
             target = (T) in.readObject();

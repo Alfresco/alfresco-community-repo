@@ -25,14 +25,18 @@
  */
 package org.alfresco.heartbeat;
 
+import com.sun.management.OperatingSystemMXBean;
+import com.sun.management.UnixOperatingSystemMXBean;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +55,7 @@ public class SystemUsageDataCollectorTest
     private DescriptorDAO mockDescriptorDAO;
     private List<HBData> collectedData;
     private HeartBeatJobScheduler mockScheduler;
+    private BasicDataSource mockDataSource;
 
     @Before
     public void setUp()
@@ -58,6 +63,7 @@ public class SystemUsageDataCollectorTest
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
         mockScheduler = mock(HeartBeatJobScheduler.class);
+        mockDataSource = mock(BasicDataSource.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
@@ -65,6 +71,7 @@ public class SystemUsageDataCollectorTest
 
         usageSystemCollector = new SystemUsageDataCollector("acs.repository.usage.system","1.0","0 0 0 ? * *", mockScheduler);
         usageSystemCollector.setHbDataCollectorService(mockCollectorService);
+        usageSystemCollector.setDataSource(mockDataSource);
         usageSystemCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
 
         collectedData = usageSystemCollector.collectData();
@@ -90,6 +97,28 @@ public class SystemUsageDataCollectorTest
         assertNotNull("Repository usage data missing.", systemUsage);
 
         Map<String,Object> data = systemUsage.getData();
+
+        assertTrue(data.containsKey("cpu"));
+        Map<String, Object> cpu = (Map<String, Object>) data.get("cpu");
+        assertTrue(cpu.containsKey("availableProcessors"));
+
+        OperatingSystemMXBean osMBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+        if (osMBean != null)
+        {
+            if (osMBean instanceof UnixOperatingSystemMXBean)
+            {
+                assertTrue(data.containsKey("openFileDescriptorCount"));
+            }
+            assertTrue(cpu.containsKey("percentageProcessCpuLoad"));
+            assertTrue(cpu.containsKey("percentageSystemCpuLoad"));
+            assertTrue(cpu.containsKey("systemLoadAverage"));
+        }
+
+        assertTrue(data.containsKey("db"));
+        Map<String, Object> db = (Map<String, Object>) data.get("db");
+        assertTrue(db.containsKey("idleConnections"));
+        assertTrue(db.containsKey("activeConnections"));
+
         assertTrue(data.containsKey("memFree"));
         assertTrue(data.containsKey("memMax"));
         assertTrue(data.containsKey("memTotal"));

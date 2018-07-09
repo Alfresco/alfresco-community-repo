@@ -43,7 +43,6 @@ public class CMISUtils
         {
             out.writeObject(source);
             out.flush();
-            out.close();
 
             ObjectInputStream in = new ObjectInputStream(cos.getInputStream());
             target = (T) in.readObject();

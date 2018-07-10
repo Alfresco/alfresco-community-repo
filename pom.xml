@@ -175,6 +175,33 @@
             </plugins>
          </build>
       </profile>
+      <profile>
+         <id>enterprise-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
+      <profile>
+         <id>hotfix-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/hotfix-releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
+      <profile>
+         <id>community-release</id>
+         <distributionManagement>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/repositories/releases/</url>
+            </repository>
+         </distributionManagement>
+      </profile>
 
       <!--
         The following profile adds the /properties directories as resource directories in the project.

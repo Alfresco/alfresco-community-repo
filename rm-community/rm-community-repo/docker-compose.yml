@@ -5,7 +5,7 @@ version: "3"
 services:
     alfresco:
     # acs repo community image with ags repo community amp applied
-        image: alfresco/ags-repo-community:latest
+        image: alfresco/alfresco-governance-repository-community:latest
         environment:
             CATALINA_OPTS : "
                 -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n

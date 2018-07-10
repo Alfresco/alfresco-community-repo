@@ -70,6 +70,31 @@ public class UrlUtil
                 sysAdminParams.getShareContext());
     }
 
+
+    public static String getApiExplorerUrl(SysAdminParams sysAdminParams)
+    {
+        return getApiExplorerUrl(sysAdminParams, "", "");
+    }
+
+    /**
+     * Builds URL to Api-Explorer based on the request only if the URL property is not provided
+     *  {@link SysAdminParams}.
+     * @return Rest-Api Url such as https://col.ab.or.ate/api-explorer/
+     *  or http://localhost:8082/api-explorer/
+     */
+    public static String getApiExplorerUrl(SysAdminParams sysAdminParams, String requestURL, String requestURI)
+    {
+        if (!sysAdminParams.getApiExplorerUrl().isEmpty())
+        {
+            return sysAdminParams.getApiExplorerUrl();
+        }
+        if (!requestURI.isEmpty() && !requestURL.isEmpty())
+        {
+            return requestURL.replace(requestURI,"/api-explorer");
+        }
+        return "";
+    }
+
     /**
      * Replaces the share url placeholder, namely {@literal ${shareUrl}}, with <b>share</b> url.
      *

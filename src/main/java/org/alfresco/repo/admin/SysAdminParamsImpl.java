@@ -89,6 +89,9 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
 
     /** Share protocol. */
     private String shareProtocol = "http";
+
+    /** Api Explorer Url. */
+    private String apiExplorerUrl = "";
     
     // The default is GROUP_EVERYONE, although this will likely be overridden by an injected value from spring.
     private String sitePublicGroup = PermissionService.ALL_AUTHORITIES;
@@ -303,5 +306,9 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     {
         this.sitePublicGroup = sitePublicGroup;
     }
+
+    public String getApiExplorerUrl() { return this.apiExplorerUrl; }
+
+    public void setApiExplorerUrl(String apiExplorerUrl) { this.apiExplorerUrl = apiExplorerUrl; }
 
 }

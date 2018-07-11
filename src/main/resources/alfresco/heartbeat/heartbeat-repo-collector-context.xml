@@ -27,7 +27,7 @@
     <!-- HeartBeat repository usage system data collector -->
     <bean id="systemUsageDataCollector" class="org.alfresco.heartbeat.SystemUsageDataCollector" parent="hbBaseDataCollector" >
         <constructor-arg name="collectorId"         value="acs.repository.usage.system"/>  <!-- Collector ID -->
-        <constructor-arg name="collectorVersion"    value="1.1"/> <!-- Collector version -->
+        <constructor-arg name="collectorVersion"    value="1.2"/> <!-- Collector version -->
         <constructor-arg name="cronExpression"      value="0 0 0 ? * *"/> <!-- Daily -->
         <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
         <property name="dataSource"                 ref="dataSource"/>

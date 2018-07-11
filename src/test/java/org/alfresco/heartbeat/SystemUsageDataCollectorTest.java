@@ -109,8 +109,8 @@ public class SystemUsageDataCollectorTest
             {
                 assertTrue(data.containsKey("openFileDescriptorCount"));
             }
-            assertTrue(cpu.containsKey("percentageProcessCpuLoad"));
-            assertTrue(cpu.containsKey("percentageSystemCpuLoad"));
+            assertTrue(cpu.containsKey("percentageProcessLoad"));
+            assertTrue(cpu.containsKey("percentageSystemLoad"));
             assertTrue(cpu.containsKey("systemLoadAverage"));
         }
 
@@ -119,9 +119,11 @@ public class SystemUsageDataCollectorTest
         assertTrue(db.containsKey("idleConnections"));
         assertTrue(db.containsKey("activeConnections"));
 
-        assertTrue(data.containsKey("memFree"));
-        assertTrue(data.containsKey("memMax"));
-        assertTrue(data.containsKey("memTotal"));
+        assertTrue(data.containsKey("mem"));
+        Map<String, Object> mem = (Map<String, Object>) data.get("mem");
+        assertTrue(mem.containsKey("free"));
+        assertTrue(mem.containsKey("total"));
+        assertTrue(mem.containsKey("max"));
     }
 
     private HBData grabDataByCollectorId(String collectorId)

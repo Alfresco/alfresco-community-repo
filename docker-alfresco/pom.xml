@@ -25,6 +25,12 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
+            <artifactId>api-explorer</artifactId>
+            <version>${dependency.alfresco-api-explorer.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-server-root</artifactId>
             <version>${dependency.alfresco-server-root.version}</version>
             <type>war</type>
@@ -88,6 +94,14 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/war/alfresco</outputDirectory>
                                     <destFileName>alfresco.war</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>api-explorer</artifactId>
+                                    <version>${dependency.alfresco-api-explorer.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/war/api-explorer</outputDirectory>
+                                    <destFileName>api-explorer.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

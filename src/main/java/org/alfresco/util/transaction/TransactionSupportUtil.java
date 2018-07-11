@@ -480,7 +480,7 @@ public abstract class TransactionSupportUtil
             // These are still considered part of the transaction so are executed here
             doBeforeCommit(readOnly);
             
-            // Now run the > 0 listeners beforeCommit
+            // Now run the != 0 listeners beforeCommit
             Set<Integer> priorities = priorityLookup.keySet();
             
             SortedSet<Integer> sortedPriorities = new ConcurrentSkipListSet<Integer>(FORWARD_INTEGER_ORDER);
@@ -526,8 +526,7 @@ public abstract class TransactionSupportUtil
          */
         private void doBeforeCommit(Set<TransactionListener> visitedListeners, boolean readOnly)
         {
-            Set<TransactionListener> listeners = priorityLookup.get(0);
-            Set<TransactionListener> pendingListeners = new HashSet<TransactionListener>(listeners);
+            List<TransactionListener> pendingListeners = getLevelZeroListenersIterable();
             pendingListeners.removeAll(visitedListeners);
             
             if (pendingListeners.size() != 0)

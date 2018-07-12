@@ -23,6 +23,7 @@
             <modules>
                 <module>war</module>
                 <module>docker-alfresco</module>
+                <module>docker-alfresco/test/docker-alfresco-community-test</module>
             </modules>
         </profile>
         <profile>
@@ -35,6 +36,7 @@
                 <module>distribution</module>
                 <module>public-javadoc</module>
                 <module>docker-alfresco</module>
+                <module>docker-alfresco/test/docker-alfresco-community-test</module>
             </modules>
         </profile>
     </profiles>

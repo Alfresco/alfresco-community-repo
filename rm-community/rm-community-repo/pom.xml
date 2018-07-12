@@ -31,7 +31,7 @@
       <dependency.alfresco-repository.version>6.55</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>6.38</dependency.alfresco-remote-api.version>
       <alfresco.alfresco-share-services.version>6.0.b</alfresco.alfresco-share-services.version>
-      <image.name>alfresco/ags-repo-community</image.name>
+      <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
    </properties>
 

@@ -72,22 +72,6 @@ ok> delete <tenant domain>
 	tenant index directories should be deleted manually.
 	
 	Example:   delete yyy.zzz.com
-    
-ok> export <tenant domain> <destination directory>
-
-    Export tenant to given destination directory. Export filenames will be suffixed with '<tenant domain>_'.
-    
-    Example:   export yyy.zzz.com /usr/exportdir
-    
-ok> import <tenant domain> <source directory> [<root contentstore dir>]
-
-	BETA - create tenant by importing the tenant files from the given source directory. The import filenames must
-	be suffixed with '<tenant domain>_'.
-	
-	Note: If importing into a previously deleted tenant then the server must be stopped after the delete
-	(and tenant indexes manually deleted) before restarting and performing the import.
-	
-	Example:   import yyy.zzz.com /usr/exportdir /usr/tenantstores/yyy.zzz
 
 ##
 ##  end

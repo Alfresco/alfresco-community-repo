@@ -49,6 +49,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
+import org.alfresco.repo.search.impl.solr.SolrSQLJSONResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
@@ -419,6 +420,12 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         if (returnedObject == null)
         {
             return null;
+        }
+
+        // FIXME
+        if (returnedObject.getResultSetMetaData().getSearchParameters().getLanguage().equalsIgnoreCase("solr-sql"))
+        {
+            return returnedObject;
         }
 
         class RMFilteringResultSet extends FilteringResultSet

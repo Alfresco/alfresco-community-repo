@@ -70,6 +70,7 @@ public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTe
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
+        transformer.afterPropertiesSet();
 
         contentService = serviceRegistry.getContentService();
     }

@@ -211,6 +211,26 @@ public class RemoteTransformerClientTest
         requestTransform();
     }
 
+    @Test
+    public void assertOnceAvailableAlwaysAvailable() throws Exception
+    {
+        // Mock a connection failure
+        doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
+        Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
+        assertFalse("Any failure should result in false", available.getFirst());
+
+        // Mock a normal response from the /version request. It will not be made until the end of the wait period
+        doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
+        Thread.sleep(STARTUP_RETRY_PERIOD_SECONDS*1000);
+        available = remoteTransformerClient.check(mockLogger);
+        assertTrue("No failure so should result in true", available.getFirst());
+
+        // Mock another connection failure. This time the code should not check but simply return success.
+        doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
+        available = remoteTransformerClient.check(mockLogger);
+        assertTrue("Should return true as it has before", available.getFirst());
+        }
+
     protected void assertTransformerBecomesAvailableAgainAfterFailure() throws InterruptedException, IOException
     {
         assertFalse(remoteTransformerClient.isAvailable());

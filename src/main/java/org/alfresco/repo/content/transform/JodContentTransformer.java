@@ -88,11 +88,11 @@ public class JodContentTransformer extends OOoContentTransformerHelper implement
             if (isAvailable != null && isAvailable)
             {
                 String versionString = result.getSecond().trim();
-                logger.info("Using JodCoverter: "+versionString);
+                logger.info("Using remote JodCoverter: "+versionString);
             }
             else
             {
-                String message = "JodConverter is not available for transformations. " + result.getSecond();
+                String message = "Remote JodConverter is not available for transformations. " + result.getSecond();
                 if (isAvailable == null)
                 {
                     logger.debug(message);

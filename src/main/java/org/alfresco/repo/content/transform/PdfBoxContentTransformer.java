@@ -78,4 +78,10 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
         // TODO: Possibly extend TransformationOptions to allow for per-transform PDFParserConfig?
         return context;
     }
+
+    @Override
+    protected String getTransform()
+    {
+        return "PdfBox";
+    }
 }

@@ -9,9 +9,9 @@
         delete from alf_node
         where
             type_qname_id = #{typeQNameId} and
-            transaction_id <=
+            transaction_id IN
             (
-                select max(txn.id) from alf_transaction txn
+                select txn.id from alf_transaction txn
                 where
                     txn.commit_time_ms >= #{minCommitTime} and
                     txn.commit_time_ms < #{maxCommitTime}

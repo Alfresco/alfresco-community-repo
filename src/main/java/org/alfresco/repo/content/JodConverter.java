@@ -27,6 +27,8 @@ package org.alfresco.repo.content;
 
 import org.artofsolving.jodconverter.office.OfficeManager;
 
+///////// THIS FILE IS A COPY OF THE CODE IN alfresco-docker-libreoffice /////////////
+
 public interface JodConverter
 {
     /**

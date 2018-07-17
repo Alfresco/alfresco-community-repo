@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Load property files with properties needed to fill placeholder values in search context files-->
+    <bean id="solr-search-context-test-properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/subsystems/Search/solr6/solr-search.properties</value>
+                <value>classpath:alfresco/subsystems/Search/solr/common-search.properties</value>
+                <value>classpath:alfresco/repository.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <import resource="classpath:alfresco/subsystems/Search/solr6/solr-search-context.xml" />
+</beans>

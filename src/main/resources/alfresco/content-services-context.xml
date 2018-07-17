@@ -469,11 +469,33 @@
          <ref bean="contentService" />
       </property>
    </bean>
-   
-   <!-- Content Transformations -->
-   <bean id="transformer.StringExtracter"
-         class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
-         parent="baseContentTransformer" />
+
+   <bean name="tikaRemoteTransformerClient"
+         class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+       <constructor-arg>
+          <value>Tika</value>
+       </constructor-arg>
+       <constructor-arg>
+          <value>${tika.url}</value>
+       </constructor-arg>
+       <property name="startupRetryPeriodSeconds">
+          <value>${tika.startupRetryPeriodSeconds}</value>
+       </property>
+   </bean>
+
+   <bean id="baseTikaContentTransformer"
+         class="org.alfresco.repo.content.transform.TikaPoweredContentTransformer"
+         abstract="true"
+         parent="baseContentTransformer">
+       <property name="remoteTransformerClient">
+          <ref bean="tikaRemoteTransformerClient" />
+      </property>
+   </bean>
+
+    <!-- Content Transformations -->
+    <bean id="transformer.StringExtracter"
+          class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
+          parent="baseContentTransformer" />
 
    <bean id="transformer.BinaryPassThrough"
          class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
@@ -491,7 +513,7 @@
 
    <bean id="transformer.PdfBox"
          class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
-         parent="baseContentTransformer" >
+         parent="baseTikaContentTransformer" >
          <property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
    </bean>
    
@@ -502,28 +524,28 @@
 
    <bean id="transformer.TikaAuto"
          class="org.alfresco.repo.content.transform.TikaAutoContentTransformer"
-         parent="baseContentTransformer">
+         parent="baseTikaContentTransformer">
       <constructor-arg><ref bean="tikaConfig"/></constructor-arg>
    </bean>
 
    <!-- This one does excel only -->
    <bean id="transformer.Poi"
          class="org.alfresco.repo.content.transform.PoiHssfContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseTikaContentTransformer" />
 
    <!-- This one does the other office formats, like word and powerpoint -->
    <bean id="transformer.Office"
          class="org.alfresco.repo.content.transform.PoiContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseTikaContentTransformer" />
 
    <!-- This one handles the ooxml office formats, such as .xlsx and .docx -->
    <bean id="transformer.OOXML"
          class="org.alfresco.repo.content.transform.PoiOOXMLContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseTikaContentTransformer" />
 
    <bean id="transformer.TextMining"
          class="org.alfresco.repo.content.transform.TextMiningContentTransformer"
-         parent="baseContentTransformer" >
+         parent="baseTikaContentTransformer" >
    </bean>
 
    <bean id="transformer.HtmlParser"
@@ -593,7 +615,7 @@
          
    <bean id="transformer.OutlookMsg"
          class="org.alfresco.repo.content.transform.MailContentTransformer"
-         parent="baseContentTransformer" />
+         parent="baseTikaContentTransformer" />
          
    <bean id="transformer.RFC822"
          class="org.alfresco.repo.content.transform.EMLTransformer"
@@ -645,7 +667,7 @@
    <!-- This transformer allows for the indexing and therefore searching of zip files. -->   
    <bean id="transformer.Archive"
          class="org.alfresco.repo.content.transform.ArchiveContentTransformer"
-         parent="baseContentTransformer" >
+         parent="baseTikaContentTransformer" >
       <property name="includeContents" value="${transformer.Archive.includeContents}" />
       <property name="tikaConfig">
          <ref bean="tikaConfig"/>

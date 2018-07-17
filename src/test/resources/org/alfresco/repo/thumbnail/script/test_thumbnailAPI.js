@@ -34,6 +34,21 @@ function testGetThumbnailDefintions()
 	//test.assertTrue(Array.contains(defs, "WebPreview"));	
 }
 
+function testGetThumbnailByName()
+{
+    var thumbnail = jpgOrig.createThumbnail("doclib");
+    test.assertNotNull(thumbnail);
+    var thumbnail = jpgOrig.getThumbnail("doclib");
+    test.assertNotNull(thumbnailService.getPlaceHolderResourcePath("doclib"));
+
+    // Simulate something went wrong with this thumbnail
+    thumbnail.content = "";
+    thumbnail.save();
+
+    var thumbnail = jpgOrig.getThumbnail("doclib");
+    test.assertNull(thumbnail);
+}
+
 function testUpdateNode()
 {
 	var thumbnail = jpgOrig.getThumbnail("medium");
@@ -44,4 +59,5 @@ function testUpdateNode()
 testCreateThumbnail();
 testThumbnailService();
 testGetThumbnailDefintions();
+testGetThumbnailByName();
 testUpdateNode();

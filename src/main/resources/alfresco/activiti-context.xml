@@ -129,22 +129,24 @@
     </bean>
 
     <!-- Activiti Workflow Engine Factory -->
-    <bean id="activitiWorkflowManager"
-        class="org.alfresco.repo.workflow.activiti.ActivitiWorkflowManagerFactory">
-        <property name="namespaceService" ref="NamespaceService" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="personService" ref="PersonService" />
-        <property name="dictionaryService" ref="DictionaryService" />
-        <property name="tenantService" ref="tenantService" />
-        <property name="messageService" ref="messageService" />
-        <property name="serviceRegistry" ref="ServiceRegistry" />
-        <property name="BPMEngineRegistry" ref="bpm_engineRegistry" />
-        <property name="authorityDAO" ref="authorityDAO" />
-        <property name="processEngine" ref="activitiProcessEngine" />
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="engineId" value="activiti" />
-        <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
-    </bean>
+	<bean id="activitiWorkflowManager"
+		class="org.alfresco.repo.workflow.activiti.ActivitiWorkflowManagerFactory">
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="personService" ref="PersonService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="tenantService" ref="tenantService" />
+		<property name="messageService" ref="messageService" />
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="BPMEngineRegistry" ref="bpm_engineRegistry" />
+		<property name="authorityDAO" ref="authorityDAO" />
+		<property name="processEngine" ref="activitiProcessEngine" />
+		<property name="repositoryHelper" ref="repositoryHelper" />
+		<property name="engineId" value="activiti" />
+		<property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+		<property name="retentionHistoricProcessInstance"
+			value="${system.workflow.engine.activiti.retentionHistoricProcessInstance}" />
+	</bean>
 
     <!-- Activiti Workflow Engine -->
     <bean id="activitiWorkflowEngine" factory-bean="activitiWorkflowManager"

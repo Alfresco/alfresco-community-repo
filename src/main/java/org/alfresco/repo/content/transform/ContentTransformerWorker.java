@@ -70,4 +70,12 @@ public interface ContentTransformerWorker
      * @see ContentTransformer#transform(ContentReader, ContentWriter, TransformationOptions)
      */
     public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception;
+
+    /**
+     * @return true if ther worker is using a remote server.
+     */
+    public default boolean remoteTransformerClientConfigured()
+    {
+        return false;
+    }
 }

@@ -63,7 +63,11 @@ public class RemoteTransformerClient
     private long startupRetryPeriod = 15000;
 
     // When to check availability.
-    protected long checkAvailabilityAfter = 0L;
+    private long checkAvailabilityAfter = 0L;
+
+    // The initial value indicates we have not had a success yet.
+    // Only changed once on success. This is stored so it can always be returned.
+    private Pair<Boolean, String> checkResult = new Pair<>(null, null);
 
     public RemoteTransformerClient(String name, String baseUrl)
     {
@@ -217,12 +221,19 @@ public class RemoteTransformerClient
         }
     }
 
+    /**
+     *  Indicates if a remote transform:
+     *  a) ready probe has ever indicated success {@code new Pair<>(true, <version string>)},
+     *  b) a ready probe has just failed {@code new Pair<>(false, <error string>)}, or
+     *  c) we are not performing a ready check as we have just done one {@code new Pair<>(null, null)}.
+     */
     public Pair<Boolean, String> check(Log logger)
     {
         if (!isTimeToCheckAvailability())
         {
             logger.debug("Remote "+name+' '+" too early to check availability");
-            return new Pair<>(null, null);
+            Pair<Boolean, String> result = getCheckResult();
+            return result;
         }
 
         String url = baseUrl + "/version";
@@ -268,7 +279,9 @@ public class RemoteTransformerClient
 
                                 EntityUtils.consume(resEntity);
                                 connectionSuccess();
-                                return new Pair<>(true, version);
+                                Pair<Boolean, String> success = new Pair<>(true, version);
+                                setCheckResult(success);
+                                return success;
                             }
                             catch (IOException e)
                             {
@@ -304,7 +317,9 @@ public class RemoteTransformerClient
             {
                 logger.debug(e.getMessage());
             }
-            return new Pair<>(false, e.getMessage());
+            // Indicates there was a check made and that it failed
+            Pair<Boolean, String> failure = new Pair<>(false, e.getMessage());
+            return failure;
         }
     }
 
@@ -354,23 +369,33 @@ public class RemoteTransformerClient
         return new Pair<>(success, output);
     }
 
-    void connectionFailed()
+    synchronized void connectionFailed()
     {
         checkAvailabilityAfter = System.currentTimeMillis() + startupRetryPeriod;
     }
 
-    void connectionSuccess()
+    synchronized void connectionSuccess()
     {
         checkAvailabilityAfter = Long.MAX_VALUE;
     }
 
-    private boolean isTimeToCheckAvailability()
+    private synchronized boolean isTimeToCheckAvailability()
     {
         return System.currentTimeMillis() > checkAvailabilityAfter;
     }
 
-    public boolean isAvailable()
+    public synchronized boolean isAvailable()
     {
         return checkAvailabilityAfter == Long.MAX_VALUE;
+    }
+
+    private synchronized Pair<Boolean, String> getCheckResult()
+    {
+        return checkResult;
+    }
+
+    private synchronized void setCheckResult(Pair<Boolean, String> checkResult)
+    {
+        this.checkResult = checkResult;
     }
 }

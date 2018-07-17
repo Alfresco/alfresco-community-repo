@@ -61,7 +61,8 @@ public class ActivitiUtil
     private final TaskService taskService;
     private final FormService formService;
     private final ManagementService managementService;
-	private boolean deployWorkflowsInTenant;
+    private boolean deployWorkflowsInTenant;
+    private boolean retentionHistoricProcessInstance;
 
     public ActivitiUtil(ProcessEngine engine, boolean deployWorkflowsInTenant)
     {
@@ -74,6 +75,18 @@ public class ActivitiUtil
         this.deployWorkflowsInTenant = deployWorkflowsInTenant;
     }
     
+    public ActivitiUtil(ProcessEngine engine, boolean deployWorkflowsInTenant, boolean retentionHistoricProcessInstance)
+    {
+        this.repoService = engine.getRepositoryService();
+        this.runtimeService = engine.getRuntimeService();
+        this.taskService = engine.getTaskService();
+        this.historyService = engine.getHistoryService();
+        this.formService = engine.getFormService();
+        this.managementService = engine.getManagementService();
+        this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+        this.retentionHistoricProcessInstance = retentionHistoricProcessInstance;
+    }
+
     public ProcessDefinition getProcessDefinition(String definitionId)
     {
         return repoService.createProcessDefinitionQuery()
@@ -225,4 +238,9 @@ public class ActivitiUtil
     {
 		return deployWorkflowsInTenant;
 	}
+    
+    public boolean isRetentionHistoricProcessInstanceEnabled()
+    {
+        return retentionHistoricProcessInstance;
+    }
 }

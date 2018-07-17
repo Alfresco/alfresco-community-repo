@@ -26,6 +26,7 @@
 package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
@@ -66,9 +67,10 @@ public class ModelUsageDataCollector extends HBBaseDataCollector implements Init
     /** The transaction service. */
     private TransactionService transactionService;
 
-    public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression,
+                                   HeartBeatJobScheduler hbJobScheduler)
     {
-        super(collectorId, collectorVersion, cronExpression);
+        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)

@@ -111,4 +111,9 @@ public class ProxyContentTransformer extends AbstractContentTransformer2
             options.setLimits(original);
         }
    }
+
+    boolean remoteTransformerClientConfigured()
+    {
+        return worker.remoteTransformerClientConfigured();
+    }
 }

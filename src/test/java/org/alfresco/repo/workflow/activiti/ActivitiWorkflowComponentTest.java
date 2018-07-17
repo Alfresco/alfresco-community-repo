@@ -363,8 +363,9 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
             .processInstanceId(processInstance.getProcessInstanceId())
             .singleResult();
-        
-        assertNull(historicProcessInstance);
+        if(workflowEngine.activitiUtil.isRetentionHistoricProcessInstanceEnabled()==false){
+           assertNull(historicProcessInstance);
+        }
     }
     
     @Test

@@ -188,7 +188,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private HistoryService historyService;
     private ManagementService managementService;
     private FormService formService;
-    private ActivitiUtil activitiUtil;
+    protected ActivitiUtil activitiUtil;
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -248,32 +248,35 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         try
         {
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(localId).singleResult();
-            if(processInstance == null) 
+            if (processInstance == null)
             {
                 throw new WorkflowException(messageService.getMessage(ERR_CANCEL_UNEXISTING_WORKFLOW));
             }
-            
+
             // TODO: Cancel VS delete?
             // Delete the process instance
             runtimeService.deleteProcessInstance(processInstance.getId(), WorkflowConstants.PROP_CANCELLED);
-            
+
             // Convert historic process instance
-            HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstance.getId())
-                .singleResult();
-            WorkflowInstance result =  typeConverter.convert(deletedInstance);
-            
+            HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstance.getId())
+                    .singleResult();
+            WorkflowInstance result = typeConverter.convert(deletedInstance);
+
             // Delete the historic process instance
-            historyService.deleteHistoricProcessInstance(deletedInstance.getId());
-            
+            // MNT-15498
+            if (!activitiUtil.isRetentionHistoricProcessInstanceEnabled())
+            {
+                historyService.deleteHistoricProcessInstance(deletedInstance.getId());
+            }
+
             return result;
-        } 
-        catch(ActivitiException ae) 
+        }
+        catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -101,8 +101,9 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /** Mimetype wildcard postfix */
     private static final String SUBTYPES_POSTFIX = "/*";
 
-    /** Transaction resource name */
+    /** Transaction resources name */
     private static final String THUMBNAIL_PARENT_NODES = "ThumbnailServiceImpl.ParentNodes";
+    private static final String THUMBNAIL_TO_DELETE_NODES = "ThumbnailServiceImpl.ToDeleteNodes";
 
     /** Node service */
     private NodeService nodeService;
@@ -131,6 +132,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     private TransactionService transactionService;
 
     private TransactionListener transactionListener;
+    private TransactionListener thumbnailsToDeleteTransactionListener;
     
     /**
      * Set the behaviour filter.
@@ -224,6 +226,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                 new JavaBehaviour(this, "getCopyCallback"));
 
         transactionListener = new ThumbnailTransactionListenerAdapter();
+        thumbnailsToDeleteTransactionListener = new ThumbnailCleanupTransactionListenerAdapter();
     }
     
     public void beforeCreateNode(
@@ -579,13 +582,16 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             Serializable contentPropertyName = this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME);
             if (contentProperty.equals(contentPropertyName) == true)
             {
-                thumbnail = child;
+                if (validateThumbnail(child))
+                {
+                    thumbnail = child;
+                }
             }
         }
         
         return thumbnail;
     }
-
+    
     /**
      * @see org.alfresco.service.cmr.thumbnail.ThumbnailService#getThumbnails(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
      */
@@ -615,7 +621,10 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             if (contentProperty.equals(this.nodeService.getProperty(child, ContentModel.PROP_CONTENT_PROPERTY_NAME)) == true &&
                 matchMimetypeOptions(child, mimetype, options) == true)
             {
-                thumbnails.add(child);
+                if (validateThumbnail(child))
+                {
+                    thumbnails.add(child);
+                }
             }
         }
         
@@ -623,6 +632,20 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         return thumbnails;
     }
     
+    private boolean validateThumbnail(NodeRef thumbnailNode)
+    {
+        boolean valid = true;
+        ContentData content = (ContentData) this.nodeService.getProperty(thumbnailNode, ContentModel.PROP_CONTENT);
+        // (MNT-17162) A thumbnail with an empty content is cached for post-transaction removal, to prevent the delete in read-only transactions. 
+        if (content.getSize() == 0)
+        {
+            TransactionalResourceHelper.getSet(THUMBNAIL_TO_DELETE_NODES).add(thumbnailNode);
+            TransactionSupportUtil.bindListener(this.thumbnailsToDeleteTransactionListener, 0);
+            valid = false;
+        }
+        return valid;
+    }
+
     @Override
     public Map<String, FailedThumbnailInfo> getFailedThumbnails(NodeRef sourceNode)
     {
@@ -941,6 +964,47 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                                     logger.debug("Adding thumbnail modification data.");
                                 }
                                 addThumbnailModificationData(thumbnailNodeRef, thumbnailName);
+                            }
+                            return null;
+                        }
+                    }, false, true);
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+        }
+    }
+    
+    private class ThumbnailCleanupTransactionListenerAdapter extends TransactionListenerAdapter
+    {
+        @Override
+        public void afterCommit()
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Starting aftercommit listener execution.");
+            }
+            final Set<NodeRef> thumbnailToDelete =  TransactionalResourceHelper.getSet(THUMBNAIL_TO_DELETE_NODES);
+
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                   RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                    txnHelper.setForceWritable(true);
+                    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    {
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            for (NodeRef node : thumbnailToDelete)
+                            {
+                                // Update lastThumbnailModification on parent node
+                                // so that the thumbnail will be recreated when browsing share
+                                String thumbnailName = (String) nodeService.getProperty(node, ContentModel.PROP_NAME);
+                                addThumbnailModificationData(node, thumbnailName);
+
+                                nodeService.deleteNode(node);
                             }
                             return null;
                         }

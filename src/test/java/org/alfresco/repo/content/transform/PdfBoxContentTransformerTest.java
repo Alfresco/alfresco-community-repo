@@ -68,6 +68,7 @@ public class PdfBoxContentTransformerTest extends AbstractContentTransformerTest
                 MimetypeMap.MIMETYPE_IMAGE_TIFF,
                 MimetypeMap.MIMETYPE_IMAGE_PNG));
         transformer.setDocumentSelector(selector);
+        transformer.afterPropertiesSet();
     }
     
     /**

@@ -79,6 +79,8 @@ import org.junit.runners.Suite;
     // REPO-2963 : Tests causing a cascade of failures in AllDBTestsTestSuite on PostgreSQL/MySQL	
     // Moved at the bottom of the suite because DbNodeServiceImplTest.testNodeCleanupRegistry() takes a long time on a clean DB.
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
+
+    org.alfresco.repo.node.cleanup.TransactionCleanupTest.class
 })
 public class AllDBTestsTestSuite
 {

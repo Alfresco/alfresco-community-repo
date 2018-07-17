@@ -98,7 +98,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         this.remoteTransformerClient = remoteTransformerClient;
     }
 
-    protected boolean remoteTransformerClientConfigured()
+    public boolean remoteTransformerClientConfigured()
     {
         return remoteTransformerClient != null && remoteTransformerClient.getBaseUrl() != null;
     }

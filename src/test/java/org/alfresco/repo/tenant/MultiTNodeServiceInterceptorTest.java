@@ -27,6 +27,7 @@ package org.alfresco.repo.tenant;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -68,17 +69,23 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
             enableTest = false;
             return;
         }
-        
+
         // Create a tenant
-        RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                tenantAdminService.createTenant(tenant1, tenant1Pwd.toCharArray());
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>(){
+            @Override
+            public Void doWork() throws Exception {
+                RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        tenantAdminService.createTenant(tenant1, tenant1Pwd.toCharArray());
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(createTenantCallback, false, true);
                 return null;
             }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(createTenantCallback, false, true);
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     @Override
@@ -89,17 +96,23 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
         {
             return;
         }
-        
+
         // Delete a tenant
-        RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Throwable
-            {
-                tenantAdminService.deleteTenant(tenant1);
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>(){
+            @Override
+            public Void doWork() throws Exception {
+                RetryingTransactionCallback<Object> deleteTenantCallback = new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Throwable
+                    {
+                        tenantAdminService.deleteTenant(tenant1);
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(deleteTenantCallback, false, true);
                 return null;
             }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(createTenantCallback, false, true);
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     /**

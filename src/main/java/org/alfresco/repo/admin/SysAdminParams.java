@@ -129,4 +129,11 @@ public interface SysAdminParams
      * @return the string
      */
     public String subsituteHost(String hostName);
+
+    /**
+     * Gets Rest Api-Explorer URL.
+     *
+     * @return Api-Explorer URL
+     */
+    public String getApiExplorerUrl();
 }

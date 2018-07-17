@@ -60,6 +60,7 @@ import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityAddedToGroup;
 import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityRemovedFromGroup;
 import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnGroupDeleted;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
@@ -1689,6 +1690,20 @@ public class AuthorityServiceTest extends TestCase
         for (String name : createdAuthNames)
         {
             pubAuthorityService.deleteAuthority(name);
+        }
+    }
+
+    public void testNonAdminCannotUpdateAuthorityNodes()
+    {
+        authenticationComponent.setCurrentUser("andy");
+        try
+        {
+            authorityService.createAuthority(AuthorityType.GROUP, "test");
+            fail("a non-admin user should not be allowed to update properties on nodes of type ContentModel.TYPE_AUTHORITY");
+        }
+        catch(AccessDeniedException ade)
+        {
+            ; // expected
         }
     }
 

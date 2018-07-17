@@ -236,7 +236,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setSingletonCache(SimpleCache<String, Object> singletonCache)
     {
         this.singletonCache = singletonCache;

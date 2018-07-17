@@ -70,7 +70,8 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     
     private String engineId;
     private boolean deployWorkflowsInTenant;
-    
+    private boolean retentionHistoricProcessInstance;
+
     /**
     * {@inheritDoc}
     */
@@ -100,7 +101,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         WorkflowAuthorityManager authorityManager = new WorkflowAuthorityManager(authorityDAO);
         QName defaultStartTaskType = WorkflowModel.TYPE_ACTIVTI_START_TASK;
         WorkflowObjectFactory factory = new WorkflowObjectFactory(qNameConverter, tenantService, messageService, dictionaryService, engineId, defaultStartTaskType);
-        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant);
+        ActivitiUtil activitiUtil = new ActivitiUtil(processEngine, deployWorkflowsInTenant,retentionHistoricProcessInstance);
         ActivitiPropertyConverter propertyConverter = new ActivitiPropertyConverter(activitiUtil, factory, handlerRegistry, authorityManager, messageService, nodeConverter);
         ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter, deployWorkflowsInTenant);
         
@@ -240,9 +241,20 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
     
     /**
-     * @param deployWorkflowsInTenant wether or not to deploy workflows in multi-tenant context.
+     * @param deployWorkflowsInTenant
+     *            wether or not to deploy workflows in multi-tenant context.
      */
-	public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant) {
-		this.deployWorkflowsInTenant = deployWorkflowsInTenant;
-	}
+    public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant)
+    {
+        this.deployWorkflowsInTenant = deployWorkflowsInTenant;
+    }
+    
+    /** 
+     * @param retentionHistoricProcessInstance
+     *         whether or not to retain the process instance
+     */
+    public void setRetentionHistoricProcessInstance(boolean retentionHistoricProcessInstance)
+    {
+        this.retentionHistoricProcessInstance = retentionHistoricProcessInstance;
+    }
 }

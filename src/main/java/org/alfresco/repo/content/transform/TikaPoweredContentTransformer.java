@@ -25,19 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -52,6 +39,18 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.ExpandedTitleContentHandler;
 import org.xml.sax.ContentHandler;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Provides helpful services for {@link org.alfresco.repo.content.transform.ContentTransformer}
  *  implementations which are powered by Apache Tika.
@@ -65,7 +64,7 @@ import org.xml.sax.ContentHandler;
  * 
  * @author Nick Burch
  */
-public abstract class TikaPoweredContentTransformer extends AbstractContentTransformer2
+public abstract class TikaPoweredContentTransformer extends AbstractRemoteContentTransformer
 {
     private static final Log logger = LogFactory.getLog(TikaPoweredContentTransformer.class);
     private static final List<String> TARGET_MIMETYPES = Arrays.asList(new String[] { 
@@ -91,13 +90,22 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
     protected static final String LINE_BREAK = "\r\n";
     public static final String WRONG_FORMAT_MESSAGE_ID = "transform.err.format_or_password";
     
-        protected TikaPoweredContentTransformer(List<String> sourceMimeTypes) {
+    protected TikaPoweredContentTransformer(List<String> sourceMimeTypes)
+    {
        this.sourceMimeTypes = sourceMimeTypes;
     }
-    protected TikaPoweredContentTransformer(String[] sourceMimeTypes) {
+
+    protected TikaPoweredContentTransformer(String[] sourceMimeTypes)
+    {
        this(Arrays.asList(sourceMimeTypes));
     }
-    
+
+    @Override
+    protected Log getLogger()
+    {
+        return logger;
+    }
+
     /**
      * Returns the correct Tika Parser to process
      *  the document.
@@ -215,14 +223,15 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        }
        return context;
     }
-    
-    public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
-    throws Exception
+
+    @Override
+    public void transformLocal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
+            throws Exception
     {
        OutputStream os = writer.getContentOutputStream();
        String encoding = writer.getEncoding();
        String targetMimeType = writer.getMimetype();
-       
+
        Writer ow = new OutputStreamWriter(os, encoding); 
        
        Parser parser = getParser();
@@ -271,6 +280,22 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           }
       }
     }
+
+    @Override
+    protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
+                                   ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype, String targetMimetype,
+                                   String sourceExtension, String targetExtension,
+                                   String targetEncoding) throws Exception
+    {
+        String transform = getTransform();
+        long timeoutMs = options.getTimeoutMs();
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger, "transform", transform,
+                "targetMimetype", targetMimetype, "targetEncoding", targetEncoding);
+    }
+
+    protected abstract String getTransform();
 
     private String calculateMemoryAndTimeUsage(ContentReader reader, long startTime)
     {

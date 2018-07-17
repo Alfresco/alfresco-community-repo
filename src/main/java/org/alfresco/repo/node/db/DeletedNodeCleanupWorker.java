@@ -43,6 +43,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 {
     private long minPurgeAgeMs;
+    // used for tests, to consider only transactions after a certain commit time
+    private long fromCustomCommitTime = -1;
     
     // Unused transactions will be purged in chunks determined by commit time boundaries. 'index.tracking.purgeSize' specifies the size
     // of the chunk (in ms). Default is a couple of hours.
@@ -89,6 +91,16 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     }
 
     /**
+     * Set a custom "from commit time" that will consider only the transactions after this specified time
+     * Setting a negative value or 0 will trigger the default behaviour to get the oldest "from time" for any deleted node
+     *
+     * @param fromCustomCommitTime the custom from commit time value
+     */
+    public void setFromCustomCommitTime(long fromCustomCommitTime)
+    {
+        this.fromCustomCommitTime = fromCustomCommitTime;
+    }
+    /**
      * Set the purge transaction block size. This determines how many unused transactions are purged in one go.
      * 
      * @param purgeSize int
@@ -109,8 +121,11 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-        long fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
-        
+        long fromCommitTime = fromCustomCommitTime;
+        if (fromCommitTime <= 0L)
+        {
+            fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+        }
         if ( fromCommitTime == 0L )
         {
               String msg = "There are no old nodes to purge.";
@@ -225,8 +240,11 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-    	long fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
-
+        long fromCommitTime = fromCustomCommitTime;
+        if (fromCommitTime <= 0L)
+        {
+            fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+        }
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
         {

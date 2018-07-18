@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>acs-community-packaging</artifactId>
-        <version>6.0.6-SNAPSHOT</version>
+        <version>6.0.8-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -21,6 +21,12 @@
             <groupId>org.alfresco</groupId>
             <artifactId>content-services-community</artifactId>
             <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>api-explorer</artifactId>
+            <version>${dependency.alfresco-api-explorer.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -88,6 +94,14 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/war/alfresco</outputDirectory>
                                     <destFileName>alfresco.war</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>api-explorer</artifactId>
+                                    <version>${dependency.alfresco-api-explorer.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/war/api-explorer</outputDirectory>
+                                    <destFileName>api-explorer.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

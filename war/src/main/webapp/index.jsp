@@ -86,7 +86,9 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
              %>
             <p><a href="./webdav">Alfresco WebDav</a></p>
             <p></p>
-            <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only)</p>
+            <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only - INTERNAL)</p>
+            <p></p>
+            <p><a href="<%=UrlUtil.getApiExplorerUrl(sysAdminParams, request.getRequestURL().toString(), request.getRequestURI())%>">Alfresco API Explorer</a></p>
 <%
    if (descriptorService.getLicenseDescriptor() == null && transactionService.isReadOnly())
    {

@@ -25,7 +25,7 @@
  */
 package org.alfresco.service.cmr.activities;
 
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListener;
 

@@ -978,7 +978,7 @@
    <bean id="repositoryState" class="org.alfresco.repo.admin.RepositoryState" />
 
    <!-- Alfresco Events Publisher -->
-   <bean id="eventPublisher" class="org.alfresco.repo.events.DelegatingEventPublisher" />
+   <bean id="eventPublisher" class="org.alfresco.sync.repo.events.DelegatingEventPublisher" />
 
    <!-- index subsystem proxies -->
 

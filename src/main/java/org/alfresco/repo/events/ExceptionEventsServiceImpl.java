@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.events;
 
-import org.alfresco.events.types.ExceptionGeneratedEvent;
+import org.alfresco.sync.events.types.ExceptionGeneratedEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.apache.commons.logging.Log;

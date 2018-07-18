@@ -28,8 +28,8 @@ package org.alfresco.opencmis;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.Client;
-import org.alfresco.repo.Client.ClientType;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.tenant.TenantService;

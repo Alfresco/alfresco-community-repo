@@ -30,14 +30,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.alfresco.events.types.BrowserEvent;
-import org.alfresco.events.types.Event;
+import org.alfresco.sync.events.types.Event;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.sync.repo.events.EventPreparator;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * An implementation of EventPublisher that is used for testing

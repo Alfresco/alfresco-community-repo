@@ -27,7 +27,7 @@ package org.alfresco.repo.events;
 
 import static org.junit.Assert.*;
 
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.util.FileFilterMode;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ public class ClientUtilTest
     /**
      * If a new client is added to the FileFilterMode.Client then this unit test will
      * throw a IllegalArgument exception.  To fix it you will need to add to the
-     * org.alfresco.events.Client.ClientType.
+     * org.alfresco.sync.events.Client.ClientType.
      */
     @Test
     public void testFileFilterModeConversion()
@@ -47,7 +47,7 @@ public class ClientUtilTest
         {
             equalsConversion(client);
         }
-        org.alfresco.repo.Client client = ClientUtil.from(null);
+        org.alfresco.sync.repo.Client client = ClientUtil.from(null);
         assertNull(client);
     }
 
@@ -60,7 +60,7 @@ public class ClientUtilTest
 
     private void equalsConversion(FileFilterMode.Client ffSource)
     {
-        org.alfresco.repo.Client client = ClientUtil.from(ffSource);
+        org.alfresco.sync.repo.Client client = ClientUtil.from(ffSource);
         FileFilterMode.Client ffClient = to(client);
         assertEquals(ffSource, ffClient);
     }
@@ -84,7 +84,7 @@ public class ClientUtilTest
     }
     */
     
-    private static FileFilterMode.Client to(org.alfresco.repo.Client from)
+    private static FileFilterMode.Client to(org.alfresco.sync.repo.Client from)
     {
         FileFilterMode.Client client = FileFilterMode.Client.valueOf(from.getType().toString());
         return client;

@@ -28,7 +28,7 @@ package org.alfresco.repo.events;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.events.types.Property;
+import org.alfresco.sync.events.types.Property;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;

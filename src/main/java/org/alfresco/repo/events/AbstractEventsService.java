@@ -39,13 +39,13 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.events.EventRegistry;
-import org.alfresco.events.types.Event;
-import org.alfresco.events.types.TransactionCommittedEvent;
-import org.alfresco.events.types.TransactionRolledBackEvent;
+import org.alfresco.sync.events.EventRegistry;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.events.types.TransactionCommittedEvent;
+import org.alfresco.sync.events.types.TransactionRolledBackEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.AlfrescoCmisServiceCall;
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

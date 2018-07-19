@@ -1,0 +1,14 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <routeContext id="deadLetterRoutes" xmlns="http://camel.apache.org/schema/spring">
+        <route id="alfresco.default.deadLetter">
+            <from uri="direct-vm:alfresco.default" />
+            <to uri="bean:deadLetterQueue" />
+        </route>
+    </routeContext>
+
+</beans>

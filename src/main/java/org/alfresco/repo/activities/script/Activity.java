@@ -27,8 +27,8 @@ package org.alfresco.repo.activities.script;
 
 import java.util.List;
 
-import org.alfresco.repo.Client;
-import org.alfresco.repo.Client.ClientType;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;

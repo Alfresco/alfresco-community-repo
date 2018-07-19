@@ -25,7 +25,7 @@
  */
 package org.alfresco.service.cmr.activities;
 
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 

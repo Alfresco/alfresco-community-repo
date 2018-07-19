@@ -731,7 +731,7 @@ interface javax.servlet.ServletConfig {
 +  getServletName()  :  String
 
 }
-interface org.alfresco.repo.events.EventPreparator {
+interface org.alfresco.sync.repo.events.EventPreparator {
 --
 +  prepareEvent(c String, c String, c String)  :  Event
 
@@ -1503,7 +1503,7 @@ org.alfresco.repo.webdav.WebDAV "1"  o-left-  "1" org.apache.commons.logging.Log
 org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : m_rootNodeRef: c NodeRef
 org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.policy.BehaviourFilter  : m_policyBehaviourFilter: i BehaviourFilter
 org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : defaultNode: c NodeRef
-org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.events.EventPublisher  : eventPublisher: i EventPublisher
+org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.sync.repo.events.EventPublisher  : eventPublisher: i EventPublisher
 org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : request: i HttpServletRequest
 org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.repo.tenant.TenantService  : tenantService: i TenantService

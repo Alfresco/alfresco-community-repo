@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd 
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
+                           http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+                           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="eventsDispatcher" class="org.gytheio.messaging.camel.CamelMessageProducer">
+        <property name="producer" ref="camelProducerTemplate" />
+        <property name="endpoint" value="direct-vm:alfresco.events" />
+    </bean>
+
+    <bean id="eventsRegistry" class="org.alfresco.sync.events.EventRegistryImpl">
+    </bean>
+
+    <bean id="abstractEventsService" abstract="true" init-method="init">
+        <property name="eventRegistry" ref="eventsRegistry"/>
+        <property name="messageProducer" ref="eventsDispatcher"/>
+        <property name="siteService" ref="siteService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="fileFolderService" ref="fileFolderService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="hiddenAspect" ref="hiddenAspect"/>
+        <property name="permissionService" ref="permissionService"/>
+        <property name="cociService" ref="CheckoutCheckinService"/>
+        <property name="transactionService" ref="transactionService"/>
+    </bean>
+    
+    <bean id="abstractEventGenerationBehaviours" class="org.alfresco.repo.events.AbstractEventGenerationBehaviours" abstract="true" init-method="init" destroy-method="cleanUp">
+        <property name="includeEventTypes" value="${alfresco.events.include}"/>
+        <property name="policyComponent" ref="policyComponent"/>
+    </bean>
+
+    <bean id="eventGenerationBehaviours" class="org.alfresco.repo.events.EventGenerationBehaviours" parent="abstractEventGenerationBehaviours" init-method="init">
+        <property name="eventsService" ref="eventsService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="nodeService" ref="nodeService"/>
+    </bean>
+
+    <bean id="eventsService" class="org.alfresco.repo.events.EventsServiceImpl" parent="abstractEventsService" init-method="init">
+        <property name="includeEventTypes" value="${alfresco.events.include}"/>
+    </bean>
+
+    <bean id="monitor" class="org.alfresco.repo.events.jmx.EventsManager" >
+    </bean>
+</beans>

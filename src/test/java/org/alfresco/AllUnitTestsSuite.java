@@ -199,7 +199,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.domain.DialectFactoryBeanTest.class,
     org.alfresco.util.BeanExtenderUnitTest.class,
     org.alfresco.util.bean.HierarchicalBeanLoaderTest.class,
-    org.alfresco.util.resource.HierarchicalResourceLoaderTest.class
+    org.alfresco.util.resource.HierarchicalResourceLoaderTest.class,
+    org.alfresco.repo.events.ClientUtilTest.class
 })
 public class AllUnitTestsSuite
 {

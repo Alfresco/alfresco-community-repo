@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
-import org.alfresco.events.types.ContentEventImpl;
+import org.alfresco.sync.events.types.ContentEventImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.node.ContentDataWithId;

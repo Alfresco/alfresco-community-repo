@@ -1159,7 +1159,7 @@
 	            join alf_node parentNode on (parentNode.id = assoc.parent_node_id)
 	            join alf_store parentStore on (parentStore.id = parentNode.store_id)
 	            join alf_node childNode on (childNode.id = assoc.child_node_id)
-	            join alf_store childStore on (childStore.id = childNode.store_id)
+	            left join alf_store childStore on (childStore.id = childNode.store_id)
 	        )
 	        LEFT OUTER JOIN
 	        (
@@ -1430,7 +1430,7 @@
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_store childStore on (childStore.id = childNode.store_id)
             <if test="filter != null">
             join alf_node_properties prop on (prop.node_id = childNode.id)
             join alf_qname qname on (prop.qname_id = qname.id and qname.id = #{nameQNameId})
@@ -1454,7 +1454,7 @@
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_store childStore on (childStore.id = childNode.store_id)
         where
             assoc.parent_node_id = #{idOne} 
             <if test="idTwo != null"><![CDATA[and childNode.id >= #{idTwo} ]]></if>

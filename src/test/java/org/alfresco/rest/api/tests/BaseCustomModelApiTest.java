@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.alfresco.repo.dictionary.CustomModelServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.model.AbstractClassModel;
@@ -94,16 +95,14 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         this.customModelAdmin = createUser("customModelAdmin" + System.currentTimeMillis(), "password", null);
         users.add(nonAdminUserName);
         users.add(customModelAdmin);
-        
+
         // Add 'customModelAdmin' user into 'ALFRESCO_MODEL_ADMINISTRATORS' group
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            transactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
                 authorityService.addAuthority(CustomModelServiceImpl.GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY, customModelAdmin);
                 return null;
-            }
+            });
+            return null;
         });
     }
 

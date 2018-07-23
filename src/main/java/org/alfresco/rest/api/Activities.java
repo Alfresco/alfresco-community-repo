@@ -27,7 +27,7 @@ package org.alfresco.rest.api;
 
 import java.util.Map;
 
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.rest.api.model.Activity;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;

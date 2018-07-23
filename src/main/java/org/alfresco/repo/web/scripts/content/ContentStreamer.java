@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.events.EventPublisher;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.service.cmr.repository.ContentIOException;

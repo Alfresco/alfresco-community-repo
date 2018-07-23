@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 scriptName=`basename "$0"`
 

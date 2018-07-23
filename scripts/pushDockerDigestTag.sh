@@ -55,7 +55,7 @@ do
         exit 1
     fi
 
-    newTag=${existingTag}_${digest}
+    newTag=${existingTag}-${digest}
 
     # Remove the source repository name if it contains one.
     slashes=`echo $sourceImage | sed "s|[^/]||g"`

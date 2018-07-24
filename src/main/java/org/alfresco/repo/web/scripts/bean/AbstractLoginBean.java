@@ -31,10 +31,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.events.types.Event;
-import org.alfresco.events.types.RepositoryEventImpl;
-import org.alfresco.repo.events.EventPreparator;
-import org.alfresco.repo.events.EventPublisher;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.events.types.RepositoryEventImpl;
+import org.alfresco.sync.repo.events.EventPreparator;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;

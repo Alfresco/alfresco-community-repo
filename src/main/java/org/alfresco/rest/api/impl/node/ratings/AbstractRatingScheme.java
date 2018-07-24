@@ -30,7 +30,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.Client;
+import org.alfresco.sync.repo.Client;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.model.DocumentRatingSummary;

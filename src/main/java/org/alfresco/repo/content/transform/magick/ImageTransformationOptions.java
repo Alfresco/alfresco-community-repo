@@ -53,9 +53,11 @@ public class ImageTransformationOptions extends TransformationOptions
     private boolean autoOrient = true;
     /**
      * Set the command string options
-     * 
+     * @deprecated will be removed in a future release and be replaced by individual options that can be checked.
+     *
      * @param commandOptions    the command string options
      */
+    @Deprecated
     public void setCommandOptions(String commandOptions)
     {
         this.commandOptions = commandOptions;
@@ -63,9 +65,11 @@ public class ImageTransformationOptions extends TransformationOptions
     
     /**
      * Get the command string options
-     * 
+     * @deprecated will be removed in a future release and be replaced by individual options that can be checked.
+     *
      * @return  String  the command string options
      */
+    @Deprecated
     public String getCommandOptions()
     {
         return commandOptions;

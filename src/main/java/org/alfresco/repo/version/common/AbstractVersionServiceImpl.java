@@ -141,10 +141,10 @@ public abstract class AbstractVersionServiceImpl
     {
         // invoke for node type
         QName nodeTypeQName = nodeService.getType(nodeRef);
-        this.afterVersionRevertDelegate.get(nodeTypeQName).afterVersionRevert(nodeRef, version);
+        this.afterVersionRevertDelegate.get(nodeRef, nodeTypeQName).afterVersionRevert(nodeRef, version);
         // invoke for node aspects
         Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
-        this.afterVersionRevertDelegate.get(nodeAspectQNames).afterVersionRevert(nodeRef, version);
+        this.afterVersionRevertDelegate.get(nodeRef, nodeAspectQNames).afterVersionRevert(nodeRef, version);
     }	
 	
 	/**
@@ -156,14 +156,14 @@ public abstract class AbstractVersionServiceImpl
 	{
         // invoke for node type
         QName nodeTypeQName = nodeService.getType(nodeRef);
-        this.beforeCreateVersionDelegate.get(nodeTypeQName).beforeCreateVersion(nodeRef);
+        this.beforeCreateVersionDelegate.get(nodeRef, nodeTypeQName).beforeCreateVersion(nodeRef);
         // invoke for node aspects
         Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
-		this.beforeCreateVersionDelegate.get(nodeAspectQNames).beforeCreateVersion(nodeRef);
+		this.beforeCreateVersionDelegate.get(nodeRef, nodeAspectQNames).beforeCreateVersion(nodeRef);
 	}
 	
 	/**
-	 * Invoke the after create version policy bahaviour
+	 * Invoke the after create version policy behaviour
 	 * 
 	 * @param nodeRef	the nodeRef versioned
 	 * @param version 	the created version
@@ -172,10 +172,10 @@ public abstract class AbstractVersionServiceImpl
 	{
 		// invoke for node type
         QName nodeTypeQName = nodeService.getType(nodeRef);
-        this.afterCreateVersionDelegate.get(nodeTypeQName).afterCreateVersion(nodeRef, version);
+        this.afterCreateVersionDelegate.get(nodeRef, nodeTypeQName).afterCreateVersion(nodeRef, version);
         // invoke for node aspects
         Set<QName> nodeAspectQNames = nodeService.getAspects(nodeRef);
-		this.afterCreateVersionDelegate.get(nodeAspectQNames).afterCreateVersion(nodeRef, version);
+		this.afterCreateVersionDelegate.get(nodeRef, nodeAspectQNames).afterCreateVersion(nodeRef, version);
 	}
 	
 	/**
@@ -209,7 +209,7 @@ public abstract class AbstractVersionServiceImpl
 	protected RevertAspectAction getRevertAspectAction(QName aspectName,  VersionRevertDetails revertDetails)
 	{
 		// first check for a policy for the node type
-		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(aspectName);
+		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(revertDetails.getNodeRef(), aspectName);
 		for(OnRevertVersionPolicy policy : policies)
 		{
 			VersionRevertCallback cb = policy.getRevertVersionCallback(aspectName, revertDetails);
@@ -235,7 +235,7 @@ public abstract class AbstractVersionServiceImpl
 	 */
 	protected RevertAssocAction getRevertAssocAction(QName className, QName assocName,  VersionRevertDetails revertDetails)
 	{
-		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(className);
+		Collection<OnRevertVersionPolicy> policies = onRevertVersionDelegate.getList(revertDetails.getNodeRef(), className);
 		for(OnRevertVersionPolicy policy : policies)
 		{
 			VersionRevertCallback cb = policy.getRevertVersionCallback(className, revertDetails);
@@ -275,7 +275,7 @@ public abstract class AbstractVersionServiceImpl
 	            nodeDetails);
 	    
 	    // Call the policy definitions
-            Collection<OnCreateVersionPolicy> policies = this.onCreateVersionDelegate.getList(classRef);
+            Collection<OnCreateVersionPolicy> policies = this.onCreateVersionDelegate.getList(nodeRef, classRef);
 	    for (VersionServicePolicies.OnCreateVersionPolicy policy : policies) 
 	    {
 	        policy.onCreateVersion(

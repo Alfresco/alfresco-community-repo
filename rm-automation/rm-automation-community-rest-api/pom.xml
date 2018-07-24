@@ -2,19 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
-   <name>Alfresco Records Management Automation Community REST API</name>
+   <artifactId>alfresco-governance-services-automation-community-rest-api</artifactId>
+   <name>Alfresco Governance Services Automation Community REST API</name>
 
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-rm-automation</artifactId>
+      <artifactId>alfresco-governance-services-automation</artifactId>
       <version>3.0.0-SNAPSHOT</version>
    </parent>
 
    <properties>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
-      <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
-      <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
+      <ags.share>alfresco-governance-services-community-share</ags.share>
+      <ags.repo>alfresco-governance-services-community-repo</ags.repo>
       <tas.restapi.version>5.2.0-10</tas.restapi.version>
       <fluent.json.version>2.0.0</fluent.json.version>
    </properties>

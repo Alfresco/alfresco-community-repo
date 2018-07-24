@@ -257,7 +257,7 @@
             <artifactId>alfresco-maven-plugin</artifactId>
             <executions>
                <execution>
-                  <id>attach-governance-services-jar</id>
+                  <id>attach-alfresco-governance-services-jar</id>
                   <goals>
                      <goal>amp</goal>
                   </goals>

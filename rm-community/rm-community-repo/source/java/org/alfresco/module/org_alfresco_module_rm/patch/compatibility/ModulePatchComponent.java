@@ -188,8 +188,16 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         RegistryKey moduleKeyVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
                 new String[]{REGISTRY_PATH_MODULES, moduleId, registryProperty});
         Serializable moduleVersion = this.registryService.getProperty(moduleKeyVersion);
-        
-        return new ModuleVersionNumber(moduleVersion.toString());
+
+        if (moduleVersion == null)
+        {
+            return VERSION_ZERO;
+        }
+        else
+        {
+            return new ModuleVersionNumber(moduleVersion.toString());
+        }
+
     }
 
     /**

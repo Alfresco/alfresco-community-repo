@@ -15,7 +15,7 @@ This produces the docker images for alfresco-content-repository-community and th
 * ```mvn clean install``` in the root of the project will build everything.
 
 ## Docker Alfresco
-On official releases, the image is published: https://hub.docker.com/r/alfresco/alfresco-content-repository-community/tags/ 
+On official releases, the image is published: https://hub.docker.com/r/alfresco/alfresco-content-repository-community/tags/
 
 For testing locally:
 1. Go to docker-alfreco folder
@@ -33,4 +33,4 @@ In this folder the distribution zip is build. It contains all the war files, lib
 
 * [Create a custom Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image.md)
 * [Creating customized Docker images using an existing Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image-using-existing-docker-image.md)
-* [Verifying that AMPs have been applied](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image-using-existing-docker-image.md)
+* [Verifying that AMPs have been applied](https://github.com/Alfresco/acs-packaging/blob/master/docs/verify-the-amp-has-been-applied.md)

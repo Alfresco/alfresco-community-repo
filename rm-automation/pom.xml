@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-automation</artifactId>
-   <name>Alfresco Records Management Automation</name>
+   <artifactId>alfresco-governance-services-automation</artifactId>
+   <name>Alfresco Governance Services Automation</name>
    <packaging>pom</packaging>
 
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-rm</artifactId>
+      <artifactId>alfresco-governance-services</artifactId>
       <version>3.0.0-SNAPSHOT</version>
    </parent>
 
@@ -131,7 +131,7 @@
          </build>
       </profile>
       <profile>
-         <id>apply-rm-community</id>
+         <id>apply-alfresco-governance-services-community</id>
          <build>
             <plugins>
                <plugin>
@@ -147,13 +147,13 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-community-share</artifactId>
+                                 <artifactId>alfresco-governance-services-community-share</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-community-repo</artifactId>
+                                 <artifactId>alfresco-governance-services-community-repo</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
@@ -178,7 +178,7 @@
                         <configuration>
                            <backup>true</backup>
                            <ampLocation>
-                              ${project.build.directory}/amps/alfresco-rm-community-repo-${project.version}.amp
+                              ${project.build.directory}/amps/alfresco-governance-services-community-repo-${project.version}.amp
                            </ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war
                            </warLocation>
@@ -193,7 +193,7 @@
                         <configuration>
                            <backup>true</backup>
                            <ampLocation>
-                              ${project.build.directory}/amps/alfresco-rm-community-share-${project.version}.amp
+                              ${project.build.directory}/amps/alfresco-governance-services-community-share-${project.version}.amp
                            </ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war
                            </warLocation>
@@ -205,7 +205,7 @@
          </build>
       </profile>
       <profile>
-         <id>apply-rm-enterprise</id>
+         <id>apply-alfresco-governance-services-enterprise</id>
          <build>
             <plugins>
                <plugin>
@@ -221,13 +221,13 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>${alfresco.rm.share}</artifactId>
+                                 <artifactId>${ags.share}</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>${alfresco.rm.repo}</artifactId>
+                                 <artifactId>${ags.repo}</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
@@ -251,7 +251,7 @@
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/${alfresco.rm.repo}-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/${ags.repo}-${project.version}.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war</warLocation>
                         </configuration>
                      </execution>
@@ -263,7 +263,7 @@
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/${alfresco.rm.share}-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/${ags.share}-${project.version}.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war</warLocation>
                         </configuration>
                      </execution>

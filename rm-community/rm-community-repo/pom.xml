@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-community-repo</artifactId>
-   <name>Alfresco Records Management Community Repo</name>
-   <description>Alfresco Record Management Community Repository Extension</description>
+   <artifactId>alfresco-governance-services-community-repo</artifactId>
+   <name>Alfresco Governance Services Community Repo</name>
+   <description>Alfresco Governance Services Community Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-rm-community</artifactId>
+      <artifactId>alfresco-governance-services-community</artifactId>
       <version>3.0.0-SNAPSHOT</version>
    </parent>
 
@@ -23,7 +23,7 @@
       <alfresco.test.db.name>alfresco-test</alfresco.test.db.name>
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
-      <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
+      <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
 
       <!-- 6.0 changes -->
@@ -223,7 +223,7 @@
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.alfresco</groupId>
-                           <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
+                           <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
                            <version>${project.version}</version>
                            <type>war</type>
                            <destFileName>gs-api-explorer-${project.version}.war</destFileName>
@@ -257,7 +257,7 @@
             <artifactId>alfresco-maven-plugin</artifactId>
             <executions>
                <execution>
-                  <id>attach-rm-jar</id>
+                  <id>attach-governance-services-jar</id>
                   <goals>
                      <goal>amp</goal>
                   </goals>
@@ -585,7 +585,7 @@
                               </webapp>
                               <webapp>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
+                                 <artifactId>alfresco-governance-services-community-rest-api-explorer</artifactId>
                                  <version>${project.version}</version>
                                  <contextPath>/gs-api-explorer</contextPath>
                                  <type>war</type>

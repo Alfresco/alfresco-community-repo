@@ -71,8 +71,8 @@ do
 
     for repository in ${repositories[@]}
     do
-        docker tag ${sourceImage}:${existingTag} ${repository}:${image}:${newTag}
-        docker push ${repository}:${image}:${newTag}
-        echo "Pushed ${sourceImage}:${existingTag} to ${repository}:${image}:${newTag}"
+        docker tag ${sourceImage}:${existingTag} ${repository}/${image}:${newTag}
+        docker push ${repository}/${image}:${newTag}
+        echo "Pushed ${sourceImage}:${existingTag} to ${repository}/${image}:${newTag}"
     done
 done

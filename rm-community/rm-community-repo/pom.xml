@@ -2,8 +2,8 @@
 
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-community-repo</artifactId>
-   <name>Alfresco Records Management Community Repo</name>
-   <description>Alfresco Record Management Community Repository Extension</description>
+   <name>AGS Repo</name>
+   <description>Alfresco Governance Services Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>

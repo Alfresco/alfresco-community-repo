@@ -26,6 +26,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.tika.TikaTransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -77,6 +78,14 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
         }
         // TODO: Possibly extend TransformationOptions to allow for per-transform PDFParserConfig?
         return context;
+    }
+    
+    @Override
+    protected void buildExtraOptionsforTika(TransformationOptions options)
+    {
+        TikaTransformationOptions tikaOptions = new TikaTransformationOptions();
+        tikaOptions.copyFrom(options);
+        tikaOptions.setNotExtractBookmarksText(true);
     }
 
     @Override

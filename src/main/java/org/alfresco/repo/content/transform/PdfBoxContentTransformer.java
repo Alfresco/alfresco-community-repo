@@ -81,11 +81,13 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
     }
     
     @Override
-    protected void buildExtraOptionsforTika(TransformationOptions options)
+    protected TikaTransformationOptions buildExtraOptions(TransformationOptions options)
     {
         TikaTransformationOptions tikaOptions = new TikaTransformationOptions();
         tikaOptions.copyFrom(options);
         tikaOptions.setNotExtractBookmarksText(true);
+        
+        return tikaOptions;
     }
 
     @Override

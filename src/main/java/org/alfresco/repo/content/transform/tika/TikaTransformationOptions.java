@@ -25,7 +25,11 @@
  */
 package org.alfresco.repo.content.transform.tika;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -58,6 +62,33 @@ public class TikaTransformationOptions extends TransformationOptions
     public void setNotExtractBookmarksText(boolean notExtractBookmarksText)
     {
         this.notExtractBookmarksText = notExtractBookmarksText;
+    }
+    
+    
+    /**
+     * Overrides the base class implementation to add our options
+     */
+    @Override
+    public Map<String, Object> toMap()
+    {
+        Map<String, Object> baseProps = super.toMap();
+        Map<String, Object> props = new HashMap<String, Object>(baseProps);
+        props.put(OPT_NOT_EXTRACT_BOOKMARKS_TEXT, notExtractBookmarksText);
+        return props;
+    }
+    
+    @Override
+    public void copyFrom(TransformationOptions origOptions) {
+        super.copyFrom(origOptions);
+        if (origOptions != null)
+        {
+            if (origOptions instanceof TikaTransformationOptions)
+            {
+                // Clone TikaTransformationOptions
+                this.setNotExtractBookmarksText(((TikaTransformationOptions) origOptions).isNotExtractBookmarksText());
+                
+            }
+        }
     }
 
 }

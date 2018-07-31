@@ -226,12 +226,14 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
        return context;
     }
     
-    protected void buildExtraOptionsforTika(TransformationOptions options)
+    protected TransformationOptions buildExtraOptions(TransformationOptions options)
     {
         if (options == null)
         {
             options = new TransformationOptions();
         }
+        
+        return options;
     }
 
     @Override
@@ -302,7 +304,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
         long timeoutMs = options.getTimeoutMs();
         String notExtractBookmarksText = null;
 
-        buildExtraOptionsforTika(options);
+        options = buildExtraOptions(options);
 
         if (options instanceof TikaTransformationOptions)
         {

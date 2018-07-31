@@ -490,6 +490,9 @@
        <property name="remoteTransformerClient">
           <ref bean="tikaRemoteTransformerClient" />
       </property>
+      <property name="extractBookmarksText">
+      		<value>${trasformer.pdf.extractBookmarksText}</value>
+      </property>
    </bean>
 
     <!-- Content Transformations -->
@@ -511,11 +514,18 @@
          parent="baseContentTransformer" >
    </bean>
 
-   <bean id="transformer.PdfBox"
-         class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
-         parent="baseTikaContentTransformer" >
-         <property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
-   </bean>
+	<bean id="transformer.PdfBox"
+		class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
+		parent="baseTikaContentTransformer">
+		<property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
+		<property name="pdfParserConfig" ref="pdfBoxPDFParserConfig"/>
+	</bean>
+	
+	<bean id="pdfBoxPDFParserConfig" class="org.apache.tika.parser.pdf.PDFParserConfig">
+		<property name="extractBookmarksText">
+					<value>${trasformer.pdf.extractBookmarksText}</value>
+		</property>
+	</bean>
    
    <bean id="transformer.PdfBox.TextToPdf"
          class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"

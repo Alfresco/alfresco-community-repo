@@ -164,4 +164,5 @@ public class PdfBoxContentTransformerTest extends AbstractContentTransformerTest
         targetWriter.setMimetype(targetMimetype);
         transformer.transform(sourceReader.getReader(), targetWriter);
     }
+    
 }

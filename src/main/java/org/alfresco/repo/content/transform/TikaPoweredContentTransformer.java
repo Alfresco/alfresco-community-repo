@@ -39,7 +39,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.tika.TikaTransformationOptions;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -92,6 +91,8 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
     protected static final String LINE_BREAK = "\r\n";
     public static final String WRONG_FORMAT_MESSAGE_ID = "transform.err.format_or_password";
     
+    private boolean extractBookmarksText = true;
+
     protected TikaPoweredContentTransformer(List<String> sourceMimeTypes)
     {
        this.sourceMimeTypes = sourceMimeTypes;
@@ -100,6 +101,11 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
     protected TikaPoweredContentTransformer(String[] sourceMimeTypes)
     {
        this(Arrays.asList(sourceMimeTypes));
+    }
+
+    public void setExtractBookmarksText(boolean extractBookmarksText)
+    {
+        this.extractBookmarksText = extractBookmarksText;
     }
 
     @Override
@@ -304,19 +310,11 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
         long timeoutMs = options.getTimeoutMs();
         String notExtractBookmarksText = null;
 
-        options = buildExtraOptions(options);
-
-        if (options instanceof TikaTransformationOptions)
+        if (extractBookmarksText)
         {
-            TikaTransformationOptions tikaOptions = (TikaTransformationOptions) options;
-
-            if (tikaOptions.isNotExtractBookmarksText())
-            {
-                notExtractBookmarksText = Boolean.TRUE.toString();
-            }
-
+            notExtractBookmarksText = Boolean.TRUE.toString();
         }
-        
+
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger, 
                 "transform", transform,

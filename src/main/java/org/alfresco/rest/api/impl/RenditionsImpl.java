@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tenant.TenantService;
@@ -106,6 +107,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     private ServiceRegistry serviceRegistry;
     private ResourceLoader resourceLoader;
     private TenantService tenantService;
+    private RenditionsDataCollector renditionsDataCollector;
 
     public void setNodes(Nodes nodes)
     {
@@ -138,6 +140,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         this.tenantService = tenantService;
     }
 
+    public void setRenditionsDataCollector(RenditionsDataCollector renditionsDataCollector)
+    {
+        this.renditionsDataCollector = renditionsDataCollector;
+    }
+
     public void init()
     {
         PropertyCheck.mandatory(this, "nodes", nodes);
@@ -145,6 +152,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         PropertyCheck.mandatory(this, "scriptThumbnailService", scriptThumbnailService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
+        PropertyCheck.mandatory(this, "renditionsDataCollector", renditionsDataCollector);
 
         this.nodeService = serviceRegistry.getNodeService();
         this.actionService = serviceRegistry.getActionService();
@@ -291,14 +299,16 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
         ContentData contentData = getContentData(sourceNodeRef, true);
         // Check if anything is currently available to generate thumbnails for the specified mimeType
-        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize(), sourceNodeRef,
+        String sourceMimetype = contentData.getMimetype();
+        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), sourceMimetype, contentData.getSize(), sourceNodeRef,
                 thumbnailDefinition))
         {
             throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' for " +
-                    contentData.getMimetype() + " as no transformer is currently available.");
+                    sourceMimetype + " as no transformer is currently available.");
         }
 
         Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
+        renditionsDataCollector.recordRenditionRequest(thumbnailDefinition, sourceMimetype);
 
         // Create thumbnail - or else queue for async creation
         actionService.executeAction(action, sourceNodeRef, true, executeAsync);

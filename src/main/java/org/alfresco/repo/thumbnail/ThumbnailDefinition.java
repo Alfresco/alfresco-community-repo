@@ -30,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
+import java.util.Objects;
+
 /**
  * This class provides the thumbnail details to the thumbnail service.
  * 
@@ -278,5 +280,26 @@ public class ThumbnailDefinition
             return;
         }
         thumbnailRegistry.addThumbnailDefinition(this);
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        ThumbnailDefinition that = (ThumbnailDefinition) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name);
     }
 }

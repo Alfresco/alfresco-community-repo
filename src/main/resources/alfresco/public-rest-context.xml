@@ -1362,6 +1362,7 @@
         <property name="scriptThumbnailService" ref="thumbnailServiceScript" />
         <property name="serviceRegistry" ref="ServiceRegistry" />
         <property name="tenantService" ref="tenantService"/>
+        <property name="renditionsDataCollector" ref="renditionsDataCollector"/>
     </bean>
 
     <bean id="Renditions" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1388,6 +1389,14 @@
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanRenditionsRelation">
         <property name="deletedNodes" ref="DeletedNodes"/>
+    </bean>
+
+    <!-- HeartBeat rest api renditions data collector -->
+    <bean id="renditionsDataCollector" class="org.alfresco.heartbeat.RenditionsDataCollector" parent="hbBaseDataCollector" >
+        <constructor-arg name="collectorId"         value="acs.repository.renditions"/>  <!-- Collector ID -->
+        <constructor-arg name="collectorVersion"    value="1.0"/> <!-- Collector version -->
+        <constructor-arg name="cronExpression"      value="0 0 0 ? * *"/> <!-- Daily -->
+        <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
     </bean>
 
     <!--                               -->

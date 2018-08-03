@@ -29,11 +29,11 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.EqualsHelper;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * The compound property representing content
@@ -317,7 +317,7 @@ public class ContentData implements Serializable
                 throw new IllegalArgumentException("\n" +
                         "The content mimetype must be set whenever the URL is set: \n" +
                         "   content URL: " + contentUrl + "\n" +
-                        "   mimetype: " + mimetype);
+                        "  and cannot be 'null'.");
             }
         }
     }

@@ -317,7 +317,7 @@ public class ContentData implements Serializable
                 throw new IllegalArgumentException("\n" +
                         "The content mimetype must be set whenever the URL is set: \n" +
                         "   content URL: " + contentUrl + "\n" +
-                        "  and cannot be 'null'.");
+                        "  and mimetype cannot be 'null'.");
             }
         }
     }

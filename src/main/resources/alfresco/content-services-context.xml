@@ -490,9 +490,6 @@
        <property name="remoteTransformerClient">
           <ref bean="tikaRemoteTransformerClient" />
       </property>
-      <property name="extractBookmarksText">
-      		<value>${trasformer.pdf.extractBookmarksText}</value>
-      </property>
    </bean>
 
     <!-- Content Transformations -->
@@ -519,12 +516,12 @@
 		parent="baseTikaContentTransformer">
 		<property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
 		<property name="pdfParserConfig" ref="pdfBoxPDFParserConfig"/>
+		<property name="extractBookmarksText">
+			<value>${content.transformer.PdfBox.extractBookmarksText}</value>
+		</property>
 	</bean>
 	
 	<bean id="pdfBoxPDFParserConfig" class="org.apache.tika.parser.pdf.PDFParserConfig">
-		<property name="extractBookmarksText">
-					<value>${trasformer.pdf.extractBookmarksText}</value>
-		</property>
 	</bean>
    
    <bean id="transformer.PdfBox.TextToPdf"

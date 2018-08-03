@@ -90,8 +90,6 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
      */
     protected static final String LINE_BREAK = "\r\n";
     public static final String WRONG_FORMAT_MESSAGE_ID = "transform.err.format_or_password";
-    
-    private boolean extractBookmarksText = true;
 
     protected TikaPoweredContentTransformer(List<String> sourceMimeTypes)
     {
@@ -101,11 +99,6 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
     protected TikaPoweredContentTransformer(String[] sourceMimeTypes)
     {
        this(Arrays.asList(sourceMimeTypes));
-    }
-
-    public void setExtractBookmarksText(boolean extractBookmarksText)
-    {
-        this.extractBookmarksText = extractBookmarksText;
     }
 
     @Override
@@ -231,16 +224,6 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
        }
        return context;
     }
-    
-    protected TransformationOptions buildExtraOptions(TransformationOptions options)
-    {
-        if (options == null)
-        {
-            options = new TransformationOptions();
-        }
-        
-        return options;
-    }
 
     @Override
     public void transformLocal(ContentReader reader, ContentWriter writer,  TransformationOptions options)
@@ -308,17 +291,10 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
     {
         String transform = getTransform();
         long timeoutMs = options.getTimeoutMs();
-        String notExtractBookmarksText = null;
-
-        if (extractBookmarksText)
-        {
-            notExtractBookmarksText = Boolean.TRUE.toString();
-        }
 
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger, 
                 "transform", transform,
-                "notExtractBookmarksText", notExtractBookmarksText,
                 "targetMimetype", targetMimetype, 
                 "targetEncoding", targetEncoding);
     }

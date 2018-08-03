@@ -44,8 +44,10 @@ public class CMISUtils
             out.writeObject(source);
             out.flush();
 
-            ObjectInputStream in = new ObjectInputStream(cos.getInputStream());
-            target = (T) in.readObject();
+            try (ObjectInputStream in = new ObjectInputStream(cos.getInputStream()))
+            {
+                target = (T) in.readObject();
+            }
         } catch (Exception e)
         {
             throw new CmisRuntimeException("Object copy failed!", e);

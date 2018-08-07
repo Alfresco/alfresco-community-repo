@@ -32,6 +32,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +47,9 @@ import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 /**
  * @author eknizat
@@ -58,9 +64,11 @@ public class InfoDataCollectorTest
     private BaseDescriptor spyDescriptor;
     private DeploymentMethodProvider mockDeploymentMethodProvider;
     private HeartBeatJobScheduler mockScheduler;
+    private DatabaseMetaData mockDatabaseMetaData;
+    private ServletContext mockServletContext;
 
     @Before
-    public void setUp()
+    public void setUp() throws SQLException
     {
         spyDescriptor = spy(BaseDescriptor.class);
         mockDescriptorDAO = mock(DescriptorDAO.class);
@@ -68,17 +76,28 @@ public class InfoDataCollectorTest
         mockCollectorService = mock(HBDataCollectorService.class);
         mockDeploymentMethodProvider = mock(DeploymentMethodProvider.class);
         mockScheduler = mock(HeartBeatJobScheduler.class);
+        mockDatabaseMetaData = mock(DatabaseMetaData.class);
+        mockServletContext = mock(ServletContext.class);
+
+        DataSource mockDataSource = mock(DataSource.class);
+        Connection mockCon = mock(Connection.class);
+        when(mockDataSource.getConnection()).thenReturn(mockCon);
+        when(mockCon.getMetaData()).thenReturn(mockDatabaseMetaData);
+
 
         when(spyDescriptor.getId()).thenReturn("mock_id");
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
         when(mockDeploymentMethodProvider.getDeploymentMethod()).thenReturn(DeploymentMethod.DEFAULT);
+        when(mockServletContext.getServerInfo()).thenReturn("Apache Tomcat/7.0.47");
 
         infoCollector = new InfoDataCollector("acs.repository.info", "1.0", "0 0 0 ? * *", mockScheduler);
         infoCollector.setHbDataCollectorService(mockCollectorService);
         infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);
         infoCollector.setDeploymentMethodProvider(mockDeploymentMethodProvider);
+        infoCollector.setDataSource(mockDataSource);
+        infoCollector.setServletContext(mockServletContext);
     }
 
     @Test
@@ -104,6 +123,7 @@ public class InfoDataCollectorTest
     public void testInfoDataIsCollected()
     {
         mockVersionDetails("5","1","2",".4");
+        mockDatabaseMetaData("PostgreSQL","10.1","PostgreSQL JDBC Driver","42.2.1");
         collectedData = infoCollector.collectData();
 
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
@@ -116,12 +136,32 @@ public class InfoDataCollectorTest
         assertEquals(DeploymentMethod.DEFAULT.toString(), data.get("deploymentMethod"));
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
-        assertEquals("5.1.2 (.4)", version.get("full"));
+        assertEquals("5.1.2 (.4 rc08e1b5a-b192)", version.get("full"));
         assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
         assertEquals("2", version.get("patch"));
         assertEquals("4", version.get("hotfix"));
+
+        // No need to mock the system properties, just check if they are collected 
+        assertNotNull("Check if data is collected", data.get("osVendor") );
+        assertNotNull("Check if data is collected", data.get("osVersion") );
+        assertNotNull("Check if data is collected", data.get("osArch") );
+        assertNotNull("Check if data is collected", data.get("javaVendor") );
+        assertNotNull("Check if data is collected", data.get("javaVersion") );
+        assertNotNull("Check if data is collected", data.get("userLanguage") );
+        assertNotNull("Check if data is collected", data.get("userTimezone") );
+        assertNotNull("Check if data is collected", data.get("userUTCOffset") );
+        
+        assertEquals("Apache Tomcat/7.0.47", data.get("serverInfo") );
+                
+        assertTrue(data.containsKey("database"));
+        Map<String, Object> db = (Map<String, Object>) data.get("database");
+        assertEquals("PostgreSQL", db.get("vendor"));
+        assertEquals("10.1", db.get("version"));
+        assertEquals("PostgreSQL JDBC Driver", db.get("driverName"));
+        assertEquals("42.2.1", db.get("driverVersion"));
+        
     }
     
     @Test
@@ -139,7 +179,7 @@ public class InfoDataCollectorTest
         assertEquals("Community", data.get("edition"));
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
-        assertEquals("5.1.2 (4)", version.get("full"));
+        assertEquals("5.1.2 (4 rc08e1b5a-b192)", version.get("full"));
         assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
@@ -162,7 +202,7 @@ public class InfoDataCollectorTest
         assertEquals("Community", data.get("edition"));
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
-        assertEquals("5.1.2", version.get("full"));
+        assertEquals("5.1.2 (rc08e1b5a-b192)", version.get("full"));
         assertEquals("5.1", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
@@ -190,5 +230,21 @@ public class InfoDataCollectorTest
         when(spyDescriptor.getVersionLabel()).thenReturn(hotfix);
         when(spyDescriptor.getSchema()).thenReturn(1000);
         when(spyDescriptor.getEdition()).thenReturn("Community");
+        when(spyDescriptor.getVersionBuild()).thenReturn("rc08e1b5a-b192");
+    }
+
+    private void mockDatabaseMetaData(String vendor, String version, String driverName, String driverVersion)
+    {
+        try
+        {
+            when(mockDatabaseMetaData.getDatabaseProductName()).thenReturn(vendor);
+            when(mockDatabaseMetaData.getDatabaseProductVersion()).thenReturn(version);
+            when(mockDatabaseMetaData.getDriverName()).thenReturn(driverName);
+            when(mockDatabaseMetaData.getDriverVersion()).thenReturn(driverVersion);
+        }
+        catch (SQLException e)
+        {
+            // No need to log exception if the data cannot be retrieved
+        }
     }
 }

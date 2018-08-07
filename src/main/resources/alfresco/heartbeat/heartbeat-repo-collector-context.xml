@@ -7,11 +7,12 @@
     <!-- HeartBeat repository info data collector -->
     <bean id="infoDataCollector" class="org.alfresco.heartbeat.InfoDataCollector" parent="hbBaseDataCollector" >
         <constructor-arg name="collectorId"         value="acs.repository.info"/> <!-- Collector ID -->
-        <constructor-arg name="collectorVersion"    value="1.0"/> <!-- Collector version -->
+        <constructor-arg name="collectorVersion"    value="1.1"/> <!-- Collector version -->
         <constructor-arg name="cronExpression"      value="0 0 0 ? * SUN"/> <!-- Weekly -->
         <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
         <property name="serverDescriptorDAO"        ref="serverDescriptorDAO"/>
         <property name="deploymentMethodProvider"   ref="deploymentMethodProvider"/>
+        <property name="dataSource"                 ref="dataSource" />
     </bean>
 
     <!-- HeartBeat repository usage model data collector -->

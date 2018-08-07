@@ -79,7 +79,7 @@ import java.util.TimeZone;
  *          <li><b>userLanguage:</b> String - The language which this instance was installed with. {@link Locale#getLanguage()} </li>
  *          <li><b>userTimezone:</b> String - The timezone ID for this Alfresco instance. e.g. Europe/Athens {@link TimeZone#getID()} </li>
  *          <li><b>userUTCOffset:</b> String - The UTC offset of the timezone for this Alfresco instance. e.g. +03.00 {@link OffsetDateTime#getOffset()} </li>
- *          <li><b>database: Object which contains database information:</b>
+ *          <li><b>db: Object which contains database information:</b>
  *              <ul>
  *                  <li>vendor: String - The vendor of the database. {@link DatabaseMetaData#getDatabaseProductName()}</li>
  *                  <li>version: String - The version of the database used. {@link DatabaseMetaData#getDatabaseProductVersion()}</li>
@@ -185,7 +185,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         infoValues.put("userLanguage", Locale.getDefault().getLanguage());
         infoValues.put("userTimezone", TimeZone.getDefault().getID());
-        infoValues.put("userUTCOffset", OffsetDateTime.now().getOffset().getId());
+        infoValues.put("userUTCOffset", OffsetDateTime.now().getOffset().getId().replaceAll("Z","+00.00"));
 
         if(servletContext != null)
         {
@@ -202,7 +202,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
             db.put("version", dbmeta.getDatabaseProductVersion());
             db.put("driverName", dbmeta.getDriverName());
             db.put("driverVersion", dbmeta.getDriverVersion());
-            infoValues.put("database", db); 
+            infoValues.put("db", db); 
         }
         catch (SQLException e)
         {

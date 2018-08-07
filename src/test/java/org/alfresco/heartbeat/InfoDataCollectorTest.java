@@ -155,8 +155,8 @@ public class InfoDataCollectorTest
         
         assertEquals("Apache Tomcat/7.0.47", data.get("serverInfo") );
                 
-        assertTrue(data.containsKey("database"));
-        Map<String, Object> db = (Map<String, Object>) data.get("database");
+        assertTrue(data.containsKey("db"));
+        Map<String, Object> db = (Map<String, Object>) data.get("db");
         assertEquals("PostgreSQL", db.get("vendor"));
         assertEquals("10.1", db.get("version"));
         assertEquals("PostgreSQL JDBC Driver", db.get("driverName"));

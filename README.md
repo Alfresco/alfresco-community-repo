@@ -18,7 +18,7 @@ This produces the docker images for alfresco-content-repository-community and th
 On official releases, the image is published: https://hub.docker.com/r/alfresco/alfresco-content-repository-community/tags/
 
 For testing locally:
-1. Go to docker-alfreco folder
+1. Go to docker-alfresco folder
 2. Run *mvn clean install* if you have not done so
 3. Build the docker image: ```docker build . --tag acr-community:6.0.tag```
 4. Check that the image has been created locally with your desired name/tag: ```docker images```

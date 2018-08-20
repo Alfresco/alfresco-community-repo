@@ -39,6 +39,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -72,6 +73,7 @@ public class PolicyComponentTransactionTest extends TestCase
     private static QName A_TYPE = QName.createQName(TEST_NAMESPACE, "a_type");
     private static QName B_TYPE = QName.createQName(TEST_NAMESPACE, "b_type");
     private static QName C_TYPE = QName.createQName(TEST_NAMESPACE, "c_type");
+    private static QName ASPECT = QName.createQName(TEST_NAMESPACE, "aspect");
 
     private ApplicationContext applicationContext;
     private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
@@ -86,6 +88,9 @@ public class PolicyComponentTransactionTest extends TestCase
     private TestOnCreateNodePolicy aTypeBehavior;
     private TestOnCreateNodePolicy bTypeBehavior;
     private TestOnCreateNodePolicy cTypeBehavior;
+    private TestOnUpdateNodePolicy aTypeUpdateBehavior;
+    private TestOnUpdateNodePolicy bTypeUpdateBehavior;
+    private TestOnUpdateNodePolicy cTypeUpdateBehavior;
 
     
     @Override
@@ -128,15 +133,22 @@ public class PolicyComponentTransactionTest extends TestCase
     private void createAndEnableBehaviours()
     {
         aTypeBehavior = new TestOnCreateNodePolicy();
+        aTypeUpdateBehavior = new TestOnUpdateNodePolicy();
         bTypeBehavior = new TestOnCreateNodePolicy();
+        bTypeUpdateBehavior = new TestOnUpdateNodePolicy();
         cTypeBehavior = new TestOnCreateNodePolicy();
+        cTypeUpdateBehavior = new TestOnUpdateNodePolicy();
 
         // bind custom behavior for super type
         policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeUpdateBehavior, "onUpdateNode"));
         // bind custom behavior for "middle" type
         policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeUpdateBehavior, "onUpdateNode"));
         // bind custom behavior for sub type
         policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeUpdateBehavior, "onUpdateNode"));
+        // bind custom behavior for aspect
     }
     
     @Override
@@ -431,6 +443,31 @@ public class PolicyComponentTransactionTest extends TestCase
         }
     }
 
+    public void behaviourHierarchyNodeTestWork(QName createDocType, QName... disableTypes) throws Exception
+    {
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            NodeRef nodeRef = createDocOfType(createDocType);
+            disableBehaviours(nodeRef, disableTypes);
+            try
+            {
+                nodeService.addAspect(nodeRef, ASPECT, null);
+            }
+            finally
+            {
+                enableBehaviours(nodeRef, disableTypes);
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+    }
+
     /**
      * Test for MNT-13836
      * @throws Exception
@@ -444,6 +481,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, bTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
         assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    public void testBehaviourHierarchyNodeEnableAll1() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(A_TYPE);
+        assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
@@ -461,6 +509,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeEnableAll2() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(B_TYPE);
+        assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(1, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836
      * @throws Exception
@@ -474,6 +533,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(1, bTypeBehavior.getExecutionCount());
         assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
         assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    public void testBehaviourHierarchyNodeEnableAll3() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(C_TYPE);
+        assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(1, bTypeUpdateBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(1, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
@@ -656,6 +726,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableSuper1() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(A_TYPE, A_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -671,6 +752,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableSuper2() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(B_TYPE, A_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -684,6 +776,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, bTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
         assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    public void testBehaviourHierarchyNodeDisableSuper3() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(C_TYPE, A_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
@@ -746,6 +849,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableMiddle1() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(A_TYPE, B_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -761,6 +875,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableMiddle2() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(B_TYPE, B_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -774,6 +899,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, bTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
         assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    public void testBehaviourHierarchyNodeDisableMiddle3() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(C_TYPE, B_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
@@ -836,6 +972,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableSub1() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(A_TYPE, C_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -851,6 +998,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
+    public void testBehaviourHierarchyNodeDisableSub2() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(B_TYPE, C_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(1, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
+    }
+
     /**
      * Test for MNT-13836 (new API)
      * @throws Exception
@@ -864,6 +1022,17 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, bTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
         assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    public void testBehaviourHierarchyNodeDisableSub3() throws Exception
+    {
+        behaviourHierarchyNodeTestWork(C_TYPE, C_TYPE);
+        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
@@ -1072,6 +1241,16 @@ public class PolicyComponentTransactionTest extends TestCase
         }
     }
 
+    private void disableBehaviours(NodeRef nodeRef, QName... classNames)
+    {
+        for(int i = 0; i < classNames.length; i++)
+        {
+            behaviourFilter.disableBehaviour(nodeRef, classNames[i]);
+            // check that behavior is disabled correctly
+            checkBehaviour(classNames[i], nodeRef, true, true, false, true);
+        }
+    }
+
     private void enableBehaviours(ClassFilter... types)
     {
         for(int i = 0; i < types.length; i++)
@@ -1084,18 +1263,30 @@ public class PolicyComponentTransactionTest extends TestCase
         }
     }
 
-    private void createDocOfType(QName type)
+    private void enableBehaviours(NodeRef nodeRef, QName... types)
+    {
+        for(int i = 0; i < types.length; i++)
+        {
+            behaviourFilter.enableBehaviour(nodeRef, types[i]);
+        }
+        for(int i = 0; i < types.length; i++)
+        {
+            checkBehaviour(types[i], companyHome, true, true, true, true);
+        }
+    }
+
+    private NodeRef createDocOfType(QName type)
     {
         final String name = "Test (" + System.currentTimeMillis() + ").docx";
         final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
 
         // create node of child type
-        nodeService.createNode(companyHome,
+        return nodeService.createNode(companyHome,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
                 type,
-                contentProps);
+                contentProps).getChildRef();
     }
 
     /**
@@ -1256,13 +1447,12 @@ public class PolicyComponentTransactionTest extends TestCase
         }
     }
     
-    private class TestOnCreateNodePolicy implements OnCreateNodePolicy
+    private abstract class TestExecutionPolicy
     {
         private boolean executed;
         private int executionCount;
-
-        @Override
-        public void onCreateNode(ChildAssociationRef childAssocRef)
+        
+        protected void execute()
         {
             executed = true;
             executionCount++;
@@ -1276,6 +1466,24 @@ public class PolicyComponentTransactionTest extends TestCase
         public int getExecutionCount()
         {
             return executionCount;
+        }
+    }
+    
+    private class TestOnCreateNodePolicy extends TestExecutionPolicy implements OnCreateNodePolicy
+    {
+        @Override
+        public void onCreateNode(ChildAssociationRef childAssocRef)
+        {
+            execute();
+        }
+    }
+    
+    private class TestOnUpdateNodePolicy extends TestExecutionPolicy implements OnUpdateNodePolicy
+    {
+        @Override
+        public void onUpdateNode(NodeRef nodeRef)
+        {
+            execute();
         }
     }
     

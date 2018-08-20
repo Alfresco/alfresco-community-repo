@@ -507,7 +507,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
             {
                 continue;
             }
-            MutableInt filter = classFilters.get(className);
+            MutableInt filter = classFilters.get(classCheck);
             if (filter != null && filter.intValue() > 0)
             {
                 // Class was disabled

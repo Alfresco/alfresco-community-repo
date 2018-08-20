@@ -17,7 +17,7 @@ Please refer to our [How to contribute](/CONTRIBUTING.md) guide and our [Contrib
    rm-community/rm-community-share/ or rm-enterprise/rm-enterprise-share/ )
 
 ## Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL)
-* Create a file called _local.properties_ under src/main/resources in alfresco-rm-enterprise-repo
+* Create a file called _local.properties_ under src/main/resources in alfresco-governance-services-enterprise-repo
 * Add the following properties in this new file
 
    ```

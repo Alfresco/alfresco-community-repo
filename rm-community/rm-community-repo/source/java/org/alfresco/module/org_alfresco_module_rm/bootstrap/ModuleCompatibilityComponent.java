@@ -53,7 +53,7 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
     private static Log logger = LogFactory.getLog(ModuleCompatibilityComponent.class);
 
     // TODO get this from somewhere
-    private static final String RM_ENT_MODULE_ID = "alfresco-governance-services-enterprise-repo";
+    private static final String RM_ENT_MODULE_ID = "alfresco-rm-enterprise-repo";
 
     /** descriptor service */
     private DescriptorService descriptorService;

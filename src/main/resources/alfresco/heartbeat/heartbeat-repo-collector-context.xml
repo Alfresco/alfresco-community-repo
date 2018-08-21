@@ -68,4 +68,12 @@
         <property name="authenticationSubsystem"    ref="Authentication"/>
     </bean>
 
+    <!-- HeartBeat sessions usage data collector -->
+    <bean id="sessionsUsageDataCollector" class="org.alfresco.heartbeat.SessionsUsageDataCollector" parent="hbBaseDataCollector" >
+        <constructor-arg name="collectorId"         value="acs.repository.usage.sessions"/>  <!-- Collector ID -->
+        <constructor-arg name="collectorVersion"    value="1.0"/>  <!-- Collector version -->
+        <constructor-arg name="cronExpression"      value="0 0 0/1 * * ?"/> <!-- Hourly -->
+        <property name="currentRepoDescriptorDAO"   ref="currentRepoDescriptorDAO"/>
+        <property name="repoServerMgmt"             ref="RepoServerMgmt"/>
+    </bean>
 </beans>

@@ -192,7 +192,7 @@
                         <configuration>
                            <backup>true</backup>
                            <ampLocation>
-                              ${project.build.directory}/amps/alfresco-rm-community-repo-${project.version}.amp
+                              ${project.build.directory}/amps/alfresco-rm-enterprise-repo-${project.version}.amp
                            </ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war
                            </warLocation>
@@ -207,7 +207,7 @@
                         <configuration>
                            <backup>true</backup>
                            <ampLocation>
-                              ${project.build.directory}/amps/alfresco-rm-community-share-${project.version}.amp
+                              ${project.build.directory}/amps/alfresco-rm-enterprise-share-${project.version}.amp
                            </ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war
                            </warLocation>

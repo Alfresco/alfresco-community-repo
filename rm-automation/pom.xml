@@ -145,6 +145,7 @@
                         </goals>
                         <configuration>
                            <artifactItems>
+                              <!-- Due to no compatible community version of ACS 5.2.N with RM community
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-community-share</artifactId>
@@ -154,6 +155,19 @@
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-community-repo</artifactId>
+                                 <version>${project.version}</version>
+                                 <type>amp</type>
+                              </artifactItem>
+                              !-->
+                              <artifactItem>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-enterprise-share</artifactId>
+                                 <version>${project.version}</version>
+                                 <type>amp</type>
+                              </artifactItem>
+                              <artifactItem>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-enterprise-repo</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>

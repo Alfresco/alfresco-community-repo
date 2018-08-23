@@ -61,10 +61,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.SimpleScheduleBuilder;
-import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.impl.triggers.CalendarIntervalTriggerImpl;
+import org.quartz.impl.triggers.SimpleTriggerImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -279,7 +280,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals(12345, t.getStartTime().getTime());
         assertEquals(null, t.getEndTime());
-        assertEquals(SimpleTrigger.class, t.getClass());
+        assertEquals(SimpleTriggerImpl.class, t.getClass());
 
         // Only end date
         // (End date + no repeat = never schedule)
@@ -299,7 +300,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 10); // Within 10ms
         assertEquals(null, t.getEndTime());
-        assertEquals(Trigger.class, t.getClass());
+        assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(2, ((CalendarIntervalTrigger) t).getRepeatInterval());
         assertEquals(DateBuilder.IntervalUnit.SECOND, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
@@ -313,7 +314,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals(12345, t.getStartTime().getTime());
         assertEquals(null, t.getEndTime());
-        assertEquals(CalendarIntervalTrigger.class, t.getClass());
+        assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(3, ((CalendarIntervalTrigger) t).getRepeatInterval());
         assertEquals(DateBuilder.IntervalUnit.MONTH, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
@@ -337,7 +338,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals(12345, t.getStartTime().getTime());
         assertEquals(future, t.getEndTime().getTime());
-        assertEquals(CalendarIntervalTrigger.class, t.getClass());
+        assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(12, ((CalendarIntervalTrigger) t).getRepeatInterval());
         assertEquals(DateBuilder.IntervalUnit.WEEK, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
@@ -351,7 +352,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals((double) System.currentTimeMillis(), (double) t.getStartTime().getTime(), 2); // Within 2ms
         assertEquals(future, t.getEndTime().getTime());
-        assertEquals(CalendarIntervalTrigger.class, t.getClass());
+        assertEquals(CalendarIntervalTriggerImpl.class, t.getClass());
         assertEquals(6, ((CalendarIntervalTrigger) t).getRepeatInterval());
         assertEquals(DateBuilder.IntervalUnit.HOUR, ((CalendarIntervalTrigger) t).getRepeatIntervalUnit());
 
@@ -378,7 +379,7 @@ public class ScheduledPersistedActionServiceTest extends TestCase
         assertNotNull(t);
         assertEquals(12345, t.getStartTime().getTime());
         assertEquals(null, t.getEndTime());
-        assertEquals(SimpleTrigger.class, t.getClass());
+        assertEquals(SimpleTriggerImpl.class, t.getClass());
     }
 
     /**

@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.quartz.CalendarIntervalScheduleBuilder;
+import org.quartz.DateBuilder;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
@@ -274,7 +275,10 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
                //  due to fire?
                Trigger testT = TriggerBuilder.newTrigger()
                        .withIdentity("TEST")
-                       .withSchedule(CalendarIntervalScheduleBuilder.calendarIntervalSchedule())
+                       .withSchedule(CalendarIntervalScheduleBuilder.calendarIntervalSchedule()
+                               .withInterval(
+                                       intervalCount,
+                                       DateBuilder.IntervalUnit.valueOf(intervalPeriod.toString().toUpperCase())))
                        .startAt(scheduleStart)
                        .build();
                Date nextFireFromNow = testT.getFireTimeAfter(new Date());
@@ -318,7 +322,10 @@ public class ScheduledPersistedActionImpl implements ScheduledPersistedAction
                    .endAt(endAt)
                    .withSchedule(
                            CalendarIntervalScheduleBuilder.calendarIntervalSchedule()
-                                   .withMisfireHandlingInstructionFireAndProceed())
+                                   .withMisfireHandlingInstructionFireAndProceed()
+                                   .withInterval(
+                                           intervalCount,
+                                           DateBuilder.IntervalUnit.valueOf(intervalPeriod.toString().toUpperCase())))
                    .build();
        }
        return trigger;

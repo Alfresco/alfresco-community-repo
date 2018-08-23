@@ -36,10 +36,6 @@ import java.util.Map;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.cmr.repository.datatype.TypeConverter;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -381,20 +377,5 @@ public class RecordsManagementSearchParameters
     {
         return includedContainerTypes;
     }
-
-    // This code needs to be removed once MNT-14795 (Search does not work when RM is installed) has been fixed.
-    static
-    {
-        DefaultTypeConverter.INSTANCE.addConverter(
-            SearchParameters.class,
-            String.class,
-            new TypeConverter.Converter<SearchParameters, String>()
-            {
-                public String convert(SearchParameters source)
-                {
-                    throw new TypeConversionException("Dummy converter! Should throw a TypeConversionException");
-                }
-            }
-        );
-    }
+    
 }

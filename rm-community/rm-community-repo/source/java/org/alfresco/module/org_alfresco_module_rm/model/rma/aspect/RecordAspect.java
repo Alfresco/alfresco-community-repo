@@ -389,8 +389,11 @@ public class RecordAspect extends    AbstractDisposableItem
 
             //create a new content URL for the copy
             ContentReader reader = fileFolderService.getReader(targetNodeRef);
-            ContentWriter writer = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
-            writer.putContent(reader);
+            if (reader != null)
+            {
+                ContentWriter writer = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
+                writer.putContent(reader);
+            }
         }
     }
 

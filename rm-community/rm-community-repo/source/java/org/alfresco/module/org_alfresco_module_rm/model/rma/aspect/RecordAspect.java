@@ -101,9 +101,6 @@ public class RecordAspect extends    AbstractDisposableItem
     /** File folder service */
     private FileFolderService fileFolderService;
 
-    /** Content service */
-    private ContentService contentService;
-
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
@@ -147,15 +144,6 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
-    }
-
-    /**
-     *
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
     }
 
     /**
@@ -391,7 +379,7 @@ public class RecordAspect extends    AbstractDisposableItem
             ContentReader reader = fileFolderService.getReader(targetNodeRef);
             if (reader != null)
             {
-                ContentWriter writer = contentService.getWriter(targetNodeRef, ContentModel.PROP_CONTENT, true);
+                ContentWriter writer = fileFolderService.getWriter(targetNodeRef);
                 writer.putContent(reader);
             }
         }

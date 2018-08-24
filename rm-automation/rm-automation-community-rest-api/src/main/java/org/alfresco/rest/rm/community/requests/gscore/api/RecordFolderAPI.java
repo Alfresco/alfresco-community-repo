@@ -40,6 +40,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -212,7 +213,7 @@ public class RecordFolderAPI extends RMModelRequest
     /**
      * see {@link #createRecord(Record, String, String)}
      */
-    public Record createRecord(Record recordModel, String recordFolderId) throws Exception
+    public Record createRecord(Record recordModel, String recordFolderId)
     {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);
@@ -227,9 +228,9 @@ public class RecordFolderAPI extends RMModelRequest
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param recordFolderId The identifier of a record folder
      * @return newly created {@link Record}
-     * @throws Exception for invalid recordModel JSON strings
+     * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public Record createRecord(Record recordModel, String recordFolderId, File recordContent) throws Exception
+    public Record createRecord(Record recordModel, String recordFolderId, File recordContent) throws RuntimeException
     {
         mandatoryString("recordFolderId", recordFolderId);
         mandatoryObject("recordContent", recordContent);
@@ -245,7 +246,15 @@ public class RecordFolderAPI extends RMModelRequest
          * to the request.
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
-        JsonNode root = new ObjectMapper().readTree(toJson(recordModel, Record.class, FilePlanComponentMixIn.class));
+        JsonNode root;
+        try
+        {
+            root = new ObjectMapper().readTree(toJson(recordModel, Record.class, FilePlanComponentMixIn.class));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to convert model to JSON.", e);
+        }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
@@ -266,7 +275,7 @@ public class RecordFolderAPI extends RMModelRequest
      * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @return The created {@link Record}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordFolderId is not a valid format or {@code recordModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -275,7 +284,7 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public Record createRecord(Record recordModel, String recordFolderId, String parameters) throws Exception
+    public Record createRecord(Record recordModel, String recordFolderId, String parameters)
     {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);

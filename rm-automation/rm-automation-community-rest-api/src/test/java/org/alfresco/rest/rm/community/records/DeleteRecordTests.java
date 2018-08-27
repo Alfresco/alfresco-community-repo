@@ -46,6 +46,10 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import org.alfresco.rest.core.RestResponse;
+import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -55,8 +59,10 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.report.log.Step;
 import org.testng.annotations.Test;
 
 /**
@@ -246,6 +252,40 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     * <pre>
+     * Given a record
+     * And a copy of that record
+     * When I delete the copy
+     * Then it is still possible to view the content of the original record
+     * </pre>
+     */
+    @Test(description = "Deleting copy of record doesn't delete original content")
+    @AlfrescoTest(jira="MNT-18806")
+    public void deleteCopyOfRecord()
+    {
+        Step.STEP("Create two record categories and folders.");
+        RecordCategoryChild recordFolderA = createCategoryFolderInFilePlan();
+        RecordCategoryChild recordFolderB = createCategoryFolderInFilePlan();
+
+        Step.STEP("Create a record in folder A and copy it into folder B.");
+        String recordId = getRestAPIFactory().getRecordFolderAPI()
+                    .createRecord(createElectronicRecordModel(), recordFolderA.getId(), getFile(IMAGE_FILE)).getId();
+        String copyId = copyRecord(recordId, recordFolderB.getId()).getId();
+        assertStatusCode(CREATED);
+
+        Step.STEP("Check that it's possible to load the original content.");
+        getNodeContent(recordId);
+        assertStatusCode(OK);
+
+        Step.STEP("Delete the copy.");
+        deleteAndVerify(copyId);
+
+        Step.STEP("Check that the original record node and content still exist.");
+        checkNodeExists(recordId);
+        getNodeContent(recordId);
+    }
+
+    /**
      * Utility method to delete a record and verify successful deletion
      *
      * @param recordId The id of the record
@@ -263,4 +303,73 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(NOT_FOUND);
     }
 
+    /**
+     * Copy a record to a record folder.
+     *
+     * @param recordId The id of the record to copy.
+     * @param destinationFolder The id of the record folder to copy it to.
+     * @return The model returned by the copy API.
+     */
+    private RestNodeModel copyRecord(String recordId, String destinationFolder)
+    {
+        Node node = getNode(recordId);
+        RestNodeBodyMoveCopyModel copyBody = new RestNodeBodyMoveCopyModel();
+        copyBody.setTargetParentId(destinationFolder);
+        try
+        {
+            return node.copy(copyBody);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Problem copying record.", e);
+        }
+    }
+
+    /**
+     * Get the content from a node.
+     *
+     * @param nodeId
+     * @return The response containing the node content.
+     */
+    private RestResponse getNodeContent(String nodeId)
+    {
+        try
+        {
+            return getNode(nodeId).getNodeContent();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to load content for node.", e);
+        }
+    }
+
+    /**
+     * Check that the given node exists.
+     *
+     * @param nodeId The node to check.
+     */
+    private void checkNodeExists(String nodeId)
+    {
+        try
+        {
+            getNode(nodeId).getNode();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Node does not exist.", e);
+        }
+    }
+
+    /**
+     * Get the node from a record id.
+     *
+     * @param recordId The record to get.
+     * @return The node object.
+     */
+    private Node getNode(String recordId)
+    {
+        RepoTestModel repoTestModel = new RepoTestModel() {};
+        repoTestModel.setNodeRef(recordId);
+        return getRestAPIFactory().getNodeAPI(repoTestModel);
+    }
 }

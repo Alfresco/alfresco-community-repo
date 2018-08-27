@@ -135,7 +135,7 @@ public class FilePlanAPI extends RMModelRequest
     /**
      * see {@link #createRootRecordCategory(RecordCategory, String, String)}
      */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId) throws Exception
+    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId)
     {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);
@@ -150,7 +150,7 @@ public class FilePlanAPI extends RMModelRequest
      * @param filePlanId The identifier of a file plan
      * @param parameters The URL parameters to add
      * @return The created {@link RecordCategory}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code filePlanId} is not a valid format or {@code filePlanId} is invalid</li>
      *  <li>authentication fails</li>
@@ -160,7 +160,7 @@ public class FilePlanAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId, String parameters) throws Exception
+    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId, String parameters)
     {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);

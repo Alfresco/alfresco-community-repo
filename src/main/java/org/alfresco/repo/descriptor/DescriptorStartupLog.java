@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -59,6 +59,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     
     private final String SYSTEM_INFO_STARTUP = "system.info.startup";
     private final String SYSTEM_WARN_READONLY = "system.warn.readonly";
+    private final String SYSTEM_INFO_NOTRAILID = "system.info.limited_trial";
 
     /**
      * @param descriptorService  Descriptor Service
@@ -132,10 +133,11 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             }
             
             Date validUntil = license.getValidUntil();
-            
+
+            Integer days = null;
             if (validUntil != null)
             {
-                Integer days = license.getDays();
+                days = license.getDays();
                 Integer remainingDays = license.getRemainingDays();
                 
                 msg += " limited to " + days + " days expiring " + validUntil + " (" + remainingDays + " days remaining).";
@@ -159,7 +161,18 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             /*
              * This is an important information logging since it logs the license
              */
-            logger.info(msg);
+            if ("Trial User".equals(holder) && days != null && days == 2)
+            {
+                String line = "================================================================";
+                logger.info(line);
+                logger.info(msg);
+                logger.info(I18NUtil.getMessage(SYSTEM_INFO_NOTRAILID));
+                logger.info(line);
+            }
+            else
+            {
+                logger.info(msg);
+            }
         }
         
         // Log Repository Descriptors

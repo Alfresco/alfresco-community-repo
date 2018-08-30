@@ -68,7 +68,7 @@ public class LockingJob implements Job
         final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(DATA_SENDER_SERVICE_KEY);
         final JobLockService jobLockService = (JobLockService) dataMap.get(JOB_LOCK_SERVICE_KEY);
 
-        ParameterCheck.mandatory( COLLECTOR_KEY, collector);
+        ParameterCheck.mandatory(COLLECTOR_KEY, collector);
         ParameterCheck.mandatory(DATA_SENDER_SERVICE_KEY, hbDataSenderService);
         ParameterCheck.mandatory(JOB_LOCK_SERVICE_KEY, jobLockService);
 
@@ -104,7 +104,7 @@ public class LockingJob implements Job
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Finished collector job. ID:" + collector.getCollectorId());
+                logger.debug("Finished collector job. ID: " + collector.getCollectorId());
             }
             lockCallback.running.set(false);
         }

@@ -198,6 +198,8 @@
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
+      <!-- Prevent the module from being added to inappropriate versions of the WAR file !-->
+      <alfresco.min.version>5.2.4</alfresco.min.version>
    </properties>
 
    <dependencyManagement>
@@ -254,9 +256,9 @@
                      <regexPropertySettings>
                         <regexPropertySetting>
                            <name>rm.module.repo.version.min</name>
-                           <value>${alfresco.version}</value>
-                            <regex>(\d+)\.(\d+).*</regex>
-                            <replacement>$1.$2</replacement>
+                           <value>${alfresco.min.version}</value>
+                            <regex>(\d+)\.(\d+).(\d+).*</regex>
+                            <replacement>$1.$2.$3</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                         <regexPropertySetting>

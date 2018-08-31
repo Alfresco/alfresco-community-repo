@@ -51,9 +51,13 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
@@ -94,6 +98,9 @@ public class RecordAspect extends    AbstractDisposableItem
     /** quickShare service */
     private QuickShareService quickShareService;
 
+    /** File folder service */
+    private FileFolderService fileFolderService;
+
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
@@ -128,6 +135,15 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setQuickShareService(QuickShareService quickShareService)
     {
         this.quickShareService = quickShareService;
+    }
+
+    /**
+     *
+     * @param fileFolderService file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -358,6 +374,14 @@ public class RecordAspect extends    AbstractDisposableItem
         {
             // then remove any extended security from the newly copied record
             extendedSecurityService.remove(targetNodeRef);
+
+            //create a new content URL for the copy
+            ContentReader reader = fileFolderService.getReader(targetNodeRef);
+            if (reader != null)
+            {
+                ContentWriter writer = fileFolderService.getWriter(targetNodeRef);
+                writer.putContent(reader);
+            }
         }
     }
 

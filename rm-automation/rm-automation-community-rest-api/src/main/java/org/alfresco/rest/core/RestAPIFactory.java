@@ -92,14 +92,28 @@ public class RestAPIFactory
         return getRmRestWrapper().withSearchAPI();
     }   
 
-    public Node getNodeAPI(RepoTestModel model) throws Exception
+    public Node getNodeAPI(RepoTestModel model) throws RuntimeException
     {
-        return getCoreAPI(null).usingNode(model);
+        try
+        {
+            return getCoreAPI(null).usingNode(model);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to load nodeAPI.", e);
+        }
     }
 
-    public Node getNodeAPI(UserModel userModel, RepoTestModel model) throws Exception
+    public Node getNodeAPI(UserModel userModel, RepoTestModel model) throws RuntimeException
     {
-        return getCoreAPI(userModel).usingNode(model);
+        try
+        {
+            return getCoreAPI(userModel).usingNode(model);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to load nodeAPI.", e);
+        }
     }
 
     public RMSiteAPI getRMSiteAPI()

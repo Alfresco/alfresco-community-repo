@@ -217,9 +217,9 @@ public class BaseRMRestTest extends RestTest
      * @param userModel The user under whose privileges this structure is going to be created
      * @param categoryName The name of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(UserModel userModel, String categoryName) throws Exception
+    public RecordCategory createRootCategory(UserModel userModel, String categoryName)
     {
         return createRootCategory(userModel, categoryName, RECORD_CATEGORY_TITLE);
     }
@@ -244,9 +244,9 @@ public class BaseRMRestTest extends RestTest
      * @param categoryName The name of the category
      * @param categoryTitle The title of the category
      * @return The created category
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle) throws Exception
+    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
     {
         RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
         return getRestAPIFactory().getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
@@ -315,9 +315,9 @@ public class BaseRMRestTest extends RestTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the folder
      * @return The created folder
-     * @throws Exception on unsuccessful component creation
+     * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name) throws Exception
+    public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name)
     {
         RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
         return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordFolderModel, recordCategoryId);
@@ -455,13 +455,13 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create a randomly-named <category>/<folder> structure in file plan
+     * Helper method to create a randomly-named [category]/[folder] structure in file plan
      *
      * @param user The user under whose privileges this structure is going to be created
      * @return {@link RecordCategoryChild} which represents the record folder
-     * @throws Exception on failed creation
+     * @throws RuntimeException on failed creation
      */
-    public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user) throws Exception
+    public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user)
     {
         // create root category
         RecordCategory recordCategory = createRootCategory(user, "Category " + getRandomAlphanumeric());
@@ -471,12 +471,12 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create a randomly-named <category>/<folder> structure in file plan as the admin user
+     * Helper method to create a randomly-named [category]/[folder] structure in file plan as the admin user
      *
      * @return {@link RecordCategoryChild} which represents the record folder
-     * @throws Exception on failed creation
+     * @throws RuntimeException on failed creation
      */
-    public RecordCategoryChild createCategoryFolderInFilePlan() throws Exception
+    public RecordCategoryChild createCategoryFolderInFilePlan()
     {
         return createCategoryFolderInFilePlan(getAdminUser());
     }

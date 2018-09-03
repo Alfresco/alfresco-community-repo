@@ -55,6 +55,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     private AlfrescoCmisExceptionInterceptor cmisExceptions;
     private AlfrescoCmisServiceInterceptor cmisControl;
     private AlfrescoCmisStreamInterceptor cmisStreams;
+    private CMISTransactionAwareHolderInterceptor cmisHolder;
     private AuthorityService authorityService;
 
     /**
@@ -133,6 +134,11 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         this.cmisStreams = cmisStreams;
     }
 
+    public void setCmisHolder(CMISTransactionAwareHolderInterceptor cmisHolder)
+    {
+        this.cmisHolder = cmisHolder;
+    }
+
     @Override
     public void init(Map<String, String> parameters)
     {
@@ -195,6 +201,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         proxyFactory.addAdvice(cmisControl);
         proxyFactory.addAdvice(cmisStreams);
         proxyFactory.addAdvice(cmisTransactions);
+        proxyFactory.addAdvice(cmisHolder);
         AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
 
         ConformanceCmisServiceWrapper wrapperService = new ConformanceCmisServiceWrapper(

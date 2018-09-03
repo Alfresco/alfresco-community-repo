@@ -84,8 +84,11 @@
         <property name="cmisExceptions"         ref="CMISService_Exceptions" />
         <property name="cmisControl"            ref="CMISService_Control" />
         <property name="cmisStreams"            ref="CMISService_Streams" />
+        <property name="cmisHolder"             ref="CMISTransactionAwareHolderInterceptor" />
         <property name="authorityService"       ref="AuthorityService" />
     </bean>
+
+    <bean id="CMISTransactionAwareHolderInterceptor" class="org.alfresco.opencmis.CMISTransactionAwareHolderInterceptor" />
 
     <bean id="CMISService_Transactions" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
         <property name="transactionService"     ref="TransactionService" />

@@ -25,19 +25,24 @@
  */
 package org.alfresco.opencmis;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.TempFileProvider;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 
 /**
  * Interceptor to deal with ContentStreams, determining mime type if appropriate.
- * 
- * Note: this used to cache content stream to a local file so that retrying transaction behaviour
- * worked properly; this is now done in the Chemsitry OpenCMIS layer so no need to do it again
- * here. 
  * 
  * @author steveglover
  * @author Alan Davis
@@ -57,25 +62,102 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
 
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        Class<?>[] parameterTypes = mi.getMethod().getParameterTypes();
-        Object[] arguments = mi.getArguments();
-        for (int i = 0; i < parameterTypes.length; i++)
+        List<ReusableContentStream> reusableContentStreams = null;
+        try
         {
-            if (arguments[i] instanceof ContentStreamImpl)
+            Class<?>[] parameterTypes = mi.getMethod().getParameterTypes();
+            Object[] arguments = mi.getArguments();
+            for (int i=0; i<parameterTypes.length; i++)
             {
-            	ContentStreamImpl contentStream = (ContentStreamImpl) arguments[i];
-                if (contentStream != null)
+                if (ContentStream.class.isAssignableFrom(parameterTypes[i]))
                 {
-                    // ALF-18006
-                    if (contentStream.getMimeType() == null)
+                    ContentStream contentStream = (ContentStream) arguments[i];
+                    if (contentStream != null)
                     {
-                    	InputStream stream = contentStream.getStream();
-                        String mimeType = mimetypeService.guessMimetype(contentStream.getFileName(), stream);
-                        contentStream.setMimeType(mimeType);
+                        if (reusableContentStreams == null)
+                        {
+                            reusableContentStreams = new ArrayList<ReusableContentStream>();
+                        }
+                        // reusable streams are required for buffering in case of tx retry
+                        ReusableContentStream reusableContentStream = new ReusableContentStream(contentStream);
+
+                        // ALF-18006
+                        if (contentStream.getMimeType() == null)
+                        {
+                            String mimeType = mimetypeService.guessMimetype(reusableContentStream.getFileName(), new FileContentReader(reusableContentStream.file));
+                            reusableContentStream.setMimeType(mimeType);
+                        }
+
+                        reusableContentStreams.add(reusableContentStream);
+                        arguments[i] = reusableContentStream;
                     }
                 }
             }
+            return mi.proceed();
         }
-        return mi.proceed();
+        finally
+        {
+            if (reusableContentStreams != null)
+            {
+                for (ReusableContentStream contentStream: reusableContentStreams)
+                {
+                    contentStream.close();
+                }
+            }
+        }
+    }
+
+
+    private static class ReusableContentStream extends ContentStreamImpl
+    {
+        private static final long serialVersionUID = 8992465629472248502L;
+
+        private File file;
+
+        public ReusableContentStream(ContentStream contentStream) throws Exception
+        {
+            setLength(contentStream.getBigLength());
+            setMimeType(contentStream.getMimeType());
+            setFileName(contentStream.getFileName());
+            file = TempFileProvider.createTempFile(contentStream.getStream(), "cmis", "contentStream");
+        }
+
+        @Override
+        public InputStream getStream() {
+            InputStream stream = super.getStream();
+            if (stream == null && file != null)
+            {
+                try
+                {
+                    stream = new FileInputStream(file)
+                    {
+                        @Override
+                        public void close() throws IOException
+                        {
+                            setStream(null);
+                            super.close();
+                        }
+                    };
+                }
+                catch (Exception e)
+                {
+                    throw new AlfrescoRuntimeException("Expected to be able to reopen temporary file", e);
+                }
+                setStream(stream);
+            }
+            return stream;
+        }
+
+        public void close()
+        {
+            try
+            {
+                file.delete();
+            }
+            finally
+            {
+                file = null;
+            }
+        }
     }
 }

@@ -1053,6 +1053,7 @@
         <property name="cmisExceptions"         ref="CMISService_Exceptions" />
         <property name="cmisControl"            ref="CMISService_Control" />
         <property name="cmisStreams"            ref="CMISService_Streams" />
+        <property name="cmisHolder"             ref="CMISTransactionAwareHolderInterceptor" />
         <property name="authorityService"       ref="AuthorityService" />
         <property name="tenantAdminService"     ref="tenantAdminService"/>
         <property name="networksService"        ref="networksService"/>

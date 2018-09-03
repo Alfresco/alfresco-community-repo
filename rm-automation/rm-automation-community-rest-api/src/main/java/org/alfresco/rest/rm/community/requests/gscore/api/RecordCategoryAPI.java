@@ -201,7 +201,7 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * see {@link #createRecordCategoryChild(RecordCategoryChild, String, String)}
      */
-    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId)
     {
         mandatoryObject("recordCategoryChildModel", recordCategoryChildModel);
         mandatoryString("recordCategoryId", recordCategoryId);
@@ -216,7 +216,7 @@ public class RecordCategoryAPI extends RMModelRequest
      * @param recordCategoryId The identifier of a record category
      * @param parameters The URL parameters to add
      * @return The created {@link RecordCategoryChild}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryChildModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -226,7 +226,7 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId, String parameters) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId, String parameters)
     {
         mandatoryObject("filePlanComponentProperties", recordCategoryChildModel);
         mandatoryString("recordCategoryId", recordCategoryId);

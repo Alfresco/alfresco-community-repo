@@ -39,4 +39,15 @@
             </list>
         </property>
     </bean>
+
+    <bean id="alfrescoEventObjectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+        <property name="failOnEmptyBeans" value="false"/>
+        <property name="indentOutput" value="true"/>
+    </bean>
+
+    <bean id="alfrescoEventProducer" class="org.alfresco.repo.rawevents.EventProducer">
+        <property name="producer" ref="camelProducerTemplate" />
+        <property name="endpoint" value="direct-vm:alfresco.events" />
+        <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
+    </bean>
 </beans>

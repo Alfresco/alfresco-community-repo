@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,10 +35,31 @@ import org.alfresco.service.namespace.QName;
 @AlfrescoPublicApi
 public interface RenditionModel
 {
+    /**
+     * Aspect added to renditions created by RenditionService2.
+     * Initially used to avoid duplicate rendition requests via the original RenditionService and the new one.
+     */
+    static final QName ASPECT_RENDITION2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition2");
+
+    /**
+     * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been
+     * replaced by RenditionService2 which additionally uses a rendition2 aspect to mark its renditions.
+     */
+    @Deprecated
     static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition");
+
+    /**
+     * @deprecated obsolete when RenditionService is removed.
+     */
+    @Deprecated
     static final QName ASPECT_HIDDEN_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "hiddenRendition");
+
+    /**
+     * @deprecated obsolete when RenditionService is removed.
+     */
+    @Deprecated
     static final QName ASPECT_VISIBLE_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "visibleRendition");
-    
+
     static final QName ASPECT_RENDITIONED = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditioned");
     static final QName ASSOC_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition");
     

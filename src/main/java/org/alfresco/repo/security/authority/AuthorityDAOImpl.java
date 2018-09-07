@@ -138,6 +138,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private int zoneAuthoritySampleSize = 10000;
 
     private boolean useBridgeTable = true;
+    /** limits the findAuthorities search query */
+    private int findAuthoritiesLimit = 100;
     
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
@@ -273,6 +275,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     public void setAuthorityBridgeDAO(AuthorityBridgeDAO authorityBridgeDAO)
     {
         this.authorityBridgeDAO = authorityBridgeDAO;
+    }
+
+    public void setFindAuthoritiesLimit(int findAuthoritiesLimit)
+    {
+        this.findAuthoritiesLimit = findAuthoritiesLimit;
     }
 
     @Override
@@ -718,7 +725,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             } 
         }
         sp.setQuery(query.toString());
-        sp.setMaxItems(100);
+        sp.setMaxItems(findAuthoritiesLimit);
         ResultSet rs = null;
         try
         {

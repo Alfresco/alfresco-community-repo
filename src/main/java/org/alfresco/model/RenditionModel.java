@@ -42,6 +42,12 @@ public interface RenditionModel
     static final QName ASPECT_RENDITION2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition2");
 
     /**
+     * Version number used to work out if a transform should replace the existing rendition, as transforms may be
+     * provided outr of order.
+     */
+    static final QName PROP_RENDITION_VERSION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "version");
+
+    /**
      * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been
      * replaced by RenditionService2 which additionally uses a rendition2 aspect to mark its renditions.
      */

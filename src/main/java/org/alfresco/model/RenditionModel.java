@@ -42,10 +42,10 @@ public interface RenditionModel
     static final QName ASPECT_RENDITION2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition2");
 
     /**
-     * The source node's modified date. Used to work out if a transform should replace the existing rendition, as
-     * transforms may be provided out of order.
+     * The source node's content URL's hash code. Used to work out if a transform should replace the existing rendition,
+     * as transforms may be provided out of order.
      */
-    static final QName PROP_RENDITION_SOURCE_MODIFIED_DATE = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "sourceModifiedDate");
+    static final QName PROP_RENDITION_CONTENT_URL_HAS_CODE = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "contentUrlHashCode");
 
     /**
      * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been

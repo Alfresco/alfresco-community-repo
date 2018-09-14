@@ -45,7 +45,7 @@ public interface RenditionModel
      * The source node's content URL's hash code. Used to work out if a transform should replace the existing rendition,
      * as transforms may be provided out of order.
      */
-    static final QName PROP_RENDITION_CONTENT_URL_HAS_CODE = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "contentUrlHashCode");
+    static final QName PROP_RENDITION_CONTENT_URL_HASH_CODE = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "contentUrlHashCode");
 
     /**
      * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been

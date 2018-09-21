@@ -462,7 +462,17 @@
                 <version>${alfresco.googledocs.version}</version>
                 <type>amp</type>
             </dependency>
-
+            <!-- Enforce newer version -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.60</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk15on</artifactId>
+                <version>1.60</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

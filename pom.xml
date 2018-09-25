@@ -67,7 +67,7 @@
         <dependency.alfresco-repository.version>7.9</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>7.2</dependency.alfresco-remote-api.version>
         <dependency.alfresco-hb-data-sender.version>1.0.9</dependency.alfresco-hb-data-sender.version>
-        <dependency.alfresco-spring-webscripts.version>6.19</dependency.alfresco-spring-webscripts.version>
+        <dependency.alfresco-spring-webscripts.version>6.20</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
@@ -76,7 +76,7 @@
         <dependency.alfresco-messaging-repo.version>1.2.9</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-api-explorer.version>6.1.0-ea</dependency.alfresco-api-explorer.version>
 
-        <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.1.0.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
         <dependency.jackson.version>2.9.5</dependency.jackson.version>
 

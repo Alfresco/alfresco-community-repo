@@ -36,7 +36,10 @@ import org.apache.tika.config.TikaConfig;
  * @see org.alfresco.repo.content.transform.TikaAutoContentTransformer
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TikaAutoContentTransformerTest extends TikaPoweredContentTransformerTest
 {
     private TikaAutoContentTransformer transformer;

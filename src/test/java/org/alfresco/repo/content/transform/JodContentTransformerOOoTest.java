@@ -41,7 +41,10 @@ import org.junit.Test;
  * 
  * @author Neil McErlean
  * @since 3.2 SP1
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class JodContentTransformerOOoTest extends AbstractJodConverterBasedTest
 {
     private static Log log = LogFactory.getLog(JodContentTransformerOOoTest.class);

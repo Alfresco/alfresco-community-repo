@@ -49,7 +49,10 @@ import java.io.*;
 /**
  * A class providing basic OOo-related functionality shared by both
  * {@link ContentTransformer}s and {@link ContentTransformerWorker}s.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class OOoContentTransformerHelper extends ContentTransformerHelper
 {
     private String documentFormatsConfiguration;

@@ -33,7 +33,10 @@ import org.alfresco.service.cmr.action.ActionDefinition;
  * be specified for that rendering engine.
  * 
  * @author Nick Smith
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public interface RenderingEngineDefinition extends ActionDefinition
 {
     // Intentionally empty

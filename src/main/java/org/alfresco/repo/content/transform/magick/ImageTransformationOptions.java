@@ -27,6 +27,7 @@ package org.alfresco.repo.content.transform.magick;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -36,7 +37,10 @@ import org.alfresco.service.cmr.repository.TransformationSourceOptions;
  * Image transformation options
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class ImageTransformationOptions extends TransformationOptions
 {
@@ -118,7 +122,17 @@ public class ImageTransformationOptions extends TransformationOptions
         builder.append("]");
         return builder.toString();
     }
-    
+
+    @Override
+    public String toStringAll()
+    {
+        return super.toStringAll()+"ImageTransformationOptions{" +
+                "commandOptions='" + commandOptions + '\'' +
+                ", resizeOptions=" + resizeOptions +
+                ", autoOrient=" + autoOrient +
+                '}';
+    }
+
     /**
      * Overrides the base class implementation to add our options
      */
@@ -163,5 +177,32 @@ public class ImageTransformationOptions extends TransformationOptions
                 this.setAutoOrient(((ImageTransformationOptions) origOptions).isAutoOrient());
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        if (!super.equals(o))
+        {
+            return false;
+        }
+        ImageTransformationOptions that = (ImageTransformationOptions) o;
+        return autoOrient == that.autoOrient &&
+                Objects.equals(commandOptions, that.commandOptions) &&
+                Objects.equals(resizeOptions, that.resizeOptions);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(super.hashCode(), commandOptions, resizeOptions, autoOrient);
     }
 }

@@ -62,7 +62,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @see RenditionedAspect
  * @see AddFailedThumbnailActionExecuter
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class DeleteRenditionActionExecuter extends ActionExecuterAbstractBase
 {
     private static Log log = LogFactory.getLog(DeleteRenditionActionExecuter.class);

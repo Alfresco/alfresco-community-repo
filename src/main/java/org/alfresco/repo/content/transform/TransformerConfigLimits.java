@@ -47,7 +47,10 @@ import org.apache.commons.logging.LogFactory;
  * Provides access to transformer limits defined via properties.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigLimits extends TransformerPropertyNameExtractor
 {
     private static Log logger = LogFactory.getLog(TransformerConfigLimits.class);

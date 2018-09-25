@@ -39,7 +39,10 @@ import org.alfresco.util.TempFileProvider;
  * @see org.alfresco.repo.content.transform.MailContentTransformer
  * 
  * @author Kevin Roast
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class MailContentTransformerTest extends AbstractContentTransformerTest
 {
     private MailContentTransformer transformer;

@@ -31,7 +31,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * Rendition Service Exception Class
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class RenditionServiceException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -6947067735970465937L;

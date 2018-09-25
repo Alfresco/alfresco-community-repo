@@ -51,7 +51,10 @@ import org.htmlcleaner.ContentToken;
  *  transformer cannot currently be converted to use Tika.
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class MediaWikiContentTransformer extends AbstractContentTransformer2
 {
     /** The file folder service */

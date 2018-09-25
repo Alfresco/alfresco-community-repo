@@ -68,7 +68,10 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Neil McErlean
  * @since 3.3.4
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class MultiUserRenditionTest
 {
     private ApplicationContext appContext;

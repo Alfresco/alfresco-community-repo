@@ -26,12 +26,6 @@
 
 package org.alfresco.repo.rendition;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
@@ -39,6 +33,10 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckOut;
 import org.alfresco.repo.lock.LockServicePolicies.BeforeLock;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -59,18 +57,26 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 /*
  * @author Nick Smith
  * @author Neil McErlean
  * @since 3.3
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class RenditionServiceImpl implements 
         RenditionService, 
         RenditionDefinitionPersister, 
@@ -85,7 +91,8 @@ public class RenditionServiceImpl implements
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private PolicyComponent policyComponent;
-    
+    private RenditionService2Impl renditionService2;
+
     private RenditionDefinitionPersister renditionDefinitionPersister;
     
     /**
@@ -168,6 +175,11 @@ public class RenditionServiceImpl implements
     public void setKnownCancellableActionTypes(List<String> knownCancellableActionTypes)
     {
         this.knownCancellableActionTypes = knownCancellableActionTypes;
+    }
+
+    public void setRenditionService2(RenditionService2Impl renditionService2)
+    {
+        this.renditionService2 = renditionService2;
     }
 
     public void init()
@@ -453,16 +465,7 @@ public class RenditionServiceImpl implements
      */
     public List<ChildAssociationRef> getRenditions(NodeRef node)
     {
-        List<ChildAssociationRef> result = Collections.emptyList();
-
-        // Check that the node has the renditioned aspect applied
-        if (nodeService.hasAspect(node, RenditionModel.ASPECT_RENDITIONED) == true)
-        {
-            // Get all the renditions that match the given rendition name
-            result = nodeService.getChildAssocs(node, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
-
-        }
-        return result;
+        return renditionService2.getRenditions(node);
     }
 
     /*
@@ -528,7 +531,9 @@ public class RenditionServiceImpl implements
             {
                 log.debug("Unexpectedly found " + renditions.size() + " renditions of name " + renditionName + " on node " + node);
             }
-            return renditions.get(0);
+            ChildAssociationRef childAssoc = renditions.get(0);
+            NodeRef renditionNode = childAssoc.getChildRef();
+            return !renditionService2.isRenditionAvailable(node, renditionNode) ? null: childAssoc;
         }
     }
 
@@ -630,5 +635,82 @@ public class RenditionServiceImpl implements
     public void beforeLock(NodeRef nodeRef, LockType lockType)
     {
         cancelRenditions(nodeRef);
+    }
+
+    @Override
+    public boolean usingRenditionService2(NodeRef sourceNodeRef, RenditionDefinition rendDefn)
+    {
+        boolean useRenditionService2 = false;
+
+        QName renditionQName = rendDefn.getRenditionName();
+        String renditionName = renditionQName.getLocalName();
+        RenditionDefinition2 renditionDefinition2 = getEquivalentRenditionDefinition2(rendDefn);
+        boolean createdByRenditionService2 = renditionService2.isCreatedByRenditionService2(sourceNodeRef, renditionName);
+
+        if (renditionService2.isEnabled())
+        {
+            if (createdByRenditionService2)
+            {
+                // The rendition has been created by RenditionService2 and the older RenditionService should leave it to
+                // the newer service to do the work unless there is no matching rendition in which case we remove the
+                // rendition and the old service takes over again.
+                if (renditionDefinition2 != null)
+                {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("OnContentUpdate ignored by original service as the rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" new service has taken over.");
+                    }
+                    useRenditionService2 = true;
+                }
+                else
+                {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("OnContentUpdate remove rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" so we switch back to the original service, as the new service does not have the definition.");
+                    }
+                    renditionService2.deleteRendition(sourceNodeRef, renditionName);
+                }
+            }
+            else if (renditionDefinition2 != null)
+            {
+                // The rendition has been created by the older RenditionService but we know that RenditionService2
+                // can do the work, so we ask the newer service to do it here. This will result in the rendition2
+                // aspect being added, so future renditions will also be done by the newer service.
+                if (log.isDebugEnabled())
+                {
+                    log.debug("OnContentUpdate calling RenditionService2.render(\""+sourceNodeRef+"\", \""+renditionName+"\" so we switch to the new service.");
+                }
+                useRenditionService2 = true;
+                renditionService2.render(sourceNodeRef, renditionName);
+            }
+        }
+        else if (createdByRenditionService2)
+        {
+            // As the new service has been disabled the old service needs to take over, so the rendition is removed.
+            if (log.isDebugEnabled())
+            {
+                log.debug("OnContentUpdate remove rendition for \""+sourceNodeRef+"\", \""+renditionName+"\" so we switch back to the original service, as the new service is disabled.");
+            }
+            renditionService2.deleteRendition(sourceNodeRef, renditionName);
+        }
+
+        return useRenditionService2;
+    }
+
+    // Finds a RenditionDefinition2 with the same name (local part) and target mimetype.
+    private RenditionDefinition2 getEquivalentRenditionDefinition2(RenditionDefinition rendDefn)
+    {
+        QName renditionQName = rendDefn.getRenditionName();
+        String renditionName = renditionQName.getLocalName();
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+        RenditionDefinition2 renditionDefinition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+        RenditionDefinition2 equivalentRenditionDefinition2 = null;
+        if (renditionDefinition2 != null)
+        {
+            String targetMimetype = (String) rendDefn.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE);
+            String targetMimetype2 = renditionDefinition2.getTargetMimetype();
+            equivalentRenditionDefinition2 = targetMimetype.equals(targetMimetype2) ? renditionDefinition2 : null;
+        }
+        return equivalentRenditionDefinition2;
     }
 }

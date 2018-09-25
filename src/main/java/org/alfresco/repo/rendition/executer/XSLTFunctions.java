@@ -54,8 +54,11 @@ import org.xml.sax.SAXException;
 /**
  * @author Brian Remmington
  * @since 3.3
- * 
+ *
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class XSLTFunctions
 {
     private static final Log log = LogFactory.getLog(XSLTFunctions.class);

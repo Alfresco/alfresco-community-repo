@@ -1393,10 +1393,20 @@
       <!--             -->
       <!--  RENDITIONS -->
       <!--             -->
-      
-      <!-- This aspect marks a node as a rendition. -->
+
+      <!-- This aspect marks a node as a rendition created by the deprecated RenditionService. -->
       <aspect name="rn:rendition">
          <title>Rendition</title>
+      </aspect>
+      <!-- This aspect marks a node as a rendition created by RenditionService2. -->
+      <aspect name="rn:rendition2">
+         <title>Rendition2</title>
+         <properties>
+            <property name="rn:contentUrlHashCode">
+               <title>Hash code of the source content url</title>
+               <type>d:int</type>
+            </property>
+         </properties>
       </aspect>
       <!-- A hidden rendition is one which is located directly under its source node. -->
       <aspect name="rn:hiddenRendition">

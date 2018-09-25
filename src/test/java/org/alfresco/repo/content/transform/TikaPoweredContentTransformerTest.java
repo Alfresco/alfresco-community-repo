@@ -31,7 +31,10 @@ import org.alfresco.repo.content.MimetypeMap;
  * Parent test for Tika powered transformer tests 
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class TikaPoweredContentTransformerTest extends AbstractContentTransformerTest
 {
    protected boolean isQuickPhraseExpected(String targetMimetype)

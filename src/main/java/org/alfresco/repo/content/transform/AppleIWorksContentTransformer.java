@@ -48,7 +48,10 @@ import java.util.List;
  * 
  * @author Neil Mc Erlean
  * @since 4.0
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class AppleIWorksContentTransformer extends AbstractContentTransformer2
 {
     private static final Log log = LogFactory.getLog(AppleIWorksContentTransformer.class);

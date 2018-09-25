@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
  * and statistics.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigMBeanImpl implements TransformerConfigMBean
 {
     private static final String NO_TRANSFORMATIONS_TO_REPORT = "No transformations to report";

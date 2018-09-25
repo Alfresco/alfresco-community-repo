@@ -57,7 +57,10 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
  * Tests the retry mechanism in the RemoteTransformerClient.
  *
  * @since 6.0
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class RemoteTransformerClientTest
 {
     public static final int STARTUP_RETRY_PERIOD_SECONDS = 2;

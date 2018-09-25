@@ -29,7 +29,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This simple class is a struct containing a rendition node, its parent and its name.
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class RenditionLocationImpl implements RenditionLocation
 {
     private final NodeRef parentRef;

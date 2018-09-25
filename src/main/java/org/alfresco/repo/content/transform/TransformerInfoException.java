@@ -37,8 +37,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * See {@link org.alfresco.repo.content.transform.PoiHssfContentTransformer} for pattern.
  * 
  * @author Arseny Kovalchuk
- * 
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerInfoException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -4343331677825559617L;

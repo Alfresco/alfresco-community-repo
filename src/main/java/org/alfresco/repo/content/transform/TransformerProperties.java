@@ -46,7 +46,10 @@ import org.apache.commons.logging.LogFactory;
  * As this class allows this to happen for the Transformers subsystem.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerProperties
 {
     private static final String TRANSFORMERS_PROPERTIES = "alfresco/subsystems/Transformers/default/transformers.properties";

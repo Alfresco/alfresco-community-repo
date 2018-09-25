@@ -49,11 +49,12 @@
       <property name="renditionDefinitionPersister" ref="renditionDefinitionPersister" />
       <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
       <property name="policyComponent" ref="policyComponent" />
+       <property name="renditionService2" ref="renditionService2"/>
       <property name="knownCancellableActionTypes">
         <list>
-            <bean id="org.alfresco.repo.rendition.executer.ImageRenderingEngine.NAME" 
+            <bean id="org.alfresco.repo.rendition.executer.ImageRenderingEngine.NAME"
                 class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"/>
-            <bean id="org.alfresco.repo.rendition.executer.ReformatRenderingEngine.NAME" 
+            <bean id="org.alfresco.repo.rendition.executer.ReformatRenderingEngine.NAME"
                 class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"/>
         </list>
       </property>
@@ -89,14 +90,14 @@
          </list>
       </property>
    </bean>
-   
-   
+
+
    <!-- It is possible to prevent all renditioning of a node by applying a marker aspect. -->
    <!-- This registry keeps a list of what aspects (and what types) should be considered when preventing renditions. -->
    <bean id="renditionPreventionRegistry" class="org.alfresco.repo.rendition.RenditionPreventionRegistry">
       <property name="namespaceService" ref="namespaceService"/>
    </bean>
-   
+
    <!-- This abstract bean ensures that any child beans are registered centrally. -->
    <bean id="baseRenditionPreventionClass"
          abstract="true"
@@ -104,13 +105,13 @@
          init-method="register">
        <property name="registry" ref="renditionPreventionRegistry"/>
    </bean>
-   
+
    <!-- By default there is only one such content class: a marker aspect -->
    <bean id="preventRenditions" parent="baseRenditionPreventionClass">
        <constructor-arg value="rn:preventRenditions"/>
    </bean>
-   
-   
+
+
    <!-- Rendering Action executor beans -->
 
    <bean id="baseRenderingAction" abstract="true" parent="action-executer"
@@ -186,7 +187,7 @@
          <ref bean="actionService" />
       </property>
    </bean>
-   
+
    <bean id="xsltRenderingEngine"
       class="org.alfresco.repo.rendition.executer.XSLTRenderingEngine"
       parent="baseTemplateRenderingAction">
@@ -194,7 +195,7 @@
       <property name="namespacePrefixResolver" ref="NamespaceService" />
       <property name="fileFolderService" ref="FileFolderService" />
    </bean>
-   
+
    <bean id="xsltFunctions" class="org.alfresco.repo.rendition.executer.XSLTFunctions">
       <property name="fileService" ref="FileFolderService" />
       <property name="contentService" ref="ContentService" />
@@ -202,9 +203,9 @@
       <property name="namespaceService" ref="NamespaceService" />
       <property name="dictionaryService" ref="DictionaryService" />
    </bean>
-   
+
    <!-- Behaviours and policies for Renditions -->
-   
+
    <bean id="renditionedAspect" class="org.alfresco.repo.rendition.RenditionedAspect" init-method="init">
        <property name="actionService" ref="ActionService"/>
        <property name="dictionaryService" ref="DictionaryService"/>
@@ -220,7 +221,7 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="renditionService" ref="RenditionService"/>
     </bean>
-   
+
    <!-- JavaScript API support -->
    <bean id="renditionServiceScript" parent="baseJavaScriptExtension"
          class="org.alfresco.repo.rendition.script.ScriptRenditionService">

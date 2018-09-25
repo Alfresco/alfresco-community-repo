@@ -33,7 +33,10 @@ import org.alfresco.service.cmr.rendition.RenditionServiceException;
  * transformation options.
  * 
  * @author Ray Gauss II
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public interface SerializedTransformationOptionsAccessor
 {

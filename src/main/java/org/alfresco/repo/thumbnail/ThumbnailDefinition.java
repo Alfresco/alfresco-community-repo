@@ -36,7 +36,10 @@ import java.util.Objects;
  * This class provides the thumbnail details to the thumbnail service.
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class ThumbnailDefinition
 {
 

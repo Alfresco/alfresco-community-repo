@@ -41,7 +41,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * defined via properties for all transformers.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigSupported extends TransformerPropertyNameExtractor
 {
     // Holds configured (entries only exist if configured rather than for all possible combinations)

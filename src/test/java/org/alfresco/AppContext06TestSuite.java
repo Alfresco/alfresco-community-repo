@@ -51,7 +51,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.tenant.MultiTServiceImplTest.class,
     org.alfresco.repo.search.SearcherComponentTest.class,
     org.alfresco.repo.blog.BlogServiceImplTest.class,
-    org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class
+    org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
+    org.alfresco.repo.rendition2.RenditionDefinitionTest.class
 })
 public class AppContext06TestSuite
 {

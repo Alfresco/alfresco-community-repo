@@ -34,7 +34,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
  * Implementation of a {@link TransformerStatistics}.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerStatisticsImpl implements TransformerStatistics
 {
     private final MimetypeService mimetypeService;

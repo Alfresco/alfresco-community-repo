@@ -69,7 +69,10 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @since 1.1
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class RuntimeExecutableContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {

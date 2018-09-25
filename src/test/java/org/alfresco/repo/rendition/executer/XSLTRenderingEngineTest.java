@@ -58,8 +58,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
- * 
+ *
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @Category(BaseSpringTestsCategory.class)
 @Transactional
 public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest

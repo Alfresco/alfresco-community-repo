@@ -82,7 +82,10 @@ import static org.junit.Assert.*;
 /**
  * @author Neil McErlean
  * @since 3.3
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @Category(OwnJVMTestsCategory.class)
 public class RenditionServicePermissionsTest
 {

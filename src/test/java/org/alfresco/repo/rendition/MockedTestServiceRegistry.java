@@ -89,6 +89,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
+/**
+ *
+ * @deprecated We are introducing the new async RenditionService2.
+ */
+@Deprecated
 public class MockedTestServiceRegistry implements ServiceRegistry
 {
     private final ActionService actionService = mock(ActionService.class);

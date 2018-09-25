@@ -81,7 +81,10 @@ import org.springframework.util.ResourceUtils;
  * transformers) and {@link #popAvailable} are called.<p>
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class TransformerDebug
 {
@@ -91,6 +94,7 @@ public class TransformerDebug
     private final Log logger;
     private final Log info;
 
+    @Deprecated
     @AlfrescoPublicApi 
     private enum Call
     {
@@ -98,7 +102,8 @@ public class TransformerDebug
         TRANSFORM,
         AVAILABLE_AND_TRANSFORM
     };
-    
+
+    @Deprecated
     @AlfrescoPublicApi
     private static class ThreadInfo
     {
@@ -149,7 +154,8 @@ public class TransformerDebug
             threadInfo.get().sb = sb;
         }
     }
-    
+
+    @Deprecated
     @AlfrescoPublicApi
     private static class Frame
     {
@@ -226,7 +232,8 @@ public class TransformerDebug
             return transformerName;
         }
     }
-    
+
+    @Deprecated
     @AlfrescoPublicApi
     private class UnavailableTransformer implements Comparable<UnavailableTransformer>
     {
@@ -1445,6 +1452,7 @@ public class TransformerDebug
         return result;
     }
 
+    @Deprecated
     @AlfrescoPublicApi
     private abstract class TestTransform
     {

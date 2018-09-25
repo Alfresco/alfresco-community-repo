@@ -55,7 +55,10 @@ import org.mockito.ArgumentCaptor;
 
 /**
  * @author Nick Smith
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class AbstractRenderingEngineTest extends TestCase
 {
     private final NodeRef source = new NodeRef("http://test/sourceId");

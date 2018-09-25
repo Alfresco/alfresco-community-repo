@@ -47,7 +47,10 @@ import org.apache.commons.logging.LogFactory;
  * definition executed is the output of this rendering engine.
  * 
  * @author Nick Smith
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class CompositeRenderingEngine extends AbstractRenderingEngine
 {
     /** Logger */

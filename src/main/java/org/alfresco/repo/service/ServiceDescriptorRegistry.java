@@ -355,7 +355,13 @@ public class ServiceDescriptorRegistry
     {
         return (MultilingualContentService) getService(MULTILINGUAL_CONTENT_SERVICE);
     }
-    
+
+    /**
+     *
+     * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2
+     * or other external libraries.
+     */
+    @Deprecated
     @Override
     public ThumbnailService getThumbnailService()
     {
@@ -373,7 +379,12 @@ public class ServiceDescriptorRegistry
     {
         return (FormService)getService(FORM_SERVICE);
     }
-    
+
+    /**
+     *
+     * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
+     */
+    @Deprecated
     @Override
     public RenditionService getRenditionService() 
     {

@@ -43,7 +43,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * transformer and source and target mimetypes, falling back to defaults.
  *  
  * @author Alan Davis
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
 {
     private Map<String, DoubleMap<String, String, String>> values;

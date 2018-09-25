@@ -37,7 +37,10 @@ import org.alfresco.service.ServiceRegistry;
  * Script object representing the site service.
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class ScriptThumbnailService extends BaseScopableProcessorExtension
 {
 	/** Service Registry */

@@ -54,7 +54,10 @@ import org.springframework.beans.factory.InitializingBean;
  * synchronously, this is not recommended for production use.
  * 
  * @author dward
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class SimpleThumbnailer extends TransactionListenerAdapter implements
         ContentServicePolicies.OnContentUpdatePolicy, InitializingBean
 {

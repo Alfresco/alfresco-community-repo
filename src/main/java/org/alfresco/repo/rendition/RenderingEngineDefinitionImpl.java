@@ -32,7 +32,10 @@ import org.alfresco.service.cmr.rendition.RenderingEngineDefinition;
 /**
  * @author Nick Smith
  * @since 3.3
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class RenderingEngineDefinitionImpl extends ActionDefinitionImpl implements RenderingEngineDefinition
 {
     /**

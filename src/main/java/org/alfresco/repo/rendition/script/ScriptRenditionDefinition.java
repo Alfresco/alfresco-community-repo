@@ -39,7 +39,10 @@ import org.mozilla.javascript.Scriptable;
  * 
  * @author Neil McErlean
  * @see org.alfresco.service.cmr.rendition.RenditionDefinition
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public final class ScriptRenditionDefinition extends ScriptAction
 {
     private static final long serialVersionUID = 8132935577891455490L;

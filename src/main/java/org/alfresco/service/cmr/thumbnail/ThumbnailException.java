@@ -31,7 +31,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * Thumbnail service exception class
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class ThumbnailException extends AlfrescoRuntimeException 
 {
 	/**

@@ -83,7 +83,10 @@ import org.xml.sax.helpers.AttributesImpl;
  * 
  * @author Nick Burch
  * @since 3.4
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class HTMLRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(HTMLRenderingEngine.class);

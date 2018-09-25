@@ -44,7 +44,10 @@ import static org.mockito.Mockito.when;
  * are aliased to JodConverter settings if they are not set up.
  *
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerPropertiesTest
 {
     @Mock

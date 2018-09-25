@@ -98,10 +98,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
+    @Deprecated
     protected TransformerDebug transformerDebug;
 
 
     /** a registry of all available content transformers */
+    @Deprecated
     private ContentTransformerRegistry transformerRegistry;
     /** The cleaner that will ensure that rollbacks clean up after themselves */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
@@ -109,6 +111,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentStore store;
     /** the store for all temporarily created content */
     private ContentStore tempStore;
+    @Deprecated
     private ContentTransformer imageMagickContentTransformer;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
@@ -145,7 +148,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
+    /**
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
     {
         this.transformerRegistry = transformerRegistry;
@@ -165,7 +172,12 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.policyComponent = policyComponent;
     }
-    
+
+    /**
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer) 
     {
         this.imageMagickContentTransformer = imageMagickContentTransformer;
@@ -182,7 +194,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * of the transformer must go to a temporary file in case it fails.
      * @param transformerFailover {@code true} (the default) indicate
      *        that fail over should take place.
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the
+     * new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public void setTransformerFailover(boolean transformerFailover)
     {
         this.transformerFailover = transformerFailover;
@@ -199,7 +214,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * Helper setter of the transformer debug. 
      * @param transformerDebug TransformerDebug
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
@@ -551,7 +568,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
      * @see org.alfresco.service.cmr.repository.ContentService#transform(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter)
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public void transform(ContentReader reader, ContentWriter writer)
     {
         // Call transform with no options
@@ -563,7 +582,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
      * @deprecated
-     */    
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
             throws NoTransformerException, ContentIOException
     {
@@ -573,7 +594,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) 
         throws NoTransformerException, ContentIOException
     {
@@ -627,6 +650,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
     }
 
+    /**
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     private void failoverTransformers(ContentReader reader, ContentWriter writer,
             TransformationOptions options, String targetMimetype,
             List<ContentTransformer> transformers)
@@ -747,12 +775,19 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
     {
         return getTransformer(null, sourceMimetype, -1, targetMimetype, new TransformationOptions());
     }
-    
+
+    /**
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return getTransformer(null, sourceMimetype, -1, targetMimetype, options);
@@ -760,7 +795,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#getTransformer(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public ContentTransformer getTransformer(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         List<ContentTransformer> transformers = getTransformers(sourceUrl, sourceMimetype, sourceSize, targetMimetype, options);
@@ -769,7 +806,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#getTransformers(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public List<ContentTransformer> getTransformers(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         try
@@ -790,7 +829,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * Checks if the file just uploaded into Share is a special "debugTransformers.txt" file and
      * if it is creates TransformerDebug that lists all the supported mimetype transformation for
      * each transformer.
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     private void debugTransformations(String sourceMimetype, String targetMimetype,
             long sourceSize, TransformationOptions transformOptions)
     {
@@ -809,7 +850,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     
     /**
      * {@inheritDoc}
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         try
@@ -845,12 +888,22 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             transformerDebug.popAvailable();
         }
     }
-    
+
+    /**
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return getActiveTransformers(sourceMimetype, -1, targetMimetype, options);
     }
 
+    /**
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+     */
+    @Deprecated
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
         return transformerRegistry.getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
@@ -858,7 +911,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#getImageTransformer()
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public ContentTransformer getImageTransformer()
     {
         return imageMagickContentTransformer;
@@ -867,7 +922,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
      * @see org.alfresco.repo.content.transform.ContentTransformer
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public boolean isTransformable(ContentReader reader, ContentWriter writer)
     {
        return isTransformable(reader, writer, new TransformationOptions());
@@ -875,7 +932,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     
     /**
      * @see org.alfresco.service.cmr.repository.ContentService#isTransformable(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     public boolean isTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options)
     {
      // check that source and target mimetypes are available

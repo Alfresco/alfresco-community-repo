@@ -47,7 +47,10 @@ import org.alfresco.util.TempFileProvider;
  * @see org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerWorker
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class ImageMagickContentTransformerTest extends AbstractContentTransformerTest
 {
     private ProxyContentTransformer transformer;

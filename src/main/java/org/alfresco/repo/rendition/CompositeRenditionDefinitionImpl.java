@@ -39,7 +39,10 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Smith
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl implements CompositeRenditionDefinition
 {
     /**

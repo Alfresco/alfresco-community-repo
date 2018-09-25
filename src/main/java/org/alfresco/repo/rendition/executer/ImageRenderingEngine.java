@@ -38,6 +38,9 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.CropSourceOptions.CropSourceOptionsSerializer;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_ENLARGEMENT;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.MAINTAIN_ASPECT_RATIO;
+
 /**
  * This class is the implementation of the {@link RenditionService}'s
  * "imageRenderingEngine" rendering engine. This action renders a piece of
@@ -46,7 +49,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Neil McErlean
  * @since 3.3
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
 {
     public static final String NAME = "imageRenderingEngine";
@@ -62,7 +68,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * If an image is being cropped and resized then the cropping happens first,
      * followed by resizing of the cropped image.
      */
-    public static final String PARAM_RESIZE_WIDTH = "xsize";
+    public static final String PARAM_RESIZE_WIDTH = "xsize"; // RESIZE_WIDTH
 
     /**
      * This optional {@link Integer} or {@link Float} parameter specifies the
@@ -74,7 +80,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * If an image is being cropped and resized then the cropping happens
      * first, followed by resizing of the cropped image.
      */
-    public static final String PARAM_RESIZE_HEIGHT = "ysize";
+    public static final String PARAM_RESIZE_HEIGHT = "ysize"; // RESIZE_HEIGHT
 
     /**
      * This optional {@link Boolean} flag parameter specifies how the
@@ -101,7 +107,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * original aspect ratio. <br>
      * This parameter defaults to <code>false</code>
      */
-    public static final String PARAM_MAINTAIN_ASPECT_RATIO = "maintainAspectRatio";
+    public static final String PARAM_MAINTAIN_ASPECT_RATIO = MAINTAIN_ASPECT_RATIO;
 
     /**
      * This optional {@link Boolean} flag parameter specifies a mode for
@@ -121,7 +127,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * of the original image at the same size.
      * @since 4.0
      */
-    public static final String PARAM_ALLOW_ENLARGEMENT = "allowEnlargement";
+    public static final String PARAM_ALLOW_ENLARGEMENT = ALLOW_ENLARGEMENT;
 
     /**
      * This optional {@link String} parameter specifies any additional

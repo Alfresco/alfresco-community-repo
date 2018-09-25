@@ -51,7 +51,10 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * @author Nick Smith
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class RenditionNodeManagerTest extends TestCase
 {
     private final NodeService nodeService = mock(NodeService.class);

@@ -79,7 +79,10 @@ import org.apache.commons.logging.LogFactory;
  * @see FailedThumbnailInfo
  * @see NodeEligibleForRethumbnailingEvaluator
  * @see ThumbnailServiceImpl#init()
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
     private static Log log = LogFactory.getLog(AddFailedThumbnailActionExecuter.class);

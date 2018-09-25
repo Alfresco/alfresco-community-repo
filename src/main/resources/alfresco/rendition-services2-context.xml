@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ #%L
+  ~ Alfresco Repository
+  ~ %%
+  ~ Copyright (C) 2005 - 2018 Alfresco Software Limited
+  ~ %%
+  ~ This file is part of the Alfresco software.
+  ~ If the software was purchased under a paid Alfresco license, the terms of
+  ~ the paid license agreement will prevail.  Otherwise, the software is
+  ~ provided under the following open source license terms:
+  ~
+  ~ Alfresco is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Alfresco is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+  ~ #L%
+  -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Rendition Service 2 -->
+
+    <bean id="RenditionService2" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.rendition2.RenditionService2</value>
+        </property>
+        <property name="target">
+            <ref bean="renditionService2" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="RenditionService2_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref bean="RenditionService2_security" />
+            </list>
+        </property>
+    </bean>
+
+    <!-- Rendition Service 2 base bean -->
+    <bean id="renditionService2" class="org.alfresco.repo.rendition2.RenditionService2Impl">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
+        <property name="transformClient" ref="transformClient" />
+        <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="enabled" value="${renditionService2.enabled}" />
+        <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
+        <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
+    </bean>
+
+    <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">
+        <property name="transactionService" ref="TransactionService" />
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformClient" parent="localTransformClient"/>
+
+    <!-- Even though there is a circular dependency between renditionService2 and localTransformClient
+         we should not run into problems with setting up the spring context, as we are not using
+         constructors or setters that do any more than save the reference.
+    -->
+    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LocalTransformClient">
+        <property name="transactionService" ref="transactionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="renditionService2" ref="renditionService2" />
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
+
+    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LocalTransformServiceRegistry" >
+        <property name="contentService" ref="contentService" />
+    </bean>
+
+    <bean id="RenditionService2_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Rendition service 2 security bean -->
+    <bean id="RenditionService2_security"
+          class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <!-- Rendition Definition Registry 2 -->
+    <bean id="renditionDefinitionRegistry2" class="org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl">
+        <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+    </bean>
+
+    <!-- The definitions -->
+
+    <bean id="baseRenditionDefinition2" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl" abstract="true">
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="timeoutMs" value="${system.thumbnail.definition.default.timeoutMs}" />
+                <entry key="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
+                <entry key="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
+                <entry key="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
+                <entry key="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
+                <entry key="maxPages" value="${system.thumbnail.definition.default.maxPages}" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="baseResizeRenditionDefinition2" parent="baseRenditionDefinition2" abstract="true">
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Medium" parent="baseResizeRenditionDefinition2">
+        <constructor-arg name="renditionName" value="medium"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="width" value="100"/>
+                <entry key="height" value="100"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2DocLib" parent="baseResizeRenditionDefinition2">
+        <constructor-arg name="renditionName" value="doclib"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="width" value="100"/>
+                <entry key="height" value="100"/>
+                <entry key="allowEnlargement" value="false" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Imgpreview" parent="baseResizeRenditionDefinition2">
+        <constructor-arg name="renditionName" value="imgpreview"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="width" value="960"/>
+                <entry key="height" value="960"/>
+                <entry key="allowEnlargement" value="false" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar" parent="baseResizeRenditionDefinition2">
+        <constructor-arg name="renditionName" value="avatar"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="width" value="64"/>
+                <entry key="height" value="64"/>
+                <entry key="allowEnlargement" value="false" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar32" parent="baseResizeRenditionDefinition2">
+        <constructor-arg name="renditionName" value="avatar32"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="width" value="32"/>
+                <entry key="height" value="32"/>
+                <entry key="allowEnlargement" value="false" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Webpreview" parent="baseRenditionDefinition2">
+        <constructor-arg name="renditionName" value="webpreview"/>
+        <constructor-arg name="targetMimetype" value="application/x-shockwave-flash"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="flashVersion" value="9"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="renditionDefinition2Pdf" parent="baseRenditionDefinition2">
+        <constructor-arg name="renditionName" value="pdf"/>
+        <constructor-arg name="targetMimetype" value="application/pdf"/>
+        <constructor-arg name="transformOptions">
+            <map merge="true">
+                <entry key="allowEnlargement" value="false"/> <!-- does nothing other than select ImageTransformationOptions -->
+            </map>
+        </constructor-arg>
+    </bean>
+    
+</beans>

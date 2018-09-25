@@ -43,7 +43,10 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
 /**
  * @author Nick Smith
  * @since 3.3
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class FreemarkerRenderingEngine
             extends BaseTemplateRenderingEngine
 {

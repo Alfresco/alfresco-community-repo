@@ -58,7 +58,10 @@ import org.apache.commons.logging.LogFactory;
  * @see <a href="http://sourceforge.net/tracker/?func=detail&aid=1644504&group_id=24399&atid=381401">HTML Parser</a>
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class HtmlParserContentTransformer extends AbstractContentTransformer2
 {
     @SuppressWarnings("unused")

@@ -44,7 +44,10 @@ import org.springframework.beans.factory.BeanNameAware;
  * A class providing basic functionality shared by both {@link ContentTransformer}s and {@link ContentTransformerWorker}s.
  * 
  * @author dward
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class ContentTransformerHelper implements BeanNameAware
 {

@@ -37,7 +37,10 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Test TransformationOptionPair
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformationOptionPairTest
 {
     TransformationOptionPair pair;

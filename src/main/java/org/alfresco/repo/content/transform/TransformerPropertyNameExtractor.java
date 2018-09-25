@@ -44,7 +44,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
  * Provides access to transformer property names and values.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class TransformerPropertyNameExtractor
 {
     private static Pattern EXTENSIONS_SEPARATOR = Pattern.compile("[^]\\\\]\\.");

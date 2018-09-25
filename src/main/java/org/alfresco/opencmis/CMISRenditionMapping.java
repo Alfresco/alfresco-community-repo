@@ -53,6 +53,11 @@ import org.apache.chemistry.opencmis.commons.data.RenditionData;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisFilterNotValidException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RenditionDataImpl;
 
+/**
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
+ */
+@Deprecated
 public class CMISRenditionMapping
 {
     private NodeService nodeService;

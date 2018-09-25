@@ -35,7 +35,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * size of the intermediate file is unknown at the start.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class UnsupportedTransformationException extends AlfrescoRuntimeException
 {

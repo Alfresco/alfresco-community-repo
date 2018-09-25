@@ -44,7 +44,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Nick Burch
  * @author Dmitry Velichkevich
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTest
 {
     private static final int SMALL_TIMEOUT = 30;

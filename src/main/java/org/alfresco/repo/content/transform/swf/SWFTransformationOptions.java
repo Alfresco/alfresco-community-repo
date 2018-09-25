@@ -27,18 +27,24 @@ package org.alfresco.repo.content.transform.swf;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.springframework.extensions.surf.util.ParameterCheck;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
 
 /**
  * SFW transformation options
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class SWFTransformationOptions extends TransformationOptions
 {
-    private static final String OPT_FLASH_VERSION = "flashVersion";
+    private static final String OPT_FLASH_VERSION = FLASH_VERSION;
     
     /** The version of the flash to convert to */
     private String flashVersion = "9";
@@ -61,5 +67,30 @@ public class SWFTransformationOptions extends TransformationOptions
         Map<String, Object> props = new HashMap<String, Object>(baseProps);
         props.put(OPT_FLASH_VERSION, flashVersion);
         return props;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof SWFTransformationOptions))
+        {
+            return false;
+        }
+        if (!super.equals(o))
+        {
+            return false;
+        }
+        SWFTransformationOptions that = (SWFTransformationOptions) o;
+        return Objects.equals(flashVersion, that.flashVersion);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(super.hashCode(), flashVersion);
     }
 }

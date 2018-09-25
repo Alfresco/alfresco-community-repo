@@ -28,6 +28,7 @@ package org.alfresco.repo.thumbnail;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
@@ -37,14 +38,23 @@ import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.AbstractTransformationRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_PAGES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_PAGE_LIMIT;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
+import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_TIMEOUT_MS;
 
 /**
  * A helper class to convert {@link ThumbnailDefinition thumbnail definition} and
@@ -62,7 +72,10 @@ import org.alfresco.service.namespace.QName;
  * @see RenditionDefinition
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class ThumbnailRenditionConvertor
 {
     private RenditionService renditionService;
@@ -251,13 +264,13 @@ public class ThumbnailRenditionConvertor
             Serializable xsize = renditionDefinition.getParameterValue(ImageRenderingEngine.PARAM_RESIZE_WIDTH);
             if (xsize != null)
             {
-                resizeOptions.setWidth(((Long) xsize).intValue());
+                resizeOptions.setWidth(((Integer) xsize).intValue());
             }
             
             Serializable ysize = renditionDefinition.getParameterValue(ImageRenderingEngine.PARAM_RESIZE_HEIGHT);
             if (ysize != null)
             {
-                resizeOptions.setHeight(((Long) ysize).intValue());
+                resizeOptions.setHeight(((Integer) ysize).intValue());
             }
 
             Serializable maintainAspectRatio = renditionDefinition.getParameterValue(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO);
@@ -282,6 +295,38 @@ public class ThumbnailRenditionConvertor
         }
         
         thDefn.setTransformationOptions(transformationOptions);
+        TransformationOptionLimits limits = transformationOptions.getLimits();
+
+        Serializable v = params.get(OPT_TIMEOUT_MS);
+        if (v != null)
+        {
+            limits.setTimeoutMs((Long)v);
+        }
+        v = params.get(OPT_READ_LIMIT_TIME_MS);
+        if (v != null)
+        {
+            limits.setReadLimitTimeMs((Long)v);
+        }
+        v = params.get(OPT_MAX_SOURCE_SIZE_K_BYTES);
+        if (v != null)
+        {
+            limits.setMaxSourceSizeKBytes((Long)v);
+        }
+        v = params.get(OPT_READ_LIMIT_K_BYTES);
+        if (v != null)
+        {
+            limits.setReadLimitKBytes((Long)v);
+        }
+        v = params.get(OPT_MAX_PAGES);
+        if (v != null)
+        {
+            limits.setMaxPages((Integer)v);
+        }
+        v = params.get(OPT_PAGE_LIMIT);
+        if (v != null)
+        {
+            limits.setPageLimit((Integer)v);
+        }
 
         return thDefn;
     }

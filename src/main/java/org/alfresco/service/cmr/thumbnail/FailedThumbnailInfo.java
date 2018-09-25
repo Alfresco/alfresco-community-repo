@@ -40,7 +40,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Neil Mc Erlean
  * @since 3.5.0
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class FailedThumbnailInfo
 {
     private final String thumbnailDefinitionName;

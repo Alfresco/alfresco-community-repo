@@ -35,7 +35,10 @@ import org.apache.tika.parser.microsoft.OfficeParser;
  *  Outlook email msg files.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class MailContentTransformer extends TikaPoweredContentTransformer
 {
     public MailContentTransformer() {

@@ -43,7 +43,10 @@ import org.apache.commons.logging.LogFactory;
  * The transformation is sensitive to the source and target string encodings.
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class StringExtractingContentTransformer extends AbstractContentTransformer2
 {
     public static final String PREFIX_TEXT = "text/";

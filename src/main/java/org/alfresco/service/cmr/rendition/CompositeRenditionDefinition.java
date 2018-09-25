@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.action.ActionList;
  * reformat the PDF to a JPEG image and the second to resize the JPEG image.
  * 
  * @author Nick Smith
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public interface CompositeRenditionDefinition extends RenditionDefinition, ActionList<RenditionDefinition>
 {
     // Intentionally empty!

@@ -60,7 +60,10 @@ import org.apache.commons.logging.LogFactory;
 
  * @author Neil Mc Erlean
  * @since 3.5.0
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDeleteNodePolicy,
                                                     ContentServicePolicies.OnContentUpdatePolicy
 {

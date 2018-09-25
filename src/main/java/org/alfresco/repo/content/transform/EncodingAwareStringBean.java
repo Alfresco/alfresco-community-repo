@@ -40,7 +40,10 @@ import org.htmlparser.util.ParserException;
  * This allows us to correctly handle HTML files where the encoding
  *  is specified against the content property (rather than in the 
  *  HTML Head Meta), see ALF-10466 for details.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 class EncodingAwareStringBean extends StringBean
 {
     private static final long serialVersionUID = -9033414360428669553L;

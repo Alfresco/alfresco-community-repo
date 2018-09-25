@@ -26,21 +26,6 @@
 
 package org.alfresco.repo.rendition;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -101,11 +86,28 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Neil McErlean
  * @author Nick Smith
  * @since 3.3
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @SuppressWarnings("deprecation")
 @Category({OwnJVMTestsCategory.class})
 @Transactional

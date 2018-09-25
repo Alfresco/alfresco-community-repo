@@ -42,6 +42,7 @@ import org.mozilla.javascript.Scriptable;
 /**
  * @author Roy Wetherall
  * @author Neil McErlean
+ *
  */
 public class ScriptThumbnail extends ScriptNode
 {

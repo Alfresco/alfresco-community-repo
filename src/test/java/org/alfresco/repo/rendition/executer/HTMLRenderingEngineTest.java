@@ -62,7 +62,10 @@ import org.springframework.transaction.annotation.Transactional;
  * Unit tests for the HTML Rendering Engine
  * 
  * @author Nick Burch
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @Category(BaseSpringTestsCategory.class)
 @Transactional
 public class HTMLRenderingEngineTest extends BaseAlfrescoSpringTest

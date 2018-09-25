@@ -40,7 +40,10 @@ import java.io.File;
  * OpenOffice application to perform OpenOffice-driven conversions.
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class JodContentTransformer extends OOoContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     private static Log logger = LogFactory.getLog(JodContentTransformer.class);

@@ -428,10 +428,11 @@ public interface ServiceRegistry
     EditionService getEditionService();
     
     /**
-     * Get the Thumbnail Service
-     * @deprecated This method has been deprecated as it would return a service that is not part of the public API. 
-     * The service itself is not deprecated, but access to it via the ServiceRegistry will be removed in the future.
+     *
+     * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2
+     * or other external libraries.
      */
+    @Deprecated
     @NotAuditable
     ThumbnailService getThumbnailService();
     
@@ -451,7 +452,10 @@ public interface ServiceRegistry
 
     /**
      * Get the rendition service (or null if one is not provided)
+     *
+     * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
      */
+    @Deprecated
     @NotAuditable
     RenditionService getRenditionService();
 

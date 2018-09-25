@@ -2725,7 +2725,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     {
         return transformDocument(mimetype, destination.getNodeRef());
     }
-    
+
     private ScriptNode transformDocument(String mimetype, NodeRef destination)
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
@@ -2848,7 +2848,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         ParameterCheck.mandatory("Destination Node", destination);
         return transformImage(mimetype, options, destination.getNodeRef());
     }
-    
+
     private ScriptNode transformImage(String mimetype, final String options, NodeRef destination)
     {
         ParameterCheck.mandatoryString("Mimetype", mimetype);
@@ -3017,7 +3017,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      * @param  thumbnailName    the name of the thumbnail
      * @param  async            indicates whether the thumbnail is create asynchronously or not
      * @return ScriptThumbnail  the newly create thumbnail node or null if async creation occures
+     *
+     * @deprecated The async flag in the method signature will not be applicable as all of
+     * the future transformations will be asynchronous
      */
+    @Deprecated
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async)
     {
         return createThumbnail(thumbnailName, async, false);
@@ -3038,7 +3042,11 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      * @param  async            indicates whether the thumbnail is create asynchronously or not
      * @param  force            ignore system.thumbnail.generate=false
      * @return ScriptThumbnail  the newly create thumbnail node or null if async creation occures
+     *
+     * @deprecated The async flag in the method signature will not be applicable as all of
+     * the future transformations will be asynchronous
      */
+    @Deprecated
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force)
     {
         final ThumbnailService thumbnailService = services.getThumbnailService();
@@ -3189,7 +3197,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     /**
      * This version of the method name spelling is retained (for now) for backwards compatibility
-     * @see #getThumbnailDefinitions() 
+     * @see #getThumbnailDefinitions()
      */
     @Deprecated
     public String[] getThumbnailDefintions()
@@ -4123,7 +4131,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         private QName property;
         private boolean isDirty;
     }
-    
+
     /**
      * Interface contract for simple anonymous classes that implement document transformations
      */
@@ -4142,7 +4150,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         ScriptNode transform(ContentService contentService, NodeRef noderef,
             ContentReader reader, ContentWriter writer);
     }
-    
+
     private abstract class AbstractTransformer implements Transformer
     {
         public ScriptNode transform(ContentService contentService, NodeRef nodeRef,

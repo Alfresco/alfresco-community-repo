@@ -40,7 +40,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * to maintain the previous approach if they really wish.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerSelectorImplOriginal implements TransformerSelector
 {
     private ContentTransformerRegistry contentTransformerRegistry;

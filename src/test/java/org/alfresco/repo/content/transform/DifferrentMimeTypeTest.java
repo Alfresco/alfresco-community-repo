@@ -69,7 +69,10 @@ import junit.framework.TestCase;
  * mimetype of the node matches the content. This is the opposite of what this
  * test class was originally written to prove for MNT-11015. The current version
  * was reworked for MNT-16381.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class DifferrentMimeTypeTest extends TestCase
 {
     private static Log log = LogFactory.getLog(DifferrentMimeTypeTest.class);

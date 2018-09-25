@@ -46,7 +46,10 @@ import org.alfresco.repo.content.transform.TransformerDebug;
  * using the lowest of the four values.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class TransformationOptionPair implements Serializable
 {

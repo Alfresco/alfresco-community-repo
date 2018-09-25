@@ -33,7 +33,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Nick Burch
  * @since 4.0.1
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class OOXMLThumbnailContentTransformerTest extends AbstractContentTransformerTest
 {
     private ContentTransformer transformer;

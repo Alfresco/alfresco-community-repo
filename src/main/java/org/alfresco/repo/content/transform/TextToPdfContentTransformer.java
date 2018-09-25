@@ -55,7 +55,10 @@ import java.util.Map;
  * 
  * @author Derek Hulley
  * @since 2.1.0
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TextToPdfContentTransformer extends AbstractContentTransformer2
 {
     private static final Log logger = LogFactory.getLog(TextToPdfContentTransformer.class);

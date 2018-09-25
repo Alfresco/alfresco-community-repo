@@ -35,7 +35,10 @@ import org.junit.Test;
  * Test {@link TemporalSourceOptions}.
  * 
  * @author Ray Gauss II
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TemporalSourceOptionsTest
 {
     private TemporalSourceOptions temporalSourceOptions;

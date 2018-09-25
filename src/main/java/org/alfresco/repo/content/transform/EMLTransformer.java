@@ -53,7 +53,10 @@ import org.alfresco.util.TempFileProvider;
  * parser. Would require a recursing parser to be specified, but not the full
  * Auto one (we don't want attachments), just one containing text and html
  * related parsers.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class EMLTransformer extends AbstractContentTransformer2
 
 {

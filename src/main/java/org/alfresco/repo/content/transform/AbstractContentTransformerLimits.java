@@ -52,7 +52,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * c) for the {@link TransformationOptions} provided for a specific transform.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public abstract class AbstractContentTransformerLimits extends ContentTransformerHelper implements ContentTransformer
 {

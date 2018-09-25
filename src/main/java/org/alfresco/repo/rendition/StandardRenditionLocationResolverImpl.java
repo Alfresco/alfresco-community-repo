@@ -66,6 +66,12 @@ import freemarker.ext.dom.NodeModel;
 import freemarker.template.SimpleDate;
 import freemarker.template.SimpleHash;
 
+/**
+ *
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
+ */
+@Deprecated
 public class StandardRenditionLocationResolverImpl implements RenditionLocationResolver
 {
     private final static Log log = LogFactory.getLog(StandardRenditionLocationResolverImpl.class);

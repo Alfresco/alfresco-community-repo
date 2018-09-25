@@ -34,7 +34,10 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
  * 
  * @author Neil McErlean
  * @see RenditionService#render(org.alfresco.service.cmr.repository.NodeRef, RenditionDefinition, RenderCallback)
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public interface RenderCallback
 {
     /**

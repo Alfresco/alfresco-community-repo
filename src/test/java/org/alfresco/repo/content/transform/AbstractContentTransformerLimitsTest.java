@@ -52,7 +52,10 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Test methods that control limits in {@link AbstractContentTransformerLimits}
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class AbstractContentTransformerLimitsTest
 {
     private static final String A = MimetypeMap.MIMETYPE_XML;

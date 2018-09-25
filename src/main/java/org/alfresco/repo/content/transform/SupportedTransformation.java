@@ -28,7 +28,10 @@ package org.alfresco.repo.content.transform;
 /**
  * Represents a supported transformation. Normally used in a spring bean that limits
  * the number of supported configures.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class SupportedTransformation
 {
     private String sourceMimetype;

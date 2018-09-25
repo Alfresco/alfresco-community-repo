@@ -31,7 +31,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This interface defines a type which can be used to resolve the location of rendition nodes.
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public interface RenditionLocationResolver
 {
 

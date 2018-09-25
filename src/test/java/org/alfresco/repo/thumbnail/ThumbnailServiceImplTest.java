@@ -111,7 +111,10 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author Roy Wetherall
  * @author Neil McErlean
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 @ContextConfiguration({"classpath:alfresco/application-context.xml",

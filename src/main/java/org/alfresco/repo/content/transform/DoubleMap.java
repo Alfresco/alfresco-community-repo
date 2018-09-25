@@ -62,7 +62,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>
  * 
  * @author Alan Davis
+ *
  */
+@Deprecated
 public class DoubleMap<K1, K2, V>
 {
     private final Map<K1, Map<K2, V>> mapMap = new ConcurrentHashMap<K1, Map<K2, V>>();

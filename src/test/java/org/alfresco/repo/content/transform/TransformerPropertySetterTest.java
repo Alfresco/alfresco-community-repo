@@ -54,7 +54,10 @@ import org.mockito.MockitoAnnotations;
  * Tests TransformerPropertySetter.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerPropertySetterTest
 {
     @Mock
@@ -641,6 +644,7 @@ public class TransformerPropertySetterTest
     }
 }
 
+@Deprecated
 class DummyContentTransformer implements ContentTransformer
 {
     private final String name;

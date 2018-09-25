@@ -52,6 +52,7 @@ import org.alfresco.repo.rendition.RenditionDefinitionImpl;
 import org.alfresco.repo.rendition.RenditionLocation;
 import org.alfresco.repo.rendition.RenditionLocationResolver;
 import org.alfresco.repo.rendition.RenditionNodeManager;
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -86,7 +87,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Neil McErlean
  * @author Nick Smith
  * @since 3.3
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 {
 
@@ -117,10 +121,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * This is the default default property used to specify where rendition
      * content is stored - used if no value is injected from spring.
      */
-    private static final QName DEFAULT_DEFAULT_RENDITION_CONTENT_PROP = ContentModel.PROP_CONTENT;
-
-    private static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_TEXT_PLAIN;
-    private static final String DEFAULT_ENCODING = "UTF-8";
+    private static final QName DEFAULT_DEFAULT_RENDITION_CONTENT_PROP = RenditionService2Impl.DEFAULT_RENDITION_CONTENT_PROP;
+    private static final String DEFAULT_MIMETYPE = RenditionService2Impl.DEFAULT_MIMETYPE;
+    private static final String DEFAULT_ENCODING = RenditionService2Impl.DEFAULT_ENCODING;
 
     /**
      * This is the default node type that is used when creating rendition

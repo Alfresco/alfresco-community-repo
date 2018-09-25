@@ -35,7 +35,10 @@ import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvalu
  * @author Neil Mc Erlean
  * @since 3.5.0
  * @see NodeEligibleForRethumbnailingEvaluator for a description of how these configuration parameters are used.
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class FailureHandlingOptions
 {
     public static final int DEFAULT_PERIOD = 0;

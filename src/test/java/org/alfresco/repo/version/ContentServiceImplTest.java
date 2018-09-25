@@ -107,6 +107,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
+    @Deprecated
     public void testTransformAndNulls()
     {
         NodeRef versionableNode = createNewVersionableNode();

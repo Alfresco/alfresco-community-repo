@@ -40,7 +40,10 @@ import org.alfresco.service.namespace.QName;
  * Thumbnail Service API
  * 
  * @author Roy Wetherall (based on original contribution by Ray Gauss II)
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public interface ThumbnailService
 {
     /**

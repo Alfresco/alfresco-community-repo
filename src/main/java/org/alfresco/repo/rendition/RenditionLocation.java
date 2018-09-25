@@ -29,8 +29,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This simple interface defines a data class which identifies a rendition node, its parent and its name.
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
-
+@Deprecated
 public interface RenditionLocation
 {
     /**

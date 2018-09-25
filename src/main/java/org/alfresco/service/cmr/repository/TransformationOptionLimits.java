@@ -36,22 +36,27 @@ import org.alfresco.util.EqualsHelper;
  * Represents maximum source values (that result in exceptions if exceeded) or
  * limits on source values (that result in EOF (End Of File) being returned
  * early). Options exist for elapse time, KBytes read or number of pages read.
- * 
+ *
+ * @deprecated with the introduction of RenditionService2 the OPT_... public static final values
+ * have been deprecated as they will no longer form part of the rendition definition and will be
+ * removed when local transformations are removed.
+ *
  * @author Alan Davis
  */
 @AlfrescoPublicApi
+@Deprecated
 public class TransformationOptionLimits implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    public static final String OPT_TIMEOUT_MS = "timeoutMs";
-    public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
-    
-    public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
-    public static final String OPT_READ_LIMIT_K_BYTES = "readLimitKBytes";
-    
-    public static final String OPT_MAX_PAGES = "maxPages";
-    public static final String OPT_PAGE_LIMIT = "pageLimit";
+    @Deprecated public static final String OPT_TIMEOUT_MS = "timeoutMs";
+    @Deprecated public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
+
+    @Deprecated public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
+    @Deprecated public static final String OPT_READ_LIMIT_K_BYTES = "readLimitKBytes";
+
+    @Deprecated public static final String OPT_MAX_PAGES = "maxPages";
+    @Deprecated public static final String OPT_PAGE_LIMIT = "pageLimit";
     
     public static final String TIME_MESSAGE = "Both timeoutMs and readLimitTimeMs should not be set.";
     public static final String KBYTES_MESSAGE = "Both maxSourceSizeKBytes and readLimitKBytes should not be set.";

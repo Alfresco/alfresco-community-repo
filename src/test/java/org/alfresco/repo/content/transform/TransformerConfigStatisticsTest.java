@@ -40,7 +40,10 @@ import org.mockito.MockitoAnnotations;
  * Test class for TransformerConfigStatistics.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigStatisticsTest
 {
     @Mock

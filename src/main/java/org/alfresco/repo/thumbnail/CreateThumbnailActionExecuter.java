@@ -54,7 +54,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall
  * @author Ph Dubois (optional thumbnail creation by mimetype and in general)
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(CreateThumbnailActionExecuter.class);

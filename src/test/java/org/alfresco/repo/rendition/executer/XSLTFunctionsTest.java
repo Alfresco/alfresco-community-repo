@@ -58,7 +58,10 @@ import org.w3c.dom.NodeList;
 /**
  * @author Brian
  *
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @Category({BaseSpringTestsCategory.class})
 @Transactional
 public class XSLTFunctionsTest extends BaseAlfrescoSpringTest

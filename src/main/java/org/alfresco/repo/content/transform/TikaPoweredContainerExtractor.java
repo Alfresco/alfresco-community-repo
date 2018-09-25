@@ -78,7 +78,10 @@ import org.apache.tika.parser.AutoDetectParser;
  *  an extension context file.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TikaPoweredContainerExtractor
 {
     private static final Log logger = LogFactory.getLog(TikaPoweredContainerExtractor.class);

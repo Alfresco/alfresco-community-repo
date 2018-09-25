@@ -33,7 +33,10 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * Encapsulates the details of a thumbnails parent association
  * 
  * @author Roy Wetherall
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 public class ThumbnailParentAssociationDetails
 {
     /** The parent node reference */

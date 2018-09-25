@@ -39,7 +39,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * Interface for class that allow content transformation from one mimetype to another.
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 @AlfrescoPublicApi
 public interface ContentTransformer extends ContentWorker
 {

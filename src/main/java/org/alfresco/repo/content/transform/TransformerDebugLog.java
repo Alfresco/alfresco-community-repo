@@ -38,7 +38,10 @@ import org.apache.commons.logging.Log;
  * {@link TransformerConfigMBean#getTransformationDebugLog(int)}.<p>
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerDebugLog extends TransformerLogger<DebugEntry>
 {
     private static Pattern END_OF_REQUEST_ID_PATTERN = Pattern.compile("[^0-9]");
@@ -105,6 +108,7 @@ public class TransformerDebugLog extends TransformerLogger<DebugEntry>
 }
 
 // Collects multiple lines of debug for the same transformer request.
+@Deprecated
 class DebugEntry
 {
     final String requestId;

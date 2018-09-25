@@ -46,7 +46,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
  * of another transformation.
  *
  * @author Alan Davis
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class TransformerConfigStatistics
 {
     private TransformerConfigImpl transformerConfigImpl;

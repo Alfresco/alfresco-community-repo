@@ -51,7 +51,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * @author Brian Remmington
  * @author Nick Smith
+ *
+ * @deprecated We are introducing the new async RenditionService2.
  */
+@Deprecated
 @Category(BaseSpringTestsCategory.class)
 @Transactional
 public class StandardRenditionLocationResolverTest extends BaseAlfrescoSpringTest

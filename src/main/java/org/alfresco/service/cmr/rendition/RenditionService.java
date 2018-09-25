@@ -40,7 +40,10 @@ import org.alfresco.service.namespace.QName;
  * The Rendition service.
  * @author Nick Smith
  * @author Neil McErlean
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 @AlfrescoPublicApi
 public interface RenditionService extends RenditionDefinitionPersister
 {
@@ -277,4 +280,20 @@ public interface RenditionService extends RenditionDefinitionPersister
      */
     @NotAuditable
     void cancelRenditions(NodeRef sourceNode, String type);
+
+    /**
+     * If a rendition has been created by the newer RenditionService2, this method will return true. In this case the
+     * original RenditionService should not be used to update an existing rendition if the content changes. These
+     * renditions can be identified by the existence of the rendition2 aspect. RenditionService2 also listens for
+     * content changes and will perform the rendition.</p>
+     *
+     * If RenditionService2 has a definition with the same name (matched on the local part of the supplied rendDef's
+     * name) and the target mimetype matches, RenditionService2 will also be used. This is being done to help with the
+     * conversion of custom transformers and renditions. The basic definitions (called "medium", "doclib",
+     * "imgpreview", "avatar", "avatar32", "webpreview", "pdf") already exist. Rather than writing a converter form one
+     * definition to the newer one, it is suggested that a newer RenditionDefinition2 is simply defined to avoid having
+     * to worry about any complexities in converting TransformationOptions into a simple flat Map structure.
+     */
+    @NotAuditable
+    boolean usingRenditionService2(NodeRef sourceNodeRef, RenditionDefinition rendDefn);
 }

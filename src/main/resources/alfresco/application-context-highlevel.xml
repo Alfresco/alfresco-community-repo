@@ -21,6 +21,7 @@
     <import resource="classpath:alfresco/oauth2-credentials-store-services-context.xml"/>
     <import resource="classpath:alfresco/remote-ticket-services-context.xml"/>
     <import resource="classpath:alfresco/rendition-services-context.xml"/>
+    <import resource="classpath:alfresco/rendition-services2-context.xml"/>
     <import resource="classpath:alfresco/replication-services-context.xml"/>
     <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
     <import resource="classpath:alfresco/preference-service-context.xml"/>

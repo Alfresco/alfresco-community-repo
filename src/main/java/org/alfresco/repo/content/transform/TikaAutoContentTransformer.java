@@ -42,7 +42,10 @@ import org.apache.tika.parser.Parser;
  *  extractor is defined. 
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
 {
     private static AutoDetectParser parser;

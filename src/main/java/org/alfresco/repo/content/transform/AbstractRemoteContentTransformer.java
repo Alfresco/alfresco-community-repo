@@ -36,7 +36,10 @@ import org.apache.commons.logging.Log;
 /**
  * Optionally sends transformations to a remote transformer if a {@link RemoteTransformerClient} is set and
  * the ".url" Alfresco global property is set.
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class AbstractRemoteContentTransformer extends AbstractContentTransformer2
 {
     private RemoteTransformerClient remoteTransformerClient;

@@ -44,7 +44,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
  * where these are sorted into groups.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerPropertyGetter
 {
     private final String string;

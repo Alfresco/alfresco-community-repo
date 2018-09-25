@@ -42,7 +42,10 @@ import org.alfresco.service.cmr.repository.PagedSourceOptions;
  * describes the page number that should be used from the source content.
  * 
  * @author Ray Gauss II
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public interface TransformationSourceOptions
 {

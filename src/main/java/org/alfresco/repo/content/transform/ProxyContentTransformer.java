@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * Makes use of a {@link ContentTransformerWorker} to perform conversions.
  * 
  * @author dward
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class ProxyContentTransformer extends AbstractContentTransformer2
 {

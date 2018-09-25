@@ -50,7 +50,10 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * Provides access to transformer configuration and current performance data.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class TransformerConfigImpl extends AbstractLifecycleBean implements TransformerConfig
 {
     private static final Log logger = LogFactory.getLog(TransformerConfigImpl.class);

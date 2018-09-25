@@ -64,7 +64,10 @@ import org.xml.sax.ContentHandler;
  *  transformers and have them nicely take priority.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class TikaPoweredContentTransformer extends AbstractRemoteContentTransformer
 {
     private static final Log logger = LogFactory.getLog(TikaPoweredContentTransformer.class);

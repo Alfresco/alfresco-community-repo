@@ -44,7 +44,10 @@ import org.apache.pdfbox.text.PDFTextStripper;
  * 
  * @author Derek Hulley
  * @since 2.1.0
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TextToPdfContentTransformerTest extends AbstractContentTransformerTest
 {
     private TextToPdfContentTransformer transformer;

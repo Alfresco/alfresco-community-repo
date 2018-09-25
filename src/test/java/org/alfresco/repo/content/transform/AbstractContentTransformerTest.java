@@ -63,7 +63,10 @@ import org.springframework.util.ResourceUtils;
  * implementations.
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class AbstractContentTransformerTest extends TestCase
 {
     protected static String QUICK_CONTENT = "The quick brown fox jumps over the lazy dog";

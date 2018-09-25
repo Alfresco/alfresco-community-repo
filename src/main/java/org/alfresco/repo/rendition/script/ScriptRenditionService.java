@@ -44,7 +44,10 @@ import org.apache.commons.logging.LogFactory;
  * Script object representing the rendition service.
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class ScriptRenditionService extends BaseScopableProcessorExtension
 {
     private static Log logger = LogFactory.getLog(ScriptRenditionService.class);

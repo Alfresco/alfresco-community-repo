@@ -30,7 +30,10 @@ package org.alfresco.service.cmr.rendition;
  * 
  * @author Neil McErlean
  * @author Ray Gauss II
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public class RenditionCancelledException extends RenditionServiceException
 {
     private static final long serialVersionUID = 6369478812653824042L;

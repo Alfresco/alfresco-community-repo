@@ -52,7 +52,10 @@ import org.apache.poi.openxml4j.opc.PackageRelationshipTypes;
  * 
  * @author Nick Burch
  * @since 4.0.1
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class OOXMLThumbnailContentTransformer extends AbstractContentTransformer2
 {
     public static final String NO_THUMBNAIL_PRESENT_IN_FILE = "No thumbnail present in file, unable to generate ";

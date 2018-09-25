@@ -37,7 +37,10 @@ import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
  *  conversions from the newer OOXML Office documents.
  *
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class PoiOOXMLContentTransformer extends TikaPoweredContentTransformer
 {
    /** 

@@ -57,7 +57,10 @@ import org.springframework.beans.factory.InitializingBean;
  * in order to accomplish its goal.
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class ComplexContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {

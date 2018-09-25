@@ -52,7 +52,10 @@ import org.apache.commons.logging.LogFactory;
  * Adds dynamic transformers defined in alfresco global properties to the ContentTransformerRegistry.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigDynamicTransformers extends TransformerPropertyNameExtractor
 {
     private static final Log logger = LogFactory.getLog(TransformerConfigDynamicTransformers.class);

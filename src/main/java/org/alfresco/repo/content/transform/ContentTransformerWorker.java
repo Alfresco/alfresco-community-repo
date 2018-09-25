@@ -35,8 +35,11 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * performing the transformation.
  * 
  * @author dward
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 // TODO Modify ContentTransformerWorker to understand transformer limits. At the moment no workers use them
+@Deprecated
 @AlfrescoPublicApi
 public interface ContentTransformerWorker
 {

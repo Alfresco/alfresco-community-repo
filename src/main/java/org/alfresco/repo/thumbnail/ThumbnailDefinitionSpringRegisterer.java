@@ -37,7 +37,10 @@ import org.springframework.beans.factory.InitializingBean;
  *  the same way as other Alfresco beans to their registrys.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class ThumbnailDefinitionSpringRegisterer implements InitializingBean
 {
    private ThumbnailRegistry thumbnailRegistry;

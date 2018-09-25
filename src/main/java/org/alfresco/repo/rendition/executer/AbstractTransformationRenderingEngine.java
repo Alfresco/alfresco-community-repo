@@ -40,6 +40,8 @@ import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerConfig;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
+
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -61,7 +63,10 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Nick Smith
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 public abstract class AbstractTransformationRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(AbstractTransformationRenderingEngine.class);
@@ -116,7 +121,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     /* Error messages */
     private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
     private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = "Content not transformable for '%s' source mime type and '%s' target mime type. Operation can't be performed";
-    private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
+    private static final String TRANSFORMING_ERROR_MESSAGE = RenditionService2Impl.TRANSFORMING_ERROR_MESSAGE;
     
     private Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers;
 

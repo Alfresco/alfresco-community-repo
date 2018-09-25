@@ -43,7 +43,10 @@ import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
  * a transform from the start until that duration is reached if possible.
  * 
  * @author Ray Gauss II
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TemporalSourceOptions extends AbstractTransformationSourceOptions
 {
 

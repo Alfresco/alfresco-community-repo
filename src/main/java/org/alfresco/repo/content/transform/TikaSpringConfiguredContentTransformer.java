@@ -41,7 +41,10 @@ import org.apache.tika.parser.Parser;
  *  either a spring created bean, or a parser class name.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TikaSpringConfiguredContentTransformer extends TikaPoweredContentTransformer
 {
     private Parser tikaParser;

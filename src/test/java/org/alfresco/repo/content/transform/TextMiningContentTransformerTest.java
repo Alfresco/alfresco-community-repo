@@ -40,7 +40,10 @@ import org.alfresco.util.TempFileProvider;
  *  old and unsupported Text Mining library!
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TextMiningContentTransformerTest extends AbstractContentTransformerTest
 {
     private TextMiningContentTransformer transformer;

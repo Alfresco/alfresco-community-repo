@@ -43,7 +43,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @see org.alfresco.repo.content.transform.FailoverContentTransformer
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class FailoverContentTransformerTest extends AbstractContentTransformerTest
 {
     private static final String sourceMimeType = MimetypeMap.MIMETYPE_PDF;
@@ -88,7 +91,10 @@ public class FailoverContentTransformerTest extends AbstractContentTransformerTe
  * This dummy class is used only for test purposes within this source file.
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 class DummyTestContentTransformer extends AbstractContentTransformer2 implements BeanNameAware
 {
     private static Log logger = LogFactory.getLog(DummyTestContentTransformer.class);

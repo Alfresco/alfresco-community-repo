@@ -44,7 +44,10 @@ import org.alfresco.util.exec.RuntimeExec;
  * @see org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class RuntimeExecutableContentTransformerTest extends BaseAlfrescoTestCase
 {
     private ContentTransformer transformer;

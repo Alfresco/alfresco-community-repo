@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * @see org.alfresco.repo.content.transform.HtmlParserContentTransformer
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class HtmlParserContentTransformerTest extends AbstractContentTransformerTest
 {
     private HtmlParserContentTransformer transformer;

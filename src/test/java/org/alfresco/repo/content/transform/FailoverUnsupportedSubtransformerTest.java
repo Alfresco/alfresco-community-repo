@@ -46,7 +46,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @see org.alfresco.repo.content.transform.FailoverContentTransformer
  * 
  * @author Viachaslau Tsikhanovich
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class FailoverUnsupportedSubtransformerTest extends AbstractContentTransformerTest
 {
     private static final String sourceMimeType = MimetypeMap.MIMETYPE_EXCEL;
@@ -136,6 +139,7 @@ public class FailoverUnsupportedSubtransformerTest extends AbstractContentTransf
 /**
  * To share with DummyTestComplexSubtransformer to detect if html2pdf was triggered
  */
+@Deprecated
 class TestHtml2PdfTriggeredFlag
 {
     private boolean value;
@@ -151,6 +155,7 @@ class TestHtml2PdfTriggeredFlag
     }
 }
 
+@Deprecated
 class TestFailoverContentTransformer extends FailoverContentTransformer
 {
     private TestHtml2PdfTriggeredFlag triggered;
@@ -169,6 +174,7 @@ class TestFailoverContentTransformer extends FailoverContentTransformer
 /**
  * This dummy class is used only for test purposes within this source file.
  */
+@Deprecated
 class DummyTestComplexSubtransformer extends ComplexContentTransformer
 {
 
@@ -210,6 +216,7 @@ class DummyTestComplexSubtransformer extends ComplexContentTransformer
  * 
  * Supported source mimetype can be set
  */
+@Deprecated
 class DummyAnyToPDFTestSubtransformer extends DummyTestContentTransformer
 {
     @Override

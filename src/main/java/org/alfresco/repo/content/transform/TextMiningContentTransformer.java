@@ -34,7 +34,10 @@ import org.apache.tika.parser.microsoft.OfficeParser;
  *  (Word 6, 95, 97, 2000, 2003) into plain text, using Apache Tika.
  * 
  * @author Nick Burch
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TextMiningContentTransformer extends TikaPoweredContentTransformer
 {
     public TextMiningContentTransformer()

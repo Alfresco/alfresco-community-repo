@@ -55,7 +55,10 @@ import org.springframework.context.ApplicationContext;
  * the real method is called.
  * 
  * @author Alan Davis
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public class TransformerConfigImplTest
 {
     @Mock

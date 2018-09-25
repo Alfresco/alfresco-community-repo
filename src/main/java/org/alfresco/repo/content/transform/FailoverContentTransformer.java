@@ -48,7 +48,10 @@ import org.springframework.beans.factory.InitializingBean;
  * <P/>Transformers are considered to have failed of they throw an exception.
  * 
  * @author Neil McErlean
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class FailoverContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {

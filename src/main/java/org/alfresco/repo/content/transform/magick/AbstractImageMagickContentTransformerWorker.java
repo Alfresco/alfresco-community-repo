@@ -44,7 +44,10 @@ import java.io.InputStream;
  * Abstract helper for transformations based on <b>ImageMagick</b>
  * 
  * @author Derek Hulley
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
+@Deprecated
 public abstract class AbstractImageMagickContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     /** the prefix for mimetypes supported by the transformer */

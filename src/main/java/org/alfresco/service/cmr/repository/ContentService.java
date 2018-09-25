@@ -170,7 +170,10 @@ public interface ContentService
      * @throws NoTransformerException if no transformer exists for the
      *      given source and target mimetypes of the reader and writer
      * @throws ContentIOException if the transformation fails
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"reader", "writer"})
     public void transform(ContentReader reader, ContentWriter writer)
             throws NoTransformerException, ContentIOException;
@@ -193,8 +196,8 @@ public interface ContentService
      * As of release 3.0 the TransformOptions class should be used to pass transformation options 
      * to a transformation execution.
      */
-    @Auditable(parameters = {"reader", "writer", "options"})
     @Deprecated
+    @Auditable(parameters = {"reader", "writer", "options"})
     public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
             throws NoTransformerException, ContentIOException;
     
@@ -209,7 +212,10 @@ public interface ContentService
      * @throws NoTransformerException if no transformer exists for the
      *      given source and target mimetypes of the reader and writer
      * @throws ContentIOException if the transformation fails
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"reader", "writer", "options"})
     public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
             throws NoTransformerException, ContentIOException;
@@ -227,7 +233,10 @@ public interface ContentService
      * 
      * @see ContentService#getTransformer(String, String, long, String, TransformationOptions)
      * @see ContentAccessor#getMimetype()
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"sourceMimetype", "targetMimetype"})
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype);
     
@@ -246,7 +255,10 @@ public interface ContentService
      * @param  options              the transformation options
      * 
      * @return ContentTransformer   the transformers that can be used, or null if none are available
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"sourceMimetype", "sourceSize", "targetMimetype", "options"})
     public List<ContentTransformer> getTransformers(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
@@ -267,13 +279,17 @@ public interface ContentService
      * @return ContentTransformer   a transformer that can be used, or null if one was not available
      * 
      * @see ContentAccessor#getMimetype()
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"sourceMimetype", "sourceSize", "targetMimetype", "options"})
     public ContentTransformer getTransformer(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
     /**
      * @deprecated use overloaded method with sourceSize parameter.
      */
+    @Deprecated
     public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
@@ -283,7 +299,10 @@ public interface ContentService
      * @param targetMimetype target mime type
      * @param options transformation options
      * @return 0 if there are no transformers, -1 if there is no limit or if positive number the size in bytes.
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
     public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
@@ -303,13 +322,17 @@ public interface ContentService
      * Fetch the transformer that is capable of transforming image content.
      * 
      * @return Returns a transformer that can be used, or null if one was not available
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable
     public ContentTransformer getImageTransformer();
     
     /**
      * @deprecated use {@link #isTransformable(ContentReader, ContentWriter, TransformationOptions)}.
      */
+    @Deprecated
     @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);
     
@@ -330,7 +353,10 @@ public interface ContentService
      * @param  writer   the target content location and mimetype
      * @param  options  the transformation options
      * @return boolean  true if a transformer exists, false otherwise
+     *
+     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
+    @Deprecated
     @Auditable(parameters = {"reader", "writer", "options"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options);
 }

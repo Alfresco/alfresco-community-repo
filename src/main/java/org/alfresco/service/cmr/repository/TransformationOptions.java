@@ -43,7 +43,10 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  * @since 3.0.0
+ *
+ * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
+@Deprecated
 @AlfrescoPublicApi
 public class TransformationOptions implements Cloneable
 {
@@ -590,7 +593,21 @@ public class TransformationOptions implements Cloneable
     {
         return toMap().toString();
     }
-    
+
+    public String toStringAll()
+    {
+        return "TransformationOptions{" +
+                "sourceNodeRef=" + sourceNodeRef +
+                ", sourceContentProperty=" + sourceContentProperty +
+                ", targetNodeRef=" + targetNodeRef +
+                ", targetContentProperty=" + targetContentProperty +
+                ", includeEmbedded=" + includeEmbedded +
+                ", use='" + use + '\'' +
+                ", limits=" + limits +
+                ", sourceOptionsMap=" + sourceOptionsMap +
+                '}';
+    }
+
     public static TypeConverter.Converter<String, Boolean> relaxedBooleanTypeConverter = new TypeConverter.Converter<String, Boolean>()
     {
         public Boolean convert(String source)

@@ -29,10 +29,10 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.repo.thumbnail.ThumbnailHelper;
-import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -45,6 +45,7 @@ import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
@@ -57,17 +58,12 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
@@ -98,25 +94,17 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
     private Nodes nodes;
     private NodeService nodeService;
-    private ThumbnailService thumbnailService;
     private ScriptThumbnailService scriptThumbnailService;
-    private RenditionService renditionService;
     private MimetypeService mimetypeService;
-    private ActionService actionService;
-    private NamespaceService namespaceService;
     private ServiceRegistry serviceRegistry;
     private ResourceLoader resourceLoader;
     private TenantService tenantService;
+    private RenditionService2 renditionService2;
     private RenditionsDataCollector renditionsDataCollector;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
-    }
-
-    public void setThumbnailService(ThumbnailService thumbnailService)
-    {
-        this.thumbnailService = thumbnailService;
     }
 
     public void setScriptThumbnailService(ScriptThumbnailService scriptThumbnailService)
@@ -140,6 +128,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         this.tenantService = tenantService;
     }
 
+    public void setRenditionService2(RenditionService2 renditionService2)
+    {
+        this.renditionService2 = renditionService2;
+    }
+
     public void setRenditionsDataCollector(RenditionsDataCollector renditionsDataCollector)
     {
         this.renditionsDataCollector = renditionsDataCollector;
@@ -148,26 +141,23 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public void init()
     {
         PropertyCheck.mandatory(this, "nodes", nodes);
-        PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
         PropertyCheck.mandatory(this, "scriptThumbnailService", scriptThumbnailService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         PropertyCheck.mandatory(this, "tenantService", tenantService);
+        PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "renditionsDataCollector", renditionsDataCollector);
 
         this.nodeService = serviceRegistry.getNodeService();
-        this.actionService = serviceRegistry.getActionService();
-        this.renditionService = serviceRegistry.getRenditionService();
         this.mimetypeService = serviceRegistry.getMimetypeService();
-        this.namespaceService = serviceRegistry.getNamespaceService();
     }
 
     @Override
     public CollectionWithPagingInfo<Rendition> getRenditions(NodeRef nodeRef, Parameters parameters)
     {
         final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
-        String contentMimeType = getMimeType(validatedNodeRef);
+        ContentData contentData = getContentData(nodeRef, true);
+        String sourceMimetype = contentData.getMimetype();
 
-        Query query = parameters.getQuery();
         boolean includeCreated = true;
         boolean includeNotCreated = true;
         String status = getStatus(parameters);
@@ -180,15 +170,17 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         Map<String, Rendition> apiRenditions = new TreeMap<>();
         if (includeNotCreated)
         {
-            // List all available thumbnail definitions
-            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentMimeType, -1);
-            for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
+            // List all available rendition definitions
+            long size = contentData.getSize();
+            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+            Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, size);
+            for (String renditionName : renditionNames)
             {
-                apiRenditions.put(thumbnailDefinition.getName(), toApiRendition(thumbnailDefinition));
+                apiRenditions.put(renditionName, toApiRendition(renditionName));
             }
         }
 
-        List<ChildAssociationRef> nodeRefRenditions = renditionService.getRenditions(validatedNodeRef);
+        List<ChildAssociationRef> nodeRefRenditions = renditionService2.getRenditions(validatedNodeRef);
         if (!nodeRefRenditions.isEmpty())
         {
             for (ChildAssociationRef childAssociationRef : nodeRefRenditions)
@@ -231,21 +223,23 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         // if there is no rendition, then try to find the available/registered rendition (yet to be created).
         if (renditionNodeRef == null && includeNotCreated)
         {
-            ThumbnailDefinition thumbnailDefinition = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(renditionId);
-            if (thumbnailDefinition == null)
+            ContentData contentData = getContentData(validatedNodeRef, true);
+            String sourceMimetype = contentData.getMimetype();
+            long size = contentData.getSize();
+            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+            RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionId);
+            if (renditionDefinition == null)
             {
                 throw new NotFoundException(renditionId + " is not registered.");
             }
             else
             {
-                String contentMimeType = getMimeType(validatedNodeRef);
-                // List all available thumbnail definitions for the source node
-                List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentMimeType, -1);
+                Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, size);
                 boolean found = false;
-                for (ThumbnailDefinition td : thumbnailDefinitions)
+                for (String renditionName : renditionNames)
                 {
                     // Check the registered renditionId is applicable for the node's mimeType
-                    if (renditionId.equals(td.getName()))
+                    if (renditionId.equals(renditionName))
                     {
                         found = true;
                         break;
@@ -253,10 +247,10 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 }
                 if (!found)
                 {
-                    throw new NotFoundException(renditionId + " is not applicable for the node's mimeType " + contentMimeType);
+                    throw new NotFoundException(renditionId + " is not applicable for the node's mimeType " + sourceMimetype);
                 }
             }
-            return toApiRendition(thumbnailDefinition);
+            return toApiRendition(renditionId);
         }
 
         if (renditionNodeRef == null)
@@ -277,9 +271,9 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public void createRendition(NodeRef nodeRef, Rendition rendition, boolean executeAsync, Parameters parameters)
     {
         // If thumbnail generation has been configured off, then don't bother.
-        if (!thumbnailService.getThumbnailsEnabled())
+        if (!renditionService2.isEnabled())
         {
-            throw new DisabledServiceException("Thumbnail generation has been disabled.");
+            throw new DisabledServiceException("Rendition generation has been disabled.");
         }
 
         final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
@@ -289,29 +283,22 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             throw new ConstraintViolatedException(rendition.getId() + " rendition already exists.");
         }
 
-        // Use the thumbnail registry to get the details of the thumbnail
-        ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
-        ThumbnailDefinition thumbnailDefinition = registry.getThumbnailDefinition(rendition.getId());
-        if (thumbnailDefinition == null)
+        try
         {
-            throw new NotFoundException(rendition.getId() + " is not registered.");
+            renditionService2.render(sourceNodeRef, rendition.getId());
         }
-
-        ContentData contentData = getContentData(sourceNodeRef, true);
-        // Check if anything is currently available to generate thumbnails for the specified mimeType
-        String sourceMimetype = contentData.getMimetype();
-        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), sourceMimetype, contentData.getSize(), sourceNodeRef,
-                thumbnailDefinition))
+        catch (IllegalArgumentException e)
         {
-            throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' for " +
-                    sourceMimetype + " as no transformer is currently available.");
+            throw new NotFoundException(rendition.getId() + " is not registered."); // 404
         }
-
-        Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
-        renditionsDataCollector.recordRenditionRequest(thumbnailDefinition, sourceMimetype);
-
-        // Create thumbnail - or else queue for async creation
-        actionService.executeAction(action, sourceNodeRef, true, executeAsync);
+        catch (UnsupportedOperationException e)
+        {
+            throw new IllegalArgumentException((e.getMessage())); // 400
+        }
+        catch (IllegalStateException e)
+        {
+            throw new StaleEntityException(e.getMessage()); // 409
+        }
     }
 
     @Override
@@ -423,10 +410,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         {
             throw new InvalidArgumentException("renditionId can't be null or empty.");
         }
-        // Thumbnails have a cm: prefix.
-        QName renditionQName = QName.resolveToQName(namespaceService, renditionId);
 
-        ChildAssociationRef nodeRefRendition = renditionService.getRenditionByName(nodeRef, renditionQName);
+        ChildAssociationRef nodeRefRendition = renditionService2.getRenditionByName(nodeRef, renditionId);
         if (nodeRefRendition == null)
         {
             return null;
@@ -457,12 +442,15 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return apiRendition;
     }
 
-    protected Rendition toApiRendition(ThumbnailDefinition thumbnailDefinition)
+    protected Rendition toApiRendition(String renditionName)
     {
-        ContentInfo contentInfo = new ContentInfo(thumbnailDefinition.getMimetype(),
-                getMimeTypeDisplayName(thumbnailDefinition.getMimetype()), null, null);
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+        RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+        ContentInfo contentInfo = new ContentInfo(renditionDefinition.getTargetMimetype(),
+                getMimeTypeDisplayName(renditionDefinition.getTargetMimetype()), null, null);
+
         Rendition apiRendition = new Rendition();
-        apiRendition.setId(thumbnailDefinition.getName());
+        apiRendition.setId(renditionName);
         apiRendition.setContent(contentInfo);
         apiRendition.setStatus(RenditionStatus.NOT_CREATED);
 

@@ -85,6 +85,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static java.lang.Thread.sleep;
 import static org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.getWorkflowIdAndKeyFromUrl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -2059,7 +2060,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             try
             {
-                Thread.sleep(requiredDelay);
+                sleep(requiredDelay);
             }
             catch (InterruptedException e)
             {
@@ -2129,7 +2130,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public void updateAvatar() throws PublicApiException, IOException
+    public void updateAvatar() throws PublicApiException, IOException, InterruptedException
     {
         final String person1 = account1PersonIt.next();
         final String person2 = account1PersonIt.next();
@@ -2243,7 +2244,8 @@ public class TestPeople extends AbstractBaseApiTest
 
 
     @Test
-    public void removeAvatar() throws IOException, PublicApiException{
+    public void removeAvatar() throws IOException, PublicApiException, InterruptedException
+    {
         
         final String person1 = account1PersonIt.next();
         final String person2 = account1PersonIt.next();

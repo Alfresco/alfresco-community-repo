@@ -1411,17 +1411,17 @@ public class PublicApiClient
             remove("people", personId, "activities", String.valueOf(activity.getId()), "Failed to remove activity");
         }
 
-        public HttpResponse getAvatar(String personId, boolean placeholder, int expectedStatus) throws PublicApiException
+        public HttpResponse getAvatar(String personId, boolean placeholder, int expectedStatus) throws PublicApiException, InterruptedException
         {
             return getAvatar(personId, null, placeholder, null, expectedStatus);
         }
 
-        public HttpResponse getAvatar(String personId, String ifModifiedSince, int expectedStatus) throws PublicApiException
+        public HttpResponse getAvatar(String personId, String ifModifiedSince, int expectedStatus) throws PublicApiException, InterruptedException
         {
             return getAvatar(personId, null, false, ifModifiedSince, expectedStatus);
         }
 
-        public HttpResponse getAvatar(String personId, Boolean attachment, boolean placeholder, String ifModifiedSince, int expectedStatus) throws PublicApiException
+        public HttpResponse getAvatar(String personId, Boolean attachment, boolean placeholder, String ifModifiedSince, int expectedStatus) throws PublicApiException, InterruptedException
         {
             // Binary response expected
             Map<String, String> params = new HashMap<>();
@@ -1438,10 +1438,31 @@ public class PublicApiClient
                 headers.put("If-Modified-Since", ifModifiedSince);
             }
 
-            HttpResponse response = getSingle("people", personId, "avatar", null, params, headers, "Failed to get avatar", expectedStatus);
+            // As renditions are now done async, we generally need to wait.
+            HttpResponse response = getSingleWithDelayRetry("people", personId, "avatar",
+                    null, params, headers, "Failed to get avatar", 40, 2500, expectedStatus);
             checkStatus("Unexpected response", expectedStatus, response);
 
             return response;
+        }
+
+        private HttpResponse getSingleWithDelayRetry(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params,
+                                      Map<String, String> headers, String errorMessage, int repeat, long pauseInMillisecond, int expectedStatus) throws PublicApiException, InterruptedException
+        {
+            int retryCount = 0;
+            while (retryCount < repeat)
+            {
+                try
+                {
+                    return getSingle(entityCollectionName, entityId, relationCollectionName, relationId, params, headers, errorMessage, expectedStatus);
+                }
+                catch (PublicApiException ex)
+                {
+                    retryCount++;
+                    Thread.sleep(pauseInMillisecond);
+                }
+            }
+            return null;
         }
 
         public HttpResponse updateAvatar(String personId, File avatar, int expectedStatus) throws PublicApiException

@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Ordering;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -469,9 +470,9 @@ public class RenditionsTest extends AbstractBaseApiTest
         multipleRenditionRequest.add(new Rendition().setId("imgpreview"));
         post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(multipleRenditionRequest), 400);
 
-        ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
+        RenditionService2Impl renditionService2 = applicationContext.getBean("renditionService2", RenditionService2Impl.class);
         // Disable thumbnail generation
-        thumbnailService.setThumbnailsEnabled(false);
+        renditionService2.setThumbnailsEnabled(false);
         try
         {
             // Create multipart request
@@ -494,7 +495,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         }
         finally
         {
-            thumbnailService.setThumbnailsEnabled(true);
+            renditionService2.setThumbnailsEnabled(true);
         }
     }
 

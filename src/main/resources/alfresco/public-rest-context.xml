@@ -1359,10 +1359,10 @@
     <!--                               -->
     <bean id="renditions" class="org.alfresco.rest.api.impl.RenditionsImpl" init-method="init">
         <property name="nodes" ref="nodes" />
-        <property name="thumbnailService" ref="ThumbnailService" />
         <property name="scriptThumbnailService" ref="thumbnailServiceScript" />
         <property name="serviceRegistry" ref="ServiceRegistry" />
         <property name="tenantService" ref="tenantService"/>
+        <property name="renditionService2" ref="RenditionService2"/>
         <property name="renditionsDataCollector" ref="renditionsDataCollector"/>
     </bean>
 

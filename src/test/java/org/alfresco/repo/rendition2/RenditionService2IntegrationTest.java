@@ -332,7 +332,11 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         String otherUserName = createRandomUser();
-        permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+        {
+            permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
+            return null;
+        });
         render(ownerUserName, sourceNodeRef, DOC_LIB);
         NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
         assertNotNull("The rendition is not visible for owner of source node", renditionNodeRef);
@@ -348,7 +352,11 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         String otherUserName = createRandomUser();
-        permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+        {
+            permissionService.setPermission(sourceNodeRef, otherUserName, PermissionService.READ, true);
+            return null;
+        });
         render(otherUserName, sourceNodeRef, DOC_LIB);
         NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
         assertNotNull("The rendition is not visible for owner of source node", renditionNodeRef);
@@ -365,7 +373,11 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         render(ownerUserName, sourceNodeRef, DOC_LIB);
         String noPermissionsUser = createRandomUser();
-        permissionService.setPermission(sourceNodeRef, noPermissionsUser, PermissionService.ALL_PERMISSIONS, false);
+        transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+        {
+            permissionService.setPermission(sourceNodeRef, noPermissionsUser, PermissionService.ALL_PERMISSIONS, false);
+            return null;
+        });
         try
         {
             waitForRendition(noPermissionsUser, sourceNodeRef, DOC_LIB);

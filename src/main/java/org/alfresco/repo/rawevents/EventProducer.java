@@ -96,7 +96,8 @@ public class EventProducer
             {
                 endpointUri = this.endpoint;
             }
-            else if (this.objectMapper != null && !(event instanceof String))
+
+            if (this.objectMapper != null && !(event instanceof String))
             {
                 event = this.objectMapper.writeValueAsString(event);
             }
@@ -108,4 +109,5 @@ public class EventProducer
             throw new AlfrescoRuntimeException(ERROR_SENDING, e);
         }
     }
+
 }

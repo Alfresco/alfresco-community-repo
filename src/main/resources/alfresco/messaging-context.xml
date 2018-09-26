@@ -47,7 +47,13 @@
 
     <bean id="alfrescoEventProducer" class="org.alfresco.repo.rawevents.EventProducer">
         <property name="producer" ref="camelProducerTemplate" />
-        <property name="endpoint" value="direct-vm:alfresco.events" />
+        <property name="endpoint" value="direct-vm:alfresco.raw.events" />
+        <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
+    </bean>
+
+    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer">
+        <property name="producer" ref="camelProducerTemplate" />
+        <property name="endpoint" value="direct-vm:alfresco.raw.events" />
         <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
     </bean>
 </beans>

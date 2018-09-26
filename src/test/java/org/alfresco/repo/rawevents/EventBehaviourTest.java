@@ -78,9 +78,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Cristian Turlica
  */
 @Category(OwnJVMTestsCategory.class)
-public class EventBehaviorTest
+public class EventBehaviourTest
 {
-    private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/EventBehaviorTest";
+    private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/EventBehaviourTest";
 
     private RetryingTransactionHelper retryingTransactionHelper;
     private ContentService contentService;

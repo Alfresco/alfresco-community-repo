@@ -143,7 +143,9 @@ import org.springframework.context.ApplicationContext;
     // TODO enable in REPO-3811
     //org.alfresco.messaging.camel.CamelRoutesTest.class,
     // Requires a running ActiveMQ
-    org.alfresco.repo.rawevents.EventBehaviorTest.class,
+    org.alfresco.repo.rawevents.EventBehaviourTest.class,
+    org.alfresco.repo.rawevents.EventProducerTest.class,
+    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
     // Requires running transformers
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class

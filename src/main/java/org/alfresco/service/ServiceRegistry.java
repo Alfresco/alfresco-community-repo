@@ -37,6 +37,7 @@ import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -165,6 +166,8 @@ public interface ServiceRegistry
     static final QName MODULE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService");
     
     static final QName POLICY_COMPONENT = QName.createQName(NamespaceService.ALFRESCO_URI, "policyComponent");
+
+    static final QName RENDITION_SERVICE_2 = QName.createQName(NamespaceService.ALFRESCO_URI, "RenditionService2");
 
     /**
      * Get the list of services provided by the Repository
@@ -603,11 +606,18 @@ public interface ServiceRegistry
      */
     @NotAuditable
     DocumentLinkService getDocumentLinkService();
-    
+
     /**
      * Get the policy component
      * @return The policy component
      */
     @NotAuditable
     PolicyComponent getPolicyComponent();
+
+    /**
+     * Get the async rendition service component
+     * @return The async rendition component
+     */
+    @NotAuditable
+    RenditionService2 getRenditionService2();
 }

@@ -68,6 +68,9 @@
     <!-- Any RouteBuilder in this package will be fired up -->
     <context:component-scan base-package="org.alfresco.messaging.camel.routes"/>
 
+    <!-- Any RouteBuilder in this enterprise package will be fired up -->
+    <context:component-scan base-package="org.alfresco.enterprise.repo.routes"/>
+
     <camelContext id="alfrescoCamelContext" xmlns="http://camel.apache.org/schema/spring">
         <contextScan/>
         <camel:jmxAgent id="agent" mbeanObjectDomainName="Alfresco.Camel" />

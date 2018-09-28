@@ -76,12 +76,12 @@ public class DispositionScheduleService extends BaseAPI
      */
     public void addRetainAfterPeriodStep(String categoryName, String period)
     {
-        HashMap<RETENTION_SCHEDULE, String> cutOffStep = new HashMap<>();
-        cutOffStep.put(RETENTION_SCHEDULE.NAME, "retain");
-        cutOffStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
-        cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Retain after a period step");
+        HashMap<RETENTION_SCHEDULE, String> retainStep = new HashMap<>();
+        retainStep.put(RETENTION_SCHEDULE.NAME, "retain");
+        retainStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        retainStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Retain after a period step");
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
+                dataUser.getAdminUser().getPassword(), categoryName, retainStep);
     }
 
     /**

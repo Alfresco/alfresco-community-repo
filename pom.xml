@@ -289,7 +289,7 @@
          </build>
       </profile>
 
-      <!-- Profile used to build docker images with given tag and push them to the given image registry (quay.io) -->
+      <!-- Profile used to build docker images with a specific tag and push them to the given image registry (quay.io)-->
       <profile>
          <id>internal</id>
          <build>
@@ -326,7 +326,7 @@
          </build>
       </profile>
 
-      <!-- Profile used to build and push docker images with given tag to the given image registry (quay.io) and
+      <!-- Profile used to build and push docker images with a specific tag to the given image registry (quay.io) and
        hub.docker -->
       <profile>
          <id>master</id>

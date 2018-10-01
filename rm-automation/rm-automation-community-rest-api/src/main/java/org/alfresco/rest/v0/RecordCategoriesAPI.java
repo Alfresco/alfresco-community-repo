@@ -51,7 +51,6 @@ public class RecordCategoriesAPI extends BaseAPI
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordCategoriesAPI.class);
     private static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     private static final String DISPOSITION_ACTIONS_API = "{0}node/{1}/dispositionschedule/dispositionactiondefinitions";
-    private static final String DISPOSITION_SCHEDULE_API = "{0}node/{1}/dispositionschedule";
 
     /**
      * Creates a retention schedule for the category given as parameter
@@ -70,21 +69,6 @@ public class RecordCategoriesAPI extends BaseAPI
         requestParams.put("nodeRef", catNodeRef);
 
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
-    }
-
-    /**
-     * Get the disposition schedule nodeRef
-     *
-     * @param user
-     * @param password
-     * @param categoryName
-     * @return the disposition schedule nodeRef
-     */
-    public String getDispositionScheduleNodeRef(String user, String password, String categoryName)
-    {
-        String catNodeRef = NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
-        JSONObject dispositionSchedule = doGetRequest(user, password, MessageFormat.format(DISPOSITION_SCHEDULE_API, "{0}", catNodeRef));
-        return dispositionSchedule.getJSONObject("data").getString("nodeRef").replace(getNodeRefSpacesStore(), "");
     }
 
     /**

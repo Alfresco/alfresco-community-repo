@@ -200,7 +200,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
                 "rma:recordSearchHasDispositionSchedule property should be true");
         Assert.assertEquals(recFolder.getProperties().getRecordSearchDispositionActionName(),
                 CUTOFF_STEP,
-                "Disposition action should be retain and not cutoff for complete record");
+                "Disposition action should be cutoff and not retain for the record folder");
     }
 
     /**
@@ -257,6 +257,7 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
      *                      - incomplete electronic record
      *                      - complete non-electronic record
      * Then both records should not have RS (rma:recordSearchHasDispositionSchedule property is set to false)
+     * and record folder inherits the RS from subCategory
      */
     @Test
     public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders() throws Exception
@@ -287,5 +288,12 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
                 "rma:recordSearchHasDispositionSchedule property should be false for incomplete record");
         Assert.assertFalse(nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be false for complete record");
+
+        STEP("Check that recFolder inherits subCategory retention schedule");
+        Assert.assertTrue(recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be true");
+        Assert.assertEquals(recFolder.getProperties().getRecordSearchDispositionActionName(),
+                RETAIN_STEP,
+                "Disposition action should be retain and not cutoff for the record folder");
     }
 }

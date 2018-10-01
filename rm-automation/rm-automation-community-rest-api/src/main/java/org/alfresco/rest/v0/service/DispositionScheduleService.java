@@ -39,8 +39,8 @@ import org.springframework.stereotype.Service;
 /**
  * Service for different disposition schedule actions
  *
- * @author jcule
- * @since 2.7.0.1
+ * @author jcule, cagache
+ * @since 2.6.2
  */
 @Service
 public class DispositionScheduleService extends BaseAPI

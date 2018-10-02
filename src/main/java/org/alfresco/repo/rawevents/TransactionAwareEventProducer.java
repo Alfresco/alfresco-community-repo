@@ -36,12 +36,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * A transaction aware {@link EventProducer}. Events are scheduled to be sent in
+ * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in
  * post-commit phase.
  * 
  * @author Cristian Turlica
  */
-public class TransactionAwareEventProducer extends EventProducer
+public class TransactionAwareEventProducer extends AbstractEventProducer
 {
     private static Log logger = LogFactory.getLog(TransactionAwareEventProducer.class);
 
@@ -137,7 +137,7 @@ public class TransactionAwareEventProducer extends EventProducer
                 }
                 catch (Exception e)
                 {
-                    logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage());
+                    logger.error("The after commit callback " + id + " failed to execute: " + e.getMessage(), e);
                     // consume exception
                 }
             }

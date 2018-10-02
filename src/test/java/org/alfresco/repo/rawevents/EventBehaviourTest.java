@@ -58,9 +58,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.After;
 import org.junit.Before;
@@ -91,7 +88,7 @@ public class EventBehaviourTest
     private NodeRef contentNodeRef;
 
     private CamelContext camelContext;
-    private EventProducer eventProducer;
+    private AbstractEventProducer eventProducer;
     private ObjectMapper messagingObjectMapper;
 
     private boolean policyFired = false;
@@ -111,7 +108,7 @@ public class EventBehaviourTest
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
-        eventProducer = (EventProducer) ctx.getBean("alfrescoEventProducer");
+        eventProducer = (AbstractEventProducer) ctx.getBean("transactionAwareEventProducer");
         messagingObjectMapper = (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
 
         // authenticate
@@ -165,18 +162,17 @@ public class EventBehaviourTest
     }
 
     /**
-     * Tests that the content update policy is triggered correctly for every event.
+     * Tests that the content update policy is triggered correctly for the first
+     * event.
      */
     @Test
-    public void onContentUpdatePolicyEveryEventNF()
+    public void onContentUpdatePolicyFirstEventNF() throws Exception
     {
         this.policyFired = false;
-
-        String endpointUri = "mock:onContentUpdatePolicyEveryEventNF";
+        String endpointUri = getMockEndpointUri();
 
         MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
         mockEndpoint.setAssertPeriod(500);
-        mockEndpoint.setExpectedCount(1);
 
         retryingTransactionHelper.doInTransaction(() -> {
             BehaviourDefinition<ClassBehaviourBinding> classBehaviour = null;
@@ -185,7 +181,7 @@ public class EventBehaviourTest
             {
                 setupTestData();
 
-                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "onContentUpdateBehaviourTest", Behaviour.NotificationFrequency.EVERY_EVENT);
+                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "createOnContentUpdateEvent", Behaviour.NotificationFrequency.FIRST_EVENT);
 
                 // Register interest in the content update event for a versionable node
                 classBehaviour = this.policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, ContentModel.ASPECT_VERSIONABLE, eventBehaviour);
@@ -210,12 +206,92 @@ public class EventBehaviourTest
                 contentWriter3.putContent("content update three");
                 assertFalse(this.policyFired);
 
+                // Now check that the policy isn't fired when the versionable aspect is present
+                // (because it's triggered only for the first event regardless how many times it
+                // is updated in that transaction)
+                this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                ContentWriter contentWriter4 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter4.putContent("content update four");
+                assertFalse(this.policyFired);
+
+                // Assert that the endpoint didn't receive any message
+                // Event is sent only on transaction commit.
+                mockEndpoint.setExpectedCount(0);
+                mockEndpoint.assertIsSatisfied();
+            }
+            finally
+            {
+                if (classBehaviour != null)
+                {
+                    this.policyComponent.removeClassDefinition(classBehaviour);
+                }
+            }
+
+            return null;
+        });
+
+        // Assert that the endpoint received 1 messages
+        mockEndpoint.setExpectedCount(1);
+        mockEndpoint.assertIsSatisfied();
+    }
+
+    /**
+     * Tests that the content update policy is triggered correctly for every event.
+     */
+    @Test
+    public void onContentUpdatePolicyEveryEventNF() throws Exception
+    {
+        this.policyFired = false;
+        String endpointUri = getMockEndpointUri();
+
+        MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
+        mockEndpoint.setAssertPeriod(500);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            BehaviourDefinition<ClassBehaviourBinding> classBehaviour = null;
+
+            try
+            {
+                setupTestData();
+
+                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "createOnContentUpdateEvent", Behaviour.NotificationFrequency.EVERY_EVENT);
+
+                // Register interest in the content update event for a versionable node
+                classBehaviour = this.policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, ContentModel.ASPECT_VERSIONABLE, eventBehaviour);
+
+                // First check that the policy is not fired when the versionable aspect is not
+                // present
+                ContentWriter contentWriter = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter.putContent("content update one");
+                assertFalse(this.policyFired);
+
+                this.newContent = false;
+
+                // Now check that the policy is fired when the versionable aspect is present
+                this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                ContentWriter contentWriter2 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter2.putContent("content update two");
+                assertTrue(this.policyFired);
+                this.policyFired = false;
+
+                // Check that the policy is not fired when using a non updating content writer
+                ContentWriter contentWriter3 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, false);
+                contentWriter3.putContent("content update three");
+                assertFalse(this.policyFired);
+
+                // Now check that the policy is fired when the versionable aspect is present
+                this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                ContentWriter contentWriter4 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter4.putContent("content update four");
+                assertTrue(this.policyFired);
+                this.policyFired = false;
+
                 try
                 {
                     eventBehaviour.disable();
 
-                    ContentWriter contentWriter4 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                    contentWriter4.putContent("content update four");
+                    ContentWriter contentWriter5 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                    contentWriter5.putContent("content update five");
                     assertFalse(this.policyFired);
                 }
                 finally
@@ -223,7 +299,9 @@ public class EventBehaviourTest
                     eventBehaviour.enable();
                 }
 
-                // Assert that the endpoint received 1 message
+                // Assert that the endpoint didn't receive any message
+                // Event is sent only on transaction commit.
+                mockEndpoint.setExpectedCount(0);
                 mockEndpoint.assertIsSatisfied();
             }
             finally
@@ -237,81 +315,9 @@ public class EventBehaviourTest
             return null;
         });
 
-    }
-
-    /**
-     * Tests that the content update policy is triggered correctly for every event.
-     */
-    @Test
-    public void onContentUpdatePolicyEveryEventNFWithListener() throws Exception
-    {
-        this.policyFired = false;
-
-        String endpointUri = "jms:policyEEQueueTest?jmsMessageType=Text";
-
-        camelContext.addRoutes(new RouteBuilder()
-        {
-            public void configure()
-            {
-                from(endpointUri).process(new Processor()
-                {
-                    public void process(Exchange exchange) throws Exception
-                    {
-                        String body = (String) exchange.getMessage().getBody();
-
-                        System.out.println("***** Exchange =" + body);
-
-                        OnContentUpdatePolicyEvent event = messagingObjectMapper.readValue(body, OnContentUpdatePolicyEvent.class);
-                        System.out.println("***** Event =" + event.getTimestamp());
-                    }
-                }).end();
-            }
-        });
-
-        retryingTransactionHelper.doInTransaction(() -> {
-            BehaviourDefinition<ClassBehaviourBinding> classBehaviour = null;
-
-            try
-            {
-                setupTestData();
-
-                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "onContentUpdateBehaviourTest", Behaviour.NotificationFrequency.EVERY_EVENT);
-
-                // Register interest in the content update event for a versionable node
-                classBehaviour = this.policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, ContentModel.ASPECT_VERSIONABLE, eventBehaviour);
-
-                // First check that the policy is not fired when the versionable aspect is not
-                // present
-                ContentWriter contentWriter = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                contentWriter.putContent("content update one");
-                assertFalse(this.policyFired);
-
-                this.newContent = false;
-
-                // Now check that the policy is fired when the versionable aspect is present
-                this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
-                ContentWriter contentWriter2 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                contentWriter2.putContent("content update two");
-                assertTrue(this.policyFired);
-                this.policyFired = false;
-
-                // Check that the policy is not fired when using a non updating content
-                // writer
-                ContentWriter contentWriter3 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, false);
-                contentWriter3.putContent("content update three");
-                assertFalse(this.policyFired);
-
-            }
-            finally
-            {
-                if (classBehaviour != null)
-                {
-                    this.policyComponent.removeClassDefinition(classBehaviour);
-                }
-            }
-
-            return null;
-        });
+        // Assert that the endpoint received 2 messages.
+        mockEndpoint.setExpectedCount(2);
+        mockEndpoint.assertIsSatisfied();
     }
 
     /**
@@ -319,14 +325,13 @@ public class EventBehaviourTest
      * commit (the default notification frequency).
      */
     @Test
-    public void onContentUpdatePolicyTxnCommitNF()
+    public void onContentUpdatePolicyTxnCommitNF() throws Exception
     {
         this.policyFired = false;
-        String endpointUri = "mock:onContentUpdatePolicyTxnCommitNF";
+        String endpointUri = getMockEndpointUri();
 
         MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
         mockEndpoint.setAssertPeriod(500);
-        mockEndpoint.setExpectedCount(0);
 
         retryingTransactionHelper.doInTransaction(() -> {
             BehaviourDefinition<ClassBehaviourBinding> classBehaviour = null;
@@ -335,7 +340,8 @@ public class EventBehaviourTest
             {
                 setupTestData();
 
-                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "onContentUpdateBehaviourTest");
+                EventBehaviour eventBehaviour = new EventBehaviour(eventProducer, endpointUri, this, "createOnContentUpdateEvent",
+                        Behaviour.NotificationFrequency.TRANSACTION_COMMIT);
 
                 // Register interest in the content update event for a versionable node
                 classBehaviour = this.policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, ContentModel.ASPECT_VERSIONABLE, eventBehaviour);
@@ -348,7 +354,8 @@ public class EventBehaviourTest
 
                 this.newContent = false;
 
-                // Now check that the policy is fired when the versionable aspect is present
+                // The policy is fired when the versionable aspect is present (on transaction
+                // commit)
                 this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
                 ContentWriter contentWriter2 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
                 contentWriter2.putContent("content update two");
@@ -359,7 +366,16 @@ public class EventBehaviourTest
                 contentWriter3.putContent("content update three");
                 assertFalse(this.policyFired);
 
-                // Assert that the endpoint received 0 messages
+                // The policy is fired when the versionable aspect is present (on transaction
+                // commit)
+                this.nodeService.addAspect(this.contentNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                ContentWriter contentWriter4 = this.contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                contentWriter4.putContent("content update four");
+                assertFalse(this.policyFired);
+
+                // Assert that the endpoint didn't receive any message
+                // Event is sent only on transaction commit.
+                mockEndpoint.setExpectedCount(0);
                 mockEndpoint.assertIsSatisfied();
             }
             finally
@@ -372,9 +388,20 @@ public class EventBehaviourTest
 
             return null;
         });
+
+        // Assert that the endpoint received 1 messages
+        // Event is created once per transaction regardless how many times it is updated
+        mockEndpoint.setExpectedCount(1);
+        mockEndpoint.assertIsSatisfied();
     }
 
-    public Event onContentUpdateBehaviourTest(NodeRef nodeRef, boolean newContent)
+    private String getMockEndpointUri()
+    {
+        return "mock:" + this.getClass().getSimpleName() + "_" + name.getMethodName();
+    }
+
+    @SuppressWarnings("unused")
+    public Event createOnContentUpdateEvent(NodeRef nodeRef, boolean newContent)
     {
         assertEquals(this.contentNodeRef, nodeRef);
         assertEquals(this.newContent, newContent);

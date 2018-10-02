@@ -213,5 +213,10 @@
             </map>
         </constructor-arg>
     </bean>
-    
+
+    <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
+        <property name="transactionService" ref="transactionService" />
+    </bean>
 </beans>

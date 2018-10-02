@@ -74,11 +74,10 @@ public class TransactionAwareEventProducerTest
     @Test
     public void send() throws Exception
     {
-        String endpointUri = "mock:TxAwareEP-" + name.getMethodName();
+        String endpointUri = getMockEndpointUri();
 
         MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
         mockEndpoint.setAssertPeriod(500);
-        mockEndpoint.setExpectedCount(2);
 
         String stringMessage = "stringMessage";
         OnContentUpdatePolicyEvent objectMessage = new OnContentUpdatePolicyEvent();
@@ -89,16 +88,23 @@ public class TransactionAwareEventProducerTest
         retryingTransactionHelper.doInTransaction(() -> {
             eventProducer.send(endpointUri, stringMessage);
 
-            return null;
-        });
+            // Assert that the endpoint didn't receive any message
+            // Event is sent only on transaction commit.
+            mockEndpoint.setExpectedCount(0);
+            mockEndpoint.assertIsSatisfied();
 
-        retryingTransactionHelper.doInTransaction(() -> {
             eventProducer.send(endpointUri, objectMessage);
+
+            // Assert that the endpoint didn't receive any message
+            // Event is sent only on transaction commit.
+            mockEndpoint.setExpectedCount(0);
+            mockEndpoint.assertIsSatisfied();
 
             return null;
         });
 
         // Assert that the endpoint received 2 messages
+        mockEndpoint.setExpectedCount(2);
         mockEndpoint.assertIsSatisfied();
 
         // Get the sent string message
@@ -119,37 +125,8 @@ public class TransactionAwareEventProducerTest
         assertEquals(objectMessage.getTimestamp(), objectMessageSent.getTimestamp());
     }
 
-    @Test
-    public void sendTransactionAware() throws InterruptedException
+    private String getMockEndpointUri()
     {
-        String endpointUri = "mock:TxAwareEP-" + name.getMethodName();
-
-        MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
-        mockEndpoint.setAssertPeriod(500);
-
-        String stringMessage = "stringMessage";
-
-        retryingTransactionHelper.doInTransaction(() -> {
-            eventProducer.send(endpointUri, stringMessage);
-
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
-
-            eventProducer.send(endpointUri, stringMessage);
-
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
-
-            return null;
-        });
-
-        // Assert that the endpoint received 2 message
-        mockEndpoint.setExpectedCount(2);
-        mockEndpoint.assertIsSatisfied();
+        return "mock:" + this.getClass().getSimpleName() + "_" + name.getMethodName();
     }
-
 }

@@ -37,8 +37,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
@@ -65,6 +67,14 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
     private static final String ADMIN = "admin";
     private static final String DOC_LIB = "doclib";
+    
+    @BeforeClass
+    public static void before()
+    {
+        // Ensure other applications contexts are closed...
+        // Multiple consumers not supported for same direct vm in different Camel contexts.
+        ApplicationContextHelper.closeApplicationContext();
+    }
 
     @Before
     public void setUp()

@@ -30,7 +30,6 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -182,12 +181,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "ruleService", ruleService);
-
-        // TODO use raw events
-        policyComponent.bindClassBehaviour(
-                ContentServicePolicies.OnContentUpdatePolicy.QNAME,
-                RenditionModel.ASPECT_RENDITIONED,
-                new JavaBehaviour(this, "onContentUpdate"));
     }
 
     public void render(NodeRef sourceNodeRef, String renditionName)
@@ -671,4 +664,5 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
         }
     }
+
 }

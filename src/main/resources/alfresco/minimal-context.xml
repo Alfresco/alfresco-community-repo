@@ -21,6 +21,8 @@
     <import resource="classpath:alfresco/rendition-services-context.xml"/>
     <import resource="classpath:alfresco/rendition-services2-context.xml"/>
 
+    <import resource="classpath*:alfresco/messaging-context.xml" />
+
     <!-- Required by RepositoryStartStopTest which may apply the CalendarAllDayEventDatesCorrectingPatch -->
     <import resource="classpath:alfresco/calendar-services-context.xml"/>
 

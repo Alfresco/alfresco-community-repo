@@ -31,7 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.repo.rawevents.EventProducer;
+import org.alfresco.repo.rawevents.AbstractEventProducer;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -50,7 +50,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class EventBehaviour extends BaseBehaviour
 {
 
-    private EventProducer eventProducer;
+    private AbstractEventProducer eventProducer;
 
     private String endpointUri;
 
@@ -68,7 +68,7 @@ public class EventBehaviour extends BaseBehaviour
      * @param method
      *            the method name
      */
-    public EventBehaviour(EventProducer eventProducer, String endpointUri, Object instance, String method)
+    public EventBehaviour(AbstractEventProducer eventProducer, String endpointUri, Object instance, String method)
     {
         this(eventProducer, endpointUri, instance, method, NotificationFrequency.TRANSACTION_COMMIT);
     }
@@ -81,7 +81,7 @@ public class EventBehaviour extends BaseBehaviour
      * @param method
      *            the method name
      */
-    public EventBehaviour(EventProducer eventProducer, String endpointUri, Object instance, String method, NotificationFrequency frequency)
+    public EventBehaviour(AbstractEventProducer eventProducer, String endpointUri, Object instance, String method, NotificationFrequency frequency)
     {
         super(frequency);
 
@@ -129,7 +129,7 @@ public class EventBehaviour extends BaseBehaviour
      *            the policy interface class
      * @return the invocation handler
      */
-    <T> InvocationHandler getInvocationHandler(EventProducer eventProducer, String endpointUri, Object instance, String method, Class<T> policyIF)
+    <T> InvocationHandler getInvocationHandler(AbstractEventProducer eventProducer, String endpointUri, Object instance, String method, Class<T> policyIF)
     {
         Method[] policyIFMethods = policyIF.getMethods();
         if (policyIFMethods.length != 1)
@@ -162,7 +162,7 @@ public class EventBehaviour extends BaseBehaviour
      */
     private static class JavaMethodInvocationHandler implements InvocationHandler
     {
-        private EventProducer eventProducer;
+        private AbstractEventProducer eventProducer;
         private String endpointUri;
         private EventBehaviour behaviour;
         private Method delegateMethod;
@@ -175,7 +175,7 @@ public class EventBehaviour extends BaseBehaviour
          * @param delegateMethod
          *            the method to invoke
          */
-        private JavaMethodInvocationHandler(EventProducer eventProducer, String endpointUri, EventBehaviour behaviour, Method delegateMethod)
+        private JavaMethodInvocationHandler(AbstractEventProducer eventProducer, String endpointUri, EventBehaviour behaviour, Method delegateMethod)
         {
             this.eventProducer = eventProducer;
             this.endpointUri = endpointUri;

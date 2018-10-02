@@ -52,6 +52,13 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ORIGINATING_CREATION_DATE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ORIGINATING_LOCATION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ORIGINATING_USER_ID;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RESOLUTION_UNIT;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
@@ -64,6 +71,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_X_RESOLUTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_Y_RESOLUTION;
 
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -208,4 +216,25 @@ public class RecordProperties extends TestModel
 
     @JsonProperty(PROPERTIES_AUTHOR)
     private String author;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION)
+    private String recordSearchDispositionPeriodExpression;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
+    private String recordSearchDispositionAuthority;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF)
+    private Date recordSearchDispositionActionAsOf;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD)
+    private String recordSearchDispositionPeriod;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME)
+    private String recordSearchDispositionActionName;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE)
+    private Boolean recordSearchDispositionEventsEligible;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
+    private String recordSearchDispositionInstructions;
 }

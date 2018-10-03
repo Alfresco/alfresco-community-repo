@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class provides the implementation of RenditionDefinition persistence.
@@ -63,6 +65,8 @@ import org.alfresco.service.namespace.QName;
 @Deprecated
 public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPersister
 {
+    private final static Log log = LogFactory.getLog(RenditionDefinitionPersisterImpl.class);
+
     /** Reference to the rendering action space node */
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final NodeRef RENDERING_ACTION_ROOT_NODE_REF = new NodeRef(SPACES_STORE, "rendering_actions_space");
@@ -207,8 +211,8 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         {
             if (childAssocs.size() > 1)
             {
-                throw new RenditionServiceException("Multiple rendition definitions with the name: "
-                        + renditionDefinitionName + " exist!");
+                log.warn("Multiple rendition definitions with the name: "
+                        + renditionDefinitionName + " exist! Taking the first ones!");
             }
             return childAssocs.get(0).getChildRef();
         }

@@ -38,6 +38,9 @@ import java.util.Map;
 @AlfrescoPublicApi
 public interface RenditionDefinition2
 {
+    public static final String TIMEOUT = "timeout";
+    public static final String MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
+
     // ImageMagick options
 
     public static final String START_PAGE = "startPage";

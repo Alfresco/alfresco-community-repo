@@ -42,21 +42,29 @@ public class LocalTransformServiceRegistry extends AbstractTransformServiceRegis
 {
     private static ContentService contentService;
 
+    private TransformationOptionsConverter converter;
+
     public static void setContentService(ContentService contentService)
     {
         LocalTransformServiceRegistry.contentService = contentService;
+    }
+
+    public void setConverter(TransformationOptionsConverter converter)
+    {
+        this.converter = converter;
     }
 
     @Override
     public void afterPropertiesSet()
     {
         PropertyCheck.mandatory(this, "contentService", contentService);
+        PropertyCheck.mandatory(this, "converter", converter);
     }
 
     @Override
     public Long getMaxSize(String sourceMimetype, String targetMimetype, String renditionName, Map<String, String> options)
     {
-        TransformationOptions transformationOptions = LocalTransformClient.getTransformationOptions(renditionName, options);
+        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
         long maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
         return maxSize == 0 ? null : maxSize;
     }

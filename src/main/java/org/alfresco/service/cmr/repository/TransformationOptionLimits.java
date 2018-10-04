@@ -29,7 +29,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -52,7 +53,7 @@ public class TransformationOptionLimits implements Serializable
     @Deprecated public static final String OPT_TIMEOUT_MS = "timeoutMs";
     @Deprecated public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
 
-    @Deprecated public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
+    @Deprecated public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = RenditionDefinition2.MAX_SOURCE_SIZE_K_BYTES;
     @Deprecated public static final String OPT_READ_LIMIT_K_BYTES = "readLimitKBytes";
 
     @Deprecated public static final String OPT_MAX_PAGES = "maxPages";

@@ -55,6 +55,7 @@ public class RenditionDefinitionTest extends TestCase
 {
     private RenditionServiceImpl renditionService;
     private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
+    private TransformationOptionsConverter transformationOptionsConverter;
 
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -66,6 +67,7 @@ public class RenditionDefinitionTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("AuthenticationComponent");
         renditionService = (RenditionServiceImpl) ctx.getBean("renditionService");
         renditionDefinitionRegistry2 = (RenditionDefinitionRegistry2) ctx.getBean("renditionDefinitionRegistry2");
+        transformationOptionsConverter = (TransformationOptionsConverter) ctx.getBean("transformOptionsConverter");
         authenticationComponent.setSystemUserAsCurrentUser();
     }
 
@@ -114,7 +116,7 @@ public class RenditionDefinitionTest extends TestCase
 
             RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
             Map<String, String> options = definition2.getTransformOptions();
-            TransformationOptions transformationOptions2 = LocalTransformClient.getTransformationOptions(renditionName, options);
+            TransformationOptions transformationOptions2 = transformationOptionsConverter.getTransformationOptions(renditionName, options);
             transformationOptions2.setUse(null); // The use is not set in the original until much later
 
             // These 2 original thumbnails are wrong, as they don't include the 'limits' and in the

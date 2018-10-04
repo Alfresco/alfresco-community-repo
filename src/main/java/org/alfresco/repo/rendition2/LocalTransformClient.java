@@ -98,59 +98,13 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
 {
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
-    private static Set<String> PAGED_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        PAGE, START_PAGE, END_PAGE
-    }));
-
-    private static Set<String> CROP_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        CROP_GRAVITY, CROP_WIDTH, CROP_HEIGHT, CROP_PERCENTAGE, CROP_X_OFFSET, CROP_Y_OFFSET
-    }));
-
-    private static Set<String> TEMPORAL_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        OFFSET, DURATION
-    }));
-
-    private static Set<String> RESIZE_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        WIDTH, HEIGHT,
-        THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
-        ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
-    }));
-
-    private static Set<String> IMAGE_OPTIONS = new HashSet<>();
-    static
-    {
-        IMAGE_OPTIONS.addAll(PAGED_OPTIONS);
-        IMAGE_OPTIONS.addAll(CROP_OPTIONS);
-        IMAGE_OPTIONS.addAll(TEMPORAL_OPTIONS);
-        IMAGE_OPTIONS.addAll(RESIZE_OPTIONS);
-    }
-
-    private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-        {
-            PAGE, WIDTH, HEIGHT, ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
-        }));
-
-    private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        FLASH_VERSION
-    }));
-
-    private static Set<String> LIMIT_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-    {
-        OPT_TIMEOUT_MS, OPT_READ_LIMIT_TIME_MS,
-        OPT_MAX_SOURCE_SIZE_K_BYTES, OPT_READ_LIMIT_K_BYTES,
-        OPT_MAX_PAGES, OPT_PAGE_LIMIT
-    }));
-
     private TransactionService transactionService;
 
     private ContentService contentService;
 
     private RenditionService2Impl renditionService2;
+
+    private TransformationOptionsConverter converter;
 
     private ExecutorService executorService;
 
@@ -169,6 +123,11 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
         this.renditionService2 = renditionService2;
     }
 
+    public void setConverter(TransformationOptionsConverter converter)
+    {
+        this.converter = converter;
+    }
+
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -180,6 +139,7 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
         super.afterPropertiesSet();
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
+        PropertyCheck.mandatory(this, "converter", converter);
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
@@ -193,7 +153,7 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
         String renditionName = renditionDefinition.getRenditionName();
         Map<String, String> options = renditionDefinition.getTransformOptions();
 
-        TransformationOptions transformationOptions = getTransformationOptions(renditionName, options);
+        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
         ContentTransformer transformer = contentService.getTransformer(contentUrl, sourceMimetype, size, targetMimetype, transformationOptions);
@@ -223,7 +183,7 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
                         String renditionName = renditionDefinition.getRenditionName();
                         Map<String, String> options = renditionDefinition.getTransformOptions();
 
-                        TransformationOptions transformationOptions = getTransformationOptions(renditionName, options);
+                        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
                         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
                         ContentReader reader = LocalTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
@@ -261,130 +221,6 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
     @Deprecated
     static TransformationOptions getTransformationOptions(String renditionName, Map<String, String> options)
     {
-        TransformationOptions transformationOptions = null;
-        Set<String> optionNames = options.keySet();
-
-        Set<String> subclassOptionNames = new HashSet<>(optionNames);
-        subclassOptionNames.removeAll(LIMIT_OPTIONS);
-        subclassOptionNames.remove(INCLUDE_CONTENTS);
-        if (!subclassOptionNames.isEmpty())
-        {
-            if (FLASH_OPTIONS.containsAll(subclassOptionNames))
-            {
-                SWFTransformationOptions opts = new SWFTransformationOptions();
-                transformationOptions = opts;
-                opts.setFlashVersion(options.get(FLASH_VERSION));
-            }
-            else if (IMAGE_OPTIONS.containsAll(subclassOptionNames) ||  PDF_OPTIONS.containsAll(subclassOptionNames))
-            {
-                ImageTransformationOptions opts = new ImageTransformationOptions();
-                transformationOptions = opts;
-
-                if (containsAny(subclassOptionNames, RESIZE_OPTIONS))
-                {
-                    ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
-                    opts.setResizeOptions(imageResizeOptions);
-                    ifSet(options, WIDTH, (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
-                    ifSet(options, RESIZE_WIDTH, (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
-                    ifSet(options, HEIGHT, (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
-                    ifSet(options, RESIZE_HEIGHT, (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
-                    ifSet(options, THUMBNAIL, (v) ->imageResizeOptions.setResizeToThumbnail(Boolean.parseBoolean(v)));
-                    ifSet(options, RESIZE_PERCENTAGE, (v) ->imageResizeOptions.setPercentResize(Boolean.parseBoolean(v)));
-                    ifSet(options, ALLOW_ENLARGEMENT, (v) ->imageResizeOptions.setAllowEnlargement(Boolean.parseBoolean(v)));
-                    ifSet(options, MAINTAIN_ASPECT_RATIO, (v) ->imageResizeOptions.setMaintainAspectRatio(Boolean.parseBoolean(v)));
-                }
-
-                ifSet(options, AUTO_ORIENT, (v) ->opts.setAutoOrient(Boolean.parseBoolean(v)));
-
-                boolean containsPaged = containsAny(subclassOptionNames, PAGED_OPTIONS);
-                boolean containsCrop = containsAny(subclassOptionNames, CROP_OPTIONS);
-                boolean containsTemporal = containsAny(subclassOptionNames, TEMPORAL_OPTIONS);
-                if (containsPaged || containsCrop || containsTemporal)
-                {
-                    List<TransformationSourceOptions> sourceOptionsList = new ArrayList<>();
-                    opts.setSourceOptionsList(sourceOptionsList);
-                    if (containsPaged)
-                    {
-                        PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
-                        sourceOptionsList.add(pagedSourceOptions);
-                        ifSet(options, START_PAGE, (v) -> pagedSourceOptions.setStartPageNumber(Integer.parseInt(v)));
-                        ifSet(options, END_PAGE, (v) -> pagedSourceOptions.setEndPageNumber(Integer.parseInt(v)));
-                        ifSet(options, PAGE, (v) ->
-                        {
-                            int i = Integer.parseInt(v);
-                            pagedSourceOptions.setStartPageNumber(i);
-                            pagedSourceOptions.setEndPageNumber(i);
-                        });
-                    }
-
-                    if (containsCrop)
-                    {
-                        CropSourceOptions cropSourceOptions = new CropSourceOptions();
-                        sourceOptionsList.add(cropSourceOptions);
-                        ifSet(options, CROP_GRAVITY, (v) -> cropSourceOptions.setGravity(v));
-                        ifSet(options, CROP_PERCENTAGE, (v) -> cropSourceOptions.setPercentageCrop(Boolean.parseBoolean(v)));
-                        ifSet(options, CROP_WIDTH, (v) -> cropSourceOptions.setWidth(Integer.parseInt(v)));
-                        ifSet(options, CROP_HEIGHT, (v) -> cropSourceOptions.setHeight(Integer.parseInt(v)));
-                        ifSet(options, CROP_X_OFFSET, (v) -> cropSourceOptions.setXOffset(Integer.parseInt(v)));
-                        ifSet(options, CROP_Y_OFFSET, (v) -> cropSourceOptions.setYOffset(Integer.parseInt(v)));
-                    }
-
-                    if (containsTemporal)
-                    {
-                        TemporalSourceOptions temporalSourceOptions = new TemporalSourceOptions();
-                        sourceOptionsList.add(temporalSourceOptions);
-                        ifSet(options, DURATION, (v) -> temporalSourceOptions.setDuration(v));
-                        ifSet(options, OFFSET, (v) -> temporalSourceOptions.setOffset(v));
-                    }
-                }
-            }
-        }
-
-        if (transformationOptions == null)
-        {
-            StringJoiner sj = new StringJoiner("\n    ");
-            sj.add("The RenditionDefinition2 "+renditionName +
-                " contains options that cannot be mapped to TransformationOptions used by local transformers");
-            HashSet<String> otherNames = new HashSet<>(optionNames);
-            otherNames.removeAll(FLASH_OPTIONS);
-            otherNames.removeAll(IMAGE_OPTIONS);
-            otherNames.removeAll(PDF_OPTIONS);
-            otherNames.removeAll(LIMIT_OPTIONS);
-            otherNames.forEach(sj::add);
-            sj.add("---");
-            optionNames.forEach(sj::add);
-            throw new IllegalArgumentException(sj.toString());
-        }
-
-        final TransformationOptions opts = transformationOptions;
-        ifSet(options, INCLUDE_CONTENTS, (v) ->opts.setIncludeEmbedded(Boolean.parseBoolean(v)));
-
-        if (containsAny(optionNames, LIMIT_OPTIONS))
-        {
-            TransformationOptionLimits limits = new TransformationOptionLimits();
-            transformationOptions.setLimits(limits);
-            ifSet(options, OPT_TIMEOUT_MS, (v) -> limits.setTimeoutMs(Long.parseLong(v)));
-            ifSet(options, OPT_READ_LIMIT_TIME_MS, (v) -> limits.setReadLimitTimeMs(Long.parseLong(v)));
-            ifSet(options, OPT_MAX_PAGES, (v) -> limits.setMaxPages(Integer.parseInt(v)));
-            ifSet(options, OPT_PAGE_LIMIT, (v) -> limits.setPageLimit(Integer.parseInt(v)));
-            ifSet(options, OPT_MAX_SOURCE_SIZE_K_BYTES, (v) -> limits.setMaxSourceSizeKBytes(Long.parseLong(v)));
-            ifSet(options, OPT_READ_LIMIT_K_BYTES, (v) -> limits.setReadLimitKBytes(Long.parseLong(v)));
-        }
-
-        transformationOptions.setUse(renditionName);
-        return transformationOptions;
-    }
-
-    private interface Setter {
-        void set(String s);
-    }
-
-    private static <T> void ifSet(Map<String, String> options, String key, Setter setter)
-    {
-        String value = options.get(key);
-        if (value != null)
-        {
-            setter.set(value);
-        }
+        return null; // TODO cahnge caller so they call the new class.
     }
 }

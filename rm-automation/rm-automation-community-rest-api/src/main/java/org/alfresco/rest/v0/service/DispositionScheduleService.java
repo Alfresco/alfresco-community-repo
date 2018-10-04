@@ -39,8 +39,8 @@ import org.springframework.stereotype.Service;
 /**
  * Service for different disposition schedule actions
  *
- * @author jcule
- * @since 2.7.0.1
+ * @author jcule, cagache
+ * @since 2.6.2
  */
 @Service
 public class DispositionScheduleService extends BaseAPI
@@ -50,6 +50,23 @@ public class DispositionScheduleService extends BaseAPI
 
     @Autowired
     private DataUser dataUser;
+
+    /**
+     * Helper method for adding a retain after period step
+     *
+     * @param categoryName the category in whose schedule the step will be added
+     * @param period
+     * @return
+     */
+    public void addRetainAfterPeriodStep(String categoryName, String period)
+    {
+        HashMap<RETENTION_SCHEDULE, String> cutOffStep = new HashMap<>();
+        cutOffStep.put(RETENTION_SCHEDULE.NAME, "retain");
+        cutOffStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Retain after a period step");
+        recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
+    }
 
     /**
      * Helper method for adding a cut off after period step

@@ -33,12 +33,13 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.Map;
 
 /**
- * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a local transformation request is
- * supported.
+ * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a legacy local transformation
+ * (based on {@link org.alfresco.repo.content.transform.AbstractContentTransformer2} request is supported.
  *
  * @author adavis
  */
-public class LocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+@Deprecated
+public class LegacyLocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
 {
     private static ContentService contentService;
 
@@ -46,7 +47,7 @@ public class LocalTransformServiceRegistry extends AbstractTransformServiceRegis
 
     public static void setContentService(ContentService contentService)
     {
-        LocalTransformServiceRegistry.contentService = contentService;
+        LegacyLocalTransformServiceRegistry.contentService = contentService;
     }
 
     public void setConverter(TransformationOptionsConverter converter)

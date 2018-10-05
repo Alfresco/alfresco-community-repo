@@ -27,76 +27,34 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
-import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.CropSourceOptions;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.PagedSourceOptions;
-import org.alfresco.service.cmr.repository.TemporalSourceOptions;
-import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_ENLARGEMENT;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.AUTO_ORIENT;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_GRAVITY;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_HEIGHT;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_PERCENTAGE;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_WIDTH;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_X_OFFSET;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_Y_OFFSET;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.DURATION;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.END_PAGE;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.HEIGHT;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.INCLUDE_CONTENTS;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.MAINTAIN_ASPECT_RATIO;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.OFFSET;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.PAGE;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.RESIZE_HEIGHT;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.RESIZE_PERCENTAGE;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.RESIZE_WIDTH;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.START_PAGE;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.THUMBNAIL;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.WIDTH;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_PAGES;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_PAGE_LIMIT;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
-import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT_TIMEOUT_MS;
-import static org.springframework.util.CollectionUtils.containsAny;
-
 /**
- * Requests rendition transforms take place using transforms available on the local machine. The transform and
- * consumption of the resulting content is linked into a single operation that will take place at some point in
- * the future on the local machine.
+ * Requests rendition transforms take place using legacy transforms available on the local machine (based on
+ * {@link org.alfresco.repo.content.transform.AbstractContentTransformer2}. The transform and consumption of the
+ * resulting content is linked into a single operation that will take place at some point in the future on the local
+ * machine.
  *
  * @author adavis
  */
-public class LocalTransformClient extends AbstractTransformClient implements TransformClient
+@Deprecated
+public class LegacyLocalTransformClient extends AbstractTransformClient implements TransformClient
 {
-    private static Log logger = LogFactory.getLog(LocalTransformClient.class);
+    private static Log logger = LogFactory.getLog(LegacyLocalTransformClient.class);
 
     private TransactionService transactionService;
 
@@ -186,7 +144,7 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
                         TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
                         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
-                        ContentReader reader = LocalTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                        ContentReader reader = LegacyLocalTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
                         if (null == reader || !reader.exists())
                         {
                             throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");
@@ -212,15 +170,5 @@ public class LocalTransformClient extends AbstractTransformClient implements Tra
                     return null;
                 }), user);
         });
-    }
-
-    /**
-     * @deprecated as we do not plan to use TransformationOptions moving forwards as local transformations will also
-     * use the same options as the Transform Service.
-     */
-    @Deprecated
-    static TransformationOptions getTransformationOptions(String renditionName, Map<String, String> options)
-    {
-        return null; // TODO cahnge caller so they call the new class.
     }
 }

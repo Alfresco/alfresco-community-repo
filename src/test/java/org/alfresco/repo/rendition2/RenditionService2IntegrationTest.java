@@ -80,7 +80,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     public void setUp()
     {
         assertTrue("The RenditionService2 needs to be enabled", renditionService2.isEnabled());
-        assertTrue("A wrong type of transform client detected", transformClient instanceof LocalTransformClient);
+        assertTrue("A wrong type of transform client detected", transformClient instanceof LegacyLocalTransformClient);
     }
 
     @After

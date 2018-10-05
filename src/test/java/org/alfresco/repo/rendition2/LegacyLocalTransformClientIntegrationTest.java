@@ -37,9 +37,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
 /**
- * Integration tests for {@link LocalTransformClient}
+ * Integration tests for {@link LegacyLocalTransformClient}
  */
-public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
+public class LegacyLocalTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
 {
     @Autowired
     private TransformClient transformClient;
@@ -54,7 +54,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     public void setUp()
     {
         AuthenticationUtil.setRunAsUser(AuthenticationUtil.getAdminUserName());
-        assertTrue("A wrong type of transform client detected", transformClient instanceof LocalTransformClient);
+        assertTrue("A wrong type of transform client detected", transformClient instanceof LegacyLocalTransformClient);
     }
 
 

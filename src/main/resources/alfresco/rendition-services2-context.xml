@@ -71,11 +71,7 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="transformClient" parent="localTransformClient"/>
 
-    <!-- Even though there is a circular dependency between renditionService2 and localTransformClient
-         we should not run into problems with setting up the spring context, as we are not using
-         constructors or setters that do any more than save the reference.
-    -->
-    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LocalTransformClient">
+    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LegacyLocalTransformClient">
         <property name="transactionService" ref="transactionService" />
         <property name="nodeService" ref="NodeService" />
         <property name="contentService" ref="ContentService" />
@@ -94,7 +90,7 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
 
-    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LocalTransformServiceRegistry" >
+    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistry" >
         <property name="contentService" ref="contentService" />
         <property name="converter" ref="transformOptionsConverter" />
     </bean>

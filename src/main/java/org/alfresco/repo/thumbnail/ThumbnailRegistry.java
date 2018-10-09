@@ -32,6 +32,8 @@ import java.util.Map;
 
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -43,6 +45,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,6 +69,9 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 @Deprecated
 public class ThumbnailRegistry implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>
 {
+    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.thumbnail.ThumbnailRegistry");
+    private static final long LOCK_TTL = 60000;
+
     /** Logger */
     private static Log logger = LogFactory.getLog(ThumbnailRegistry.class);
     
@@ -78,6 +85,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     protected RenditionService renditionService;
     
     protected TenantAdminService tenantAdminService;
+
+    private JobLockService jobLockService;
     
     private boolean redeployStaticDefsOnStartup;
     
@@ -141,6 +150,11 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     {
         this.redeployStaticDefsOnStartup = redeployStaticDefsOnStartup;
     }
+
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
     
     /**
      * This method is used to inject the thumbnail definitions.
@@ -161,8 +175,41 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     
     // Otherwise we should go ahead and persist the thumbnail definitions.
     // This is done during system startup. It needs to be done as the system user (see callers) to ensure the thumbnail definitions get saved
-    // and also needs to be done within a transaction in order to support concurrent startup. See ALF-6271 for details.
+    // and also needs to be done within a transaction in order to support concurrent startup. See c for details.
+    // MNT-19986 executing initialisation with a db lock for not creating duplicates in a cluster
     public void initThumbnailDefinitions()
+    {
+        String lockToken = null;
+        try
+        {
+            // Get a lock
+            lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            initThumbnailDefinitionsTransaction();
+        }
+        catch (LockAcquisitionException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Skipping initialisation from thumbnail definitions (could not get lock): " + e.getMessage());
+            }
+        }
+        finally
+        {
+            if (lockToken != null)
+            {
+                try
+                {
+                    jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                }
+                catch (LockAcquisitionException e)
+                {
+                    // Ignore
+                }
+            }
+        }
+    }
+
+    private void initThumbnailDefinitionsTransaction()
     {
         RetryingTransactionHelper transactionHelper = transactionService.getRetryingTransactionHelper();
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -173,11 +220,11 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
                 for (String thumbnailDefName : thumbnailDefinitions.keySet())
                 {
                     final ThumbnailDefinition thumbnailDefinition = thumbnailDefinitions.get(thumbnailDefName);
-                    
+
                     // Built-in thumbnailDefinitions do not provide any non-standard values
                     // for the ThumbnailParentAssociationDetails object. Hence the null
                     RenditionDefinition renditionDef = thumbnailRenditionConvertor.convert(thumbnailDefinition, null);
-                    
+
                     // Thumbnail definitions are saved into the repository as actions
                     renditionService.saveRenditionDefinition(renditionDef);
                 }
@@ -185,6 +232,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             }
         });
     }
+
     
     /**
      * Get a list of all the thumbnail definitions

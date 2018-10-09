@@ -151,7 +151,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         this.redeployStaticDefsOnStartup = redeployStaticDefsOnStartup;
     }
 
-    public void setJobLockService(JobLockService jobLockService){
+    public void setJobLockService(JobLockService jobLockService)
+    {
         this.jobLockService = jobLockService;
     }
     

@@ -212,7 +212,7 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
             if (childAssocs.size() > 1)
             {
                 log.warn("Multiple rendition definitions with the name: "
-                        + renditionDefinitionName + " exist! Taking the first ones!");
+                        + renditionDefinitionName + " exist. Taking the first ones.");
             }
             return childAssocs.get(0).getChildRef();
         }

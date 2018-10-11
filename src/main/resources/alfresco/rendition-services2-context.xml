@@ -81,6 +81,7 @@
 
     <!-- Deprecated bean that converts transform properties to the deprecated TransformationOptions format -->
     <bean id="transformOptionsConverter" class="org.alfresco.repo.rendition2.TransformationOptionsConverter">
+        <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
         <property name="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
         <property name="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
         <property name="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
@@ -123,7 +124,6 @@
         <constructor-arg name="transformOptions">
             <map>
                 <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
-                <entry key="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
             </map>
         </constructor-arg>
     </bean>

@@ -23,23 +23,44 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rendition2;
-
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-
-import java.util.Map;
+package org.alfresco.transform.client.model.config;
 
 /**
- * Contains common code used in TransformServiceRegistries.
- *
- * @author adavis
+ * Represents a single transformer in a pipeline of multiple transformers. A transformer's options may be optional or
+ * required in the containing transformer. Historically in ACS only options for the final transformer were provided.
  */
-public abstract class AbstractTransformServiceRegistry implements TransformServiceRegistry
+public class ChildTransformer
 {
-    @Override
-    public boolean isSupported(String sourceMimetype, long size, String targetMimetype, Map<String, String> options, String renditionName)
+    private boolean required;
+    private Transformer transformer;
+
+    public ChildTransformer()
     {
-        long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        return maxSize != 0 && (maxSize == -1L || maxSize > size);
+    }
+
+    public ChildTransformer(boolean required, Transformer transformer)
+    {
+        this.required = required;
+        this.transformer = transformer;
+    }
+
+    public boolean isRequired()
+    {
+        return required;
+    }
+
+    public void setRequired(boolean required)
+    {
+        this.required = required;
+    }
+
+    public Transformer getTransformer()
+    {
+        return transformer;
+    }
+
+    public void setTransformer(Transformer transformer)
+    {
+        this.transformer = transformer;
     }
 }

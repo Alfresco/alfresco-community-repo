@@ -23,23 +23,45 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rendition2;
-
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-
-import java.util.Map;
+package org.alfresco.transform.client.model.config;
 
 /**
- * Contains common code used in TransformServiceRegistries.
- *
- * @author adavis
+ * Represents a single transformation option.
  */
-public abstract class AbstractTransformServiceRegistry implements TransformServiceRegistry
+public class TransformOptionValue implements TransformOption
 {
-    @Override
-    public boolean isSupported(String sourceMimetype, long size, String targetMimetype, Map<String, String> options, String renditionName)
+    private boolean required;
+    private String name;
+
+    public TransformOptionValue()
     {
-        long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        return maxSize != 0 && (maxSize == -1L || maxSize > size);
+    }
+
+    public TransformOptionValue(boolean required, String name)
+    {
+        setRequired(required);
+        setName(name);
+    }
+
+    @Override
+    public boolean isRequired()
+    {
+        return required;
+    }
+
+    @Override
+    public void setRequired(boolean required)
+    {
+        this.required = required;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 }

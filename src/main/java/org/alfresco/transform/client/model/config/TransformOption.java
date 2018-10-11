@@ -23,23 +23,23 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rendition2;
+package org.alfresco.transform.client.model.config;
 
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Contains common code used in TransformServiceRegistries.
- *
- * @author adavis
+ * Represents an individual transformer option or group of options that are required or optional.
  */
-public abstract class AbstractTransformServiceRegistry implements TransformServiceRegistry
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.WRAPPER_OBJECT)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = TransformOptionValue.class, name = "value"),
+        @JsonSubTypes.Type(value = TransformOptionGroup.class, name = "group")
+})
+public interface TransformOption
 {
-    @Override
-    public boolean isSupported(String sourceMimetype, long size, String targetMimetype, Map<String, String> options, String renditionName)
-    {
-        long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        return maxSize != 0 && (maxSize == -1L || maxSize > size);
-    }
+    boolean isRequired();
+    void setRequired(boolean required);
 }

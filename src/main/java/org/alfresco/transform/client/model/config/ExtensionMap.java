@@ -23,23 +23,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rendition2;
-
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-
-import java.util.Map;
+package org.alfresco.transform.client.model.config;
 
 /**
- * Contains common code used in TransformServiceRegistries.
- *
- * @author adavis
+ * Helper class to be supplied by the client to map file extensions to mimetypes, so the json description of what
+ * is supported by the Transform Service includes file extensions rather than mmetypes, so is more readable.
  */
-public abstract class AbstractTransformServiceRegistry implements TransformServiceRegistry
+public interface ExtensionMap
 {
-    @Override
-    public boolean isSupported(String sourceMimetype, long size, String targetMimetype, Map<String, String> options, String renditionName)
-    {
-        long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        return maxSize != 0 && (maxSize == -1L || maxSize > size);
-    }
+    String toMimetype(String extension);
 }

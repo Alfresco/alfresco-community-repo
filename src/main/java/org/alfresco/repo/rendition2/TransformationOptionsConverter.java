@@ -131,10 +131,16 @@ public class TransformationOptionsConverter implements InitializingBean
     }
 
     // The default valued in the old TransformationOptionsLimits
+    private long maxSourceSizeKBytes;
     private long readLimitTimeMs;
     private long readLimitKBytes;
     private int pageLimit;
     private int maxPages;
+
+    public void setMaxSourceSizeKBytes(String maxSourceSizeKBytes)
+    {
+        this.maxSourceSizeKBytes = Long.parseLong(maxSourceSizeKBytes);;
+    }
 
     public void setReadLimitTimeMs(String readLimitTimeMs)
     {
@@ -159,6 +165,7 @@ public class TransformationOptionsConverter implements InitializingBean
     @Override
     public void afterPropertiesSet()
     {
+        PropertyCheck.mandatory(this, "maxSourceSizeKBytes", maxSourceSizeKBytes);
         PropertyCheck.mandatory(this, "readLimitTimeMs", readLimitTimeMs);
         PropertyCheck.mandatory(this, "readLimitKBytes", readLimitKBytes);
         PropertyCheck.mandatory(this, "pageLimit", pageLimit);
@@ -277,7 +284,7 @@ public class TransformationOptionsConverter implements InitializingBean
             TransformationOptionLimits limits = new TransformationOptionLimits();
             transformationOptions.setLimits(limits);
             ifSet(options, TIMEOUT, (v) -> limits.setTimeoutMs(Long.parseLong(v)));
-            ifSet(options, MAX_SOURCE_SIZE_K_BYTES, (v) -> limits.setMaxSourceSizeKBytes(Long.parseLong(v)));
+            limits.setMaxSourceSizeKBytes(maxSourceSizeKBytes);
             limits.setReadLimitKBytes(readLimitTimeMs);
             limits.setReadLimitTimeMs(readLimitKBytes);
             limits.setMaxPages(maxPages);

@@ -1,0 +1,159 @@
+[
+  {
+    "name": "libreOffice",
+    "version": "1",
+    "supportedSourceAndTargetList": [
+      {"sourceExt": "doc",  "targetExt": "doc" },
+      {"sourceExt": "doc",  "targetExt": "docx" },
+      {"sourceExt": "docx",  "targetExt": "doc" },
+      {"sourceExt": "docx",  "targetExt": "docx" },
+      {"sourceExt": "doc",  "maxSourceSizeBytes": 10485760, "targetExt": "pdf" },
+      {"sourceExt": "xls",  "maxSourceSizeBytes": 10485760, "targetExt": "pdf"},
+      {"sourceExt": "ppt",  "maxSourceSizeBytes":  6291456, "targetExt": "pdf" },
+      {"sourceExt": "docx", "maxSourceSizeBytes":   786432, "targetExt": "pdf" },
+      {"sourceExt": "xlsx", "maxSourceSizeBytes":  1572864, "targetExt": "pdf"},
+      {"sourceExt": "pptx", "maxSourceSizeBytes":  4194304, "targetExt": "pdf" },
+      {"sourceExt": "msg",  "targetExt": "pdf"}
+    ]
+  },
+  {
+    "name": "tika",
+    "version": "1",
+    "transformOptions": [
+      {"value": {"required": false, "name": "transform"}},
+      {"value": {"required": false, "name": "includeContents"}},
+      {"value": {"required": false, "name": "notExtractBookmarksText"}},
+      {"value": {"required": false, "name": "targetMimetype"}},
+      {"value": {"required": false, "name": "targetEncoding"}}
+    ],
+    "supportedSourceAndTargetList": [
+      {"sourceExt": "pdf",  "maxSourceSizeBytes": 26214400, "targetExt": "txt" },
+      {"sourceExt": "doc",  "targetExt": "txt"},
+      {"sourceExt": "xls",  "targetExt": "txt" },
+      {"sourceExt": "ppt",  "targetExt": "txt" },
+      {"sourceExt": "docx", "targetExt": "txt"},
+      {"sourceExt": "xlsx", "targetExt": "txt" },
+      {"sourceExt": "pptx", "targetExt": "txt" },
+      {"sourceExt": "msg",  "targetExt": "txt"}
+    ]
+  },
+  {
+    "name": "pdfRenderer",
+    "version": "1",
+    "transformOptions": [
+      {"value": {"required": false, "name": "page"}},
+      {"value": {"required": false, "name": "width"}},
+      {"value": {"required": false, "name": "height"}},
+      {"value": {"required": false, "name": "allowEnlargement"}},
+      {"value": {"required": false, "name": "maintainAspectRatio"}}
+    ],
+    "supportedSourceAndTargetList": [
+      {"sourceExt": "pdf",  "targetExt": "pdf" },
+      {"sourceExt": "pdf",  "targetExt": "gif" },
+      {"sourceExt": "pdf",  "targetExt": "jpeg"},
+      {"sourceExt": "pdf",  "targetExt": "png" },
+      {"sourceExt": "pdf",  "targetExt": "tiff"}
+    ]
+  },
+  {
+    "name": "imageMagick",
+    "version": "1",
+    "transformOptions": [
+      {"value": {"required": false, "name": "alphaRemove"}},
+      {"value": {"required": false, "name": "autoOrient"}},
+      {"value": {"required": false, "name": "startPage"}},
+      {"value": {"required": false, "name": "endPage"}},
+      {"group": {"required": false, "transformOptions": [
+        {"value": {"required": false, "name": "cropGravity"}},
+        {"value": {"required": false, "name": "cropWidth"}},
+        {"value": {"required": false, "name": "cropHeight"}},
+        {"value": {"required": false, "name": "cropPercentage"}},
+        {"value": {"required": false, "name": "cropXOffset"}},
+        {"value": {"required": false, "name": "cropYOffset"}}
+      ]}},
+      {"group": {"required": false, "transformOptions": [
+        {"value": {"required": false, "name": "thumbnail"}},
+        {"value": {"required": false, "name": "resizeHeight"}},
+        {"value": {"required": false, "name": "resizeWidth"}},
+        {"value": {"required": false, "name": "resizePercentage"}},
+        {"value": {"required": false, "name": "allowEnlargement"}},
+        {"value": {"required": false, "name": "maintainAspectRatio"}}
+      ]}}
+    ],
+    "supportedSourceAndTargetList": [
+      {"sourceExt": "gif",  "targetExt": "gif" },
+      {"sourceExt": "gif",  "targetExt": "jpeg"},
+      {"sourceExt": "gif",  "targetExt": "png" },
+      {"sourceExt": "gif",  "targetExt": "tiff"},
+
+      {"sourceExt": "jpeg", "targetExt": "gif" },
+      {"sourceExt": "jpeg", "targetExt": "jpeg"},
+      {"sourceExt": "jpeg", "targetExt": "png" },
+      {"sourceExt": "jpeg", "targetExt": "tiff"},
+
+      {"sourceExt": "png",  "targetExt": "gif" },
+      {"sourceExt": "png",  "targetExt": "jpeg"},
+      {"sourceExt": "png",  "targetExt": "png" },
+      {"sourceExt": "png",  "targetExt": "tiff"},
+
+      {"sourceExt": "tiff", "targetExt": "gif" },
+      {"sourceExt": "tiff", "targetExt": "jpeg"},
+      {"sourceExt": "tiff", "targetExt": "png" },
+      {"sourceExt": "tiff", "targetExt": "tiff"}
+    ]
+  },
+  {
+    "name": "officeToImageViaPdf",
+    "version": "1",
+    "transformOptions": [
+      {
+        "group": {
+          "required": true,
+          "transformOptions": [
+            {"value": {"required": false, "name": "page"}},
+            {"value": {"required": false, "name": "width"}},
+            {"value": {"required": false, "name": "height"}},
+            {"value": {"required": false, "name": "allowEnlargement"}},
+            {"value": {"required": false, "name": "maintainAspectRatio"}}
+          ]
+        }
+      }
+    ],
+    "supportedSourceAndTargetList": [
+      {"sourceExt": "doc",  "targetExt": "gif" },
+      {"sourceExt": "doc",  "targetExt": "jpeg"},
+      {"sourceExt": "doc",  "targetExt": "png" },
+      {"sourceExt": "doc",  "targetExt": "tiff"},
+
+      {"sourceExt": "xls",  "targetExt": "gif" },
+      {"sourceExt": "xls",  "targetExt": "jpeg"},
+      {"sourceExt": "xls",  "targetExt": "png" },
+      {"sourceExt": "xls",  "targetExt": "tiff"},
+
+      {"sourceExt": "ppt",  "targetExt": "gif" },
+      {"sourceExt": "ppt",  "targetExt": "jpeg"},
+      {"sourceExt": "ppt",  "targetExt": "png" },
+      {"sourceExt": "ppt",  "targetExt": "tiff"},
+
+      {"sourceExt": "docx", "targetExt": "gif" },
+      {"sourceExt": "docx", "targetExt": "jpeg"},
+      {"sourceExt": "docx", "targetExt": "png" },
+      {"sourceExt": "docx", "targetExt": "tiff"},
+
+      {"sourceExt": "xlsx", "targetExt": "gif" },
+      {"sourceExt": "xlsx", "targetExt": "jpeg"},
+      {"sourceExt": "xlsx", "targetExt": "png" },
+      {"sourceExt": "xlsx", "targetExt": "tiff"},
+
+      {"sourceExt": "pptx", "targetExt": "gif" },
+      {"sourceExt": "pptx", "targetExt": "jpeg"},
+      {"sourceExt": "pptx", "targetExt": "png" },
+      {"sourceExt": "pptx", "targetExt": "tiff"},
+
+      {"sourceExt": "msg",  "targetExt": "gif" },
+      {"sourceExt": "msg",  "targetExt": "jpeg"},
+      {"sourceExt": "msg",  "targetExt": "png" },
+      {"sourceExt": "msg",  "targetExt": "tiff"}
+    ]
+  }
+]

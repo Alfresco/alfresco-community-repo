@@ -25,49 +25,46 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 import java.util.Map;
 
 /**
- * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a legacy local transformation
- * (based on {@link org.alfresco.repo.content.transform.AbstractContentTransformer2} request is supported.
+ * A transform service registry that falls back between different implementations if not supported.
  *
  * @author adavis
  */
-@Deprecated
-public class LegacyLocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+public class SwitchingTransformServiceRegistry extends AbstractTransformServiceRegistry
 {
-    private ContentService contentService;
+    private final TransformServiceRegistry primary;
+    private final TransformServiceRegistry secondary;
 
-    private TransformationOptionsConverter converter;
-
-    public void setContentService(ContentService contentService)
+    public SwitchingTransformServiceRegistry(TransformServiceRegistry primary, TransformServiceRegistry secondary)
     {
-        this.contentService = contentService;
-    }
-
-    public void setConverter(TransformationOptionsConverter converter)
-    {
-        this.converter = converter;
-    }
-
-    @Override
-    public void afterPropertiesSet()
-    {
-        PropertyCheck.mandatory(this, "contentService", contentService);
-        PropertyCheck.mandatory(this, "converter", converter);
+        this.primary = primary;
+        this.secondary = secondary;
     }
 
     @Override
     public long getMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
     {
-        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-        long maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+        long maxSize;
+        long primaryMaxSize = primary.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+        if (primaryMaxSize != 0 && primaryMaxSize == -1L)
+        {
+            maxSize = -1L;
+        }
+        else
+        {
+            long secondaryMaxSize = secondary.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+            maxSize = primaryMaxSize == 0
+                ? secondaryMaxSize
+                : secondaryMaxSize == 0
+                    ? primaryMaxSize
+                    : secondaryMaxSize == -1L
+                        ? new Long(-1L)
+                        : new Long(Math.max(primaryMaxSize, secondaryMaxSize));
+        }
         return maxSize;
     }
 }

@@ -29,6 +29,7 @@ services:
                 -Dftp.dataPortTo=30099
                 -Dcifs.enabled=true
                 -Dshare.host=localhost
+                -Dmessaging.broker.url=\"failover:(tcp://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 "
         ports:
             - 8082:8080

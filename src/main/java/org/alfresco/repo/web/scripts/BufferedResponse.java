@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.chemistry.opencmis.commons.server.TempStoreOutputStream;
+import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.StringBuilderWriter;
@@ -38,6 +39,7 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Runtime;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
+import org.springframework.util.FileCopyUtils;
 
 /**
  * Transactional Buffered Response
@@ -47,9 +49,10 @@ public class BufferedResponse implements WrappingWebScriptResponse
     // Logger
     protected static final Log logger = LogFactory.getLog(BufferedResponse.class);
 
+    private TempStoreOutputStreamFactory streamFactory;
     private WebScriptResponse res;
     private int bufferSize;
-    private ByteArrayOutputStream outputStream = null;
+    private TempStoreOutputStream outputStream = null;
     private StringBuilderWriter outputWriter = null;
     
 
@@ -59,10 +62,11 @@ public class BufferedResponse implements WrappingWebScriptResponse
      * @param res WebScriptResponse
      * @param bufferSize int
      */
-    public BufferedResponse(WebScriptResponse res, int bufferSize)
+    public BufferedResponse(WebScriptResponse res, int bufferSize, TempStoreOutputStreamFactory streamFactory)
     {
         this.res = res;
         this.bufferSize = bufferSize;
+        this.streamFactory = streamFactory;
     }
 
     /*
@@ -129,7 +133,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
             {
                 throw new AlfrescoRuntimeException("Already buffering output writer");
             }
-            this.outputStream = new ByteArrayOutputStream(bufferSize);
+            outputStream = streamFactory.newOutputStream();
         }
         return outputStream;
     }
@@ -168,7 +172,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
     {
         if (outputStream != null)
         {
-            outputStream.reset();
+            outputStream = null;
         }
         else if (outputWriter != null)
         {
@@ -231,7 +235,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
         {
             if (logger.isDebugEnabled() && outputStream != null)
             {
-                logger.debug("Writing Transactional response: size=" + outputStream.size());
+                logger.debug("Writing Transactional response: size=" + outputStream.getLength());
             }
             
             if (outputWriter != null)
@@ -242,10 +246,10 @@ public class BufferedResponse implements WrappingWebScriptResponse
             else if (outputStream != null)
             {
                 if (logger.isDebugEnabled())
-                    logger.debug("Writing Transactional response: size=" + outputStream.size());
+                    logger.debug("Writing Transactional response: size=" + outputStream.getLength());
                 
                 outputStream.flush();
-                outputStream.writeTo(res.getOutputStream());
+                FileCopyUtils.copy(outputStream.getInputStream(), res.getOutputStream());
             }
         }
         catch (IOException e)

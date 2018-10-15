@@ -138,7 +138,7 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected BufferedResponse getResponse(final WebScriptResponse resp)
     {
         // create buffered request and response that allow transaction retrying
-        final BufferedResponse bufferedRes = new BufferedResponse(resp, memoryThreshold);
+        final BufferedResponse bufferedRes = new BufferedResponse(resp, memoryThreshold, streamFactory);
         return bufferedRes;
     }
 

@@ -68,6 +68,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.TestUserPreferences.class,
     org.alfresco.rest.api.tests.WherePredicateApiTest.class,
     org.alfresco.rest.api.tests.TestRemovePermissions.class,
+    org.alfresco.rest.api.tests.BufferedResponseTest.class,
     org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class,
     org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class,
 })

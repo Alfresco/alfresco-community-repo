@@ -417,6 +417,14 @@ public class TransformServiceRegistryImplTest
             assertSupported(DOC,1234, PNG,  null, null, "");
             assertSupported(DOC,1234, JPEG, null, null, "");
             assertSupported(DOC,1234, TIFF, null, null, "");
+
+            Map<String, String> actualOptions = new HashMap<>();
+            actualOptions.put("thumbnail", "true");
+            actualOptions.put("resizeWidth", "100");
+            actualOptions.put("resizeHeight", "100");
+            actualOptions.put("allowEnlargement", "false");
+            actualOptions.put("maintainAspectRatio", "true");
+            assertSupported(DOC,1234, PNG, actualOptions, null, "");
         }
     }
 

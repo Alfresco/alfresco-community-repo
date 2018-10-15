@@ -480,7 +480,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 
                         // create buffered request and response that allow transaction retrying
                         bufferedReq = new BufferedRequest(scriptReq, streamFactory);
-                        bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize());
+                        bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize(), streamFactory);
                     }
                     else
                     {

@@ -268,11 +268,7 @@ public class TransformServiceRegistryImplTest
                         new TransformOptionValue(false, "allowEnlargement"),
                         new TransformOptionValue(false, "maintainAspectRatio")),
                 Arrays.asList(
-                        new SupportedSourceAndTarget(PDF, PDF, -1),
-                        new SupportedSourceAndTarget(PDF, GIF, -1),
-                        new SupportedSourceAndTarget(PDF, JPEG, -1),
-                        new SupportedSourceAndTarget(PDF, PNG, -1),
-                        new SupportedSourceAndTarget(PDF, TIFF, -1)));
+                        new SupportedSourceAndTarget(PDF, PNG, -1)));
 
         Transformer tika = new Transformer("tika", "1",
                 Arrays.asList(
@@ -345,8 +341,9 @@ public class TransformServiceRegistryImplTest
                         new SupportedSourceAndTarget(MSG, PNG, -1),
                         new SupportedSourceAndTarget(MSG, TIFF, -1)),
                 Arrays.asList(
-                        new ChildTransformer(false, libreOffice),
-                        new ChildTransformer(true, pdfRenderer)));
+                        new ChildTransformer(false, libreOffice),  // to pdf
+                        new ChildTransformer(false, pdfRenderer),  // to png
+                        new ChildTransformer(true, imageMagick))); // to other image formats
 
         List<Transformer> transformers1 = Arrays.asList(libreOffice, tika, pdfRenderer, imageMagick, officeToImage);
 
@@ -359,18 +356,19 @@ public class TransformServiceRegistryImplTest
             registry.register(reader);
             // Check the count of transforms supported
             assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
-                    46, countSupportedTransforms(true));
+                    42, countSupportedTransforms(true));
             assertEquals("The number of source to target mimetypes transforms has changed. " +
                             "There may be multiple transformers for the same combination. Config change?",
-                    46, countSupportedTransforms(false));
+                    42, countSupportedTransforms(false));
 
             // Check a supported transform for each transformer.
             assertSupported(DOC, 1234, PDF, null, null, ""); // libreoffice
             assertSupported(DOC, 1234, PDF, null, null, ""); // libreoffice
-            assertSupported(PDF, 1234, GIF, null, null, ""); // pdfrenderer
+            assertSupported(PDF, 1234, PNG, null, null, ""); // pdfrenderer
             assertSupported(JPEG,1234, GIF, null, null, ""); // imagemagick
             assertSupported(MSG, 1234, TXT, null, null, ""); // tika
             assertSupported(MSG, 1234, GIF, null, null, ""); // officeToImageViaPdf
+            assertSupported(DOC, 1234, PNG, null, null, ""); // officeToImageViaPdf
         }
     }
 
@@ -384,18 +382,41 @@ public class TransformServiceRegistryImplTest
 
             // Check the count of transforms supported
             assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
-                    68, countSupportedTransforms(true));
+                    64, countSupportedTransforms(true));
             assertEquals("The number of source to target mimetypes transforms has changed. " +
-                    "There may be multiple transformers for the same combination. Config change?",
-                    68, countSupportedTransforms(false));
+                            "There may be multiple transformers for the same combination. Config change?",
+                    64, countSupportedTransforms(false));
 
             // Check a supported transform for each transformer.
             assertSupported(DOC, 1234, PDF, null, null, ""); // libreoffice
             assertSupported(DOC, 1234, PDF, null, null, ""); // libreoffice
-            assertSupported(PDF, 1234, GIF, null, null, ""); // pdfrenderer
+            assertSupported(PDF, 1234, PNG, null, null, ""); // pdfrenderer
             assertSupported(JPEG,1234, GIF, null, null, ""); // imagemagick
             assertSupported(MSG, 1234, TXT, null, null, ""); // tika
             assertSupported(MSG, 1234, GIF, null, null, ""); // officeToImageViaPdf
+        }
+    }
+
+    @Test
+    public void testJsonConfig1() throws IOException
+    {
+        try (Reader reader = new BufferedReader(new InputStreamReader(getClass().getClassLoader().
+                getResourceAsStream("alfresco/transform-service-config-test1.json"))))
+        {
+            registry.register(reader);
+
+            // Check the count of transforms supported
+            assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
+                    4, countSupportedTransforms(true));
+            assertEquals("The number of source to target mimetypes transforms has changed. " +
+                            "There may be multiple transformers for the same combination. Config change?",
+                    4, countSupportedTransforms(false));
+
+            // Check a supported transform for each transformer.
+            assertSupported(DOC,1234, GIF,  null, null, "");
+            assertSupported(DOC,1234, PNG,  null, null, "");
+            assertSupported(DOC,1234, JPEG, null, null, "");
+            assertSupported(DOC,1234, TIFF, null, null, "");
         }
     }
 

@@ -1382,4 +1382,11 @@
         </property>
         <property name="dataSource" ref="dataSource"/>
     </bean>
+
+    <bean id="jvmMetricsReporter" class="org.alfresco.micrometer.JVMMetricsReporter">
+        <property name="metricsController" ref="metricsController"/>
+        <property name="enabled">
+            <value>${metrics.jvmMetricsReporter.enabled}</value>
+        </property>
+    </bean>
 </beans>

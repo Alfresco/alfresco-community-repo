@@ -28,6 +28,8 @@ package org.alfresco.ibatis;
 import java.io.IOException;
 import java.util.Properties;
 import javax.sql.DataSource;
+
+import org.alfresco.repo.metrics.db.DBMetricsReporter;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.resource.HierarchicalResourceLoader;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -93,7 +95,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
 
     private Properties configurationProperties;
 
-    private SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+    private SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new AlfrescoSqlSessionFactoryBuilder();
 
     private SqlSessionFactory sqlSessionFactory;
 
@@ -118,11 +120,23 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
     private ObjectFactory objectFactory;
 
     private ObjectWrapperFactory objectWrapperFactory;
+
+    private DBMetricsReporter dbMetricsReporter;
     /**
      * Default constructor
      */
     public HierarchicalSqlSessionFactoryBean()
     {
+    }
+
+    public DBMetricsReporter getDbMetricsReporter()
+    {
+        return dbMetricsReporter;
+    }
+
+    public void setDbMetricsReporter(DBMetricsReporter dbMetricsReporter)
+    {
+        this.dbMetricsReporter = dbMetricsReporter;
     }
 
     /**
@@ -363,7 +377,10 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
 
         notNull(dataSource, "Property 'dataSource' is required");
         notNull(sqlSessionFactoryBuilder, "Property 'sqlSessionFactoryBuilder' is required");
-
+        if (sqlSessionFactoryBuilder instanceof  AlfrescoSqlSessionFactoryBuilder)
+        {
+            ((AlfrescoSqlSessionFactoryBuilder)sqlSessionFactoryBuilder).setDbMetricsReporter(this.dbMetricsReporter);
+        }
         this.sqlSessionFactory = buildSqlSessionFactory();
     }
 

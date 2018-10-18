@@ -40,6 +40,6 @@ public abstract class AbstractTransformServiceRegistry implements TransformServi
     public boolean isSupported(String sourceMimetype, long size, String targetMimetype, Map<String, String> options, String renditionName)
     {
         long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        return maxSize != 0 && (maxSize == -1L || maxSize > size);
+        return maxSize != 0 && (maxSize == -1L || maxSize >= size);
     }
 }

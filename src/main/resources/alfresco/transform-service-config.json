@@ -94,7 +94,6 @@
 
       {"sourceExt": "tiff", "targetExt": "gif" },
       {"sourceExt": "tiff", "targetExt": "jpeg"},
-      {"sourceExt": "tiff", "targetExt": "png" },
       {"sourceExt": "tiff", "targetExt": "tiff"}
     ]
   },

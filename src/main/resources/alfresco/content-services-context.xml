@@ -328,6 +328,8 @@
       <constructor-arg>
          <ref bean="transformerSelector"/>
       </constructor-arg>
+       <property name="enabled" value="${local.transform.service.enabled}" />
+       <property name="transformerDebug" ref="transformerDebug" />
    </bean>
 
    <!-- Transformation Debug -->

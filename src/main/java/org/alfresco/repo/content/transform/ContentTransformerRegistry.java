@@ -55,12 +55,15 @@ import org.apache.commons.logging.LogFactory;
 public class ContentTransformerRegistry
 {
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);
-    
+
     private final List<ContentTransformer> transformers;
     private final List<ContentTransformer> allTransformers;
     
     private final TransformerSelector transformerSelector;
-    
+    private boolean enabled = true;
+    private boolean firstTime = true;
+    private TransformerDebug transformerDebug;
+
     /**
      * @param transformerSelector Transformer selector
      */
@@ -70,7 +73,17 @@ public class ContentTransformerRegistry
         this.transformers = new ArrayList<ContentTransformer>(70);
         this.allTransformers = new ArrayList<ContentTransformer>(70);
     }
-    
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
+
     /**
      * Registers an individual transformer that can be queried to check for applicability.
      *  
@@ -180,8 +193,23 @@ public class ContentTransformerRegistry
      */
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
     {
+        if (firstTime)
+        {
+            firstTime = false;
+            transformerDebug.debug("Local legacy transformers are " + (enabled ? "enabled" : "disabled"));
+        }
+
         // Get the list of transformers
-        List<ContentTransformer> transformers = transformerSelector.selectTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+        List<ContentTransformer> transformers;
+        if (enabled)
+        {
+            transformers = transformerSelector.selectTransformers(sourceMimetype, sourceSize, targetMimetype, options);
+
+        }
+        else
+        {
+            transformers = Collections.EMPTY_LIST;
+        }
         if (logger.isDebugEnabled())
         {
             logger.debug("Searched for transformer: \n" +

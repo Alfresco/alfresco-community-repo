@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +61,6 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Debugs transformers selection and activity.<p>
@@ -635,7 +633,7 @@ public class TransformerDebug
                 if (!suppressFinish && (firstLevel || logger.isTraceEnabled()))
                 {
                     log(FINISHED_IN + ms +
-                        (frame.callType == Call.AVAILABLE ? " Transformer NOT called" : "") +
+                        (frame.callType == Call.AVAILABLE ? " Transformer NOT available" : "") +
                         (firstLevel ? "\n" : ""), 
                         firstLevel);
                 }
@@ -1378,6 +1376,33 @@ public class TransformerDebug
         }
         Collection<ContentTransformer> sorted = map.values();
         return sorted;
+    }
+
+    /**
+     * Debugs a request to the Transform Service
+     */
+    public void debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
+                                             int contentHashcode, String fileName, String targetMimetype, String use)
+    {
+        pushMisc();
+        debug(getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
+              ((fileName != null) ? fileName+' ' : "")+
+              ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
+              (use != null ? "-- "+use+" -- " : "") + " RenditionService2");
+        debug(sourceNodeRef.toString() + ' ' +contentHashcode);
+        debug(" **a)  [01] TransformService");
+        pop(Call.AVAILABLE, true);
+    }
+
+    /**
+     * Debugs a response to the Transform Service
+     */
+    public void debugTransformServiceResponse(NodeRef sourceNodeRef, int contentHashcode, String msg)
+    {
+        pushMisc();
+        debug(msg);
+        debug(sourceNodeRef.toString() + ' ' +contentHashcode);
+        pop(Call.AVAILABLE, true);
     }
 
     public String testTransform(String sourceExtension, String targetExtension, String use)

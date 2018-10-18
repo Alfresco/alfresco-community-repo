@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.transform.client.model.config.TransformServiceRegistry;
@@ -43,8 +44,10 @@ import java.util.Map;
 public class LegacyLocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
 {
     private ContentService contentService;
-
     private TransformationOptionsConverter converter;
+    private boolean enabled = true;
+    private boolean firstTime = true;
+    private TransformerDebug transformerDebug;
 
     public void setContentService(ContentService contentService)
     {
@@ -56,18 +59,40 @@ public class LegacyLocalTransformServiceRegistry extends AbstractTransformServic
         this.converter = converter;
     }
 
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
+    }
+
     @Override
     public void afterPropertiesSet()
     {
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "converter", converter);
+        PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
     }
 
     @Override
     public long getMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
     {
-        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-        long maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+        // This message is not logged if placed in afterPropertiesSet
+        if (firstTime)
+        {
+            firstTime = false;
+            transformerDebug.debug("Local legacy transformers are " + (enabled ? "enabled" : "disabled"));
+        }
+
+        long maxSize = 0;
+        if (enabled)
+        {
+            TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
+            maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+        }
         return maxSize;
     }
 }

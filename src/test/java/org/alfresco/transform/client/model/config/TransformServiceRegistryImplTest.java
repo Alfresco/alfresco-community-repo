@@ -398,7 +398,7 @@ public class TransformServiceRegistryImplTest
     }
 
     @Test
-    public void testJsonConfig1() throws IOException
+    public void testJsonPipeline() throws IOException
     {
         try (Reader reader = new BufferedReader(new InputStreamReader(getClass().getClassLoader().
                 getResourceAsStream("alfresco/transform-service-config-test1.json"))))

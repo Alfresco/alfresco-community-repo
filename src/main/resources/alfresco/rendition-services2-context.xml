@@ -94,6 +94,8 @@
     <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistry" >
         <property name="contentService" ref="contentService" />
         <property name="converter" ref="transformOptionsConverter" />
+        <property name="enabled" value="${local.transform.service.enabled}" />
+        <property name="transformerDebug" ref="transformerDebug" />
     </bean>
 
     <bean id="RenditionService2_transaction"

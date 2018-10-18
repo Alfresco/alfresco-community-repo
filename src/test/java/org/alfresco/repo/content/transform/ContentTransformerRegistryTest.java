@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -36,6 +33,12 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Assert;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
 /**
  * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
@@ -47,7 +50,7 @@ import org.alfresco.util.TempFileProvider;
 @Deprecated
 public class ContentTransformerRegistryTest extends AbstractContentTransformerTest
 {
-    private static final String A = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+    private static final String A = MIMETYPE_TEXT_PLAIN;
     private static final String B = MimetypeMap.MIMETYPE_XML;
     private static final String C = MimetypeMap.MIMETYPE_WORD;
     private static final String D = MimetypeMap.MIMETYPE_HTML;
@@ -91,6 +94,7 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
         transformerSelector.setContentTransformerRegistry(dummyRegistry);
         dummyRegistry = new ContentTransformerRegistry(transformerSelector);
         transformerSelector.setContentTransformerRegistry(dummyRegistry);
+        dummyRegistry.setTransformerDebug(transformerDebug);
         // create some dummy transformers for reliability tests
         new DummyTransformer(mimetypeService, "transformer.testAB10a", transformerDebug, transformerConfig, dummyRegistry, A, B, 10L);
         new DummyTransformer(mimetypeService, "transformer.testAB10b", transformerDebug, transformerConfig, dummyRegistry, A, B, 10L);
@@ -120,6 +124,40 @@ public class ContentTransformerRegistryTest extends AbstractContentTransformerTe
     protected ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
         return registry.getTransformer(sourceMimetype, -1, targetMimetype, options);
+    }
+
+    public void testGetTransformerEnabledDisabled() throws Exception
+    {
+        TransformationOptions options = new TransformationOptions();
+
+        Assert.assertNotNull(registry.getTransformer(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options));
+        try
+        {
+            registry.setEnabled(false);
+            Assert.assertNull(registry.getTransformer(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options));
+        }
+        finally
+        {
+            registry.setEnabled(true);
+        }
+        Assert.assertNotNull(registry.getTransformer(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options));
+    }
+
+    public void testGetActiveTransformersEnabledDisabled() throws Exception
+    {
+        TransformationOptions options = new TransformationOptions();
+
+        Assert.assertFalse(registry.getActiveTransformers(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options).isEmpty());
+        try
+        {
+            registry.setEnabled(false);
+            Assert.assertTrue(registry.getActiveTransformers(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options).isEmpty());
+        }
+        finally
+        {
+            registry.setEnabled(true);
+        }
+        Assert.assertFalse(registry.getActiveTransformers(MIMETYPE_TEXT_PLAIN, -1, MIMETYPE_TEXT_PLAIN, options).isEmpty());
     }
 
     public void testNullRetrieval() throws Exception

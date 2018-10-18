@@ -170,7 +170,7 @@ public class TransformerDebugTest
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
         "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
         "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
-        "0             Finished in NN ms Transformer NOT called"}, unnumbered(untimed(debug.getEntries(10))));
+        "0             Finished in NN ms Transformer NOT available"}, unnumbered(untimed(debug.getEntries(10))));
         assertArrayEquals(new String[] {
         "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(stripDateStamp(log.getEntries(10)))));
     }

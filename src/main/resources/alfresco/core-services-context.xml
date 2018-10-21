@@ -1359,34 +1359,7 @@
        </property>
    </bean>
 
-    <!-- micrometer metrics -->
-    <bean id="metricsRegistryFactory" class="org.alfresco.micrometer.MetricsRegistryFactory"/>
+    <bean id="dbMetricsReporter" class="org.alfresco.metrics.db.DBMetricsReporterProxy"/>
 
-    <bean id="metricsController" class="org.alfresco.micrometer.MetricsControllerPrometheusImpl">
-        <property name="metricsRegistryFactory" ref="metricsRegistryFactory"/>
-        <property name="enabled">
-            <value>${metrics.enabled}</value>
-        </property>
-    </bean>
-
-    <bean id="dbMetricsReporter" class="org.alfresco.repo.metrics.db.DBMetricsReporterImpl">
-        <property name="metricsController" ref="metricsController"/>
-        <property name="enabled">
-            <value>${metrics.dbMetricsReporter.enabled}</value>
-        </property>
-        <property name="queryMetricsEnabled">
-            <value>${metrics.dbMetricsReporter.query.enabled}</value>
-        </property>
-        <property name="queryStatementsMetricsEnabled">
-            <value>${metrics.dbMetricsReporter.query.statements.enabled}</value>
-        </property>
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="jvmMetricsReporter" class="org.alfresco.micrometer.JVMMetricsReporter">
-        <property name="metricsController" ref="metricsController"/>
-        <property name="enabled">
-            <value>${metrics.jvmMetricsReporter.enabled}</value>
-        </property>
-    </bean>
+    <bean id="restMetricsReporter" class="org.alfresco.metrics.rest.RestMetricsReporterProxy"/>
 </beans>

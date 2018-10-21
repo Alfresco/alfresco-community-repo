@@ -23,9 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.metrics.db;
+package org.alfresco.metrics.db;
 
-import org.alfresco.micrometer.MetricsReporter;
+import org.alfresco.metrics.MetricsReporter;
 
 public interface DBMetricsReporter extends MetricsReporter
 {

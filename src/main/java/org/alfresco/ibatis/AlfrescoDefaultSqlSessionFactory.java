@@ -25,7 +25,7 @@
  */
 package org.alfresco.ibatis;
 
-import org.alfresco.repo.metrics.db.DBMetricsReporter;
+import org.alfresco.metrics.db.DBMetricsReporter;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;

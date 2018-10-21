@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.Properties;
 import javax.sql.DataSource;
 
-import org.alfresco.repo.metrics.db.DBMetricsReporter;
+import org.alfresco.metrics.db.DBMetricsReporter;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.resource.HierarchicalResourceLoader;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;

@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tools;
 
+import org.alfresco.metrics.rest.RestMetricsReporter;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
@@ -49,6 +50,7 @@ public class ApiAssistant {
     private ExceptionResolver<WebScriptException> webScriptExceptionResolver;
     private ExceptionResolver<Exception> resolver;
     private JacksonHelper jsonHelper;
+    private RestMetricsReporter restMetricsReporter;
 
     /**
      * Determines the api being used from the templateVars
@@ -104,5 +106,18 @@ public class ApiAssistant {
 
     public void setJsonHelper(JacksonHelper jsonHelper) {
         this.jsonHelper = jsonHelper;
+    }
+
+    /**
+     * @return null if the code is run in community mode
+     */
+    public RestMetricsReporter getRestMetricsReporter()
+    {
+        return restMetricsReporter;
+    }
+
+    public void setRestMetricsReporter(RestMetricsReporter restMetricsReporterImpl)
+    {
+        this.restMetricsReporter = restMetricsReporterImpl;
     }
 }

@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.metrics.rest.RestMetricsReporter;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
@@ -87,6 +88,8 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     @Override
     public void execute(final Api api, final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
+        long startTime = System.currentTimeMillis();
+        
         try
         {
             final Map<String, Object> respons = new HashMap<String, Object>();
@@ -152,6 +155,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         {
             renderException(runtimeException, res, assistant);
         }
+        finally
+        {
+            reportExecutionTimeMetric(startTime, req.getServicePath());
+        }
     }
 
     public Object execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
@@ -199,6 +206,26 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), attach, nodeResource.getAttachFileName(), model);
         }
 
+    }
+
+    private void reportExecutionTimeMetric(final long startTime, final String servicePath)
+    {
+        try
+        {
+            final RestMetricsReporter restMetricsReporter = assistant.getRestMetricsReporter();
+            if (restMetricsReporter != null)
+            {
+                long delta = System.currentTimeMillis() - startTime;
+                restMetricsReporter.reportRestRequestExecutionTime(delta, httpMethod.toString(), servicePath);
+            }
+        }
+        catch (Exception e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Could not report rest api metric:" + e.getMessage(), e);
+            }
+        }
     }
 
     private static Map<String, Object> getModelForCacheDirective(CacheDirective cacheDirective)

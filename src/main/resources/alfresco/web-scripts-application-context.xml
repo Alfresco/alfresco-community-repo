@@ -1767,10 +1767,4 @@
         <property name="customModels" ref="CustomModels" />
         <property name="customModelService" ref="customModelService" />
    </bean>
-
-   <!-- Prometheus metrics endpoint -->
-   <bean id="webscript.org.alfresco.metrics.prometheus.get" class="org.alfresco.repo.web.scripts.metrics.PrometheusGet"
-         parent="webscript">
-      <property name="metricsController" ref="metricsController"/>
-   </bean>
 </beans>

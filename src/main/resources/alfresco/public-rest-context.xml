@@ -174,11 +174,14 @@
         </property>
     </bean>
     <bean id="simpleMappingExceptionResolver" parent="simpleMappingExceptionResolverParent" />
+    
     <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
         <property name="jsonHelper" ref="jsonHelper" />
         <property name="resolver" ref="simpleMappingExceptionResolver" />
         <property name="webScriptExceptionResolver" ref="webScriptExceptionResolver" />
+        <property name="restMetricsReporter" ref="restMetricsReporter"/>
     </bean>
+    
 	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 
         and CommonAnnotationBeanPostProcessor are both NOT included implicitly -->
 	<!-- context:component-scan base-package="org.alfresco.deleteme" annotation-config="false" 

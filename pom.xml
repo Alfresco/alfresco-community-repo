@@ -76,7 +76,7 @@
         <dependency.alfresco-messaging-repo.version>1.2.9</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-api-explorer.version>6.1.0-ea</dependency.alfresco-api-explorer.version>
 
-        <dependency.spring.version>5.1.0.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.1.1.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
         <dependency.jackson.version>2.9.5</dependency.jackson.version>
 
@@ -229,7 +229,7 @@
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.9.4</version>
+                <version>2.10</version>
             </dependency>
             <dependency>
                 <groupId>commons-httpclient</groupId>
@@ -280,7 +280,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.2</version>
+                <version>4.5.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>

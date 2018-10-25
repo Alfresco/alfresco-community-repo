@@ -1659,6 +1659,57 @@ public class AuthenticationTest extends TestCase
         }
     }
 
+    public void testAlwaysGetNewTicket()
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
+        authenticationComponent.clearCurrentSecurityContext();
+
+        // authenticate with this user details
+        pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
+
+        // assert the user is authenticated
+        assertEquals("Andy", authenticationService.getCurrentUserName());
+
+        // get the ticket that represents the current user authentication instance
+        String ticket = pubAuthenticationService.getCurrentTicket();
+
+        // validate our ticket is still valid
+        pubAuthenticationService.validate(ticket);
+        assertEquals(ticket, authenticationService.getCurrentTicket());
+
+        // destroy the ticket instance, but keep the current security context
+        pubAuthenticationService.invalidateTicket(ticket);
+
+        // we should be able to get a ticket now, because if we got past the authentication filters, meaning
+        // we have a valid security context,
+        // it means that we should be able to use the application (for external SSO case, for example)
+        String ticketRenew = pubAuthenticationService.getCurrentTicket();
+        // validate our ticket is still valid
+        pubAuthenticationService.validate(ticketRenew);
+        assertEquals(ticketRenew, authenticationService.getCurrentTicket());
+
+        pubAuthenticationService.invalidateTicket(ticketRenew);
+        try
+        {
+            pubAuthenticationService.validate(ticketRenew);
+            fail("Ticket should not validate");
+        }
+        catch (AuthenticationException e)
+        {
+            // intentionally left blank
+        }
+        try
+        {
+            String ticketRenewAfterValidate = pubAuthenticationService.getCurrentTicket();
+            fail(" Previous call to validate should have cleared the context, so no new tickets should be issued");
+        }
+        catch (Exception e)
+        {
+            // we expect this here
+        }
+    }
+
     public void testPubAuthenticationService()
     {
         // pubAuthenticationService.authenticateAsGuest();

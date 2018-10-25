@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -251,10 +250,10 @@ public class RulesAPI extends BaseAPI
     {
         List<JSONObject> ruleActionsList = new ArrayList<>();
 
-        for (ActionsOnRule ruleAction : ruleProperties.getActions())
+        for (String ruleAction : ruleProperties.getActions())
         {
             JSONObject ruleActionObj = new JSONObject();
-            ruleActionObj.put("actionDefinitionName", ruleAction.getActionValue());
+            ruleActionObj.put("actionDefinitionName", ruleAction);
             JSONObject parameters = new JSONObject();
             if (ruleProperties.getPath() != null)
             {

@@ -45,7 +45,7 @@ public class RuleDefinition
     private String contentTitle;
     private String contentDescription;
     private String rejectReason;
-    private List<ActionsOnRule> actions;
+    private List<String> actions;
 
     /**
      * Creates a new object of type Rule Definition
@@ -189,15 +189,15 @@ public class RuleDefinition
         return this;
     }
 
-
-    public List<ActionsOnRule> getActions()
+    public List<String> getActions()
     {
         return actions;
     }
 
-    public RuleDefinition actions(List<ActionsOnRule> actions)
+    public RuleDefinition actions(List<String> actions)
     {
         this.actions = actions;
         return this;
     }
 }
+

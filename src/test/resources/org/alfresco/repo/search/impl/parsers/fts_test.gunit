@@ -67,7 +67,8 @@ ftsQuery:
 "TYPE:\"content\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"content\" (FIELD_REF TYPE)))))"
 "created:[* TO *]" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE * * INCLUSIVE (FIELD_REF created)))))"
 "TYPE:{http://www.alfresco.org/model/content/1.0}folder" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM {http://www.alfresco.org/model/content/1.0} folder (FIELD_REF TYPE)))))"
-
+"wlss\:FourBC\:'BEBO'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM wlss\\:FourBC\\:'BEBO'))))"
+"wlss\:4BC\:'BEBO'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM wlss\\:4BC\\:'BEBO'))))"
 
 ftsDisjunction:
 "red" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))))

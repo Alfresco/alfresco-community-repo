@@ -41,59 +41,49 @@ import static org.alfresco.model.ContentModel.PROP_CONTENT;
  */
 public class LegacyLocalTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
 {
-    @Autowired
-    private TransformClient transformClient;
-
-    @Autowired
-    private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
-
-    @Autowired
-    private RenditionService2 renditionService2;
-
     @Before
-    public void setUp()
+    public void setUp() throws Exception
     {
+        super.setUp();
         AuthenticationUtil.setRunAsUser(AuthenticationUtil.getAdminUserName());
-        assertTrue("A wrong type of transform client detected", transformClient instanceof LegacyLocalTransformClient);
     }
-
 
     // PDF transformation
 
     @Test
     public void testLocalRenderPdfToJpegMedium() throws Exception
     {
-        checkRendition("quick.pdf", "medium", true);
+        localCheckRendition("quick.pdf", "medium", true);
     }
 
     @Test
     public void testLocalRenderPdfToDoclib() throws Exception
     {
-        checkRendition("quick.pdf", "doclib", true);
+        localCheckRendition("quick.pdf", "doclib", true);
     }
 
     @Test
     public void testLocalRenderPdfJpegImgpreview() throws Exception
     {
-        checkRendition("quick.pdf", "imgpreview", true);
+        localCheckRendition("quick.pdf", "imgpreview", true);
     }
 
     @Test
     public void testLocalRenderPdfPngAvatar() throws Exception
     {
-        checkRendition("quick.pdf", "avatar", true);
+        localCheckRendition("quick.pdf", "avatar", true);
     }
 
     @Test
     public void testLocalRenderPdfPngAvatar32() throws Exception
     {
-        checkRendition("quick.pdf", "avatar32", true);
+        localCheckRendition("quick.pdf", "avatar32", true);
     }
 
     @Test
     public void testLocalRenderPdfFlashWebpreview() throws Exception
     {
-        checkRendition("quick.pdf", "webpreview", false);
+        localCheckRendition("quick.pdf", "webpreview", false);
     }
 
     // DOCX transformation
@@ -101,46 +91,46 @@ public class LegacyLocalTransformClientIntegrationTest extends AbstractRendition
     @Test
     public void testLocalRenderDocxJpegMedium() throws Exception
     {
-        checkRendition("quick.docx", "medium", true);
+        localCheckRendition("quick.docx", "medium", true);
     }
 
     @Test
     public void testLocalRenderDocxDoclib() throws Exception
     {
-        checkRendition("quick.docx", "doclib", true);
+        localCheckRendition("quick.docx", "doclib", true);
     }
 
     @Test
     public void testLocalRenderDocxJpegImgpreview() throws Exception
     {
-        checkRendition("quick.docx", "imgpreview", true);
+        localCheckRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
     public void testLocalRenderDocxPngAvatar() throws Exception
     {
-        checkRendition("quick.docx", "avatar", true);
+        localCheckRendition("quick.docx", "avatar", true);
     }
 
     @Test
     public void testLocalRenderDocxPngAvatar32() throws Exception
     {
-        checkRendition("quick.docx", "avatar32", true);
+        localCheckRendition("quick.docx", "avatar32", true);
     }
 
     @Test
     public void testLocalRenderDocxFlashWebpreview() throws Exception
     {
-        checkRendition("quick.docx", "webpreview", false);
+        localCheckRendition("quick.docx", "webpreview", false);
     }
 
     @Test
     public void testLocalRenderDocxPdf() throws Exception
     {
-        checkRendition("quick.docx", "pdf", false);
+        localCheckRendition("quick.docx", "pdf", false);
     }
 
-    private void checkRendition(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws InterruptedException
+    private void localCheckRendition(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws InterruptedException
     {
         if (expectedToPass)
         {

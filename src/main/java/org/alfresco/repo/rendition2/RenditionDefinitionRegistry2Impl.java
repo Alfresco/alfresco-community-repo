@@ -109,7 +109,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         for (Pair<String, Long> pair : renditionNamesWithMaxSize)
         {
             Long maxSize = pair.getSecond();
-            if (maxSize == -1L || maxSize >= size)
+            if (maxSize != 0 && (maxSize == -1L || maxSize >= size))
             {
                 String renditionName = pair.getFirst();
                 renditionNames.add(renditionName);

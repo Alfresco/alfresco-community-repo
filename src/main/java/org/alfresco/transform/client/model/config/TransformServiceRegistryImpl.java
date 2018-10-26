@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
+
 /**
  * Used by clients work out if a transformation is supported by the Transform Service.
  */
@@ -138,6 +140,13 @@ public class TransformServiceRegistryImpl implements TransformServiceRegistry, I
         if (maxSize != null)
         {
             return maxSize.longValue();
+        }
+
+        // Remove the "timeout" property from the actualOptions as it is not used to select a transformer.
+        if (actualOptions.containsKey(TIMEOUT))
+        {
+            actualOptions = new HashMap(actualOptions);
+            actualOptions.remove(TIMEOUT);
         }
 
         long calculatedMaxSize = 0;

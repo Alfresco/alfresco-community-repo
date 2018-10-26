@@ -165,7 +165,7 @@ public class TransformerDebug
         private final String targetMimetype;
         private final TransformationOptions options;
         private final boolean origDebugOutput;
-        private final long start;
+        private long start;
 
         private Call callType;
         private Frame parent;
@@ -564,7 +564,11 @@ public class TransformerDebug
                 (firstLevel && use != null ? "-- "+use+" -- " : "") + message);
         if (firstLevel)
         {
-            log(getNodeRef(frame.options, firstLevel, sourceSize));
+            String nodeRef = getNodeRef(frame.options, firstLevel, sourceSize);
+            if (!nodeRef.isEmpty())
+            {
+                log(nodeRef);
+            }
         }
     }
 
@@ -576,7 +580,7 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            pop(Call.AVAILABLE, false);
+            pop(Call.AVAILABLE, false, false);
         }
     }
     
@@ -587,7 +591,7 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            pop(Call.TRANSFORM, false);
+            pop(Call.TRANSFORM, false, false);
         }
     }
 
@@ -599,7 +603,7 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            pop(Call.AVAILABLE, ThreadInfo.getStack().size() > 1);
+            pop(Call.AVAILABLE, ThreadInfo.getStack().size() > 1, false);
         }
     }
     
@@ -614,12 +618,14 @@ public class TransformerDebug
         }
     }
 
-    private void pop(Call callType, boolean suppressFinish)
+    private int pop(Call callType, boolean suppressFinish, boolean suppressChecking)
     {
+        int id = -1;
         Deque<Frame> ourStack = ThreadInfo.getStack();
         if (!ourStack.isEmpty())
         {
             Frame frame = ourStack.peek();
+            id = frame.getId();
 
             if ((frame.callType == callType) ||
                 (frame.callType == Call.AVAILABLE_AND_TRANSFORM && callType == Call.AVAILABLE))
@@ -633,7 +639,7 @@ public class TransformerDebug
                 if (!suppressFinish && (firstLevel || logger.isTraceEnabled()))
                 {
                     log(FINISHED_IN + ms +
-                        (frame.callType == Call.AVAILABLE ? " Transformer NOT available" : "") +
+                        (frame.callType == Call.AVAILABLE && !suppressChecking? " Just checking if a transformer is available" : "") +
                         (firstLevel ? "\n" : ""), 
                         firstLevel);
                 }
@@ -642,6 +648,7 @@ public class TransformerDebug
                 ourStack.pop();
             }
         }
+        return id;
     }
 
     private void logInfo(Frame frame, int size, String ms)
@@ -1381,7 +1388,7 @@ public class TransformerDebug
     /**
      * Debugs a request to the Transform Service
      */
-    public void debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
+    public int debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
                                              int contentHashcode, String fileName, String targetMimetype, String use)
     {
         pushMisc();
@@ -1391,18 +1398,32 @@ public class TransformerDebug
               (use != null ? "-- "+use+" -- " : "") + " RenditionService2");
         debug(sourceNodeRef.toString() + ' ' +contentHashcode);
         debug(" **a)  [01] TransformService");
-        pop(Call.AVAILABLE, true);
+        return pop(Call.AVAILABLE, true, false);
     }
 
     /**
      * Debugs a response to the Transform Service
      */
-    public void debugTransformServiceResponse(NodeRef sourceNodeRef, int contentHashcode, String msg)
+    public void debugTransformServiceResponse(NodeRef sourceNodeRef, int contentHashcode,
+                                              long requested, int seq, String sourceExt, String targetExt, String msg)
     {
         pushMisc();
+        Frame frame = ThreadInfo.getStack().getLast();
+        frame.id = seq;
+        boolean suppressFinish = seq == -1 || requested == -1;
+        if (!suppressFinish)
+        {
+            frame.start = requested;
+// TODO Create a dummy (available == false) transformer for TransformService before we can record the TS's stats
+//            String sourceMimetype = mimetypeService.getMimetype(sourceExt);
+//            String targetMimetype = mimetypeService.getMimetype(targetExt);
+//            long ms = System.currentTimeMillis()-requested;
+//            AbstractContentTransformer2 transformer = null;
+//            transformer.recordTime(sourceMimetype, targetMimetype, ms);
+        }
         debug(msg);
         debug(sourceNodeRef.toString() + ' ' +contentHashcode);
-        pop(Call.AVAILABLE, true);
+        pop(Call.AVAILABLE, suppressFinish, true);
     }
 
     public String testTransform(String sourceExtension, String targetExtension, String use)

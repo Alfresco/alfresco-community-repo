@@ -237,6 +237,8 @@
         <property name="transactionService" ref="TransactionService" />
         <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="jobLockService" ref="jobLockService" />
+        <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+        <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
         <property name="redeployStaticDefsOnStartup" value="${system.thumbnail.redeployStaticDefsOnStartup}" />
         <property name="thumbnailDefinitions">
             <list>

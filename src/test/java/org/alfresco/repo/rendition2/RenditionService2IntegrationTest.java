@@ -26,10 +26,14 @@
 package org.alfresco.repo.rendition2;
 
 import java.util.List;
+
+import junit.framework.AssertionFailedError;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -50,161 +54,13 @@ import java.io.FileNotFoundException;
 
 import static java.lang.Thread.sleep;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
 
 /**
  * Integration tests for {@link RenditionService2}
  */
 public class RenditionService2IntegrationTest extends AbstractRenditionIntegrationTest
 {
-    @Autowired
-    private RenditionService2Impl renditionService2;
-    @Autowired
-    private TransformClient transformClient;
-    @Autowired
-    private PermissionService permissionService;
-    @Autowired
-    private RenditionService renditionService;
-
-    private static final String ADMIN = "admin";
-    private static final String DOC_LIB = "doclib";
-    
-    @BeforeClass
-    public static void before()
-    {
-        // Ensure other applications contexts are closed...
-        // Multiple consumers not supported for same direct vm in different Camel contexts.
-        ApplicationContextHelper.closeApplicationContext();
-    }
-
-    @Before
-    public void setUp()
-    {
-        assertTrue("The RenditionService2 needs to be enabled", renditionService2.isEnabled());
-        assertTrue("A wrong type of transform client detected", transformClient instanceof LegacyLocalTransformClient);
-    }
-
-    @After
-    public void cleanUp()
-    {
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-    private void checkRendition(String testFileName, String renditionName, boolean expectedToPass)
-    {
-        try
-        {
-            NodeRef sourceNodeRef = createSource(ADMIN, testFileName);
-            render(ADMIN, sourceNodeRef, renditionName);
-            waitForRendition(ADMIN, sourceNodeRef, renditionName);
-        }
-        catch(UnsupportedOperationException uoe)
-        {
-            if (expectedToPass)
-            {
-                fail("The " + renditionName + " rendition should be supported for " + testFileName);
-            }
-        }
-    }
-
-    // Creates a new source node as the given user in its own transaction.
-    private NodeRef createSource(String user, String testFileName)
-    {
-        return AuthenticationUtil.runAs(() ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                        createSource(testFileName)), user);
-    }
-
-    // Creates a new source node as the current user in the current transaction.
-    private NodeRef createSource(String testFileName) throws FileNotFoundException
-    {
-        return createContentNodeFromQuickFile(testFileName);
-    }
-
-    // Changes the content of a source node as the given user in its own transaction.
-    private void updateContent(String user, NodeRef sourceNodeRef, String testFileName)
-    {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    updateContent(sourceNodeRef, testFileName);
-                    return null;
-                }), user);
-    }
-
-    // Changes the content of a source node as the current user in the current transaction.
-    private NodeRef updateContent(NodeRef sourceNodeRef, String testFileName) throws FileNotFoundException
-    {
-        File file = ResourceUtils.getFile("classpath:quick/" + testFileName);
-        nodeService.setProperty(sourceNodeRef, ContentModel.PROP_NAME, testFileName);
-
-        ContentWriter contentWriter = contentService.getWriter(sourceNodeRef, ContentModel.PROP_CONTENT, true);
-        contentWriter.setMimetype(mimetypeService.guessMimetype(testFileName));
-        contentWriter.putContent(file);
-
-        return sourceNodeRef;
-    }
-
-    // Clears the content of a source node as the given user in its own transaction.
-    private void clearContent(String user, NodeRef sourceNodeRef)
-    {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    clearContent(sourceNodeRef);
-                    return null;
-                }), user);
-    }
-
-    // Clears the content of a source node as the current user in the current transaction.
-    private void clearContent(NodeRef sourceNodeRef)
-    {
-        nodeService.removeProperty(sourceNodeRef, PROP_CONTENT);
-    }
-
-    // Requests a new rendition as the given user in its own transaction.
-    private void render(String user, NodeRef sourceNode, String renditionName)
-    {
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    render(sourceNode, renditionName);
-                    return null;
-                }), user);
-    }
-
-    // Requests a new rendition as the current user in the current transaction.
-    private void render(NodeRef sourceNodeRef, String renditionName)
-    {
-        renditionService2.render(sourceNodeRef, renditionName);
-    }
-
-    // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    private NodeRef waitForRendition(String user, NodeRef sourceNodeRef, String renditionName)
-    {
-        return AuthenticationUtil.runAs(() -> waitForRendition(sourceNodeRef, renditionName), user);
-    }
-
-    // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    private NodeRef waitForRendition(NodeRef sourceNodeRef, String renditionName) throws InterruptedException
-    {
-        long maxMillis = 20000;
-        ChildAssociationRef assoc = null;
-        for (int i = (int)(maxMillis / 500); i >= 0; i--)
-        {
-            // Must create a new transaction in order to see changes that take place after this method started.
-            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
-            if (assoc != null)
-            {
-                break;
-            }
-            logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
-            sleep(500);
-        }
-        assertNotNull("Rendition " + renditionName + " failed", assoc);
-        return assoc.getChildRef();
-    }
-
     // PDF transformation
 
     @Test

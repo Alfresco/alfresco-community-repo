@@ -77,6 +77,7 @@ public class ContentTransformerRegistry
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+        firstTime = true;
     }
 
     public void setTransformerDebug(TransformerDebug transformerDebug)

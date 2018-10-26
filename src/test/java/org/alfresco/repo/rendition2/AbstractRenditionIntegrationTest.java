@@ -25,28 +25,43 @@
  */
 package org.alfresco.repo.rendition2;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Collections;
+import junit.framework.AssertionFailedError;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Collections;
+
+import static java.lang.Thread.sleep;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
 
 /**
  * Class unites common utility methods for {@link org.alfresco.repo.rendition2} package tests.
@@ -54,24 +69,233 @@ import org.springframework.util.ResourceUtils;
 public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 {
     @Autowired
-    NodeService nodeService;
+    protected RenditionService2Impl renditionService2;
 
     @Autowired
-    ContentService contentService;
+    protected RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
 
     @Autowired
-    MimetypeService mimetypeService;
+    protected TransformClient transformClient;
 
     @Autowired
-    TransactionService transactionService;
+    protected RenditionService renditionService;
 
     @Autowired
-    PersonService personService;
+    protected ThumbnailRegistry thumbnailRegistry;
 
     @Autowired
-    MutableAuthenticationService authenticationService;
+    protected MimetypeMap mimetypeMap;
+
+    @Autowired
+    protected MimetypeService mimetypeService;
+
+    @Autowired
+    protected NodeService nodeService;
+
+    @Autowired
+    protected ContentService contentService;
+
+    @Autowired
+    protected TransactionService transactionService;
+
+    @Autowired
+    protected MutableAuthenticationService authenticationService;
+
+    @Autowired
+    protected PersonService personService;
+
+    @Autowired
+    protected PermissionService permissionService;
 
     static String PASSWORD = "password";
+
+    protected static final String ADMIN = "admin";
+    protected static final String DOC_LIB = "doclib";
+
+    @BeforeClass
+    public static void before()
+    {
+        // Ensure other applications contexts are closed...
+        // Multiple consumers not supported for same direct vm in different Camel contexts.
+        ApplicationContextHelper.closeApplicationContext();
+
+        // Use the docker images for transforms
+        System.setProperty("alfresco-pdf-renderer.url", "http://localhost:8090/");
+        System.setProperty("img.url", "http://localhost:8091");
+        System.setProperty("jodconverter.url", "http://localhost:8092/");
+        System.setProperty("tika.url", "http://localhost:8093/");
+    }
+
+    @Before
+    public void setUp() throws Exception
+    {
+        assertTrue("The RenditionService2 needs to be enabled", renditionService2.isEnabled());
+    }
+
+    @After
+    public void cleanUp()
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    @AfterClass
+    public static void after()
+    {
+        System.clearProperty("alfresco-pdf-renderer.url");
+        System.clearProperty("img.url");
+        System.clearProperty("jodconverter.url");
+        System.clearProperty("tika.url");
+    }
+
+    protected void checkRendition(String testFileName, String renditionName, boolean expectedToPass)
+    {
+        try
+        {
+            NodeRef sourceNodeRef = createSource(ADMIN, testFileName);
+            render(ADMIN, sourceNodeRef, renditionName);
+            waitForRendition(ADMIN, sourceNodeRef, renditionName);
+            if (!expectedToPass)
+            {
+                fail("The " + renditionName + " rendition should NOT be supported for " + testFileName);
+            }
+        }
+        catch(UnsupportedOperationException e)
+        {
+            if (expectedToPass)
+            {
+                fail("The " + renditionName + " rendition SHOULD be supported for " + testFileName);
+            }
+        }
+    }
+
+    // Creates a new source node as the given user in its own transaction.
+    protected NodeRef createSource(String user, String testFileName)
+    {
+        return AuthenticationUtil.runAs(() ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                        createSource(testFileName)), user);
+    }
+
+    // Creates a new source node as the current user in the current transaction.
+    private NodeRef createSource(String testFileName) throws FileNotFoundException
+    {
+        return createContentNodeFromQuickFile(testFileName);
+    }
+
+    // Changes the content of a source node as the given user in its own transaction.
+    protected void updateContent(String user, NodeRef sourceNodeRef, String testFileName)
+    {
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    updateContent(sourceNodeRef, testFileName);
+                    return null;
+                }), user);
+    }
+
+    // Changes the content of a source node as the current user in the current transaction.
+    private NodeRef updateContent(NodeRef sourceNodeRef, String testFileName) throws FileNotFoundException
+    {
+        File file = ResourceUtils.getFile("classpath:quick/" + testFileName);
+        nodeService.setProperty(sourceNodeRef, ContentModel.PROP_NAME, testFileName);
+
+        ContentWriter contentWriter = contentService.getWriter(sourceNodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype(mimetypeService.guessMimetype(testFileName));
+        contentWriter.putContent(file);
+
+        return sourceNodeRef;
+    }
+
+    // Clears the content of a source node as the given user in its own transaction.
+    protected void clearContent(String user, NodeRef sourceNodeRef)
+    {
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    clearContent(sourceNodeRef);
+                    return null;
+                }), user);
+    }
+
+    // Clears the content of a source node as the current user in the current transaction.
+    private void clearContent(NodeRef sourceNodeRef)
+    {
+        nodeService.removeProperty(sourceNodeRef, PROP_CONTENT);
+    }
+
+    // Requests a new rendition as the given user in its own transaction.
+    protected void render(String user, NodeRef sourceNode, String renditionName)
+    {
+        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    render(sourceNode, renditionName);
+                    return null;
+                }), user);
+    }
+
+    // Requests a new rendition as the current user in the current transaction.
+    private void render(NodeRef sourceNodeRef, String renditionName)
+    {
+        renditionService2.render(sourceNodeRef, renditionName);
+    }
+
+    // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.
+    protected NodeRef waitForRendition(String user, NodeRef sourceNodeRef, String renditionName) throws AssertionFailedError
+    {
+        try
+        {
+            return AuthenticationUtil.runAs(() -> waitForRendition(sourceNodeRef, renditionName), user);
+        }
+        catch (RuntimeException e)
+        {
+            Throwable cause = e.getCause();
+            if (cause instanceof AssertionFailedError)
+            {
+                throw (AssertionFailedError)cause;
+            }
+            throw e;
+        }
+    }
+
+    // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
+    private NodeRef waitForRendition(NodeRef sourceNodeRef, String renditionName) throws InterruptedException
+    {
+        long maxMillis = 10000;
+        ChildAssociationRef assoc = null;
+        for (int i = (int)(maxMillis / 1000); i >= 0; i--)
+        {
+            // Must create a new transaction in order to see changes that take place after this method started.
+            assoc = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                    renditionService2.getRenditionByName(sourceNodeRef, renditionName), true, true);
+            if (assoc != null)
+            {
+                break;
+            }
+            logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
+            sleep(1000);
+        }
+        assertNotNull("Rendition " + renditionName + " failed", assoc);
+        return assoc.getChildRef();
+    }
+
+    protected String getTestFileName(String sourceMimetype) throws FileNotFoundException
+    {
+        String extension = mimetypeMap.getExtension(sourceMimetype);
+        String testFileName = extension.equals(EXTENSION_BINARY) ? null : "quick."+extension;
+        if (testFileName != null)
+        {
+            try
+            {
+                ResourceUtils.getFile("classpath:quick/" + testFileName);
+            }
+            catch (FileNotFoundException e)
+            {
+                testFileName = null;
+            }
+        }
+        return testFileName;
+    }
 
     NodeRef createContentNodeFromQuickFile(String fileName) throws FileNotFoundException
     {

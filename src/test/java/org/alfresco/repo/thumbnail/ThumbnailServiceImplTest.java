@@ -1235,6 +1235,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
         ThumbnailRegistry thumbnailRegistry = this.thumbnailService.getThumbnailRegistry();
         List<ThumbnailDefinition> defs = thumbnailRegistry.getThumbnailDefinitions(MimetypeMap.MIMETYPE_HTML, -1);
+        assertFalse("There should be some thumbnails", defs.isEmpty());
         System.out.println("Definitions ...");
         for (ThumbnailDefinition def : defs)
         {

@@ -62,6 +62,7 @@ public class LegacyLocalTransformServiceRegistry extends AbstractTransformServic
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+        firstTime = true;
     }
 
     public void setTransformerDebug(TransformerDebug transformerDebug)

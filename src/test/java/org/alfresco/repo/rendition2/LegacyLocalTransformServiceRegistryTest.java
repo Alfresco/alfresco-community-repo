@@ -54,6 +54,7 @@ public class LegacyLocalTransformServiceRegistryTest extends AbstractRenditionIn
     @Before
     public void setUp() throws Exception
     {
+        super.setUp();
         RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(RENDITION_NAME);
         options = definition2.getTransformOptions();
     }

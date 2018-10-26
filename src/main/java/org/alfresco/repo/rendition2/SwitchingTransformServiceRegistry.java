@@ -50,7 +50,7 @@ public class SwitchingTransformServiceRegistry extends AbstractTransformServiceR
     {
         long maxSize;
         long primaryMaxSize = primary.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        if (primaryMaxSize != 0 && primaryMaxSize == -1L)
+        if (primaryMaxSize == -1L)
         {
             maxSize = -1L;
         }

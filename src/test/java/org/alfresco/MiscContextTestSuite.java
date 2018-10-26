@@ -148,24 +148,29 @@ import org.springframework.context.ApplicationContext;
     // Requires running transformers
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
     org.alfresco.repo.rendition2.LegacyLocalTransformClientIntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistryTest.class
+    org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistryTest.class,
+
+    // Due to problems reloading the context (bits of it remain), NoLocalTransformRenditionTest has been commented out.
+    // It works on its own.
+    org.alfresco.repo.rendition2.RenditionTest.class,
+//   org.alfresco.repo.rendition2.NoLocalTransformRenditionTest.class,
 })
 public class MiscContextTestSuite
 {
-   /**
-    * Asks {@link ApplicationContextHelper} to give us a
-    *  suitable, perhaps cached context for use in our tests
-    */
-   public static ApplicationContext getMinimalContext() {
-      ApplicationContextHelper.setUseLazyLoading(false);
-      ApplicationContextHelper.setNoAutoStart(true);
-      return ApplicationContextHelper.getApplicationContext(
-           new String[] { "classpath:alfresco/minimal-context.xml" }
-      );
-   }
+    /**
+     * Asks {@link ApplicationContextHelper} to give us a
+     *  suitable, perhaps cached context for use in our tests
+     */
+    public static ApplicationContext getMinimalContext() {
+        ApplicationContextHelper.setUseLazyLoading(false);
+        ApplicationContextHelper.setNoAutoStart(true);
+        return ApplicationContextHelper.getApplicationContext(
+            new String[] { "classpath:alfresco/minimal-context.xml" }
+        );
+    }
 
-   static
-   {
-       getMinimalContext();
-   }
+    static
+    {
+        getMinimalContext();
+    }
 }

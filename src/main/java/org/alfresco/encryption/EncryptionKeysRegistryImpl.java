@@ -119,7 +119,17 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
         Encryptor encryptor = getEncryptor(keys);
         Serializable encrypted = encryptor.sealObject(keyAlias, null, guid);
         Pair<String, Serializable> keyCheck = new Pair<String, Serializable>(guid, encrypted);
-        attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
+        RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
+        final RetryingTransactionCallback<Void> createAttributeCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+            	attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
+                return null;
+            }
+        };
+        retryingTransactionHelper.doInTransaction(createAttributeCallback, false);
+
         logger.info("Registered key " + keyAlias);
     }
     

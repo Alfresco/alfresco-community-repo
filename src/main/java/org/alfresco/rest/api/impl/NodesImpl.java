@@ -2440,21 +2440,26 @@ public class NodesImpl implements Nodes
     @Override
     public Node moveOrCopyNode(String sourceNodeId, String targetParentId, String name, Parameters parameters, boolean isCopy)
     {
-        if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing sourceNodeId");
-        }
+        FileInfo fi = retryingTransactionHelper.doInTransaction(() -> {
+            if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))
+            {
+                throw new InvalidArgumentException("Missing sourceNodeId");
+            }
+    
+            if ((targetParentId == null) || (targetParentId.isEmpty()))
+            {
+                throw new InvalidArgumentException("Missing targetParentId");
+            }
+    
+            final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
+            final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
+    
+            return moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
+        }, false, true);
 
-        if ((targetParentId == null) || (targetParentId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing targetParentId");
-        }
-
-        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
-        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
-
-        FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
-        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
+        return retryingTransactionHelper.doInTransaction(() -> {
+            return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
+        }, false, false);
     }
     
     public void updateCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> excludedAspects)
@@ -3272,22 +3277,28 @@ public class NodesImpl implements Nodes
     @Override
     public Node lock(String nodeId, LockInfo lockInfo, Parameters parameters)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        retryingTransactionHelper.doInTransaction(() -> {
+            NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
-        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
-        {
-            throw new PermissionDeniedException("Current user doesn't have permission to lock node " + nodeId);
-        }
+            if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+            {
+                throw new PermissionDeniedException("Current user doesn't have permission to lock node " + nodeId);
+            }
 
-        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
-        {
-            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
-        }
+            if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+            {
+                throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
+            }
 
-        lockInfo = validateLockInformation(lockInfo);
-        lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime());
+            LockInfo validatedLockInfo = validateLockInformation(lockInfo);
+            lockService.lock(nodeRef, validatedLockInfo.getMappedType(), validatedLockInfo.getTimeToExpire(), validatedLockInfo.getLifetime());
 
-        return getFolderOrDocument(nodeId, parameters);
+            return null;
+        }, false, true);
+
+        return retryingTransactionHelper.doInTransaction(() -> {
+            return getFolderOrDocument(nodeId, parameters);
+        }, false, false);
     }
 
     private LockInfo validateLockInformation(LockInfo lockInfo)
@@ -3311,19 +3322,25 @@ public class NodesImpl implements Nodes
     @Override
     public Node unlock(String nodeId, Parameters parameters)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        retryingTransactionHelper.doInTransaction(() -> {
+            NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
-        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
-        {
-            throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
-        }
-        if (!lockService.isLocked(nodeRef))
-        {
-            throw new IntegrityException("Can't unlock node " + nodeId + " because it isn't locked", null);
-        }
-        
-        lockService.unlock(nodeRef);
-        return getFolderOrDocument(nodeId, parameters);
+            if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+            {
+                throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
+            }
+            if (!lockService.isLocked(nodeRef))
+            {
+                throw new IntegrityException("Can't unlock node " + nodeId + " because it isn't locked", null);
+            }
+
+            lockService.unlock(nodeRef);
+            return null;
+        }, false, true);
+
+        return retryingTransactionHelper.doInTransaction(() -> {
+            return getFolderOrDocument(nodeId, parameters);
+        }, false, false);
     }
 
     /**

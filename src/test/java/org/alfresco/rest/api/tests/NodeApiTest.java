@@ -4098,6 +4098,141 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         deleteNode(folderId);
     }
 
+    @Test
+    public void testLockFileCreatedByDeletedUser() throws Exception
+    {
+        // Create temp user
+        String user = createUser("userRND-" + RUNID, "userRNDPassword", networkOne);
+
+        setRequestContext(user);
+
+        // Create folder
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folderRND" + RUNID);
+        String folderId = folderResp.getId();
+
+        // Create doc d1
+        String d1Name = "content" + RUNID + "_1l";
+        Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
+        String d1Id = d1.getId();
+
+        setRequestContext(networkAdmin);
+
+        transactionHelper.doInTransaction(() -> {
+            deleteUser(user, networkOne);
+            return null;
+        });
+
+        // Lock d1 document
+        LockInfo lockInfo = new LockInfo();
+        lockInfo.setTimeToExpire(30);
+        lockInfo.setType("FULL");
+        lockInfo.setLifetime("PERSISTENT");
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check that the lock was successful - from default response
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(d1Id, documentResp.getId());
+        assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
+        assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertNull(documentResp.getIsLocked());
+
+        // Get node info (ensure rollback didn't happen)
+        Map<String, String> params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(NodesEntityResource.class, d1Id, params, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check that the lock was successful - from get info call response
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(d1Id, documentResp.getId());
+        assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
+        assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertTrue(documentResp.getIsLocked());
+
+        // Clean up
+        unlock(d1Id);
+
+        // Get node info (ensure rollback didn't happen)
+        response = getSingle(NodesEntityResource.class, d1Id, params, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check that the unlock was successful
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(d1Id, documentResp.getId());
+        assertEquals(null, documentResp.getProperties().get("cm:lockType"));
+        assertNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertFalse(documentResp.getIsLocked());
+
+        deleteNode(folderId);
+    }
+
+    @Test
+    public void testMoveFileCreatedByDeletedUser() throws Exception
+    {
+        // Create temp user
+        String user = createUser("userTstMove-" + RUNID, "userRNDPassword", networkOne);
+        
+        setRequestContext(user);
+
+        // create folder f0
+        String folder0Name = "f0-testMove-"+RUNID;
+        String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
+
+        // create folder f1
+        Folder folderResp = createFolder(f0Id, "f1");
+        String f1Id = folderResp.getId();
+
+        // create folder f2
+        folderResp = createFolder(f0Id, "f2");
+        String f2Id = folderResp.getId();
+
+        // create doc d1
+        String d1Name = "content" + RUNID + "_1";
+        String d1Id = createTextFile(f1Id, d1Name, "The quick brown fox jumps over the lazy dog 1.").getId();
+
+        setRequestContext(networkAdmin);
+
+        transactionHelper.doInTransaction(() -> {
+            deleteUser(user, networkOne);
+            return null;
+        });
+        
+        // move file (without rename)
+
+        NodeTarget tgt = new NodeTarget();
+        tgt.setTargetParentId(f2Id);
+
+        HttpResponse response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(f2Id, documentResp.getParentId());
+
+        // Get node info (ensure rollback didn't happen)
+        response = getSingle(NodesEntityResource.class, d1Id, null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(f2Id, documentResp.getParentId());
+
+        // move file (with rename)
+
+        String d1NewName = d1Name+" updated !!";
+
+        tgt = new NodeTarget();
+        tgt.setName(d1NewName);
+        tgt.setTargetParentId(f1Id);
+
+        response = post("nodes/"+d1Id+"/move", toJsonAsStringNonNull(tgt), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(d1NewName, documentResp.getName());
+        assertEquals(f1Id, documentResp.getParentId());
+
+        // Get node info (ensure rollback didn't happen)
+        response = getSingle(NodesEntityResource.class, d1Id, null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(f1Id, documentResp.getParentId());
+    }
+
     /**
      * Creates authority context
      *

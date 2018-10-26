@@ -224,7 +224,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
-                <version>4.4.5</version>
+                <version>4.4.10</version>
             </dependency>
             <dependency>
                 <groupId>joda-time</groupId>
@@ -285,12 +285,12 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient-cache</artifactId>
-                <version>4.5.2</version>
+                <version>4.5.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -371,17 +371,17 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>3.0.12</version>
+                <version>3.2.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>3.0.12</version>
+                <version>3.2.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>3.0.12</version>
+                <version>3.2.6</version>
             </dependency>
             <!-- newer version, see REPO-3133 -->
             <dependency>

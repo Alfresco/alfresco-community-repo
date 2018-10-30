@@ -35,7 +35,6 @@ import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.keycloak.adapters.BasicAuthRequestAuthenticator;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.representations.AccessToken;
@@ -104,30 +103,37 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
      */
     public String getRemoteUser(HttpServletRequest request)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Retrieving username from http request...");
-        
-        if (!this.isEnabled)
+        try
         {
             if (logger.isDebugEnabled())
-                logger.debug("TokenRemoteUserMapper is disabled, returning null.");
-            
-            return null;
+                logger.debug("Retrieving username from http request...");
+
+            if (!this.isEnabled)
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("TokenRemoteUserMapper is disabled, returning null.");
+
+                return null;
+            }
+
+            String headerUserId = extractUserFromHeader(request);
+
+            if (headerUserId != null)
+            {
+                // Normalize the user ID taking into account case sensitivity settings
+                String normalizedUserId =  normalizeUserId(headerUserId);
+
+                if (logger.isDebugEnabled())
+                    logger.debug("Returning username: " + normalizedUserId);
+
+                return normalizedUserId;
+            }
         }
-        
-        String headerUserId = extractUserFromHeader(request);
-        
-        if (headerUserId != null)
+        catch (Exception e)
         {
-            // Normalize the user ID taking into account case sensitivity settings
-            String normalizedUserId =  normalizeUserId(headerUserId);
-            
-            if (logger.isDebugEnabled())
-                logger.debug("Returning username: " + normalizedUserId);
-            
-            return normalizedUserId;
+            logger.error("Failed to authenticate user using IdentityServiceRemoteUserMapper: " + e.getMessage(), e);
         }
-        
+
         return null;
     }
 
@@ -179,28 +185,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         }
         else
         {
-            // if bearer token failed, try basic auth, if enabled
-            if (this.keycloakDeployment.isEnableBasicAuth())
+            if (logger.isDebugEnabled())
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Trying basic auth...");
-                }
-                
-                BasicAuthRequestAuthenticator basicAuthenticator = 
-                            new BasicAuthRequestAuthenticator(this.keycloakDeployment);
-                AuthOutcome basicOutcome = basicAuthenticator.authenticate(facade);
-                
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Basic auth outcome: " + basicOutcome);
-                }
-                
-                // if auth was successful, extract username and return
-                if (basicOutcome == AuthOutcome.AUTHENTICATED)
-                {
-                    userName = extractUserFromToken(basicAuthenticator.getToken());
-                }
+                logger.debug("User could not be authenticated by IdentityServiceRemoteUserMapper.");
             }
         }
         

@@ -47,10 +47,49 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
     
     private Properties globalProperties;
+
+    private int clientConnectionTimeout;
+    private int clientSocketTimeout;
     
     public void setGlobalProperties(Properties globalProperties)
     {
         this.globalProperties = globalProperties;
+    }
+
+    /**
+     *
+     * @return Client connection timeout in milliseconds.
+     */
+    public int getClientConnectionTimeout()
+    {
+        return clientConnectionTimeout;
+    }
+
+    /**
+     *
+     * @param clientConnectionTimeout Client connection timeout in milliseconds.
+     */
+    public void setClientConnectionTimeout(int clientConnectionTimeout)
+    {
+        this.clientConnectionTimeout = clientConnectionTimeout;
+    }
+
+    /**
+     *
+     * @return Client socket timeout in milliseconds.s
+     */
+    public int getClientSocketTimeout()
+    {
+        return clientSocketTimeout;
+    }
+
+    /**
+     *
+     * @param clientSocketTimeout Client socket timeout in milliseconds.
+     */
+    public void setClientSocketTimeout(int clientSocketTimeout)
+    {
+        this.clientSocketTimeout = clientSocketTimeout;
     }
     
     @Override

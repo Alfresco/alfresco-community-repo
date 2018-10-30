@@ -182,6 +182,12 @@
       <property name="ignoreOAuthQueryParameter">
          <value>${identity-service.ignore-oauth-query-parameter:false}</value>
       </property>
+      <property name="clientConnectionTimeout">
+         <value>${identity-service.client-connection-timeout:2000}</value>
+      </property>
+      <property name="clientSocketTimeout">
+         <value>${identity-service.client-socket-timeout:2000}</value>
+      </property>
    </bean>
 
    <bean name="identityServiceDeployment" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceDeploymentFactoryBean">

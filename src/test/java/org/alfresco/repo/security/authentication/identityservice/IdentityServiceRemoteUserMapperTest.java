@@ -93,9 +93,6 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
     private KeyPair keyPair;
     private IdentityServiceConfig identityServiceConfig;
 
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
-     */
     @Override
     protected void setUp() throws Exception
     {
@@ -115,10 +112,7 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         this.identityServiceConfig = (IdentityServiceConfig)childApplicationContextFactory.
                     getApplicationContext().getBean(CONFIG_BEAN_NAME);
     }
-    
-    /* (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -205,7 +199,13 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         
         assertEquals("identity-service.public-key-cache-ttl", 3600, 
                     this.identityServiceConfig.getPublicKeyCacheTtl());
-        
+
+        assertEquals("identity-service.client-connection-timeout", 3000,
+                this.identityServiceConfig.getClientConnectionTimeout());
+
+        assertEquals("identity-service.client-socket-timeout", 1000,
+                this.identityServiceConfig.getClientSocketTimeout());
+
         // check boolean overrides
         assertFalse("identity-service.public-client", 
                     this.identityServiceConfig.isPublicClient());
@@ -247,8 +247,8 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
                     this.identityServiceConfig.isIgnoreOAuthQueryParameter());
         
         assertTrue("identity-service.turn-off-change-session-id-on-login", 
-                    this.identityServiceConfig.getTurnOffChangeSessionIdOnLogin());    
-        
+                    this.identityServiceConfig.getTurnOffChangeSessionIdOnLogin());
+
         // check credentials overrides
         Map<String, Object> credentials = this.identityServiceConfig.getCredentials();
         assertNotNull("Expected a credentials map", credentials);
@@ -300,18 +300,10 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         // create mock request object
         HttpServletRequest mockRequest = createMockTokenRequest(jwt);
         
-        // ensure an exception is thrown with correct description
-        try
-        {
-            ((RemoteUserMapper)childApplicationContextFactory.getApplicationContext().getBean(
-                        REMOTE_USER_MAPPER_BEAN_NAME)).getRemoteUser(mockRequest);
-            fail("Expected an AuthenticationException to be thrown");
-        }
-        catch (AuthenticationException ae)
-        {
-            assertTrue("Exception message contains 'Invalid token signature'", 
-                        ae.getMessage().indexOf("Invalid token signature") != -1);
-        }
+        // ensure user mapper falls through instead of throwing an exception
+        String user = ((RemoteUserMapper)childApplicationContextFactory.getApplicationContext().getBean(
+                REMOTE_USER_MAPPER_BEAN_NAME)).getRemoteUser(mockRequest);
+        assertEquals("Returned user should be null when wrong public key is used.",  null, user);
     }
     
     public void testInvalidJwt() throws Exception
@@ -361,17 +353,9 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         HttpServletRequest mockRequest = createMockTokenRequest(jwt);
         
         // ensure an exception is thrown with correct description
-        try
-        {
-            ((RemoteUserMapper)childApplicationContextFactory.getApplicationContext().getBean(
+        String user = ((RemoteUserMapper)childApplicationContextFactory.getApplicationContext().getBean(
                         REMOTE_USER_MAPPER_BEAN_NAME)).getRemoteUser(mockRequest);
-            fail("Expected an AuthenticationException to be thrown");
-        }
-        catch (AuthenticationException ae)
-        {
-            assertTrue("Exception message contains 'Token is not active'", 
-                        ae.getMessage().indexOf("Token is not active") != -1);
-        }
+        assertEquals("Returned user should be null when the token is expired.", null, user);
     }
     
     public void testMissingHeader() throws Exception
@@ -381,22 +365,6 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         
         // ensure null is returned if the header was missing
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
-              REMOTE_USER_MAPPER_BEAN_NAME)).getRemoteUser(mockRequest));
-    }
-    
-    public void testBasicAuthFallback() throws Exception
-    {
-        // create mock objects
-        HttpServletRequest mockRequest = createMockBasicRequest();
-        HttpClient mockHttpClient = createMockHttpClient();
-        
-        // override the http client on the keycloak deployment
-        KeycloakDeployment deployment  = (KeycloakDeployment)childApplicationContextFactory.getApplicationContext().
-                    getBean(DEPLOYMENT_BEAN_NAME);
-        deployment.setClient(mockHttpClient);
-        
-        // validate correct user was found
-        assertEquals(TEST_USER_USERNAME, ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
               REMOTE_USER_MAPPER_BEAN_NAME)).getRemoteUser(mockRequest));
     }
     

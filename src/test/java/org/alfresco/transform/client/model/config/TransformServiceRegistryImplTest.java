@@ -382,10 +382,10 @@ public class TransformServiceRegistryImplTest
 
             // Check the count of transforms supported
             assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
-                    64, countSupportedTransforms(true));
+                    63, countSupportedTransforms(true));
             assertEquals("The number of source to target mimetypes transforms has changed. " +
                             "There may be multiple transformers for the same combination. Config change?",
-                    64, countSupportedTransforms(false));
+                    63, countSupportedTransforms(false));
 
             // Check a supported transform for each transformer.
             assertSupported(DOC, 1234, PDF, null, null, ""); // libreoffice
@@ -394,6 +394,10 @@ public class TransformServiceRegistryImplTest
             assertSupported(JPEG,1234, GIF, null, null, ""); // imagemagick
             assertSupported(MSG, 1234, TXT, null, null, ""); // tika
             assertSupported(MSG, 1234, GIF, null, null, ""); // officeToImageViaPdf
+
+            Map<String, String> invalidPdfOptions = new HashMap<>();
+            invalidPdfOptions.put("allowEnlargement", "false");
+            assertSupported(DOC, 1234, PDF, invalidPdfOptions, null, "Invalid as there is a extra option");
         }
     }
 

@@ -211,11 +211,6 @@
     <bean id="renditionDefinition2Pdf" parent="baseRenditionDefinition2">
         <constructor-arg name="renditionName" value="pdf"/>
         <constructor-arg name="targetMimetype" value="application/pdf"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="allowEnlargement" value="false"/> <!-- does nothing other than select ImageTransformationOptions -->
-            </map>
-        </constructor-arg>
     </bean>
 
     <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">

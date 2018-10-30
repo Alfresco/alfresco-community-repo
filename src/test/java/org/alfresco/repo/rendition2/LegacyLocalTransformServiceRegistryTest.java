@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
+import com.sun.star.auth.InvalidArgumentException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,15 +64,12 @@ public class LegacyLocalTransformServiceRegistryTest extends AbstractRenditionIn
     public void testIsSupported()
     {
         // +ve
-        // Source, Target and Props are in dictionary.properties
-        Map<String, String> badValidationProps = new HashMap<>();
-        badValidationProps.put("timeout", "true");
         // No props
         Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
 
         // -ve
         // Bad Source
-        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, ""));
+        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, RENDITION_NAME));
         // Bad Target
         Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, "pdfBad", options, RENDITION_NAME));
 
@@ -81,6 +79,24 @@ public class LegacyLocalTransformServiceRegistryTest extends AbstractRenditionIn
         // -ve
         // Bad MaxSize docx max size is 768K
         Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 768L*1024+1, MIMETYPE_PDF, options, RENDITION_NAME));
+    }
+
+    @Test
+    public void testNoOptions()
+    {
+        // The options for "pdf" are empty once "timeout" has been removed. As a result the converter just creates a
+        // basic TransformationOption object for a custom transformer and rendition without any options.
+        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, "custom"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testBadOptions()
+    {
+        // Source, Target and Props are in dictionary.properties
+        Map<String, String> options = new HashMap<>();
+        options.put("timeout", "true");
+        options.put("unknown", "optionValue");
+        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, ""));
     }
 
     @Test

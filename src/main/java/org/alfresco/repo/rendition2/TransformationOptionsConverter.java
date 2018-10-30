@@ -112,7 +112,7 @@ public class TransformationOptionsConverter implements InitializingBean
 
     private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
             {
-                    PAGE, WIDTH, HEIGHT, ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
+                    PAGE, WIDTH, HEIGHT
             }));
 
     private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]
@@ -182,16 +182,21 @@ public class TransformationOptionsConverter implements InitializingBean
         TransformationOptions transformationOptions = null;
         Set<String> optionNames = options.keySet();
 
+        // The "pdf" rendition is special as it was incorrectly set up as an SWFTransformationOptions in 6.0
+        // It should have been simply a TransformationOptions.
+        boolean isPdfRendition = "pdf".equals(renditionName);
+
         Set<String> subclassOptionNames = new HashSet<>(optionNames);
         subclassOptionNames.removeAll(LIMIT_OPTIONS);
         subclassOptionNames.remove(INCLUDE_CONTENTS);
-        if (!subclassOptionNames.isEmpty())
+        boolean hasOptions = !subclassOptionNames.isEmpty();
+        if (isPdfRendition || hasOptions)
         {
-            if (FLASH_OPTIONS.containsAll(subclassOptionNames))
+            if (isPdfRendition || FLASH_OPTIONS.containsAll(subclassOptionNames))
             {
                 SWFTransformationOptions opts = new SWFTransformationOptions();
                 transformationOptions = opts;
-                opts.setFlashVersion(options.get(FLASH_VERSION));
+                opts.setFlashVersion(isPdfRendition ? "9" : options.get(FLASH_VERSION));
             }
             else if (IMAGE_OPTIONS.containsAll(subclassOptionNames) ||  PDF_OPTIONS.containsAll(subclassOptionNames))
             {
@@ -259,12 +264,19 @@ public class TransformationOptionsConverter implements InitializingBean
                 }
             }
         }
+        else
+        {
+            // This what the "pdf" rendition should have used in 6.0 and it is not unreasonable for a custom transformer
+            // and rendition to do the same.
+            transformationOptions = new TransformationOptions();
+        }
 
         if (transformationOptions == null)
         {
             StringJoiner sj = new StringJoiner("\n    ");
             sj.add("The RenditionDefinition2 "+renditionName +
-                    " contains options that cannot be mapped to TransformationOptions used by local transformers");
+                    " contains options that cannot be mapped to TransformationOptions used by local transformers. "+
+                    " The TransformOptionConverter may need to be sub classed to support this conversion.");
             HashSet<String> otherNames = new HashSet<>(optionNames);
             otherNames.removeAll(FLASH_OPTIONS);
             otherNames.removeAll(IMAGE_OPTIONS);

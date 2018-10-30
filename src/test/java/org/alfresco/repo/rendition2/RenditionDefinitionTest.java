@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import junit.framework.TestCase;
+import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.rendition.RenditionServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
@@ -119,12 +120,20 @@ public class RenditionDefinitionTest extends TestCase
             TransformationOptions transformationOptions2 = transformationOptionsConverter.getTransformationOptions(renditionName, options);
             transformationOptions2.setUse(null); // The use is not set in the original until much later
 
-            // These 2 original thumbnails are wrong, as they don't include the 'limits' and in the
-            // case of 'pdf' used the wrong TransformationOptions subclass, so don't use them.
+            // The original pdf and webpreview thumbnails are wrong, as they don't include the 'limits' and in the
+            // case of pdf used the wrong TransformationOptions subclass, so this code only checks the type rather
+            // than checking transformationOptions is equal to transformationOptions2.
             if (!renditionName.equals("pdf") && !renditionName.equals("webpreview"))
             {
                 assertEquals("The TransformationOptions used in transforms for " + renditionName + " should be the same",
                         transformationOptions.toStringAll(), transformationOptions2.toStringAll());
+            }
+            else
+            {
+                assertEquals("The converted class for "+renditionName+" should be the same as before",
+                        transformationOptions.getClass(), transformationOptions2.getClass());
+                assertEquals("The converted class for "+renditionName+" should be SWFTransformationOptions",
+                        SWFTransformationOptions.class, transformationOptions2.getClass());
             }
         }
 

@@ -79,6 +79,7 @@
         <dependency.spring.version>5.1.1.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
         <dependency.jackson.version>2.9.5</dependency.jackson.version>
+        <dependency.cxf.version>3.2.7</dependency.cxf.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>6.0.c</alfresco.share.version>
@@ -371,17 +372,17 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>3.2.6</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>3.2.6</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>3.2.6</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <!-- newer version, see REPO-3133 -->
             <dependency>

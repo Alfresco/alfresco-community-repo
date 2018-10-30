@@ -50,8 +50,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.activation.MimeType;
-
 import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;

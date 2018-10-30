@@ -64,7 +64,7 @@ public class PageCollatorTest extends TestCase
     private int[] createMergedPage(int skip, int count, List<Integer> s1, int[] s2)
     {
         int[] s1Primitive = (s1 == null || s1.isEmpty()) ? new int[] {} : ArrayUtils.toPrimitive((Integer[]) s1
-                    .toArray());
+                    .toArray(new Integer[s1.size()]));
 
         return createMergedPage(skip,
                                 count,

@@ -1664,8 +1664,8 @@ public class FTSParser extends Parser {
 		ParserRuleReturnScope and15 =null;
 		ParserRuleReturnScope ftsPrefixed16 =null;
 
-		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 		RewriteRuleSubtreeStream stream_and=new RewriteRuleSubtreeStream(adaptor,"rule and");
+		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:386:9: ( ftsPrefixed ( and ftsPrefixed )* -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
@@ -1790,8 +1790,8 @@ public class FTSParser extends Parser {
 		ParserRuleReturnScope and17 =null;
 		ParserRuleReturnScope ftsPrefixed18 =null;
 
-		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 		RewriteRuleSubtreeStream stream_and=new RewriteRuleSubtreeStream(adaptor,"rule and");
+		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:393:9: ( ( ( and )? ftsPrefixed )+ -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
@@ -2103,12 +2103,12 @@ public class FTSParser extends Parser {
 		Object PLUS25_tree=null;
 		Object BAR28_tree=null;
 		Object MINUS31_tree=null;
+		RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
 		RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
 		RewriteRuleTokenStream stream_MINUS=new RewriteRuleTokenStream(adaptor,"token MINUS");
-		RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
 		RewriteRuleSubtreeStream stream_not=new RewriteRuleSubtreeStream(adaptor,"rule not");
-		RewriteRuleSubtreeStream stream_ftsTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsTest");
 		RewriteRuleSubtreeStream stream_boost=new RewriteRuleSubtreeStream(adaptor,"rule boost");
+		RewriteRuleSubtreeStream stream_ftsTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsTest");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:414:9: ( ( not )=> not ftsTest ( boost )? -> ^( NEGATION ftsTest ( boost )? ) | ftsTest ( boost )? -> ^( DEFAULT ftsTest ( boost )? ) | PLUS ftsTest ( boost )? -> ^( MANDATORY ftsTest ( boost )? ) | BAR ftsTest ( boost )? -> ^( OPTIONAL ftsTest ( boost )? ) | MINUS ftsTest ( boost )? -> ^( EXCLUDE ftsTest ( boost )? ) )
@@ -2677,13 +2677,13 @@ public class FTSParser extends Parser {
 
 		Object LPAREN43_tree=null;
 		Object RPAREN45_tree=null;
-		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
+		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 		RewriteRuleSubtreeStream stream_template=new RewriteRuleSubtreeStream(adaptor,"rule template");
-		RewriteRuleSubtreeStream stream_ftsFieldGroup=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroup");
-		RewriteRuleSubtreeStream stream_ftsDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsDisjunction");
 		RewriteRuleSubtreeStream stream_ftsRange=new RewriteRuleSubtreeStream(adaptor,"rule ftsRange");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupProximity=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximity");
+		RewriteRuleSubtreeStream stream_ftsDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsDisjunction");
+		RewriteRuleSubtreeStream stream_ftsFieldGroup=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroup");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:446:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( PROXIMITY ftsFieldGroupProximity ) | ( ftsRange )=> ftsRange -> ^( RANGE ftsRange ) | ( ftsFieldGroup )=> ftsFieldGroup -> ftsFieldGroup | ( ftsTermOrPhrase )=> ftsTermOrPhrase | ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase | ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase | LPAREN ftsDisjunction RPAREN -> ftsDisjunction | template -> template )
@@ -2948,8 +2948,8 @@ public class FTSParser extends Parser {
 		ParserRuleReturnScope cmisTerm47 =null;
 		ParserRuleReturnScope cmisPhrase48 =null;
 
-		RewriteRuleSubtreeStream stream_cmisPhrase=new RewriteRuleSubtreeStream(adaptor,"rule cmisPhrase");
 		RewriteRuleSubtreeStream stream_cmisTerm=new RewriteRuleSubtreeStream(adaptor,"rule cmisTerm");
+		RewriteRuleSubtreeStream stream_cmisPhrase=new RewriteRuleSubtreeStream(adaptor,"rule cmisPhrase");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:472:9: ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) )
@@ -3097,10 +3097,10 @@ public class FTSParser extends Parser {
 		Object LPAREN52_tree=null;
 		Object COMMA54_tree=null;
 		Object RPAREN55_tree=null;
-		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
-		RewriteRuleTokenStream stream_PERCENT=new RewriteRuleTokenStream(adaptor,"token PERCENT");
 		RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+		RewriteRuleTokenStream stream_PERCENT=new RewriteRuleTokenStream(adaptor,"token PERCENT");
 		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
+		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 		RewriteRuleSubtreeStream stream_tempReference=new RewriteRuleSubtreeStream(adaptor,"rule tempReference");
 
 		try {
@@ -3406,8 +3406,8 @@ public class FTSParser extends Parser {
 
 		Object TILDA58_tree=null;
 		Object DECIMAL_INTEGER_LITERAL59_tree=null;
-		RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
 		RewriteRuleTokenStream stream_DECIMAL_INTEGER_LITERAL=new RewriteRuleTokenStream(adaptor,"token DECIMAL_INTEGER_LITERAL");
+		RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:499:9: ( TILDA DECIMAL_INTEGER_LITERAL -> ^( FUZZY DECIMAL_INTEGER_LITERAL ) )
@@ -3584,12 +3584,12 @@ public class FTSParser extends Parser {
 		Object COLON63_tree=null;
 		Object FTSPHRASE64_tree=null;
 		Object FTSPHRASE68_tree=null;
-		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
 		RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
-		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
-		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
+		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
 		RewriteRuleSubtreeStream stream_ftsWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsWord");
 		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
+		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
+		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:513:9: ( ( fieldReference COLON )=> fieldReference COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReference ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReference ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
@@ -3964,7 +3964,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: FTSPHRASE, slop, fieldReference
+							// elements: fieldReference, FTSPHRASE, slop
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4041,7 +4041,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fuzzy, ftsWord, fieldReference
+							// elements: ftsWord, fuzzy, fieldReference
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4115,7 +4115,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: slop, FTSPHRASE
+					// elements: FTSPHRASE, slop
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -4280,13 +4280,13 @@ public class FTSParser extends Parser {
 		Object COLON74_tree=null;
 		Object FTSPHRASE75_tree=null;
 		Object FTSPHRASE79_tree=null;
-		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
-		RewriteRuleTokenStream stream_EQUALS=new RewriteRuleTokenStream(adaptor,"token EQUALS");
 		RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
-		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
-		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
+		RewriteRuleTokenStream stream_EQUALS=new RewriteRuleTokenStream(adaptor,"token EQUALS");
+		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
 		RewriteRuleSubtreeStream stream_ftsWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsWord");
 		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
+		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
+		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:532:9: ( EQUALS ( ( fieldReference COLON )=> fieldReference COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReference ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReference ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) ) )
@@ -4361,7 +4361,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: slop, fieldReference, FTSPHRASE
+							// elements: FTSPHRASE, fieldReference, slop
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4438,7 +4438,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fieldReference, ftsWord, fuzzy
+							// elements: fieldReference, fuzzy, ftsWord
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4512,7 +4512,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: FTSPHRASE, slop
+					// elements: slop, FTSPHRASE
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -4588,7 +4588,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsWord, fuzzy
+					// elements: fuzzy, ftsWord
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -4680,13 +4680,13 @@ public class FTSParser extends Parser {
 		Object COLON85_tree=null;
 		Object FTSPHRASE86_tree=null;
 		Object FTSPHRASE90_tree=null;
-		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
-		RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
 		RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
-		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
-		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
+		RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
+		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
 		RewriteRuleSubtreeStream stream_ftsWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsWord");
 		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
+		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
+		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:554:9: ( TILDA ( ( fieldReference COLON )=> fieldReference COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReference ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReference ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) ) )
@@ -4761,7 +4761,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fieldReference, slop, FTSPHRASE
+							// elements: FTSPHRASE, fieldReference, slop
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4838,7 +4838,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: ftsWord, fuzzy, fieldReference
+							// elements: fuzzy, ftsWord, fieldReference
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4912,7 +4912,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: FTSPHRASE, slop
+					// elements: slop, FTSPHRASE
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -5319,7 +5319,7 @@ public class FTSParser extends Parser {
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsFieldGroupRange.add(ftsFieldGroupRange98.getTree());
 			// AST REWRITE
-			// elements: ftsFieldGroupRange, fieldReference
+			// elements: fieldReference, ftsFieldGroupRange
 			// token labels: 
 			// rule labels: retval
 			// token list labels: 
@@ -5392,11 +5392,11 @@ public class FTSParser extends Parser {
 		Object COLON100_tree=null;
 		Object LPAREN101_tree=null;
 		Object RPAREN103_tree=null;
+		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
 		RewriteRuleTokenStream stream_COLON=new RewriteRuleTokenStream(adaptor,"token COLON");
 		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
-		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
-		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupDisjunction");
+		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:596:9: ( fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction ) )
@@ -6703,12 +6703,12 @@ public class FTSParser extends Parser {
 		Object PLUS121_tree=null;
 		Object BAR124_tree=null;
 		Object MINUS127_tree=null;
+		RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
 		RewriteRuleTokenStream stream_PLUS=new RewriteRuleTokenStream(adaptor,"token PLUS");
 		RewriteRuleTokenStream stream_MINUS=new RewriteRuleTokenStream(adaptor,"token MINUS");
-		RewriteRuleTokenStream stream_BAR=new RewriteRuleTokenStream(adaptor,"token BAR");
 		RewriteRuleSubtreeStream stream_not=new RewriteRuleSubtreeStream(adaptor,"rule not");
-		RewriteRuleSubtreeStream stream_boost=new RewriteRuleSubtreeStream(adaptor,"rule boost");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTest");
+		RewriteRuleSubtreeStream stream_boost=new RewriteRuleSubtreeStream(adaptor,"rule boost");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:641:9: ( ( not )=> not ftsFieldGroupTest ( boost )? -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? ) | ftsFieldGroupTest ( boost )? -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? ) | PLUS ftsFieldGroupTest ( boost )? -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? ) | BAR ftsFieldGroupTest ( boost )? -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? ) | MINUS ftsFieldGroupTest ( boost )? -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? ) )
@@ -6782,7 +6782,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: boost, ftsFieldGroupTest
+					// elements: ftsFieldGroupTest, boost
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -6846,7 +6846,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupTest, boost
+					// elements: boost, ftsFieldGroupTest
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -6980,7 +6980,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupTest, boost
+					// elements: boost, ftsFieldGroupTest
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7140,19 +7140,19 @@ public class FTSParser extends Parser {
 
 		Object LPAREN144_tree=null;
 		Object RPAREN146_tree=null;
-		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
+		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
+		RewriteRuleSubtreeStream stream_ftsFieldGroupSynonym=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupSynonym");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupRange=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupRange");
-		RewriteRuleSubtreeStream stream_ftsFieldGroupPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupPhrase");
+		RewriteRuleSubtreeStream stream_ftsFieldGroupProximity=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximity");
+		RewriteRuleSubtreeStream stream_ftsFieldGroupDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupDisjunction");
+		RewriteRuleSubtreeStream stream_ftsFieldGroupExactTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactTerm");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupExactPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactPhrase");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupTokenisedPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTokenisedPhrase");
 		RewriteRuleSubtreeStream stream_fuzzy=new RewriteRuleSubtreeStream(adaptor,"rule fuzzy");
-		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
+		RewriteRuleSubtreeStream stream_ftsFieldGroupPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupPhrase");
 		RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
-		RewriteRuleSubtreeStream stream_ftsFieldGroupSynonym=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupSynonym");
-		RewriteRuleSubtreeStream stream_ftsFieldGroupExactTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactTerm");
-		RewriteRuleSubtreeStream stream_ftsFieldGroupDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupDisjunction");
-		RewriteRuleSubtreeStream stream_ftsFieldGroupProximity=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximity");
+		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:660:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? ) | ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? ) | ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? ) | ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )? -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? ) | ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? ) | ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )? -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? ) | ( ftsFieldGroupRange )=> ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupDisjunction RPAREN -> ftsFieldGroupDisjunction )
@@ -7238,7 +7238,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: fuzzy, ftsFieldGroupTerm
+					// elements: ftsFieldGroupTerm, fuzzy
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7314,7 +7314,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: fuzzy, ftsFieldGroupExactTerm
+					// elements: ftsFieldGroupExactTerm, fuzzy
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7384,7 +7384,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupPhrase, slop
+					// elements: slop, ftsFieldGroupPhrase
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7454,7 +7454,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: slop, ftsFieldGroupExactPhrase
+					// elements: ftsFieldGroupExactPhrase, slop
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7524,7 +7524,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupTokenisedPhrase, slop
+					// elements: slop, ftsFieldGroupTokenisedPhrase
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -8888,10 +8888,10 @@ public class FTSParser extends Parser {
 		Object LPAREN173_tree=null;
 		Object DECIMAL_INTEGER_LITERAL174_tree=null;
 		Object RPAREN175_tree=null;
-		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
-		RewriteRuleTokenStream stream_STAR=new RewriteRuleTokenStream(adaptor,"token STAR");
 		RewriteRuleTokenStream stream_DECIMAL_INTEGER_LITERAL=new RewriteRuleTokenStream(adaptor,"token DECIMAL_INTEGER_LITERAL");
+		RewriteRuleTokenStream stream_STAR=new RewriteRuleTokenStream(adaptor,"token STAR");
 		RewriteRuleTokenStream stream_LPAREN=new RewriteRuleTokenStream(adaptor,"token LPAREN");
+		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:745:9: ( STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )? -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? ) )
@@ -9024,8 +9024,8 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_DOTDOT=new RewriteRuleTokenStream(adaptor,"token DOTDOT");
 		RewriteRuleTokenStream stream_TO=new RewriteRuleTokenStream(adaptor,"token TO");
 		RewriteRuleSubtreeStream stream_range_left=new RewriteRuleSubtreeStream(adaptor,"rule range_left");
-		RewriteRuleSubtreeStream stream_range_right=new RewriteRuleSubtreeStream(adaptor,"rule range_right");
 		RewriteRuleSubtreeStream stream_ftsRangeWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsRangeWord");
+		RewriteRuleSubtreeStream stream_range_right=new RewriteRuleSubtreeStream(adaptor,"rule range_right");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:752:9: ( ftsRangeWord DOTDOT ftsRangeWord -> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE | range_left ftsRangeWord TO ftsRangeWord range_right -> range_left ftsRangeWord ftsRangeWord range_right )
@@ -9115,7 +9115,7 @@ public class FTSParser extends Parser {
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_range_right.add(range_right183.getTree());
 					// AST REWRITE
-					// elements: range_right, ftsRangeWord, ftsRangeWord, range_left
+					// elements: ftsRangeWord, range_left, range_right, ftsRangeWord
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -9183,8 +9183,8 @@ public class FTSParser extends Parser {
 
 		Object LSQUARE184_tree=null;
 		Object LT185_tree=null;
-		RewriteRuleTokenStream stream_LT=new RewriteRuleTokenStream(adaptor,"token LT");
 		RewriteRuleTokenStream stream_LSQUARE=new RewriteRuleTokenStream(adaptor,"token LSQUARE");
+		RewriteRuleTokenStream stream_LT=new RewriteRuleTokenStream(adaptor,"token LT");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:760:9: ( LSQUARE -> INCLUSIVE | LT -> EXCLUSIVE )
@@ -9306,8 +9306,8 @@ public class FTSParser extends Parser {
 
 		Object RSQUARE186_tree=null;
 		Object GT187_tree=null;
-		RewriteRuleTokenStream stream_GT=new RewriteRuleTokenStream(adaptor,"token GT");
 		RewriteRuleTokenStream stream_RSQUARE=new RewriteRuleTokenStream(adaptor,"token RSQUARE");
+		RewriteRuleTokenStream stream_GT=new RewriteRuleTokenStream(adaptor,"token GT");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:768:9: ( RSQUARE -> INCLUSIVE | GT -> EXCLUSIVE )
@@ -9431,9 +9431,9 @@ public class FTSParser extends Parser {
 
 		Object AT188_tree=null;
 		RewriteRuleTokenStream stream_AT=new RewriteRuleTokenStream(adaptor,"token AT");
+		RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
 		RewriteRuleSubtreeStream stream_prefix=new RewriteRuleSubtreeStream(adaptor,"rule prefix");
 		RewriteRuleSubtreeStream stream_uri=new RewriteRuleSubtreeStream(adaptor,"rule uri");
-		RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:778:9: ( ( AT )? ( ( prefix )=> prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) )
@@ -9743,7 +9743,7 @@ public class FTSParser extends Parser {
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_identifier.add(identifier191.getTree());
 			// AST REWRITE
-			// elements: uri, prefix, identifier
+			// elements: identifier, prefix, uri
 			// token labels: 
 			// rule labels: retval
 			// token list labels: 
@@ -9827,9 +9827,9 @@ public class FTSParser extends Parser {
 
 		Object AT192_tree=null;
 		RewriteRuleTokenStream stream_AT=new RewriteRuleTokenStream(adaptor,"token AT");
+		RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
 		RewriteRuleSubtreeStream stream_prefix=new RewriteRuleSubtreeStream(adaptor,"rule prefix");
 		RewriteRuleSubtreeStream stream_uri=new RewriteRuleSubtreeStream(adaptor,"rule uri");
-		RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:790:9: ( ( AT )? ( prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) )
@@ -9941,7 +9941,7 @@ public class FTSParser extends Parser {
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_identifier.add(identifier195.getTree());
 			// AST REWRITE
-			// elements: prefix, identifier, uri
+			// elements: identifier, uri, prefix
 			// token labels: 
 			// rule labels: retval
 			// token list labels: 
@@ -10199,11 +10199,11 @@ public class FTSParser extends Parser {
 		Object AND203_tree=null;
 		Object NOT204_tree=null;
 		RewriteRuleTokenStream stream_NOT=new RewriteRuleTokenStream(adaptor,"token NOT");
-		RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
-		RewriteRuleTokenStream stream_TO=new RewriteRuleTokenStream(adaptor,"token TO");
-		RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
-		RewriteRuleTokenStream stream_DOT=new RewriteRuleTokenStream(adaptor,"token DOT");
 		RewriteRuleTokenStream stream_OR=new RewriteRuleTokenStream(adaptor,"token OR");
+		RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
+		RewriteRuleTokenStream stream_DOT=new RewriteRuleTokenStream(adaptor,"token DOT");
+		RewriteRuleTokenStream stream_ID=new RewriteRuleTokenStream(adaptor,"token ID");
+		RewriteRuleTokenStream stream_TO=new RewriteRuleTokenStream(adaptor,"token TO");
 
 		try {
 			// W:\\alfresco\\HEAD-BUG-FIX\\root\\projects\\data-model\\source\\java\\org\\alfresco\\repo\\search\\impl\\parsers\\FTS.g:816:9: ( ( ID DOT ID )=>id1= ID DOT id2= ID ->| ID -> ID | TO -> TO | OR -> OR | AND -> AND | NOT -> NOT )
@@ -14123,39 +14123,11 @@ public class FTSParser extends Parser {
 
 	// Delegated rules
 
-	public final boolean synpred22_FTS() {
+	public final boolean synpred18_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred22_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred1_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred1_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred27_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred27_FTS_fragment(); // can never throw exception
+			synpred18_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14179,193 +14151,11 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred34_FTS() {
+	public final boolean synpred9_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred34_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred7_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred7_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred31_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred31_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred45_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred45_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred8_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred8_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred49_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred49_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred4_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred4_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred24_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred24_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred20_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred20_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred48_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred48_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred52_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred52_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred10_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred10_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred41_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred41_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred35_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred35_FTS_fragment(); // can never throw exception
+			synpred9_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14389,6 +14179,216 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
+	public final boolean synpred51_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred51_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred35_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred35_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred27_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred27_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred42_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred42_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred25_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred25_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred44_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred44_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred8_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred8_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred34_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred34_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred52_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred52_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred17_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred17_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred37_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred37_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred24_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred24_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred10_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred10_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred53_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred53_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred7_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred7_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
 	public final boolean synpred40_FTS() {
 		state.backtracking++;
 		int start = input.mark();
@@ -14403,11 +14403,39 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred56_FTS() {
+	public final boolean synpred49_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred56_FTS_fragment(); // can never throw exception
+			synpred49_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred19_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred19_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred23_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred23_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14445,235 +14473,11 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred30_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred30_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred21_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred21_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred23_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred23_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred17_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred17_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred14_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred14_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred12_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred12_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred50_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred50_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred51_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred51_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred53_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred53_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred19_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred19_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred9_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred9_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred32_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred32_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred16_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred16_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred29_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred29_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
 	public final boolean synpred11_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
 			synpred11_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred3_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred3_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred44_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred44_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14697,109 +14501,11 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred46_FTS() {
+	public final boolean synpred41_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred46_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred18_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred18_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred25_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred25_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred2_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred2_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred55_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred55_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred47_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred47_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred38_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred38_FTS_fragment(); // can never throw exception
-		} catch (RecognitionException re) {
-			System.err.println("impossible: "+re);
-		}
-		boolean success = !state.failed;
-		input.rewind(start);
-		state.backtracking--;
-		state.failed=false;
-		return success;
-	}
-	public final boolean synpred42_FTS() {
-		state.backtracking++;
-		int start = input.mark();
-		try {
-			synpred42_FTS_fragment(); // can never throw exception
+			synpred41_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14823,6 +14529,48 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
+	public final boolean synpred48_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred48_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred21_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred21_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred14_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred14_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
 	public final boolean synpred5_FTS() {
 		state.backtracking++;
 		int start = input.mark();
@@ -14837,11 +14585,11 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred28_FTS() {
+	public final boolean synpred55_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred28_FTS_fragment(); // can never throw exception
+			synpred55_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14851,11 +14599,67 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred15_FTS() {
+	public final boolean synpred12_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred15_FTS_fragment(); // can never throw exception
+			synpred12_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred31_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred31_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred38_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred38_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred47_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred47_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred22_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred22_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14879,11 +14683,137 @@ public class FTSParser extends Parser {
 		state.failed=false;
 		return success;
 	}
-	public final boolean synpred37_FTS() {
+	public final boolean synpred4_FTS() {
 		state.backtracking++;
 		int start = input.mark();
 		try {
-			synpred37_FTS_fragment(); // can never throw exception
+			synpred4_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred30_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred30_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred56_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred56_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred32_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred32_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred46_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred46_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred29_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred29_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred1_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred1_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred3_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred3_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred16_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred16_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred50_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred50_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14898,6 +14828,76 @@ public class FTSParser extends Parser {
 		int start = input.mark();
 		try {
 			synpred33_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred20_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred20_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred28_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred28_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred45_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred45_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred2_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred2_FTS_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred15_FTS() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred15_FTS_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -14936,13 +14936,13 @@ public class FTSParser extends Parser {
 		"\13\4\14\uffff\6\4\1\3\16\uffff\2\4\7\uffff\1\1\33\4\6\uffff\3\4\7\uffff"+
 		"\2\4\3\uffff\12\4\1\uffff\13\4\3\uffff\1\4\1\uffff";
 	static final String DFA17_specialS =
-		"\1\45\1\73\1\40\1\43\1\44\1\66\1\77\1\54\1\55\1\71\1\63\4\uffff\1\62\10"+
-		"\uffff\1\53\1\20\1\56\37\uffff\1\47\1\4\1\2\1\5\1\27\7\uffff\1\41\13\uffff"+
-		"\1\17\1\60\1\57\1\65\1\11\1\75\1\12\1\25\1\35\1\31\1\24\10\uffff\1\3\1"+
-		"\0\2\uffff\1\1\1\67\1\72\1\42\1\10\1\51\1\52\1\26\1\46\3\uffff\1\37\1"+
-		"\34\4\uffff\1\6\34\uffff\1\32\1\33\1\22\1\14\1\7\1\76\3\uffff\1\50\1\15"+
-		"\1\13\1\64\1\70\1\16\1\74\4\uffff\1\36\12\uffff\1\23\13\uffff\1\21\1\uffff"+
-		"\1\30\1\uffff\1\61}>";
+		"\1\75\1\77\1\37\1\44\1\45\1\62\1\54\1\56\1\52\1\66\1\60\4\uffff\1\55\10"+
+		"\uffff\1\25\1\43\1\71\37\uffff\1\33\1\10\1\6\1\13\1\20\7\uffff\1\76\13"+
+		"\uffff\1\40\1\24\1\22\1\27\1\42\1\47\1\65\1\61\1\73\1\5\1\46\10\uffff"+
+		"\1\53\1\63\2\uffff\1\64\1\15\1\12\1\23\1\31\1\30\1\26\1\41\1\36\3\uffff"+
+		"\1\4\1\51\4\uffff\1\32\34\uffff\1\57\1\0\1\7\1\21\1\34\1\50\3\uffff\1"+
+		"\70\1\67\1\74\1\3\1\2\1\17\1\11\4\uffff\1\14\12\uffff\1\16\13\uffff\1"+
+		"\35\1\uffff\1\72\1\uffff\1\1}>";
 	static final String[] DFA17_transitionS = {
 			"\1\16\1\14\4\uffff\1\22\1\uffff\1\11\1\uffff\1\7\5\uffff\1\22\2\uffff"+
 			"\1\24\26\uffff\1\10\2\uffff\1\17\1\3\1\4\1\2\11\uffff\1\1\3\uffff\1\26"+
@@ -15365,92 +15365,173 @@ public class FTSParser extends Parser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA17_102 = input.LA(1);
+						int LA17_153 = input.LA(1);
 						 
-						int index17_102 = input.index();
+						int index17_153 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_102==COLON) ) {s = 118;}
-						else if ( (LA17_102==COMMA||LA17_102==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_102==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_102==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_102==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_102==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_102==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_102==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_102==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_102==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_102==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_102==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_102==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_102==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_102==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_102==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_102==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_102==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_102==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_102==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_102==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_102==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_102==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_102==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_102==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_102==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_102==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_102==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_102==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_102==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_102==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_102==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 182;}
 						 
-						input.seek(index17_102);
+						input.seek(index17_153);
 						if ( s>=0 ) return s;
 						break;
 
 					case 1 : 
-						int LA17_105 = input.LA(1);
+						int LA17_199 = input.LA(1);
 						 
-						int index17_105 = input.index();
+						int index17_199 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_105==COLON) ) {s = 118;}
-						else if ( (LA17_105==COMMA||LA17_105==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_105==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_105==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_105==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_105==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_105==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_105==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_105==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_105==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_105==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_105==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_105==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_105==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_105==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_105==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_105==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_105==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_105==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_105==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_105==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_105==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_105==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_105==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_105==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_105==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_105==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_105==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_105==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_105==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_105==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_105==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (synpred3_FTS()) ) {s = 27;}
+						else if ( (synpred5_FTS()) ) {s = 198;}
 						 
-						input.seek(index17_105);
+						input.seek(index17_199);
 						if ( s>=0 ) return s;
 						break;
 
 					case 2 : 
+						int LA17_165 = input.LA(1);
+						 
+						int index17_165 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_165==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_165==COMMA||LA17_165==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_165==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_165==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_165==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_165==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_165==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_165==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_165==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_165==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_165==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_165==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_165==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_165==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_165==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_165==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_165==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_165==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_165==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_165==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_165==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_165==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_165==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_165==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_165==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_165==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_165==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_165==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_165==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_165==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_165==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_165==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_165);
+						if ( s>=0 ) return s;
+						break;
+
+					case 3 : 
+						int LA17_164 = input.LA(1);
+						 
+						int index17_164 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_164==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_164==COMMA||LA17_164==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_164==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_164==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_164==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_164==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_164==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_164==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_164==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_164==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_164==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_164==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_164==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_164==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_164==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_164==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_164==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_164==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_164==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_164==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_164==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_164==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_164==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_164==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_164==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_164==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_164==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_164==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_164==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_164==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_164==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_164==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_164);
+						if ( s>=0 ) return s;
+						break;
+
+					case 4 : 
+						int LA17_117 = input.LA(1);
+						 
+						int index17_117 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_117==ID) ) {s = 166;}
+						else if ( (LA17_117==FTSWORD) && (synpred5_FTS())) {s = 71;}
+						else if ( (LA17_117==FTSPRE) && (synpred5_FTS())) {s = 72;}
+						else if ( (LA17_117==FTSWILD) && (synpred5_FTS())) {s = 73;}
+						else if ( (LA17_117==NOT) && (synpred5_FTS())) {s = 74;}
+						else if ( (LA17_117==TO) && (synpred5_FTS())) {s = 75;}
+						else if ( (LA17_117==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
+						else if ( (LA17_117==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
+						else if ( (LA17_117==STAR) && (synpred5_FTS())) {s = 78;}
+						else if ( (LA17_117==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
+						else if ( (LA17_117==DATETIME) && (synpred5_FTS())) {s = 80;}
+						else if ( (LA17_117==URI) && (synpred5_FTS())) {s = 81;}
+						else if ( (LA17_117==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_117==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_117==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_117==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_117==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_117==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_117==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_117==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_117==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_117==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_117==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_117==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_117==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_117==COMMA||LA17_117==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_117==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_117==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_117==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_117==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_117==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_117);
+						if ( s>=0 ) return s;
+						break;
+
+					case 5 : 
+						int LA17_91 = input.LA(1);
+						 
+						int index17_91 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_91);
+						if ( s>=0 ) return s;
+						break;
+
+					case 6 : 
 						int LA17_60 = input.LA(1);
 						 
 						int index17_60 = input.index();
@@ -15494,52 +15575,20 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 3 : 
-						int LA17_101 = input.LA(1);
+					case 7 : 
+						int LA17_154 = input.LA(1);
 						 
-						int index17_101 = input.index();
+						int index17_154 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_101==DOT) ) {s = 157;}
-						else if ( (LA17_101==COLON) ) {s = 118;}
-						else if ( (LA17_101==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_101==COMMA) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_101==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_101==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_101==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_101==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_101==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_101==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_101==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_101==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_101==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_101==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_101==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_101==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_101==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_101==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_101==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_101==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_101==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_101==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_101==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_101==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_101==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_101==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_101==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_101==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_101==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_101==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_101==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_101==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_101==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_101==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 182;}
 						 
-						input.seek(index17_101);
+						input.seek(index17_154);
 						if ( s>=0 ) return s;
 						break;
 
-					case 4 : 
+					case 8 : 
 						int LA17_59 = input.LA(1);
 						 
 						int index17_59 = input.index();
@@ -15583,7 +15632,93 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 5 : 
+					case 9 : 
+						int LA17_167 = input.LA(1);
+						 
+						int index17_167 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_167==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_167==COMMA||LA17_167==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_167==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_167==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_167==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_167==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_167==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_167==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_167==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_167==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_167==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_167==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_167==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_167==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_167==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_167==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_167==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_167==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_167==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_167==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_167==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_167==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_167==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_167==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_167==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_167==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_167==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_167==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_167==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_167==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_167==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_167==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_167);
+						if ( s>=0 ) return s;
+						break;
+
+					case 10 : 
+						int LA17_107 = input.LA(1);
+						 
+						int index17_107 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_107==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_107==COMMA||LA17_107==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_107==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_107==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_107==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_107==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_107==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_107==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_107==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_107==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_107==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_107==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_107==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_107==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_107==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_107==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_107==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_107==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_107==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_107==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_107==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_107==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_107==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_107==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_107==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_107==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_107==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_107==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_107==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_107==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_107==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_107==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_107);
+						if ( s>=0 ) return s;
+						break;
+
+					case 11 : 
 						int LA17_61 = input.LA(1);
 						 
 						int index17_61 = input.index();
@@ -15627,230 +15762,106 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 6 : 
-						int LA17_123 = input.LA(1);
-						 
-						int index17_123 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_123==RPAREN) ) {s = 172;}
-						else if ( (LA17_123==COMMA||LA17_123==DOT) && (synpred5_FTS())) {s = 173;}
-						else if ( (LA17_123==OR) && (synpred5_FTS())) {s = 174;}
-						else if ( (LA17_123==BAR) && (synpred5_FTS())) {s = 175;}
-						else if ( (LA17_123==ID) && (synpred5_FTS())) {s = 126;}
-						else if ( (LA17_123==FTSWORD) && (synpred5_FTS())) {s = 127;}
-						else if ( (LA17_123==FTSPRE) && (synpred5_FTS())) {s = 128;}
-						else if ( (LA17_123==FTSWILD) && (synpred5_FTS())) {s = 129;}
-						else if ( (LA17_123==NOT) && (synpred5_FTS())) {s = 130;}
-						else if ( (LA17_123==TO) && (synpred5_FTS())) {s = 131;}
-						else if ( (LA17_123==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 176;}
-						else if ( (LA17_123==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 132;}
-						else if ( (LA17_123==STAR) && (synpred5_FTS())) {s = 177;}
-						else if ( (LA17_123==QUESTION_MARK) && (synpred5_FTS())) {s = 134;}
-						else if ( (LA17_123==DATETIME) && (synpred5_FTS())) {s = 135;}
-						else if ( (LA17_123==URI) && (synpred5_FTS())) {s = 136;}
-						else if ( (LA17_123==FTSPHRASE) && (synpred5_FTS())) {s = 137;}
-						else if ( (LA17_123==MINUS) && (synpred5_FTS())) {s = 138;}
-						else if ( (LA17_123==DOTDOT) && (synpred5_FTS())) {s = 178;}
-						else if ( (LA17_123==TILDA) && (synpred5_FTS())) {s = 179;}
-						else if ( (LA17_123==CARAT) && (synpred5_FTS())) {s = 180;}
-						else if ( (LA17_123==AND) && (synpred5_FTS())) {s = 181;}
-						else if ( (LA17_123==AMP) && (synpred5_FTS())) {s = 182;}
-						else if ( (LA17_123==EXCLAMATION) && (synpred5_FTS())) {s = 141;}
-						else if ( (LA17_123==AT) && (synpred5_FTS())) {s = 142;}
-						else if ( (LA17_123==LSQUARE) && (synpred5_FTS())) {s = 144;}
-						else if ( (LA17_123==LT) && (synpred5_FTS())) {s = 145;}
-						else if ( (LA17_123==EQUALS) && (synpred5_FTS())) {s = 146;}
-						else if ( (LA17_123==LPAREN) && (synpred5_FTS())) {s = 148;}
-						else if ( (LA17_123==PERCENT) && (synpred5_FTS())) {s = 149;}
-						else if ( (LA17_123==PLUS) && (synpred5_FTS())) {s = 150;}
-						 
-						input.seek(index17_123);
-						if ( s>=0 ) return s;
-						break;
-
-					case 7 : 
-						int LA17_156 = input.LA(1);
-						 
-						int index17_156 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 182;}
-						 
-						input.seek(index17_156);
-						if ( s>=0 ) return s;
-						break;
-
-					case 8 : 
-						int LA17_109 = input.LA(1);
-						 
-						int index17_109 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_109==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_109==TILDA) && (synpred5_FTS())) {s = 160;}
-						else if ( (LA17_109==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_109==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_109==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_109==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_109==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_109==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_109==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_109==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_109==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_109==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_109==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_109==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_109==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_109==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_109==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_109==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_109==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_109==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_109==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_109==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_109==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_109==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_109==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_109==COMMA||LA17_109==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_109==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_109==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_109==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_109==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_109==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_109==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_109);
-						if ( s>=0 ) return s;
-						break;
-
-					case 9 : 
-						int LA17_86 = input.LA(1);
-						 
-						int index17_86 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_86);
-						if ( s>=0 ) return s;
-						break;
-
-					case 10 : 
-						int LA17_88 = input.LA(1);
-						 
-						int index17_88 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_88);
-						if ( s>=0 ) return s;
-						break;
-
-					case 11 : 
-						int LA17_163 = input.LA(1);
-						 
-						int index17_163 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_163==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_163==COMMA||LA17_163==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_163==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_163==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_163==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_163==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_163==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_163==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_163==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_163==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_163==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_163==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_163==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_163==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_163==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_163==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_163==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_163==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_163==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_163==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_163==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_163==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_163==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_163==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_163==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_163==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_163==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_163==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_163==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_163==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_163==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_163==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_163);
-						if ( s>=0 ) return s;
-						break;
-
 					case 12 : 
-						int LA17_155 = input.LA(1);
+						int LA17_172 = input.LA(1);
 						 
-						int index17_155 = input.index();
+						int index17_172 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 182;}
+						if ( (LA17_172==ID) ) {s = 83;}
+						else if ( (LA17_172==FTSWORD) ) {s = 84;}
+						else if ( (LA17_172==FTSPRE) ) {s = 85;}
+						else if ( (LA17_172==FTSWILD) ) {s = 86;}
+						else if ( (LA17_172==NOT) ) {s = 87;}
+						else if ( (LA17_172==TO) ) {s = 88;}
+						else if ( (LA17_172==DECIMAL_INTEGER_LITERAL) ) {s = 89;}
+						else if ( (LA17_172==FLOATING_POINT_LITERAL) ) {s = 90;}
+						else if ( (LA17_172==DATETIME) ) {s = 91;}
+						else if ( (LA17_172==STAR) ) {s = 197;}
+						else if ( (LA17_172==URI) ) {s = 93;}
+						else if ( (LA17_172==CARAT) && (synpred5_FTS())) {s = 97;}
+						else if ( (LA17_172==AND) && (synpred5_FTS())) {s = 98;}
+						else if ( (LA17_172==AMP) && (synpred5_FTS())) {s = 99;}
+						else if ( (LA17_172==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_172==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_172==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_172==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_172==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_172==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_172==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_172==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_172==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_172==COMMA||LA17_172==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_172==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_172==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_172==TILDA) && (synpred5_FTS())) {s = 198;}
+						else if ( (LA17_172==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_172==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_172==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_172==MINUS) && (synpred5_FTS())) {s = 57;}
 						 
-						input.seek(index17_155);
+						input.seek(index17_172);
 						if ( s>=0 ) return s;
 						break;
 
 					case 13 : 
-						int LA17_162 = input.LA(1);
+						int LA17_106 = input.LA(1);
 						 
-						int index17_162 = input.index();
+						int index17_106 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_162==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_162==COMMA||LA17_162==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_162==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_162==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_162==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_162==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_162==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_162==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_162==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_162==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_162==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_162==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_162==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_162==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_162==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_162==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_162==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_162==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_162==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_162==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_162==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_162==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_162==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_162==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_162==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_162==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_162==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_162==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_162==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_162==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_162==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_162==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (LA17_106==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_106==COMMA||LA17_106==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_106==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_106==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_106==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_106==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_106==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_106==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_106==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_106==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_106==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_106==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_106==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_106==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_106==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_106==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_106==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_106==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_106==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_106==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_106==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_106==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_106==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_106==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_106==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_106==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_106==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_106==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_106==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_106==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_106==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_106==MINUS) && (synpred5_FTS())) {s = 57;}
 						 
-						input.seek(index17_162);
+						input.seek(index17_106);
 						if ( s>=0 ) return s;
 						break;
 
 					case 14 : 
+						int LA17_183 = input.LA(1);
+						 
+						int index17_183 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_FTS()) ) {s = 27;}
+						else if ( (synpred4_FTS()) ) {s = 100;}
+						else if ( (synpred5_FTS()) ) {s = 198;}
+						 
+						input.seek(index17_183);
+						if ( s>=0 ) return s;
+						break;
+
+					case 15 : 
 						int LA17_166 = input.LA(1);
 						 
 						int index17_166 = input.index();
@@ -15865,228 +15876,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 15 : 
-						int LA17_82 = input.LA(1);
-						 
-						int index17_82 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_82==DECIMAL_INTEGER_LITERAL) ) {s = 123;}
-						else if ( (LA17_82==RPAREN) && (synpred2_FTS())) {s = 124;}
-						else if ( (LA17_82==COMMA||LA17_82==DOT) && (synpred5_FTS())) {s = 125;}
-						else if ( (LA17_82==ID) && (synpred5_FTS())) {s = 126;}
-						else if ( (LA17_82==FTSWORD) && (synpred5_FTS())) {s = 127;}
-						else if ( (LA17_82==FTSPRE) && (synpred5_FTS())) {s = 128;}
-						else if ( (LA17_82==FTSWILD) && (synpred5_FTS())) {s = 129;}
-						else if ( (LA17_82==NOT) && (synpred5_FTS())) {s = 130;}
-						else if ( (LA17_82==TO) && (synpred5_FTS())) {s = 131;}
-						else if ( (LA17_82==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 132;}
-						else if ( (LA17_82==STAR) && (synpred5_FTS())) {s = 133;}
-						else if ( (LA17_82==QUESTION_MARK) && (synpred5_FTS())) {s = 134;}
-						else if ( (LA17_82==DATETIME) && (synpred5_FTS())) {s = 135;}
-						else if ( (LA17_82==URI) && (synpred5_FTS())) {s = 136;}
-						else if ( (LA17_82==FTSPHRASE) && (synpred5_FTS())) {s = 137;}
-						else if ( (LA17_82==MINUS) && (synpred5_FTS())) {s = 138;}
-						else if ( (LA17_82==AND) && (synpred5_FTS())) {s = 139;}
-						else if ( (LA17_82==AMP) && (synpred5_FTS())) {s = 140;}
-						else if ( (LA17_82==EXCLAMATION) && (synpred5_FTS())) {s = 141;}
-						else if ( (LA17_82==AT) && (synpred5_FTS())) {s = 142;}
-						else if ( (LA17_82==OR) && (synpred5_FTS())) {s = 143;}
-						else if ( (LA17_82==LSQUARE) && (synpred5_FTS())) {s = 144;}
-						else if ( (LA17_82==LT) && (synpred5_FTS())) {s = 145;}
-						else if ( (LA17_82==EQUALS) && (synpred5_FTS())) {s = 146;}
-						else if ( (LA17_82==TILDA) && (synpred5_FTS())) {s = 147;}
-						else if ( (LA17_82==LPAREN) && (synpred5_FTS())) {s = 148;}
-						else if ( (LA17_82==PERCENT) && (synpred5_FTS())) {s = 149;}
-						else if ( (LA17_82==PLUS) && (synpred5_FTS())) {s = 150;}
-						else if ( (LA17_82==BAR) && (synpred5_FTS())) {s = 151;}
-						 
-						input.seek(index17_82);
-						if ( s>=0 ) return s;
-						break;
-
 					case 16 : 
-						int LA17_25 = input.LA(1);
-						 
-						int index17_25 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_25==LPAREN) ) {s = 82;}
-						else if ( (LA17_25==ID) ) {s = 83;}
-						else if ( (LA17_25==FTSWORD) ) {s = 84;}
-						else if ( (LA17_25==FTSPRE) ) {s = 85;}
-						else if ( (LA17_25==FTSWILD) ) {s = 86;}
-						else if ( (LA17_25==NOT) ) {s = 87;}
-						else if ( (LA17_25==TO) ) {s = 88;}
-						else if ( (LA17_25==DECIMAL_INTEGER_LITERAL) ) {s = 89;}
-						else if ( (LA17_25==FLOATING_POINT_LITERAL) ) {s = 90;}
-						else if ( (LA17_25==DATETIME) ) {s = 91;}
-						else if ( (LA17_25==STAR) ) {s = 92;}
-						else if ( (LA17_25==URI) ) {s = 93;}
-						else if ( (LA17_25==DOTDOT) && (synpred5_FTS())) {s = 94;}
-						else if ( (LA17_25==COMMA||LA17_25==DOT) && (synpred5_FTS())) {s = 95;}
-						else if ( (LA17_25==TILDA) && (synpred5_FTS())) {s = 96;}
-						else if ( (LA17_25==CARAT) && (synpred5_FTS())) {s = 97;}
-						else if ( (LA17_25==AND) && (synpred5_FTS())) {s = 98;}
-						else if ( (LA17_25==AMP) && (synpred5_FTS())) {s = 99;}
-						else if ( (LA17_25==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_25==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_25==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_25==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_25==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_25==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_25==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_25==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_25==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_25==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_25==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_25==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_25==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_25==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_25);
-						if ( s>=0 ) return s;
-						break;
-
-					case 17 : 
-						int LA17_195 = input.LA(1);
-						 
-						int index17_195 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_195==ID) ) {s = 199;}
-						else if ( (LA17_195==FTSWORD) && (synpred5_FTS())) {s = 184;}
-						else if ( (LA17_195==FTSPRE) && (synpred5_FTS())) {s = 185;}
-						else if ( (LA17_195==FTSWILD) && (synpred5_FTS())) {s = 186;}
-						else if ( (LA17_195==NOT) && (synpred5_FTS())) {s = 187;}
-						else if ( (LA17_195==TO) && (synpred5_FTS())) {s = 188;}
-						else if ( (LA17_195==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 189;}
-						else if ( (LA17_195==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 190;}
-						else if ( (LA17_195==STAR) && (synpred5_FTS())) {s = 191;}
-						else if ( (LA17_195==QUESTION_MARK) && (synpred5_FTS())) {s = 192;}
-						else if ( (LA17_195==DATETIME) && (synpred5_FTS())) {s = 193;}
-						else if ( (LA17_195==URI) && (synpred5_FTS())) {s = 194;}
-						else if ( (LA17_195==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_195==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_195==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_195==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_195==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_195==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_195==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_195==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_195==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_195==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_195==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_195==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_195==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_195==COMMA||LA17_195==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_195==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_195==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_195==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_195==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_195==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_195);
-						if ( s>=0 ) return s;
-						break;
-
-					case 18 : 
-						int LA17_154 = input.LA(1);
-						 
-						int index17_154 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 182;}
-						 
-						input.seek(index17_154);
-						if ( s>=0 ) return s;
-						break;
-
-					case 19 : 
-						int LA17_183 = input.LA(1);
-						 
-						int index17_183 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_FTS()) ) {s = 27;}
-						else if ( (synpred4_FTS()) ) {s = 100;}
-						else if ( (synpred5_FTS()) ) {s = 198;}
-						 
-						input.seek(index17_183);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
-						int LA17_92 = input.LA(1);
-						 
-						int index17_92 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_92);
-						if ( s>=0 ) return s;
-						break;
-
-					case 21 : 
-						int LA17_89 = input.LA(1);
-						 
-						int index17_89 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_89);
-						if ( s>=0 ) return s;
-						break;
-
-					case 22 : 
-						int LA17_112 = input.LA(1);
-						 
-						int index17_112 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_112==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_112==COMMA||LA17_112==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_112==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_112==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_112==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_112==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_112==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_112==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_112==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_112==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_112==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_112==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_112==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_112==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_112==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_112==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_112==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_112==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_112==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_112==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_112==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_112==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_112==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_112==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_112==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_112==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_112==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_112==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_112==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_112==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_112==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_112==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_112);
-						if ( s>=0 ) return s;
-						break;
-
-					case 23 : 
 						int LA17_62 = input.LA(1);
 						 
 						int index17_62 = input.index();
@@ -16130,241 +15920,33 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 24 : 
-						int LA17_197 = input.LA(1);
+					case 17 : 
+						int LA17_155 = input.LA(1);
 						 
-						int index17_197 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 198;}
-						 
-						input.seek(index17_197);
-						if ( s>=0 ) return s;
-						break;
-
-					case 25 : 
-						int LA17_91 = input.LA(1);
-						 
-						int index17_91 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_91);
-						if ( s>=0 ) return s;
-						break;
-
-					case 26 : 
-						int LA17_152 = input.LA(1);
-						 
-						int index17_152 = input.index();
+						int index17_155 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred2_FTS()) ) {s = 124;}
 						else if ( (synpred5_FTS()) ) {s = 182;}
 						 
-						input.seek(index17_152);
+						input.seek(index17_155);
 						if ( s>=0 ) return s;
 						break;
 
-					case 27 : 
-						int LA17_153 = input.LA(1);
+					case 18 : 
+						int LA17_84 = input.LA(1);
 						 
-						int index17_153 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 182;}
-						 
-						input.seek(index17_153);
-						if ( s>=0 ) return s;
-						break;
-
-					case 28 : 
-						int LA17_118 = input.LA(1);
-						 
-						int index17_118 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_118==LPAREN) && (synpred4_FTS())) {s = 100;}
-						else if ( (LA17_118==ID) ) {s = 167;}
-						else if ( (LA17_118==FTSWORD) ) {s = 106;}
-						else if ( (LA17_118==FTSPRE) ) {s = 107;}
-						else if ( (LA17_118==FTSWILD) ) {s = 108;}
-						else if ( (LA17_118==FTSPHRASE) ) {s = 109;}
-						else if ( (LA17_118==DECIMAL_INTEGER_LITERAL) ) {s = 110;}
-						else if ( (LA17_118==FLOATING_POINT_LITERAL) ) {s = 111;}
-						else if ( (LA17_118==DATETIME) ) {s = 112;}
-						else if ( (LA17_118==STAR) ) {s = 113;}
-						else if ( (LA17_118==URI) ) {s = 114;}
-						else if ( (LA17_118==LSQUARE) && (synpred3_FTS())) {s = 16;}
-						else if ( (LA17_118==LT) && (synpred3_FTS())) {s = 17;}
-						else if ( (LA17_118==COMMA||LA17_118==DOT) && (synpred5_FTS())) {s = 115;}
-						else if ( (LA17_118==NOT) && (synpred5_FTS())) {s = 168;}
-						else if ( (LA17_118==TO) && (synpred5_FTS())) {s = 169;}
-						else if ( (LA17_118==QUESTION_MARK) && (synpred5_FTS())) {s = 116;}
-						 
-						input.seek(index17_118);
-						if ( s>=0 ) return s;
-						break;
-
-					case 29 : 
-						int LA17_90 = input.LA(1);
-						 
-						int index17_90 = input.index();
+						int index17_84 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred2_FTS()) ) {s = 124;}
 						else if ( (synpred5_FTS()) ) {s = 151;}
 						 
-						input.seek(index17_90);
+						input.seek(index17_84);
 						if ( s>=0 ) return s;
 						break;
 
-					case 30 : 
-						int LA17_172 = input.LA(1);
-						 
-						int index17_172 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_172==ID) ) {s = 83;}
-						else if ( (LA17_172==FTSWORD) ) {s = 84;}
-						else if ( (LA17_172==FTSPRE) ) {s = 85;}
-						else if ( (LA17_172==FTSWILD) ) {s = 86;}
-						else if ( (LA17_172==NOT) ) {s = 87;}
-						else if ( (LA17_172==TO) ) {s = 88;}
-						else if ( (LA17_172==DECIMAL_INTEGER_LITERAL) ) {s = 89;}
-						else if ( (LA17_172==FLOATING_POINT_LITERAL) ) {s = 90;}
-						else if ( (LA17_172==DATETIME) ) {s = 91;}
-						else if ( (LA17_172==STAR) ) {s = 197;}
-						else if ( (LA17_172==URI) ) {s = 93;}
-						else if ( (LA17_172==CARAT) && (synpred5_FTS())) {s = 97;}
-						else if ( (LA17_172==AND) && (synpred5_FTS())) {s = 98;}
-						else if ( (LA17_172==AMP) && (synpred5_FTS())) {s = 99;}
-						else if ( (LA17_172==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_172==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_172==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_172==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_172==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_172==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_172==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_172==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_172==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_172==COMMA||LA17_172==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_172==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_172==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_172==TILDA) && (synpred5_FTS())) {s = 198;}
-						else if ( (LA17_172==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_172==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_172==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_172==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_172);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
-						int LA17_117 = input.LA(1);
-						 
-						int index17_117 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_117==ID) ) {s = 166;}
-						else if ( (LA17_117==FTSWORD) && (synpred5_FTS())) {s = 71;}
-						else if ( (LA17_117==FTSPRE) && (synpred5_FTS())) {s = 72;}
-						else if ( (LA17_117==FTSWILD) && (synpred5_FTS())) {s = 73;}
-						else if ( (LA17_117==NOT) && (synpred5_FTS())) {s = 74;}
-						else if ( (LA17_117==TO) && (synpred5_FTS())) {s = 75;}
-						else if ( (LA17_117==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
-						else if ( (LA17_117==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
-						else if ( (LA17_117==STAR) && (synpred5_FTS())) {s = 78;}
-						else if ( (LA17_117==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
-						else if ( (LA17_117==DATETIME) && (synpred5_FTS())) {s = 80;}
-						else if ( (LA17_117==URI) && (synpred5_FTS())) {s = 81;}
-						else if ( (LA17_117==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_117==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_117==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_117==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_117==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_117==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_117==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_117==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_117==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_117==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_117==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_117==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_117==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_117==COMMA||LA17_117==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_117==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_117==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_117==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_117==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_117==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_117);
-						if ( s>=0 ) return s;
-						break;
-
-					case 32 : 
-						int LA17_2 = input.LA(1);
-						 
-						int index17_2 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_2==STAR) ) {s = 25;}
-						else if ( (LA17_2==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_2==COMMA||LA17_2==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_2==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_2==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_2==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_2==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_2==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_2==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_2==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_2==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_2==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_2==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_2==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_2==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_2==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_2==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_2==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_2==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_2==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_2==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_2==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_2==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_2==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_2==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_2==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_2==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_2==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_2==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_2==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_2==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_2==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_2);
-						if ( s>=0 ) return s;
-						break;
-
-					case 33 : 
-						int LA17_70 = input.LA(1);
-						 
-						int index17_70 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_FTS()) ) {s = 27;}
-						else if ( (synpred4_FTS()) ) {s = 100;}
-						else if ( (synpred5_FTS()) ) {s = 116;}
-						 
-						input.seek(index17_70);
-						if ( s>=0 ) return s;
-						break;
-
-					case 34 : 
+					case 19 : 
 						int LA17_108 = input.LA(1);
 						 
 						int index17_108 = input.index();
@@ -16407,170 +15989,246 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 35 : 
-						int LA17_3 = input.LA(1);
+					case 20 : 
+						int LA17_83 = input.LA(1);
 						 
-						int index17_3 = input.index();
+						int index17_83 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_3==STAR) ) {s = 25;}
-						else if ( (LA17_3==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_3==COMMA||LA17_3==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_3==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_3==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_3==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_3==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_3==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_3==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_3==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_3==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_3==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_3==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_3==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_3==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_3==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_3==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_3==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_3==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_3==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_3==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_3==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_3==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_3==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_3==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_3==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_3==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_3==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_3==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_3==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_3==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_3==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
 						 
-						input.seek(index17_3);
+						input.seek(index17_83);
 						if ( s>=0 ) return s;
 						break;
 
-					case 36 : 
-						int LA17_4 = input.LA(1);
+					case 21 : 
+						int LA17_24 = input.LA(1);
 						 
-						int index17_4 = input.index();
+						int index17_24 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_4==STAR) ) {s = 25;}
-						else if ( (LA17_4==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_4==COMMA||LA17_4==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_4==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_4==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_4==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_4==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_4==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_4==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_4==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_4==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_4==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_4==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_4==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_4==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_4==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_4==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_4==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_4==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_4==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_4==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_4==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_4==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_4==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_4==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_4==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_4==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_4==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_4==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_4==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_4==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_4==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (LA17_24==ID) ) {s = 70;}
+						else if ( (LA17_24==FTSWORD) && (synpred5_FTS())) {s = 71;}
+						else if ( (LA17_24==FTSPRE) && (synpred5_FTS())) {s = 72;}
+						else if ( (LA17_24==FTSWILD) && (synpred5_FTS())) {s = 73;}
+						else if ( (LA17_24==NOT) && (synpred5_FTS())) {s = 74;}
+						else if ( (LA17_24==TO) && (synpred5_FTS())) {s = 75;}
+						else if ( (LA17_24==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
+						else if ( (LA17_24==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
+						else if ( (LA17_24==STAR) && (synpred5_FTS())) {s = 78;}
+						else if ( (LA17_24==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
+						else if ( (LA17_24==DATETIME) && (synpred5_FTS())) {s = 80;}
+						else if ( (LA17_24==URI) && (synpred5_FTS())) {s = 81;}
+						else if ( (LA17_24==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_24==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_24==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_24==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_24==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_24==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_24==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_24==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_24==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_24==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_24==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_24==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_24==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_24==COMMA||LA17_24==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_24==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_24==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_24==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_24==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_24==MINUS) && (synpred5_FTS())) {s = 57;}
 						 
-						input.seek(index17_4);
+						input.seek(index17_24);
 						if ( s>=0 ) return s;
 						break;
 
-					case 37 : 
-						int LA17_0 = input.LA(1);
+					case 22 : 
+						int LA17_111 = input.LA(1);
 						 
-						int index17_0 = input.index();
+						int index17_111 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_0==ID) ) {s = 1;}
-						else if ( (LA17_0==FTSWORD) ) {s = 2;}
-						else if ( (LA17_0==FTSPRE) ) {s = 3;}
-						else if ( (LA17_0==FTSWILD) ) {s = 4;}
-						else if ( (LA17_0==NOT) ) {s = 5;}
-						else if ( (LA17_0==TO) ) {s = 6;}
-						else if ( (LA17_0==DECIMAL_INTEGER_LITERAL) ) {s = 7;}
-						else if ( (LA17_0==FLOATING_POINT_LITERAL) ) {s = 8;}
-						else if ( (LA17_0==DATETIME) ) {s = 9;}
-						else if ( (LA17_0==STAR) ) {s = 10;}
-						else if ( (LA17_0==URI) ) {s = 11;}
-						else if ( (LA17_0==AT) ) {s = 12;}
-						else if ( (LA17_0==OR) ) {s = 13;}
-						else if ( (LA17_0==AND) ) {s = 14;}
-						else if ( (LA17_0==FTSPHRASE) ) {s = 15;}
-						else if ( (LA17_0==LSQUARE) && (synpred3_FTS())) {s = 16;}
-						else if ( (LA17_0==LT) && (synpred3_FTS())) {s = 17;}
-						else if ( (LA17_0==COMMA||LA17_0==DOT) && (synpred5_FTS())) {s = 18;}
-						else if ( (LA17_0==QUESTION_MARK) && (synpred5_FTS())) {s = 19;}
-						else if ( (LA17_0==EQUALS) && (synpred6_FTS())) {s = 20;}
-						else if ( (LA17_0==TILDA) && (synpred7_FTS())) {s = 21;}
-						else if ( (LA17_0==LPAREN) ) {s = 22;}
-						else if ( (LA17_0==PERCENT) ) {s = 23;}
+						if ( (LA17_111==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_111==COMMA||LA17_111==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_111==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_111==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_111==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_111==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_111==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_111==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_111==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_111==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_111==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_111==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_111==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_111==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_111==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_111==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_111==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_111==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_111==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_111==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_111==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_111==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_111==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_111==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_111==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_111==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_111==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_111==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_111==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_111==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_111==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_111==MINUS) && (synpred5_FTS())) {s = 57;}
 						 
-						input.seek(index17_0);
+						input.seek(index17_111);
 						if ( s>=0 ) return s;
 						break;
 
-					case 38 : 
-						int LA17_113 = input.LA(1);
+					case 23 : 
+						int LA17_85 = input.LA(1);
 						 
-						int index17_113 = input.index();
+						int index17_85 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_113==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_113==COMMA||LA17_113==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_113==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_113==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_113==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_113==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_113==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_113==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_113==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_113==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_113==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_113==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_113==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_113==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_113==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_113==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_113==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_113==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_113==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_113==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_113==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_113==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_113==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_113==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_113==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_113==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_113==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_113==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_113==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_113==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_113==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_113==MINUS) && (synpred5_FTS())) {s = 57;}
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
 						 
-						input.seek(index17_113);
+						input.seek(index17_85);
 						if ( s>=0 ) return s;
 						break;
 
-					case 39 : 
+					case 24 : 
+						int LA17_110 = input.LA(1);
+						 
+						int index17_110 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_110==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_110==COMMA||LA17_110==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_110==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_110==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_110==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_110==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_110==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_110==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_110==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_110==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_110==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_110==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_110==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_110==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_110==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_110==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_110==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_110==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_110==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_110==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_110==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_110==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_110==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_110==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_110==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_110==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_110==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_110==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_110==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_110==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_110==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_110==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_110);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
+						int LA17_109 = input.LA(1);
+						 
+						int index17_109 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_109==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_109==TILDA) && (synpred5_FTS())) {s = 160;}
+						else if ( (LA17_109==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_109==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_109==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_109==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_109==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_109==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_109==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_109==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_109==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_109==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_109==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_109==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_109==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_109==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_109==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_109==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_109==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_109==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_109==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_109==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_109==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_109==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_109==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_109==COMMA||LA17_109==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_109==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_109==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_109==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_109==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_109==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_109==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_109);
+						if ( s>=0 ) return s;
+						break;
+
+					case 26 : 
+						int LA17_123 = input.LA(1);
+						 
+						int index17_123 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_123==RPAREN) ) {s = 172;}
+						else if ( (LA17_123==COMMA||LA17_123==DOT) && (synpred5_FTS())) {s = 173;}
+						else if ( (LA17_123==OR) && (synpred5_FTS())) {s = 174;}
+						else if ( (LA17_123==BAR) && (synpred5_FTS())) {s = 175;}
+						else if ( (LA17_123==ID) && (synpred5_FTS())) {s = 126;}
+						else if ( (LA17_123==FTSWORD) && (synpred5_FTS())) {s = 127;}
+						else if ( (LA17_123==FTSPRE) && (synpred5_FTS())) {s = 128;}
+						else if ( (LA17_123==FTSWILD) && (synpred5_FTS())) {s = 129;}
+						else if ( (LA17_123==NOT) && (synpred5_FTS())) {s = 130;}
+						else if ( (LA17_123==TO) && (synpred5_FTS())) {s = 131;}
+						else if ( (LA17_123==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 176;}
+						else if ( (LA17_123==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 132;}
+						else if ( (LA17_123==STAR) && (synpred5_FTS())) {s = 177;}
+						else if ( (LA17_123==QUESTION_MARK) && (synpred5_FTS())) {s = 134;}
+						else if ( (LA17_123==DATETIME) && (synpred5_FTS())) {s = 135;}
+						else if ( (LA17_123==URI) && (synpred5_FTS())) {s = 136;}
+						else if ( (LA17_123==FTSPHRASE) && (synpred5_FTS())) {s = 137;}
+						else if ( (LA17_123==MINUS) && (synpred5_FTS())) {s = 138;}
+						else if ( (LA17_123==DOTDOT) && (synpred5_FTS())) {s = 178;}
+						else if ( (LA17_123==TILDA) && (synpred5_FTS())) {s = 179;}
+						else if ( (LA17_123==CARAT) && (synpred5_FTS())) {s = 180;}
+						else if ( (LA17_123==AND) && (synpred5_FTS())) {s = 181;}
+						else if ( (LA17_123==AMP) && (synpred5_FTS())) {s = 182;}
+						else if ( (LA17_123==EXCLAMATION) && (synpred5_FTS())) {s = 141;}
+						else if ( (LA17_123==AT) && (synpred5_FTS())) {s = 142;}
+						else if ( (LA17_123==LSQUARE) && (synpred5_FTS())) {s = 144;}
+						else if ( (LA17_123==LT) && (synpred5_FTS())) {s = 145;}
+						else if ( (LA17_123==EQUALS) && (synpred5_FTS())) {s = 146;}
+						else if ( (LA17_123==LPAREN) && (synpred5_FTS())) {s = 148;}
+						else if ( (LA17_123==PERCENT) && (synpred5_FTS())) {s = 149;}
+						else if ( (LA17_123==PLUS) && (synpred5_FTS())) {s = 150;}
+						 
+						input.seek(index17_123);
+						if ( s>=0 ) return s;
+						break;
+
+					case 27 : 
 						int LA17_58 = input.LA(1);
 						 
 						int index17_58 = input.index();
@@ -16615,7 +16273,983 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
+					case 28 : 
+						int LA17_156 = input.LA(1);
+						 
+						int index17_156 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 182;}
+						 
+						input.seek(index17_156);
+						if ( s>=0 ) return s;
+						break;
+
+					case 29 : 
+						int LA17_195 = input.LA(1);
+						 
+						int index17_195 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_195==ID) ) {s = 199;}
+						else if ( (LA17_195==FTSWORD) && (synpred5_FTS())) {s = 184;}
+						else if ( (LA17_195==FTSPRE) && (synpred5_FTS())) {s = 185;}
+						else if ( (LA17_195==FTSWILD) && (synpred5_FTS())) {s = 186;}
+						else if ( (LA17_195==NOT) && (synpred5_FTS())) {s = 187;}
+						else if ( (LA17_195==TO) && (synpred5_FTS())) {s = 188;}
+						else if ( (LA17_195==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 189;}
+						else if ( (LA17_195==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 190;}
+						else if ( (LA17_195==STAR) && (synpred5_FTS())) {s = 191;}
+						else if ( (LA17_195==QUESTION_MARK) && (synpred5_FTS())) {s = 192;}
+						else if ( (LA17_195==DATETIME) && (synpred5_FTS())) {s = 193;}
+						else if ( (LA17_195==URI) && (synpred5_FTS())) {s = 194;}
+						else if ( (LA17_195==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_195==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_195==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_195==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_195==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_195==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_195==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_195==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_195==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_195==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_195==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_195==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_195==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_195==COMMA||LA17_195==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_195==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_195==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_195==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_195==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_195==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_195);
+						if ( s>=0 ) return s;
+						break;
+
+					case 30 : 
+						int LA17_113 = input.LA(1);
+						 
+						int index17_113 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_113==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_113==COMMA||LA17_113==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_113==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_113==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_113==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_113==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_113==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_113==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_113==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_113==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_113==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_113==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_113==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_113==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_113==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_113==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_113==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_113==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_113==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_113==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_113==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_113==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_113==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_113==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_113==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_113==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_113==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_113==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_113==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_113==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_113==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_113==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_113);
+						if ( s>=0 ) return s;
+						break;
+
+					case 31 : 
+						int LA17_2 = input.LA(1);
+						 
+						int index17_2 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_2==STAR) ) {s = 25;}
+						else if ( (LA17_2==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_2==COMMA||LA17_2==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_2==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_2==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_2==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_2==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_2==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_2==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_2==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_2==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_2==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_2==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_2==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_2==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_2==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_2==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_2==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_2==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_2==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_2==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_2==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_2==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_2==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_2==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_2==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_2==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_2==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_2==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_2==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_2==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_2==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_2);
+						if ( s>=0 ) return s;
+						break;
+
+					case 32 : 
+						int LA17_82 = input.LA(1);
+						 
+						int index17_82 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_82==DECIMAL_INTEGER_LITERAL) ) {s = 123;}
+						else if ( (LA17_82==RPAREN) && (synpred2_FTS())) {s = 124;}
+						else if ( (LA17_82==COMMA||LA17_82==DOT) && (synpred5_FTS())) {s = 125;}
+						else if ( (LA17_82==ID) && (synpred5_FTS())) {s = 126;}
+						else if ( (LA17_82==FTSWORD) && (synpred5_FTS())) {s = 127;}
+						else if ( (LA17_82==FTSPRE) && (synpred5_FTS())) {s = 128;}
+						else if ( (LA17_82==FTSWILD) && (synpred5_FTS())) {s = 129;}
+						else if ( (LA17_82==NOT) && (synpred5_FTS())) {s = 130;}
+						else if ( (LA17_82==TO) && (synpred5_FTS())) {s = 131;}
+						else if ( (LA17_82==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 132;}
+						else if ( (LA17_82==STAR) && (synpred5_FTS())) {s = 133;}
+						else if ( (LA17_82==QUESTION_MARK) && (synpred5_FTS())) {s = 134;}
+						else if ( (LA17_82==DATETIME) && (synpred5_FTS())) {s = 135;}
+						else if ( (LA17_82==URI) && (synpred5_FTS())) {s = 136;}
+						else if ( (LA17_82==FTSPHRASE) && (synpred5_FTS())) {s = 137;}
+						else if ( (LA17_82==MINUS) && (synpred5_FTS())) {s = 138;}
+						else if ( (LA17_82==AND) && (synpred5_FTS())) {s = 139;}
+						else if ( (LA17_82==AMP) && (synpred5_FTS())) {s = 140;}
+						else if ( (LA17_82==EXCLAMATION) && (synpred5_FTS())) {s = 141;}
+						else if ( (LA17_82==AT) && (synpred5_FTS())) {s = 142;}
+						else if ( (LA17_82==OR) && (synpred5_FTS())) {s = 143;}
+						else if ( (LA17_82==LSQUARE) && (synpred5_FTS())) {s = 144;}
+						else if ( (LA17_82==LT) && (synpred5_FTS())) {s = 145;}
+						else if ( (LA17_82==EQUALS) && (synpred5_FTS())) {s = 146;}
+						else if ( (LA17_82==TILDA) && (synpred5_FTS())) {s = 147;}
+						else if ( (LA17_82==LPAREN) && (synpred5_FTS())) {s = 148;}
+						else if ( (LA17_82==PERCENT) && (synpred5_FTS())) {s = 149;}
+						else if ( (LA17_82==PLUS) && (synpred5_FTS())) {s = 150;}
+						else if ( (LA17_82==BAR) && (synpred5_FTS())) {s = 151;}
+						 
+						input.seek(index17_82);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA17_112 = input.LA(1);
+						 
+						int index17_112 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_112==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_112==COMMA||LA17_112==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_112==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_112==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_112==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_112==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_112==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_112==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_112==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_112==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_112==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_112==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_112==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_112==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_112==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_112==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_112==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_112==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_112==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_112==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_112==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_112==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_112==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_112==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_112==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_112==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_112==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_112==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_112==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_112==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_112==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_112==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_112);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
+						int LA17_86 = input.LA(1);
+						 
+						int index17_86 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_86);
+						if ( s>=0 ) return s;
+						break;
+
+					case 35 : 
+						int LA17_25 = input.LA(1);
+						 
+						int index17_25 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_25==LPAREN) ) {s = 82;}
+						else if ( (LA17_25==ID) ) {s = 83;}
+						else if ( (LA17_25==FTSWORD) ) {s = 84;}
+						else if ( (LA17_25==FTSPRE) ) {s = 85;}
+						else if ( (LA17_25==FTSWILD) ) {s = 86;}
+						else if ( (LA17_25==NOT) ) {s = 87;}
+						else if ( (LA17_25==TO) ) {s = 88;}
+						else if ( (LA17_25==DECIMAL_INTEGER_LITERAL) ) {s = 89;}
+						else if ( (LA17_25==FLOATING_POINT_LITERAL) ) {s = 90;}
+						else if ( (LA17_25==DATETIME) ) {s = 91;}
+						else if ( (LA17_25==STAR) ) {s = 92;}
+						else if ( (LA17_25==URI) ) {s = 93;}
+						else if ( (LA17_25==DOTDOT) && (synpred5_FTS())) {s = 94;}
+						else if ( (LA17_25==COMMA||LA17_25==DOT) && (synpred5_FTS())) {s = 95;}
+						else if ( (LA17_25==TILDA) && (synpred5_FTS())) {s = 96;}
+						else if ( (LA17_25==CARAT) && (synpred5_FTS())) {s = 97;}
+						else if ( (LA17_25==AND) && (synpred5_FTS())) {s = 98;}
+						else if ( (LA17_25==AMP) && (synpred5_FTS())) {s = 99;}
+						else if ( (LA17_25==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_25==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_25==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_25==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_25==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_25==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_25==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_25==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_25==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_25==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_25==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_25==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_25==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_25==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_25);
+						if ( s>=0 ) return s;
+						break;
+
+					case 36 : 
+						int LA17_3 = input.LA(1);
+						 
+						int index17_3 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_3==STAR) ) {s = 25;}
+						else if ( (LA17_3==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_3==COMMA||LA17_3==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_3==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_3==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_3==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_3==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_3==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_3==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_3==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_3==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_3==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_3==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_3==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_3==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_3==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_3==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_3==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_3==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_3==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_3==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_3==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_3==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_3==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_3==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_3==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_3==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_3==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_3==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_3==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_3==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_3==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_3);
+						if ( s>=0 ) return s;
+						break;
+
+					case 37 : 
+						int LA17_4 = input.LA(1);
+						 
+						int index17_4 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_4==STAR) ) {s = 25;}
+						else if ( (LA17_4==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_4==COMMA||LA17_4==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_4==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_4==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_4==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_4==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_4==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_4==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_4==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_4==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_4==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_4==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_4==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_4==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_4==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_4==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_4==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_4==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_4==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_4==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_4==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_4==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_4==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_4==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_4==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_4==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_4==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_4==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_4==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_4==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_4==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_4);
+						if ( s>=0 ) return s;
+						break;
+
+					case 38 : 
+						int LA17_92 = input.LA(1);
+						 
+						int index17_92 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_92);
+						if ( s>=0 ) return s;
+						break;
+
+					case 39 : 
+						int LA17_87 = input.LA(1);
+						 
+						int index17_87 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_87);
+						if ( s>=0 ) return s;
+						break;
+
 					case 40 : 
+						int LA17_157 = input.LA(1);
+						 
+						int index17_157 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_157==ID) ) {s = 183;}
+						else if ( (LA17_157==FTSWORD) && (synpred5_FTS())) {s = 184;}
+						else if ( (LA17_157==FTSPRE) && (synpred5_FTS())) {s = 185;}
+						else if ( (LA17_157==FTSWILD) && (synpred5_FTS())) {s = 186;}
+						else if ( (LA17_157==NOT) && (synpred5_FTS())) {s = 187;}
+						else if ( (LA17_157==TO) && (synpred5_FTS())) {s = 188;}
+						else if ( (LA17_157==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 189;}
+						else if ( (LA17_157==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 190;}
+						else if ( (LA17_157==STAR) && (synpred5_FTS())) {s = 191;}
+						else if ( (LA17_157==QUESTION_MARK) && (synpred5_FTS())) {s = 192;}
+						else if ( (LA17_157==DATETIME) && (synpred5_FTS())) {s = 193;}
+						else if ( (LA17_157==URI) && (synpred5_FTS())) {s = 194;}
+						else if ( (LA17_157==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_157==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_157==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_157==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_157==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_157==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_157==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_157==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_157==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_157==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_157==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_157==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_157==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_157==COMMA||LA17_157==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_157==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_157==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_157==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_157==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_157==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_157);
+						if ( s>=0 ) return s;
+						break;
+
+					case 41 : 
+						int LA17_118 = input.LA(1);
+						 
+						int index17_118 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_118==LPAREN) && (synpred4_FTS())) {s = 100;}
+						else if ( (LA17_118==ID) ) {s = 167;}
+						else if ( (LA17_118==FTSWORD) ) {s = 106;}
+						else if ( (LA17_118==FTSPRE) ) {s = 107;}
+						else if ( (LA17_118==FTSWILD) ) {s = 108;}
+						else if ( (LA17_118==FTSPHRASE) ) {s = 109;}
+						else if ( (LA17_118==DECIMAL_INTEGER_LITERAL) ) {s = 110;}
+						else if ( (LA17_118==FLOATING_POINT_LITERAL) ) {s = 111;}
+						else if ( (LA17_118==DATETIME) ) {s = 112;}
+						else if ( (LA17_118==STAR) ) {s = 113;}
+						else if ( (LA17_118==URI) ) {s = 114;}
+						else if ( (LA17_118==LSQUARE) && (synpred3_FTS())) {s = 16;}
+						else if ( (LA17_118==LT) && (synpred3_FTS())) {s = 17;}
+						else if ( (LA17_118==COMMA||LA17_118==DOT) && (synpred5_FTS())) {s = 115;}
+						else if ( (LA17_118==NOT) && (synpred5_FTS())) {s = 168;}
+						else if ( (LA17_118==TO) && (synpred5_FTS())) {s = 169;}
+						else if ( (LA17_118==QUESTION_MARK) && (synpred5_FTS())) {s = 116;}
+						 
+						input.seek(index17_118);
+						if ( s>=0 ) return s;
+						break;
+
+					case 42 : 
+						int LA17_8 = input.LA(1);
+						 
+						int index17_8 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_8==STAR) ) {s = 25;}
+						else if ( (LA17_8==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_8==COMMA||LA17_8==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_8==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_8==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_8==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_8==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_8==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_8==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_8==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_8==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_8==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_8==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_8==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_8==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_8==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_8==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_8==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_8==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_8==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_8==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_8==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_8==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_8==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_8==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_8==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_8==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_8==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_8==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_8==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_8==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_8==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_8);
+						if ( s>=0 ) return s;
+						break;
+
+					case 43 : 
+						int LA17_101 = input.LA(1);
+						 
+						int index17_101 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_101==DOT) ) {s = 157;}
+						else if ( (LA17_101==COLON) ) {s = 118;}
+						else if ( (LA17_101==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_101==COMMA) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_101==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_101==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_101==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_101==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_101==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_101==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_101==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_101==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_101==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_101==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_101==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_101==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_101==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_101==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_101==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_101==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_101==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_101==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_101==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_101==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_101==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_101==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_101==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_101==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_101==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_101==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_101==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_101==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_101==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_101==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_101);
+						if ( s>=0 ) return s;
+						break;
+
+					case 44 : 
+						int LA17_6 = input.LA(1);
+						 
+						int index17_6 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_6==STAR) ) {s = 25;}
+						else if ( (LA17_6==COLON) ) {s = 26;}
+						else if ( (LA17_6==COMMA||LA17_6==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_6==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_6==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_6==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_6==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_6==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_6==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_6==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_6==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_6==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_6==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_6==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_6==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_6==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_6==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_6==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_6==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_6==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_6==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_6==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_6==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_6==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_6==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_6==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_6==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_6==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_6==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_6==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_6==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_6==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_6);
+						if ( s>=0 ) return s;
+						break;
+
+					case 45 : 
+						int LA17_15 = input.LA(1);
+						 
+						int index17_15 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_15==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_15==TILDA) && (synpred5_FTS())) {s = 67;}
+						else if ( (LA17_15==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_15==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_15==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_15==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_15==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_15==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_15==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_15==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_15==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_15==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_15==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_15==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_15==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_15==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_15==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_15==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_15==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_15==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_15==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_15==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_15==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_15==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_15==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_15==COMMA||LA17_15==DOT) && (synpred5_FTS())) {s = 69;}
+						else if ( (LA17_15==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_15==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_15==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_15==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_15==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_15==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_15);
+						if ( s>=0 ) return s;
+						break;
+
+					case 46 : 
+						int LA17_7 = input.LA(1);
+						 
+						int index17_7 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_7==STAR) ) {s = 25;}
+						else if ( (LA17_7==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_7==COMMA||LA17_7==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_7==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_7==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_7==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_7==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_7==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_7==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_7==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_7==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_7==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_7==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_7==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_7==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_7==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_7==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_7==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_7==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_7==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_7==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_7==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_7==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_7==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_7==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_7==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_7==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_7==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_7==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_7==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_7==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_7==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_7);
+						if ( s>=0 ) return s;
+						break;
+
+					case 47 : 
+						int LA17_152 = input.LA(1);
+						 
+						int index17_152 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 182;}
+						 
+						input.seek(index17_152);
+						if ( s>=0 ) return s;
+						break;
+
+					case 48 : 
+						int LA17_10 = input.LA(1);
+						 
+						int index17_10 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_10==STAR) ) {s = 25;}
+						else if ( (LA17_10==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_10==COMMA||LA17_10==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_10==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_10==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_10==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_10==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_10==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_10==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_10==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_10==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_10==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_10==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_10==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_10==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_10==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_10==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_10==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_10==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_10==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_10==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_10==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_10==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_10==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_10==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_10==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_10==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_10==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_10==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_10==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_10==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_10==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_10);
+						if ( s>=0 ) return s;
+						break;
+
+					case 49 : 
+						int LA17_89 = input.LA(1);
+						 
+						int index17_89 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_89);
+						if ( s>=0 ) return s;
+						break;
+
+					case 50 : 
+						int LA17_5 = input.LA(1);
+						 
+						int index17_5 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_5==STAR) ) {s = 25;}
+						else if ( (LA17_5==COLON) ) {s = 26;}
+						else if ( (LA17_5==COMMA||LA17_5==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_5==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_5==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_5==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_5==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_5==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_5==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_5==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_5==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_5==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_5==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_5==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_5==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_5==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_5==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_5==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_5==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_5==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_5==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_5==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_5==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_5==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_5==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_5==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_5==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_5==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_5==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_5==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_5==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_5==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_5);
+						if ( s>=0 ) return s;
+						break;
+
+					case 51 : 
+						int LA17_102 = input.LA(1);
+						 
+						int index17_102 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_102==COLON) ) {s = 118;}
+						else if ( (LA17_102==COMMA||LA17_102==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_102==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_102==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_102==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_102==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_102==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_102==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_102==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_102==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_102==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_102==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_102==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_102==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_102==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_102==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_102==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_102==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_102==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_102==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_102==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_102==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_102==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_102==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_102==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_102==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_102==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_102==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_102==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_102==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_102==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_102==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_102);
+						if ( s>=0 ) return s;
+						break;
+
+					case 52 : 
+						int LA17_105 = input.LA(1);
+						 
+						int index17_105 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_105==COLON) ) {s = 118;}
+						else if ( (LA17_105==COMMA||LA17_105==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_105==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_105==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_105==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_105==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_105==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_105==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_105==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_105==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_105==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_105==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_105==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_105==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_105==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_105==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_105==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_105==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_105==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_105==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_105==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_105==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_105==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_105==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_105==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_105==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_105==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_105==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_105==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_105==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_105==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_105==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_105);
+						if ( s>=0 ) return s;
+						break;
+
+					case 53 : 
+						int LA17_88 = input.LA(1);
+						 
+						int index17_88 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_88);
+						if ( s>=0 ) return s;
+						break;
+
+					case 54 : 
+						int LA17_9 = input.LA(1);
+						 
+						int index17_9 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_9==STAR) ) {s = 25;}
+						else if ( (LA17_9==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_9==COMMA||LA17_9==DOT) && (synpred5_FTS())) {s = 28;}
+						else if ( (LA17_9==TILDA) && (synpred5_FTS())) {s = 29;}
+						else if ( (LA17_9==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_9==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_9==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_9==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_9==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_9==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_9==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_9==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_9==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_9==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_9==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_9==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_9==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_9==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_9==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_9==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_9==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_9==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_9==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_9==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_9==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_9==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_9==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_9==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_9==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_9==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_9==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_9==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_9);
+						if ( s>=0 ) return s;
+						break;
+
+					case 55 : 
+						int LA17_162 = input.LA(1);
+						 
+						int index17_162 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_162==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_162==COMMA||LA17_162==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_162==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_162==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_162==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_162==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_162==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_162==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_162==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_162==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_162==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_162==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_162==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_162==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_162==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_162==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_162==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_162==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_162==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_162==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_162==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_162==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_162==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_162==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_162==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_162==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_162==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_162==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_162==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_162==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_162==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_162==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_162);
+						if ( s>=0 ) return s;
+						break;
+
+					case 56 : 
 						int LA17_161 = input.LA(1);
 						 
 						int index17_161 = input.index();
@@ -16659,221 +17293,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 41 : 
-						int LA17_110 = input.LA(1);
-						 
-						int index17_110 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_110==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_110==COMMA||LA17_110==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_110==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_110==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_110==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_110==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_110==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_110==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_110==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_110==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_110==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_110==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_110==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_110==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_110==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_110==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_110==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_110==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_110==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_110==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_110==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_110==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_110==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_110==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_110==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_110==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_110==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_110==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_110==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_110==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_110==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_110==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_110);
-						if ( s>=0 ) return s;
-						break;
-
-					case 42 : 
-						int LA17_111 = input.LA(1);
-						 
-						int index17_111 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_111==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_111==COMMA||LA17_111==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_111==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_111==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_111==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_111==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_111==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_111==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_111==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_111==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_111==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_111==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_111==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_111==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_111==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_111==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_111==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_111==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_111==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_111==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_111==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_111==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_111==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_111==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_111==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_111==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_111==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_111==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_111==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_111==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_111==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_111==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_111);
-						if ( s>=0 ) return s;
-						break;
-
-					case 43 : 
-						int LA17_24 = input.LA(1);
-						 
-						int index17_24 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_24==ID) ) {s = 70;}
-						else if ( (LA17_24==FTSWORD) && (synpred5_FTS())) {s = 71;}
-						else if ( (LA17_24==FTSPRE) && (synpred5_FTS())) {s = 72;}
-						else if ( (LA17_24==FTSWILD) && (synpred5_FTS())) {s = 73;}
-						else if ( (LA17_24==NOT) && (synpred5_FTS())) {s = 74;}
-						else if ( (LA17_24==TO) && (synpred5_FTS())) {s = 75;}
-						else if ( (LA17_24==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
-						else if ( (LA17_24==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
-						else if ( (LA17_24==STAR) && (synpred5_FTS())) {s = 78;}
-						else if ( (LA17_24==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
-						else if ( (LA17_24==DATETIME) && (synpred5_FTS())) {s = 80;}
-						else if ( (LA17_24==URI) && (synpred5_FTS())) {s = 81;}
-						else if ( (LA17_24==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_24==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_24==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_24==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_24==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_24==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_24==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_24==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_24==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_24==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_24==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_24==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_24==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_24==COMMA||LA17_24==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_24==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_24==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_24==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_24==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_24==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_24);
-						if ( s>=0 ) return s;
-						break;
-
-					case 44 : 
-						int LA17_7 = input.LA(1);
-						 
-						int index17_7 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_7==STAR) ) {s = 25;}
-						else if ( (LA17_7==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_7==COMMA||LA17_7==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_7==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_7==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_7==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_7==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_7==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_7==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_7==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_7==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_7==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_7==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_7==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_7==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_7==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_7==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_7==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_7==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_7==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_7==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_7==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_7==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_7==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_7==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_7==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_7==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_7==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_7==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_7==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_7==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_7==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_7);
-						if ( s>=0 ) return s;
-						break;
-
-					case 45 : 
-						int LA17_8 = input.LA(1);
-						 
-						int index17_8 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_8==STAR) ) {s = 25;}
-						else if ( (LA17_8==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_8==COMMA||LA17_8==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_8==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_8==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_8==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_8==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_8==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_8==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_8==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_8==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_8==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_8==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_8==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_8==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_8==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_8==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_8==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_8==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_8==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_8==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_8==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_8==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_8==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_8==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_8==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_8==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_8==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_8==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_8==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_8==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_8==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_8);
-						if ( s>=0 ) return s;
-						break;
-
-					case 46 : 
+					case 57 : 
 						int LA17_26 = input.LA(1);
 						 
 						int index17_26 = input.index();
@@ -16903,403 +17323,124 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 47 : 
-						int LA17_84 = input.LA(1);
+					case 58 : 
+						int LA17_197 = input.LA(1);
 						 
-						int index17_84 = input.index();
+						int index17_197 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_84);
-						if ( s>=0 ) return s;
-						break;
-
-					case 48 : 
-						int LA17_83 = input.LA(1);
-						 
-						int index17_83 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_83);
-						if ( s>=0 ) return s;
-						break;
-
-					case 49 : 
-						int LA17_199 = input.LA(1);
-						 
-						int index17_199 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_FTS()) ) {s = 27;}
 						else if ( (synpred5_FTS()) ) {s = 198;}
 						 
-						input.seek(index17_199);
-						if ( s>=0 ) return s;
-						break;
-
-					case 50 : 
-						int LA17_15 = input.LA(1);
-						 
-						int index17_15 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_15==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_15==TILDA) && (synpred5_FTS())) {s = 67;}
-						else if ( (LA17_15==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_15==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_15==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_15==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_15==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_15==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_15==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_15==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_15==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_15==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_15==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_15==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_15==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_15==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_15==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_15==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_15==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_15==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_15==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_15==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_15==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_15==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_15==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_15==COMMA||LA17_15==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_15==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_15==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_15==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_15==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_15==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_15==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_15);
-						if ( s>=0 ) return s;
-						break;
-
-					case 51 : 
-						int LA17_10 = input.LA(1);
-						 
-						int index17_10 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_10==STAR) ) {s = 25;}
-						else if ( (LA17_10==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_10==COMMA||LA17_10==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_10==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_10==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_10==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_10==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_10==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_10==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_10==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_10==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_10==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_10==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_10==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_10==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_10==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_10==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_10==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_10==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_10==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_10==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_10==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_10==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_10==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_10==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_10==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_10==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_10==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_10==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_10==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_10==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_10==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_10);
-						if ( s>=0 ) return s;
-						break;
-
-					case 52 : 
-						int LA17_164 = input.LA(1);
-						 
-						int index17_164 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_164==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_164==COMMA||LA17_164==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_164==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_164==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_164==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_164==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_164==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_164==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_164==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_164==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_164==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_164==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_164==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_164==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_164==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_164==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_164==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_164==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_164==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_164==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_164==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_164==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_164==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_164==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_164==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_164==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_164==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_164==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_164==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_164==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_164==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_164==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_164);
-						if ( s>=0 ) return s;
-						break;
-
-					case 53 : 
-						int LA17_85 = input.LA(1);
-						 
-						int index17_85 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_85);
-						if ( s>=0 ) return s;
-						break;
-
-					case 54 : 
-						int LA17_5 = input.LA(1);
-						 
-						int index17_5 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_5==STAR) ) {s = 25;}
-						else if ( (LA17_5==COLON) ) {s = 26;}
-						else if ( (LA17_5==COMMA||LA17_5==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_5==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_5==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_5==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_5==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_5==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_5==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_5==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_5==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_5==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_5==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_5==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_5==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_5==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_5==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_5==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_5==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_5==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_5==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_5==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_5==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_5==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_5==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_5==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_5==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_5==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_5==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_5==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_5==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_5==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_5);
-						if ( s>=0 ) return s;
-						break;
-
-					case 55 : 
-						int LA17_106 = input.LA(1);
-						 
-						int index17_106 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_106==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_106==COMMA||LA17_106==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_106==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_106==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_106==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_106==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_106==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_106==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_106==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_106==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_106==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_106==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_106==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_106==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_106==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_106==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_106==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_106==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_106==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_106==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_106==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_106==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_106==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_106==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_106==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_106==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_106==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_106==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_106==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_106==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_106==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_106==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_106);
-						if ( s>=0 ) return s;
-						break;
-
-					case 56 : 
-						int LA17_165 = input.LA(1);
-						 
-						int index17_165 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_165==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_165==COMMA||LA17_165==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_165==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_165==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_165==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_165==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_165==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_165==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_165==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_165==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_165==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_165==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_165==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_165==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_165==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_165==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_165==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_165==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_165==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_165==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_165==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_165==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_165==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_165==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_165==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_165==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_165==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_165==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_165==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_165==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_165==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_165==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_165);
-						if ( s>=0 ) return s;
-						break;
-
-					case 57 : 
-						int LA17_9 = input.LA(1);
-						 
-						int index17_9 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_9==STAR) ) {s = 25;}
-						else if ( (LA17_9==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_9==COMMA||LA17_9==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_9==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_9==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_9==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_9==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_9==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_9==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_9==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_9==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_9==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_9==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_9==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_9==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_9==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_9==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_9==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_9==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_9==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_9==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_9==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_9==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_9==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_9==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_9==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_9==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_9==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_9==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_9==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_9==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_9==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_9);
-						if ( s>=0 ) return s;
-						break;
-
-					case 58 : 
-						int LA17_107 = input.LA(1);
-						 
-						int index17_107 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_107==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_107==COMMA||LA17_107==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_107==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_107==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_107==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_107==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_107==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_107==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_107==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_107==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_107==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_107==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_107==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_107==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_107==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_107==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_107==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_107==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_107==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_107==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_107==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_107==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_107==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_107==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_107==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_107==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_107==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_107==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_107==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_107==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_107==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_107==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_107);
+						input.seek(index17_197);
 						if ( s>=0 ) return s;
 						break;
 
 					case 59 : 
+						int LA17_90 = input.LA(1);
+						 
+						int index17_90 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred2_FTS()) ) {s = 124;}
+						else if ( (synpred5_FTS()) ) {s = 151;}
+						 
+						input.seek(index17_90);
+						if ( s>=0 ) return s;
+						break;
+
+					case 60 : 
+						int LA17_163 = input.LA(1);
+						 
+						int index17_163 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_163==DOTDOT) && (synpred3_FTS())) {s = 27;}
+						else if ( (LA17_163==COMMA||LA17_163==DOT) && (synpred5_FTS())) {s = 158;}
+						else if ( (LA17_163==TILDA) && (synpred5_FTS())) {s = 159;}
+						else if ( (LA17_163==CARAT) && (synpred5_FTS())) {s = 30;}
+						else if ( (LA17_163==AND) && (synpred5_FTS())) {s = 31;}
+						else if ( (LA17_163==AMP) && (synpred5_FTS())) {s = 32;}
+						else if ( (LA17_163==EOF) && (synpred5_FTS())) {s = 33;}
+						else if ( (LA17_163==RPAREN) && (synpred5_FTS())) {s = 34;}
+						else if ( (LA17_163==OR) && (synpred5_FTS())) {s = 35;}
+						else if ( (LA17_163==BAR) && (synpred5_FTS())) {s = 36;}
+						else if ( (LA17_163==NOT) && (synpred5_FTS())) {s = 37;}
+						else if ( (LA17_163==ID) && (synpred5_FTS())) {s = 38;}
+						else if ( (LA17_163==FTSWORD) && (synpred5_FTS())) {s = 39;}
+						else if ( (LA17_163==FTSPRE) && (synpred5_FTS())) {s = 40;}
+						else if ( (LA17_163==FTSWILD) && (synpred5_FTS())) {s = 41;}
+						else if ( (LA17_163==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+						else if ( (LA17_163==TO) && (synpred5_FTS())) {s = 43;}
+						else if ( (LA17_163==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
+						else if ( (LA17_163==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
+						else if ( (LA17_163==DATETIME) && (synpred5_FTS())) {s = 46;}
+						else if ( (LA17_163==STAR) && (synpred5_FTS())) {s = 68;}
+						else if ( (LA17_163==URI) && (synpred5_FTS())) {s = 47;}
+						else if ( (LA17_163==AT) && (synpred5_FTS())) {s = 48;}
+						else if ( (LA17_163==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+						else if ( (LA17_163==LSQUARE) && (synpred5_FTS())) {s = 50;}
+						else if ( (LA17_163==LT) && (synpred5_FTS())) {s = 51;}
+						else if ( (LA17_163==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
+						else if ( (LA17_163==EQUALS) && (synpred5_FTS())) {s = 53;}
+						else if ( (LA17_163==LPAREN) && (synpred5_FTS())) {s = 54;}
+						else if ( (LA17_163==PERCENT) && (synpred5_FTS())) {s = 55;}
+						else if ( (LA17_163==PLUS) && (synpred5_FTS())) {s = 56;}
+						else if ( (LA17_163==MINUS) && (synpred5_FTS())) {s = 57;}
+						 
+						input.seek(index17_163);
+						if ( s>=0 ) return s;
+						break;
+
+					case 61 : 
+						int LA17_0 = input.LA(1);
+						 
+						int index17_0 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA17_0==ID) ) {s = 1;}
+						else if ( (LA17_0==FTSWORD) ) {s = 2;}
+						else if ( (LA17_0==FTSPRE) ) {s = 3;}
+						else if ( (LA17_0==FTSWILD) ) {s = 4;}
+						else if ( (LA17_0==NOT) ) {s = 5;}
+						else if ( (LA17_0==TO) ) {s = 6;}
+						else if ( (LA17_0==DECIMAL_INTEGER_LITERAL) ) {s = 7;}
+						else if ( (LA17_0==FLOATING_POINT_LITERAL) ) {s = 8;}
+						else if ( (LA17_0==DATETIME) ) {s = 9;}
+						else if ( (LA17_0==STAR) ) {s = 10;}
+						else if ( (LA17_0==URI) ) {s = 11;}
+						else if ( (LA17_0==AT) ) {s = 12;}
+						else if ( (LA17_0==OR) ) {s = 13;}
+						else if ( (LA17_0==AND) ) {s = 14;}
+						else if ( (LA17_0==FTSPHRASE) ) {s = 15;}
+						else if ( (LA17_0==LSQUARE) && (synpred3_FTS())) {s = 16;}
+						else if ( (LA17_0==LT) && (synpred3_FTS())) {s = 17;}
+						else if ( (LA17_0==COMMA||LA17_0==DOT) && (synpred5_FTS())) {s = 18;}
+						else if ( (LA17_0==QUESTION_MARK) && (synpred5_FTS())) {s = 19;}
+						else if ( (LA17_0==EQUALS) && (synpred6_FTS())) {s = 20;}
+						else if ( (LA17_0==TILDA) && (synpred7_FTS())) {s = 21;}
+						else if ( (LA17_0==LPAREN) ) {s = 22;}
+						else if ( (LA17_0==PERCENT) ) {s = 23;}
+						 
+						input.seek(index17_0);
+						if ( s>=0 ) return s;
+						break;
+
+					case 62 : 
+						int LA17_70 = input.LA(1);
+						 
+						int index17_70 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_FTS()) ) {s = 27;}
+						else if ( (synpred4_FTS()) ) {s = 100;}
+						else if ( (synpred5_FTS()) ) {s = 116;}
+						 
+						input.seek(index17_70);
+						if ( s>=0 ) return s;
+						break;
+
+					case 63 : 
 						int LA17_1 = input.LA(1);
 						 
 						int index17_1 = input.index();
@@ -17343,147 +17484,6 @@ public class FTSParser extends Parser {
 						input.seek(index17_1);
 						if ( s>=0 ) return s;
 						break;
-
-					case 60 : 
-						int LA17_167 = input.LA(1);
-						 
-						int index17_167 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_167==DOTDOT) && (synpred3_FTS())) {s = 27;}
-						else if ( (LA17_167==COMMA||LA17_167==DOT) && (synpred5_FTS())) {s = 158;}
-						else if ( (LA17_167==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_167==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_167==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_167==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_167==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_167==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_167==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_167==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_167==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_167==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_167==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_167==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_167==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_167==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_167==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_167==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_167==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_167==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_167==STAR) && (synpred5_FTS())) {s = 68;}
-						else if ( (LA17_167==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_167==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_167==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_167==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_167==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_167==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_167==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_167==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_167==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_167==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_167==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_167);
-						if ( s>=0 ) return s;
-						break;
-
-					case 61 : 
-						int LA17_87 = input.LA(1);
-						 
-						int index17_87 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_FTS()) ) {s = 124;}
-						else if ( (synpred5_FTS()) ) {s = 151;}
-						 
-						input.seek(index17_87);
-						if ( s>=0 ) return s;
-						break;
-
-					case 62 : 
-						int LA17_157 = input.LA(1);
-						 
-						int index17_157 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_157==ID) ) {s = 183;}
-						else if ( (LA17_157==FTSWORD) && (synpred5_FTS())) {s = 184;}
-						else if ( (LA17_157==FTSPRE) && (synpred5_FTS())) {s = 185;}
-						else if ( (LA17_157==FTSWILD) && (synpred5_FTS())) {s = 186;}
-						else if ( (LA17_157==NOT) && (synpred5_FTS())) {s = 187;}
-						else if ( (LA17_157==TO) && (synpred5_FTS())) {s = 188;}
-						else if ( (LA17_157==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 189;}
-						else if ( (LA17_157==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 190;}
-						else if ( (LA17_157==STAR) && (synpred5_FTS())) {s = 191;}
-						else if ( (LA17_157==QUESTION_MARK) && (synpred5_FTS())) {s = 192;}
-						else if ( (LA17_157==DATETIME) && (synpred5_FTS())) {s = 193;}
-						else if ( (LA17_157==URI) && (synpred5_FTS())) {s = 194;}
-						else if ( (LA17_157==TILDA) && (synpred5_FTS())) {s = 159;}
-						else if ( (LA17_157==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_157==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_157==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_157==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_157==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_157==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_157==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_157==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_157==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_157==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_157==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_157==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_157==COMMA||LA17_157==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_157==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_157==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_157==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_157==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_157==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_157);
-						if ( s>=0 ) return s;
-						break;
-
-					case 63 : 
-						int LA17_6 = input.LA(1);
-						 
-						int index17_6 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA17_6==STAR) ) {s = 25;}
-						else if ( (LA17_6==COLON) ) {s = 26;}
-						else if ( (LA17_6==COMMA||LA17_6==DOT) && (synpred5_FTS())) {s = 28;}
-						else if ( (LA17_6==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_6==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_6==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_6==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_6==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_6==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_6==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_6==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_6==NOT) && (synpred5_FTS())) {s = 37;}
-						else if ( (LA17_6==ID) && (synpred5_FTS())) {s = 38;}
-						else if ( (LA17_6==FTSWORD) && (synpred5_FTS())) {s = 39;}
-						else if ( (LA17_6==FTSPRE) && (synpred5_FTS())) {s = 40;}
-						else if ( (LA17_6==FTSWILD) && (synpred5_FTS())) {s = 41;}
-						else if ( (LA17_6==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_6==TO) && (synpred5_FTS())) {s = 43;}
-						else if ( (LA17_6==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 44;}
-						else if ( (LA17_6==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 45;}
-						else if ( (LA17_6==DATETIME) && (synpred5_FTS())) {s = 46;}
-						else if ( (LA17_6==URI) && (synpred5_FTS())) {s = 47;}
-						else if ( (LA17_6==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_6==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_6==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_6==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_6==QUESTION_MARK) && (synpred5_FTS())) {s = 52;}
-						else if ( (LA17_6==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_6==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_6==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_6==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_6==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_6);
-						if ( s>=0 ) return s;
-						break;
 			}
 			if (state.backtracking>0) {state.failed=true; return -1;}
 			NoViableAltException nvae =
@@ -17507,12 +17507,12 @@ public class FTSParser extends Parser {
 	static final String DFA33_acceptS =
 		"\1\uffff\1\1\2\uffff\2\1\2\uffff\1\2\1\3\1\uffff\1\1\7\uffff\1\1\102\uffff";
 	static final String DFA33_specialS =
-		"\1\46\1\uffff\1\61\1\74\2\uffff\1\75\5\uffff\1\24\1\7\1\60\1\77\1\42\5"+
-		"\uffff\1\22\1\15\2\uffff\1\55\1\33\1\uffff\1\62\1\21\1\70\1\51\1\12\1"+
-		"\54\1\3\1\37\3\uffff\1\100\1\23\1\40\1\4\1\27\1\0\1\43\1\13\1\71\1\25"+
-		"\1\64\1\uffff\1\30\1\73\1\26\1\44\1\5\1\32\1\72\1\57\1\20\1\67\1\14\1"+
-		"\45\1\50\1\11\1\53\1\2\1\36\1\31\1\101\1\56\1\17\1\66\1\16\1\63\1\47\1"+
-		"\10\1\52\1\1\1\35\1\65\1\34\1\6\1\41\1\76}>";
+		"\1\55\1\uffff\1\72\1\67\2\uffff\1\65\5\uffff\1\14\1\20\1\54\1\53\1\76"+
+		"\5\uffff\1\63\1\16\2\uffff\1\56\1\22\1\uffff\1\37\1\77\1\43\1\3\1\60\1"+
+		"\11\1\30\1\31\3\uffff\1\2\1\51\1\32\1\75\1\26\1\7\1\57\1\0\1\74\1\46\1"+
+		"\64\1\uffff\1\15\1\1\1\52\1\42\1\73\1\23\1\21\1\40\1\100\1\44\1\10\1\70"+
+		"\1\4\1\61\1\12\1\33\1\34\1\24\1\50\1\41\1\101\1\45\1\17\1\71\1\5\1\62"+
+		"\1\13\1\35\1\36\1\47\1\27\1\66\1\25\1\6}>";
 	static final String[] DFA33_transitionS = {
 			"\1\5\1\1\4\uffff\1\11\1\uffff\1\11\1\uffff\1\11\5\uffff\1\11\31\uffff"+
 			"\1\11\2\uffff\1\10\3\11\11\uffff\1\2\16\uffff\1\6\2\uffff\1\4\6\uffff"+
@@ -17687,149 +17687,6 @@ public class FTSParser extends Parser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA33_45 = input.LA(1);
-						 
-						int index33_45 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_45);
-						if ( s>=0 ) return s;
-						break;
-
-					case 1 : 
-						int LA33_79 = input.LA(1);
-						 
-						int index33_79 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_79);
-						if ( s>=0 ) return s;
-						break;
-
-					case 2 : 
-						int LA33_67 = input.LA(1);
-						 
-						int index33_67 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_67);
-						if ( s>=0 ) return s;
-						break;
-
-					case 3 : 
-						int LA33_35 = input.LA(1);
-						 
-						int index33_35 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_35);
-						if ( s>=0 ) return s;
-						break;
-
-					case 4 : 
-						int LA33_43 = input.LA(1);
-						 
-						int index33_43 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_43);
-						if ( s>=0 ) return s;
-						break;
-
-					case 5 : 
-						int LA33_56 = input.LA(1);
-						 
-						int index33_56 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_56);
-						if ( s>=0 ) return s;
-						break;
-
-					case 6 : 
-						int LA33_83 = input.LA(1);
-						 
-						int index33_83 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_83);
-						if ( s>=0 ) return s;
-						break;
-
-					case 7 : 
-						int LA33_13 = input.LA(1);
-						 
-						int index33_13 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA33_13==COLON) && (synpred13_FTS())) {s = 19;}
-						else if ( (LA33_13==EOF||(LA33_13 >= AMP && LA33_13 <= BAR)||LA33_13==CARAT||LA33_13==COMMA||LA33_13==DATETIME||LA33_13==DECIMAL_INTEGER_LITERAL||LA33_13==DOT||LA33_13==EQUALS||LA33_13==EXCLAMATION||LA33_13==FLOATING_POINT_LITERAL||(LA33_13 >= FTSPHRASE && LA33_13 <= FTSWORD)||LA33_13==ID||(LA33_13 >= LPAREN && LA33_13 <= LT)||LA33_13==MINUS||LA33_13==NOT||(LA33_13 >= OR && LA33_13 <= PERCENT)||LA33_13==PLUS||LA33_13==QUESTION_MARK||LA33_13==RPAREN||LA33_13==STAR||(LA33_13 >= TILDA && LA33_13 <= TO)||LA33_13==URI) ) {s = 9;}
-						 
-						input.seek(index33_13);
-						if ( s>=0 ) return s;
-						break;
-
-					case 8 : 
-						int LA33_77 = input.LA(1);
-						 
-						int index33_77 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_77);
-						if ( s>=0 ) return s;
-						break;
-
-					case 9 : 
-						int LA33_65 = input.LA(1);
-						 
-						int index33_65 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_65);
-						if ( s>=0 ) return s;
-						break;
-
-					case 10 : 
-						int LA33_33 = input.LA(1);
-						 
-						int index33_33 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_33);
-						if ( s>=0 ) return s;
-						break;
-
-					case 11 : 
 						int LA33_47 = input.LA(1);
 						 
 						int index33_47 = input.index();
@@ -17842,7 +17699,98 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 12 : 
+					case 1 : 
+						int LA33_53 = input.LA(1);
+						 
+						int index33_53 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_53);
+						if ( s>=0 ) return s;
+						break;
+
+					case 2 : 
+						int LA33_40 = input.LA(1);
+						 
+						int index33_40 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_40);
+						if ( s>=0 ) return s;
+						break;
+
+					case 3 : 
+						int LA33_32 = input.LA(1);
+						 
+						int index33_32 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_32);
+						if ( s>=0 ) return s;
+						break;
+
+					case 4 : 
+						int LA33_64 = input.LA(1);
+						 
+						int index33_64 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_64);
+						if ( s>=0 ) return s;
+						break;
+
+					case 5 : 
+						int LA33_76 = input.LA(1);
+						 
+						int index33_76 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_76);
+						if ( s>=0 ) return s;
+						break;
+
+					case 6 : 
+						int LA33_85 = input.LA(1);
+						 
+						int index33_85 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_85);
+						if ( s>=0 ) return s;
+						break;
+
+					case 7 : 
+						int LA33_45 = input.LA(1);
+						 
+						int index33_45 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_45);
+						if ( s>=0 ) return s;
+						break;
+
+					case 8 : 
 						int LA33_62 = input.LA(1);
 						 
 						int index33_62 = input.index();
@@ -17855,98 +17803,46 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 13 : 
-						int LA33_23 = input.LA(1);
+					case 9 : 
+						int LA33_34 = input.LA(1);
 						 
-						int index33_23 = input.index();
+						int index33_34 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_23);
+						input.seek(index33_34);
 						if ( s>=0 ) return s;
 						break;
 
-					case 14 : 
-						int LA33_74 = input.LA(1);
+					case 10 : 
+						int LA33_66 = input.LA(1);
 						 
-						int index33_74 = input.index();
+						int index33_66 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_74);
+						input.seek(index33_66);
 						if ( s>=0 ) return s;
 						break;
 
-					case 15 : 
-						int LA33_72 = input.LA(1);
+					case 11 : 
+						int LA33_78 = input.LA(1);
 						 
-						int index33_72 = input.index();
+						int index33_78 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_72);
+						input.seek(index33_78);
 						if ( s>=0 ) return s;
 						break;
 
-					case 16 : 
-						int LA33_60 = input.LA(1);
-						 
-						int index33_60 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_60);
-						if ( s>=0 ) return s;
-						break;
-
-					case 17 : 
-						int LA33_30 = input.LA(1);
-						 
-						int index33_30 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_30);
-						if ( s>=0 ) return s;
-						break;
-
-					case 18 : 
-						int LA33_22 = input.LA(1);
-						 
-						int index33_22 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_22);
-						if ( s>=0 ) return s;
-						break;
-
-					case 19 : 
-						int LA33_41 = input.LA(1);
-						 
-						int index33_41 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_41);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
+					case 12 : 
 						int LA33_12 = input.LA(1);
 						 
 						int index33_12 = input.index();
@@ -17960,46 +17856,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 21 : 
-						int LA33_49 = input.LA(1);
-						 
-						int index33_49 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_49);
-						if ( s>=0 ) return s;
-						break;
-
-					case 22 : 
-						int LA33_54 = input.LA(1);
-						 
-						int index33_54 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_54);
-						if ( s>=0 ) return s;
-						break;
-
-					case 23 : 
-						int LA33_44 = input.LA(1);
-						 
-						int index33_44 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_44);
-						if ( s>=0 ) return s;
-						break;
-
-					case 24 : 
+					case 13 : 
 						int LA33_52 = input.LA(1);
 						 
 						int index33_52 = input.index();
@@ -18012,33 +17869,59 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 25 : 
-						int LA33_69 = input.LA(1);
+					case 14 : 
+						int LA33_23 = input.LA(1);
 						 
-						int index33_69 = input.index();
+						int index33_23 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_69);
+						input.seek(index33_23);
 						if ( s>=0 ) return s;
 						break;
 
-					case 26 : 
-						int LA33_57 = input.LA(1);
+					case 15 : 
+						int LA33_74 = input.LA(1);
 						 
-						int index33_57 = input.index();
+						int index33_74 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_57);
+						input.seek(index33_74);
 						if ( s>=0 ) return s;
 						break;
 
-					case 27 : 
+					case 16 : 
+						int LA33_13 = input.LA(1);
+						 
+						int index33_13 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_13==COLON) && (synpred13_FTS())) {s = 19;}
+						else if ( (LA33_13==EOF||(LA33_13 >= AMP && LA33_13 <= BAR)||LA33_13==CARAT||LA33_13==COMMA||LA33_13==DATETIME||LA33_13==DECIMAL_INTEGER_LITERAL||LA33_13==DOT||LA33_13==EQUALS||LA33_13==EXCLAMATION||LA33_13==FLOATING_POINT_LITERAL||(LA33_13 >= FTSPHRASE && LA33_13 <= FTSWORD)||LA33_13==ID||(LA33_13 >= LPAREN && LA33_13 <= LT)||LA33_13==MINUS||LA33_13==NOT||(LA33_13 >= OR && LA33_13 <= PERCENT)||LA33_13==PLUS||LA33_13==QUESTION_MARK||LA33_13==RPAREN||LA33_13==STAR||(LA33_13 >= TILDA && LA33_13 <= TO)||LA33_13==URI) ) {s = 9;}
+						 
+						input.seek(index33_13);
+						if ( s>=0 ) return s;
+						break;
+
+					case 17 : 
+						int LA33_58 = input.LA(1);
+						 
+						int index33_58 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_58);
+						if ( s>=0 ) return s;
+						break;
+
+					case 18 : 
 						int LA33_27 = input.LA(1);
 						 
 						int index33_27 = input.index();
@@ -18051,72 +17934,33 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 28 : 
-						int LA33_82 = input.LA(1);
+					case 19 : 
+						int LA33_57 = input.LA(1);
 						 
-						int index33_82 = input.index();
+						int index33_57 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_82);
+						input.seek(index33_57);
 						if ( s>=0 ) return s;
 						break;
 
-					case 29 : 
-						int LA33_80 = input.LA(1);
+					case 20 : 
+						int LA33_69 = input.LA(1);
 						 
-						int index33_80 = input.index();
+						int index33_69 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_80);
+						input.seek(index33_69);
 						if ( s>=0 ) return s;
 						break;
 
-					case 30 : 
-						int LA33_68 = input.LA(1);
-						 
-						int index33_68 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_68);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
-						int LA33_36 = input.LA(1);
-						 
-						int index33_36 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_36);
-						if ( s>=0 ) return s;
-						break;
-
-					case 32 : 
-						int LA33_42 = input.LA(1);
-						 
-						int index33_42 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_42);
-						if ( s>=0 ) return s;
-						break;
-
-					case 33 : 
+					case 21 : 
 						int LA33_84 = input.LA(1);
 						 
 						int index33_84 = input.index();
@@ -18129,33 +17973,163 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 34 : 
-						int LA33_16 = input.LA(1);
+					case 22 : 
+						int LA33_44 = input.LA(1);
 						 
-						int index33_16 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA33_16==COLON) && (synpred13_FTS())) {s = 19;}
-						else if ( (LA33_16==EOF||(LA33_16 >= AMP && LA33_16 <= BAR)||LA33_16==CARAT||LA33_16==COMMA||LA33_16==DATETIME||LA33_16==DECIMAL_INTEGER_LITERAL||LA33_16==DOT||LA33_16==EQUALS||LA33_16==EXCLAMATION||LA33_16==FLOATING_POINT_LITERAL||(LA33_16 >= FTSPHRASE && LA33_16 <= FTSWORD)||LA33_16==ID||(LA33_16 >= LPAREN && LA33_16 <= LT)||LA33_16==MINUS||LA33_16==NOT||(LA33_16 >= OR && LA33_16 <= PERCENT)||LA33_16==PLUS||LA33_16==QUESTION_MARK||LA33_16==RPAREN||LA33_16==STAR||(LA33_16 >= TILDA && LA33_16 <= TO)||LA33_16==URI) ) {s = 9;}
-						 
-						input.seek(index33_16);
-						if ( s>=0 ) return s;
-						break;
-
-					case 35 : 
-						int LA33_46 = input.LA(1);
-						 
-						int index33_46 = input.index();
+						int index33_44 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_46);
+						input.seek(index33_44);
 						if ( s>=0 ) return s;
 						break;
 
-					case 36 : 
+					case 23 : 
+						int LA33_82 = input.LA(1);
+						 
+						int index33_82 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_82);
+						if ( s>=0 ) return s;
+						break;
+
+					case 24 : 
+						int LA33_35 = input.LA(1);
+						 
+						int index33_35 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_35);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
+						int LA33_36 = input.LA(1);
+						 
+						int index33_36 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_36);
+						if ( s>=0 ) return s;
+						break;
+
+					case 26 : 
+						int LA33_42 = input.LA(1);
+						 
+						int index33_42 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_42);
+						if ( s>=0 ) return s;
+						break;
+
+					case 27 : 
+						int LA33_67 = input.LA(1);
+						 
+						int index33_67 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_67);
+						if ( s>=0 ) return s;
+						break;
+
+					case 28 : 
+						int LA33_68 = input.LA(1);
+						 
+						int index33_68 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_68);
+						if ( s>=0 ) return s;
+						break;
+
+					case 29 : 
+						int LA33_79 = input.LA(1);
+						 
+						int index33_79 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_79);
+						if ( s>=0 ) return s;
+						break;
+
+					case 30 : 
+						int LA33_80 = input.LA(1);
+						 
+						int index33_80 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_80);
+						if ( s>=0 ) return s;
+						break;
+
+					case 31 : 
+						int LA33_29 = input.LA(1);
+						 
+						int index33_29 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_29);
+						if ( s>=0 ) return s;
+						break;
+
+					case 32 : 
+						int LA33_59 = input.LA(1);
+						 
+						int index33_59 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_59);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA33_71 = input.LA(1);
+						 
+						int index33_71 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_71);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
 						int LA33_55 = input.LA(1);
 						 
 						int index33_55 = input.index();
@@ -18168,20 +18142,137 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 37 : 
-						int LA33_63 = input.LA(1);
+					case 35 : 
+						int LA33_31 = input.LA(1);
 						 
-						int index33_63 = input.index();
+						int index33_31 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_63);
+						input.seek(index33_31);
+						if ( s>=0 ) return s;
+						break;
+
+					case 36 : 
+						int LA33_61 = input.LA(1);
+						 
+						int index33_61 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_61);
+						if ( s>=0 ) return s;
+						break;
+
+					case 37 : 
+						int LA33_73 = input.LA(1);
+						 
+						int index33_73 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_73);
 						if ( s>=0 ) return s;
 						break;
 
 					case 38 : 
+						int LA33_49 = input.LA(1);
+						 
+						int index33_49 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_49);
+						if ( s>=0 ) return s;
+						break;
+
+					case 39 : 
+						int LA33_81 = input.LA(1);
+						 
+						int index33_81 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_81);
+						if ( s>=0 ) return s;
+						break;
+
+					case 40 : 
+						int LA33_70 = input.LA(1);
+						 
+						int index33_70 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_70);
+						if ( s>=0 ) return s;
+						break;
+
+					case 41 : 
+						int LA33_41 = input.LA(1);
+						 
+						int index33_41 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_41);
+						if ( s>=0 ) return s;
+						break;
+
+					case 42 : 
+						int LA33_54 = input.LA(1);
+						 
+						int index33_54 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_54);
+						if ( s>=0 ) return s;
+						break;
+
+					case 43 : 
+						int LA33_15 = input.LA(1);
+						 
+						int index33_15 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_15==COLON) && (synpred13_FTS())) {s = 19;}
+						else if ( (LA33_15==EOF||(LA33_15 >= AMP && LA33_15 <= BAR)||LA33_15==CARAT||LA33_15==COMMA||LA33_15==DATETIME||LA33_15==DECIMAL_INTEGER_LITERAL||LA33_15==DOT||LA33_15==EQUALS||LA33_15==EXCLAMATION||LA33_15==FLOATING_POINT_LITERAL||(LA33_15 >= FTSPHRASE && LA33_15 <= FTSWORD)||LA33_15==ID||(LA33_15 >= LPAREN && LA33_15 <= LT)||LA33_15==MINUS||LA33_15==NOT||(LA33_15 >= OR && LA33_15 <= PERCENT)||LA33_15==PLUS||LA33_15==QUESTION_MARK||LA33_15==RPAREN||LA33_15==STAR||(LA33_15 >= TILDA && LA33_15 <= TO)||LA33_15==URI) ) {s = 9;}
+						 
+						input.seek(index33_15);
+						if ( s>=0 ) return s;
+						break;
+
+					case 44 : 
+						int LA33_14 = input.LA(1);
+						 
+						int index33_14 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_14==COLON) && (synpred13_FTS())) {s = 19;}
+						else if ( (LA33_14==EOF||(LA33_14 >= AMP && LA33_14 <= BAR)||LA33_14==CARAT||LA33_14==COMMA||LA33_14==DATETIME||LA33_14==DECIMAL_INTEGER_LITERAL||LA33_14==DOT||LA33_14==EQUALS||LA33_14==EXCLAMATION||LA33_14==FLOATING_POINT_LITERAL||(LA33_14 >= FTSPHRASE && LA33_14 <= FTSWORD)||LA33_14==ID||(LA33_14 >= LPAREN && LA33_14 <= LT)||LA33_14==MINUS||LA33_14==NOT||(LA33_14 >= OR && LA33_14 <= PERCENT)||LA33_14==PLUS||LA33_14==QUESTION_MARK||LA33_14==RPAREN||LA33_14==STAR||(LA33_14 >= TILDA && LA33_14 <= TO)||LA33_14==URI) ) {s = 9;}
+						 
+						input.seek(index33_14);
+						if ( s>=0 ) return s;
+						break;
+
+					case 45 : 
 						int LA33_0 = input.LA(1);
 						 
 						int index33_0 = input.index();
@@ -18201,85 +18292,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 39 : 
-						int LA33_76 = input.LA(1);
-						 
-						int index33_76 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_76);
-						if ( s>=0 ) return s;
-						break;
-
-					case 40 : 
-						int LA33_64 = input.LA(1);
-						 
-						int index33_64 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_64);
-						if ( s>=0 ) return s;
-						break;
-
-					case 41 : 
-						int LA33_32 = input.LA(1);
-						 
-						int index33_32 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_32);
-						if ( s>=0 ) return s;
-						break;
-
-					case 42 : 
-						int LA33_78 = input.LA(1);
-						 
-						int index33_78 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_78);
-						if ( s>=0 ) return s;
-						break;
-
-					case 43 : 
-						int LA33_66 = input.LA(1);
-						 
-						int index33_66 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_66);
-						if ( s>=0 ) return s;
-						break;
-
-					case 44 : 
-						int LA33_34 = input.LA(1);
-						 
-						int index33_34 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_34);
-						if ( s>=0 ) return s;
-						break;
-
-					case 45 : 
+					case 46 : 
 						int LA33_26 = input.LA(1);
 						 
 						int index33_26 = input.index();
@@ -18292,82 +18305,68 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 46 : 
-						int LA33_71 = input.LA(1);
-						 
-						int index33_71 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_71);
-						if ( s>=0 ) return s;
-						break;
-
 					case 47 : 
-						int LA33_59 = input.LA(1);
+						int LA33_46 = input.LA(1);
 						 
-						int index33_59 = input.index();
+						int index33_46 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_59);
+						input.seek(index33_46);
 						if ( s>=0 ) return s;
 						break;
 
 					case 48 : 
-						int LA33_14 = input.LA(1);
+						int LA33_33 = input.LA(1);
 						 
-						int index33_14 = input.index();
+						int index33_33 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA33_14==COLON) && (synpred13_FTS())) {s = 19;}
-						else if ( (LA33_14==EOF||(LA33_14 >= AMP && LA33_14 <= BAR)||LA33_14==CARAT||LA33_14==COMMA||LA33_14==DATETIME||LA33_14==DECIMAL_INTEGER_LITERAL||LA33_14==DOT||LA33_14==EQUALS||LA33_14==EXCLAMATION||LA33_14==FLOATING_POINT_LITERAL||(LA33_14 >= FTSPHRASE && LA33_14 <= FTSWORD)||LA33_14==ID||(LA33_14 >= LPAREN && LA33_14 <= LT)||LA33_14==MINUS||LA33_14==NOT||(LA33_14 >= OR && LA33_14 <= PERCENT)||LA33_14==PLUS||LA33_14==QUESTION_MARK||LA33_14==RPAREN||LA33_14==STAR||(LA33_14 >= TILDA && LA33_14 <= TO)||LA33_14==URI) ) {s = 9;}
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_14);
+						input.seek(index33_33);
 						if ( s>=0 ) return s;
 						break;
 
 					case 49 : 
-						int LA33_2 = input.LA(1);
+						int LA33_65 = input.LA(1);
 						 
-						int index33_2 = input.index();
+						int index33_65 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA33_2==DOT) ) {s = 10;}
-						else if ( (LA33_2==COLON) && (synpred13_FTS())) {s = 11;}
-						else if ( (LA33_2==EOF||(LA33_2 >= AMP && LA33_2 <= BAR)||LA33_2==CARAT||LA33_2==COMMA||LA33_2==DATETIME||LA33_2==DECIMAL_INTEGER_LITERAL||LA33_2==EQUALS||LA33_2==EXCLAMATION||LA33_2==FLOATING_POINT_LITERAL||(LA33_2 >= FTSPHRASE && LA33_2 <= FTSWORD)||LA33_2==ID||(LA33_2 >= LPAREN && LA33_2 <= LT)||LA33_2==MINUS||LA33_2==NOT||(LA33_2 >= OR && LA33_2 <= PERCENT)||LA33_2==PLUS||LA33_2==QUESTION_MARK||LA33_2==RPAREN||LA33_2==STAR||(LA33_2 >= TILDA && LA33_2 <= TO)||LA33_2==URI) ) {s = 9;}
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_2);
+						input.seek(index33_65);
 						if ( s>=0 ) return s;
 						break;
 
 					case 50 : 
-						int LA33_29 = input.LA(1);
+						int LA33_77 = input.LA(1);
 						 
-						int index33_29 = input.index();
+						int index33_77 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_29);
+						input.seek(index33_77);
 						if ( s>=0 ) return s;
 						break;
 
 					case 51 : 
-						int LA33_75 = input.LA(1);
+						int LA33_22 = input.LA(1);
 						 
-						int index33_75 = input.index();
+						int index33_22 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_75);
+						input.seek(index33_22);
 						if ( s>=0 ) return s;
 						break;
 
@@ -18385,110 +18384,6 @@ public class FTSParser extends Parser {
 						break;
 
 					case 53 : 
-						int LA33_81 = input.LA(1);
-						 
-						int index33_81 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_81);
-						if ( s>=0 ) return s;
-						break;
-
-					case 54 : 
-						int LA33_73 = input.LA(1);
-						 
-						int index33_73 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_73);
-						if ( s>=0 ) return s;
-						break;
-
-					case 55 : 
-						int LA33_61 = input.LA(1);
-						 
-						int index33_61 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_61);
-						if ( s>=0 ) return s;
-						break;
-
-					case 56 : 
-						int LA33_31 = input.LA(1);
-						 
-						int index33_31 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_31);
-						if ( s>=0 ) return s;
-						break;
-
-					case 57 : 
-						int LA33_48 = input.LA(1);
-						 
-						int index33_48 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_48);
-						if ( s>=0 ) return s;
-						break;
-
-					case 58 : 
-						int LA33_58 = input.LA(1);
-						 
-						int index33_58 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_58);
-						if ( s>=0 ) return s;
-						break;
-
-					case 59 : 
-						int LA33_53 = input.LA(1);
-						 
-						int index33_53 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred13_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index33_53);
-						if ( s>=0 ) return s;
-						break;
-
-					case 60 : 
-						int LA33_3 = input.LA(1);
-						 
-						int index33_3 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA33_3==COLON) && (synpred13_FTS())) {s = 11;}
-						else if ( (LA33_3==EOF||(LA33_3 >= AMP && LA33_3 <= BAR)||LA33_3==CARAT||LA33_3==COMMA||LA33_3==DATETIME||LA33_3==DECIMAL_INTEGER_LITERAL||LA33_3==DOT||LA33_3==EQUALS||LA33_3==EXCLAMATION||LA33_3==FLOATING_POINT_LITERAL||(LA33_3 >= FTSPHRASE && LA33_3 <= FTSWORD)||LA33_3==ID||(LA33_3 >= LPAREN && LA33_3 <= LT)||LA33_3==MINUS||LA33_3==NOT||(LA33_3 >= OR && LA33_3 <= PERCENT)||LA33_3==PLUS||LA33_3==QUESTION_MARK||LA33_3==RPAREN||LA33_3==STAR||(LA33_3 >= TILDA && LA33_3 <= TO)||LA33_3==URI) ) {s = 9;}
-						 
-						input.seek(index33_3);
-						if ( s>=0 ) return s;
-						break;
-
-					case 61 : 
 						int LA33_6 = input.LA(1);
 						 
 						int index33_6 = input.index();
@@ -18501,55 +18396,160 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 62 : 
-						int LA33_85 = input.LA(1);
+					case 54 : 
+						int LA33_83 = input.LA(1);
 						 
-						int index33_85 = input.index();
+						int index33_83 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_85);
+						input.seek(index33_83);
+						if ( s>=0 ) return s;
+						break;
+
+					case 55 : 
+						int LA33_3 = input.LA(1);
+						 
+						int index33_3 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_3==COLON) && (synpred13_FTS())) {s = 11;}
+						else if ( (LA33_3==EOF||(LA33_3 >= AMP && LA33_3 <= BAR)||LA33_3==CARAT||LA33_3==COMMA||LA33_3==DATETIME||LA33_3==DECIMAL_INTEGER_LITERAL||LA33_3==DOT||LA33_3==EQUALS||LA33_3==EXCLAMATION||LA33_3==FLOATING_POINT_LITERAL||(LA33_3 >= FTSPHRASE && LA33_3 <= FTSWORD)||LA33_3==ID||(LA33_3 >= LPAREN && LA33_3 <= LT)||LA33_3==MINUS||LA33_3==NOT||(LA33_3 >= OR && LA33_3 <= PERCENT)||LA33_3==PLUS||LA33_3==QUESTION_MARK||LA33_3==RPAREN||LA33_3==STAR||(LA33_3 >= TILDA && LA33_3 <= TO)||LA33_3==URI) ) {s = 9;}
+						 
+						input.seek(index33_3);
+						if ( s>=0 ) return s;
+						break;
+
+					case 56 : 
+						int LA33_63 = input.LA(1);
+						 
+						int index33_63 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_63);
+						if ( s>=0 ) return s;
+						break;
+
+					case 57 : 
+						int LA33_75 = input.LA(1);
+						 
+						int index33_75 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_75);
+						if ( s>=0 ) return s;
+						break;
+
+					case 58 : 
+						int LA33_2 = input.LA(1);
+						 
+						int index33_2 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_2==DOT) ) {s = 10;}
+						else if ( (LA33_2==COLON) && (synpred13_FTS())) {s = 11;}
+						else if ( (LA33_2==EOF||(LA33_2 >= AMP && LA33_2 <= BAR)||LA33_2==CARAT||LA33_2==COMMA||LA33_2==DATETIME||LA33_2==DECIMAL_INTEGER_LITERAL||LA33_2==EQUALS||LA33_2==EXCLAMATION||LA33_2==FLOATING_POINT_LITERAL||(LA33_2 >= FTSPHRASE && LA33_2 <= FTSWORD)||LA33_2==ID||(LA33_2 >= LPAREN && LA33_2 <= LT)||LA33_2==MINUS||LA33_2==NOT||(LA33_2 >= OR && LA33_2 <= PERCENT)||LA33_2==PLUS||LA33_2==QUESTION_MARK||LA33_2==RPAREN||LA33_2==STAR||(LA33_2 >= TILDA && LA33_2 <= TO)||LA33_2==URI) ) {s = 9;}
+						 
+						input.seek(index33_2);
+						if ( s>=0 ) return s;
+						break;
+
+					case 59 : 
+						int LA33_56 = input.LA(1);
+						 
+						int index33_56 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_56);
+						if ( s>=0 ) return s;
+						break;
+
+					case 60 : 
+						int LA33_48 = input.LA(1);
+						 
+						int index33_48 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_48);
+						if ( s>=0 ) return s;
+						break;
+
+					case 61 : 
+						int LA33_43 = input.LA(1);
+						 
+						int index33_43 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index33_43);
+						if ( s>=0 ) return s;
+						break;
+
+					case 62 : 
+						int LA33_16 = input.LA(1);
+						 
+						int index33_16 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA33_16==COLON) && (synpred13_FTS())) {s = 19;}
+						else if ( (LA33_16==EOF||(LA33_16 >= AMP && LA33_16 <= BAR)||LA33_16==CARAT||LA33_16==COMMA||LA33_16==DATETIME||LA33_16==DECIMAL_INTEGER_LITERAL||LA33_16==DOT||LA33_16==EQUALS||LA33_16==EXCLAMATION||LA33_16==FLOATING_POINT_LITERAL||(LA33_16 >= FTSPHRASE && LA33_16 <= FTSWORD)||LA33_16==ID||(LA33_16 >= LPAREN && LA33_16 <= LT)||LA33_16==MINUS||LA33_16==NOT||(LA33_16 >= OR && LA33_16 <= PERCENT)||LA33_16==PLUS||LA33_16==QUESTION_MARK||LA33_16==RPAREN||LA33_16==STAR||(LA33_16 >= TILDA && LA33_16 <= TO)||LA33_16==URI) ) {s = 9;}
+						 
+						input.seek(index33_16);
 						if ( s>=0 ) return s;
 						break;
 
 					case 63 : 
-						int LA33_15 = input.LA(1);
+						int LA33_30 = input.LA(1);
 						 
-						int index33_15 = input.index();
+						int index33_30 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA33_15==COLON) && (synpred13_FTS())) {s = 19;}
-						else if ( (LA33_15==EOF||(LA33_15 >= AMP && LA33_15 <= BAR)||LA33_15==CARAT||LA33_15==COMMA||LA33_15==DATETIME||LA33_15==DECIMAL_INTEGER_LITERAL||LA33_15==DOT||LA33_15==EQUALS||LA33_15==EXCLAMATION||LA33_15==FLOATING_POINT_LITERAL||(LA33_15 >= FTSPHRASE && LA33_15 <= FTSWORD)||LA33_15==ID||(LA33_15 >= LPAREN && LA33_15 <= LT)||LA33_15==MINUS||LA33_15==NOT||(LA33_15 >= OR && LA33_15 <= PERCENT)||LA33_15==PLUS||LA33_15==QUESTION_MARK||LA33_15==RPAREN||LA33_15==STAR||(LA33_15 >= TILDA && LA33_15 <= TO)||LA33_15==URI) ) {s = 9;}
+						if ( (synpred13_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_15);
+						input.seek(index33_30);
 						if ( s>=0 ) return s;
 						break;
 
 					case 64 : 
-						int LA33_40 = input.LA(1);
+						int LA33_60 = input.LA(1);
 						 
-						int index33_40 = input.index();
+						int index33_60 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_40);
+						input.seek(index33_60);
 						if ( s>=0 ) return s;
 						break;
 
 					case 65 : 
-						int LA33_70 = input.LA(1);
+						int LA33_72 = input.LA(1);
 						 
-						int index33_70 = input.index();
+						int index33_72 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred13_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index33_70);
+						input.seek(index33_72);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -18575,12 +18575,12 @@ public class FTSParser extends Parser {
 	static final String DFA39_acceptS =
 		"\1\uffff\1\1\2\uffff\2\1\2\uffff\1\2\1\3\1\uffff\1\1\7\uffff\1\1\102\uffff";
 	static final String DFA39_specialS =
-		"\1\44\1\uffff\1\14\1\6\2\uffff\1\24\5\uffff\1\42\1\43\1\53\1\1\1\11\5"+
-		"\uffff\1\10\1\101\2\uffff\1\71\1\66\1\uffff\1\52\1\56\1\20\1\63\1\5\1"+
-		"\47\1\77\1\27\3\uffff\1\32\1\57\1\21\1\12\1\40\1\33\1\35\1\0\1\41\1\60"+
-		"\1\31\1\uffff\1\67\1\13\1\100\1\30\1\73\1\65\1\2\1\51\1\55\1\17\1\70\1"+
-		"\34\1\62\1\4\1\46\1\76\1\26\1\64\1\23\1\50\1\54\1\16\1\72\1\22\1\61\1"+
-		"\3\1\45\1\75\1\25\1\15\1\74\1\37\1\7\1\36}>";
+		"\1\51\1\uffff\1\101\1\74\2\uffff\1\52\5\uffff\1\67\1\11\1\42\1\57\1\45"+
+		"\5\uffff\1\35\1\2\2\uffff\1\3\1\60\1\uffff\1\30\1\13\1\53\1\4\1\76\1\36"+
+		"\1\21\1\22\3\uffff\1\44\1\70\1\23\1\12\1\50\1\10\1\75\1\41\1\73\1\56\1"+
+		"\16\1\uffff\1\64\1\43\1\71\1\33\1\72\1\61\1\46\1\31\1\14\1\54\1\34\1\0"+
+		"\1\5\1\77\1\37\1\24\1\25\1\62\1\66\1\32\1\15\1\55\1\65\1\1\1\6\1\100\1"+
+		"\40\1\26\1\27\1\63\1\20\1\17\1\47\1\7}>";
 	static final String[] DFA39_transitionS = {
 			"\1\5\1\1\4\uffff\1\11\1\uffff\1\11\1\uffff\1\11\5\uffff\1\11\31\uffff"+
 			"\1\11\2\uffff\1\10\3\11\11\uffff\1\2\16\uffff\1\6\2\uffff\1\4\6\uffff"+
@@ -18755,132 +18755,132 @@ public class FTSParser extends Parser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA39_47 = input.LA(1);
+						int LA39_63 = input.LA(1);
 						 
-						int index39_47 = input.index();
+						int index39_63 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_47);
+						input.seek(index39_63);
 						if ( s>=0 ) return s;
 						break;
 
 					case 1 : 
-						int LA39_15 = input.LA(1);
+						int LA39_75 = input.LA(1);
 						 
-						int index39_15 = input.index();
+						int index39_75 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA39_15==COLON) && (synpred18_FTS())) {s = 19;}
-						else if ( (LA39_15==EOF||(LA39_15 >= AMP && LA39_15 <= BAR)||LA39_15==CARAT||LA39_15==COMMA||LA39_15==DATETIME||LA39_15==DECIMAL_INTEGER_LITERAL||LA39_15==DOT||LA39_15==EQUALS||LA39_15==EXCLAMATION||LA39_15==FLOATING_POINT_LITERAL||(LA39_15 >= FTSPHRASE && LA39_15 <= FTSWORD)||LA39_15==ID||(LA39_15 >= LPAREN && LA39_15 <= LT)||LA39_15==MINUS||LA39_15==NOT||(LA39_15 >= OR && LA39_15 <= PERCENT)||LA39_15==PLUS||LA39_15==QUESTION_MARK||LA39_15==RPAREN||LA39_15==STAR||(LA39_15 >= TILDA && LA39_15 <= TO)||LA39_15==URI) ) {s = 9;}
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_15);
+						input.seek(index39_75);
 						if ( s>=0 ) return s;
 						break;
 
 					case 2 : 
-						int LA39_58 = input.LA(1);
+						int LA39_23 = input.LA(1);
 						 
-						int index39_58 = input.index();
+						int index39_23 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_58);
+						input.seek(index39_23);
 						if ( s>=0 ) return s;
 						break;
 
 					case 3 : 
-						int LA39_77 = input.LA(1);
+						int LA39_26 = input.LA(1);
 						 
-						int index39_77 = input.index();
+						int index39_26 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_77);
+						input.seek(index39_26);
 						if ( s>=0 ) return s;
 						break;
 
 					case 4 : 
-						int LA39_65 = input.LA(1);
+						int LA39_32 = input.LA(1);
 						 
-						int index39_65 = input.index();
+						int index39_32 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_65);
+						input.seek(index39_32);
 						if ( s>=0 ) return s;
 						break;
 
 					case 5 : 
-						int LA39_33 = input.LA(1);
+						int LA39_64 = input.LA(1);
 						 
-						int index39_33 = input.index();
+						int index39_64 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_33);
+						input.seek(index39_64);
 						if ( s>=0 ) return s;
 						break;
 
 					case 6 : 
-						int LA39_3 = input.LA(1);
+						int LA39_76 = input.LA(1);
 						 
-						int index39_3 = input.index();
+						int index39_76 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA39_3==COLON) && (synpred18_FTS())) {s = 11;}
-						else if ( (LA39_3==EOF||(LA39_3 >= AMP && LA39_3 <= BAR)||LA39_3==CARAT||LA39_3==COMMA||LA39_3==DATETIME||LA39_3==DECIMAL_INTEGER_LITERAL||LA39_3==DOT||LA39_3==EQUALS||LA39_3==EXCLAMATION||LA39_3==FLOATING_POINT_LITERAL||(LA39_3 >= FTSPHRASE && LA39_3 <= FTSWORD)||LA39_3==ID||(LA39_3 >= LPAREN && LA39_3 <= LT)||LA39_3==MINUS||LA39_3==NOT||(LA39_3 >= OR && LA39_3 <= PERCENT)||LA39_3==PLUS||LA39_3==QUESTION_MARK||LA39_3==RPAREN||LA39_3==STAR||(LA39_3 >= TILDA && LA39_3 <= TO)||LA39_3==URI) ) {s = 9;}
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_3);
+						input.seek(index39_76);
 						if ( s>=0 ) return s;
 						break;
 
 					case 7 : 
-						int LA39_84 = input.LA(1);
+						int LA39_85 = input.LA(1);
 						 
-						int index39_84 = input.index();
+						int index39_85 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_84);
+						input.seek(index39_85);
 						if ( s>=0 ) return s;
 						break;
 
 					case 8 : 
-						int LA39_22 = input.LA(1);
+						int LA39_45 = input.LA(1);
 						 
-						int index39_22 = input.index();
+						int index39_45 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_22);
+						input.seek(index39_45);
 						if ( s>=0 ) return s;
 						break;
 
 					case 9 : 
-						int LA39_16 = input.LA(1);
+						int LA39_13 = input.LA(1);
 						 
-						int index39_16 = input.index();
+						int index39_13 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA39_16==COLON) && (synpred18_FTS())) {s = 19;}
-						else if ( (LA39_16==EOF||(LA39_16 >= AMP && LA39_16 <= BAR)||LA39_16==CARAT||LA39_16==COMMA||LA39_16==DATETIME||LA39_16==DECIMAL_INTEGER_LITERAL||LA39_16==DOT||LA39_16==EQUALS||LA39_16==EXCLAMATION||LA39_16==FLOATING_POINT_LITERAL||(LA39_16 >= FTSPHRASE && LA39_16 <= FTSWORD)||LA39_16==ID||(LA39_16 >= LPAREN && LA39_16 <= LT)||LA39_16==MINUS||LA39_16==NOT||(LA39_16 >= OR && LA39_16 <= PERCENT)||LA39_16==PLUS||LA39_16==QUESTION_MARK||LA39_16==RPAREN||LA39_16==STAR||(LA39_16 >= TILDA && LA39_16 <= TO)||LA39_16==URI) ) {s = 9;}
+						if ( (LA39_13==COLON) && (synpred18_FTS())) {s = 19;}
+						else if ( (LA39_13==EOF||(LA39_13 >= AMP && LA39_13 <= BAR)||LA39_13==CARAT||LA39_13==COMMA||LA39_13==DATETIME||LA39_13==DECIMAL_INTEGER_LITERAL||LA39_13==DOT||LA39_13==EQUALS||LA39_13==EXCLAMATION||LA39_13==FLOATING_POINT_LITERAL||(LA39_13 >= FTSPHRASE && LA39_13 <= FTSWORD)||LA39_13==ID||(LA39_13 >= LPAREN && LA39_13 <= LT)||LA39_13==MINUS||LA39_13==NOT||(LA39_13 >= OR && LA39_13 <= PERCENT)||LA39_13==PLUS||LA39_13==QUESTION_MARK||LA39_13==RPAREN||LA39_13==STAR||(LA39_13 >= TILDA && LA39_13 <= TO)||LA39_13==URI) ) {s = 9;}
 						 
-						input.seek(index39_16);
+						input.seek(index39_13);
 						if ( s>=0 ) return s;
 						break;
 
@@ -18898,189 +18898,45 @@ public class FTSParser extends Parser {
 						break;
 
 					case 11 : 
-						int LA39_53 = input.LA(1);
+						int LA39_30 = input.LA(1);
 						 
-						int index39_53 = input.index();
+						int index39_30 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_53);
+						input.seek(index39_30);
 						if ( s>=0 ) return s;
 						break;
 
 					case 12 : 
-						int LA39_2 = input.LA(1);
+						int LA39_60 = input.LA(1);
 						 
-						int index39_2 = input.index();
+						int index39_60 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA39_2==DOT) ) {s = 10;}
-						else if ( (LA39_2==COLON) && (synpred18_FTS())) {s = 11;}
-						else if ( (LA39_2==EOF||(LA39_2 >= AMP && LA39_2 <= BAR)||LA39_2==CARAT||LA39_2==COMMA||LA39_2==DATETIME||LA39_2==DECIMAL_INTEGER_LITERAL||LA39_2==EQUALS||LA39_2==EXCLAMATION||LA39_2==FLOATING_POINT_LITERAL||(LA39_2 >= FTSPHRASE && LA39_2 <= FTSWORD)||LA39_2==ID||(LA39_2 >= LPAREN && LA39_2 <= LT)||LA39_2==MINUS||LA39_2==NOT||(LA39_2 >= OR && LA39_2 <= PERCENT)||LA39_2==PLUS||LA39_2==QUESTION_MARK||LA39_2==RPAREN||LA39_2==STAR||(LA39_2 >= TILDA && LA39_2 <= TO)||LA39_2==URI) ) {s = 9;}
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_2);
+						input.seek(index39_60);
 						if ( s>=0 ) return s;
 						break;
 
 					case 13 : 
-						int LA39_81 = input.LA(1);
+						int LA39_72 = input.LA(1);
 						 
-						int index39_81 = input.index();
+						int index39_72 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_81);
+						input.seek(index39_72);
 						if ( s>=0 ) return s;
 						break;
 
 					case 14 : 
-						int LA39_73 = input.LA(1);
-						 
-						int index39_73 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_73);
-						if ( s>=0 ) return s;
-						break;
-
-					case 15 : 
-						int LA39_61 = input.LA(1);
-						 
-						int index39_61 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_61);
-						if ( s>=0 ) return s;
-						break;
-
-					case 16 : 
-						int LA39_31 = input.LA(1);
-						 
-						int index39_31 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_31);
-						if ( s>=0 ) return s;
-						break;
-
-					case 17 : 
-						int LA39_42 = input.LA(1);
-						 
-						int index39_42 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_42);
-						if ( s>=0 ) return s;
-						break;
-
-					case 18 : 
-						int LA39_75 = input.LA(1);
-						 
-						int index39_75 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_75);
-						if ( s>=0 ) return s;
-						break;
-
-					case 19 : 
-						int LA39_70 = input.LA(1);
-						 
-						int index39_70 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_70);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
-						int LA39_6 = input.LA(1);
-						 
-						int index39_6 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA39_6==COLON) && (synpred18_FTS())) {s = 11;}
-						else if ( (LA39_6==EOF||(LA39_6 >= AMP && LA39_6 <= BAR)||LA39_6==CARAT||LA39_6==COMMA||LA39_6==DATETIME||LA39_6==DECIMAL_INTEGER_LITERAL||LA39_6==DOT||LA39_6==EQUALS||LA39_6==EXCLAMATION||LA39_6==FLOATING_POINT_LITERAL||(LA39_6 >= FTSPHRASE && LA39_6 <= FTSWORD)||LA39_6==ID||(LA39_6 >= LPAREN && LA39_6 <= LT)||LA39_6==MINUS||LA39_6==NOT||(LA39_6 >= OR && LA39_6 <= PERCENT)||LA39_6==PLUS||LA39_6==QUESTION_MARK||LA39_6==RPAREN||LA39_6==STAR||(LA39_6 >= TILDA && LA39_6 <= TO)||LA39_6==URI) ) {s = 9;}
-						 
-						input.seek(index39_6);
-						if ( s>=0 ) return s;
-						break;
-
-					case 21 : 
-						int LA39_80 = input.LA(1);
-						 
-						int index39_80 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_80);
-						if ( s>=0 ) return s;
-						break;
-
-					case 22 : 
-						int LA39_68 = input.LA(1);
-						 
-						int index39_68 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_68);
-						if ( s>=0 ) return s;
-						break;
-
-					case 23 : 
-						int LA39_36 = input.LA(1);
-						 
-						int index39_36 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_36);
-						if ( s>=0 ) return s;
-						break;
-
-					case 24 : 
-						int LA39_55 = input.LA(1);
-						 
-						int index39_55 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_55);
-						if ( s>=0 ) return s;
-						break;
-
-					case 25 : 
 						int LA39_50 = input.LA(1);
 						 
 						int index39_50 = input.index();
@@ -19093,72 +18949,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 26 : 
-						int LA39_40 = input.LA(1);
-						 
-						int index39_40 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_40);
-						if ( s>=0 ) return s;
-						break;
-
-					case 27 : 
-						int LA39_45 = input.LA(1);
-						 
-						int index39_45 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_45);
-						if ( s>=0 ) return s;
-						break;
-
-					case 28 : 
-						int LA39_63 = input.LA(1);
-						 
-						int index39_63 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_63);
-						if ( s>=0 ) return s;
-						break;
-
-					case 29 : 
-						int LA39_46 = input.LA(1);
-						 
-						int index39_46 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_46);
-						if ( s>=0 ) return s;
-						break;
-
-					case 30 : 
-						int LA39_85 = input.LA(1);
-						 
-						int index39_85 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_85);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
+					case 15 : 
 						int LA39_83 = input.LA(1);
 						 
 						int index39_83 = input.index();
@@ -19171,7 +18962,319 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
+					case 16 : 
+						int LA39_82 = input.LA(1);
+						 
+						int index39_82 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_82);
+						if ( s>=0 ) return s;
+						break;
+
+					case 17 : 
+						int LA39_35 = input.LA(1);
+						 
+						int index39_35 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_35);
+						if ( s>=0 ) return s;
+						break;
+
+					case 18 : 
+						int LA39_36 = input.LA(1);
+						 
+						int index39_36 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_36);
+						if ( s>=0 ) return s;
+						break;
+
+					case 19 : 
+						int LA39_42 = input.LA(1);
+						 
+						int index39_42 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_42);
+						if ( s>=0 ) return s;
+						break;
+
+					case 20 : 
+						int LA39_67 = input.LA(1);
+						 
+						int index39_67 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_67);
+						if ( s>=0 ) return s;
+						break;
+
+					case 21 : 
+						int LA39_68 = input.LA(1);
+						 
+						int index39_68 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_68);
+						if ( s>=0 ) return s;
+						break;
+
+					case 22 : 
+						int LA39_79 = input.LA(1);
+						 
+						int index39_79 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_79);
+						if ( s>=0 ) return s;
+						break;
+
+					case 23 : 
+						int LA39_80 = input.LA(1);
+						 
+						int index39_80 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_80);
+						if ( s>=0 ) return s;
+						break;
+
+					case 24 : 
+						int LA39_29 = input.LA(1);
+						 
+						int index39_29 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_29);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
+						int LA39_59 = input.LA(1);
+						 
+						int index39_59 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_59);
+						if ( s>=0 ) return s;
+						break;
+
+					case 26 : 
+						int LA39_71 = input.LA(1);
+						 
+						int index39_71 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_71);
+						if ( s>=0 ) return s;
+						break;
+
+					case 27 : 
+						int LA39_55 = input.LA(1);
+						 
+						int index39_55 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_55);
+						if ( s>=0 ) return s;
+						break;
+
+					case 28 : 
+						int LA39_62 = input.LA(1);
+						 
+						int index39_62 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_62);
+						if ( s>=0 ) return s;
+						break;
+
+					case 29 : 
+						int LA39_22 = input.LA(1);
+						 
+						int index39_22 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_22);
+						if ( s>=0 ) return s;
+						break;
+
+					case 30 : 
+						int LA39_34 = input.LA(1);
+						 
+						int index39_34 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_34);
+						if ( s>=0 ) return s;
+						break;
+
+					case 31 : 
+						int LA39_66 = input.LA(1);
+						 
+						int index39_66 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_66);
+						if ( s>=0 ) return s;
+						break;
+
 					case 32 : 
+						int LA39_78 = input.LA(1);
+						 
+						int index39_78 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_78);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA39_47 = input.LA(1);
+						 
+						int index39_47 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_47);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
+						int LA39_14 = input.LA(1);
+						 
+						int index39_14 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA39_14==COLON) && (synpred18_FTS())) {s = 19;}
+						else if ( (LA39_14==EOF||(LA39_14 >= AMP && LA39_14 <= BAR)||LA39_14==CARAT||LA39_14==COMMA||LA39_14==DATETIME||LA39_14==DECIMAL_INTEGER_LITERAL||LA39_14==DOT||LA39_14==EQUALS||LA39_14==EXCLAMATION||LA39_14==FLOATING_POINT_LITERAL||(LA39_14 >= FTSPHRASE && LA39_14 <= FTSWORD)||LA39_14==ID||(LA39_14 >= LPAREN && LA39_14 <= LT)||LA39_14==MINUS||LA39_14==NOT||(LA39_14 >= OR && LA39_14 <= PERCENT)||LA39_14==PLUS||LA39_14==QUESTION_MARK||LA39_14==RPAREN||LA39_14==STAR||(LA39_14 >= TILDA && LA39_14 <= TO)||LA39_14==URI) ) {s = 9;}
+						 
+						input.seek(index39_14);
+						if ( s>=0 ) return s;
+						break;
+
+					case 35 : 
+						int LA39_53 = input.LA(1);
+						 
+						int index39_53 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_53);
+						if ( s>=0 ) return s;
+						break;
+
+					case 36 : 
+						int LA39_40 = input.LA(1);
+						 
+						int index39_40 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_40);
+						if ( s>=0 ) return s;
+						break;
+
+					case 37 : 
+						int LA39_16 = input.LA(1);
+						 
+						int index39_16 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA39_16==COLON) && (synpred18_FTS())) {s = 19;}
+						else if ( (LA39_16==EOF||(LA39_16 >= AMP && LA39_16 <= BAR)||LA39_16==CARAT||LA39_16==COMMA||LA39_16==DATETIME||LA39_16==DECIMAL_INTEGER_LITERAL||LA39_16==DOT||LA39_16==EQUALS||LA39_16==EXCLAMATION||LA39_16==FLOATING_POINT_LITERAL||(LA39_16 >= FTSPHRASE && LA39_16 <= FTSWORD)||LA39_16==ID||(LA39_16 >= LPAREN && LA39_16 <= LT)||LA39_16==MINUS||LA39_16==NOT||(LA39_16 >= OR && LA39_16 <= PERCENT)||LA39_16==PLUS||LA39_16==QUESTION_MARK||LA39_16==RPAREN||LA39_16==STAR||(LA39_16 >= TILDA && LA39_16 <= TO)||LA39_16==URI) ) {s = 9;}
+						 
+						input.seek(index39_16);
+						if ( s>=0 ) return s;
+						break;
+
+					case 38 : 
+						int LA39_58 = input.LA(1);
+						 
+						int index39_58 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_58);
+						if ( s>=0 ) return s;
+						break;
+
+					case 39 : 
+						int LA39_84 = input.LA(1);
+						 
+						int index39_84 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_84);
+						if ( s>=0 ) return s;
+						break;
+
+					case 40 : 
 						int LA39_44 = input.LA(1);
 						 
 						int index39_44 = input.index();
@@ -19184,47 +19287,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 33 : 
-						int LA39_48 = input.LA(1);
-						 
-						int index39_48 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_48);
-						if ( s>=0 ) return s;
-						break;
-
-					case 34 : 
-						int LA39_12 = input.LA(1);
-						 
-						int index39_12 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA39_12==DOT) ) {s = 18;}
-						else if ( (LA39_12==COLON) && (synpred18_FTS())) {s = 19;}
-						else if ( (LA39_12==EOF||(LA39_12 >= AMP && LA39_12 <= BAR)||LA39_12==CARAT||LA39_12==COMMA||LA39_12==DATETIME||LA39_12==DECIMAL_INTEGER_LITERAL||LA39_12==EQUALS||LA39_12==EXCLAMATION||LA39_12==FLOATING_POINT_LITERAL||(LA39_12 >= FTSPHRASE && LA39_12 <= FTSWORD)||LA39_12==ID||(LA39_12 >= LPAREN && LA39_12 <= LT)||LA39_12==MINUS||LA39_12==NOT||(LA39_12 >= OR && LA39_12 <= PERCENT)||LA39_12==PLUS||LA39_12==QUESTION_MARK||LA39_12==RPAREN||LA39_12==STAR||(LA39_12 >= TILDA && LA39_12 <= TO)||LA39_12==URI) ) {s = 9;}
-						 
-						input.seek(index39_12);
-						if ( s>=0 ) return s;
-						break;
-
-					case 35 : 
-						int LA39_13 = input.LA(1);
-						 
-						int index39_13 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA39_13==COLON) && (synpred18_FTS())) {s = 19;}
-						else if ( (LA39_13==EOF||(LA39_13 >= AMP && LA39_13 <= BAR)||LA39_13==CARAT||LA39_13==COMMA||LA39_13==DATETIME||LA39_13==DECIMAL_INTEGER_LITERAL||LA39_13==DOT||LA39_13==EQUALS||LA39_13==EXCLAMATION||LA39_13==FLOATING_POINT_LITERAL||(LA39_13 >= FTSPHRASE && LA39_13 <= FTSWORD)||LA39_13==ID||(LA39_13 >= LPAREN && LA39_13 <= LT)||LA39_13==MINUS||LA39_13==NOT||(LA39_13 >= OR && LA39_13 <= PERCENT)||LA39_13==PLUS||LA39_13==QUESTION_MARK||LA39_13==RPAREN||LA39_13==STAR||(LA39_13 >= TILDA && LA39_13 <= TO)||LA39_13==URI) ) {s = 9;}
-						 
-						input.seek(index39_13);
-						if ( s>=0 ) return s;
-						break;
-
-					case 36 : 
+					case 41 : 
 						int LA39_0 = input.LA(1);
 						 
 						int index39_0 = input.index();
@@ -19244,150 +19307,59 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 37 : 
-						int LA39_78 = input.LA(1);
-						 
-						int index39_78 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_78);
-						if ( s>=0 ) return s;
-						break;
-
-					case 38 : 
-						int LA39_66 = input.LA(1);
-						 
-						int index39_66 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_66);
-						if ( s>=0 ) return s;
-						break;
-
-					case 39 : 
-						int LA39_34 = input.LA(1);
-						 
-						int index39_34 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_34);
-						if ( s>=0 ) return s;
-						break;
-
-					case 40 : 
-						int LA39_71 = input.LA(1);
-						 
-						int index39_71 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_71);
-						if ( s>=0 ) return s;
-						break;
-
-					case 41 : 
-						int LA39_59 = input.LA(1);
-						 
-						int index39_59 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_59);
-						if ( s>=0 ) return s;
-						break;
-
 					case 42 : 
-						int LA39_29 = input.LA(1);
+						int LA39_6 = input.LA(1);
 						 
-						int index39_29 = input.index();
+						int index39_6 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
+						if ( (LA39_6==COLON) && (synpred18_FTS())) {s = 11;}
+						else if ( (LA39_6==EOF||(LA39_6 >= AMP && LA39_6 <= BAR)||LA39_6==CARAT||LA39_6==COMMA||LA39_6==DATETIME||LA39_6==DECIMAL_INTEGER_LITERAL||LA39_6==DOT||LA39_6==EQUALS||LA39_6==EXCLAMATION||LA39_6==FLOATING_POINT_LITERAL||(LA39_6 >= FTSPHRASE && LA39_6 <= FTSWORD)||LA39_6==ID||(LA39_6 >= LPAREN && LA39_6 <= LT)||LA39_6==MINUS||LA39_6==NOT||(LA39_6 >= OR && LA39_6 <= PERCENT)||LA39_6==PLUS||LA39_6==QUESTION_MARK||LA39_6==RPAREN||LA39_6==STAR||(LA39_6 >= TILDA && LA39_6 <= TO)||LA39_6==URI) ) {s = 9;}
 						 
-						input.seek(index39_29);
+						input.seek(index39_6);
 						if ( s>=0 ) return s;
 						break;
 
 					case 43 : 
-						int LA39_14 = input.LA(1);
+						int LA39_31 = input.LA(1);
 						 
-						int index39_14 = input.index();
+						int index39_31 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA39_14==COLON) && (synpred18_FTS())) {s = 19;}
-						else if ( (LA39_14==EOF||(LA39_14 >= AMP && LA39_14 <= BAR)||LA39_14==CARAT||LA39_14==COMMA||LA39_14==DATETIME||LA39_14==DECIMAL_INTEGER_LITERAL||LA39_14==DOT||LA39_14==EQUALS||LA39_14==EXCLAMATION||LA39_14==FLOATING_POINT_LITERAL||(LA39_14 >= FTSPHRASE && LA39_14 <= FTSWORD)||LA39_14==ID||(LA39_14 >= LPAREN && LA39_14 <= LT)||LA39_14==MINUS||LA39_14==NOT||(LA39_14 >= OR && LA39_14 <= PERCENT)||LA39_14==PLUS||LA39_14==QUESTION_MARK||LA39_14==RPAREN||LA39_14==STAR||(LA39_14 >= TILDA && LA39_14 <= TO)||LA39_14==URI) ) {s = 9;}
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_14);
+						input.seek(index39_31);
 						if ( s>=0 ) return s;
 						break;
 
 					case 44 : 
-						int LA39_72 = input.LA(1);
+						int LA39_61 = input.LA(1);
 						 
-						int index39_72 = input.index();
+						int index39_61 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_72);
+						input.seek(index39_61);
 						if ( s>=0 ) return s;
 						break;
 
 					case 45 : 
-						int LA39_60 = input.LA(1);
+						int LA39_73 = input.LA(1);
 						 
-						int index39_60 = input.index();
+						int index39_73 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_60);
+						input.seek(index39_73);
 						if ( s>=0 ) return s;
 						break;
 
 					case 46 : 
-						int LA39_30 = input.LA(1);
-						 
-						int index39_30 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_30);
-						if ( s>=0 ) return s;
-						break;
-
-					case 47 : 
-						int LA39_41 = input.LA(1);
-						 
-						int index39_41 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_41);
-						if ( s>=0 ) return s;
-						break;
-
-					case 48 : 
 						int LA39_49 = input.LA(1);
 						 
 						int index39_49 = input.index();
@@ -19400,72 +19372,20 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 49 : 
-						int LA39_76 = input.LA(1);
+					case 47 : 
+						int LA39_15 = input.LA(1);
 						 
-						int index39_76 = input.index();
+						int index39_15 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
+						if ( (LA39_15==COLON) && (synpred18_FTS())) {s = 19;}
+						else if ( (LA39_15==EOF||(LA39_15 >= AMP && LA39_15 <= BAR)||LA39_15==CARAT||LA39_15==COMMA||LA39_15==DATETIME||LA39_15==DECIMAL_INTEGER_LITERAL||LA39_15==DOT||LA39_15==EQUALS||LA39_15==EXCLAMATION||LA39_15==FLOATING_POINT_LITERAL||(LA39_15 >= FTSPHRASE && LA39_15 <= FTSWORD)||LA39_15==ID||(LA39_15 >= LPAREN && LA39_15 <= LT)||LA39_15==MINUS||LA39_15==NOT||(LA39_15 >= OR && LA39_15 <= PERCENT)||LA39_15==PLUS||LA39_15==QUESTION_MARK||LA39_15==RPAREN||LA39_15==STAR||(LA39_15 >= TILDA && LA39_15 <= TO)||LA39_15==URI) ) {s = 9;}
 						 
-						input.seek(index39_76);
+						input.seek(index39_15);
 						if ( s>=0 ) return s;
 						break;
 
-					case 50 : 
-						int LA39_64 = input.LA(1);
-						 
-						int index39_64 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_64);
-						if ( s>=0 ) return s;
-						break;
-
-					case 51 : 
-						int LA39_32 = input.LA(1);
-						 
-						int index39_32 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_32);
-						if ( s>=0 ) return s;
-						break;
-
-					case 52 : 
-						int LA39_69 = input.LA(1);
-						 
-						int index39_69 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_69);
-						if ( s>=0 ) return s;
-						break;
-
-					case 53 : 
-						int LA39_57 = input.LA(1);
-						 
-						int index39_57 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_57);
-						if ( s>=0 ) return s;
-						break;
-
-					case 54 : 
+					case 48 : 
 						int LA39_27 = input.LA(1);
 						 
 						int index39_27 = input.index();
@@ -19478,7 +19398,46 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 55 : 
+					case 49 : 
+						int LA39_57 = input.LA(1);
+						 
+						int index39_57 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_57);
+						if ( s>=0 ) return s;
+						break;
+
+					case 50 : 
+						int LA39_69 = input.LA(1);
+						 
+						int index39_69 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_69);
+						if ( s>=0 ) return s;
+						break;
+
+					case 51 : 
+						int LA39_81 = input.LA(1);
+						 
+						int index39_81 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_81);
+						if ( s>=0 ) return s;
+						break;
+
+					case 52 : 
 						int LA39_52 = input.LA(1);
 						 
 						int index39_52 = input.index();
@@ -19491,33 +19450,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 56 : 
-						int LA39_62 = input.LA(1);
-						 
-						int index39_62 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_62);
-						if ( s>=0 ) return s;
-						break;
-
-					case 57 : 
-						int LA39_26 = input.LA(1);
-						 
-						int index39_26 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_26);
-						if ( s>=0 ) return s;
-						break;
-
-					case 58 : 
+					case 53 : 
 						int LA39_74 = input.LA(1);
 						 
 						int index39_74 = input.index();
@@ -19530,72 +19463,47 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 59 : 
-						int LA39_56 = input.LA(1);
+					case 54 : 
+						int LA39_70 = input.LA(1);
 						 
-						int index39_56 = input.index();
+						int index39_70 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_56);
+						input.seek(index39_70);
 						if ( s>=0 ) return s;
 						break;
 
-					case 60 : 
-						int LA39_82 = input.LA(1);
+					case 55 : 
+						int LA39_12 = input.LA(1);
 						 
-						int index39_82 = input.index();
+						int index39_12 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA39_12==DOT) ) {s = 18;}
+						else if ( (LA39_12==COLON) && (synpred18_FTS())) {s = 19;}
+						else if ( (LA39_12==EOF||(LA39_12 >= AMP && LA39_12 <= BAR)||LA39_12==CARAT||LA39_12==COMMA||LA39_12==DATETIME||LA39_12==DECIMAL_INTEGER_LITERAL||LA39_12==EQUALS||LA39_12==EXCLAMATION||LA39_12==FLOATING_POINT_LITERAL||(LA39_12 >= FTSPHRASE && LA39_12 <= FTSWORD)||LA39_12==ID||(LA39_12 >= LPAREN && LA39_12 <= LT)||LA39_12==MINUS||LA39_12==NOT||(LA39_12 >= OR && LA39_12 <= PERCENT)||LA39_12==PLUS||LA39_12==QUESTION_MARK||LA39_12==RPAREN||LA39_12==STAR||(LA39_12 >= TILDA && LA39_12 <= TO)||LA39_12==URI) ) {s = 9;}
+						 
+						input.seek(index39_12);
+						if ( s>=0 ) return s;
+						break;
+
+					case 56 : 
+						int LA39_41 = input.LA(1);
+						 
+						int index39_41 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_82);
+						input.seek(index39_41);
 						if ( s>=0 ) return s;
 						break;
 
-					case 61 : 
-						int LA39_79 = input.LA(1);
-						 
-						int index39_79 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_79);
-						if ( s>=0 ) return s;
-						break;
-
-					case 62 : 
-						int LA39_67 = input.LA(1);
-						 
-						int index39_67 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_67);
-						if ( s>=0 ) return s;
-						break;
-
-					case 63 : 
-						int LA39_35 = input.LA(1);
-						 
-						int index39_35 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred18_FTS()) ) {s = 19;}
-						else if ( (true) ) {s = 9;}
-						 
-						input.seek(index39_35);
-						if ( s>=0 ) return s;
-						break;
-
-					case 64 : 
+					case 57 : 
 						int LA39_54 = input.LA(1);
 						 
 						int index39_54 = input.index();
@@ -19608,16 +19516,108 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 65 : 
-						int LA39_23 = input.LA(1);
+					case 58 : 
+						int LA39_56 = input.LA(1);
 						 
-						int index39_23 = input.index();
+						int index39_56 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred18_FTS()) ) {s = 19;}
 						else if ( (true) ) {s = 9;}
 						 
-						input.seek(index39_23);
+						input.seek(index39_56);
+						if ( s>=0 ) return s;
+						break;
+
+					case 59 : 
+						int LA39_48 = input.LA(1);
+						 
+						int index39_48 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_48);
+						if ( s>=0 ) return s;
+						break;
+
+					case 60 : 
+						int LA39_3 = input.LA(1);
+						 
+						int index39_3 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA39_3==COLON) && (synpred18_FTS())) {s = 11;}
+						else if ( (LA39_3==EOF||(LA39_3 >= AMP && LA39_3 <= BAR)||LA39_3==CARAT||LA39_3==COMMA||LA39_3==DATETIME||LA39_3==DECIMAL_INTEGER_LITERAL||LA39_3==DOT||LA39_3==EQUALS||LA39_3==EXCLAMATION||LA39_3==FLOATING_POINT_LITERAL||(LA39_3 >= FTSPHRASE && LA39_3 <= FTSWORD)||LA39_3==ID||(LA39_3 >= LPAREN && LA39_3 <= LT)||LA39_3==MINUS||LA39_3==NOT||(LA39_3 >= OR && LA39_3 <= PERCENT)||LA39_3==PLUS||LA39_3==QUESTION_MARK||LA39_3==RPAREN||LA39_3==STAR||(LA39_3 >= TILDA && LA39_3 <= TO)||LA39_3==URI) ) {s = 9;}
+						 
+						input.seek(index39_3);
+						if ( s>=0 ) return s;
+						break;
+
+					case 61 : 
+						int LA39_46 = input.LA(1);
+						 
+						int index39_46 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_46);
+						if ( s>=0 ) return s;
+						break;
+
+					case 62 : 
+						int LA39_33 = input.LA(1);
+						 
+						int index39_33 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_33);
+						if ( s>=0 ) return s;
+						break;
+
+					case 63 : 
+						int LA39_65 = input.LA(1);
+						 
+						int index39_65 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_65);
+						if ( s>=0 ) return s;
+						break;
+
+					case 64 : 
+						int LA39_77 = input.LA(1);
+						 
+						int index39_77 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred18_FTS()) ) {s = 19;}
+						else if ( (true) ) {s = 9;}
+						 
+						input.seek(index39_77);
+						if ( s>=0 ) return s;
+						break;
+
+					case 65 : 
+						int LA39_2 = input.LA(1);
+						 
+						int index39_2 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA39_2==DOT) ) {s = 10;}
+						else if ( (LA39_2==COLON) && (synpred18_FTS())) {s = 11;}
+						else if ( (LA39_2==EOF||(LA39_2 >= AMP && LA39_2 <= BAR)||LA39_2==CARAT||LA39_2==COMMA||LA39_2==DATETIME||LA39_2==DECIMAL_INTEGER_LITERAL||LA39_2==EQUALS||LA39_2==EXCLAMATION||LA39_2==FLOATING_POINT_LITERAL||(LA39_2 >= FTSPHRASE && LA39_2 <= FTSWORD)||LA39_2==ID||(LA39_2 >= LPAREN && LA39_2 <= LT)||LA39_2==MINUS||LA39_2==NOT||(LA39_2 >= OR && LA39_2 <= PERCENT)||LA39_2==PLUS||LA39_2==QUESTION_MARK||LA39_2==RPAREN||LA39_2==STAR||(LA39_2 >= TILDA && LA39_2 <= TO)||LA39_2==URI) ) {s = 9;}
+						 
+						input.seek(index39_2);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -19644,10 +19644,10 @@ public class FTSParser extends Parser {
 		"\4\1\6\15\7\14\uffff\6\2\2\uffff\1\1\31\2\6\uffff\14\2\1\uffff\12\2\1"+
 		"\uffff\1\2";
 	static final String DFA60_specialS =
-		"\1\20\1\31\1\34\1\43\1\50\1\33\1\21\1\10\1\12\1\32\1\17\3\uffff\1\35\1"+
-		"\4\1\30\3\uffff\1\37\34\uffff\1\6\1\45\1\42\1\36\1\27\70\uffff\1\0\1\14"+
-		"\1\3\1\44\1\26\1\47\1\13\1\7\1\2\1\25\1\46\7\uffff\1\23\1\16\32\uffff"+
-		"\1\11\1\15\1\1\1\22\1\41\1\5\14\uffff\1\24\12\uffff\1\40\1\uffff}>";
+		"\1\16\1\4\1\12\1\20\1\14\1\40\1\50\1\30\1\44\1\1\1\47\3\uffff\1\41\1\2"+
+		"\1\10\3\uffff\1\5\34\uffff\1\22\1\26\1\32\1\31\1\45\70\uffff\1\0\1\3\1"+
+		"\7\1\33\1\46\1\21\1\36\1\15\1\11\1\42\1\25\7\uffff\1\35\1\27\32\uffff"+
+		"\1\43\1\24\1\37\1\6\1\13\1\34\14\uffff\1\17\12\uffff\1\23\1\uffff}>";
 	static final String[] DFA60_transitionS = {
 			"\1\14\1\uffff\1\11\1\uffff\1\7\5\uffff\1\14\2\uffff\1\16\26\uffff\1\10"+
 			"\2\uffff\1\17\1\3\1\4\1\2\11\uffff\1\1\3\uffff\1\23\1\21\1\22\10\uffff"+
@@ -20010,45 +20010,46 @@ public class FTSParser extends Parser {
 						break;
 
 					case 1 : 
-						int LA60_158 = input.LA(1);
+						int LA60_9 = input.LA(1);
 						 
-						int index60_158 = input.index();
+						int index60_9 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 184;}
+						if ( (LA60_9==STAR) ) {s = 20;}
+						else if ( (LA60_9==COMMA||LA60_9==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_9==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_9==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_9==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_9==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_9==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_9==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_9==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_9==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_9==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_9==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_9==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_9==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_9==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_9==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_9==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_9==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_9==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_9==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_9==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_9==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_9==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_9==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_9==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_9==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_9==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_9==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_9==DOTDOT) && (synpred37_FTS())) {s = 48;}
 						 
-						input.seek(index60_158);
+						input.seek(index60_9);
 						if ( s>=0 ) return s;
 						break;
 
 					case 2 : 
-						int LA60_118 = input.LA(1);
-						 
-						int index60_118 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_118);
-						if ( s>=0 ) return s;
-						break;
-
-					case 3 : 
-						int LA60_112 = input.LA(1);
-						 
-						int index60_112 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_112);
-						if ( s>=0 ) return s;
-						break;
-
-					case 4 : 
 						int LA60_15 = input.LA(1);
 						 
 						int index60_15 = input.index();
@@ -20088,21 +20089,392 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 5 : 
-						int LA60_161 = input.LA(1);
+					case 3 : 
+						int LA60_111 = input.LA(1);
 						 
-						int index60_161 = input.index();
+						int index60_111 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 184;}
-						else if ( (synpred37_FTS()) ) {s = 48;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
 						 
-						input.seek(index60_161);
+						input.seek(index60_111);
+						if ( s>=0 ) return s;
+						break;
+
+					case 4 : 
+						int LA60_1 = input.LA(1);
+						 
+						int index60_1 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_1==STAR) ) {s = 20;}
+						else if ( (LA60_1==COMMA||LA60_1==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_1==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_1==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_1==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_1==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_1==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_1==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_1==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_1==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_1==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_1==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_1==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_1==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_1==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_1==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_1==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_1==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_1==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_1==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_1==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_1==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_1==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_1==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_1==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_1==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_1==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_1==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_1==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_1);
+						if ( s>=0 ) return s;
+						break;
+
+					case 5 : 
+						int LA60_20 = input.LA(1);
+						 
+						int index60_20 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_20==LPAREN) ) {s = 110;}
+						else if ( (LA60_20==ID) ) {s = 111;}
+						else if ( (LA60_20==FTSWORD) ) {s = 112;}
+						else if ( (LA60_20==FTSPRE) ) {s = 113;}
+						else if ( (LA60_20==FTSWILD) ) {s = 114;}
+						else if ( (LA60_20==NOT) ) {s = 115;}
+						else if ( (LA60_20==TO) ) {s = 116;}
+						else if ( (LA60_20==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
+						else if ( (LA60_20==FLOATING_POINT_LITERAL) ) {s = 118;}
+						else if ( (LA60_20==DATETIME) ) {s = 119;}
+						else if ( (LA60_20==STAR) ) {s = 120;}
+						else if ( (LA60_20==URI) ) {s = 121;}
+						else if ( (LA60_20==COMMA||LA60_20==DOT) && (synpred25_FTS())) {s = 122;}
+						else if ( (LA60_20==TILDA) && (synpred25_FTS())) {s = 123;}
+						else if ( (LA60_20==CARAT) && (synpred25_FTS())) {s = 124;}
+						else if ( (LA60_20==AND) && (synpred25_FTS())) {s = 125;}
+						else if ( (LA60_20==AMP) && (synpred25_FTS())) {s = 126;}
+						else if ( (LA60_20==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_20==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_20==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_20==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_20==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_20==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_20==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_20==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_20==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_20==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_20==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_20==DOTDOT) && (synpred25_FTS())) {s = 127;}
+						 
+						input.seek(index60_20);
 						if ( s>=0 ) return s;
 						break;
 
 					case 6 : 
+						int LA60_159 = input.LA(1);
+						 
+						int index60_159 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 184;}
+						 
+						input.seek(index60_159);
+						if ( s>=0 ) return s;
+						break;
+
+					case 7 : 
+						int LA60_112 = input.LA(1);
+						 
+						int index60_112 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_112);
+						if ( s>=0 ) return s;
+						break;
+
+					case 8 : 
+						int LA60_16 = input.LA(1);
+						 
+						int index60_16 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_16==EQUALS) && (synpred33_FTS())) {s = 96;}
+						else if ( (LA60_16==COMMA||LA60_16==DOT) && (synpred35_FTS())) {s = 97;}
+						else if ( (LA60_16==ID) && (synpred35_FTS())) {s = 98;}
+						else if ( (LA60_16==FTSWORD) && (synpred35_FTS())) {s = 99;}
+						else if ( (LA60_16==FTSPRE) && (synpred35_FTS())) {s = 100;}
+						else if ( (LA60_16==FTSWILD) && (synpred35_FTS())) {s = 101;}
+						else if ( (LA60_16==NOT) && (synpred35_FTS())) {s = 102;}
+						else if ( (LA60_16==TO) && (synpred35_FTS())) {s = 103;}
+						else if ( (LA60_16==DECIMAL_INTEGER_LITERAL) && (synpred35_FTS())) {s = 104;}
+						else if ( (LA60_16==FLOATING_POINT_LITERAL) && (synpred35_FTS())) {s = 105;}
+						else if ( (LA60_16==STAR) && (synpred35_FTS())) {s = 106;}
+						else if ( (LA60_16==QUESTION_MARK) && (synpred35_FTS())) {s = 107;}
+						else if ( (LA60_16==DATETIME) && (synpred35_FTS())) {s = 108;}
+						else if ( (LA60_16==URI) && (synpred35_FTS())) {s = 109;}
+						 
+						input.seek(index60_16);
+						if ( s>=0 ) return s;
+						break;
+
+					case 9 : 
+						int LA60_118 = input.LA(1);
+						 
+						int index60_118 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_118);
+						if ( s>=0 ) return s;
+						break;
+
+					case 10 : 
+						int LA60_2 = input.LA(1);
+						 
+						int index60_2 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_2==STAR) ) {s = 20;}
+						else if ( (LA60_2==COMMA||LA60_2==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_2==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_2==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_2==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_2==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_2==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_2==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_2==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_2==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_2==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_2==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_2==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_2==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_2==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_2==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_2==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_2==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_2==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_2==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_2==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_2==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_2==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_2==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_2==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_2==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_2==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_2==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_2==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_2);
+						if ( s>=0 ) return s;
+						break;
+
+					case 11 : 
+						int LA60_160 = input.LA(1);
+						 
+						int index60_160 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 184;}
+						 
+						input.seek(index60_160);
+						if ( s>=0 ) return s;
+						break;
+
+					case 12 : 
+						int LA60_4 = input.LA(1);
+						 
+						int index60_4 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_4==STAR) ) {s = 20;}
+						else if ( (LA60_4==COMMA||LA60_4==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_4==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_4==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_4==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_4==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_4==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_4==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_4==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_4==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_4==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_4==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_4==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_4==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_4==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_4==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_4==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_4==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_4==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_4==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_4==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_4==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_4==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_4==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_4==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_4==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_4==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_4==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_4==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_4);
+						if ( s>=0 ) return s;
+						break;
+
+					case 13 : 
+						int LA60_117 = input.LA(1);
+						 
+						int index60_117 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_117);
+						if ( s>=0 ) return s;
+						break;
+
+					case 14 : 
+						int LA60_0 = input.LA(1);
+						 
+						int index60_0 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_0==ID) ) {s = 1;}
+						else if ( (LA60_0==FTSWORD) ) {s = 2;}
+						else if ( (LA60_0==FTSPRE) ) {s = 3;}
+						else if ( (LA60_0==FTSWILD) ) {s = 4;}
+						else if ( (LA60_0==NOT) ) {s = 5;}
+						else if ( (LA60_0==TO) ) {s = 6;}
+						else if ( (LA60_0==DECIMAL_INTEGER_LITERAL) ) {s = 7;}
+						else if ( (LA60_0==FLOATING_POINT_LITERAL) ) {s = 8;}
+						else if ( (LA60_0==DATETIME) ) {s = 9;}
+						else if ( (LA60_0==STAR) ) {s = 10;}
+						else if ( (LA60_0==URI) ) {s = 11;}
+						else if ( (LA60_0==COMMA||LA60_0==DOT) && (synpred25_FTS())) {s = 12;}
+						else if ( (LA60_0==QUESTION_MARK) && (synpred25_FTS())) {s = 13;}
+						else if ( (LA60_0==EQUALS) ) {s = 14;}
+						else if ( (LA60_0==FTSPHRASE) ) {s = 15;}
+						else if ( (LA60_0==TILDA) ) {s = 16;}
+						else if ( (LA60_0==LSQUARE) && (synpred37_FTS())) {s = 17;}
+						else if ( (LA60_0==LT) && (synpred37_FTS())) {s = 18;}
+						else if ( (LA60_0==LPAREN) ) {s = 19;}
+						 
+						input.seek(index60_0);
+						if ( s>=0 ) return s;
+						break;
+
+					case 15 : 
+						int LA60_174 = input.LA(1);
+						 
+						int index60_174 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_174==ID) ) {s = 111;}
+						else if ( (LA60_174==FTSWORD) ) {s = 112;}
+						else if ( (LA60_174==FTSPRE) ) {s = 113;}
+						else if ( (LA60_174==FTSWILD) ) {s = 114;}
+						else if ( (LA60_174==NOT) ) {s = 115;}
+						else if ( (LA60_174==TO) ) {s = 116;}
+						else if ( (LA60_174==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
+						else if ( (LA60_174==FLOATING_POINT_LITERAL) ) {s = 118;}
+						else if ( (LA60_174==DATETIME) ) {s = 119;}
+						else if ( (LA60_174==STAR) ) {s = 185;}
+						else if ( (LA60_174==URI) ) {s = 121;}
+						else if ( (LA60_174==CARAT) && (synpred25_FTS())) {s = 124;}
+						else if ( (LA60_174==AND) && (synpred25_FTS())) {s = 125;}
+						else if ( (LA60_174==AMP) && (synpred25_FTS())) {s = 126;}
+						else if ( (LA60_174==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_174==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_174==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_174==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_174==COMMA||LA60_174==DOT) && (synpred25_FTS())) {s = 173;}
+						else if ( (LA60_174==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_174==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_174==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_174==TILDA) && (synpred25_FTS())) {s = 186;}
+						else if ( (LA60_174==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_174==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_174==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_174==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_174==MINUS) && (synpred25_FTS())) {s = 47;}
+						 
+						input.seek(index60_174);
+						if ( s>=0 ) return s;
+						break;
+
+					case 16 : 
+						int LA60_3 = input.LA(1);
+						 
+						int index60_3 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_3==STAR) ) {s = 20;}
+						else if ( (LA60_3==COMMA||LA60_3==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_3==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_3==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_3==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_3==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_3==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_3==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_3==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_3==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_3==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_3==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_3==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_3==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_3==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_3==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_3==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_3==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_3==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_3==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_3==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_3==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_3==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_3==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_3==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_3==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_3==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_3==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_3==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_3);
+						if ( s>=0 ) return s;
+						break;
+
+					case 17 : 
+						int LA60_115 = input.LA(1);
+						 
+						int index60_115 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_115);
+						if ( s>=0 ) return s;
+						break;
+
+					case 18 : 
 						int LA60_49 = input.LA(1);
 						 
 						int index60_49 = input.index();
@@ -20143,747 +20515,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 7 : 
-						int LA60_117 = input.LA(1);
-						 
-						int index60_117 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_117);
-						if ( s>=0 ) return s;
-						break;
-
-					case 8 : 
-						int LA60_7 = input.LA(1);
-						 
-						int index60_7 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_7==STAR) ) {s = 20;}
-						else if ( (LA60_7==COMMA||LA60_7==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_7==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_7==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_7==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_7==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_7==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_7==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_7==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_7==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_7==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_7==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_7==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_7==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_7==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_7==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_7==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_7==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_7==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_7==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_7==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_7==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_7==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_7==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_7==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_7==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_7==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_7==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_7==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_7);
-						if ( s>=0 ) return s;
-						break;
-
-					case 9 : 
-						int LA60_156 = input.LA(1);
-						 
-						int index60_156 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 184;}
-						 
-						input.seek(index60_156);
-						if ( s>=0 ) return s;
-						break;
-
-					case 10 : 
-						int LA60_8 = input.LA(1);
-						 
-						int index60_8 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_8==STAR) ) {s = 20;}
-						else if ( (LA60_8==COMMA||LA60_8==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_8==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_8==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_8==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_8==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_8==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_8==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_8==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_8==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_8==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_8==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_8==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_8==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_8==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_8==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_8==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_8==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_8==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_8==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_8==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_8==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_8==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_8==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_8==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_8==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_8==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_8==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_8==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_8);
-						if ( s>=0 ) return s;
-						break;
-
-					case 11 : 
-						int LA60_116 = input.LA(1);
-						 
-						int index60_116 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_116);
-						if ( s>=0 ) return s;
-						break;
-
-					case 12 : 
-						int LA60_111 = input.LA(1);
-						 
-						int index60_111 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_111);
-						if ( s>=0 ) return s;
-						break;
-
-					case 13 : 
-						int LA60_157 = input.LA(1);
-						 
-						int index60_157 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 184;}
-						 
-						input.seek(index60_157);
-						if ( s>=0 ) return s;
-						break;
-
-					case 14 : 
-						int LA60_129 = input.LA(1);
-						 
-						int index60_129 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_129==RPAREN) ) {s = 174;}
-						else if ( (LA60_129==STAR) && (synpred25_FTS())) {s = 175;}
-						else if ( (LA60_129==COMMA||LA60_129==DOT) && (synpred25_FTS())) {s = 176;}
-						else if ( (LA60_129==TILDA) && (synpred25_FTS())) {s = 177;}
-						else if ( (LA60_129==CARAT) && (synpred25_FTS())) {s = 178;}
-						else if ( (LA60_129==OR) && (synpred25_FTS())) {s = 179;}
-						else if ( (LA60_129==BAR) && (synpred25_FTS())) {s = 180;}
-						else if ( (LA60_129==AND) && (synpred25_FTS())) {s = 181;}
-						else if ( (LA60_129==AMP) && (synpred25_FTS())) {s = 182;}
-						else if ( (LA60_129==NOT) && (synpred25_FTS())) {s = 133;}
-						else if ( (LA60_129==ID) && (synpred25_FTS())) {s = 134;}
-						else if ( (LA60_129==FTSWORD) && (synpred25_FTS())) {s = 135;}
-						else if ( (LA60_129==FTSPRE) && (synpred25_FTS())) {s = 136;}
-						else if ( (LA60_129==FTSWILD) && (synpred25_FTS())) {s = 137;}
-						else if ( (LA60_129==EXCLAMATION) && (synpred25_FTS())) {s = 138;}
-						else if ( (LA60_129==TO) && (synpred25_FTS())) {s = 139;}
-						else if ( (LA60_129==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 183;}
-						else if ( (LA60_129==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 140;}
-						else if ( (LA60_129==DATETIME) && (synpred25_FTS())) {s = 141;}
-						else if ( (LA60_129==URI) && (synpred25_FTS())) {s = 143;}
-						else if ( (LA60_129==QUESTION_MARK) && (synpred25_FTS())) {s = 145;}
-						else if ( (LA60_129==EQUALS) && (synpred25_FTS())) {s = 146;}
-						else if ( (LA60_129==FTSPHRASE) && (synpred25_FTS())) {s = 147;}
-						else if ( (LA60_129==LSQUARE) && (synpred25_FTS())) {s = 149;}
-						else if ( (LA60_129==LT) && (synpred25_FTS())) {s = 150;}
-						else if ( (LA60_129==LPAREN) && (synpred25_FTS())) {s = 151;}
-						else if ( (LA60_129==PLUS) && (synpred25_FTS())) {s = 152;}
-						else if ( (LA60_129==MINUS) && (synpred25_FTS())) {s = 154;}
-						else if ( (LA60_129==DOTDOT) && (synpred25_FTS())) {s = 184;}
-						 
-						input.seek(index60_129);
-						if ( s>=0 ) return s;
-						break;
-
-					case 15 : 
-						int LA60_10 = input.LA(1);
-						 
-						int index60_10 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_10==STAR) ) {s = 20;}
-						else if ( (LA60_10==COMMA||LA60_10==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_10==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_10==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_10==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_10==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_10==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_10==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_10==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_10==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_10==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_10==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_10==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_10==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_10==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_10==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_10==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_10==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_10==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_10==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_10==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_10==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_10==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_10==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_10==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_10==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_10==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_10==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_10==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_10);
-						if ( s>=0 ) return s;
-						break;
-
-					case 16 : 
-						int LA60_0 = input.LA(1);
-						 
-						int index60_0 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_0==ID) ) {s = 1;}
-						else if ( (LA60_0==FTSWORD) ) {s = 2;}
-						else if ( (LA60_0==FTSPRE) ) {s = 3;}
-						else if ( (LA60_0==FTSWILD) ) {s = 4;}
-						else if ( (LA60_0==NOT) ) {s = 5;}
-						else if ( (LA60_0==TO) ) {s = 6;}
-						else if ( (LA60_0==DECIMAL_INTEGER_LITERAL) ) {s = 7;}
-						else if ( (LA60_0==FLOATING_POINT_LITERAL) ) {s = 8;}
-						else if ( (LA60_0==DATETIME) ) {s = 9;}
-						else if ( (LA60_0==STAR) ) {s = 10;}
-						else if ( (LA60_0==URI) ) {s = 11;}
-						else if ( (LA60_0==COMMA||LA60_0==DOT) && (synpred25_FTS())) {s = 12;}
-						else if ( (LA60_0==QUESTION_MARK) && (synpred25_FTS())) {s = 13;}
-						else if ( (LA60_0==EQUALS) ) {s = 14;}
-						else if ( (LA60_0==FTSPHRASE) ) {s = 15;}
-						else if ( (LA60_0==TILDA) ) {s = 16;}
-						else if ( (LA60_0==LSQUARE) && (synpred37_FTS())) {s = 17;}
-						else if ( (LA60_0==LT) && (synpred37_FTS())) {s = 18;}
-						else if ( (LA60_0==LPAREN) ) {s = 19;}
-						 
-						input.seek(index60_0);
-						if ( s>=0 ) return s;
-						break;
-
-					case 17 : 
-						int LA60_6 = input.LA(1);
-						 
-						int index60_6 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_6==STAR) ) {s = 20;}
-						else if ( (LA60_6==COMMA||LA60_6==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_6==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_6==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_6==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_6==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_6==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_6==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_6==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_6==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_6==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_6==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_6==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_6==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_6==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_6==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_6==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_6==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_6==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_6==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_6==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_6==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_6==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_6==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_6==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_6==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_6==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_6==MINUS) && (synpred25_FTS())) {s = 47;}
-						 
-						input.seek(index60_6);
-						if ( s>=0 ) return s;
-						break;
-
-					case 18 : 
-						int LA60_159 = input.LA(1);
-						 
-						int index60_159 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 184;}
-						 
-						input.seek(index60_159);
-						if ( s>=0 ) return s;
-						break;
-
 					case 19 : 
-						int LA60_128 = input.LA(1);
-						 
-						int index60_128 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_128==ID) ) {s = 161;}
-						else if ( (LA60_128==FTSWORD) && (synpred25_FTS())) {s = 162;}
-						else if ( (LA60_128==FTSPRE) && (synpred25_FTS())) {s = 163;}
-						else if ( (LA60_128==FTSWILD) && (synpred25_FTS())) {s = 164;}
-						else if ( (LA60_128==NOT) && (synpred25_FTS())) {s = 165;}
-						else if ( (LA60_128==TO) && (synpred25_FTS())) {s = 166;}
-						else if ( (LA60_128==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 167;}
-						else if ( (LA60_128==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 168;}
-						else if ( (LA60_128==STAR) && (synpred25_FTS())) {s = 169;}
-						else if ( (LA60_128==QUESTION_MARK) && (synpred25_FTS())) {s = 170;}
-						else if ( (LA60_128==DATETIME) && (synpred25_FTS())) {s = 171;}
-						else if ( (LA60_128==URI) && (synpred25_FTS())) {s = 172;}
-						else if ( (LA60_128==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_128==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_128==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_128==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_128==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_128==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_128==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_128==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_128==COMMA||LA60_128==DOT) && (synpred25_FTS())) {s = 173;}
-						else if ( (LA60_128==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_128==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_128==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_128==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_128==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_128==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_128==MINUS) && (synpred25_FTS())) {s = 47;}
-						 
-						input.seek(index60_128);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
-						int LA60_174 = input.LA(1);
-						 
-						int index60_174 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_174==ID) ) {s = 111;}
-						else if ( (LA60_174==FTSWORD) ) {s = 112;}
-						else if ( (LA60_174==FTSPRE) ) {s = 113;}
-						else if ( (LA60_174==FTSWILD) ) {s = 114;}
-						else if ( (LA60_174==NOT) ) {s = 115;}
-						else if ( (LA60_174==TO) ) {s = 116;}
-						else if ( (LA60_174==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
-						else if ( (LA60_174==FLOATING_POINT_LITERAL) ) {s = 118;}
-						else if ( (LA60_174==DATETIME) ) {s = 119;}
-						else if ( (LA60_174==STAR) ) {s = 185;}
-						else if ( (LA60_174==URI) ) {s = 121;}
-						else if ( (LA60_174==CARAT) && (synpred25_FTS())) {s = 124;}
-						else if ( (LA60_174==AND) && (synpred25_FTS())) {s = 125;}
-						else if ( (LA60_174==AMP) && (synpred25_FTS())) {s = 126;}
-						else if ( (LA60_174==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_174==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_174==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_174==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_174==COMMA||LA60_174==DOT) && (synpred25_FTS())) {s = 173;}
-						else if ( (LA60_174==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_174==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_174==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_174==TILDA) && (synpred25_FTS())) {s = 186;}
-						else if ( (LA60_174==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_174==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_174==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_174==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_174==MINUS) && (synpred25_FTS())) {s = 47;}
-						 
-						input.seek(index60_174);
-						if ( s>=0 ) return s;
-						break;
-
-					case 21 : 
-						int LA60_119 = input.LA(1);
-						 
-						int index60_119 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_119);
-						if ( s>=0 ) return s;
-						break;
-
-					case 22 : 
-						int LA60_114 = input.LA(1);
-						 
-						int index60_114 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
-						 
-						input.seek(index60_114);
-						if ( s>=0 ) return s;
-						break;
-
-					case 23 : 
-						int LA60_53 = input.LA(1);
-						 
-						int index60_53 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_53==STAR) ) {s = 20;}
-						else if ( (LA60_53==COMMA||LA60_53==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_53==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_53==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_53==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_53==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_53==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_53==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_53==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_53==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_53==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_53==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_53==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_53==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_53==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_53==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_53==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_53==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_53==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_53==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_53==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_53==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_53==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_53==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_53==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_53==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_53==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_53==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_53==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_53);
-						if ( s>=0 ) return s;
-						break;
-
-					case 24 : 
-						int LA60_16 = input.LA(1);
-						 
-						int index60_16 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_16==EQUALS) && (synpred33_FTS())) {s = 96;}
-						else if ( (LA60_16==COMMA||LA60_16==DOT) && (synpred35_FTS())) {s = 97;}
-						else if ( (LA60_16==ID) && (synpred35_FTS())) {s = 98;}
-						else if ( (LA60_16==FTSWORD) && (synpred35_FTS())) {s = 99;}
-						else if ( (LA60_16==FTSPRE) && (synpred35_FTS())) {s = 100;}
-						else if ( (LA60_16==FTSWILD) && (synpred35_FTS())) {s = 101;}
-						else if ( (LA60_16==NOT) && (synpred35_FTS())) {s = 102;}
-						else if ( (LA60_16==TO) && (synpred35_FTS())) {s = 103;}
-						else if ( (LA60_16==DECIMAL_INTEGER_LITERAL) && (synpred35_FTS())) {s = 104;}
-						else if ( (LA60_16==FLOATING_POINT_LITERAL) && (synpred35_FTS())) {s = 105;}
-						else if ( (LA60_16==STAR) && (synpred35_FTS())) {s = 106;}
-						else if ( (LA60_16==QUESTION_MARK) && (synpred35_FTS())) {s = 107;}
-						else if ( (LA60_16==DATETIME) && (synpred35_FTS())) {s = 108;}
-						else if ( (LA60_16==URI) && (synpred35_FTS())) {s = 109;}
-						 
-						input.seek(index60_16);
-						if ( s>=0 ) return s;
-						break;
-
-					case 25 : 
-						int LA60_1 = input.LA(1);
-						 
-						int index60_1 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_1==STAR) ) {s = 20;}
-						else if ( (LA60_1==COMMA||LA60_1==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_1==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_1==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_1==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_1==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_1==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_1==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_1==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_1==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_1==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_1==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_1==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_1==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_1==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_1==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_1==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_1==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_1==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_1==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_1==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_1==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_1==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_1==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_1==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_1==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_1==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_1==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_1==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_1);
-						if ( s>=0 ) return s;
-						break;
-
-					case 26 : 
-						int LA60_9 = input.LA(1);
-						 
-						int index60_9 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_9==STAR) ) {s = 20;}
-						else if ( (LA60_9==COMMA||LA60_9==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_9==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_9==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_9==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_9==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_9==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_9==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_9==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_9==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_9==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_9==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_9==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_9==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_9==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_9==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_9==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_9==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_9==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_9==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_9==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_9==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_9==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_9==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_9==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_9==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_9==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_9==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_9==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_9);
-						if ( s>=0 ) return s;
-						break;
-
-					case 27 : 
-						int LA60_5 = input.LA(1);
-						 
-						int index60_5 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_5==STAR) ) {s = 20;}
-						else if ( (LA60_5==COMMA||LA60_5==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_5==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_5==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_5==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_5==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_5==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_5==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_5==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_5==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_5==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_5==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_5==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_5==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_5==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_5==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_5==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_5==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_5==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_5==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_5==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_5==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_5==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_5==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_5==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_5==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_5==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_5==MINUS) && (synpred25_FTS())) {s = 47;}
-						 
-						input.seek(index60_5);
-						if ( s>=0 ) return s;
-						break;
-
-					case 28 : 
-						int LA60_2 = input.LA(1);
-						 
-						int index60_2 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_2==STAR) ) {s = 20;}
-						else if ( (LA60_2==COMMA||LA60_2==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_2==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_2==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_2==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_2==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_2==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_2==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_2==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_2==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_2==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_2==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_2==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_2==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_2==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_2==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_2==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_2==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_2==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_2==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_2==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_2==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_2==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_2==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_2==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_2==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_2==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_2==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_2==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_2);
-						if ( s>=0 ) return s;
-						break;
-
-					case 29 : 
-						int LA60_14 = input.LA(1);
-						 
-						int index60_14 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_14==COMMA||LA60_14==DOT) && (synpred27_FTS())) {s = 54;}
-						else if ( (LA60_14==ID) && (synpred27_FTS())) {s = 55;}
-						else if ( (LA60_14==FTSWORD) && (synpred27_FTS())) {s = 56;}
-						else if ( (LA60_14==FTSPRE) && (synpred27_FTS())) {s = 57;}
-						else if ( (LA60_14==FTSWILD) && (synpred27_FTS())) {s = 58;}
-						else if ( (LA60_14==NOT) && (synpred27_FTS())) {s = 59;}
-						else if ( (LA60_14==TO) && (synpred27_FTS())) {s = 60;}
-						else if ( (LA60_14==DECIMAL_INTEGER_LITERAL) && (synpred27_FTS())) {s = 61;}
-						else if ( (LA60_14==FLOATING_POINT_LITERAL) && (synpred27_FTS())) {s = 62;}
-						else if ( (LA60_14==STAR) && (synpred27_FTS())) {s = 63;}
-						else if ( (LA60_14==QUESTION_MARK) && (synpred27_FTS())) {s = 64;}
-						else if ( (LA60_14==DATETIME) && (synpred27_FTS())) {s = 65;}
-						else if ( (LA60_14==URI) && (synpred27_FTS())) {s = 66;}
-						else if ( (LA60_14==EQUALS) && (synpred31_FTS())) {s = 67;}
-						 
-						input.seek(index60_14);
-						if ( s>=0 ) return s;
-						break;
-
-					case 30 : 
-						int LA60_52 = input.LA(1);
-						 
-						int index60_52 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_52==STAR) ) {s = 20;}
-						else if ( (LA60_52==COMMA||LA60_52==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_52==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_52==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_52==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_52==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_52==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_52==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_52==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_52==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_52==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_52==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_52==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_52==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_52==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_52==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_52==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_52==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_52==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_52==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_52==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_52==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_52==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_52==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_52==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_52==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_52==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_52==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_52==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_52);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
-						int LA60_20 = input.LA(1);
-						 
-						int index60_20 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_20==LPAREN) ) {s = 110;}
-						else if ( (LA60_20==ID) ) {s = 111;}
-						else if ( (LA60_20==FTSWORD) ) {s = 112;}
-						else if ( (LA60_20==FTSPRE) ) {s = 113;}
-						else if ( (LA60_20==FTSWILD) ) {s = 114;}
-						else if ( (LA60_20==NOT) ) {s = 115;}
-						else if ( (LA60_20==TO) ) {s = 116;}
-						else if ( (LA60_20==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
-						else if ( (LA60_20==FLOATING_POINT_LITERAL) ) {s = 118;}
-						else if ( (LA60_20==DATETIME) ) {s = 119;}
-						else if ( (LA60_20==STAR) ) {s = 120;}
-						else if ( (LA60_20==URI) ) {s = 121;}
-						else if ( (LA60_20==COMMA||LA60_20==DOT) && (synpred25_FTS())) {s = 122;}
-						else if ( (LA60_20==TILDA) && (synpred25_FTS())) {s = 123;}
-						else if ( (LA60_20==CARAT) && (synpred25_FTS())) {s = 124;}
-						else if ( (LA60_20==AND) && (synpred25_FTS())) {s = 125;}
-						else if ( (LA60_20==AMP) && (synpred25_FTS())) {s = 126;}
-						else if ( (LA60_20==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_20==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_20==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_20==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_20==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_20==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_20==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_20==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_20==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_20==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_20==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_20==DOTDOT) && (synpred25_FTS())) {s = 127;}
-						 
-						input.seek(index60_20);
-						if ( s>=0 ) return s;
-						break;
-
-					case 32 : 
 						int LA60_185 = input.LA(1);
 						 
 						int index60_185 = input.index();
@@ -20896,113 +20528,33 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 33 : 
-						int LA60_160 = input.LA(1);
+					case 20 : 
+						int LA60_157 = input.LA(1);
 						 
-						int index60_160 = input.index();
+						int index60_157 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred24_FTS()) ) {s = 130;}
 						else if ( (synpred25_FTS()) ) {s = 184;}
 						 
-						input.seek(index60_160);
+						input.seek(index60_157);
 						if ( s>=0 ) return s;
 						break;
 
-					case 34 : 
-						int LA60_51 = input.LA(1);
+					case 21 : 
+						int LA60_120 = input.LA(1);
 						 
-						int index60_51 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_51==STAR) ) {s = 20;}
-						else if ( (LA60_51==COMMA||LA60_51==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_51==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_51==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_51==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_51==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_51==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_51==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_51==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_51==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_51==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_51==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_51==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_51==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_51==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_51==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_51==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_51==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_51==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_51==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_51==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_51==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_51==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_51==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_51==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_51==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_51==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_51==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_51==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_51);
-						if ( s>=0 ) return s;
-						break;
-
-					case 35 : 
-						int LA60_3 = input.LA(1);
-						 
-						int index60_3 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA60_3==STAR) ) {s = 20;}
-						else if ( (LA60_3==COMMA||LA60_3==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_3==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_3==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_3==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_3==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_3==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_3==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_3==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_3==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_3==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_3==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_3==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_3==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_3==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_3==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_3==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_3==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_3==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_3==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_3==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_3==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_3==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_3==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_3==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_3==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_3==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_3==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_3==DOTDOT) && (synpred37_FTS())) {s = 48;}
-						 
-						input.seek(index60_3);
-						if ( s>=0 ) return s;
-						break;
-
-					case 36 : 
-						int LA60_113 = input.LA(1);
-						 
-						int index60_113 = input.index();
+						int index60_120 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred24_FTS()) ) {s = 130;}
 						else if ( (synpred25_FTS()) ) {s = 155;}
 						 
-						input.seek(index60_113);
+						input.seek(index60_120);
 						if ( s>=0 ) return s;
 						break;
 
-					case 37 : 
+					case 22 : 
 						int LA60_50 = input.LA(1);
 						 
 						int index60_50 = input.index();
@@ -21042,69 +20594,517 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 38 : 
-						int LA60_120 = input.LA(1);
+					case 23 : 
+						int LA60_129 = input.LA(1);
 						 
-						int index60_120 = input.index();
+						int index60_129 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_129==RPAREN) ) {s = 174;}
+						else if ( (LA60_129==STAR) && (synpred25_FTS())) {s = 175;}
+						else if ( (LA60_129==COMMA||LA60_129==DOT) && (synpred25_FTS())) {s = 176;}
+						else if ( (LA60_129==TILDA) && (synpred25_FTS())) {s = 177;}
+						else if ( (LA60_129==CARAT) && (synpred25_FTS())) {s = 178;}
+						else if ( (LA60_129==OR) && (synpred25_FTS())) {s = 179;}
+						else if ( (LA60_129==BAR) && (synpred25_FTS())) {s = 180;}
+						else if ( (LA60_129==AND) && (synpred25_FTS())) {s = 181;}
+						else if ( (LA60_129==AMP) && (synpred25_FTS())) {s = 182;}
+						else if ( (LA60_129==NOT) && (synpred25_FTS())) {s = 133;}
+						else if ( (LA60_129==ID) && (synpred25_FTS())) {s = 134;}
+						else if ( (LA60_129==FTSWORD) && (synpred25_FTS())) {s = 135;}
+						else if ( (LA60_129==FTSPRE) && (synpred25_FTS())) {s = 136;}
+						else if ( (LA60_129==FTSWILD) && (synpred25_FTS())) {s = 137;}
+						else if ( (LA60_129==EXCLAMATION) && (synpred25_FTS())) {s = 138;}
+						else if ( (LA60_129==TO) && (synpred25_FTS())) {s = 139;}
+						else if ( (LA60_129==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 183;}
+						else if ( (LA60_129==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 140;}
+						else if ( (LA60_129==DATETIME) && (synpred25_FTS())) {s = 141;}
+						else if ( (LA60_129==URI) && (synpred25_FTS())) {s = 143;}
+						else if ( (LA60_129==QUESTION_MARK) && (synpred25_FTS())) {s = 145;}
+						else if ( (LA60_129==EQUALS) && (synpred25_FTS())) {s = 146;}
+						else if ( (LA60_129==FTSPHRASE) && (synpred25_FTS())) {s = 147;}
+						else if ( (LA60_129==LSQUARE) && (synpred25_FTS())) {s = 149;}
+						else if ( (LA60_129==LT) && (synpred25_FTS())) {s = 150;}
+						else if ( (LA60_129==LPAREN) && (synpred25_FTS())) {s = 151;}
+						else if ( (LA60_129==PLUS) && (synpred25_FTS())) {s = 152;}
+						else if ( (LA60_129==MINUS) && (synpred25_FTS())) {s = 154;}
+						else if ( (LA60_129==DOTDOT) && (synpred25_FTS())) {s = 184;}
+						 
+						input.seek(index60_129);
+						if ( s>=0 ) return s;
+						break;
+
+					case 24 : 
+						int LA60_7 = input.LA(1);
+						 
+						int index60_7 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_7==STAR) ) {s = 20;}
+						else if ( (LA60_7==COMMA||LA60_7==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_7==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_7==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_7==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_7==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_7==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_7==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_7==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_7==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_7==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_7==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_7==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_7==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_7==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_7==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_7==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_7==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_7==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_7==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_7==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_7==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_7==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_7==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_7==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_7==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_7==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_7==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_7==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_7);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
+						int LA60_52 = input.LA(1);
+						 
+						int index60_52 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_52==STAR) ) {s = 20;}
+						else if ( (LA60_52==COMMA||LA60_52==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_52==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_52==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_52==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_52==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_52==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_52==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_52==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_52==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_52==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_52==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_52==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_52==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_52==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_52==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_52==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_52==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_52==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_52==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_52==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_52==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_52==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_52==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_52==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_52==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_52==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_52==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_52==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_52);
+						if ( s>=0 ) return s;
+						break;
+
+					case 26 : 
+						int LA60_51 = input.LA(1);
+						 
+						int index60_51 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_51==STAR) ) {s = 20;}
+						else if ( (LA60_51==COMMA||LA60_51==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_51==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_51==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_51==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_51==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_51==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_51==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_51==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_51==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_51==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_51==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_51==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_51==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_51==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_51==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_51==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_51==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_51==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_51==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_51==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_51==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_51==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_51==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_51==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_51==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_51==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_51==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_51==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_51);
+						if ( s>=0 ) return s;
+						break;
+
+					case 27 : 
+						int LA60_113 = input.LA(1);
+						 
+						int index60_113 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred24_FTS()) ) {s = 130;}
 						else if ( (synpred25_FTS()) ) {s = 155;}
 						 
-						input.seek(index60_120);
+						input.seek(index60_113);
+						if ( s>=0 ) return s;
+						break;
+
+					case 28 : 
+						int LA60_161 = input.LA(1);
+						 
+						int index60_161 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 184;}
+						else if ( (synpred37_FTS()) ) {s = 48;}
+						 
+						input.seek(index60_161);
+						if ( s>=0 ) return s;
+						break;
+
+					case 29 : 
+						int LA60_128 = input.LA(1);
+						 
+						int index60_128 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_128==ID) ) {s = 161;}
+						else if ( (LA60_128==FTSWORD) && (synpred25_FTS())) {s = 162;}
+						else if ( (LA60_128==FTSPRE) && (synpred25_FTS())) {s = 163;}
+						else if ( (LA60_128==FTSWILD) && (synpred25_FTS())) {s = 164;}
+						else if ( (LA60_128==NOT) && (synpred25_FTS())) {s = 165;}
+						else if ( (LA60_128==TO) && (synpred25_FTS())) {s = 166;}
+						else if ( (LA60_128==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 167;}
+						else if ( (LA60_128==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 168;}
+						else if ( (LA60_128==STAR) && (synpred25_FTS())) {s = 169;}
+						else if ( (LA60_128==QUESTION_MARK) && (synpred25_FTS())) {s = 170;}
+						else if ( (LA60_128==DATETIME) && (synpred25_FTS())) {s = 171;}
+						else if ( (LA60_128==URI) && (synpred25_FTS())) {s = 172;}
+						else if ( (LA60_128==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_128==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_128==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_128==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_128==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_128==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_128==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_128==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_128==COMMA||LA60_128==DOT) && (synpred25_FTS())) {s = 173;}
+						else if ( (LA60_128==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_128==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_128==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_128==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_128==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_128==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_128==MINUS) && (synpred25_FTS())) {s = 47;}
+						 
+						input.seek(index60_128);
+						if ( s>=0 ) return s;
+						break;
+
+					case 30 : 
+						int LA60_116 = input.LA(1);
+						 
+						int index60_116 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_116);
+						if ( s>=0 ) return s;
+						break;
+
+					case 31 : 
+						int LA60_158 = input.LA(1);
+						 
+						int index60_158 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 184;}
+						 
+						input.seek(index60_158);
+						if ( s>=0 ) return s;
+						break;
+
+					case 32 : 
+						int LA60_5 = input.LA(1);
+						 
+						int index60_5 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_5==STAR) ) {s = 20;}
+						else if ( (LA60_5==COMMA||LA60_5==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_5==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_5==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_5==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_5==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_5==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_5==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_5==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_5==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_5==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_5==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_5==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_5==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_5==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_5==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_5==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_5==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_5==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_5==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_5==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_5==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_5==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_5==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_5==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_5==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_5==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_5==MINUS) && (synpred25_FTS())) {s = 47;}
+						 
+						input.seek(index60_5);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA60_14 = input.LA(1);
+						 
+						int index60_14 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_14==COMMA||LA60_14==DOT) && (synpred27_FTS())) {s = 54;}
+						else if ( (LA60_14==ID) && (synpred27_FTS())) {s = 55;}
+						else if ( (LA60_14==FTSWORD) && (synpred27_FTS())) {s = 56;}
+						else if ( (LA60_14==FTSPRE) && (synpred27_FTS())) {s = 57;}
+						else if ( (LA60_14==FTSWILD) && (synpred27_FTS())) {s = 58;}
+						else if ( (LA60_14==NOT) && (synpred27_FTS())) {s = 59;}
+						else if ( (LA60_14==TO) && (synpred27_FTS())) {s = 60;}
+						else if ( (LA60_14==DECIMAL_INTEGER_LITERAL) && (synpred27_FTS())) {s = 61;}
+						else if ( (LA60_14==FLOATING_POINT_LITERAL) && (synpred27_FTS())) {s = 62;}
+						else if ( (LA60_14==STAR) && (synpred27_FTS())) {s = 63;}
+						else if ( (LA60_14==QUESTION_MARK) && (synpred27_FTS())) {s = 64;}
+						else if ( (LA60_14==DATETIME) && (synpred27_FTS())) {s = 65;}
+						else if ( (LA60_14==URI) && (synpred27_FTS())) {s = 66;}
+						else if ( (LA60_14==EQUALS) && (synpred31_FTS())) {s = 67;}
+						 
+						input.seek(index60_14);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
+						int LA60_119 = input.LA(1);
+						 
+						int index60_119 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_119);
+						if ( s>=0 ) return s;
+						break;
+
+					case 35 : 
+						int LA60_156 = input.LA(1);
+						 
+						int index60_156 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 184;}
+						 
+						input.seek(index60_156);
+						if ( s>=0 ) return s;
+						break;
+
+					case 36 : 
+						int LA60_8 = input.LA(1);
+						 
+						int index60_8 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_8==STAR) ) {s = 20;}
+						else if ( (LA60_8==COMMA||LA60_8==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_8==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_8==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_8==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_8==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_8==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_8==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_8==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_8==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_8==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_8==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_8==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_8==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_8==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_8==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_8==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_8==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_8==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_8==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_8==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_8==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_8==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_8==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_8==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_8==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_8==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_8==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_8==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_8);
+						if ( s>=0 ) return s;
+						break;
+
+					case 37 : 
+						int LA60_53 = input.LA(1);
+						 
+						int index60_53 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA60_53==STAR) ) {s = 20;}
+						else if ( (LA60_53==COMMA||LA60_53==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_53==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_53==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_53==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_53==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_53==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_53==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_53==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_53==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_53==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_53==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_53==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_53==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_53==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_53==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_53==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_53==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_53==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_53==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_53==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_53==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_53==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_53==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_53==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_53==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_53==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_53==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_53==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						 
+						input.seek(index60_53);
+						if ( s>=0 ) return s;
+						break;
+
+					case 38 : 
+						int LA60_114 = input.LA(1);
+						 
+						int index60_114 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred24_FTS()) ) {s = 130;}
+						else if ( (synpred25_FTS()) ) {s = 155;}
+						 
+						input.seek(index60_114);
 						if ( s>=0 ) return s;
 						break;
 
 					case 39 : 
-						int LA60_115 = input.LA(1);
+						int LA60_10 = input.LA(1);
 						 
-						int index60_115 = input.index();
+						int index60_10 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred24_FTS()) ) {s = 130;}
-						else if ( (synpred25_FTS()) ) {s = 155;}
+						if ( (LA60_10==STAR) ) {s = 20;}
+						else if ( (LA60_10==COMMA||LA60_10==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_10==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_10==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_10==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_10==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_10==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_10==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_10==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_10==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_10==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_10==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_10==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_10==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_10==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_10==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_10==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_10==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_10==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_10==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_10==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_10==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_10==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_10==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_10==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_10==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_10==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_10==MINUS) && (synpred25_FTS())) {s = 47;}
+						else if ( (LA60_10==DOTDOT) && (synpred37_FTS())) {s = 48;}
 						 
-						input.seek(index60_115);
+						input.seek(index60_10);
 						if ( s>=0 ) return s;
 						break;
 
 					case 40 : 
-						int LA60_4 = input.LA(1);
+						int LA60_6 = input.LA(1);
 						 
-						int index60_4 = input.index();
+						int index60_6 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA60_4==STAR) ) {s = 20;}
-						else if ( (LA60_4==COMMA||LA60_4==DOT) && (synpred25_FTS())) {s = 21;}
-						else if ( (LA60_4==TILDA) && (synpred25_FTS())) {s = 22;}
-						else if ( (LA60_4==CARAT) && (synpred25_FTS())) {s = 23;}
-						else if ( (LA60_4==AND) && (synpred25_FTS())) {s = 24;}
-						else if ( (LA60_4==AMP) && (synpred25_FTS())) {s = 25;}
-						else if ( (LA60_4==RPAREN) && (synpred25_FTS())) {s = 26;}
-						else if ( (LA60_4==OR) && (synpred25_FTS())) {s = 27;}
-						else if ( (LA60_4==BAR) && (synpred25_FTS())) {s = 28;}
-						else if ( (LA60_4==NOT) && (synpred25_FTS())) {s = 29;}
-						else if ( (LA60_4==ID) && (synpred25_FTS())) {s = 30;}
-						else if ( (LA60_4==FTSWORD) && (synpred25_FTS())) {s = 31;}
-						else if ( (LA60_4==FTSPRE) && (synpred25_FTS())) {s = 32;}
-						else if ( (LA60_4==FTSWILD) && (synpred25_FTS())) {s = 33;}
-						else if ( (LA60_4==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
-						else if ( (LA60_4==TO) && (synpred25_FTS())) {s = 35;}
-						else if ( (LA60_4==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
-						else if ( (LA60_4==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
-						else if ( (LA60_4==DATETIME) && (synpred25_FTS())) {s = 38;}
-						else if ( (LA60_4==URI) && (synpred25_FTS())) {s = 39;}
-						else if ( (LA60_4==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
-						else if ( (LA60_4==EQUALS) && (synpred25_FTS())) {s = 41;}
-						else if ( (LA60_4==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
-						else if ( (LA60_4==LSQUARE) && (synpred25_FTS())) {s = 43;}
-						else if ( (LA60_4==LT) && (synpred25_FTS())) {s = 44;}
-						else if ( (LA60_4==LPAREN) && (synpred25_FTS())) {s = 45;}
-						else if ( (LA60_4==PLUS) && (synpred25_FTS())) {s = 46;}
-						else if ( (LA60_4==MINUS) && (synpred25_FTS())) {s = 47;}
-						else if ( (LA60_4==DOTDOT) && (synpred37_FTS())) {s = 48;}
+						if ( (LA60_6==STAR) ) {s = 20;}
+						else if ( (LA60_6==COMMA||LA60_6==DOT) && (synpred25_FTS())) {s = 21;}
+						else if ( (LA60_6==TILDA) && (synpred25_FTS())) {s = 22;}
+						else if ( (LA60_6==CARAT) && (synpred25_FTS())) {s = 23;}
+						else if ( (LA60_6==AND) && (synpred25_FTS())) {s = 24;}
+						else if ( (LA60_6==AMP) && (synpred25_FTS())) {s = 25;}
+						else if ( (LA60_6==RPAREN) && (synpred25_FTS())) {s = 26;}
+						else if ( (LA60_6==OR) && (synpred25_FTS())) {s = 27;}
+						else if ( (LA60_6==BAR) && (synpred25_FTS())) {s = 28;}
+						else if ( (LA60_6==NOT) && (synpred25_FTS())) {s = 29;}
+						else if ( (LA60_6==ID) && (synpred25_FTS())) {s = 30;}
+						else if ( (LA60_6==FTSWORD) && (synpred25_FTS())) {s = 31;}
+						else if ( (LA60_6==FTSPRE) && (synpred25_FTS())) {s = 32;}
+						else if ( (LA60_6==FTSWILD) && (synpred25_FTS())) {s = 33;}
+						else if ( (LA60_6==EXCLAMATION) && (synpred25_FTS())) {s = 34;}
+						else if ( (LA60_6==TO) && (synpred25_FTS())) {s = 35;}
+						else if ( (LA60_6==DECIMAL_INTEGER_LITERAL) && (synpred25_FTS())) {s = 36;}
+						else if ( (LA60_6==FLOATING_POINT_LITERAL) && (synpred25_FTS())) {s = 37;}
+						else if ( (LA60_6==DATETIME) && (synpred25_FTS())) {s = 38;}
+						else if ( (LA60_6==URI) && (synpred25_FTS())) {s = 39;}
+						else if ( (LA60_6==QUESTION_MARK) && (synpred25_FTS())) {s = 40;}
+						else if ( (LA60_6==EQUALS) && (synpred25_FTS())) {s = 41;}
+						else if ( (LA60_6==FTSPHRASE) && (synpred25_FTS())) {s = 42;}
+						else if ( (LA60_6==LSQUARE) && (synpred25_FTS())) {s = 43;}
+						else if ( (LA60_6==LT) && (synpred25_FTS())) {s = 44;}
+						else if ( (LA60_6==LPAREN) && (synpred25_FTS())) {s = 45;}
+						else if ( (LA60_6==PLUS) && (synpred25_FTS())) {s = 46;}
+						else if ( (LA60_6==MINUS) && (synpred25_FTS())) {s = 47;}
 						 
-						input.seek(index60_4);
+						input.seek(index60_6);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -21145,32 +21145,32 @@ public class FTSParser extends Parser {
 		"\13\1\uffff\1\1\1\3\1\5\1\7\1\11\32\uffff\23\10\16\uffff\23\7\64\uffff"+
 		"\23\4\23\uffff\23\3\71\uffff";
 	static final String DFA73_specialS =
-		"\32\uffff\1\u00a8\6\uffff\1\u00f0\6\uffff\1\75\1\26\1\33\1\136\1\u00cb"+
-		"\1\62\1\1\1\111\1\144\1\71\1\u00c5\24\uffff\1\u00ae\1\u00a2\1\u00a4\1"+
-		"\u0091\1\103\1\u00c0\1\56\1\u00b0\1\165\1\74\1\174\1\154\24\uffff\1\17"+
-		"\1\u00ce\1\uffff\1\40\1\50\1\110\1\u008f\1\u00b8\1\u00db\1\25\1\32\1\135"+
-		"\1\u00ca\1\61\1\0\1\107\1\143\1\70\1\u00c4\1\u00b6\1\uffff\1\167\1\161"+
-		"\1\u00b1\1\u00e7\1\54\1\u00c8\1\u00a3\1\u0090\1\102\1\u00bf\1\55\1\u00af"+
-		"\1\164\1\73\1\173\1\153\1\125\1\137\1\134\1\14\1\u00b3\1\u00d2\1\u00e6"+
-		"\1\u0084\1\u00a7\1\152\1\115\24\uffff\1\65\5\uffff\1\145\1\4\1\u00f2\1"+
-		"\u00c3\1\53\1\u0099\1\172\1\130\1\100\1\u00c2\1\27\24\uffff\1\u00ab\5"+
-		"\uffff\1\11\1\30\1\u00f1\1\2\1\35\1\101\1\162\1\u008c\1\106\1\15\1\u00f3"+
-		"\1\u00cf\1\u00b2\1\66\1\51\1\u009e\1\175\1\u0085\1\104\1\116\1\u00ee\1"+
-		"\u00b9\1\u0097\1\23\1\u0089\24\uffff\1\146\1\u008d\1\u0087\1\42\1\5\1"+
-		"\u00d4\1\u00e2\1\u00d0\1\u008e\1\133\1\105\1\u00b4\1\41\24\uffff\1\166"+
-		"\1\13\1\u0094\1\126\1\u00de\1\u00c1\1\u00a5\1\176\1\157\1\151\1\u009b"+
-		"\1\u00be\1\u00e0\1\10\1\u0096\1\u00ac\1\u00cc\1\u00e4\1\127\1\47\1\uffff"+
-		"\1\34\1\u00ed\1\u0088\1\u00e8\1\u00c6\1\u00aa\1\22\1\141\1\64\1\u00c7"+
-		"\1\u00e9\1\u00ef\1\171\1\u009c\1\117\1\147\1\u00eb\1\37\1\uffff\1\u00ad"+
-		"\1\6\1\46\1\113\1\31\1\u00dc\1\u0080\1\u009d\1\u00b5\1\u00d5\1\123\24"+
-		"\uffff\1\132\1\160\1\76\1\140\1\114\1\57\1\u00d9\1\163\1\52\1\u00d7\1"+
-		"\u00d1\1\u008b\1\u00d6\1\170\1\122\1\72\1\u009a\1\24\24\uffff\1\45\1\u0083"+
-		"\1\36\1\u00a1\1\u00bc\1\u00dd\1\20\1\131\1\u008a\1\u00a9\1\120\1\155\1"+
-		"\63\1\u00e3\1\u0093\1\u0098\1\u00bb\1\u00a0\1\77\1\21\1\60\1\112\1\142"+
-		"\1\u00ea\1\uffff\1\150\1\u0086\1\u00df\1\u00bd\1\u009f\1\177\1\7\1\156"+
-		"\1\u0095\1\67\1\121\1\16\1\124\1\43\1\u00b7\1\u00d3\1\12\1\u0092\1\uffff"+
-		"\1\u00e1\1\u00da\1\u00cd\1\u00ec\1\u00c9\1\u00e5\1\3\1\u0081\1\44\1\u00ba"+
-		"\1\u00d8\1\u0082\1\u00a6}>";
+		"\32\uffff\1\52\6\uffff\1\131\6\uffff\1\14\1\46\1\40\1\121\1\21\1\u008b"+
+		"\1\60\1\146\1\135\1\62\1\u00e9\24\uffff\1\u00aa\1\173\1\144\1\125\1\u0088"+
+		"\1\u00b3\1\u00ee\1\151\1\132\1\u0091\1\170\1\70\24\uffff\1\u00d0\1\31"+
+		"\1\uffff\1\156\1\u0087\1\u00f3\1\103\1\163\1\53\1\47\1\41\1\122\1\22\1"+
+		"\u008c\1\61\1\147\1\136\1\63\1\u00ea\1\124\1\uffff\1\76\1\u00a1\1\u009a"+
+		"\1\u00cc\1\20\1\u009b\1\145\1\126\1\u0089\1\u00b4\1\u00ef\1\152\1\133"+
+		"\1\u0092\1\171\1\71\1\15\1\101\1\54\1\120\1\u009e\1\72\1\u00b6\1\u00cd"+
+		"\1\u00ed\1\u00b1\1\12\24\uffff\1\154\5\uffff\1\u00c3\1\u00f1\1\42\1\73"+
+		"\1\u00a6\1\u00e0\1\164\1\u0084\1\u00a7\1\160\1\u00e5\24\uffff\1\u00b8"+
+		"\5\uffff\1\u00b7\1\u0080\1\u00eb\1\35\1\102\1\127\1\u00d8\1\1\1\u00d6"+
+		"\1\165\1\u0090\1\u00ab\1\u00c7\1\u0099\1\65\1\u0094\1\u00b2\1\u00a5\1"+
+		"\u00c5\1\153\1\4\1\105\1\134\1\45\1\161\24\uffff\1\u00d9\1\u00af\1\u00dd"+
+		"\1\115\1\162\1\u0083\1\u00c4\1\67\1\u00e6\1\37\1\104\1\17\1\140\24\uffff"+
+		"\1\100\1\u00d3\1\u0093\1\44\1\30\1\75\1\123\1\172\1\137\1\111\1\u00b9"+
+		"\1\u00ca\1\u00e3\1\u00d7\1\u008d\1\56\1\117\1\155\1\u0081\1\u00b5\1\uffff"+
+		"\1\0\1\u00cf\1\u00ac\1\u00c8\1\u00e7\1\27\1\u00d4\1\32\1\167\1\u0097\1"+
+		"\u00b0\1\u00f0\1\143\1\u00db\1\3\1\64\1\50\1\177\1\uffff\1\u0098\1\10"+
+		"\1\51\1\141\1\13\1\u00c2\1\u008a\1\u00a9\1\u00bf\1\u00de\1\33\24\uffff"+
+		"\1\u00bc\1\u0082\1\u0095\1\7\1\55\1\116\1\u0096\1\113\1\u00da\1\2\1\107"+
+		"\1\110\1\u00ad\1\157\1\u008e\1\u00a8\1\u00e4\1\u00ec\24\uffff\1\66\1\u00be"+
+		"\1\u00df\1\u00ae\1\u00cb\1\u00e1\1\24\1\43\1\112\1\150\1\u0086\1\u00a3"+
+		"\1\u00d5\1\166\1\5\1\106\1\142\1\26\1\u00ce\1\u008f\1\u00a0\1\u00c0\1"+
+		"\u00dc\1\36\1\uffff\1\u009f\1\u00bd\1\25\1\77\1\130\1\174\1\u00a2\1\57"+
+		"\1\u00e2\1\34\1\6\1\11\1\u0085\1\175\1\u009c\1\u00bb\1\u00c6\1\u00c1\1"+
+		"\uffff\1\u00e8\1\u00a4\1\u00d1\1\u00f2\1\23\1\74\1\16\1\114\1\176\1\u009d"+
+		"\1\u00ba\1\u00c9\1\u00d2}>";
 	static final String[] DFA73_transitionS = {
 			"\1\1\1\uffff\1\14\1\uffff\1\10\5\uffff\1\1\31\uffff\1\11\3\uffff\1\4"+
 			"\1\5\1\3\11\uffff\1\2\16\uffff\1\6\11\uffff\1\13\7\uffff\1\12\5\uffff"+
@@ -21888,481 +21888,6 @@ public class FTSParser extends Parser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA73_117 = input.LA(1);
-						 
-						int index73_117 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_117==COMMA||LA73_117==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_117);
-						if ( s>=0 ) return s;
-						break;
-
-					case 1 : 
-						int LA73_46 = input.LA(1);
-						 
-						int index73_46 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_46==COMMA||LA73_46==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_46);
-						if ( s>=0 ) return s;
-						break;
-
-					case 2 : 
-						int LA73_217 = input.LA(1);
-						 
-						int index73_217 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_217==COMMA||LA73_217==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_217);
-						if ( s>=0 ) return s;
-						break;
-
-					case 3 : 
-						int LA73_451 = input.LA(1);
-						 
-						int index73_451 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_451);
-						if ( s>=0 ) return s;
-						break;
-
-					case 4 : 
-						int LA73_178 = input.LA(1);
-						 
-						int index73_178 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_178==COMMA||LA73_178==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_178);
-						if ( s>=0 ) return s;
-						break;
-
-					case 5 : 
-						int LA73_263 = input.LA(1);
-						 
-						int index73_263 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_263==COMMA||LA73_263==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_263);
-						if ( s>=0 ) return s;
-						break;
-
-					case 6 : 
-						int LA73_333 = input.LA(1);
-						 
-						int index73_333 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_333);
-						if ( s>=0 ) return s;
-						break;
-
-					case 7 : 
-						int LA73_432 = input.LA(1);
-						 
-						int index73_432 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_432);
-						if ( s>=0 ) return s;
-						break;
-
-					case 8 : 
-						int LA73_305 = input.LA(1);
-						 
-						int index73_305 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_305==COMMA||LA73_305==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_305);
-						if ( s>=0 ) return s;
-						break;
-
-					case 9 : 
-						int LA73_214 = input.LA(1);
-						 
-						int index73_214 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_214==ID) ) {s = 228;}
-						else if ( (LA73_214==FTSWORD) ) {s = 229;}
-						else if ( (LA73_214==FTSPRE) ) {s = 230;}
-						else if ( (LA73_214==FTSWILD) ) {s = 231;}
-						else if ( (LA73_214==NOT) ) {s = 232;}
-						else if ( (LA73_214==TO) ) {s = 233;}
-						else if ( (LA73_214==DECIMAL_INTEGER_LITERAL) ) {s = 234;}
-						else if ( (LA73_214==FLOATING_POINT_LITERAL) ) {s = 235;}
-						else if ( (LA73_214==STAR) ) {s = 236;}
-						else if ( (LA73_214==QUESTION_MARK) ) {s = 237;}
-						else if ( (LA73_214==DATETIME) ) {s = 238;}
-						else if ( (LA73_214==URI) ) {s = 239;}
-						else if ( (LA73_214==TILDA) && (synpred48_FTS())) {s = 240;}
-						else if ( (LA73_214==CARAT) && (synpred48_FTS())) {s = 241;}
-						else if ( (LA73_214==AND) && (synpred48_FTS())) {s = 242;}
-						else if ( (LA73_214==AMP) && (synpred48_FTS())) {s = 243;}
-						else if ( (LA73_214==EOF) && (synpred48_FTS())) {s = 244;}
-						else if ( (LA73_214==RPAREN) && (synpred48_FTS())) {s = 245;}
-						else if ( (LA73_214==OR) && (synpred48_FTS())) {s = 246;}
-						else if ( (LA73_214==BAR) && (synpred48_FTS())) {s = 247;}
-						else if ( (LA73_214==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
-						else if ( (LA73_214==AT) && (synpred48_FTS())) {s = 249;}
-						else if ( (LA73_214==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
-						else if ( (LA73_214==LSQUARE) && (synpred48_FTS())) {s = 251;}
-						else if ( (LA73_214==LT) && (synpred48_FTS())) {s = 252;}
-						else if ( (LA73_214==COMMA||LA73_214==DOT) && (synpred48_FTS())) {s = 253;}
-						else if ( (LA73_214==EQUALS) && (synpred48_FTS())) {s = 254;}
-						else if ( (LA73_214==LPAREN) && (synpred48_FTS())) {s = 255;}
-						else if ( (LA73_214==PERCENT) && (synpred48_FTS())) {s = 256;}
-						else if ( (LA73_214==PLUS) && (synpred48_FTS())) {s = 257;}
-						else if ( (LA73_214==MINUS) && (synpred48_FTS())) {s = 258;}
-						 
-						input.seek(index73_214);
-						if ( s>=0 ) return s;
-						break;
-
-					case 10 : 
-						int LA73_442 = input.LA(1);
-						 
-						int index73_442 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_442);
-						if ( s>=0 ) return s;
-						break;
-
-					case 11 : 
-						int LA73_293 = input.LA(1);
-						 
-						int index73_293 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_293==ID) ) {s = 320;}
-						else if ( (LA73_293==FTSWORD) ) {s = 321;}
-						else if ( (LA73_293==FTSPRE) ) {s = 322;}
-						else if ( (LA73_293==FTSWILD) ) {s = 323;}
-						else if ( (LA73_293==NOT) ) {s = 324;}
-						else if ( (LA73_293==TO) ) {s = 325;}
-						else if ( (LA73_293==DECIMAL_INTEGER_LITERAL) ) {s = 326;}
-						else if ( (LA73_293==FLOATING_POINT_LITERAL) ) {s = 327;}
-						else if ( (LA73_293==STAR) ) {s = 328;}
-						else if ( (LA73_293==QUESTION_MARK) ) {s = 329;}
-						else if ( (LA73_293==DATETIME) ) {s = 330;}
-						else if ( (LA73_293==URI) ) {s = 331;}
-						else if ( (LA73_293==TILDA) && (synpred47_FTS())) {s = 273;}
-						else if ( (LA73_293==CARAT) && (synpred47_FTS())) {s = 274;}
-						else if ( (LA73_293==AND) && (synpred47_FTS())) {s = 275;}
-						else if ( (LA73_293==AMP) && (synpred47_FTS())) {s = 276;}
-						else if ( (LA73_293==EOF) && (synpred47_FTS())) {s = 277;}
-						else if ( (LA73_293==RPAREN) && (synpred47_FTS())) {s = 278;}
-						else if ( (LA73_293==OR) && (synpred47_FTS())) {s = 279;}
-						else if ( (LA73_293==BAR) && (synpred47_FTS())) {s = 280;}
-						else if ( (LA73_293==EXCLAMATION) && (synpred47_FTS())) {s = 281;}
-						else if ( (LA73_293==AT) && (synpred47_FTS())) {s = 282;}
-						else if ( (LA73_293==FTSPHRASE) && (synpred47_FTS())) {s = 283;}
-						else if ( (LA73_293==LSQUARE) && (synpred47_FTS())) {s = 284;}
-						else if ( (LA73_293==LT) && (synpred47_FTS())) {s = 285;}
-						else if ( (LA73_293==COMMA||LA73_293==DOT) && (synpred47_FTS())) {s = 286;}
-						else if ( (LA73_293==EQUALS) && (synpred47_FTS())) {s = 287;}
-						else if ( (LA73_293==LPAREN) && (synpred47_FTS())) {s = 288;}
-						else if ( (LA73_293==PERCENT) && (synpred47_FTS())) {s = 289;}
-						else if ( (LA73_293==PLUS) && (synpred47_FTS())) {s = 290;}
-						else if ( (LA73_293==MINUS) && (synpred47_FTS())) {s = 291;}
-						 
-						input.seek(index73_293);
-						if ( s>=0 ) return s;
-						break;
-
-					case 12 : 
-						int LA73_143 = input.LA(1);
-						 
-						int index73_143 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_143==COMMA||LA73_143==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_143);
-						if ( s>=0 ) return s;
-						break;
-
-					case 13 : 
-						int LA73_223 = input.LA(1);
-						 
-						int index73_223 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_223==COMMA||LA73_223==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_223);
-						if ( s>=0 ) return s;
-						break;
-
-					case 14 : 
-						int LA73_437 = input.LA(1);
-						 
-						int index73_437 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_437);
-						if ( s>=0 ) return s;
-						break;
-
-					case 15 : 
-						int LA73_103 = input.LA(1);
-						 
-						int index73_103 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_103==ID) ) {s = 129;}
-						else if ( (LA73_103==FTSWORD) ) {s = 130;}
-						else if ( (LA73_103==FTSPRE) ) {s = 131;}
-						else if ( (LA73_103==FTSWILD) ) {s = 132;}
-						else if ( (LA73_103==NOT) ) {s = 133;}
-						else if ( (LA73_103==TO) ) {s = 134;}
-						else if ( (LA73_103==DECIMAL_INTEGER_LITERAL) ) {s = 135;}
-						else if ( (LA73_103==FLOATING_POINT_LITERAL) ) {s = 136;}
-						else if ( (LA73_103==STAR) ) {s = 137;}
-						else if ( (LA73_103==QUESTION_MARK) ) {s = 138;}
-						else if ( (LA73_103==DATETIME) ) {s = 139;}
-						else if ( (LA73_103==URI) ) {s = 83;}
-						else if ( (LA73_103==TILDA) && (synpred55_FTS())) {s = 84;}
-						else if ( (LA73_103==CARAT) && (synpred55_FTS())) {s = 85;}
-						else if ( (LA73_103==AND) && (synpred55_FTS())) {s = 86;}
-						else if ( (LA73_103==AMP) && (synpred55_FTS())) {s = 87;}
-						else if ( (LA73_103==EOF) && (synpred55_FTS())) {s = 88;}
-						else if ( (LA73_103==RPAREN) && (synpred55_FTS())) {s = 89;}
-						else if ( (LA73_103==OR) && (synpred55_FTS())) {s = 90;}
-						else if ( (LA73_103==BAR) && (synpred55_FTS())) {s = 91;}
-						else if ( (LA73_103==EXCLAMATION) && (synpred55_FTS())) {s = 92;}
-						else if ( (LA73_103==AT) && (synpred55_FTS())) {s = 93;}
-						else if ( (LA73_103==FTSPHRASE) && (synpred55_FTS())) {s = 94;}
-						else if ( (LA73_103==LSQUARE) && (synpred55_FTS())) {s = 95;}
-						else if ( (LA73_103==LT) && (synpred55_FTS())) {s = 96;}
-						else if ( (LA73_103==COMMA||LA73_103==DOT) && (synpred55_FTS())) {s = 97;}
-						else if ( (LA73_103==EQUALS) && (synpred55_FTS())) {s = 98;}
-						else if ( (LA73_103==LPAREN) && (synpred55_FTS())) {s = 99;}
-						else if ( (LA73_103==PERCENT) && (synpred55_FTS())) {s = 100;}
-						else if ( (LA73_103==PLUS) && (synpred55_FTS())) {s = 101;}
-						else if ( (LA73_103==MINUS) && (synpred55_FTS())) {s = 102;}
-						 
-						input.seek(index73_103);
-						if ( s>=0 ) return s;
-						break;
-
-					case 16 : 
-						int LA73_407 = input.LA(1);
-						 
-						int index73_407 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_407==COMMA||LA73_407==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_407);
-						if ( s>=0 ) return s;
-						break;
-
-					case 17 : 
-						int LA73_420 = input.LA(1);
-						 
-						int index73_420 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_420);
-						if ( s>=0 ) return s;
-						break;
-
-					case 18 : 
-						int LA73_319 = input.LA(1);
-						 
-						int index73_319 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_319==COMMA||LA73_319==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_319);
-						if ( s>=0 ) return s;
-						break;
-
-					case 19 : 
-						int LA73_237 = input.LA(1);
-						 
-						int index73_237 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_237==COMMA||LA73_237==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_237);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
-						int LA73_380 = input.LA(1);
-						 
-						int index73_380 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_380);
-						if ( s>=0 ) return s;
-						break;
-
-					case 21 : 
-						int LA73_112 = input.LA(1);
-						 
-						int index73_112 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_112==COMMA||LA73_112==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_112);
-						if ( s>=0 ) return s;
-						break;
-
-					case 22 : 
-						int LA73_41 = input.LA(1);
-						 
-						int index73_41 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_41==COMMA||LA73_41==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_41);
-						if ( s>=0 ) return s;
-						break;
-
-					case 23 : 
-						int LA73_187 = input.LA(1);
-						 
-						int index73_187 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_187==COMMA||LA73_187==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_187);
-						if ( s>=0 ) return s;
-						break;
-
-					case 24 : 
-						int LA73_215 = input.LA(1);
-						 
-						int index73_215 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_215==DOT) ) {s = 259;}
-						else if ( (LA73_215==COMMA) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_215);
-						if ( s>=0 ) return s;
-						break;
-
-					case 25 : 
-						int LA73_336 = input.LA(1);
-						 
-						int index73_336 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_336);
-						if ( s>=0 ) return s;
-						break;
-
-					case 26 : 
-						int LA73_113 = input.LA(1);
-						 
-						int index73_113 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_113==COMMA||LA73_113==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_113);
-						if ( s>=0 ) return s;
-						break;
-
-					case 27 : 
-						int LA73_42 = input.LA(1);
-						 
-						int index73_42 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_42==COMMA||LA73_42==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_42);
-						if ( s>=0 ) return s;
-						break;
-
-					case 28 : 
 						int LA73_313 = input.LA(1);
 						 
 						int index73_313 = input.index();
@@ -22404,1791 +21929,7 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 29 : 
-						int LA73_218 = input.LA(1);
-						 
-						int index73_218 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_218==COMMA||LA73_218==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_218);
-						if ( s>=0 ) return s;
-						break;
-
-					case 30 : 
-						int LA73_403 = input.LA(1);
-						 
-						int index73_403 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_403==DOT) ) {s = 445;}
-						else if ( (LA73_403==COMMA) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_403);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
-						int LA73_330 = input.LA(1);
-						 
-						int index73_330 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_330==COMMA||LA73_330==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_330);
-						if ( s>=0 ) return s;
-						break;
-
-					case 32 : 
-						int LA73_106 = input.LA(1);
-						 
-						int index73_106 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_106==DOT) ) {s = 171;}
-						else if ( (LA73_106==COMMA) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_106);
-						if ( s>=0 ) return s;
-						break;
-
-					case 33 : 
-						int LA73_271 = input.LA(1);
-						 
-						int index73_271 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_271==COMMA||LA73_271==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_271);
-						if ( s>=0 ) return s;
-						break;
-
-					case 34 : 
-						int LA73_262 = input.LA(1);
-						 
-						int index73_262 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_262==COMMA||LA73_262==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_262);
-						if ( s>=0 ) return s;
-						break;
-
-					case 35 : 
-						int LA73_439 = input.LA(1);
-						 
-						int index73_439 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_439);
-						if ( s>=0 ) return s;
-						break;
-
-					case 36 : 
-						int LA73_453 = input.LA(1);
-						 
-						int index73_453 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_453);
-						if ( s>=0 ) return s;
-						break;
-
-					case 37 : 
-						int LA73_401 = input.LA(1);
-						 
-						int index73_401 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_401==ID) ) {s = 432;}
-						else if ( (LA73_401==FTSWORD) ) {s = 371;}
-						else if ( (LA73_401==FTSPRE) ) {s = 372;}
-						else if ( (LA73_401==FTSWILD) ) {s = 373;}
-						else if ( (LA73_401==NOT) ) {s = 374;}
-						else if ( (LA73_401==TO) ) {s = 375;}
-						else if ( (LA73_401==DECIMAL_INTEGER_LITERAL) ) {s = 376;}
-						else if ( (LA73_401==FLOATING_POINT_LITERAL) ) {s = 377;}
-						else if ( (LA73_401==STAR) ) {s = 378;}
-						else if ( (LA73_401==QUESTION_MARK) ) {s = 379;}
-						else if ( (LA73_401==DATETIME) ) {s = 380;}
-						else if ( (LA73_401==URI) ) {s = 381;}
-						else if ( (LA73_401==TILDA) && (synpred43_FTS())) {s = 382;}
-						else if ( (LA73_401==CARAT) && (synpred43_FTS())) {s = 383;}
-						else if ( (LA73_401==AND) && (synpred43_FTS())) {s = 384;}
-						else if ( (LA73_401==AMP) && (synpred43_FTS())) {s = 385;}
-						else if ( (LA73_401==EOF) && (synpred43_FTS())) {s = 386;}
-						else if ( (LA73_401==RPAREN) && (synpred43_FTS())) {s = 387;}
-						else if ( (LA73_401==OR) && (synpred43_FTS())) {s = 388;}
-						else if ( (LA73_401==BAR) && (synpred43_FTS())) {s = 389;}
-						else if ( (LA73_401==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
-						else if ( (LA73_401==AT) && (synpred43_FTS())) {s = 391;}
-						else if ( (LA73_401==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
-						else if ( (LA73_401==LSQUARE) && (synpred43_FTS())) {s = 393;}
-						else if ( (LA73_401==LT) && (synpred43_FTS())) {s = 394;}
-						else if ( (LA73_401==COMMA||LA73_401==DOT) && (synpred43_FTS())) {s = 395;}
-						else if ( (LA73_401==EQUALS) && (synpred43_FTS())) {s = 396;}
-						else if ( (LA73_401==LPAREN) && (synpred43_FTS())) {s = 397;}
-						else if ( (LA73_401==PERCENT) && (synpred43_FTS())) {s = 398;}
-						else if ( (LA73_401==PLUS) && (synpred43_FTS())) {s = 399;}
-						else if ( (LA73_401==MINUS) && (synpred43_FTS())) {s = 400;}
-						 
-						input.seek(index73_401);
-						if ( s>=0 ) return s;
-						break;
-
-					case 38 : 
-						int LA73_334 = input.LA(1);
-						 
-						int index73_334 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_334);
-						if ( s>=0 ) return s;
-						break;
-
-					case 39 : 
-						int LA73_311 = input.LA(1);
-						 
-						int index73_311 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_311==COMMA||LA73_311==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_311);
-						if ( s>=0 ) return s;
-						break;
-
-					case 40 : 
-						int LA73_107 = input.LA(1);
-						 
-						int index73_107 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_107==COMMA||LA73_107==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_107);
-						if ( s>=0 ) return s;
-						break;
-
-					case 41 : 
-						int LA73_228 = input.LA(1);
-						 
-						int index73_228 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_228==COMMA||LA73_228==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_228);
-						if ( s>=0 ) return s;
-						break;
-
-					case 42 : 
-						int LA73_371 = input.LA(1);
-						 
-						int index73_371 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_371);
-						if ( s>=0 ) return s;
-						break;
-
-					case 43 : 
-						int LA73_181 = input.LA(1);
-						 
-						int index73_181 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_181==COMMA||LA73_181==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_181);
-						if ( s>=0 ) return s;
-						break;
-
-					case 44 : 
-						int LA73_128 = input.LA(1);
-						 
-						int index73_128 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_128==COMMA||LA73_128==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_128);
-						if ( s>=0 ) return s;
-						break;
-
-					case 45 : 
-						int LA73_134 = input.LA(1);
-						 
-						int index73_134 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_134==COMMA||LA73_134==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_134);
-						if ( s>=0 ) return s;
-						break;
-
-					case 46 : 
-						int LA73_77 = input.LA(1);
-						 
-						int index73_77 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_77==COMMA||LA73_77==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_77);
-						if ( s>=0 ) return s;
-						break;
-
-					case 47 : 
-						int LA73_368 = input.LA(1);
-						 
-						int index73_368 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_368==COMMA||LA73_368==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_368);
-						if ( s>=0 ) return s;
-						break;
-
-					case 48 : 
-						int LA73_421 = input.LA(1);
-						 
-						int index73_421 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_421);
-						if ( s>=0 ) return s;
-						break;
-
-					case 49 : 
-						int LA73_116 = input.LA(1);
-						 
-						int index73_116 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_116==COMMA||LA73_116==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_116);
-						if ( s>=0 ) return s;
-						break;
-
-					case 50 : 
-						int LA73_45 = input.LA(1);
-						 
-						int index73_45 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_45==COMMA||LA73_45==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_45);
-						if ( s>=0 ) return s;
-						break;
-
-					case 51 : 
-						int LA73_413 = input.LA(1);
-						 
-						int index73_413 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_413);
-						if ( s>=0 ) return s;
-						break;
-
-					case 52 : 
-						int LA73_321 = input.LA(1);
-						 
-						int index73_321 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_321==COMMA||LA73_321==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_321);
-						if ( s>=0 ) return s;
-						break;
-
-					case 53 : 
-						int LA73_171 = input.LA(1);
-						 
-						int index73_171 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_171==ID) ) {s = 220;}
-						else if ( (LA73_171==FTSWORD) ) {s = 141;}
-						else if ( (LA73_171==FTSPRE) ) {s = 142;}
-						else if ( (LA73_171==FTSWILD) ) {s = 143;}
-						else if ( (LA73_171==NOT) ) {s = 144;}
-						else if ( (LA73_171==TO) ) {s = 145;}
-						else if ( (LA73_171==DECIMAL_INTEGER_LITERAL) ) {s = 146;}
-						else if ( (LA73_171==FLOATING_POINT_LITERAL) ) {s = 147;}
-						else if ( (LA73_171==STAR) ) {s = 148;}
-						else if ( (LA73_171==QUESTION_MARK) ) {s = 149;}
-						else if ( (LA73_171==DATETIME) ) {s = 150;}
-						else if ( (LA73_171==URI) ) {s = 151;}
-						else if ( (LA73_171==TILDA) && (synpred52_FTS())) {s = 152;}
-						else if ( (LA73_171==CARAT) && (synpred52_FTS())) {s = 153;}
-						else if ( (LA73_171==AND) && (synpred52_FTS())) {s = 154;}
-						else if ( (LA73_171==AMP) && (synpred52_FTS())) {s = 155;}
-						else if ( (LA73_171==EOF) && (synpred52_FTS())) {s = 156;}
-						else if ( (LA73_171==RPAREN) && (synpred52_FTS())) {s = 157;}
-						else if ( (LA73_171==OR) && (synpred52_FTS())) {s = 158;}
-						else if ( (LA73_171==BAR) && (synpred52_FTS())) {s = 159;}
-						else if ( (LA73_171==EXCLAMATION) && (synpred52_FTS())) {s = 160;}
-						else if ( (LA73_171==AT) && (synpred52_FTS())) {s = 161;}
-						else if ( (LA73_171==FTSPHRASE) && (synpred52_FTS())) {s = 162;}
-						else if ( (LA73_171==LSQUARE) && (synpred52_FTS())) {s = 163;}
-						else if ( (LA73_171==LT) && (synpred52_FTS())) {s = 164;}
-						else if ( (LA73_171==COMMA||LA73_171==DOT) && (synpred52_FTS())) {s = 165;}
-						else if ( (LA73_171==EQUALS) && (synpred52_FTS())) {s = 166;}
-						else if ( (LA73_171==LPAREN) && (synpred52_FTS())) {s = 167;}
-						else if ( (LA73_171==PERCENT) && (synpred52_FTS())) {s = 168;}
-						else if ( (LA73_171==PLUS) && (synpred52_FTS())) {s = 169;}
-						else if ( (LA73_171==MINUS) && (synpred52_FTS())) {s = 170;}
-						 
-						input.seek(index73_171);
-						if ( s>=0 ) return s;
-						break;
-
-					case 54 : 
-						int LA73_227 = input.LA(1);
-						 
-						int index73_227 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_227==COMMA||LA73_227==DOT) ) {s = 293;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_227);
-						if ( s>=0 ) return s;
-						break;
-
-					case 55 : 
-						int LA73_435 = input.LA(1);
-						 
-						int index73_435 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_435);
-						if ( s>=0 ) return s;
-						break;
-
-					case 56 : 
-						int LA73_120 = input.LA(1);
-						 
-						int index73_120 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_120==COMMA||LA73_120==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_120);
-						if ( s>=0 ) return s;
-						break;
-
-					case 57 : 
-						int LA73_49 = input.LA(1);
-						 
-						int index73_49 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_49==COMMA||LA73_49==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_49);
-						if ( s>=0 ) return s;
-						break;
-
-					case 58 : 
-						int LA73_378 = input.LA(1);
-						 
-						int index73_378 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_378);
-						if ( s>=0 ) return s;
-						break;
-
-					case 59 : 
-						int LA73_137 = input.LA(1);
-						 
-						int index73_137 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_137==COMMA||LA73_137==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_137);
-						if ( s>=0 ) return s;
-						break;
-
-					case 60 : 
-						int LA73_80 = input.LA(1);
-						 
-						int index73_80 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_80==COMMA||LA73_80==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_80);
-						if ( s>=0 ) return s;
-						break;
-
-					case 61 : 
-						int LA73_40 = input.LA(1);
-						 
-						int index73_40 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_40==COMMA||LA73_40==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_40);
-						if ( s>=0 ) return s;
-						break;
-
-					case 62 : 
-						int LA73_365 = input.LA(1);
-						 
-						int index73_365 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_365==DOT) ) {s = 426;}
-						else if ( (LA73_365==COMMA) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_365);
-						if ( s>=0 ) return s;
-						break;
-
-					case 63 : 
-						int LA73_419 = input.LA(1);
-						 
-						int index73_419 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_419);
-						if ( s>=0 ) return s;
-						break;
-
-					case 64 : 
-						int LA73_185 = input.LA(1);
-						 
-						int index73_185 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_185==COMMA||LA73_185==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_185);
-						if ( s>=0 ) return s;
-						break;
-
-					case 65 : 
-						int LA73_219 = input.LA(1);
-						 
-						int index73_219 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_219==COMMA||LA73_219==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_219);
-						if ( s>=0 ) return s;
-						break;
-
-					case 66 : 
-						int LA73_132 = input.LA(1);
-						 
-						int index73_132 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_132==COMMA||LA73_132==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_132);
-						if ( s>=0 ) return s;
-						break;
-
-					case 67 : 
-						int LA73_75 = input.LA(1);
-						 
-						int index73_75 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_75==COMMA||LA73_75==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_75);
-						if ( s>=0 ) return s;
-						break;
-
-					case 68 : 
-						int LA73_232 = input.LA(1);
-						 
-						int index73_232 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_232==COMMA||LA73_232==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_232);
-						if ( s>=0 ) return s;
-						break;
-
-					case 69 : 
-						int LA73_269 = input.LA(1);
-						 
-						int index73_269 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_269==COMMA||LA73_269==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_269);
-						if ( s>=0 ) return s;
-						break;
-
-					case 70 : 
-						int LA73_222 = input.LA(1);
-						 
-						int index73_222 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_222==DOT) ) {s = 292;}
-						else if ( (LA73_222==COMMA) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_222);
-						if ( s>=0 ) return s;
-						break;
-
-					case 71 : 
-						int LA73_118 = input.LA(1);
-						 
-						int index73_118 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_118==COMMA||LA73_118==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_118);
-						if ( s>=0 ) return s;
-						break;
-
-					case 72 : 
-						int LA73_108 = input.LA(1);
-						 
-						int index73_108 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_108==COMMA||LA73_108==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_108);
-						if ( s>=0 ) return s;
-						break;
-
-					case 73 : 
-						int LA73_47 = input.LA(1);
-						 
-						int index73_47 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_47==COMMA||LA73_47==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_47);
-						if ( s>=0 ) return s;
-						break;
-
-					case 74 : 
-						int LA73_422 = input.LA(1);
-						 
-						int index73_422 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_422);
-						if ( s>=0 ) return s;
-						break;
-
-					case 75 : 
-						int LA73_335 = input.LA(1);
-						 
-						int index73_335 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_335);
-						if ( s>=0 ) return s;
-						break;
-
-					case 76 : 
-						int LA73_367 = input.LA(1);
-						 
-						int index73_367 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_367==COMMA||LA73_367==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_367);
-						if ( s>=0 ) return s;
-						break;
-
-					case 77 : 
-						int LA73_150 = input.LA(1);
-						 
-						int index73_150 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_150==COMMA||LA73_150==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_150);
-						if ( s>=0 ) return s;
-						break;
-
-					case 78 : 
-						int LA73_233 = input.LA(1);
-						 
-						int index73_233 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_233==COMMA||LA73_233==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_233);
-						if ( s>=0 ) return s;
-						break;
-
-					case 79 : 
-						int LA73_327 = input.LA(1);
-						 
-						int index73_327 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_327==COMMA||LA73_327==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_327);
-						if ( s>=0 ) return s;
-						break;
-
-					case 80 : 
-						int LA73_411 = input.LA(1);
-						 
-						int index73_411 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_411);
-						if ( s>=0 ) return s;
-						break;
-
-					case 81 : 
-						int LA73_436 = input.LA(1);
-						 
-						int index73_436 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_436);
-						if ( s>=0 ) return s;
-						break;
-
-					case 82 : 
-						int LA73_377 = input.LA(1);
-						 
-						int index73_377 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_377);
-						if ( s>=0 ) return s;
-						break;
-
-					case 83 : 
-						int LA73_342 = input.LA(1);
-						 
-						int index73_342 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_342);
-						if ( s>=0 ) return s;
-						break;
-
-					case 84 : 
-						int LA73_438 = input.LA(1);
-						 
-						int index73_438 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_438);
-						if ( s>=0 ) return s;
-						break;
-
-					case 85 : 
-						int LA73_140 = input.LA(1);
-						 
-						int index73_140 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_140==COMMA||LA73_140==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_140);
-						if ( s>=0 ) return s;
-						break;
-
-					case 86 : 
-						int LA73_295 = input.LA(1);
-						 
-						int index73_295 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_295==DOT) ) {s = 363;}
-						else if ( (LA73_295==COMMA) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_295);
-						if ( s>=0 ) return s;
-						break;
-
-					case 87 : 
-						int LA73_310 = input.LA(1);
-						 
-						int index73_310 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_310==COMMA||LA73_310==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_310);
-						if ( s>=0 ) return s;
-						break;
-
-					case 88 : 
-						int LA73_184 = input.LA(1);
-						 
-						int index73_184 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_184==COMMA||LA73_184==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_184);
-						if ( s>=0 ) return s;
-						break;
-
-					case 89 : 
-						int LA73_408 = input.LA(1);
-						 
-						int index73_408 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_408);
-						if ( s>=0 ) return s;
-						break;
-
-					case 90 : 
-						int LA73_363 = input.LA(1);
-						 
-						int index73_363 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_363==ID) ) {s = 413;}
-						else if ( (LA73_363==FTSWORD) ) {s = 333;}
-						else if ( (LA73_363==FTSPRE) ) {s = 334;}
-						else if ( (LA73_363==FTSWILD) ) {s = 335;}
-						else if ( (LA73_363==NOT) ) {s = 336;}
-						else if ( (LA73_363==TO) ) {s = 337;}
-						else if ( (LA73_363==DECIMAL_INTEGER_LITERAL) ) {s = 338;}
-						else if ( (LA73_363==FLOATING_POINT_LITERAL) ) {s = 339;}
-						else if ( (LA73_363==STAR) ) {s = 340;}
-						else if ( (LA73_363==QUESTION_MARK) ) {s = 341;}
-						else if ( (LA73_363==DATETIME) ) {s = 342;}
-						else if ( (LA73_363==URI) ) {s = 343;}
-						else if ( (LA73_363==TILDA) && (synpred44_FTS())) {s = 344;}
-						else if ( (LA73_363==CARAT) && (synpred44_FTS())) {s = 345;}
-						else if ( (LA73_363==AND) && (synpred44_FTS())) {s = 346;}
-						else if ( (LA73_363==AMP) && (synpred44_FTS())) {s = 347;}
-						else if ( (LA73_363==EOF) && (synpred44_FTS())) {s = 348;}
-						else if ( (LA73_363==RPAREN) && (synpred44_FTS())) {s = 349;}
-						else if ( (LA73_363==OR) && (synpred44_FTS())) {s = 350;}
-						else if ( (LA73_363==BAR) && (synpred44_FTS())) {s = 351;}
-						else if ( (LA73_363==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
-						else if ( (LA73_363==AT) && (synpred44_FTS())) {s = 353;}
-						else if ( (LA73_363==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
-						else if ( (LA73_363==LSQUARE) && (synpred44_FTS())) {s = 355;}
-						else if ( (LA73_363==LT) && (synpred44_FTS())) {s = 356;}
-						else if ( (LA73_363==COMMA||LA73_363==DOT) && (synpred44_FTS())) {s = 357;}
-						else if ( (LA73_363==EQUALS) && (synpred44_FTS())) {s = 358;}
-						else if ( (LA73_363==LPAREN) && (synpred44_FTS())) {s = 359;}
-						else if ( (LA73_363==PERCENT) && (synpred44_FTS())) {s = 360;}
-						else if ( (LA73_363==PLUS) && (synpred44_FTS())) {s = 361;}
-						else if ( (LA73_363==MINUS) && (synpred44_FTS())) {s = 362;}
-						 
-						input.seek(index73_363);
-						if ( s>=0 ) return s;
-						break;
-
-					case 91 : 
-						int LA73_268 = input.LA(1);
-						 
-						int index73_268 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_268==COMMA||LA73_268==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_268);
-						if ( s>=0 ) return s;
-						break;
-
-					case 92 : 
-						int LA73_142 = input.LA(1);
-						 
-						int index73_142 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_142==COMMA||LA73_142==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_142);
-						if ( s>=0 ) return s;
-						break;
-
-					case 93 : 
-						int LA73_114 = input.LA(1);
-						 
-						int index73_114 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_114==COMMA||LA73_114==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_114);
-						if ( s>=0 ) return s;
-						break;
-
-					case 94 : 
-						int LA73_43 = input.LA(1);
-						 
-						int index73_43 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_43==COMMA||LA73_43==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_43);
-						if ( s>=0 ) return s;
-						break;
-
-					case 95 : 
-						int LA73_141 = input.LA(1);
-						 
-						int index73_141 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_141==COMMA||LA73_141==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_141);
-						if ( s>=0 ) return s;
-						break;
-
-					case 96 : 
-						int LA73_366 = input.LA(1);
-						 
-						int index73_366 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_366==COMMA||LA73_366==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_366);
-						if ( s>=0 ) return s;
-						break;
-
-					case 97 : 
-						int LA73_320 = input.LA(1);
-						 
-						int index73_320 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_320==COMMA||LA73_320==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_320);
-						if ( s>=0 ) return s;
-						break;
-
-					case 98 : 
-						int LA73_423 = input.LA(1);
-						 
-						int index73_423 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_423);
-						if ( s>=0 ) return s;
-						break;
-
-					case 99 : 
-						int LA73_119 = input.LA(1);
-						 
-						int index73_119 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_119==COMMA||LA73_119==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_119);
-						if ( s>=0 ) return s;
-						break;
-
-					case 100 : 
-						int LA73_48 = input.LA(1);
-						 
-						int index73_48 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_48==COMMA||LA73_48==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_48);
-						if ( s>=0 ) return s;
-						break;
-
-					case 101 : 
-						int LA73_177 = input.LA(1);
-						 
-						int index73_177 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_177==COMMA||LA73_177==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_177);
-						if ( s>=0 ) return s;
-						break;
-
-					case 102 : 
-						int LA73_259 = input.LA(1);
-						 
-						int index73_259 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_259==ID) ) {s = 300;}
-						else if ( (LA73_259==FTSWORD) ) {s = 229;}
-						else if ( (LA73_259==FTSPRE) ) {s = 230;}
-						else if ( (LA73_259==FTSWILD) ) {s = 231;}
-						else if ( (LA73_259==NOT) ) {s = 232;}
-						else if ( (LA73_259==TO) ) {s = 233;}
-						else if ( (LA73_259==DECIMAL_INTEGER_LITERAL) ) {s = 234;}
-						else if ( (LA73_259==FLOATING_POINT_LITERAL) ) {s = 235;}
-						else if ( (LA73_259==STAR) ) {s = 236;}
-						else if ( (LA73_259==QUESTION_MARK) ) {s = 237;}
-						else if ( (LA73_259==DATETIME) ) {s = 238;}
-						else if ( (LA73_259==URI) ) {s = 239;}
-						else if ( (LA73_259==TILDA) && (synpred48_FTS())) {s = 240;}
-						else if ( (LA73_259==CARAT) && (synpred48_FTS())) {s = 241;}
-						else if ( (LA73_259==AND) && (synpred48_FTS())) {s = 242;}
-						else if ( (LA73_259==AMP) && (synpred48_FTS())) {s = 243;}
-						else if ( (LA73_259==EOF) && (synpred48_FTS())) {s = 244;}
-						else if ( (LA73_259==RPAREN) && (synpred48_FTS())) {s = 245;}
-						else if ( (LA73_259==OR) && (synpred48_FTS())) {s = 246;}
-						else if ( (LA73_259==BAR) && (synpred48_FTS())) {s = 247;}
-						else if ( (LA73_259==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
-						else if ( (LA73_259==AT) && (synpred48_FTS())) {s = 249;}
-						else if ( (LA73_259==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
-						else if ( (LA73_259==LSQUARE) && (synpred48_FTS())) {s = 251;}
-						else if ( (LA73_259==LT) && (synpred48_FTS())) {s = 252;}
-						else if ( (LA73_259==COMMA||LA73_259==DOT) && (synpred48_FTS())) {s = 253;}
-						else if ( (LA73_259==EQUALS) && (synpred48_FTS())) {s = 254;}
-						else if ( (LA73_259==LPAREN) && (synpred48_FTS())) {s = 255;}
-						else if ( (LA73_259==PERCENT) && (synpred48_FTS())) {s = 256;}
-						else if ( (LA73_259==PLUS) && (synpred48_FTS())) {s = 257;}
-						else if ( (LA73_259==MINUS) && (synpred48_FTS())) {s = 258;}
-						 
-						input.seek(index73_259);
-						if ( s>=0 ) return s;
-						break;
-
-					case 103 : 
-						int LA73_328 = input.LA(1);
-						 
-						int index73_328 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_328==COMMA||LA73_328==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_328);
-						if ( s>=0 ) return s;
-						break;
-
-					case 104 : 
-						int LA73_426 = input.LA(1);
-						 
-						int index73_426 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_426==ID) ) {s = 451;}
-						else if ( (LA73_426==FTSWORD) ) {s = 415;}
-						else if ( (LA73_426==FTSPRE) ) {s = 416;}
-						else if ( (LA73_426==FTSWILD) ) {s = 417;}
-						else if ( (LA73_426==NOT) ) {s = 418;}
-						else if ( (LA73_426==TO) ) {s = 419;}
-						else if ( (LA73_426==DECIMAL_INTEGER_LITERAL) ) {s = 420;}
-						else if ( (LA73_426==FLOATING_POINT_LITERAL) ) {s = 421;}
-						else if ( (LA73_426==STAR) ) {s = 422;}
-						else if ( (LA73_426==QUESTION_MARK) ) {s = 423;}
-						else if ( (LA73_426==DATETIME) ) {s = 424;}
-						else if ( (LA73_426==URI) ) {s = 425;}
-						else if ( (LA73_426==TILDA) && (synpred44_FTS())) {s = 344;}
-						else if ( (LA73_426==CARAT) && (synpred44_FTS())) {s = 345;}
-						else if ( (LA73_426==AND) && (synpred44_FTS())) {s = 346;}
-						else if ( (LA73_426==AMP) && (synpred44_FTS())) {s = 347;}
-						else if ( (LA73_426==EOF) && (synpred44_FTS())) {s = 348;}
-						else if ( (LA73_426==RPAREN) && (synpred44_FTS())) {s = 349;}
-						else if ( (LA73_426==OR) && (synpred44_FTS())) {s = 350;}
-						else if ( (LA73_426==BAR) && (synpred44_FTS())) {s = 351;}
-						else if ( (LA73_426==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
-						else if ( (LA73_426==AT) && (synpred44_FTS())) {s = 353;}
-						else if ( (LA73_426==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
-						else if ( (LA73_426==LSQUARE) && (synpred44_FTS())) {s = 355;}
-						else if ( (LA73_426==LT) && (synpred44_FTS())) {s = 356;}
-						else if ( (LA73_426==COMMA||LA73_426==DOT) && (synpred44_FTS())) {s = 357;}
-						else if ( (LA73_426==EQUALS) && (synpred44_FTS())) {s = 358;}
-						else if ( (LA73_426==LPAREN) && (synpred44_FTS())) {s = 359;}
-						else if ( (LA73_426==PERCENT) && (synpred44_FTS())) {s = 360;}
-						else if ( (LA73_426==PLUS) && (synpred44_FTS())) {s = 361;}
-						else if ( (LA73_426==MINUS) && (synpred44_FTS())) {s = 362;}
-						 
-						input.seek(index73_426);
-						if ( s>=0 ) return s;
-						break;
-
-					case 105 : 
-						int LA73_301 = input.LA(1);
-						 
-						int index73_301 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_301==COMMA||LA73_301==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_301);
-						if ( s>=0 ) return s;
-						break;
-
-					case 106 : 
-						int LA73_149 = input.LA(1);
-						 
-						int index73_149 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_149==COMMA||LA73_149==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_149);
-						if ( s>=0 ) return s;
-						break;
-
-					case 107 : 
-						int LA73_139 = input.LA(1);
-						 
-						int index73_139 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_139==COMMA||LA73_139==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_139);
-						if ( s>=0 ) return s;
-						break;
-
-					case 108 : 
-						int LA73_82 = input.LA(1);
-						 
-						int index73_82 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_82==COMMA||LA73_82==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_82);
-						if ( s>=0 ) return s;
-						break;
-
-					case 109 : 
-						int LA73_412 = input.LA(1);
-						 
-						int index73_412 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_412);
-						if ( s>=0 ) return s;
-						break;
-
-					case 110 : 
-						int LA73_433 = input.LA(1);
-						 
-						int index73_433 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_433);
-						if ( s>=0 ) return s;
-						break;
-
-					case 111 : 
-						int LA73_300 = input.LA(1);
-						 
-						int index73_300 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_300==COMMA||LA73_300==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_300);
-						if ( s>=0 ) return s;
-						break;
-
-					case 112 : 
-						int LA73_364 = input.LA(1);
-						 
-						int index73_364 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_364==ID) ) {s = 414;}
-						else if ( (LA73_364==FTSWORD) ) {s = 415;}
-						else if ( (LA73_364==FTSPRE) ) {s = 416;}
-						else if ( (LA73_364==FTSWILD) ) {s = 417;}
-						else if ( (LA73_364==NOT) ) {s = 418;}
-						else if ( (LA73_364==TO) ) {s = 419;}
-						else if ( (LA73_364==DECIMAL_INTEGER_LITERAL) ) {s = 420;}
-						else if ( (LA73_364==FLOATING_POINT_LITERAL) ) {s = 421;}
-						else if ( (LA73_364==STAR) ) {s = 422;}
-						else if ( (LA73_364==QUESTION_MARK) ) {s = 423;}
-						else if ( (LA73_364==DATETIME) ) {s = 424;}
-						else if ( (LA73_364==URI) ) {s = 425;}
-						else if ( (LA73_364==TILDA) && (synpred44_FTS())) {s = 344;}
-						else if ( (LA73_364==CARAT) && (synpred44_FTS())) {s = 345;}
-						else if ( (LA73_364==AND) && (synpred44_FTS())) {s = 346;}
-						else if ( (LA73_364==AMP) && (synpred44_FTS())) {s = 347;}
-						else if ( (LA73_364==EOF) && (synpred44_FTS())) {s = 348;}
-						else if ( (LA73_364==RPAREN) && (synpred44_FTS())) {s = 349;}
-						else if ( (LA73_364==OR) && (synpred44_FTS())) {s = 350;}
-						else if ( (LA73_364==BAR) && (synpred44_FTS())) {s = 351;}
-						else if ( (LA73_364==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
-						else if ( (LA73_364==AT) && (synpred44_FTS())) {s = 353;}
-						else if ( (LA73_364==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
-						else if ( (LA73_364==LSQUARE) && (synpred44_FTS())) {s = 355;}
-						else if ( (LA73_364==LT) && (synpred44_FTS())) {s = 356;}
-						else if ( (LA73_364==COMMA||LA73_364==DOT) && (synpred44_FTS())) {s = 357;}
-						else if ( (LA73_364==EQUALS) && (synpred44_FTS())) {s = 358;}
-						else if ( (LA73_364==LPAREN) && (synpred44_FTS())) {s = 359;}
-						else if ( (LA73_364==PERCENT) && (synpred44_FTS())) {s = 360;}
-						else if ( (LA73_364==PLUS) && (synpred44_FTS())) {s = 361;}
-						else if ( (LA73_364==MINUS) && (synpred44_FTS())) {s = 362;}
-						 
-						input.seek(index73_364);
-						if ( s>=0 ) return s;
-						break;
-
-					case 113 : 
-						int LA73_125 = input.LA(1);
-						 
-						int index73_125 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_125==COMMA||LA73_125==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_125);
-						if ( s>=0 ) return s;
-						break;
-
-					case 114 : 
-						int LA73_220 = input.LA(1);
-						 
-						int index73_220 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_220==COMMA||LA73_220==DOT) ) {s = 260;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_220);
-						if ( s>=0 ) return s;
-						break;
-
-					case 115 : 
-						int LA73_370 = input.LA(1);
-						 
-						int index73_370 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_370);
-						if ( s>=0 ) return s;
-						break;
-
-					case 116 : 
-						int LA73_136 = input.LA(1);
-						 
-						int index73_136 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_136==COMMA||LA73_136==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_136);
-						if ( s>=0 ) return s;
-						break;
-
-					case 117 : 
-						int LA73_79 = input.LA(1);
-						 
-						int index73_79 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_79==COMMA||LA73_79==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_79);
-						if ( s>=0 ) return s;
-						break;
-
-					case 118 : 
-						int LA73_292 = input.LA(1);
-						 
-						int index73_292 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_292==ID) ) {s = 319;}
-						else if ( (LA73_292==FTSWORD) ) {s = 262;}
-						else if ( (LA73_292==FTSPRE) ) {s = 263;}
-						else if ( (LA73_292==FTSWILD) ) {s = 264;}
-						else if ( (LA73_292==NOT) ) {s = 265;}
-						else if ( (LA73_292==TO) ) {s = 266;}
-						else if ( (LA73_292==DECIMAL_INTEGER_LITERAL) ) {s = 267;}
-						else if ( (LA73_292==FLOATING_POINT_LITERAL) ) {s = 268;}
-						else if ( (LA73_292==STAR) ) {s = 269;}
-						else if ( (LA73_292==QUESTION_MARK) ) {s = 270;}
-						else if ( (LA73_292==DATETIME) ) {s = 271;}
-						else if ( (LA73_292==URI) ) {s = 272;}
-						else if ( (LA73_292==TILDA) && (synpred47_FTS())) {s = 273;}
-						else if ( (LA73_292==CARAT) && (synpred47_FTS())) {s = 274;}
-						else if ( (LA73_292==AND) && (synpred47_FTS())) {s = 275;}
-						else if ( (LA73_292==AMP) && (synpred47_FTS())) {s = 276;}
-						else if ( (LA73_292==EOF) && (synpred47_FTS())) {s = 277;}
-						else if ( (LA73_292==RPAREN) && (synpred47_FTS())) {s = 278;}
-						else if ( (LA73_292==OR) && (synpred47_FTS())) {s = 279;}
-						else if ( (LA73_292==BAR) && (synpred47_FTS())) {s = 280;}
-						else if ( (LA73_292==EXCLAMATION) && (synpred47_FTS())) {s = 281;}
-						else if ( (LA73_292==AT) && (synpred47_FTS())) {s = 282;}
-						else if ( (LA73_292==FTSPHRASE) && (synpred47_FTS())) {s = 283;}
-						else if ( (LA73_292==LSQUARE) && (synpred47_FTS())) {s = 284;}
-						else if ( (LA73_292==LT) && (synpred47_FTS())) {s = 285;}
-						else if ( (LA73_292==COMMA||LA73_292==DOT) && (synpred47_FTS())) {s = 286;}
-						else if ( (LA73_292==EQUALS) && (synpred47_FTS())) {s = 287;}
-						else if ( (LA73_292==LPAREN) && (synpred47_FTS())) {s = 288;}
-						else if ( (LA73_292==PERCENT) && (synpred47_FTS())) {s = 289;}
-						else if ( (LA73_292==PLUS) && (synpred47_FTS())) {s = 290;}
-						else if ( (LA73_292==MINUS) && (synpred47_FTS())) {s = 291;}
-						 
-						input.seek(index73_292);
-						if ( s>=0 ) return s;
-						break;
-
-					case 119 : 
-						int LA73_124 = input.LA(1);
-						 
-						int index73_124 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_124==DOT) ) {s = 208;}
-						else if ( (LA73_124==COMMA) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_124);
-						if ( s>=0 ) return s;
-						break;
-
-					case 120 : 
-						int LA73_376 = input.LA(1);
-						 
-						int index73_376 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_376);
-						if ( s>=0 ) return s;
-						break;
-
-					case 121 : 
-						int LA73_325 = input.LA(1);
-						 
-						int index73_325 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_325==COMMA||LA73_325==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_325);
-						if ( s>=0 ) return s;
-						break;
-
-					case 122 : 
-						int LA73_183 = input.LA(1);
-						 
-						int index73_183 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_183==COMMA||LA73_183==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_183);
-						if ( s>=0 ) return s;
-						break;
-
-					case 123 : 
-						int LA73_138 = input.LA(1);
-						 
-						int index73_138 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_138==COMMA||LA73_138==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_138);
-						if ( s>=0 ) return s;
-						break;
-
-					case 124 : 
-						int LA73_81 = input.LA(1);
-						 
-						int index73_81 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_81==COMMA||LA73_81==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_81);
-						if ( s>=0 ) return s;
-						break;
-
-					case 125 : 
-						int LA73_230 = input.LA(1);
-						 
-						int index73_230 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_230==COMMA||LA73_230==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_230);
-						if ( s>=0 ) return s;
-						break;
-
-					case 126 : 
-						int LA73_299 = input.LA(1);
-						 
-						int index73_299 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_299==COMMA||LA73_299==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_299);
-						if ( s>=0 ) return s;
-						break;
-
-					case 127 : 
-						int LA73_431 = input.LA(1);
-						 
-						int index73_431 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_431);
-						if ( s>=0 ) return s;
-						break;
-
-					case 128 : 
-						int LA73_338 = input.LA(1);
-						 
-						int index73_338 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_338);
-						if ( s>=0 ) return s;
-						break;
-
-					case 129 : 
-						int LA73_452 = input.LA(1);
-						 
-						int index73_452 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_452);
-						if ( s>=0 ) return s;
-						break;
-
-					case 130 : 
-						int LA73_456 = input.LA(1);
-						 
-						int index73_456 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_456);
-						if ( s>=0 ) return s;
-						break;
-
-					case 131 : 
-						int LA73_402 = input.LA(1);
-						 
-						int index73_402 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_402==ID) ) {s = 433;}
-						else if ( (LA73_402==FTSWORD) ) {s = 434;}
-						else if ( (LA73_402==FTSPRE) ) {s = 435;}
-						else if ( (LA73_402==FTSWILD) ) {s = 436;}
-						else if ( (LA73_402==NOT) ) {s = 437;}
-						else if ( (LA73_402==TO) ) {s = 438;}
-						else if ( (LA73_402==DECIMAL_INTEGER_LITERAL) ) {s = 439;}
-						else if ( (LA73_402==FLOATING_POINT_LITERAL) ) {s = 440;}
-						else if ( (LA73_402==STAR) ) {s = 441;}
-						else if ( (LA73_402==QUESTION_MARK) ) {s = 442;}
-						else if ( (LA73_402==DATETIME) ) {s = 443;}
-						else if ( (LA73_402==URI) ) {s = 444;}
-						else if ( (LA73_402==TILDA) && (synpred43_FTS())) {s = 382;}
-						else if ( (LA73_402==CARAT) && (synpred43_FTS())) {s = 383;}
-						else if ( (LA73_402==AND) && (synpred43_FTS())) {s = 384;}
-						else if ( (LA73_402==AMP) && (synpred43_FTS())) {s = 385;}
-						else if ( (LA73_402==EOF) && (synpred43_FTS())) {s = 386;}
-						else if ( (LA73_402==RPAREN) && (synpred43_FTS())) {s = 387;}
-						else if ( (LA73_402==OR) && (synpred43_FTS())) {s = 388;}
-						else if ( (LA73_402==BAR) && (synpred43_FTS())) {s = 389;}
-						else if ( (LA73_402==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
-						else if ( (LA73_402==AT) && (synpred43_FTS())) {s = 391;}
-						else if ( (LA73_402==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
-						else if ( (LA73_402==LSQUARE) && (synpred43_FTS())) {s = 393;}
-						else if ( (LA73_402==LT) && (synpred43_FTS())) {s = 394;}
-						else if ( (LA73_402==COMMA||LA73_402==DOT) && (synpred43_FTS())) {s = 395;}
-						else if ( (LA73_402==EQUALS) && (synpred43_FTS())) {s = 396;}
-						else if ( (LA73_402==LPAREN) && (synpred43_FTS())) {s = 397;}
-						else if ( (LA73_402==PERCENT) && (synpred43_FTS())) {s = 398;}
-						else if ( (LA73_402==PLUS) && (synpred43_FTS())) {s = 399;}
-						else if ( (LA73_402==MINUS) && (synpred43_FTS())) {s = 400;}
-						 
-						input.seek(index73_402);
-						if ( s>=0 ) return s;
-						break;
-
-					case 132 : 
-						int LA73_147 = input.LA(1);
-						 
-						int index73_147 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_147==COMMA||LA73_147==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
-						 
-						input.seek(index73_147);
-						if ( s>=0 ) return s;
-						break;
-
-					case 133 : 
-						int LA73_231 = input.LA(1);
-						 
-						int index73_231 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_231==COMMA||LA73_231==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_231);
-						if ( s>=0 ) return s;
-						break;
-
-					case 134 : 
-						int LA73_427 = input.LA(1);
-						 
-						int index73_427 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_427);
-						if ( s>=0 ) return s;
-						break;
-
-					case 135 : 
-						int LA73_261 = input.LA(1);
-						 
-						int index73_261 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_261==COMMA||LA73_261==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_261);
-						if ( s>=0 ) return s;
-						break;
-
-					case 136 : 
-						int LA73_315 = input.LA(1);
-						 
-						int index73_315 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_315==COMMA||LA73_315==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_315);
-						if ( s>=0 ) return s;
-						break;
-
-					case 137 : 
-						int LA73_238 = input.LA(1);
-						 
-						int index73_238 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_238==COMMA||LA73_238==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_238);
-						if ( s>=0 ) return s;
-						break;
-
-					case 138 : 
-						int LA73_409 = input.LA(1);
-						 
-						int index73_409 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_409);
-						if ( s>=0 ) return s;
-						break;
-
-					case 139 : 
-						int LA73_374 = input.LA(1);
-						 
-						int index73_374 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_374);
-						if ( s>=0 ) return s;
-						break;
-
-					case 140 : 
+					case 1 : 
 						int LA73_221 = input.LA(1);
 						 
 						int index73_221 = input.index();
@@ -24230,121 +21971,48 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 141 : 
-						int LA73_260 = input.LA(1);
+					case 2 : 
+						int LA73_372 = input.LA(1);
 						 
-						int index73_260 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_260==ID) ) {s = 301;}
-						else if ( (LA73_260==FTSWORD) ) {s = 302;}
-						else if ( (LA73_260==FTSPRE) ) {s = 303;}
-						else if ( (LA73_260==FTSWILD) ) {s = 304;}
-						else if ( (LA73_260==NOT) ) {s = 305;}
-						else if ( (LA73_260==TO) ) {s = 306;}
-						else if ( (LA73_260==DECIMAL_INTEGER_LITERAL) ) {s = 307;}
-						else if ( (LA73_260==FLOATING_POINT_LITERAL) ) {s = 308;}
-						else if ( (LA73_260==STAR) ) {s = 309;}
-						else if ( (LA73_260==QUESTION_MARK) ) {s = 310;}
-						else if ( (LA73_260==DATETIME) ) {s = 311;}
-						else if ( (LA73_260==URI) ) {s = 312;}
-						else if ( (LA73_260==TILDA) && (synpred48_FTS())) {s = 240;}
-						else if ( (LA73_260==CARAT) && (synpred48_FTS())) {s = 241;}
-						else if ( (LA73_260==AND) && (synpred48_FTS())) {s = 242;}
-						else if ( (LA73_260==AMP) && (synpred48_FTS())) {s = 243;}
-						else if ( (LA73_260==EOF) && (synpred48_FTS())) {s = 244;}
-						else if ( (LA73_260==RPAREN) && (synpred48_FTS())) {s = 245;}
-						else if ( (LA73_260==OR) && (synpred48_FTS())) {s = 246;}
-						else if ( (LA73_260==BAR) && (synpred48_FTS())) {s = 247;}
-						else if ( (LA73_260==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
-						else if ( (LA73_260==AT) && (synpred48_FTS())) {s = 249;}
-						else if ( (LA73_260==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
-						else if ( (LA73_260==LSQUARE) && (synpred48_FTS())) {s = 251;}
-						else if ( (LA73_260==LT) && (synpred48_FTS())) {s = 252;}
-						else if ( (LA73_260==COMMA||LA73_260==DOT) && (synpred48_FTS())) {s = 253;}
-						else if ( (LA73_260==EQUALS) && (synpred48_FTS())) {s = 254;}
-						else if ( (LA73_260==LPAREN) && (synpred48_FTS())) {s = 255;}
-						else if ( (LA73_260==PERCENT) && (synpred48_FTS())) {s = 256;}
-						else if ( (LA73_260==PLUS) && (synpred48_FTS())) {s = 257;}
-						else if ( (LA73_260==MINUS) && (synpred48_FTS())) {s = 258;}
-						 
-						input.seek(index73_260);
-						if ( s>=0 ) return s;
-						break;
-
-					case 142 : 
-						int LA73_267 = input.LA(1);
-						 
-						int index73_267 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_267==COMMA||LA73_267==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_267);
-						if ( s>=0 ) return s;
-						break;
-
-					case 143 : 
-						int LA73_109 = input.LA(1);
-						 
-						int index73_109 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_109==COMMA||LA73_109==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_109);
-						if ( s>=0 ) return s;
-						break;
-
-					case 144 : 
-						int LA73_131 = input.LA(1);
-						 
-						int index73_131 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_131==COMMA||LA73_131==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_131);
-						if ( s>=0 ) return s;
-						break;
-
-					case 145 : 
-						int LA73_74 = input.LA(1);
-						 
-						int index73_74 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_74==COMMA||LA73_74==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_74);
-						if ( s>=0 ) return s;
-						break;
-
-					case 146 : 
-						int LA73_443 = input.LA(1);
-						 
-						int index73_443 = input.index();
+						int index73_372 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred41_FTS()) ) {s = 209;}
 						else if ( (synpred43_FTS()) ) {s = 400;}
 						 
-						input.seek(index73_443);
+						input.seek(index73_372);
 						if ( s>=0 ) return s;
 						break;
 
-					case 147 : 
+					case 3 : 
+						int LA73_327 = input.LA(1);
+						 
+						int index73_327 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_327==COMMA||LA73_327==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_327);
+						if ( s>=0 ) return s;
+						break;
+
+					case 4 : 
+						int LA73_234 = input.LA(1);
+						 
+						int index73_234 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_234==COMMA||LA73_234==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_234);
+						if ( s>=0 ) return s;
+						break;
+
+					case 5 : 
 						int LA73_415 = input.LA(1);
 						 
 						int index73_415 = input.index();
@@ -24357,564 +22025,129 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 148 : 
-						int LA73_294 = input.LA(1);
+					case 6 : 
+						int LA73_436 = input.LA(1);
 						 
-						int index73_294 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_294==ID) ) {s = 332;}
-						else if ( (LA73_294==FTSWORD) ) {s = 333;}
-						else if ( (LA73_294==FTSPRE) ) {s = 334;}
-						else if ( (LA73_294==FTSWILD) ) {s = 335;}
-						else if ( (LA73_294==NOT) ) {s = 336;}
-						else if ( (LA73_294==TO) ) {s = 337;}
-						else if ( (LA73_294==DECIMAL_INTEGER_LITERAL) ) {s = 338;}
-						else if ( (LA73_294==FLOATING_POINT_LITERAL) ) {s = 339;}
-						else if ( (LA73_294==STAR) ) {s = 340;}
-						else if ( (LA73_294==QUESTION_MARK) ) {s = 341;}
-						else if ( (LA73_294==DATETIME) ) {s = 342;}
-						else if ( (LA73_294==URI) ) {s = 343;}
-						else if ( (LA73_294==TILDA) && (synpred44_FTS())) {s = 344;}
-						else if ( (LA73_294==CARAT) && (synpred44_FTS())) {s = 345;}
-						else if ( (LA73_294==AND) && (synpred44_FTS())) {s = 346;}
-						else if ( (LA73_294==AMP) && (synpred44_FTS())) {s = 347;}
-						else if ( (LA73_294==EOF) && (synpred44_FTS())) {s = 348;}
-						else if ( (LA73_294==RPAREN) && (synpred44_FTS())) {s = 349;}
-						else if ( (LA73_294==OR) && (synpred44_FTS())) {s = 350;}
-						else if ( (LA73_294==BAR) && (synpred44_FTS())) {s = 351;}
-						else if ( (LA73_294==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
-						else if ( (LA73_294==AT) && (synpred44_FTS())) {s = 353;}
-						else if ( (LA73_294==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
-						else if ( (LA73_294==LSQUARE) && (synpred44_FTS())) {s = 355;}
-						else if ( (LA73_294==LT) && (synpred44_FTS())) {s = 356;}
-						else if ( (LA73_294==COMMA||LA73_294==DOT) && (synpred44_FTS())) {s = 357;}
-						else if ( (LA73_294==EQUALS) && (synpred44_FTS())) {s = 358;}
-						else if ( (LA73_294==LPAREN) && (synpred44_FTS())) {s = 359;}
-						else if ( (LA73_294==PERCENT) && (synpred44_FTS())) {s = 360;}
-						else if ( (LA73_294==PLUS) && (synpred44_FTS())) {s = 361;}
-						else if ( (LA73_294==MINUS) && (synpred44_FTS())) {s = 362;}
-						 
-						input.seek(index73_294);
-						if ( s>=0 ) return s;
-						break;
-
-					case 149 : 
-						int LA73_434 = input.LA(1);
-						 
-						int index73_434 = input.index();
+						int index73_436 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred41_FTS()) ) {s = 209;}
 						else if ( (synpred43_FTS()) ) {s = 400;}
 						 
-						input.seek(index73_434);
+						input.seek(index73_436);
 						if ( s>=0 ) return s;
 						break;
 
-					case 150 : 
-						int LA73_306 = input.LA(1);
+					case 7 : 
+						int LA73_366 = input.LA(1);
 						 
-						int index73_306 = input.index();
+						int index73_366 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_306==COMMA||LA73_306==DOT) ) {s = 364;}
+						if ( (LA73_366==COMMA||LA73_366==DOT) ) {s = 364;}
 						else if ( (synpred46_FTS()) ) {s = 174;}
 						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_306);
+						input.seek(index73_366);
 						if ( s>=0 ) return s;
 						break;
 
-					case 151 : 
-						int LA73_236 = input.LA(1);
+					case 8 : 
+						int LA73_333 = input.LA(1);
 						 
-						int index73_236 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_236==COMMA||LA73_236==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_236);
-						if ( s>=0 ) return s;
-						break;
-
-					case 152 : 
-						int LA73_416 = input.LA(1);
-						 
-						int index73_416 = input.index();
+						int index73_333 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred42_FTS()) ) {s = 172;}
 						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_416);
+						input.seek(index73_333);
 						if ( s>=0 ) return s;
 						break;
 
-					case 153 : 
-						int LA73_182 = input.LA(1);
+					case 9 : 
+						int LA73_437 = input.LA(1);
 						 
-						int index73_182 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_182==COMMA||LA73_182==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_182);
-						if ( s>=0 ) return s;
-						break;
-
-					case 154 : 
-						int LA73_379 = input.LA(1);
-						 
-						int index73_379 = input.index();
+						int index73_437 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred41_FTS()) ) {s = 209;}
 						else if ( (synpred43_FTS()) ) {s = 400;}
 						 
-						input.seek(index73_379);
+						input.seek(index73_437);
 						if ( s>=0 ) return s;
 						break;
 
-					case 155 : 
-						int LA73_302 = input.LA(1);
+					case 10 : 
+						int LA73_150 = input.LA(1);
 						 
-						int index73_302 = input.index();
+						int index73_150 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_302==COMMA||LA73_302==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_302);
-						if ( s>=0 ) return s;
-						break;
-
-					case 156 : 
-						int LA73_326 = input.LA(1);
-						 
-						int index73_326 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_326==COMMA||LA73_326==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_326);
-						if ( s>=0 ) return s;
-						break;
-
-					case 157 : 
-						int LA73_339 = input.LA(1);
-						 
-						int index73_339 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_339);
-						if ( s>=0 ) return s;
-						break;
-
-					case 158 : 
-						int LA73_229 = input.LA(1);
-						 
-						int index73_229 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_229==COMMA||LA73_229==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_229);
-						if ( s>=0 ) return s;
-						break;
-
-					case 159 : 
-						int LA73_430 = input.LA(1);
-						 
-						int index73_430 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_430);
-						if ( s>=0 ) return s;
-						break;
-
-					case 160 : 
-						int LA73_418 = input.LA(1);
-						 
-						int index73_418 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_418);
-						if ( s>=0 ) return s;
-						break;
-
-					case 161 : 
-						int LA73_404 = input.LA(1);
-						 
-						int index73_404 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_404==COMMA||LA73_404==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_404);
-						if ( s>=0 ) return s;
-						break;
-
-					case 162 : 
-						int LA73_72 = input.LA(1);
-						 
-						int index73_72 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_72==COMMA||LA73_72==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_72);
-						if ( s>=0 ) return s;
-						break;
-
-					case 163 : 
-						int LA73_130 = input.LA(1);
-						 
-						int index73_130 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_130==COMMA||LA73_130==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_130);
-						if ( s>=0 ) return s;
-						break;
-
-					case 164 : 
-						int LA73_73 = input.LA(1);
-						 
-						int index73_73 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_73==COMMA||LA73_73==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_73);
-						if ( s>=0 ) return s;
-						break;
-
-					case 165 : 
-						int LA73_298 = input.LA(1);
-						 
-						int index73_298 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_298==COMMA||LA73_298==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_298);
-						if ( s>=0 ) return s;
-						break;
-
-					case 166 : 
-						int LA73_457 = input.LA(1);
-						 
-						int index73_457 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_457);
-						if ( s>=0 ) return s;
-						break;
-
-					case 167 : 
-						int LA73_148 = input.LA(1);
-						 
-						int index73_148 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_148==COMMA||LA73_148==DOT) ) {s = 214;}
+						if ( (LA73_150==COMMA||LA73_150==DOT) ) {s = 214;}
 						else if ( (synpred50_FTS()) ) {s = 176;}
 						else if ( (synpred52_FTS()) ) {s = 170;}
 						 
-						input.seek(index73_148);
+						input.seek(index73_150);
 						if ( s>=0 ) return s;
 						break;
 
-					case 168 : 
-						int LA73_26 = input.LA(1);
+					case 11 : 
+						int LA73_336 = input.LA(1);
 						 
-						int index73_26 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_26==ID) ) {s = 40;}
-						else if ( (LA73_26==FTSWORD) ) {s = 41;}
-						else if ( (LA73_26==FTSPRE) ) {s = 42;}
-						else if ( (LA73_26==FTSWILD) ) {s = 43;}
-						else if ( (LA73_26==NOT) ) {s = 44;}
-						else if ( (LA73_26==TO) ) {s = 45;}
-						else if ( (LA73_26==DECIMAL_INTEGER_LITERAL) ) {s = 46;}
-						else if ( (LA73_26==FLOATING_POINT_LITERAL) ) {s = 47;}
-						else if ( (LA73_26==STAR) ) {s = 48;}
-						else if ( (LA73_26==QUESTION_MARK) ) {s = 49;}
-						else if ( (LA73_26==DATETIME) ) {s = 50;}
-						else if ( (LA73_26==URI) ) {s = 51;}
-						else if ( (LA73_26==TILDA) && (synpred56_FTS())) {s = 52;}
-						else if ( (LA73_26==CARAT) && (synpred56_FTS())) {s = 53;}
-						else if ( (LA73_26==AND) && (synpred56_FTS())) {s = 54;}
-						else if ( (LA73_26==AMP) && (synpred56_FTS())) {s = 55;}
-						else if ( (LA73_26==EOF) && (synpred56_FTS())) {s = 56;}
-						else if ( (LA73_26==RPAREN) && (synpred56_FTS())) {s = 57;}
-						else if ( (LA73_26==OR) && (synpred56_FTS())) {s = 58;}
-						else if ( (LA73_26==BAR) && (synpred56_FTS())) {s = 59;}
-						else if ( (LA73_26==EXCLAMATION) && (synpred56_FTS())) {s = 60;}
-						else if ( (LA73_26==AT) && (synpred56_FTS())) {s = 61;}
-						else if ( (LA73_26==FTSPHRASE) && (synpred56_FTS())) {s = 62;}
-						else if ( (LA73_26==LSQUARE) && (synpred56_FTS())) {s = 63;}
-						else if ( (LA73_26==LT) && (synpred56_FTS())) {s = 64;}
-						else if ( (LA73_26==COMMA||LA73_26==DOT) && (synpred56_FTS())) {s = 65;}
-						else if ( (LA73_26==EQUALS) && (synpred56_FTS())) {s = 66;}
-						else if ( (LA73_26==LPAREN) && (synpred56_FTS())) {s = 67;}
-						else if ( (LA73_26==PERCENT) && (synpred56_FTS())) {s = 68;}
-						else if ( (LA73_26==PLUS) && (synpred56_FTS())) {s = 69;}
-						else if ( (LA73_26==MINUS) && (synpred56_FTS())) {s = 70;}
-						 
-						input.seek(index73_26);
-						if ( s>=0 ) return s;
-						break;
-
-					case 169 : 
-						int LA73_410 = input.LA(1);
-						 
-						int index73_410 = input.index();
+						int index73_336 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred42_FTS()) ) {s = 172;}
 						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_410);
+						input.seek(index73_336);
 						if ( s>=0 ) return s;
 						break;
 
-					case 170 : 
-						int LA73_318 = input.LA(1);
+					case 12 : 
+						int LA73_40 = input.LA(1);
 						 
-						int index73_318 = input.index();
+						int index73_40 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_318==COMMA||LA73_318==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
+						if ( (LA73_40==COMMA||LA73_40==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
 						 
-						input.seek(index73_318);
+						input.seek(index73_40);
 						if ( s>=0 ) return s;
 						break;
 
-					case 171 : 
-						int LA73_208 = input.LA(1);
+					case 13 : 
+						int LA73_140 = input.LA(1);
 						 
-						int index73_208 = input.index();
+						int index73_140 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_208==ID) ) {s = 227;}
-						else if ( (LA73_208==FTSWORD) ) {s = 178;}
-						else if ( (LA73_208==FTSPRE) ) {s = 179;}
-						else if ( (LA73_208==FTSWILD) ) {s = 180;}
-						else if ( (LA73_208==NOT) ) {s = 181;}
-						else if ( (LA73_208==TO) ) {s = 182;}
-						else if ( (LA73_208==DECIMAL_INTEGER_LITERAL) ) {s = 183;}
-						else if ( (LA73_208==FLOATING_POINT_LITERAL) ) {s = 184;}
-						else if ( (LA73_208==STAR) ) {s = 185;}
-						else if ( (LA73_208==QUESTION_MARK) ) {s = 186;}
-						else if ( (LA73_208==DATETIME) ) {s = 187;}
-						else if ( (LA73_208==URI) ) {s = 188;}
-						else if ( (LA73_208==TILDA) && (synpred51_FTS())) {s = 189;}
-						else if ( (LA73_208==CARAT) && (synpred51_FTS())) {s = 190;}
-						else if ( (LA73_208==AND) && (synpred51_FTS())) {s = 191;}
-						else if ( (LA73_208==AMP) && (synpred51_FTS())) {s = 192;}
-						else if ( (LA73_208==EOF) && (synpred51_FTS())) {s = 193;}
-						else if ( (LA73_208==RPAREN) && (synpred51_FTS())) {s = 194;}
-						else if ( (LA73_208==OR) && (synpred51_FTS())) {s = 195;}
-						else if ( (LA73_208==BAR) && (synpred51_FTS())) {s = 196;}
-						else if ( (LA73_208==EXCLAMATION) && (synpred51_FTS())) {s = 197;}
-						else if ( (LA73_208==AT) && (synpred51_FTS())) {s = 198;}
-						else if ( (LA73_208==FTSPHRASE) && (synpred51_FTS())) {s = 199;}
-						else if ( (LA73_208==LSQUARE) && (synpred51_FTS())) {s = 200;}
-						else if ( (LA73_208==LT) && (synpred51_FTS())) {s = 201;}
-						else if ( (LA73_208==COMMA||LA73_208==DOT) && (synpred51_FTS())) {s = 202;}
-						else if ( (LA73_208==EQUALS) && (synpred51_FTS())) {s = 203;}
-						else if ( (LA73_208==LPAREN) && (synpred51_FTS())) {s = 204;}
-						else if ( (LA73_208==PERCENT) && (synpred51_FTS())) {s = 205;}
-						else if ( (LA73_208==PLUS) && (synpred51_FTS())) {s = 206;}
-						else if ( (LA73_208==MINUS) && (synpred51_FTS())) {s = 207;}
-						 
-						input.seek(index73_208);
-						if ( s>=0 ) return s;
-						break;
-
-					case 172 : 
-						int LA73_307 = input.LA(1);
-						 
-						int index73_307 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_307==COMMA||LA73_307==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_307);
-						if ( s>=0 ) return s;
-						break;
-
-					case 173 : 
-						int LA73_332 = input.LA(1);
-						 
-						int index73_332 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_332);
-						if ( s>=0 ) return s;
-						break;
-
-					case 174 : 
-						int LA73_71 = input.LA(1);
-						 
-						int index73_71 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_71==ID) ) {s = 111;}
-						else if ( (LA73_71==FTSWORD) ) {s = 112;}
-						else if ( (LA73_71==FTSPRE) ) {s = 113;}
-						else if ( (LA73_71==FTSWILD) ) {s = 114;}
-						else if ( (LA73_71==NOT) ) {s = 115;}
-						else if ( (LA73_71==TO) ) {s = 116;}
-						else if ( (LA73_71==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
-						else if ( (LA73_71==FLOATING_POINT_LITERAL) ) {s = 118;}
-						else if ( (LA73_71==STAR) ) {s = 119;}
-						else if ( (LA73_71==QUESTION_MARK) ) {s = 120;}
-						else if ( (LA73_71==DATETIME) ) {s = 121;}
-						else if ( (LA73_71==URI) ) {s = 51;}
-						else if ( (LA73_71==TILDA) && (synpred56_FTS())) {s = 52;}
-						else if ( (LA73_71==CARAT) && (synpred56_FTS())) {s = 53;}
-						else if ( (LA73_71==AND) && (synpred56_FTS())) {s = 54;}
-						else if ( (LA73_71==AMP) && (synpred56_FTS())) {s = 55;}
-						else if ( (LA73_71==EOF) && (synpred56_FTS())) {s = 56;}
-						else if ( (LA73_71==RPAREN) && (synpred56_FTS())) {s = 57;}
-						else if ( (LA73_71==OR) && (synpred56_FTS())) {s = 58;}
-						else if ( (LA73_71==BAR) && (synpred56_FTS())) {s = 59;}
-						else if ( (LA73_71==EXCLAMATION) && (synpred56_FTS())) {s = 60;}
-						else if ( (LA73_71==AT) && (synpred56_FTS())) {s = 61;}
-						else if ( (LA73_71==FTSPHRASE) && (synpred56_FTS())) {s = 62;}
-						else if ( (LA73_71==LSQUARE) && (synpred56_FTS())) {s = 63;}
-						else if ( (LA73_71==LT) && (synpred56_FTS())) {s = 64;}
-						else if ( (LA73_71==COMMA||LA73_71==DOT) && (synpred56_FTS())) {s = 65;}
-						else if ( (LA73_71==EQUALS) && (synpred56_FTS())) {s = 66;}
-						else if ( (LA73_71==LPAREN) && (synpred56_FTS())) {s = 67;}
-						else if ( (LA73_71==PERCENT) && (synpred56_FTS())) {s = 68;}
-						else if ( (LA73_71==PLUS) && (synpred56_FTS())) {s = 69;}
-						else if ( (LA73_71==MINUS) && (synpred56_FTS())) {s = 70;}
-						 
-						input.seek(index73_71);
-						if ( s>=0 ) return s;
-						break;
-
-					case 175 : 
-						int LA73_135 = input.LA(1);
-						 
-						int index73_135 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_135==COMMA||LA73_135==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_135);
-						if ( s>=0 ) return s;
-						break;
-
-					case 176 : 
-						int LA73_78 = input.LA(1);
-						 
-						int index73_78 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_78==COMMA||LA73_78==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_78);
-						if ( s>=0 ) return s;
-						break;
-
-					case 177 : 
-						int LA73_126 = input.LA(1);
-						 
-						int index73_126 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_126==COMMA||LA73_126==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_126);
-						if ( s>=0 ) return s;
-						break;
-
-					case 178 : 
-						int LA73_226 = input.LA(1);
-						 
-						int index73_226 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_226==COMMA||LA73_226==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_226);
-						if ( s>=0 ) return s;
-						break;
-
-					case 179 : 
-						int LA73_144 = input.LA(1);
-						 
-						int index73_144 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_144==COMMA||LA73_144==DOT) ) {s = 214;}
+						if ( (LA73_140==COMMA||LA73_140==DOT) ) {s = 214;}
 						else if ( (synpred50_FTS()) ) {s = 176;}
 						else if ( (synpred52_FTS()) ) {s = 170;}
 						 
-						input.seek(index73_144);
+						input.seek(index73_140);
 						if ( s>=0 ) return s;
 						break;
 
-					case 180 : 
+					case 14 : 
+						int LA73_451 = input.LA(1);
+						 
+						int index73_451 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_451);
+						if ( s>=0 ) return s;
+						break;
+
+					case 15 : 
 						int LA73_270 = input.LA(1);
 						 
 						int index73_270 = input.index();
@@ -24928,349 +22161,22 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 181 : 
-						int LA73_340 = input.LA(1);
+					case 16 : 
+						int LA73_128 = input.LA(1);
 						 
-						int index73_340 = input.index();
+						int index73_128 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_340);
-						if ( s>=0 ) return s;
-						break;
-
-					case 182 : 
-						int LA73_122 = input.LA(1);
-						 
-						int index73_122 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_122==ID) ) {s = 177;}
-						else if ( (LA73_122==FTSWORD) ) {s = 178;}
-						else if ( (LA73_122==FTSPRE) ) {s = 179;}
-						else if ( (LA73_122==FTSWILD) ) {s = 180;}
-						else if ( (LA73_122==NOT) ) {s = 181;}
-						else if ( (LA73_122==TO) ) {s = 182;}
-						else if ( (LA73_122==DECIMAL_INTEGER_LITERAL) ) {s = 183;}
-						else if ( (LA73_122==FLOATING_POINT_LITERAL) ) {s = 184;}
-						else if ( (LA73_122==STAR) ) {s = 185;}
-						else if ( (LA73_122==QUESTION_MARK) ) {s = 186;}
-						else if ( (LA73_122==DATETIME) ) {s = 187;}
-						else if ( (LA73_122==URI) ) {s = 188;}
-						else if ( (LA73_122==TILDA) && (synpred51_FTS())) {s = 189;}
-						else if ( (LA73_122==CARAT) && (synpred51_FTS())) {s = 190;}
-						else if ( (LA73_122==AND) && (synpred51_FTS())) {s = 191;}
-						else if ( (LA73_122==AMP) && (synpred51_FTS())) {s = 192;}
-						else if ( (LA73_122==EOF) && (synpred51_FTS())) {s = 193;}
-						else if ( (LA73_122==RPAREN) && (synpred51_FTS())) {s = 194;}
-						else if ( (LA73_122==OR) && (synpred51_FTS())) {s = 195;}
-						else if ( (LA73_122==BAR) && (synpred51_FTS())) {s = 196;}
-						else if ( (LA73_122==EXCLAMATION) && (synpred51_FTS())) {s = 197;}
-						else if ( (LA73_122==AT) && (synpred51_FTS())) {s = 198;}
-						else if ( (LA73_122==FTSPHRASE) && (synpred51_FTS())) {s = 199;}
-						else if ( (LA73_122==LSQUARE) && (synpred51_FTS())) {s = 200;}
-						else if ( (LA73_122==LT) && (synpred51_FTS())) {s = 201;}
-						else if ( (LA73_122==COMMA||LA73_122==DOT) && (synpred51_FTS())) {s = 202;}
-						else if ( (LA73_122==EQUALS) && (synpred51_FTS())) {s = 203;}
-						else if ( (LA73_122==LPAREN) && (synpred51_FTS())) {s = 204;}
-						else if ( (LA73_122==PERCENT) && (synpred51_FTS())) {s = 205;}
-						else if ( (LA73_122==PLUS) && (synpred51_FTS())) {s = 206;}
-						else if ( (LA73_122==MINUS) && (synpred51_FTS())) {s = 207;}
-						 
-						input.seek(index73_122);
-						if ( s>=0 ) return s;
-						break;
-
-					case 183 : 
-						int LA73_440 = input.LA(1);
-						 
-						int index73_440 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_440);
-						if ( s>=0 ) return s;
-						break;
-
-					case 184 : 
-						int LA73_110 = input.LA(1);
-						 
-						int index73_110 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_110==COMMA||LA73_110==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_110);
-						if ( s>=0 ) return s;
-						break;
-
-					case 185 : 
-						int LA73_235 = input.LA(1);
-						 
-						int index73_235 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_235==COMMA||LA73_235==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_235);
-						if ( s>=0 ) return s;
-						break;
-
-					case 186 : 
-						int LA73_454 = input.LA(1);
-						 
-						int index73_454 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_454);
-						if ( s>=0 ) return s;
-						break;
-
-					case 187 : 
-						int LA73_417 = input.LA(1);
-						 
-						int index73_417 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_417);
-						if ( s>=0 ) return s;
-						break;
-
-					case 188 : 
-						int LA73_405 = input.LA(1);
-						 
-						int index73_405 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_405==COMMA||LA73_405==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_405);
-						if ( s>=0 ) return s;
-						break;
-
-					case 189 : 
-						int LA73_429 = input.LA(1);
-						 
-						int index73_429 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_429);
-						if ( s>=0 ) return s;
-						break;
-
-					case 190 : 
-						int LA73_303 = input.LA(1);
-						 
-						int index73_303 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_303==COMMA||LA73_303==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_303);
-						if ( s>=0 ) return s;
-						break;
-
-					case 191 : 
-						int LA73_133 = input.LA(1);
-						 
-						int index73_133 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_133==COMMA||LA73_133==DOT) ) {s = 122;}
+						if ( (LA73_128==COMMA||LA73_128==DOT) ) {s = 122;}
 						else if ( (synpred53_FTS()) ) {s = 123;}
 						else if ( (synpred55_FTS()) ) {s = 102;}
 						else if ( (true) ) {s = 34;}
 						 
-						input.seek(index73_133);
+						input.seek(index73_128);
 						if ( s>=0 ) return s;
 						break;
 
-					case 192 : 
-						int LA73_76 = input.LA(1);
-						 
-						int index73_76 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_76==COMMA||LA73_76==DOT) ) {s = 122;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_76);
-						if ( s>=0 ) return s;
-						break;
-
-					case 193 : 
-						int LA73_297 = input.LA(1);
-						 
-						int index73_297 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_297==COMMA||LA73_297==DOT) ) {s = 294;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
-						 
-						input.seek(index73_297);
-						if ( s>=0 ) return s;
-						break;
-
-					case 194 : 
-						int LA73_186 = input.LA(1);
-						 
-						int index73_186 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_186==COMMA||LA73_186==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_186);
-						if ( s>=0 ) return s;
-						break;
-
-					case 195 : 
-						int LA73_180 = input.LA(1);
-						 
-						int index73_180 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_180==COMMA||LA73_180==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_180);
-						if ( s>=0 ) return s;
-						break;
-
-					case 196 : 
-						int LA73_121 = input.LA(1);
-						 
-						int index73_121 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_121==COMMA||LA73_121==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_121);
-						if ( s>=0 ) return s;
-						break;
-
-					case 197 : 
-						int LA73_50 = input.LA(1);
-						 
-						int index73_50 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_50==COMMA||LA73_50==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_50);
-						if ( s>=0 ) return s;
-						break;
-
-					case 198 : 
-						int LA73_317 = input.LA(1);
-						 
-						int index73_317 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_317==COMMA||LA73_317==DOT) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_317);
-						if ( s>=0 ) return s;
-						break;
-
-					case 199 : 
-						int LA73_322 = input.LA(1);
-						 
-						int index73_322 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_322==COMMA||LA73_322==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_322);
-						if ( s>=0 ) return s;
-						break;
-
-					case 200 : 
-						int LA73_129 = input.LA(1);
-						 
-						int index73_129 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 210;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 212;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						else if ( (synpred53_FTS()) ) {s = 123;}
-						else if ( (synpred55_FTS()) ) {s = 102;}
-						else if ( (true) ) {s = 34;}
-						 
-						input.seek(index73_129);
-						if ( s>=0 ) return s;
-						break;
-
-					case 201 : 
-						int LA73_449 = input.LA(1);
-						 
-						int index73_449 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_449);
-						if ( s>=0 ) return s;
-						break;
-
-					case 202 : 
-						int LA73_115 = input.LA(1);
-						 
-						int index73_115 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_115==COMMA||LA73_115==DOT) ) {s = 104;}
-						else if ( (synpred54_FTS()) ) {s = 105;}
-						else if ( (synpred56_FTS()) ) {s = 70;}
-						else if ( (true) ) {s = 27;}
-						 
-						input.seek(index73_115);
-						if ( s>=0 ) return s;
-						break;
-
-					case 203 : 
+					case 17 : 
 						int LA73_44 = input.LA(1);
 						 
 						int index73_44 = input.index();
@@ -25285,34 +22191,103 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 204 : 
-						int LA73_308 = input.LA(1);
+					case 18 : 
+						int LA73_115 = input.LA(1);
 						 
-						int index73_308 = input.index();
+						int index73_115 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_308==COMMA||LA73_308==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
+						if ( (LA73_115==COMMA||LA73_115==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
 						 
-						input.seek(index73_308);
+						input.seek(index73_115);
 						if ( s>=0 ) return s;
 						break;
 
-					case 205 : 
-						int LA73_447 = input.LA(1);
+					case 19 : 
+						int LA73_449 = input.LA(1);
 						 
-						int index73_447 = input.index();
+						int index73_449 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred42_FTS()) ) {s = 172;}
 						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_447);
+						input.seek(index73_449);
 						if ( s>=0 ) return s;
 						break;
 
-					case 206 : 
+					case 20 : 
+						int LA73_407 = input.LA(1);
+						 
+						int index73_407 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_407==COMMA||LA73_407==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_407);
+						if ( s>=0 ) return s;
+						break;
+
+					case 21 : 
+						int LA73_428 = input.LA(1);
+						 
+						int index73_428 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_428);
+						if ( s>=0 ) return s;
+						break;
+
+					case 22 : 
+						int LA73_418 = input.LA(1);
+						 
+						int index73_418 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_418);
+						if ( s>=0 ) return s;
+						break;
+
+					case 23 : 
+						int LA73_318 = input.LA(1);
+						 
+						int index73_318 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_318==COMMA||LA73_318==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_318);
+						if ( s>=0 ) return s;
+						break;
+
+					case 24 : 
+						int LA73_296 = input.LA(1);
+						 
+						int index73_296 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_296==COMMA||LA73_296==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_296);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
 						int LA73_104 = input.LA(1);
 						 
 						int index73_104 = input.index();
@@ -25354,168 +22329,273 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 207 : 
-						int LA73_225 = input.LA(1);
+					case 26 : 
+						int LA73_320 = input.LA(1);
 						 
-						int index73_225 = input.index();
+						int index73_320 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_225==COMMA||LA73_225==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
-						 
-						input.seek(index73_225);
-						if ( s>=0 ) return s;
-						break;
-
-					case 208 : 
-						int LA73_266 = input.LA(1);
-						 
-						int index73_266 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_266==COMMA||LA73_266==DOT) ) {s = 313;}
+						if ( (LA73_320==COMMA||LA73_320==DOT) ) {s = 402;}
 						else if ( (synpred45_FTS()) ) {s = 211;}
 						else if ( (synpred47_FTS()) ) {s = 291;}
 						 
-						input.seek(index73_266);
+						input.seek(index73_320);
 						if ( s>=0 ) return s;
 						break;
 
-					case 209 : 
-						int LA73_373 = input.LA(1);
+					case 27 : 
+						int LA73_342 = input.LA(1);
 						 
-						int index73_373 = input.index();
+						int index73_342 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_342);
+						if ( s>=0 ) return s;
+						break;
+
+					case 28 : 
+						int LA73_435 = input.LA(1);
+						 
+						int index73_435 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred41_FTS()) ) {s = 209;}
 						else if ( (synpred43_FTS()) ) {s = 400;}
 						 
-						input.seek(index73_373);
+						input.seek(index73_435);
 						if ( s>=0 ) return s;
 						break;
 
-					case 210 : 
-						int LA73_145 = input.LA(1);
+					case 29 : 
+						int LA73_217 = input.LA(1);
 						 
-						int index73_145 = input.index();
+						int index73_217 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_145==COMMA||LA73_145==DOT) ) {s = 214;}
+						if ( (LA73_217==COMMA||LA73_217==DOT) ) {s = 214;}
 						else if ( (synpred50_FTS()) ) {s = 176;}
 						else if ( (synpred52_FTS()) ) {s = 170;}
 						 
-						input.seek(index73_145);
+						input.seek(index73_217);
 						if ( s>=0 ) return s;
 						break;
 
-					case 211 : 
-						int LA73_441 = input.LA(1);
+					case 30 : 
+						int LA73_424 = input.LA(1);
 						 
-						int index73_441 = input.index();
+						int index73_424 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_441);
+						input.seek(index73_424);
 						if ( s>=0 ) return s;
 						break;
 
-					case 212 : 
-						int LA73_264 = input.LA(1);
+					case 31 : 
+						int LA73_268 = input.LA(1);
 						 
-						int index73_264 = input.index();
+						int index73_268 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_264==COMMA||LA73_264==DOT) ) {s = 313;}
+						if ( (LA73_268==COMMA||LA73_268==DOT) ) {s = 313;}
 						else if ( (synpred45_FTS()) ) {s = 211;}
 						else if ( (synpred47_FTS()) ) {s = 291;}
 						 
-						input.seek(index73_264);
+						input.seek(index73_268);
 						if ( s>=0 ) return s;
 						break;
 
-					case 213 : 
-						int LA73_341 = input.LA(1);
+					case 32 : 
+						int LA73_42 = input.LA(1);
 						 
-						int index73_341 = input.index();
+						int index73_42 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_42==COMMA||LA73_42==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_42);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA73_113 = input.LA(1);
+						 
+						int index73_113 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_113==COMMA||LA73_113==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_113);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
+						int LA73_179 = input.LA(1);
+						 
+						int index73_179 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_179==COMMA||LA73_179==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_179);
+						if ( s>=0 ) return s;
+						break;
+
+					case 35 : 
+						int LA73_408 = input.LA(1);
+						 
+						int index73_408 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred42_FTS()) ) {s = 172;}
 						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_341);
+						input.seek(index73_408);
 						if ( s>=0 ) return s;
 						break;
 
-					case 214 : 
-						int LA73_375 = input.LA(1);
+					case 36 : 
+						int LA73_295 = input.LA(1);
 						 
-						int index73_375 = input.index();
+						int index73_295 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_375);
-						if ( s>=0 ) return s;
-						break;
-
-					case 215 : 
-						int LA73_372 = input.LA(1);
-						 
-						int index73_372 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_372);
-						if ( s>=0 ) return s;
-						break;
-
-					case 216 : 
-						int LA73_455 = input.LA(1);
-						 
-						int index73_455 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred41_FTS()) ) {s = 209;}
-						else if ( (synpred43_FTS()) ) {s = 400;}
-						 
-						input.seek(index73_455);
-						if ( s>=0 ) return s;
-						break;
-
-					case 217 : 
-						int LA73_369 = input.LA(1);
-						 
-						int index73_369 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_369==COMMA||LA73_369==DOT) ) {s = 364;}
+						if ( (LA73_295==DOT) ) {s = 363;}
+						else if ( (LA73_295==COMMA) ) {s = 294;}
 						else if ( (synpred46_FTS()) ) {s = 174;}
 						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_369);
+						input.seek(index73_295);
 						if ( s>=0 ) return s;
 						break;
 
-					case 218 : 
-						int LA73_446 = input.LA(1);
+					case 37 : 
+						int LA73_237 = input.LA(1);
 						 
-						int index73_446 = input.index();
+						int index73_237 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_237==COMMA||LA73_237==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_237);
+						if ( s>=0 ) return s;
+						break;
+
+					case 38 : 
+						int LA73_41 = input.LA(1);
+						 
+						int index73_41 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_41==COMMA||LA73_41==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_41);
+						if ( s>=0 ) return s;
+						break;
+
+					case 39 : 
+						int LA73_112 = input.LA(1);
+						 
+						int index73_112 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_112==COMMA||LA73_112==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_112);
+						if ( s>=0 ) return s;
+						break;
+
+					case 40 : 
+						int LA73_329 = input.LA(1);
+						 
+						int index73_329 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_329==COMMA||LA73_329==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_329);
+						if ( s>=0 ) return s;
+						break;
+
+					case 41 : 
+						int LA73_334 = input.LA(1);
+						 
+						int index73_334 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred42_FTS()) ) {s = 172;}
 						else if ( (synpred44_FTS()) ) {s = 362;}
 						 
-						input.seek(index73_446);
+						input.seek(index73_334);
 						if ( s>=0 ) return s;
 						break;
 
-					case 219 : 
+					case 42 : 
+						int LA73_26 = input.LA(1);
+						 
+						int index73_26 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_26==ID) ) {s = 40;}
+						else if ( (LA73_26==FTSWORD) ) {s = 41;}
+						else if ( (LA73_26==FTSPRE) ) {s = 42;}
+						else if ( (LA73_26==FTSWILD) ) {s = 43;}
+						else if ( (LA73_26==NOT) ) {s = 44;}
+						else if ( (LA73_26==TO) ) {s = 45;}
+						else if ( (LA73_26==DECIMAL_INTEGER_LITERAL) ) {s = 46;}
+						else if ( (LA73_26==FLOATING_POINT_LITERAL) ) {s = 47;}
+						else if ( (LA73_26==STAR) ) {s = 48;}
+						else if ( (LA73_26==QUESTION_MARK) ) {s = 49;}
+						else if ( (LA73_26==DATETIME) ) {s = 50;}
+						else if ( (LA73_26==URI) ) {s = 51;}
+						else if ( (LA73_26==TILDA) && (synpred56_FTS())) {s = 52;}
+						else if ( (LA73_26==CARAT) && (synpred56_FTS())) {s = 53;}
+						else if ( (LA73_26==AND) && (synpred56_FTS())) {s = 54;}
+						else if ( (LA73_26==AMP) && (synpred56_FTS())) {s = 55;}
+						else if ( (LA73_26==EOF) && (synpred56_FTS())) {s = 56;}
+						else if ( (LA73_26==RPAREN) && (synpred56_FTS())) {s = 57;}
+						else if ( (LA73_26==OR) && (synpred56_FTS())) {s = 58;}
+						else if ( (LA73_26==BAR) && (synpred56_FTS())) {s = 59;}
+						else if ( (LA73_26==EXCLAMATION) && (synpred56_FTS())) {s = 60;}
+						else if ( (LA73_26==AT) && (synpred56_FTS())) {s = 61;}
+						else if ( (LA73_26==FTSPHRASE) && (synpred56_FTS())) {s = 62;}
+						else if ( (LA73_26==LSQUARE) && (synpred56_FTS())) {s = 63;}
+						else if ( (LA73_26==LT) && (synpred56_FTS())) {s = 64;}
+						else if ( (LA73_26==COMMA||LA73_26==DOT) && (synpred56_FTS())) {s = 65;}
+						else if ( (LA73_26==EQUALS) && (synpred56_FTS())) {s = 66;}
+						else if ( (LA73_26==LPAREN) && (synpred56_FTS())) {s = 67;}
+						else if ( (LA73_26==PERCENT) && (synpred56_FTS())) {s = 68;}
+						else if ( (LA73_26==PLUS) && (synpred56_FTS())) {s = 69;}
+						else if ( (LA73_26==MINUS) && (synpred56_FTS())) {s = 70;}
+						 
+						input.seek(index73_26);
+						if ( s>=0 ) return s;
+						break;
+
+					case 43 : 
 						int LA73_111 = input.LA(1);
 						 
 						int index73_111 = input.index();
@@ -25535,158 +22615,264 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 220 : 
-						int LA73_337 = input.LA(1);
+					case 44 : 
+						int LA73_142 = input.LA(1);
 						 
-						int index73_337 = input.index();
+						int index73_142 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
+						if ( (LA73_142==COMMA||LA73_142==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
 						 
-						input.seek(index73_337);
+						input.seek(index73_142);
 						if ( s>=0 ) return s;
 						break;
 
-					case 221 : 
-						int LA73_406 = input.LA(1);
+					case 45 : 
+						int LA73_367 = input.LA(1);
 						 
-						int index73_406 = input.index();
+						int index73_367 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_406==COMMA||LA73_406==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_406);
-						if ( s>=0 ) return s;
-						break;
-
-					case 222 : 
-						int LA73_296 = input.LA(1);
-						 
-						int index73_296 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_296==COMMA||LA73_296==DOT) ) {s = 294;}
+						if ( (LA73_367==COMMA||LA73_367==DOT) ) {s = 364;}
 						else if ( (synpred46_FTS()) ) {s = 174;}
 						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_296);
+						input.seek(index73_367);
 						if ( s>=0 ) return s;
 						break;
 
-					case 223 : 
-						int LA73_428 = input.LA(1);
+					case 46 : 
+						int LA73_307 = input.LA(1);
 						 
-						int index73_428 = input.index();
+						int index73_307 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_307==COMMA||LA73_307==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_307);
+						if ( s>=0 ) return s;
+						break;
+
+					case 47 : 
+						int LA73_433 = input.LA(1);
+						 
+						int index73_433 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (synpred41_FTS()) ) {s = 209;}
 						else if ( (synpred43_FTS()) ) {s = 400;}
 						 
-						input.seek(index73_428);
+						input.seek(index73_433);
 						if ( s>=0 ) return s;
 						break;
 
-					case 224 : 
-						int LA73_304 = input.LA(1);
+					case 48 : 
+						int LA73_46 = input.LA(1);
 						 
-						int index73_304 = input.index();
+						int index73_46 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_304==COMMA||LA73_304==DOT) ) {s = 364;}
-						else if ( (synpred46_FTS()) ) {s = 174;}
-						else if ( (synpred48_FTS()) ) {s = 258;}
+						if ( (LA73_46==COMMA||LA73_46==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
 						 
-						input.seek(index73_304);
+						input.seek(index73_46);
 						if ( s>=0 ) return s;
 						break;
 
-					case 225 : 
-						int LA73_445 = input.LA(1);
+					case 49 : 
+						int LA73_117 = input.LA(1);
 						 
-						int index73_445 = input.index();
+						int index73_117 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_445==ID) ) {s = 457;}
-						else if ( (LA73_445==FTSWORD) ) {s = 434;}
-						else if ( (LA73_445==FTSPRE) ) {s = 435;}
-						else if ( (LA73_445==FTSWILD) ) {s = 436;}
-						else if ( (LA73_445==NOT) ) {s = 437;}
-						else if ( (LA73_445==TO) ) {s = 438;}
-						else if ( (LA73_445==DECIMAL_INTEGER_LITERAL) ) {s = 439;}
-						else if ( (LA73_445==FLOATING_POINT_LITERAL) ) {s = 440;}
-						else if ( (LA73_445==STAR) ) {s = 441;}
-						else if ( (LA73_445==QUESTION_MARK) ) {s = 442;}
-						else if ( (LA73_445==DATETIME) ) {s = 443;}
-						else if ( (LA73_445==URI) ) {s = 444;}
-						else if ( (LA73_445==TILDA) && (synpred43_FTS())) {s = 382;}
-						else if ( (LA73_445==CARAT) && (synpred43_FTS())) {s = 383;}
-						else if ( (LA73_445==AND) && (synpred43_FTS())) {s = 384;}
-						else if ( (LA73_445==AMP) && (synpred43_FTS())) {s = 385;}
-						else if ( (LA73_445==EOF) && (synpred43_FTS())) {s = 386;}
-						else if ( (LA73_445==RPAREN) && (synpred43_FTS())) {s = 387;}
-						else if ( (LA73_445==OR) && (synpred43_FTS())) {s = 388;}
-						else if ( (LA73_445==BAR) && (synpred43_FTS())) {s = 389;}
-						else if ( (LA73_445==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
-						else if ( (LA73_445==AT) && (synpred43_FTS())) {s = 391;}
-						else if ( (LA73_445==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
-						else if ( (LA73_445==LSQUARE) && (synpred43_FTS())) {s = 393;}
-						else if ( (LA73_445==LT) && (synpred43_FTS())) {s = 394;}
-						else if ( (LA73_445==COMMA||LA73_445==DOT) && (synpred43_FTS())) {s = 395;}
-						else if ( (LA73_445==EQUALS) && (synpred43_FTS())) {s = 396;}
-						else if ( (LA73_445==LPAREN) && (synpred43_FTS())) {s = 397;}
-						else if ( (LA73_445==PERCENT) && (synpred43_FTS())) {s = 398;}
-						else if ( (LA73_445==PLUS) && (synpred43_FTS())) {s = 399;}
-						else if ( (LA73_445==MINUS) && (synpred43_FTS())) {s = 400;}
+						if ( (LA73_117==COMMA||LA73_117==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
 						 
-						input.seek(index73_445);
+						input.seek(index73_117);
 						if ( s>=0 ) return s;
 						break;
 
-					case 226 : 
-						int LA73_265 = input.LA(1);
+					case 50 : 
+						int LA73_49 = input.LA(1);
 						 
-						int index73_265 = input.index();
+						int index73_49 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_265==COMMA||LA73_265==DOT) ) {s = 313;}
+						if ( (LA73_49==COMMA||LA73_49==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_49);
+						if ( s>=0 ) return s;
+						break;
+
+					case 51 : 
+						int LA73_120 = input.LA(1);
+						 
+						int index73_120 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_120==COMMA||LA73_120==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_120);
+						if ( s>=0 ) return s;
+						break;
+
+					case 52 : 
+						int LA73_328 = input.LA(1);
+						 
+						int index73_328 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_328==COMMA||LA73_328==DOT) ) {s = 402;}
 						else if ( (synpred45_FTS()) ) {s = 211;}
 						else if ( (synpred47_FTS()) ) {s = 291;}
 						 
-						input.seek(index73_265);
+						input.seek(index73_328);
 						if ( s>=0 ) return s;
 						break;
 
-					case 227 : 
-						int LA73_414 = input.LA(1);
+					case 53 : 
+						int LA73_228 = input.LA(1);
 						 
-						int index73_414 = input.index();
+						int index73_228 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_414);
-						if ( s>=0 ) return s;
-						break;
-
-					case 228 : 
-						int LA73_309 = input.LA(1);
-						 
-						int index73_309 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_309==COMMA||LA73_309==DOT) ) {s = 364;}
+						if ( (LA73_228==COMMA||LA73_228==DOT) ) {s = 294;}
 						else if ( (synpred46_FTS()) ) {s = 174;}
 						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_309);
+						input.seek(index73_228);
 						if ( s>=0 ) return s;
 						break;
 
-					case 229 : 
+					case 54 : 
+						int LA73_401 = input.LA(1);
+						 
+						int index73_401 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_401==ID) ) {s = 432;}
+						else if ( (LA73_401==FTSWORD) ) {s = 371;}
+						else if ( (LA73_401==FTSPRE) ) {s = 372;}
+						else if ( (LA73_401==FTSWILD) ) {s = 373;}
+						else if ( (LA73_401==NOT) ) {s = 374;}
+						else if ( (LA73_401==TO) ) {s = 375;}
+						else if ( (LA73_401==DECIMAL_INTEGER_LITERAL) ) {s = 376;}
+						else if ( (LA73_401==FLOATING_POINT_LITERAL) ) {s = 377;}
+						else if ( (LA73_401==STAR) ) {s = 378;}
+						else if ( (LA73_401==QUESTION_MARK) ) {s = 379;}
+						else if ( (LA73_401==DATETIME) ) {s = 380;}
+						else if ( (LA73_401==URI) ) {s = 381;}
+						else if ( (LA73_401==TILDA) && (synpred43_FTS())) {s = 382;}
+						else if ( (LA73_401==CARAT) && (synpred43_FTS())) {s = 383;}
+						else if ( (LA73_401==AND) && (synpred43_FTS())) {s = 384;}
+						else if ( (LA73_401==AMP) && (synpred43_FTS())) {s = 385;}
+						else if ( (LA73_401==EOF) && (synpred43_FTS())) {s = 386;}
+						else if ( (LA73_401==RPAREN) && (synpred43_FTS())) {s = 387;}
+						else if ( (LA73_401==OR) && (synpred43_FTS())) {s = 388;}
+						else if ( (LA73_401==BAR) && (synpred43_FTS())) {s = 389;}
+						else if ( (LA73_401==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
+						else if ( (LA73_401==AT) && (synpred43_FTS())) {s = 391;}
+						else if ( (LA73_401==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
+						else if ( (LA73_401==LSQUARE) && (synpred43_FTS())) {s = 393;}
+						else if ( (LA73_401==LT) && (synpred43_FTS())) {s = 394;}
+						else if ( (LA73_401==COMMA||LA73_401==DOT) && (synpred43_FTS())) {s = 395;}
+						else if ( (LA73_401==EQUALS) && (synpred43_FTS())) {s = 396;}
+						else if ( (LA73_401==LPAREN) && (synpred43_FTS())) {s = 397;}
+						else if ( (LA73_401==PERCENT) && (synpred43_FTS())) {s = 398;}
+						else if ( (LA73_401==PLUS) && (synpred43_FTS())) {s = 399;}
+						else if ( (LA73_401==MINUS) && (synpred43_FTS())) {s = 400;}
+						 
+						input.seek(index73_401);
+						if ( s>=0 ) return s;
+						break;
+
+					case 55 : 
+						int LA73_266 = input.LA(1);
+						 
+						int index73_266 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_266==COMMA||LA73_266==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_266);
+						if ( s>=0 ) return s;
+						break;
+
+					case 56 : 
+						int LA73_82 = input.LA(1);
+						 
+						int index73_82 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_82==COMMA||LA73_82==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_82);
+						if ( s>=0 ) return s;
+						break;
+
+					case 57 : 
+						int LA73_139 = input.LA(1);
+						 
+						int index73_139 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_139==COMMA||LA73_139==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_139);
+						if ( s>=0 ) return s;
+						break;
+
+					case 58 : 
+						int LA73_145 = input.LA(1);
+						 
+						int index73_145 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_145==COMMA||LA73_145==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_145);
+						if ( s>=0 ) return s;
+						break;
+
+					case 59 : 
+						int LA73_180 = input.LA(1);
+						 
+						int index73_180 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_180==COMMA||LA73_180==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_180);
+						if ( s>=0 ) return s;
+						break;
+
+					case 60 : 
 						int LA73_450 = input.LA(1);
 						 
 						int index73_450 = input.index();
@@ -25699,147 +22885,454 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 230 : 
-						int LA73_146 = input.LA(1);
+					case 61 : 
+						int LA73_297 = input.LA(1);
 						 
-						int index73_146 = input.index();
+						int index73_297 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_146==COMMA||LA73_146==DOT) ) {s = 214;}
-						else if ( (synpred50_FTS()) ) {s = 176;}
-						else if ( (synpred52_FTS()) ) {s = 170;}
+						if ( (LA73_297==COMMA||LA73_297==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_146);
+						input.seek(index73_297);
 						if ( s>=0 ) return s;
 						break;
 
-					case 231 : 
-						int LA73_127 = input.LA(1);
+					case 62 : 
+						int LA73_124 = input.LA(1);
 						 
-						int index73_127 = input.index();
+						int index73_124 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_127==COMMA||LA73_127==DOT) ) {s = 122;}
+						if ( (LA73_124==DOT) ) {s = 208;}
+						else if ( (LA73_124==COMMA) ) {s = 122;}
 						else if ( (synpred53_FTS()) ) {s = 123;}
 						else if ( (synpred55_FTS()) ) {s = 102;}
 						else if ( (true) ) {s = 34;}
 						 
-						input.seek(index73_127);
+						input.seek(index73_124);
 						if ( s>=0 ) return s;
 						break;
 
-					case 232 : 
-						int LA73_316 = input.LA(1);
+					case 63 : 
+						int LA73_429 = input.LA(1);
 						 
-						int index73_316 = input.index();
+						int index73_429 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_316==COMMA||LA73_316==DOT) ) {s = 313;}
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_429);
+						if ( s>=0 ) return s;
+						break;
+
+					case 64 : 
+						int LA73_292 = input.LA(1);
+						 
+						int index73_292 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_292==ID) ) {s = 319;}
+						else if ( (LA73_292==FTSWORD) ) {s = 262;}
+						else if ( (LA73_292==FTSPRE) ) {s = 263;}
+						else if ( (LA73_292==FTSWILD) ) {s = 264;}
+						else if ( (LA73_292==NOT) ) {s = 265;}
+						else if ( (LA73_292==TO) ) {s = 266;}
+						else if ( (LA73_292==DECIMAL_INTEGER_LITERAL) ) {s = 267;}
+						else if ( (LA73_292==FLOATING_POINT_LITERAL) ) {s = 268;}
+						else if ( (LA73_292==STAR) ) {s = 269;}
+						else if ( (LA73_292==QUESTION_MARK) ) {s = 270;}
+						else if ( (LA73_292==DATETIME) ) {s = 271;}
+						else if ( (LA73_292==URI) ) {s = 272;}
+						else if ( (LA73_292==TILDA) && (synpred47_FTS())) {s = 273;}
+						else if ( (LA73_292==CARAT) && (synpred47_FTS())) {s = 274;}
+						else if ( (LA73_292==AND) && (synpred47_FTS())) {s = 275;}
+						else if ( (LA73_292==AMP) && (synpred47_FTS())) {s = 276;}
+						else if ( (LA73_292==EOF) && (synpred47_FTS())) {s = 277;}
+						else if ( (LA73_292==RPAREN) && (synpred47_FTS())) {s = 278;}
+						else if ( (LA73_292==OR) && (synpred47_FTS())) {s = 279;}
+						else if ( (LA73_292==BAR) && (synpred47_FTS())) {s = 280;}
+						else if ( (LA73_292==EXCLAMATION) && (synpred47_FTS())) {s = 281;}
+						else if ( (LA73_292==AT) && (synpred47_FTS())) {s = 282;}
+						else if ( (LA73_292==FTSPHRASE) && (synpred47_FTS())) {s = 283;}
+						else if ( (LA73_292==LSQUARE) && (synpred47_FTS())) {s = 284;}
+						else if ( (LA73_292==LT) && (synpred47_FTS())) {s = 285;}
+						else if ( (LA73_292==COMMA||LA73_292==DOT) && (synpred47_FTS())) {s = 286;}
+						else if ( (LA73_292==EQUALS) && (synpred47_FTS())) {s = 287;}
+						else if ( (LA73_292==LPAREN) && (synpred47_FTS())) {s = 288;}
+						else if ( (LA73_292==PERCENT) && (synpred47_FTS())) {s = 289;}
+						else if ( (LA73_292==PLUS) && (synpred47_FTS())) {s = 290;}
+						else if ( (LA73_292==MINUS) && (synpred47_FTS())) {s = 291;}
+						 
+						input.seek(index73_292);
+						if ( s>=0 ) return s;
+						break;
+
+					case 65 : 
+						int LA73_141 = input.LA(1);
+						 
+						int index73_141 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_141==COMMA||LA73_141==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_141);
+						if ( s>=0 ) return s;
+						break;
+
+					case 66 : 
+						int LA73_218 = input.LA(1);
+						 
+						int index73_218 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_218==COMMA||LA73_218==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_218);
+						if ( s>=0 ) return s;
+						break;
+
+					case 67 : 
+						int LA73_109 = input.LA(1);
+						 
+						int index73_109 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_109==COMMA||LA73_109==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_109);
+						if ( s>=0 ) return s;
+						break;
+
+					case 68 : 
+						int LA73_269 = input.LA(1);
+						 
+						int index73_269 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_269==COMMA||LA73_269==DOT) ) {s = 313;}
 						else if ( (synpred45_FTS()) ) {s = 211;}
 						else if ( (synpred47_FTS()) ) {s = 291;}
 						 
-						input.seek(index73_316);
+						input.seek(index73_269);
 						if ( s>=0 ) return s;
 						break;
 
-					case 233 : 
-						int LA73_323 = input.LA(1);
+					case 69 : 
+						int LA73_235 = input.LA(1);
 						 
-						int index73_323 = input.index();
+						int index73_235 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_323==COMMA||LA73_323==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_323);
-						if ( s>=0 ) return s;
-						break;
-
-					case 234 : 
-						int LA73_424 = input.LA(1);
-						 
-						int index73_424 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_424);
-						if ( s>=0 ) return s;
-						break;
-
-					case 235 : 
-						int LA73_329 = input.LA(1);
-						 
-						int index73_329 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_329==COMMA||LA73_329==DOT) ) {s = 402;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_329);
-						if ( s>=0 ) return s;
-						break;
-
-					case 236 : 
-						int LA73_448 = input.LA(1);
-						 
-						int index73_448 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred42_FTS()) ) {s = 172;}
-						else if ( (synpred44_FTS()) ) {s = 362;}
-						 
-						input.seek(index73_448);
-						if ( s>=0 ) return s;
-						break;
-
-					case 237 : 
-						int LA73_314 = input.LA(1);
-						 
-						int index73_314 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_314==DOT) ) {s = 401;}
-						else if ( (LA73_314==COMMA) ) {s = 313;}
-						else if ( (synpred45_FTS()) ) {s = 211;}
-						else if ( (synpred47_FTS()) ) {s = 291;}
-						 
-						input.seek(index73_314);
-						if ( s>=0 ) return s;
-						break;
-
-					case 238 : 
-						int LA73_234 = input.LA(1);
-						 
-						int index73_234 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA73_234==COMMA||LA73_234==DOT) ) {s = 294;}
+						if ( (LA73_235==COMMA||LA73_235==DOT) ) {s = 294;}
 						else if ( (synpred46_FTS()) ) {s = 174;}
 						else if ( (synpred48_FTS()) ) {s = 258;}
 						 
-						input.seek(index73_234);
+						input.seek(index73_235);
 						if ( s>=0 ) return s;
 						break;
 
-					case 239 : 
-						int LA73_324 = input.LA(1);
+					case 70 : 
+						int LA73_416 = input.LA(1);
 						 
-						int index73_324 = input.index();
+						int index73_416 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_324==COMMA||LA73_324==DOT) ) {s = 402;}
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_416);
+						if ( s>=0 ) return s;
+						break;
+
+					case 71 : 
+						int LA73_373 = input.LA(1);
+						 
+						int index73_373 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_373);
+						if ( s>=0 ) return s;
+						break;
+
+					case 72 : 
+						int LA73_374 = input.LA(1);
+						 
+						int index73_374 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_374);
+						if ( s>=0 ) return s;
+						break;
+
+					case 73 : 
+						int LA73_301 = input.LA(1);
+						 
+						int index73_301 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_301==COMMA||LA73_301==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_301);
+						if ( s>=0 ) return s;
+						break;
+
+					case 74 : 
+						int LA73_409 = input.LA(1);
+						 
+						int index73_409 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_409);
+						if ( s>=0 ) return s;
+						break;
+
+					case 75 : 
+						int LA73_370 = input.LA(1);
+						 
+						int index73_370 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_370);
+						if ( s>=0 ) return s;
+						break;
+
+					case 76 : 
+						int LA73_452 = input.LA(1);
+						 
+						int index73_452 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_452);
+						if ( s>=0 ) return s;
+						break;
+
+					case 77 : 
+						int LA73_262 = input.LA(1);
+						 
+						int index73_262 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_262==COMMA||LA73_262==DOT) ) {s = 313;}
 						else if ( (synpred45_FTS()) ) {s = 211;}
 						else if ( (synpred47_FTS()) ) {s = 291;}
 						 
-						input.seek(index73_324);
+						input.seek(index73_262);
 						if ( s>=0 ) return s;
 						break;
 
-					case 240 : 
+					case 78 : 
+						int LA73_368 = input.LA(1);
+						 
+						int index73_368 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_368==COMMA||LA73_368==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_368);
+						if ( s>=0 ) return s;
+						break;
+
+					case 79 : 
+						int LA73_308 = input.LA(1);
+						 
+						int index73_308 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_308==COMMA||LA73_308==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_308);
+						if ( s>=0 ) return s;
+						break;
+
+					case 80 : 
+						int LA73_143 = input.LA(1);
+						 
+						int index73_143 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_143==COMMA||LA73_143==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_143);
+						if ( s>=0 ) return s;
+						break;
+
+					case 81 : 
+						int LA73_43 = input.LA(1);
+						 
+						int index73_43 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_43==COMMA||LA73_43==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_43);
+						if ( s>=0 ) return s;
+						break;
+
+					case 82 : 
+						int LA73_114 = input.LA(1);
+						 
+						int index73_114 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_114==COMMA||LA73_114==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_114);
+						if ( s>=0 ) return s;
+						break;
+
+					case 83 : 
+						int LA73_298 = input.LA(1);
+						 
+						int index73_298 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_298==COMMA||LA73_298==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_298);
+						if ( s>=0 ) return s;
+						break;
+
+					case 84 : 
+						int LA73_122 = input.LA(1);
+						 
+						int index73_122 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_122==ID) ) {s = 177;}
+						else if ( (LA73_122==FTSWORD) ) {s = 178;}
+						else if ( (LA73_122==FTSPRE) ) {s = 179;}
+						else if ( (LA73_122==FTSWILD) ) {s = 180;}
+						else if ( (LA73_122==NOT) ) {s = 181;}
+						else if ( (LA73_122==TO) ) {s = 182;}
+						else if ( (LA73_122==DECIMAL_INTEGER_LITERAL) ) {s = 183;}
+						else if ( (LA73_122==FLOATING_POINT_LITERAL) ) {s = 184;}
+						else if ( (LA73_122==STAR) ) {s = 185;}
+						else if ( (LA73_122==QUESTION_MARK) ) {s = 186;}
+						else if ( (LA73_122==DATETIME) ) {s = 187;}
+						else if ( (LA73_122==URI) ) {s = 188;}
+						else if ( (LA73_122==TILDA) && (synpred51_FTS())) {s = 189;}
+						else if ( (LA73_122==CARAT) && (synpred51_FTS())) {s = 190;}
+						else if ( (LA73_122==AND) && (synpred51_FTS())) {s = 191;}
+						else if ( (LA73_122==AMP) && (synpred51_FTS())) {s = 192;}
+						else if ( (LA73_122==EOF) && (synpred51_FTS())) {s = 193;}
+						else if ( (LA73_122==RPAREN) && (synpred51_FTS())) {s = 194;}
+						else if ( (LA73_122==OR) && (synpred51_FTS())) {s = 195;}
+						else if ( (LA73_122==BAR) && (synpred51_FTS())) {s = 196;}
+						else if ( (LA73_122==EXCLAMATION) && (synpred51_FTS())) {s = 197;}
+						else if ( (LA73_122==AT) && (synpred51_FTS())) {s = 198;}
+						else if ( (LA73_122==FTSPHRASE) && (synpred51_FTS())) {s = 199;}
+						else if ( (LA73_122==LSQUARE) && (synpred51_FTS())) {s = 200;}
+						else if ( (LA73_122==LT) && (synpred51_FTS())) {s = 201;}
+						else if ( (LA73_122==COMMA||LA73_122==DOT) && (synpred51_FTS())) {s = 202;}
+						else if ( (LA73_122==EQUALS) && (synpred51_FTS())) {s = 203;}
+						else if ( (LA73_122==LPAREN) && (synpred51_FTS())) {s = 204;}
+						else if ( (LA73_122==PERCENT) && (synpred51_FTS())) {s = 205;}
+						else if ( (LA73_122==PLUS) && (synpred51_FTS())) {s = 206;}
+						else if ( (LA73_122==MINUS) && (synpred51_FTS())) {s = 207;}
+						 
+						input.seek(index73_122);
+						if ( s>=0 ) return s;
+						break;
+
+					case 85 : 
+						int LA73_74 = input.LA(1);
+						 
+						int index73_74 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_74==COMMA||LA73_74==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_74);
+						if ( s>=0 ) return s;
+						break;
+
+					case 86 : 
+						int LA73_131 = input.LA(1);
+						 
+						int index73_131 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_131==COMMA||LA73_131==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_131);
+						if ( s>=0 ) return s;
+						break;
+
+					case 87 : 
+						int LA73_219 = input.LA(1);
+						 
+						int index73_219 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_219==COMMA||LA73_219==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_219);
+						if ( s>=0 ) return s;
+						break;
+
+					case 88 : 
+						int LA73_430 = input.LA(1);
+						 
+						int index73_430 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_430);
+						if ( s>=0 ) return s;
+						break;
+
+					case 89 : 
 						int LA73_33 = input.LA(1);
 						 
 						int index73_33 = input.index();
@@ -25881,7 +23374,2429 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 241 : 
+					case 90 : 
+						int LA73_79 = input.LA(1);
+						 
+						int index73_79 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_79==COMMA||LA73_79==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_79);
+						if ( s>=0 ) return s;
+						break;
+
+					case 91 : 
+						int LA73_136 = input.LA(1);
+						 
+						int index73_136 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_136==COMMA||LA73_136==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_136);
+						if ( s>=0 ) return s;
+						break;
+
+					case 92 : 
+						int LA73_236 = input.LA(1);
+						 
+						int index73_236 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_236==COMMA||LA73_236==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_236);
+						if ( s>=0 ) return s;
+						break;
+
+					case 93 : 
+						int LA73_48 = input.LA(1);
+						 
+						int index73_48 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_48==COMMA||LA73_48==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_48);
+						if ( s>=0 ) return s;
+						break;
+
+					case 94 : 
+						int LA73_119 = input.LA(1);
+						 
+						int index73_119 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_119==COMMA||LA73_119==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_119);
+						if ( s>=0 ) return s;
+						break;
+
+					case 95 : 
+						int LA73_300 = input.LA(1);
+						 
+						int index73_300 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_300==COMMA||LA73_300==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_300);
+						if ( s>=0 ) return s;
+						break;
+
+					case 96 : 
+						int LA73_271 = input.LA(1);
+						 
+						int index73_271 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_271==COMMA||LA73_271==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_271);
+						if ( s>=0 ) return s;
+						break;
+
+					case 97 : 
+						int LA73_335 = input.LA(1);
+						 
+						int index73_335 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_335);
+						if ( s>=0 ) return s;
+						break;
+
+					case 98 : 
+						int LA73_417 = input.LA(1);
+						 
+						int index73_417 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_417);
+						if ( s>=0 ) return s;
+						break;
+
+					case 99 : 
+						int LA73_325 = input.LA(1);
+						 
+						int index73_325 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_325==COMMA||LA73_325==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_325);
+						if ( s>=0 ) return s;
+						break;
+
+					case 100 : 
+						int LA73_73 = input.LA(1);
+						 
+						int index73_73 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_73==COMMA||LA73_73==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_73);
+						if ( s>=0 ) return s;
+						break;
+
+					case 101 : 
+						int LA73_130 = input.LA(1);
+						 
+						int index73_130 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_130==COMMA||LA73_130==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_130);
+						if ( s>=0 ) return s;
+						break;
+
+					case 102 : 
+						int LA73_47 = input.LA(1);
+						 
+						int index73_47 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_47==COMMA||LA73_47==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_47);
+						if ( s>=0 ) return s;
+						break;
+
+					case 103 : 
+						int LA73_118 = input.LA(1);
+						 
+						int index73_118 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_118==COMMA||LA73_118==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_118);
+						if ( s>=0 ) return s;
+						break;
+
+					case 104 : 
+						int LA73_410 = input.LA(1);
+						 
+						int index73_410 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_410);
+						if ( s>=0 ) return s;
+						break;
+
+					case 105 : 
+						int LA73_78 = input.LA(1);
+						 
+						int index73_78 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_78==COMMA||LA73_78==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_78);
+						if ( s>=0 ) return s;
+						break;
+
+					case 106 : 
+						int LA73_135 = input.LA(1);
+						 
+						int index73_135 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_135==COMMA||LA73_135==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_135);
+						if ( s>=0 ) return s;
+						break;
+
+					case 107 : 
+						int LA73_233 = input.LA(1);
+						 
+						int index73_233 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_233==COMMA||LA73_233==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_233);
+						if ( s>=0 ) return s;
+						break;
+
+					case 108 : 
+						int LA73_171 = input.LA(1);
+						 
+						int index73_171 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_171==ID) ) {s = 220;}
+						else if ( (LA73_171==FTSWORD) ) {s = 141;}
+						else if ( (LA73_171==FTSPRE) ) {s = 142;}
+						else if ( (LA73_171==FTSWILD) ) {s = 143;}
+						else if ( (LA73_171==NOT) ) {s = 144;}
+						else if ( (LA73_171==TO) ) {s = 145;}
+						else if ( (LA73_171==DECIMAL_INTEGER_LITERAL) ) {s = 146;}
+						else if ( (LA73_171==FLOATING_POINT_LITERAL) ) {s = 147;}
+						else if ( (LA73_171==STAR) ) {s = 148;}
+						else if ( (LA73_171==QUESTION_MARK) ) {s = 149;}
+						else if ( (LA73_171==DATETIME) ) {s = 150;}
+						else if ( (LA73_171==URI) ) {s = 151;}
+						else if ( (LA73_171==TILDA) && (synpred52_FTS())) {s = 152;}
+						else if ( (LA73_171==CARAT) && (synpred52_FTS())) {s = 153;}
+						else if ( (LA73_171==AND) && (synpred52_FTS())) {s = 154;}
+						else if ( (LA73_171==AMP) && (synpred52_FTS())) {s = 155;}
+						else if ( (LA73_171==EOF) && (synpred52_FTS())) {s = 156;}
+						else if ( (LA73_171==RPAREN) && (synpred52_FTS())) {s = 157;}
+						else if ( (LA73_171==OR) && (synpred52_FTS())) {s = 158;}
+						else if ( (LA73_171==BAR) && (synpred52_FTS())) {s = 159;}
+						else if ( (LA73_171==EXCLAMATION) && (synpred52_FTS())) {s = 160;}
+						else if ( (LA73_171==AT) && (synpred52_FTS())) {s = 161;}
+						else if ( (LA73_171==FTSPHRASE) && (synpred52_FTS())) {s = 162;}
+						else if ( (LA73_171==LSQUARE) && (synpred52_FTS())) {s = 163;}
+						else if ( (LA73_171==LT) && (synpred52_FTS())) {s = 164;}
+						else if ( (LA73_171==COMMA||LA73_171==DOT) && (synpred52_FTS())) {s = 165;}
+						else if ( (LA73_171==EQUALS) && (synpred52_FTS())) {s = 166;}
+						else if ( (LA73_171==LPAREN) && (synpred52_FTS())) {s = 167;}
+						else if ( (LA73_171==PERCENT) && (synpred52_FTS())) {s = 168;}
+						else if ( (LA73_171==PLUS) && (synpred52_FTS())) {s = 169;}
+						else if ( (LA73_171==MINUS) && (synpred52_FTS())) {s = 170;}
+						 
+						input.seek(index73_171);
+						if ( s>=0 ) return s;
+						break;
+
+					case 109 : 
+						int LA73_309 = input.LA(1);
+						 
+						int index73_309 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_309==COMMA||LA73_309==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_309);
+						if ( s>=0 ) return s;
+						break;
+
+					case 110 : 
+						int LA73_106 = input.LA(1);
+						 
+						int index73_106 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_106==DOT) ) {s = 171;}
+						else if ( (LA73_106==COMMA) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_106);
+						if ( s>=0 ) return s;
+						break;
+
+					case 111 : 
+						int LA73_376 = input.LA(1);
+						 
+						int index73_376 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_376);
+						if ( s>=0 ) return s;
+						break;
+
+					case 112 : 
+						int LA73_186 = input.LA(1);
+						 
+						int index73_186 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_186==COMMA||LA73_186==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_186);
+						if ( s>=0 ) return s;
+						break;
+
+					case 113 : 
+						int LA73_238 = input.LA(1);
+						 
+						int index73_238 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_238==COMMA||LA73_238==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_238);
+						if ( s>=0 ) return s;
+						break;
+
+					case 114 : 
+						int LA73_263 = input.LA(1);
+						 
+						int index73_263 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_263==COMMA||LA73_263==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_263);
+						if ( s>=0 ) return s;
+						break;
+
+					case 115 : 
+						int LA73_110 = input.LA(1);
+						 
+						int index73_110 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_110==COMMA||LA73_110==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_110);
+						if ( s>=0 ) return s;
+						break;
+
+					case 116 : 
+						int LA73_183 = input.LA(1);
+						 
+						int index73_183 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_183==COMMA||LA73_183==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_183);
+						if ( s>=0 ) return s;
+						break;
+
+					case 117 : 
+						int LA73_223 = input.LA(1);
+						 
+						int index73_223 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_223==COMMA||LA73_223==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_223);
+						if ( s>=0 ) return s;
+						break;
+
+					case 118 : 
+						int LA73_414 = input.LA(1);
+						 
+						int index73_414 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_414);
+						if ( s>=0 ) return s;
+						break;
+
+					case 119 : 
+						int LA73_321 = input.LA(1);
+						 
+						int index73_321 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_321==COMMA||LA73_321==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_321);
+						if ( s>=0 ) return s;
+						break;
+
+					case 120 : 
+						int LA73_81 = input.LA(1);
+						 
+						int index73_81 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_81==COMMA||LA73_81==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_81);
+						if ( s>=0 ) return s;
+						break;
+
+					case 121 : 
+						int LA73_138 = input.LA(1);
+						 
+						int index73_138 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_138==COMMA||LA73_138==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_138);
+						if ( s>=0 ) return s;
+						break;
+
+					case 122 : 
+						int LA73_299 = input.LA(1);
+						 
+						int index73_299 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_299==COMMA||LA73_299==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_299);
+						if ( s>=0 ) return s;
+						break;
+
+					case 123 : 
+						int LA73_72 = input.LA(1);
+						 
+						int index73_72 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_72==COMMA||LA73_72==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_72);
+						if ( s>=0 ) return s;
+						break;
+
+					case 124 : 
+						int LA73_431 = input.LA(1);
+						 
+						int index73_431 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_431);
+						if ( s>=0 ) return s;
+						break;
+
+					case 125 : 
+						int LA73_439 = input.LA(1);
+						 
+						int index73_439 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_439);
+						if ( s>=0 ) return s;
+						break;
+
+					case 126 : 
+						int LA73_453 = input.LA(1);
+						 
+						int index73_453 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_453);
+						if ( s>=0 ) return s;
+						break;
+
+					case 127 : 
+						int LA73_330 = input.LA(1);
+						 
+						int index73_330 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_330==COMMA||LA73_330==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_330);
+						if ( s>=0 ) return s;
+						break;
+
+					case 128 : 
+						int LA73_215 = input.LA(1);
+						 
+						int index73_215 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_215==DOT) ) {s = 259;}
+						else if ( (LA73_215==COMMA) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_215);
+						if ( s>=0 ) return s;
+						break;
+
+					case 129 : 
+						int LA73_310 = input.LA(1);
+						 
+						int index73_310 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_310==COMMA||LA73_310==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_310);
+						if ( s>=0 ) return s;
+						break;
+
+					case 130 : 
+						int LA73_364 = input.LA(1);
+						 
+						int index73_364 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_364==ID) ) {s = 414;}
+						else if ( (LA73_364==FTSWORD) ) {s = 415;}
+						else if ( (LA73_364==FTSPRE) ) {s = 416;}
+						else if ( (LA73_364==FTSWILD) ) {s = 417;}
+						else if ( (LA73_364==NOT) ) {s = 418;}
+						else if ( (LA73_364==TO) ) {s = 419;}
+						else if ( (LA73_364==DECIMAL_INTEGER_LITERAL) ) {s = 420;}
+						else if ( (LA73_364==FLOATING_POINT_LITERAL) ) {s = 421;}
+						else if ( (LA73_364==STAR) ) {s = 422;}
+						else if ( (LA73_364==QUESTION_MARK) ) {s = 423;}
+						else if ( (LA73_364==DATETIME) ) {s = 424;}
+						else if ( (LA73_364==URI) ) {s = 425;}
+						else if ( (LA73_364==TILDA) && (synpred44_FTS())) {s = 344;}
+						else if ( (LA73_364==CARAT) && (synpred44_FTS())) {s = 345;}
+						else if ( (LA73_364==AND) && (synpred44_FTS())) {s = 346;}
+						else if ( (LA73_364==AMP) && (synpred44_FTS())) {s = 347;}
+						else if ( (LA73_364==EOF) && (synpred44_FTS())) {s = 348;}
+						else if ( (LA73_364==RPAREN) && (synpred44_FTS())) {s = 349;}
+						else if ( (LA73_364==OR) && (synpred44_FTS())) {s = 350;}
+						else if ( (LA73_364==BAR) && (synpred44_FTS())) {s = 351;}
+						else if ( (LA73_364==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
+						else if ( (LA73_364==AT) && (synpred44_FTS())) {s = 353;}
+						else if ( (LA73_364==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
+						else if ( (LA73_364==LSQUARE) && (synpred44_FTS())) {s = 355;}
+						else if ( (LA73_364==LT) && (synpred44_FTS())) {s = 356;}
+						else if ( (LA73_364==COMMA||LA73_364==DOT) && (synpred44_FTS())) {s = 357;}
+						else if ( (LA73_364==EQUALS) && (synpred44_FTS())) {s = 358;}
+						else if ( (LA73_364==LPAREN) && (synpred44_FTS())) {s = 359;}
+						else if ( (LA73_364==PERCENT) && (synpred44_FTS())) {s = 360;}
+						else if ( (LA73_364==PLUS) && (synpred44_FTS())) {s = 361;}
+						else if ( (LA73_364==MINUS) && (synpred44_FTS())) {s = 362;}
+						 
+						input.seek(index73_364);
+						if ( s>=0 ) return s;
+						break;
+
+					case 131 : 
+						int LA73_264 = input.LA(1);
+						 
+						int index73_264 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_264==COMMA||LA73_264==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_264);
+						if ( s>=0 ) return s;
+						break;
+
+					case 132 : 
+						int LA73_184 = input.LA(1);
+						 
+						int index73_184 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_184==COMMA||LA73_184==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_184);
+						if ( s>=0 ) return s;
+						break;
+
+					case 133 : 
+						int LA73_438 = input.LA(1);
+						 
+						int index73_438 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_438);
+						if ( s>=0 ) return s;
+						break;
+
+					case 134 : 
+						int LA73_411 = input.LA(1);
+						 
+						int index73_411 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_411);
+						if ( s>=0 ) return s;
+						break;
+
+					case 135 : 
+						int LA73_107 = input.LA(1);
+						 
+						int index73_107 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_107==COMMA||LA73_107==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_107);
+						if ( s>=0 ) return s;
+						break;
+
+					case 136 : 
+						int LA73_75 = input.LA(1);
+						 
+						int index73_75 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_75==COMMA||LA73_75==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_75);
+						if ( s>=0 ) return s;
+						break;
+
+					case 137 : 
+						int LA73_132 = input.LA(1);
+						 
+						int index73_132 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_132==COMMA||LA73_132==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_132);
+						if ( s>=0 ) return s;
+						break;
+
+					case 138 : 
+						int LA73_338 = input.LA(1);
+						 
+						int index73_338 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_338);
+						if ( s>=0 ) return s;
+						break;
+
+					case 139 : 
+						int LA73_45 = input.LA(1);
+						 
+						int index73_45 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_45==COMMA||LA73_45==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_45);
+						if ( s>=0 ) return s;
+						break;
+
+					case 140 : 
+						int LA73_116 = input.LA(1);
+						 
+						int index73_116 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_116==COMMA||LA73_116==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_116);
+						if ( s>=0 ) return s;
+						break;
+
+					case 141 : 
+						int LA73_306 = input.LA(1);
+						 
+						int index73_306 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_306==COMMA||LA73_306==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_306);
+						if ( s>=0 ) return s;
+						break;
+
+					case 142 : 
+						int LA73_377 = input.LA(1);
+						 
+						int index73_377 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_377);
+						if ( s>=0 ) return s;
+						break;
+
+					case 143 : 
+						int LA73_420 = input.LA(1);
+						 
+						int index73_420 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_420);
+						if ( s>=0 ) return s;
+						break;
+
+					case 144 : 
+						int LA73_224 = input.LA(1);
+						 
+						int index73_224 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_224==COMMA||LA73_224==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_224);
+						if ( s>=0 ) return s;
+						break;
+
+					case 145 : 
+						int LA73_80 = input.LA(1);
+						 
+						int index73_80 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_80==COMMA||LA73_80==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_80);
+						if ( s>=0 ) return s;
+						break;
+
+					case 146 : 
+						int LA73_137 = input.LA(1);
+						 
+						int index73_137 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_137==COMMA||LA73_137==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_137);
+						if ( s>=0 ) return s;
+						break;
+
+					case 147 : 
+						int LA73_294 = input.LA(1);
+						 
+						int index73_294 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_294==ID) ) {s = 332;}
+						else if ( (LA73_294==FTSWORD) ) {s = 333;}
+						else if ( (LA73_294==FTSPRE) ) {s = 334;}
+						else if ( (LA73_294==FTSWILD) ) {s = 335;}
+						else if ( (LA73_294==NOT) ) {s = 336;}
+						else if ( (LA73_294==TO) ) {s = 337;}
+						else if ( (LA73_294==DECIMAL_INTEGER_LITERAL) ) {s = 338;}
+						else if ( (LA73_294==FLOATING_POINT_LITERAL) ) {s = 339;}
+						else if ( (LA73_294==STAR) ) {s = 340;}
+						else if ( (LA73_294==QUESTION_MARK) ) {s = 341;}
+						else if ( (LA73_294==DATETIME) ) {s = 342;}
+						else if ( (LA73_294==URI) ) {s = 343;}
+						else if ( (LA73_294==TILDA) && (synpred44_FTS())) {s = 344;}
+						else if ( (LA73_294==CARAT) && (synpred44_FTS())) {s = 345;}
+						else if ( (LA73_294==AND) && (synpred44_FTS())) {s = 346;}
+						else if ( (LA73_294==AMP) && (synpred44_FTS())) {s = 347;}
+						else if ( (LA73_294==EOF) && (synpred44_FTS())) {s = 348;}
+						else if ( (LA73_294==RPAREN) && (synpred44_FTS())) {s = 349;}
+						else if ( (LA73_294==OR) && (synpred44_FTS())) {s = 350;}
+						else if ( (LA73_294==BAR) && (synpred44_FTS())) {s = 351;}
+						else if ( (LA73_294==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
+						else if ( (LA73_294==AT) && (synpred44_FTS())) {s = 353;}
+						else if ( (LA73_294==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
+						else if ( (LA73_294==LSQUARE) && (synpred44_FTS())) {s = 355;}
+						else if ( (LA73_294==LT) && (synpred44_FTS())) {s = 356;}
+						else if ( (LA73_294==COMMA||LA73_294==DOT) && (synpred44_FTS())) {s = 357;}
+						else if ( (LA73_294==EQUALS) && (synpred44_FTS())) {s = 358;}
+						else if ( (LA73_294==LPAREN) && (synpred44_FTS())) {s = 359;}
+						else if ( (LA73_294==PERCENT) && (synpred44_FTS())) {s = 360;}
+						else if ( (LA73_294==PLUS) && (synpred44_FTS())) {s = 361;}
+						else if ( (LA73_294==MINUS) && (synpred44_FTS())) {s = 362;}
+						 
+						input.seek(index73_294);
+						if ( s>=0 ) return s;
+						break;
+
+					case 148 : 
+						int LA73_229 = input.LA(1);
+						 
+						int index73_229 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_229==COMMA||LA73_229==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_229);
+						if ( s>=0 ) return s;
+						break;
+
+					case 149 : 
+						int LA73_365 = input.LA(1);
+						 
+						int index73_365 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_365==DOT) ) {s = 426;}
+						else if ( (LA73_365==COMMA) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_365);
+						if ( s>=0 ) return s;
+						break;
+
+					case 150 : 
+						int LA73_369 = input.LA(1);
+						 
+						int index73_369 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_369==COMMA||LA73_369==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_369);
+						if ( s>=0 ) return s;
+						break;
+
+					case 151 : 
+						int LA73_322 = input.LA(1);
+						 
+						int index73_322 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_322==COMMA||LA73_322==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_322);
+						if ( s>=0 ) return s;
+						break;
+
+					case 152 : 
+						int LA73_332 = input.LA(1);
+						 
+						int index73_332 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_332);
+						if ( s>=0 ) return s;
+						break;
+
+					case 153 : 
+						int LA73_227 = input.LA(1);
+						 
+						int index73_227 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_227==COMMA||LA73_227==DOT) ) {s = 293;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_227);
+						if ( s>=0 ) return s;
+						break;
+
+					case 154 : 
+						int LA73_126 = input.LA(1);
+						 
+						int index73_126 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_126==COMMA||LA73_126==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_126);
+						if ( s>=0 ) return s;
+						break;
+
+					case 155 : 
+						int LA73_129 = input.LA(1);
+						 
+						int index73_129 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 210;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 212;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_129);
+						if ( s>=0 ) return s;
+						break;
+
+					case 156 : 
+						int LA73_440 = input.LA(1);
+						 
+						int index73_440 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_440);
+						if ( s>=0 ) return s;
+						break;
+
+					case 157 : 
+						int LA73_454 = input.LA(1);
+						 
+						int index73_454 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_454);
+						if ( s>=0 ) return s;
+						break;
+
+					case 158 : 
+						int LA73_144 = input.LA(1);
+						 
+						int index73_144 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_144==COMMA||LA73_144==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_144);
+						if ( s>=0 ) return s;
+						break;
+
+					case 159 : 
+						int LA73_426 = input.LA(1);
+						 
+						int index73_426 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_426==ID) ) {s = 451;}
+						else if ( (LA73_426==FTSWORD) ) {s = 415;}
+						else if ( (LA73_426==FTSPRE) ) {s = 416;}
+						else if ( (LA73_426==FTSWILD) ) {s = 417;}
+						else if ( (LA73_426==NOT) ) {s = 418;}
+						else if ( (LA73_426==TO) ) {s = 419;}
+						else if ( (LA73_426==DECIMAL_INTEGER_LITERAL) ) {s = 420;}
+						else if ( (LA73_426==FLOATING_POINT_LITERAL) ) {s = 421;}
+						else if ( (LA73_426==STAR) ) {s = 422;}
+						else if ( (LA73_426==QUESTION_MARK) ) {s = 423;}
+						else if ( (LA73_426==DATETIME) ) {s = 424;}
+						else if ( (LA73_426==URI) ) {s = 425;}
+						else if ( (LA73_426==TILDA) && (synpred44_FTS())) {s = 344;}
+						else if ( (LA73_426==CARAT) && (synpred44_FTS())) {s = 345;}
+						else if ( (LA73_426==AND) && (synpred44_FTS())) {s = 346;}
+						else if ( (LA73_426==AMP) && (synpred44_FTS())) {s = 347;}
+						else if ( (LA73_426==EOF) && (synpred44_FTS())) {s = 348;}
+						else if ( (LA73_426==RPAREN) && (synpred44_FTS())) {s = 349;}
+						else if ( (LA73_426==OR) && (synpred44_FTS())) {s = 350;}
+						else if ( (LA73_426==BAR) && (synpred44_FTS())) {s = 351;}
+						else if ( (LA73_426==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
+						else if ( (LA73_426==AT) && (synpred44_FTS())) {s = 353;}
+						else if ( (LA73_426==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
+						else if ( (LA73_426==LSQUARE) && (synpred44_FTS())) {s = 355;}
+						else if ( (LA73_426==LT) && (synpred44_FTS())) {s = 356;}
+						else if ( (LA73_426==COMMA||LA73_426==DOT) && (synpred44_FTS())) {s = 357;}
+						else if ( (LA73_426==EQUALS) && (synpred44_FTS())) {s = 358;}
+						else if ( (LA73_426==LPAREN) && (synpred44_FTS())) {s = 359;}
+						else if ( (LA73_426==PERCENT) && (synpred44_FTS())) {s = 360;}
+						else if ( (LA73_426==PLUS) && (synpred44_FTS())) {s = 361;}
+						else if ( (LA73_426==MINUS) && (synpred44_FTS())) {s = 362;}
+						 
+						input.seek(index73_426);
+						if ( s>=0 ) return s;
+						break;
+
+					case 160 : 
+						int LA73_421 = input.LA(1);
+						 
+						int index73_421 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_421);
+						if ( s>=0 ) return s;
+						break;
+
+					case 161 : 
+						int LA73_125 = input.LA(1);
+						 
+						int index73_125 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_125==COMMA||LA73_125==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_125);
+						if ( s>=0 ) return s;
+						break;
+
+					case 162 : 
+						int LA73_432 = input.LA(1);
+						 
+						int index73_432 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_432);
+						if ( s>=0 ) return s;
+						break;
+
+					case 163 : 
+						int LA73_412 = input.LA(1);
+						 
+						int index73_412 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_412);
+						if ( s>=0 ) return s;
+						break;
+
+					case 164 : 
+						int LA73_446 = input.LA(1);
+						 
+						int index73_446 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_446);
+						if ( s>=0 ) return s;
+						break;
+
+					case 165 : 
+						int LA73_231 = input.LA(1);
+						 
+						int index73_231 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_231==COMMA||LA73_231==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_231);
+						if ( s>=0 ) return s;
+						break;
+
+					case 166 : 
+						int LA73_181 = input.LA(1);
+						 
+						int index73_181 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_181==COMMA||LA73_181==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_181);
+						if ( s>=0 ) return s;
+						break;
+
+					case 167 : 
+						int LA73_185 = input.LA(1);
+						 
+						int index73_185 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_185==COMMA||LA73_185==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_185);
+						if ( s>=0 ) return s;
+						break;
+
+					case 168 : 
+						int LA73_378 = input.LA(1);
+						 
+						int index73_378 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_378);
+						if ( s>=0 ) return s;
+						break;
+
+					case 169 : 
+						int LA73_339 = input.LA(1);
+						 
+						int index73_339 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_339);
+						if ( s>=0 ) return s;
+						break;
+
+					case 170 : 
+						int LA73_71 = input.LA(1);
+						 
+						int index73_71 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_71==ID) ) {s = 111;}
+						else if ( (LA73_71==FTSWORD) ) {s = 112;}
+						else if ( (LA73_71==FTSPRE) ) {s = 113;}
+						else if ( (LA73_71==FTSWILD) ) {s = 114;}
+						else if ( (LA73_71==NOT) ) {s = 115;}
+						else if ( (LA73_71==TO) ) {s = 116;}
+						else if ( (LA73_71==DECIMAL_INTEGER_LITERAL) ) {s = 117;}
+						else if ( (LA73_71==FLOATING_POINT_LITERAL) ) {s = 118;}
+						else if ( (LA73_71==STAR) ) {s = 119;}
+						else if ( (LA73_71==QUESTION_MARK) ) {s = 120;}
+						else if ( (LA73_71==DATETIME) ) {s = 121;}
+						else if ( (LA73_71==URI) ) {s = 51;}
+						else if ( (LA73_71==TILDA) && (synpred56_FTS())) {s = 52;}
+						else if ( (LA73_71==CARAT) && (synpred56_FTS())) {s = 53;}
+						else if ( (LA73_71==AND) && (synpred56_FTS())) {s = 54;}
+						else if ( (LA73_71==AMP) && (synpred56_FTS())) {s = 55;}
+						else if ( (LA73_71==EOF) && (synpred56_FTS())) {s = 56;}
+						else if ( (LA73_71==RPAREN) && (synpred56_FTS())) {s = 57;}
+						else if ( (LA73_71==OR) && (synpred56_FTS())) {s = 58;}
+						else if ( (LA73_71==BAR) && (synpred56_FTS())) {s = 59;}
+						else if ( (LA73_71==EXCLAMATION) && (synpred56_FTS())) {s = 60;}
+						else if ( (LA73_71==AT) && (synpred56_FTS())) {s = 61;}
+						else if ( (LA73_71==FTSPHRASE) && (synpred56_FTS())) {s = 62;}
+						else if ( (LA73_71==LSQUARE) && (synpred56_FTS())) {s = 63;}
+						else if ( (LA73_71==LT) && (synpred56_FTS())) {s = 64;}
+						else if ( (LA73_71==COMMA||LA73_71==DOT) && (synpred56_FTS())) {s = 65;}
+						else if ( (LA73_71==EQUALS) && (synpred56_FTS())) {s = 66;}
+						else if ( (LA73_71==LPAREN) && (synpred56_FTS())) {s = 67;}
+						else if ( (LA73_71==PERCENT) && (synpred56_FTS())) {s = 68;}
+						else if ( (LA73_71==PLUS) && (synpred56_FTS())) {s = 69;}
+						else if ( (LA73_71==MINUS) && (synpred56_FTS())) {s = 70;}
+						 
+						input.seek(index73_71);
+						if ( s>=0 ) return s;
+						break;
+
+					case 171 : 
+						int LA73_225 = input.LA(1);
+						 
+						int index73_225 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_225==COMMA||LA73_225==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_225);
+						if ( s>=0 ) return s;
+						break;
+
+					case 172 : 
+						int LA73_315 = input.LA(1);
+						 
+						int index73_315 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_315==COMMA||LA73_315==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_315);
+						if ( s>=0 ) return s;
+						break;
+
+					case 173 : 
+						int LA73_375 = input.LA(1);
+						 
+						int index73_375 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_375);
+						if ( s>=0 ) return s;
+						break;
+
+					case 174 : 
+						int LA73_404 = input.LA(1);
+						 
+						int index73_404 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_404==COMMA||LA73_404==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_404);
+						if ( s>=0 ) return s;
+						break;
+
+					case 175 : 
+						int LA73_260 = input.LA(1);
+						 
+						int index73_260 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_260==ID) ) {s = 301;}
+						else if ( (LA73_260==FTSWORD) ) {s = 302;}
+						else if ( (LA73_260==FTSPRE) ) {s = 303;}
+						else if ( (LA73_260==FTSWILD) ) {s = 304;}
+						else if ( (LA73_260==NOT) ) {s = 305;}
+						else if ( (LA73_260==TO) ) {s = 306;}
+						else if ( (LA73_260==DECIMAL_INTEGER_LITERAL) ) {s = 307;}
+						else if ( (LA73_260==FLOATING_POINT_LITERAL) ) {s = 308;}
+						else if ( (LA73_260==STAR) ) {s = 309;}
+						else if ( (LA73_260==QUESTION_MARK) ) {s = 310;}
+						else if ( (LA73_260==DATETIME) ) {s = 311;}
+						else if ( (LA73_260==URI) ) {s = 312;}
+						else if ( (LA73_260==TILDA) && (synpred48_FTS())) {s = 240;}
+						else if ( (LA73_260==CARAT) && (synpred48_FTS())) {s = 241;}
+						else if ( (LA73_260==AND) && (synpred48_FTS())) {s = 242;}
+						else if ( (LA73_260==AMP) && (synpred48_FTS())) {s = 243;}
+						else if ( (LA73_260==EOF) && (synpred48_FTS())) {s = 244;}
+						else if ( (LA73_260==RPAREN) && (synpred48_FTS())) {s = 245;}
+						else if ( (LA73_260==OR) && (synpred48_FTS())) {s = 246;}
+						else if ( (LA73_260==BAR) && (synpred48_FTS())) {s = 247;}
+						else if ( (LA73_260==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
+						else if ( (LA73_260==AT) && (synpred48_FTS())) {s = 249;}
+						else if ( (LA73_260==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
+						else if ( (LA73_260==LSQUARE) && (synpred48_FTS())) {s = 251;}
+						else if ( (LA73_260==LT) && (synpred48_FTS())) {s = 252;}
+						else if ( (LA73_260==COMMA||LA73_260==DOT) && (synpred48_FTS())) {s = 253;}
+						else if ( (LA73_260==EQUALS) && (synpred48_FTS())) {s = 254;}
+						else if ( (LA73_260==LPAREN) && (synpred48_FTS())) {s = 255;}
+						else if ( (LA73_260==PERCENT) && (synpred48_FTS())) {s = 256;}
+						else if ( (LA73_260==PLUS) && (synpred48_FTS())) {s = 257;}
+						else if ( (LA73_260==MINUS) && (synpred48_FTS())) {s = 258;}
+						 
+						input.seek(index73_260);
+						if ( s>=0 ) return s;
+						break;
+
+					case 176 : 
+						int LA73_323 = input.LA(1);
+						 
+						int index73_323 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_323==COMMA||LA73_323==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_323);
+						if ( s>=0 ) return s;
+						break;
+
+					case 177 : 
+						int LA73_149 = input.LA(1);
+						 
+						int index73_149 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_149==COMMA||LA73_149==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_149);
+						if ( s>=0 ) return s;
+						break;
+
+					case 178 : 
+						int LA73_230 = input.LA(1);
+						 
+						int index73_230 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_230==COMMA||LA73_230==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_230);
+						if ( s>=0 ) return s;
+						break;
+
+					case 179 : 
+						int LA73_76 = input.LA(1);
+						 
+						int index73_76 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_76==COMMA||LA73_76==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_76);
+						if ( s>=0 ) return s;
+						break;
+
+					case 180 : 
+						int LA73_133 = input.LA(1);
+						 
+						int index73_133 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_133==COMMA||LA73_133==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_133);
+						if ( s>=0 ) return s;
+						break;
+
+					case 181 : 
+						int LA73_311 = input.LA(1);
+						 
+						int index73_311 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_311==COMMA||LA73_311==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_311);
+						if ( s>=0 ) return s;
+						break;
+
+					case 182 : 
+						int LA73_146 = input.LA(1);
+						 
+						int index73_146 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_146==COMMA||LA73_146==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_146);
+						if ( s>=0 ) return s;
+						break;
+
+					case 183 : 
+						int LA73_214 = input.LA(1);
+						 
+						int index73_214 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_214==ID) ) {s = 228;}
+						else if ( (LA73_214==FTSWORD) ) {s = 229;}
+						else if ( (LA73_214==FTSPRE) ) {s = 230;}
+						else if ( (LA73_214==FTSWILD) ) {s = 231;}
+						else if ( (LA73_214==NOT) ) {s = 232;}
+						else if ( (LA73_214==TO) ) {s = 233;}
+						else if ( (LA73_214==DECIMAL_INTEGER_LITERAL) ) {s = 234;}
+						else if ( (LA73_214==FLOATING_POINT_LITERAL) ) {s = 235;}
+						else if ( (LA73_214==STAR) ) {s = 236;}
+						else if ( (LA73_214==QUESTION_MARK) ) {s = 237;}
+						else if ( (LA73_214==DATETIME) ) {s = 238;}
+						else if ( (LA73_214==URI) ) {s = 239;}
+						else if ( (LA73_214==TILDA) && (synpred48_FTS())) {s = 240;}
+						else if ( (LA73_214==CARAT) && (synpred48_FTS())) {s = 241;}
+						else if ( (LA73_214==AND) && (synpred48_FTS())) {s = 242;}
+						else if ( (LA73_214==AMP) && (synpred48_FTS())) {s = 243;}
+						else if ( (LA73_214==EOF) && (synpred48_FTS())) {s = 244;}
+						else if ( (LA73_214==RPAREN) && (synpred48_FTS())) {s = 245;}
+						else if ( (LA73_214==OR) && (synpred48_FTS())) {s = 246;}
+						else if ( (LA73_214==BAR) && (synpred48_FTS())) {s = 247;}
+						else if ( (LA73_214==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
+						else if ( (LA73_214==AT) && (synpred48_FTS())) {s = 249;}
+						else if ( (LA73_214==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
+						else if ( (LA73_214==LSQUARE) && (synpred48_FTS())) {s = 251;}
+						else if ( (LA73_214==LT) && (synpred48_FTS())) {s = 252;}
+						else if ( (LA73_214==COMMA||LA73_214==DOT) && (synpred48_FTS())) {s = 253;}
+						else if ( (LA73_214==EQUALS) && (synpred48_FTS())) {s = 254;}
+						else if ( (LA73_214==LPAREN) && (synpred48_FTS())) {s = 255;}
+						else if ( (LA73_214==PERCENT) && (synpred48_FTS())) {s = 256;}
+						else if ( (LA73_214==PLUS) && (synpred48_FTS())) {s = 257;}
+						else if ( (LA73_214==MINUS) && (synpred48_FTS())) {s = 258;}
+						 
+						input.seek(index73_214);
+						if ( s>=0 ) return s;
+						break;
+
+					case 184 : 
+						int LA73_208 = input.LA(1);
+						 
+						int index73_208 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_208==ID) ) {s = 227;}
+						else if ( (LA73_208==FTSWORD) ) {s = 178;}
+						else if ( (LA73_208==FTSPRE) ) {s = 179;}
+						else if ( (LA73_208==FTSWILD) ) {s = 180;}
+						else if ( (LA73_208==NOT) ) {s = 181;}
+						else if ( (LA73_208==TO) ) {s = 182;}
+						else if ( (LA73_208==DECIMAL_INTEGER_LITERAL) ) {s = 183;}
+						else if ( (LA73_208==FLOATING_POINT_LITERAL) ) {s = 184;}
+						else if ( (LA73_208==STAR) ) {s = 185;}
+						else if ( (LA73_208==QUESTION_MARK) ) {s = 186;}
+						else if ( (LA73_208==DATETIME) ) {s = 187;}
+						else if ( (LA73_208==URI) ) {s = 188;}
+						else if ( (LA73_208==TILDA) && (synpred51_FTS())) {s = 189;}
+						else if ( (LA73_208==CARAT) && (synpred51_FTS())) {s = 190;}
+						else if ( (LA73_208==AND) && (synpred51_FTS())) {s = 191;}
+						else if ( (LA73_208==AMP) && (synpred51_FTS())) {s = 192;}
+						else if ( (LA73_208==EOF) && (synpred51_FTS())) {s = 193;}
+						else if ( (LA73_208==RPAREN) && (synpred51_FTS())) {s = 194;}
+						else if ( (LA73_208==OR) && (synpred51_FTS())) {s = 195;}
+						else if ( (LA73_208==BAR) && (synpred51_FTS())) {s = 196;}
+						else if ( (LA73_208==EXCLAMATION) && (synpred51_FTS())) {s = 197;}
+						else if ( (LA73_208==AT) && (synpred51_FTS())) {s = 198;}
+						else if ( (LA73_208==FTSPHRASE) && (synpred51_FTS())) {s = 199;}
+						else if ( (LA73_208==LSQUARE) && (synpred51_FTS())) {s = 200;}
+						else if ( (LA73_208==LT) && (synpred51_FTS())) {s = 201;}
+						else if ( (LA73_208==COMMA||LA73_208==DOT) && (synpred51_FTS())) {s = 202;}
+						else if ( (LA73_208==EQUALS) && (synpred51_FTS())) {s = 203;}
+						else if ( (LA73_208==LPAREN) && (synpred51_FTS())) {s = 204;}
+						else if ( (LA73_208==PERCENT) && (synpred51_FTS())) {s = 205;}
+						else if ( (LA73_208==PLUS) && (synpred51_FTS())) {s = 206;}
+						else if ( (LA73_208==MINUS) && (synpred51_FTS())) {s = 207;}
+						 
+						input.seek(index73_208);
+						if ( s>=0 ) return s;
+						break;
+
+					case 185 : 
+						int LA73_302 = input.LA(1);
+						 
+						int index73_302 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_302==COMMA||LA73_302==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_302);
+						if ( s>=0 ) return s;
+						break;
+
+					case 186 : 
+						int LA73_455 = input.LA(1);
+						 
+						int index73_455 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_455);
+						if ( s>=0 ) return s;
+						break;
+
+					case 187 : 
+						int LA73_441 = input.LA(1);
+						 
+						int index73_441 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_441);
+						if ( s>=0 ) return s;
+						break;
+
+					case 188 : 
+						int LA73_363 = input.LA(1);
+						 
+						int index73_363 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_363==ID) ) {s = 413;}
+						else if ( (LA73_363==FTSWORD) ) {s = 333;}
+						else if ( (LA73_363==FTSPRE) ) {s = 334;}
+						else if ( (LA73_363==FTSWILD) ) {s = 335;}
+						else if ( (LA73_363==NOT) ) {s = 336;}
+						else if ( (LA73_363==TO) ) {s = 337;}
+						else if ( (LA73_363==DECIMAL_INTEGER_LITERAL) ) {s = 338;}
+						else if ( (LA73_363==FLOATING_POINT_LITERAL) ) {s = 339;}
+						else if ( (LA73_363==STAR) ) {s = 340;}
+						else if ( (LA73_363==QUESTION_MARK) ) {s = 341;}
+						else if ( (LA73_363==DATETIME) ) {s = 342;}
+						else if ( (LA73_363==URI) ) {s = 343;}
+						else if ( (LA73_363==TILDA) && (synpred44_FTS())) {s = 344;}
+						else if ( (LA73_363==CARAT) && (synpred44_FTS())) {s = 345;}
+						else if ( (LA73_363==AND) && (synpred44_FTS())) {s = 346;}
+						else if ( (LA73_363==AMP) && (synpred44_FTS())) {s = 347;}
+						else if ( (LA73_363==EOF) && (synpred44_FTS())) {s = 348;}
+						else if ( (LA73_363==RPAREN) && (synpred44_FTS())) {s = 349;}
+						else if ( (LA73_363==OR) && (synpred44_FTS())) {s = 350;}
+						else if ( (LA73_363==BAR) && (synpred44_FTS())) {s = 351;}
+						else if ( (LA73_363==EXCLAMATION) && (synpred44_FTS())) {s = 352;}
+						else if ( (LA73_363==AT) && (synpred44_FTS())) {s = 353;}
+						else if ( (LA73_363==FTSPHRASE) && (synpred44_FTS())) {s = 354;}
+						else if ( (LA73_363==LSQUARE) && (synpred44_FTS())) {s = 355;}
+						else if ( (LA73_363==LT) && (synpred44_FTS())) {s = 356;}
+						else if ( (LA73_363==COMMA||LA73_363==DOT) && (synpred44_FTS())) {s = 357;}
+						else if ( (LA73_363==EQUALS) && (synpred44_FTS())) {s = 358;}
+						else if ( (LA73_363==LPAREN) && (synpred44_FTS())) {s = 359;}
+						else if ( (LA73_363==PERCENT) && (synpred44_FTS())) {s = 360;}
+						else if ( (LA73_363==PLUS) && (synpred44_FTS())) {s = 361;}
+						else if ( (LA73_363==MINUS) && (synpred44_FTS())) {s = 362;}
+						 
+						input.seek(index73_363);
+						if ( s>=0 ) return s;
+						break;
+
+					case 189 : 
+						int LA73_427 = input.LA(1);
+						 
+						int index73_427 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_427);
+						if ( s>=0 ) return s;
+						break;
+
+					case 190 : 
+						int LA73_402 = input.LA(1);
+						 
+						int index73_402 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_402==ID) ) {s = 433;}
+						else if ( (LA73_402==FTSWORD) ) {s = 434;}
+						else if ( (LA73_402==FTSPRE) ) {s = 435;}
+						else if ( (LA73_402==FTSWILD) ) {s = 436;}
+						else if ( (LA73_402==NOT) ) {s = 437;}
+						else if ( (LA73_402==TO) ) {s = 438;}
+						else if ( (LA73_402==DECIMAL_INTEGER_LITERAL) ) {s = 439;}
+						else if ( (LA73_402==FLOATING_POINT_LITERAL) ) {s = 440;}
+						else if ( (LA73_402==STAR) ) {s = 441;}
+						else if ( (LA73_402==QUESTION_MARK) ) {s = 442;}
+						else if ( (LA73_402==DATETIME) ) {s = 443;}
+						else if ( (LA73_402==URI) ) {s = 444;}
+						else if ( (LA73_402==TILDA) && (synpred43_FTS())) {s = 382;}
+						else if ( (LA73_402==CARAT) && (synpred43_FTS())) {s = 383;}
+						else if ( (LA73_402==AND) && (synpred43_FTS())) {s = 384;}
+						else if ( (LA73_402==AMP) && (synpred43_FTS())) {s = 385;}
+						else if ( (LA73_402==EOF) && (synpred43_FTS())) {s = 386;}
+						else if ( (LA73_402==RPAREN) && (synpred43_FTS())) {s = 387;}
+						else if ( (LA73_402==OR) && (synpred43_FTS())) {s = 388;}
+						else if ( (LA73_402==BAR) && (synpred43_FTS())) {s = 389;}
+						else if ( (LA73_402==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
+						else if ( (LA73_402==AT) && (synpred43_FTS())) {s = 391;}
+						else if ( (LA73_402==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
+						else if ( (LA73_402==LSQUARE) && (synpred43_FTS())) {s = 393;}
+						else if ( (LA73_402==LT) && (synpred43_FTS())) {s = 394;}
+						else if ( (LA73_402==COMMA||LA73_402==DOT) && (synpred43_FTS())) {s = 395;}
+						else if ( (LA73_402==EQUALS) && (synpred43_FTS())) {s = 396;}
+						else if ( (LA73_402==LPAREN) && (synpred43_FTS())) {s = 397;}
+						else if ( (LA73_402==PERCENT) && (synpred43_FTS())) {s = 398;}
+						else if ( (LA73_402==PLUS) && (synpred43_FTS())) {s = 399;}
+						else if ( (LA73_402==MINUS) && (synpred43_FTS())) {s = 400;}
+						 
+						input.seek(index73_402);
+						if ( s>=0 ) return s;
+						break;
+
+					case 191 : 
+						int LA73_340 = input.LA(1);
+						 
+						int index73_340 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_340);
+						if ( s>=0 ) return s;
+						break;
+
+					case 192 : 
+						int LA73_422 = input.LA(1);
+						 
+						int index73_422 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_422);
+						if ( s>=0 ) return s;
+						break;
+
+					case 193 : 
+						int LA73_443 = input.LA(1);
+						 
+						int index73_443 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_443);
+						if ( s>=0 ) return s;
+						break;
+
+					case 194 : 
+						int LA73_337 = input.LA(1);
+						 
+						int index73_337 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_337);
+						if ( s>=0 ) return s;
+						break;
+
+					case 195 : 
+						int LA73_177 = input.LA(1);
+						 
+						int index73_177 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_177==COMMA||LA73_177==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_177);
+						if ( s>=0 ) return s;
+						break;
+
+					case 196 : 
+						int LA73_265 = input.LA(1);
+						 
+						int index73_265 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_265==COMMA||LA73_265==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_265);
+						if ( s>=0 ) return s;
+						break;
+
+					case 197 : 
+						int LA73_232 = input.LA(1);
+						 
+						int index73_232 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_232==COMMA||LA73_232==DOT) ) {s = 294;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_232);
+						if ( s>=0 ) return s;
+						break;
+
+					case 198 : 
+						int LA73_442 = input.LA(1);
+						 
+						int index73_442 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_442);
+						if ( s>=0 ) return s;
+						break;
+
+					case 199 : 
+						int LA73_226 = input.LA(1);
+						 
+						int index73_226 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_226==COMMA||LA73_226==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_226);
+						if ( s>=0 ) return s;
+						break;
+
+					case 200 : 
+						int LA73_316 = input.LA(1);
+						 
+						int index73_316 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_316==COMMA||LA73_316==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_316);
+						if ( s>=0 ) return s;
+						break;
+
+					case 201 : 
+						int LA73_456 = input.LA(1);
+						 
+						int index73_456 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_456);
+						if ( s>=0 ) return s;
+						break;
+
+					case 202 : 
+						int LA73_303 = input.LA(1);
+						 
+						int index73_303 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_303==COMMA||LA73_303==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_303);
+						if ( s>=0 ) return s;
+						break;
+
+					case 203 : 
+						int LA73_405 = input.LA(1);
+						 
+						int index73_405 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_405==COMMA||LA73_405==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_405);
+						if ( s>=0 ) return s;
+						break;
+
+					case 204 : 
+						int LA73_127 = input.LA(1);
+						 
+						int index73_127 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_127==COMMA||LA73_127==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_127);
+						if ( s>=0 ) return s;
+						break;
+
+					case 205 : 
+						int LA73_147 = input.LA(1);
+						 
+						int index73_147 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_147==COMMA||LA73_147==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_147);
+						if ( s>=0 ) return s;
+						break;
+
+					case 206 : 
+						int LA73_419 = input.LA(1);
+						 
+						int index73_419 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_419);
+						if ( s>=0 ) return s;
+						break;
+
+					case 207 : 
+						int LA73_314 = input.LA(1);
+						 
+						int index73_314 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_314==DOT) ) {s = 401;}
+						else if ( (LA73_314==COMMA) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_314);
+						if ( s>=0 ) return s;
+						break;
+
+					case 208 : 
+						int LA73_103 = input.LA(1);
+						 
+						int index73_103 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_103==ID) ) {s = 129;}
+						else if ( (LA73_103==FTSWORD) ) {s = 130;}
+						else if ( (LA73_103==FTSPRE) ) {s = 131;}
+						else if ( (LA73_103==FTSWILD) ) {s = 132;}
+						else if ( (LA73_103==NOT) ) {s = 133;}
+						else if ( (LA73_103==TO) ) {s = 134;}
+						else if ( (LA73_103==DECIMAL_INTEGER_LITERAL) ) {s = 135;}
+						else if ( (LA73_103==FLOATING_POINT_LITERAL) ) {s = 136;}
+						else if ( (LA73_103==STAR) ) {s = 137;}
+						else if ( (LA73_103==QUESTION_MARK) ) {s = 138;}
+						else if ( (LA73_103==DATETIME) ) {s = 139;}
+						else if ( (LA73_103==URI) ) {s = 83;}
+						else if ( (LA73_103==TILDA) && (synpred55_FTS())) {s = 84;}
+						else if ( (LA73_103==CARAT) && (synpred55_FTS())) {s = 85;}
+						else if ( (LA73_103==AND) && (synpred55_FTS())) {s = 86;}
+						else if ( (LA73_103==AMP) && (synpred55_FTS())) {s = 87;}
+						else if ( (LA73_103==EOF) && (synpred55_FTS())) {s = 88;}
+						else if ( (LA73_103==RPAREN) && (synpred55_FTS())) {s = 89;}
+						else if ( (LA73_103==OR) && (synpred55_FTS())) {s = 90;}
+						else if ( (LA73_103==BAR) && (synpred55_FTS())) {s = 91;}
+						else if ( (LA73_103==EXCLAMATION) && (synpred55_FTS())) {s = 92;}
+						else if ( (LA73_103==AT) && (synpred55_FTS())) {s = 93;}
+						else if ( (LA73_103==FTSPHRASE) && (synpred55_FTS())) {s = 94;}
+						else if ( (LA73_103==LSQUARE) && (synpred55_FTS())) {s = 95;}
+						else if ( (LA73_103==LT) && (synpred55_FTS())) {s = 96;}
+						else if ( (LA73_103==COMMA||LA73_103==DOT) && (synpred55_FTS())) {s = 97;}
+						else if ( (LA73_103==EQUALS) && (synpred55_FTS())) {s = 98;}
+						else if ( (LA73_103==LPAREN) && (synpred55_FTS())) {s = 99;}
+						else if ( (LA73_103==PERCENT) && (synpred55_FTS())) {s = 100;}
+						else if ( (LA73_103==PLUS) && (synpred55_FTS())) {s = 101;}
+						else if ( (LA73_103==MINUS) && (synpred55_FTS())) {s = 102;}
+						 
+						input.seek(index73_103);
+						if ( s>=0 ) return s;
+						break;
+
+					case 209 : 
+						int LA73_447 = input.LA(1);
+						 
+						int index73_447 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_447);
+						if ( s>=0 ) return s;
+						break;
+
+					case 210 : 
+						int LA73_457 = input.LA(1);
+						 
+						int index73_457 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_457);
+						if ( s>=0 ) return s;
+						break;
+
+					case 211 : 
+						int LA73_293 = input.LA(1);
+						 
+						int index73_293 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_293==ID) ) {s = 320;}
+						else if ( (LA73_293==FTSWORD) ) {s = 321;}
+						else if ( (LA73_293==FTSPRE) ) {s = 322;}
+						else if ( (LA73_293==FTSWILD) ) {s = 323;}
+						else if ( (LA73_293==NOT) ) {s = 324;}
+						else if ( (LA73_293==TO) ) {s = 325;}
+						else if ( (LA73_293==DECIMAL_INTEGER_LITERAL) ) {s = 326;}
+						else if ( (LA73_293==FLOATING_POINT_LITERAL) ) {s = 327;}
+						else if ( (LA73_293==STAR) ) {s = 328;}
+						else if ( (LA73_293==QUESTION_MARK) ) {s = 329;}
+						else if ( (LA73_293==DATETIME) ) {s = 330;}
+						else if ( (LA73_293==URI) ) {s = 331;}
+						else if ( (LA73_293==TILDA) && (synpred47_FTS())) {s = 273;}
+						else if ( (LA73_293==CARAT) && (synpred47_FTS())) {s = 274;}
+						else if ( (LA73_293==AND) && (synpred47_FTS())) {s = 275;}
+						else if ( (LA73_293==AMP) && (synpred47_FTS())) {s = 276;}
+						else if ( (LA73_293==EOF) && (synpred47_FTS())) {s = 277;}
+						else if ( (LA73_293==RPAREN) && (synpred47_FTS())) {s = 278;}
+						else if ( (LA73_293==OR) && (synpred47_FTS())) {s = 279;}
+						else if ( (LA73_293==BAR) && (synpred47_FTS())) {s = 280;}
+						else if ( (LA73_293==EXCLAMATION) && (synpred47_FTS())) {s = 281;}
+						else if ( (LA73_293==AT) && (synpred47_FTS())) {s = 282;}
+						else if ( (LA73_293==FTSPHRASE) && (synpred47_FTS())) {s = 283;}
+						else if ( (LA73_293==LSQUARE) && (synpred47_FTS())) {s = 284;}
+						else if ( (LA73_293==LT) && (synpred47_FTS())) {s = 285;}
+						else if ( (LA73_293==COMMA||LA73_293==DOT) && (synpred47_FTS())) {s = 286;}
+						else if ( (LA73_293==EQUALS) && (synpred47_FTS())) {s = 287;}
+						else if ( (LA73_293==LPAREN) && (synpred47_FTS())) {s = 288;}
+						else if ( (LA73_293==PERCENT) && (synpred47_FTS())) {s = 289;}
+						else if ( (LA73_293==PLUS) && (synpred47_FTS())) {s = 290;}
+						else if ( (LA73_293==MINUS) && (synpred47_FTS())) {s = 291;}
+						 
+						input.seek(index73_293);
+						if ( s>=0 ) return s;
+						break;
+
+					case 212 : 
+						int LA73_319 = input.LA(1);
+						 
+						int index73_319 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_319==COMMA||LA73_319==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_319);
+						if ( s>=0 ) return s;
+						break;
+
+					case 213 : 
+						int LA73_413 = input.LA(1);
+						 
+						int index73_413 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_413);
+						if ( s>=0 ) return s;
+						break;
+
+					case 214 : 
+						int LA73_222 = input.LA(1);
+						 
+						int index73_222 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_222==DOT) ) {s = 292;}
+						else if ( (LA73_222==COMMA) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_222);
+						if ( s>=0 ) return s;
+						break;
+
+					case 215 : 
+						int LA73_305 = input.LA(1);
+						 
+						int index73_305 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_305==COMMA||LA73_305==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_305);
+						if ( s>=0 ) return s;
+						break;
+
+					case 216 : 
+						int LA73_220 = input.LA(1);
+						 
+						int index73_220 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_220==COMMA||LA73_220==DOT) ) {s = 260;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_220);
+						if ( s>=0 ) return s;
+						break;
+
+					case 217 : 
+						int LA73_259 = input.LA(1);
+						 
+						int index73_259 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_259==ID) ) {s = 300;}
+						else if ( (LA73_259==FTSWORD) ) {s = 229;}
+						else if ( (LA73_259==FTSPRE) ) {s = 230;}
+						else if ( (LA73_259==FTSWILD) ) {s = 231;}
+						else if ( (LA73_259==NOT) ) {s = 232;}
+						else if ( (LA73_259==TO) ) {s = 233;}
+						else if ( (LA73_259==DECIMAL_INTEGER_LITERAL) ) {s = 234;}
+						else if ( (LA73_259==FLOATING_POINT_LITERAL) ) {s = 235;}
+						else if ( (LA73_259==STAR) ) {s = 236;}
+						else if ( (LA73_259==QUESTION_MARK) ) {s = 237;}
+						else if ( (LA73_259==DATETIME) ) {s = 238;}
+						else if ( (LA73_259==URI) ) {s = 239;}
+						else if ( (LA73_259==TILDA) && (synpred48_FTS())) {s = 240;}
+						else if ( (LA73_259==CARAT) && (synpred48_FTS())) {s = 241;}
+						else if ( (LA73_259==AND) && (synpred48_FTS())) {s = 242;}
+						else if ( (LA73_259==AMP) && (synpred48_FTS())) {s = 243;}
+						else if ( (LA73_259==EOF) && (synpred48_FTS())) {s = 244;}
+						else if ( (LA73_259==RPAREN) && (synpred48_FTS())) {s = 245;}
+						else if ( (LA73_259==OR) && (synpred48_FTS())) {s = 246;}
+						else if ( (LA73_259==BAR) && (synpred48_FTS())) {s = 247;}
+						else if ( (LA73_259==EXCLAMATION) && (synpred48_FTS())) {s = 248;}
+						else if ( (LA73_259==AT) && (synpred48_FTS())) {s = 249;}
+						else if ( (LA73_259==FTSPHRASE) && (synpred48_FTS())) {s = 250;}
+						else if ( (LA73_259==LSQUARE) && (synpred48_FTS())) {s = 251;}
+						else if ( (LA73_259==LT) && (synpred48_FTS())) {s = 252;}
+						else if ( (LA73_259==COMMA||LA73_259==DOT) && (synpred48_FTS())) {s = 253;}
+						else if ( (LA73_259==EQUALS) && (synpred48_FTS())) {s = 254;}
+						else if ( (LA73_259==LPAREN) && (synpred48_FTS())) {s = 255;}
+						else if ( (LA73_259==PERCENT) && (synpred48_FTS())) {s = 256;}
+						else if ( (LA73_259==PLUS) && (synpred48_FTS())) {s = 257;}
+						else if ( (LA73_259==MINUS) && (synpred48_FTS())) {s = 258;}
+						 
+						input.seek(index73_259);
+						if ( s>=0 ) return s;
+						break;
+
+					case 218 : 
+						int LA73_371 = input.LA(1);
+						 
+						int index73_371 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_371);
+						if ( s>=0 ) return s;
+						break;
+
+					case 219 : 
+						int LA73_326 = input.LA(1);
+						 
+						int index73_326 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_326==COMMA||LA73_326==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_326);
+						if ( s>=0 ) return s;
+						break;
+
+					case 220 : 
+						int LA73_423 = input.LA(1);
+						 
+						int index73_423 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_423);
+						if ( s>=0 ) return s;
+						break;
+
+					case 221 : 
+						int LA73_261 = input.LA(1);
+						 
+						int index73_261 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_261==COMMA||LA73_261==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_261);
+						if ( s>=0 ) return s;
+						break;
+
+					case 222 : 
+						int LA73_341 = input.LA(1);
+						 
+						int index73_341 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_341);
+						if ( s>=0 ) return s;
+						break;
+
+					case 223 : 
+						int LA73_403 = input.LA(1);
+						 
+						int index73_403 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_403==DOT) ) {s = 445;}
+						else if ( (LA73_403==COMMA) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_403);
+						if ( s>=0 ) return s;
+						break;
+
+					case 224 : 
+						int LA73_182 = input.LA(1);
+						 
+						int index73_182 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_182==COMMA||LA73_182==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_182);
+						if ( s>=0 ) return s;
+						break;
+
+					case 225 : 
+						int LA73_406 = input.LA(1);
+						 
+						int index73_406 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_406==COMMA||LA73_406==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_406);
+						if ( s>=0 ) return s;
+						break;
+
+					case 226 : 
+						int LA73_434 = input.LA(1);
+						 
+						int index73_434 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_434);
+						if ( s>=0 ) return s;
+						break;
+
+					case 227 : 
+						int LA73_304 = input.LA(1);
+						 
+						int index73_304 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_304==COMMA||LA73_304==DOT) ) {s = 364;}
+						else if ( (synpred46_FTS()) ) {s = 174;}
+						else if ( (synpred48_FTS()) ) {s = 258;}
+						 
+						input.seek(index73_304);
+						if ( s>=0 ) return s;
+						break;
+
+					case 228 : 
+						int LA73_379 = input.LA(1);
+						 
+						int index73_379 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_379);
+						if ( s>=0 ) return s;
+						break;
+
+					case 229 : 
+						int LA73_187 = input.LA(1);
+						 
+						int index73_187 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_187==COMMA||LA73_187==DOT) ) {s = 221;}
+						else if ( (synpred49_FTS()) ) {s = 213;}
+						else if ( (synpred51_FTS()) ) {s = 207;}
+						 
+						input.seek(index73_187);
+						if ( s>=0 ) return s;
+						break;
+
+					case 230 : 
+						int LA73_267 = input.LA(1);
+						 
+						int index73_267 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_267==COMMA||LA73_267==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_267);
+						if ( s>=0 ) return s;
+						break;
+
+					case 231 : 
+						int LA73_317 = input.LA(1);
+						 
+						int index73_317 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_317==COMMA||LA73_317==DOT) ) {s = 313;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_317);
+						if ( s>=0 ) return s;
+						break;
+
+					case 232 : 
+						int LA73_445 = input.LA(1);
+						 
+						int index73_445 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_445==ID) ) {s = 457;}
+						else if ( (LA73_445==FTSWORD) ) {s = 434;}
+						else if ( (LA73_445==FTSPRE) ) {s = 435;}
+						else if ( (LA73_445==FTSWILD) ) {s = 436;}
+						else if ( (LA73_445==NOT) ) {s = 437;}
+						else if ( (LA73_445==TO) ) {s = 438;}
+						else if ( (LA73_445==DECIMAL_INTEGER_LITERAL) ) {s = 439;}
+						else if ( (LA73_445==FLOATING_POINT_LITERAL) ) {s = 440;}
+						else if ( (LA73_445==STAR) ) {s = 441;}
+						else if ( (LA73_445==QUESTION_MARK) ) {s = 442;}
+						else if ( (LA73_445==DATETIME) ) {s = 443;}
+						else if ( (LA73_445==URI) ) {s = 444;}
+						else if ( (LA73_445==TILDA) && (synpred43_FTS())) {s = 382;}
+						else if ( (LA73_445==CARAT) && (synpred43_FTS())) {s = 383;}
+						else if ( (LA73_445==AND) && (synpred43_FTS())) {s = 384;}
+						else if ( (LA73_445==AMP) && (synpred43_FTS())) {s = 385;}
+						else if ( (LA73_445==EOF) && (synpred43_FTS())) {s = 386;}
+						else if ( (LA73_445==RPAREN) && (synpred43_FTS())) {s = 387;}
+						else if ( (LA73_445==OR) && (synpred43_FTS())) {s = 388;}
+						else if ( (LA73_445==BAR) && (synpred43_FTS())) {s = 389;}
+						else if ( (LA73_445==EXCLAMATION) && (synpred43_FTS())) {s = 390;}
+						else if ( (LA73_445==AT) && (synpred43_FTS())) {s = 391;}
+						else if ( (LA73_445==FTSPHRASE) && (synpred43_FTS())) {s = 392;}
+						else if ( (LA73_445==LSQUARE) && (synpred43_FTS())) {s = 393;}
+						else if ( (LA73_445==LT) && (synpred43_FTS())) {s = 394;}
+						else if ( (LA73_445==COMMA||LA73_445==DOT) && (synpred43_FTS())) {s = 395;}
+						else if ( (LA73_445==EQUALS) && (synpred43_FTS())) {s = 396;}
+						else if ( (LA73_445==LPAREN) && (synpred43_FTS())) {s = 397;}
+						else if ( (LA73_445==PERCENT) && (synpred43_FTS())) {s = 398;}
+						else if ( (LA73_445==PLUS) && (synpred43_FTS())) {s = 399;}
+						else if ( (LA73_445==MINUS) && (synpred43_FTS())) {s = 400;}
+						 
+						input.seek(index73_445);
+						if ( s>=0 ) return s;
+						break;
+
+					case 233 : 
+						int LA73_50 = input.LA(1);
+						 
+						int index73_50 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_50==COMMA||LA73_50==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_50);
+						if ( s>=0 ) return s;
+						break;
+
+					case 234 : 
+						int LA73_121 = input.LA(1);
+						 
+						int index73_121 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_121==COMMA||LA73_121==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
+						 
+						input.seek(index73_121);
+						if ( s>=0 ) return s;
+						break;
+
+					case 235 : 
 						int LA73_216 = input.LA(1);
 						 
 						int index73_216 = input.index();
@@ -25895,31 +25810,116 @@ public class FTSParser extends Parser {
 						if ( s>=0 ) return s;
 						break;
 
-					case 242 : 
-						int LA73_179 = input.LA(1);
+					case 236 : 
+						int LA73_380 = input.LA(1);
 						 
-						int index73_179 = input.index();
+						int index73_380 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_179==COMMA||LA73_179==DOT) ) {s = 221;}
+						if ( (synpred41_FTS()) ) {s = 209;}
+						else if ( (synpred43_FTS()) ) {s = 400;}
+						 
+						input.seek(index73_380);
+						if ( s>=0 ) return s;
+						break;
+
+					case 237 : 
+						int LA73_148 = input.LA(1);
+						 
+						int index73_148 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_148==COMMA||LA73_148==DOT) ) {s = 214;}
+						else if ( (synpred50_FTS()) ) {s = 176;}
+						else if ( (synpred52_FTS()) ) {s = 170;}
+						 
+						input.seek(index73_148);
+						if ( s>=0 ) return s;
+						break;
+
+					case 238 : 
+						int LA73_77 = input.LA(1);
+						 
+						int index73_77 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_77==COMMA||LA73_77==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_77);
+						if ( s>=0 ) return s;
+						break;
+
+					case 239 : 
+						int LA73_134 = input.LA(1);
+						 
+						int index73_134 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_134==COMMA||LA73_134==DOT) ) {s = 122;}
+						else if ( (synpred53_FTS()) ) {s = 123;}
+						else if ( (synpred55_FTS()) ) {s = 102;}
+						else if ( (true) ) {s = 34;}
+						 
+						input.seek(index73_134);
+						if ( s>=0 ) return s;
+						break;
+
+					case 240 : 
+						int LA73_324 = input.LA(1);
+						 
+						int index73_324 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_324==COMMA||LA73_324==DOT) ) {s = 402;}
+						else if ( (synpred45_FTS()) ) {s = 211;}
+						else if ( (synpred47_FTS()) ) {s = 291;}
+						 
+						input.seek(index73_324);
+						if ( s>=0 ) return s;
+						break;
+
+					case 241 : 
+						int LA73_178 = input.LA(1);
+						 
+						int index73_178 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA73_178==COMMA||LA73_178==DOT) ) {s = 221;}
 						else if ( (synpred49_FTS()) ) {s = 213;}
 						else if ( (synpred51_FTS()) ) {s = 207;}
 						 
-						input.seek(index73_179);
+						input.seek(index73_178);
+						if ( s>=0 ) return s;
+						break;
+
+					case 242 : 
+						int LA73_448 = input.LA(1);
+						 
+						int index73_448 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred42_FTS()) ) {s = 172;}
+						else if ( (synpred44_FTS()) ) {s = 362;}
+						 
+						input.seek(index73_448);
 						if ( s>=0 ) return s;
 						break;
 
 					case 243 : 
-						int LA73_224 = input.LA(1);
+						int LA73_108 = input.LA(1);
 						 
-						int index73_224 = input.index();
+						int index73_108 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA73_224==COMMA||LA73_224==DOT) ) {s = 221;}
-						else if ( (synpred49_FTS()) ) {s = 213;}
-						else if ( (synpred51_FTS()) ) {s = 207;}
+						if ( (LA73_108==COMMA||LA73_108==DOT) ) {s = 104;}
+						else if ( (synpred54_FTS()) ) {s = 105;}
+						else if ( (synpred56_FTS()) ) {s = 70;}
+						else if ( (true) ) {s = 27;}
 						 
-						input.seek(index73_224);
+						input.seek(index73_108);
 						if ( s>=0 ) return s;
 						break;
 			}

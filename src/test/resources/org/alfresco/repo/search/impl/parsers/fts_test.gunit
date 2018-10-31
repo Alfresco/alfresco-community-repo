@@ -67,6 +67,13 @@ ftsQuery:
 "TYPE:\"content\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"content\" (FIELD_REF TYPE)))))"
 "created:[* TO *]" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE * * INCLUSIVE (FIELD_REF created)))))"
 "TYPE:{http://www.alfresco.org/model/content/1.0}folder" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM {http://www.alfresco.org/model/content/1.0} folder (FIELD_REF TYPE)))))"
+"wlss\:FourBC\:'BEBO'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM wlss\\:FourBC\\:'BEBO'))))"
+"wlss\:4BC\:'BEBO'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM wlss\\:4BC\\:'BEBO'))))"
+"1a" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1a))))"
+"1b:1a" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1a (FIELD_REF 1b)))))"
+"1c:1b:1a" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1a (FIELD_REF 1b (PREFIX 1c))))))"
+"1:a:needle" FAIL
+"a:1:needle" FAIL
 
 
 ftsDisjunction:
@@ -433,6 +440,9 @@ ID :
 "_#"       OK
 "1"        FAIL
 "A1"       OK
+"1A"       OK
+"0_"       OK
+"0123456789$#" FAIL
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  OK
 "cm:name" FAIL
 

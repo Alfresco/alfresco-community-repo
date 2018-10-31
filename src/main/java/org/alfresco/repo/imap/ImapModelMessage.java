@@ -28,9 +28,7 @@ package org.alfresco.repo.imap;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.activation.DataHandler;
 import javax.mail.MessagingException;
-import javax.mail.internet.MimePartDataSource;
 import javax.mail.util.SharedByteArrayInputStream;
 
 import org.alfresco.model.ContentModel;

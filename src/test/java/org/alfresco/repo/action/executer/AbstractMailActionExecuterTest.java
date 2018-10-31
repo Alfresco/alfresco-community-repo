@@ -299,7 +299,7 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, recipients, subject, template);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello 01-Jan-1970", (String) message.getContent());
+        Assert.assertEquals("Hello 1 Jan 1970", (String) message.getContent());
     }
 
     @Test
@@ -313,7 +313,7 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, to, subject, template);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals("G'Day 01/01/1970", (String) message.getContent());
+        Assert.assertEquals("G'Day 1 Jan. 1970", (String) message.getContent());
     }
 
     @Test
@@ -761,7 +761,7 @@ public abstract class AbstractMailActionExecuterTest
             }, tenantId);
 
             Assert.assertNotNull(message);
-            Assert.assertEquals("Hello 01-Jan-1970", (String) message.getContent());
+            Assert.assertEquals("Hello 1 Jan 1970", (String) message.getContent());
         }
         finally
         {

@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-super-pom</artifactId>
-        <version>9</version>
+        <version>10</version>
     </parent>
 
     <profiles>
@@ -62,10 +62,10 @@
         <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
 
-        <dependency.alfresco-core.version>7.4</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>8.16</dependency.alfresco-data-model.version>
-        <dependency.alfresco-repository.version>7.23</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>7.8</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.18</dependency.alfresco-data-model.version>
+        <dependency.alfresco-repository.version>7.25</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>7.9</dependency.alfresco-remote-api.version>
         <dependency.alfresco-hb-data-sender.version>1.0.9</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-spring-webscripts.version>6.20</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>

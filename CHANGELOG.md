@@ -23,6 +23,9 @@
   <li>
     Due to the changes to the RenditionService the Media Management AMP is not supported yet.<br/>
   </li>
+  <li>
+      [<a href='https://issues.alfresco.com/jira/browse/MNT-20126'>MNT-20126</a>] - Workflow diagrams can not be rendered due to java 11 incompatibilities.<br/>
+    </li>
 </ul>
 
 <h1>        Release Notes - Alfresco - Version Community Edition 201810 EA

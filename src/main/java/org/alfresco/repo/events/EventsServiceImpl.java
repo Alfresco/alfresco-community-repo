@@ -1033,8 +1033,13 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             //When a node is declared as a record, a secondary association is created for the original location, hence use just that.
             List<Path> allPaths = nodeService.getPaths(nodeRef, false);
             Path primaryPath = nodeService.getPath(nodeRef);
-            allPaths.remove(primaryPath);
-            List<Path> secPath = Collections.singletonList(allPaths.get(0));
+            
+            if (allPaths.size() >= 2)
+            {
+                allPaths.remove(primaryPath);
+            }
+
+            List<Path> recordPath = Collections.singletonList(allPaths.get(0));
                         
             Event event = RecordCreatedEvent.builder()
                               .seqNumber(nextSequenceNumber())
@@ -1045,8 +1050,8 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
                               .siteId(nodeInfo.getSiteId())
                               .nodeId(nodeInfo.getNodeId())
                               .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
-                              .paths(getPaths(secPath, Arrays.asList(nodeInfo.getName())))
-                              .parentNodeIds(this.getNodeIdsFromParent(secPath))
+                              .paths(getPaths(recordPath, Arrays.asList(nodeInfo.getName())))
+                              .parentNodeIds(this.getNodeIdsFromParent(recordPath))
                               .username(AuthenticationUtil.getFullyAuthenticatedUser())
                               .nodeModificationTime(nodeInfo.getModificationTimestamp())
                               .client(getAlfrescoClient(nodeInfo.getClient()))

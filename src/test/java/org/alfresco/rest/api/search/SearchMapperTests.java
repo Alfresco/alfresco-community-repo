@@ -29,6 +29,14 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLOCKED;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PERMISSIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
@@ -288,9 +296,34 @@ public class SearchMapperTests
     }
 
     @Test
+    public void searchParameterIncludesValidation_validInclude_shouldReturnSuccessfulValidation()
+    {
+        searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
+                PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES,
+                PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED, PARAM_INCLUDE_PERMISSIONS));
+    }
+
+    
+    @Test
+    public void searchParameterIncludesValidation_invalidInclude_shouldThrowInvalidArgumentException() throws Exception
+    {
+        try
+        {
+            searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
+                    PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, "notValid",
+                    PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED));
+            fail();
+        }
+        catch (InvalidArgumentException exception)
+        {
+            assertNotNull(exception);
+        }
+        
+    }
+    
+    @Test
     public void validateInclude() throws Exception
     {
-
         try
         {
             searchMapper.validateInclude(Arrays.asList("sausage"));

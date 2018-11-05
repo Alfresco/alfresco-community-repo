@@ -16,7 +16,9 @@ function runAction(p_params)
 {
    var results = [],
       files = p_params.files,
-      file, result, nodeRef;
+      linkNodes = [],
+      nodes = [],
+      file, nodeRef, node;
 
    // Must have array of files
    if (!files || files.length == 0)
@@ -24,42 +26,65 @@ function runAction(p_params)
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
       return;
    }
-   
+
+   // Loop through nodes, check the existence of each node and create an array of valid ScriptNodes ready for deletion
    for (file in files)
    {
-      nodeRef = files[file];
-      result =
-      {
-         nodeRef: nodeRef,
-         action: "deleteFile",
-         success: false
-      }
-      
       try
       {
-         fileNode = search.findNode(nodeRef);
-         if (fileNode === null)
+         nodeRef = files[file];
+         node = search.findNode(nodeRef);
+
+         // Check if the node actually exists, before deleting it
+         // If it doesn't exist mark the deletion of it as failed
+         if (node === null)
          {
-            result.id = file;
-            result.nodeRef = nodeRef;
-            result.success = false;
+            results.push(
+               {
+                  id: file,
+                  nodeRef: nodeRef,
+                  action: "deleteFile",
+                  success: false
+               }
+            );
+            continue;
+         }
+         else if (node.isLinkToDocument || node.isLinkToContainer)
+         {
+            linkNodes.push(node);
          }
          else
          {
-            result.id = fileNode.name;
-            result.type = fileNode.isContainer ? "folder" : "document";
-            // remove() call must come last
-            result.success = fileNode.remove(true);
+            nodes.push(node);
          }
       }
       catch (e)
       {
-         result.id = file;
-         result.nodeRef = nodeRef;
-         result.success = false;
+         results.push(
+            {
+               id: file,
+               nodeRef: nodeRef,
+               action: "deleteFile",
+               success: false
+            }
+         );
       }
-      
-      results.push(result);
+   }
+
+   nodes = linkNodes.concat(nodes);
+
+   // Loop through ScriptNodes and delete them, one by one
+   for (var i = 0; i < nodes.length; i++)
+   {
+      results.push(
+         {
+            id: nodes[i].name,
+            nodeRef: nodes[i].nodeRef.toString(),
+            action: "deleteFile",
+            type: nodes[i].isContainer ? "folder" : "document",
+            success: nodes[i].remove(true)
+         }
+      );
    }
 
    return results;

@@ -33,12 +33,8 @@ import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileType;
 import org.alfresco.jlan.server.filesys.SearchContext;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
-import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -75,11 +71,6 @@ public class ContentSearchContext extends SearchContext
     private List<NodeRef> results;
     private int index = -1;
 
-    // Pseudo file list blended into a wildcard folder search
-    
-    private PseudoFileList pseudoList;
-    private boolean donePseudoFiles = false;
-    
     private boolean lockedFilesAsOffline;
     
     // Resume id
@@ -100,14 +91,12 @@ public class ContentSearchContext extends SearchContext
      * @param cifsHelper Filesystem helper class
      * @param results List of file/folder nodes that match the search pattern
      * @param searchStr Search path
-     * @param pseudoList List of pseudo files to be blended into the returned list of files
      * @param relPath Relative path being searched
      */
     protected ContentSearchContext(
             CifsHelper cifsHelper,
             List<NodeRef> results,
             String searchStr,
-            PseudoFileList pseudoList,
             String relPath,
             boolean lockedFilesAsOffline)
     {
@@ -115,7 +104,6 @@ public class ContentSearchContext extends SearchContext
         super.setSearchString(searchStr);
         this.cifsHelper = cifsHelper;
         this.results    = results;
-        this.pseudoList = pseudoList;
         this.lockedFilesAsOffline = lockedFilesAsOffline;
 
 		m_relPath = relPath;
@@ -136,11 +124,6 @@ public class ContentSearchContext extends SearchContext
         sb.append(getSearchString());
         sb.append(", resultCount=");
         sb.append(results.size());
-        sb.append(", pseudoList=");
-        if ( pseudoList != null)
-        	sb.append( pseudoList.numberOfFiles());
-        else
-        	sb.append("NULL");
         sb.append("]");
         
         return sb.toString();
@@ -163,10 +146,6 @@ public class ContentSearchContext extends SearchContext
      */
     public boolean hasMoreFiles()
     {
-        // Pseudo files are returned first
-        
-        if ( donePseudoFiles == false && pseudoList != null && index < (pseudoList.numberOfFiles() - 1))
-            return true;
         return index < (results.size() - 1);
     }
 
@@ -190,50 +169,6 @@ public class ContentSearchContext extends SearchContext
         
         index++;
         resumeId++;
-        
-        // If the pseudo file list is valid return the pseudo files first
-        
-        if ( donePseudoFiles == false && pseudoList != null)
-        {
-            if ( index < pseudoList.numberOfFiles())
-            {
-                PseudoFile pfile = pseudoList.getFileAt( index);
-                if ( pfile != null)
-                {
-                    // Get the file information for the pseudo file
-                    
-                    FileInfo pinfo = pfile.getFileInfo();
-                    
-                    // Copy the file information to the callers file info
-                    
-                    info.copyFrom( pinfo);
-                    
-                	// Generate a file id for the current file
-                	
-                    if ( info != null && info.getFileId() == -1)
-                    {
-	                	StringBuilder pathStr = new StringBuilder( m_relPath);
-	                	pathStr.append ( info.getFileName());
-	                	
-	                	info.setFileId( pathStr.toString().hashCode());
-                    }
-                    
-                    // Check if we have finished with the pseudo file list, switch to the normal file list
-                    
-                    if ( index == (pseudoList.numberOfFiles() - 1))
-                    {
-                        // Switch to the main file list
-                        
-                        donePseudoFiles = true;
-                        index = -1;
-                    }
-                    
-                    // Indicate that the file information is valid
-                    
-                    return true;
-                }
-            }
-        }
 
         // Return the next available file information for a real file/folder
         
@@ -347,36 +282,6 @@ public class ContentSearchContext extends SearchContext
         
         index++;
         resumeId++;
-        
-        // If the pseudo file list is valid return the pseudo files first
-        
-        if ( donePseudoFiles == false && pseudoList != null)
-        {
-            if ( index < pseudoList.numberOfFiles())
-            {
-                PseudoFile pfile = pseudoList.getFileAt( index);
-                if ( pfile != null)
-                {
-                    // Get the file information for the pseudo file
-                    
-                    FileInfo pinfo = pfile.getFileInfo();
-                    
-                    // Copy the file information to the callers file info
-                    
-                    return pinfo.getFileName();
-                }
-            }
-            else
-            {
-                // Switch to the main file list
-                
-                donePseudoFiles = true;
-                index = -1;
-                
-                if ( results == null || results.size() == 0)
-                    return null;
-            }
-        }
 
         // Get the next file info from the node search
             
@@ -413,30 +318,7 @@ public class ContentSearchContext extends SearchContext
      */
     public boolean restartAt(FileInfo info)
     {
-        //  Check if the resume point is in the pseudo file list
-
         int resId = 0;
-        
-        if (pseudoList != null)
-        {
-            while ( resId < pseudoList.numberOfFiles())
-            {
-                // Check if the current pseudo file matches the resume file name
-                
-                PseudoFile pfile = pseudoList.getFileAt(resId);
-                if ( pfile.getFileName().equals(info.getFileName()))
-                {
-                    // Found the restart point
-                    
-                    donePseudoFiles = false;
-                    index = resId - 1;
-                    
-                    return true;
-                }
-                else
-                    resId++;
-            }
-        }
         
         // Check if the resume file name is the last file returned
         
@@ -446,7 +328,6 @@ public class ContentSearchContext extends SearchContext
         	
             index = index - 1;
             resumeId = resumeId - 1;
-            donePseudoFiles = true;
 
             // DEBUG
         	
@@ -470,8 +351,7 @@ public class ContentSearchContext extends SearchContext
                 {
                     index = idx - 1;
                     resumeId = resId - 1;
-                    donePseudoFiles = true;
-                    
+
                     return true;
                 }
                 else
@@ -490,7 +370,6 @@ public class ContentSearchContext extends SearchContext
     /**
      * Restart the current search at the specified file.
      * 
-     * @param resumeId Resume point id.
      * @return true if the search can be restarted, else false.
      */
     public boolean restartAt(int resumeIdParameter)
@@ -499,36 +378,12 @@ public class ContentSearchContext extends SearchContext
         
         resumeIdParameter--;
         
-        //  Check if the resume point is in the pseudo file list
-
-        if (pseudoList != null)
-        {
-            if ( resumeIdParameter < pseudoList.numberOfFiles())
-            {
-                // Resume at a pseudo file
-                
-                index = resumeIdParameter;
-                resumeId = resumeIdParameter + 1;
-                donePseudoFiles = false;
-                
-                return true;
-            }
-            else
-            {
-                // Adjust the resume id so that it is an index into the main file list
-                
-                resumeIdParameter -= pseudoList.numberOfFiles();
-            }
-        }
-        
         // Check if the resume point is valid
         
         if ( results != null && resumeIdParameter < results.size())
         {
             index = resumeIdParameter;
             resumeId = resumeIdParameter + 1;
-            donePseudoFiles = true;
-            
             return true;
         }
         
@@ -536,18 +391,7 @@ public class ContentSearchContext extends SearchContext
         
         return false;
     }
-    
-    /**
-     * Check if the search is returning pseudo files or real file entries
-     * 
-     * @return boolean
-     */
-    protected boolean returningPseudoFiles() {
-    	if ( pseudoList == null)
-    		return false;
-    	return donePseudoFiles ? false : true;
-    }
-    
+
     /**
      * Return the relative path that is being searched
      * 
@@ -564,14 +408,5 @@ public class ContentSearchContext extends SearchContext
      */
     protected int getResultsSize() {
     	return results != null ? results.size() : 0;
-    }
-    
-    /**
-     * Return the pseudo file list size
-     * 
-     * @return int
-     */
-    protected int getPseudoListSize() {
-    	return pseudoList != null ? pseudoList.numberOfFiles() : 0;
     }
 }

@@ -69,11 +69,6 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.server.locking.FileLockingInterface;
@@ -828,28 +823,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             }
         }
     }
-
-    /**
-     * Check if pseudo file support is enabled
-     * 
-     * @param context ContentContext
-     * @return boolean
-     */
-    public final boolean hasPseudoFileInterface(ContentContext context)
-    {
-    	return context.hasPseudoFileInterface();
-    }
-    
-    /**
-     * Return the pseudo file support implementation
-     *
-     * @param context ContentContext
-     * @return PseudoFileInterface
-     */
-    public final PseudoFileInterface getPseudoFileInterface(ContentContext context)
-    {
-        return context.getPseudoFileInterface();
-    }
     
     /**
      * Determine if the disk device is read-only.
@@ -898,86 +871,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             // Check if the path is to a pseudo file
 
             FileInfo finfo = null;
-            
-            if ( hasPseudoFileInterface(ctx))
-            {
-            	// Make sure the parent folder has a file state, and the path exists
-        		
-                String[] paths = FileName.splitPath( path);
-                FileState fstate = ctx.getStateCache().findFileState( paths[0]);
-                
-                if ( fstate == null)
-                {
-                	NodeRef nodeRef = getNodeForPath(tree, paths[0]);
-                        
-                    if ( nodeRef != null)
-                    {
-                        // Get the file information for the node
-                            
-                        finfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
-                    }
-                        
-              		// Create the file state
-                		
-               		fstate = ctx.getStateCache().findFileState( paths[0], true);
-                		
-               		fstate.setFileStatus( DirectoryExists);
-   	                fstate.setFilesystemObject( nodeRef);
-                		
-               		// Add pseudo files to the folder
-                		
-               		getPseudoFileInterface( ctx).addPseudoFilesToFolder( session, tree, paths[0]);
-                		
-               		// Debug
-                		
-              		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-               			logger.debug( "Added file state for pseudo files folder (getinfo) - " + paths[0]);
-                }
-                else if ( fstate.hasPseudoFiles() == false)
-                {
-            		// Make sure the file state has the node ref
-            		
-            		if ( fstate.hasFilesystemObject() == false)
-            		{
-    	                // Get the node for the folder path
-    	                
-    	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
-            		}
-            		
-                	// Add pseudo files for the parent folder
-                	
-            		getPseudoFileInterface( ctx).addPseudoFilesToFolder( session, tree, paths[0]);
-            		
-            		// Debug
-            		
-            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-            			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
-                }
-            	
-            	
-                // Get the pseudo file
-                
-                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( session, tree, path);
-                if ( pfile != null)
-                {
-                    // DEBUG
-                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-                        logger.debug("getInfo using pseudo file info for " + path);
-                    
-                    FileInfo pseudoFileInfo = pfile.getFileInfo();
-                    if (isReadOnly)
-                    {
-                        int attr = pseudoFileInfo.getFileAttributes();
-                        if (( attr & FileAttribute.ReadOnly) == 0)
-                        {
-                            attr += FileAttribute.ReadOnly;
-                            pseudoFileInfo.setFileAttributes(attr);
-                        }
-                    }
-                    return pfile.getFileInfo();
-                }
-            }
-            
+
             // Get the node ref for the path, chances are there is a file state in the cache
             
             NodeRef nodeRef = getNodeForPath(tree, infoPath);
@@ -1170,11 +1064,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                         
                         searchFolderState.setFilesystemObject( nodeRef);
                     }
-                    
-                    // Add pseudo files to the folder being searched
-
-                    if ( hasPseudoFileInterface(ctx))
-                        getPseudoFileInterface(ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
 
                     // Set the search node and file spec
                     
@@ -1214,70 +1103,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             		logger.debug("Search for searchPath=" + searchPath + ", searchSpec=" + searchFileSpec + ", searchRootNode=" + searchRootNodeRef + " took "
             				     + ( endTime - startTime) + "ms results=" + results.size());
             }
-            
-            // Check if there are any pseudo files for the folder being searched, for CIFS only
-            
-            PseudoFileList pseudoList = null;
-            
-            if ( sess instanceof SMBSrvSession && searchFolderState != null && searchFolderState.hasPseudoFiles())
-            {
-                // If it is a wildcard search use all pseudo files
-                
-                if ( WildCard.containsWildcards(searchFileSpec))
-                {
-                    // Get the list of pseudo files for the search path
-                    
-                    pseudoList = searchFolderState.getPseudoFileList();
-                    
-                    // Check if the wildcard is for all files or a subset
-                   
-                    if ( searchFileSpec.equals( "*") == false && pseudoList != null && pseudoList.numberOfFiles() > 0)
-                    {
-                        // Generate a subset of pseudo files that match the wildcard search pattern
-                        
-                        WildCard wildCard = new WildCard( searchFileSpec, false);
-                        PseudoFileList filterList = null;
-                        
-                        for ( int i = 0; i < pseudoList.numberOfFiles(); i++)
-                        {
-                            PseudoFile pseudoFile = pseudoList.getFileAt( i);
-                            if ( wildCard.matchesPattern( pseudoFile.getFileName()))
-                            {
-                                // Add the pseudo file to the filtered list
-                                
-                                if ( filterList == null)
-                                    filterList = new PseudoFileList();
-                                filterList.addFile( pseudoFile);
-                            }
-                        }
-                        
-                        // Use the filtered pseudo file list, or null if there were no matches
-                        
-                        pseudoList = filterList;
-                    }
-                }
-                else if ( results == null || results.size() == 0)
-                {
-                    // Check if the required file is in the pseudo file list
-                    
-                    String fname = paths[1];
-                    
-                    if ( fname != null)
-                    {
-                        // Search for a matching pseudo file
-                        
-                        PseudoFile pfile = searchFolderState.getPseudoFileList().findFile( fname, true);
-                        if ( pfile != null)
-                        {
-                            // Create a file list with the required file
-                            
-                            pseudoList = new PseudoFileList();
-                            pseudoList.addFile( pfile);
-                        }
-                    }
-                }
-            }
-            
+
             // Build the search context to store the results, use the cache lookup search for wildcard searches
             
             SearchContext searchCtx = null;
@@ -1286,7 +1112,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             {
             	// Use a cache lookup search context 
                                                                                                                                                                                
-            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
+            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
             	searchCtx = cacheContext;
             	
             	// Set the '.' and '..' pseudo file entry details
@@ -1373,9 +1199,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             }
             else {
             	if ( ctx.hasStateCache())
-                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
+                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
             	else
-                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, pseudoList, paths[0], isLockedFilesAsOffline);
+                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, paths[0], isLockedFilesAsOffline);
             }
             
             // Debug
@@ -1449,90 +1275,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             }
             else
             {
-                // Check if pseudo files are enabled
-
-                if ( hasPseudoFileInterface(ctx))
-                {
-                	// Check if the file name is a pseudo file name
-                	
-                	if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, name)) {
-                		
-    	            	// Make sure the parent folder has a file state, and the path exists
-                		
-    	                String[] paths = FileName.splitPath( name);
-    	                fstate = ctx.getStateCache().findFileState( paths[0]);
-    	                
-    	                if ( fstate == null) {
-
-    	                	// Check if the path exists
-    	                	
-    	                	if ( fileExists( sess, tree, paths[0]) == FileStatus.DirectoryExists)
-    	                	{
-    	                		// Create the file state
-    	                		
-    	                		fstate = ctx.getStateCache().findFileState( paths[0], true);
-    	                		
-    	                		fstate.setFileStatus( DirectoryExists);
-    	                		
-   	        	                // Get the node for the folder path
-    	        	                
-    	                		beginReadTransaction( sess);
-   	        	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
-    	                		
-    	                		// Add pseudo files to the folder
-    	                		
-    	                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
-    	                		
-    	                		// Debug
-    	                		
-    	                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-    	                			logger.debug( "Added file state for pseudo files folder (exists) - " + paths[0]);
-    	                	}
-    	                }
-    	                else if ( fstate.hasPseudoFiles() == false)
-    	                {
-	                		// Make sure the file state has the node ref
-	                		
-	                		if ( fstate.hasFilesystemObject() == false)
-	                		{
-	        	            	// Create the transaction
-	        	                
-	                			beginReadTransaction( sess);
-	        	            
-	        	                // Get the node for the folder path
-	        	                
-	        	                fstate.setFilesystemObject( getNodeForPath( tree, paths[0]));
-	                		}
-	                		
-    	                	// Add pseudo files for the parent folder
-    	                	
-                    		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
-                    		
-                    		// Debug
-                    		
-                    		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-                    			logger.debug( "Added pseudo files for folder (exists) - " + paths[0]);
-    	                }
-    	            	
-    	                // Check if the path is to a pseudo file
-    	                
-    	                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, name);
-    	                if ( pfile != null)
-    	                {
-    	                    // Indicate that the file exists
-    	                    
-    	                    status = FileStatus.FileExists;
-    	                }
-    	                else
-    	                {
-    	                	// Failed to find pseudo file
-    	                	
-    	                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-    	                		logger.debug( "Failed to find pseudo file (exists) - " + name);
-    	                }
-                	}
-                }
-
                 // If the file is not a pseudo file then search for the file
                 
                 if ( status == FileStatus.Unknown) 
@@ -1614,71 +1356,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         try
         {
-            // Check if pseudo files are enabled
-            
-            if ( hasPseudoFileInterface(ctx))
-            {
-            	// Check if the file name is a pseudo file name
-            	
-            	String path = params.getPath();
-
-            	if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, path)) {
-            		
-	            	// Make sure the parent folder has a file state, and the path exists
-	
-	                String[] paths = FileName.splitPath( path);
-	                FileState fstate = ctx.getStateCache().findFileState( paths[0]);
-	                
-	                if ( fstate == null) {
-
-	                	// Check if the path exists
-	                	
-	                	if ( fileExists( sess, tree, paths[0]) == FileStatus.DirectoryExists)
-	                	{
-	                		// Create the file state and add any pseudo files
-	                		
-	                		fstate = ctx.getStateCache().findFileState( paths[0], true);
-	                		
-	                		fstate.setFileStatus( DirectoryExists);
-	                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
-	                		
-	                		// Debug
-	                		
-	                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-	                			logger.debug( "Added file state for pseudo files folder (open) - " + paths[0]);
-	                	}
-	                }
-	                else if ( fstate.hasPseudoFiles() == false)
-	                {
-	                	// Add pseudo files for the parent folder
-	                	
-                		getPseudoFileInterface( ctx).addPseudoFilesToFolder( sess, tree, paths[0]);
-                		
-                		// Debug
-                		
-                		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-                			logger.debug( "Added pseudo files for folder (open) - " + paths[0]);
-	                }
-	            	
-	                // Check if the path is to a pseudo file
-	                
-	                PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, params.getPath());
-	                if ( pfile != null)
-	                {
-	                    // Create a network file to access the pseudo file data
-	                    
-	                    return pfile.getFile( params.getPath());
-	                }
-	                else
-	                {
-	                	// Failed to find pseudo file
-	                	
-	                	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_PSEUDO))
-	                		logger.debug( "Failed to find pseudo file (open) - " + params.getPath());
-	                }
-            	}
-            }
-            
             // Not a pseudo file, try and open a normal file/folder node
             
             NodeRef nodeRef = getNodeForPath(tree, params.getPath());
@@ -2820,14 +2497,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     }
                 }
             }
-            else if (file.hasDeleteOnClose() && (file instanceof PseudoNetworkFile || file instanceof MemoryNetworkFile)
-                    && hasPseudoFileInterface(ctx))
-            {
-                // Delete the pseudo file
-    
-                getPseudoFileInterface(ctx).deletePseudoFile(sess, tree, file.getFullName());
-    
-            }
             
             // DEBUG
             
@@ -2900,35 +2569,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         try
         {
-            // Check if pseudo files are enabled
-            
-            if ( hasPseudoFileInterface(ctx))
-            {
-                // Check if the file name is a pseudo file name
-                
-                if ( getPseudoFileInterface( ctx).isPseudoFile(sess, tree, name)) {
-                    
-                    // Make sure the parent folder has a file state, and the path exists
-    
-                    String[] paths = FileName.splitPath( name);
-                    FileState fstate = ctx.getStateCache().findFileState( paths[0]);
-                    
-                    if ( fstate != null) {
-
-                        // Check if the path is to a pseudo file
-                        
-                        PseudoFile pfile = getPseudoFileInterface(ctx).getPseudoFile( sess, tree, name);
-                        if ( pfile != null)
-                        {
-                            // Delete the pseudo file
-
-                            getPseudoFileInterface( ctx).deletePseudoFile( sess, tree, name);
-                            return;
-                        }
-                    }
-                }
-            }
-            
             // Check if there is a quota manager enabled, if so then we need to save the current file size
             
             final QuotaManager quotaMgr = ctx.getQuotaManager();
@@ -3567,16 +3207,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         
         try
         {
-            // Check if pseudo files are enabled
-            
-            if ( hasPseudoFileInterface(ctx) &&
-                    getPseudoFileInterface(ctx).isPseudoFile( sess, tree, name))
-            {
-                // Allow the file information to be changed
-                
-                return;
-            }
-            
             final FileState fstate = getStateForPath(tree, name);
 
             doInWriteTransaction(sess, new CallableIO<Pair<Boolean, Boolean>>(){

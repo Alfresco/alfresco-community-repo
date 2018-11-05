@@ -8,9 +8,6 @@
          parent="fileServerConfigurationBase"
          factory-bean="fileServerConfigurationFactory"
          factory-method="createFileServerConfiguration">
-      <property name="cifsConfigBean">
-         <ref bean="cifsServerConfig" />
-      </property>
       <property name="ftpConfigBean">
          <ref bean="ftpServerConfig" />
       </property>
@@ -19,20 +16,6 @@
       </property>
       <property name="securityConfigBean">
          <ref bean="fileSecurityConfig" />
-      </property>
-   </bean>
-
-   <!-- CIFS Server -->
-
-   <bean id="cifsServer" class="org.alfresco.filesys.CIFSServerBean" destroy-method="stopServer">
-      <constructor-arg>
-         <ref bean="fileServerConfiguration" />
-      </constructor-arg>
-      <property name="sessionListeners">
-         <list>
-            <!-- Allow authentication subsystem to listen for SMB sessions, e.g. for passthru -->
-            <ref bean="SmbSessionListener" />
-         </list>
       </property>
    </bean>
 
@@ -53,142 +36,6 @@
       <property name="ftpServer">
          <ref bean="ftpServer" />
       </property>
-      <property name="cifsServer">
-         <ref bean="cifsServer" />
-      </property>
-   </bean>
-   
-
-
-   <bean id="cifsServerConfig" class="org.alfresco.filesys.config.CIFSConfigBean">
-      <constructor-arg index="0" value="${cifs.terminalServerList}"/>
-      <constructor-arg index="1" value="${cifs.loadBalancerList}"/>
-      <property name="serverEnabled">
-         <value>${cifs.enabled}</value>
-      </property>
-      <property name="serverName">
-         <value>${cifs.serverName}</value>
-      </property>
-      <property name="domainName">
-         <value>${cifs.domain}</value>
-      </property>
-      <property name="serverComment">
-         <value>Alfresco CIFS Server</value>
-      </property>
-      <!-- Set to the broadcast mask for the subnet -->
-      <property name="broadcastAddress">
-         <value>${cifs.broadcast}</value>
-      </property>
-      <!-- Set to the IP for the adapter for Java socket -->
-      <property name="bindToAddress">
-         <value>${cifs.bindto}</value>
-      </property>
-      <!-- Use Java socket based NetBIOS over TCP/IP and native SMB on linux -->
-      <property name="tcpipSMB">
-         <bean class="org.alfresco.filesys.config.TcpipSMBConfigBean">
-            <!--
-               Can be mapped to non-privileged ports, then use firewall rules to forward requests from the standard
-               ports
-            -->
-            <property name="port">
-               <value>${cifs.tcpipSMB.port}</value>
-            </property>
-            <property name="platforms">
-<!--               Unchecked, Unknown, WINDOWS, LINUX, SOLARIS, MACOSX, AIX -->
-               <value>linux,solaris,macosx</value>
-            </property>
-            <property name="ipv6Enabled">
-               <value>${cifs.ipv6.enabled}</value>
-            </property>
-         </bean>
-      </property>
-      <property name="netBIOSSMB">
-         <bean class="org.alfresco.filesys.config.NetBIOSSMBConfigBean">
-            <property name="bindTo">
-               <value>${cifs.bindto}</value>
-            </property>
-            <property name="sessionPort">
-               <value>${cifs.netBIOSSMB.sessionPort}</value>
-            </property>
-            <property name="namePort">
-               <value>${cifs.netBIOSSMB.namePort}</value>
-            </property>
-            <property name="datagramPort">
-               <value>${cifs.netBIOSSMB.datagramPort}</value>
-            </property>
-            <property name="platforms">
-               <value>linux,solaris,macosx</value>
-            </property>
-         </bean>
-      </property>
-
-      <property name="hostAccouncerEnabled">
-         <value>${cifs.hostannounce}</value>
-      </property>
-      <property name="hostAccounceInterval">
-         <value>5</value>
-      </property>
-
-      <!-- Use Win32 NetBIOS interface on Windows -->
-      <property name="win32NetBIOS">
-         <bean class="org.alfresco.filesys.config.Win32NetBIOSConfigBean" />
-      </property>
-      <property name="win32HostAnnouncerEnabled">
-         <value>${cifs.hostannounce}</value>
-      </property>
-      <property name="win32HostAnnounceInterval">
-         <value>5</value>
-      </property>
-
-      <!-- CIFS authentication -->
-      <property name="authenticator">
-         <ref bean="CifsAuthenticator" />
-      </property>
-
-      <!-- Disable the use of asynchronous sockets/NIO code -->
-      <property name="disableNIO">
-         <value>${cifs.disableNIO}</value>
-      </property>
-
-      <!-- Disable the use of JNI code -->
-      <!-- Only currently affects Windows -->
-      <property name="disableNativeCode">
-         <value>${cifs.disableNativeCode}</value>
-      </property>
-
-      <!-- Session timeout, in seconds -->
-      <!-- Defaults to 15 minutes, to match the default Windows client setting        -->
-      <!-- If no I/O is received within that time the session is closed by the server -->
-      <property name="sessionTimeout">
-         <value>${cifs.sessionTimeout}</value>
-      </property>
-
-	  <!-- Maximum virtual circuits per session -->
-	  <!-- Defaults to 16, valid range is 4 - 2000 -->
-	  <!-- This value should only be increased when using Terminal Server clients -->
-	  <property name="maximumVirtualCircuits">
-		 <value>${cifs.maximumVirtualCircuitsPerSession}</value>  
-	  </property>
-	   
-      <!-- Enable WINS if used for NetBIOS name lookups -->
-      <property name="WINSConfig">
-         <bean class="org.alfresco.filesys.config.WINSConfigBean">
-            <property name="autoDetectEnabled">
-               <value>${cifs.WINS.autoDetectEnabled}</value>
-            </property>
-            <property name="primary">
-               <value>${cifs.WINS.primary}</value>
-            </property>
-            <property name="secondary">
-               <value>${cifs.WINS.secondary}</value>
-            </property>
-         </bean>
-      </property>
-
-      <property name="sessionDebugFlags">
-		  <value>${cifs.sessionDebug}</value>
-	  </property>
-
    </bean>
 
    <bean id="ftpServerConfig" class="org.alfresco.filesys.config.FTPConfigBean">
@@ -261,29 +108,6 @@
 	 </property>
    </bean>
    
-   <!-- Home Share Mapper -->
-   <bean id="filesystemHomeShareMapper" class="org.alfresco.filesys.alfresco.HomeShareMapper"
-      init-method="init">
-          <property name="serverConfiguration">
-             <ref bean="fileServerConfiguration" />
-          </property>
-          <property name="repoDiskInterface"> 
-             <ref bean="contentDiskDriver"/> 
-           </property> 
-          <property name="homeShareName">
-             <value>HOME</value>
-          </property>
-          <property name="nodeService">
-             <ref bean="nodeService" />
-          </property>
-          <property name="personService">
-             <ref bean="personService" />
-          </property>
-          <property name="quotaManager">
-            <ref bean="filesystemQuotaManager"/>
-          </property>
-   </bean>
-   
    <!--  For multi-tennancy -->
    <bean id="filesystemMTShareMapper" class="org.alfresco.filesys.alfresco.MultiTenantShareMapper"
       init-method="init">
@@ -348,91 +172,7 @@
 			   <property name="quotaManager">
 				   <ref bean="filesystemQuotaManager" />
 			   </property>
-		
-			   <!--  Enables and disables pseudo files - cifs DesktopActions and URL shortcuts. -->
-			   <property name="pseudoFilesEnabled">
-                  <value>${cifs.pseudoFiles.enabled}</value>
-               </property>
-               
-               <!-- Add a pseudo links back to the alfresco explorer -->
-               <property name="alfrescoURLEnabled">
-                  <value>${cifs.pseudoFiles.explorerURL.enabled}</value>
-               </property>
-               <property name="URLFileName">
-                  <value>${cifs.pseudoFiles.explorerURL.fileName}</value>
-               </property>
-               
-               <!-- Add a pseudo links back to the alfresco share -->
-               <property name="shareURLEnabled">
-                  <value>${cifs.pseudoFiles.shareURL.enabled}</value>
-               </property>
-               <property name="shareURLFileName">
-                  <value>${cifs.pseudoFiles.shareURL.fileName}</value>
-               </property>
-				   
-               <!-- Desktop actions -->
-               <!-- Uses a client-side application to trigger a server-side action                         -->
-               <!--   Echo - displays a message echoed from the server                                     -->
-               <!--   URL  - launches a URL via the Windows shell                                          -->
-               <!--   CmdLine - launches the Notepad application                                           -->
-               <!--   CheckInOut - checks files in/out, drag and drop files onto the application           -->
-               <!--   JavaScript - run a server-side script                                                -->
-               <!--   JavaScriptURL - server-side script that generates a URL to the folder using a ticket -->
-               <!--                   to avoid having to logon                                             -->
-               <property name="globalDesktopActionConfig">
-                  <bean class="org.alfresco.filesys.config.GlobalDesktopActionConfigBean">
-                     <property name="path">
-                        <value>alfresco/desktop/Alfresco.exe</value>
-                     </property>
-                  </bean>
-               </property>
-               <property name="desktopActionList">
-                  <list>
-                     <bean class="org.alfresco.filesys.repo.desk.CheckInOutDesktopAction">
-                        <property name="name">
-                           <value>CheckInOut</value>
-                        </property>
-                        <property name="filename">
-                           <value>__CheckInOut.exe</value>
-                        </property>
-                     </bean>
-                     
-                     <bean class="org.alfresco.filesys.repo.desk.JavaScriptDesktopAction">
-                        <property name="name">
-                           <value>JavaScriptURL</value>
-                        </property>
-                        <property name="filename">
-                           <value>__ShowDetails.exe</value>
-                        </property>
-                        <property name="scriptName">
-                           <value>alfresco/desktop/showDetails.js</value>
-                        </property>
-                        <property name="attributeList">
-                           <value>anyFiles</value>
-                        </property>
-                        <property name="preprocess">
-                           <value>copyToTarget</value>
-                        </property>
-                     </bean>
 
-                     <!-- Other desktop actions which may be enabled -->
-                     <!--
-                        <bean class="org.alfresco.filesys.repo.desk.EchoDesktopAction"> <property name="name">
-                        <value>Echo</value> </property> <property name="filename"> <value>__AlfrescoEcho.exe</value>
-                        </property> </bean> <bean class="org.alfresco.filesys.repo.desk.URLDesktopAction"> <property
-                        name="name"> <value>URL</value> </property> <property name="filename">
-                        <value>__AlfrescoURL.exe</value> </property> </bean> <bean
-                        class="org.alfresco.filesys.repo.desk.CmdLineDesktopAction"> <property name="name">
-                        <value>CmdLine</value> </property> <property name="filename"> <value>__AlfrescoCmd.exe</value>
-                        </property> </bean> <bean class="org.alfresco.filesys.repo.desk.JavaScriptDesktopAction">
-                        <property name="name"> <value>JavaScript</value> </property> <property name="filename">
-                        <value>__AlfrescoScript.exe</value> </property> <property name="scriptName">
-                        <value>alfresco/desktop/dumpRequest.js</value> </property> <property name="attributeList">
-                        <value>anyFiles, multiplePaths, allowNoParams</value> </property> <property name="preprocess">
-                        <value>confirm, copyToTarget</value> </property> </bean>
-                     -->
-                  </list>
-               </property>
                <!-- Additional access control of the filesystem -->
                <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
                <!--
@@ -464,12 +204,6 @@
       <property name="shareMapper">
           <ref bean="filesystemMTShareMapper" />
       </property>
-      
-      <!--
-      <property name="shareMapper">
-          <ref bean="filesystemHomeShareMapper" />
-      </property>
-      -->
 
       <!-- Global access control list                                                                    -->
       <!-- Applied to all filesystems that do not have an accessControl property                         -->

@@ -71,31 +71,6 @@
       </property>
    </bean>
 
-   <!-- CIFS authentication -->
-   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator" parent="cifsAuthenticatorBase">
-      <property name="active">
-         <value>${kerberos.authentication.authenticateCIFS}</value>
-      </property>
-      <property name="realm">
-         <value>${kerberos.authentication.realm}</value>
-      </property>
-      <property name="password">
-         <value>${kerberos.authentication.cifs.password}</value>
-      </property>
-      <property name="jaasConfigEntryName">
-         <value>${kerberos.authentication.cifs.configEntryName}</value>
-      </property>
-      <property name="disableNTLM">
-         <value>true</value>
-      </property>
-      <property name="enableTicketCracking">
-         <value>${kerberos.authentication.cifs.enableTicketCracking}</value>
-      </property>
-      <property name="stripKerberosUsernameSuffix">
-         <value>${kerberos.authentication.stripUsernameSuffix}</value>
-      </property>
-   </bean>
-
    <!-- FTP authentication -->
    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase">
       <property name="active">

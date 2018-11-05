@@ -194,7 +194,6 @@ public class ConfigurationDataCollectorTest
         assertTrue(((Map<String, Object>) data.get("db")).containsKey("maxConnections"));
         assertTrue(data.containsKey("serverReadOnly"));
         assertTrue(data.containsKey("serverMode"));
-        assertTrue(data.containsKey("cifsEnabled"));
         assertTrue(data.containsKey("ftpEnabled"));
         assertTrue(data.containsKey("webDAVEnabled"));
         assertTrue(data.containsKey("thumbnailsEnabled"));

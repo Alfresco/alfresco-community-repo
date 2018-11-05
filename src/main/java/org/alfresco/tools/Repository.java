@@ -96,7 +96,7 @@ public class Repository extends Tool
                 "usage: repository [OPTIONS] \n" +
                 "\n" +
                 "Initialize the Alfresco application context, initiating any \n" +
-                "configured server beans (e.g. CIFS server, FTP server, etc). \n" +
+                "configured server beans (e.g. FTP server, etc). \n" +
                 "\n" +
                 "Options: \n" +
                 " -h -help         Display this help \n" +

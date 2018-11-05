@@ -49,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author gkspencer
  */
-public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDiskInterface {
+public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
 
     // Logging
     
@@ -62,19 +62,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
     //  Transaction service
     
     protected TransactionService m_transactionService;
-    
-    protected IOControlHandler ioControlHandler;
-    
-    public void setIoControlHandler(IOControlHandler ioControlHandler)
-    {
-        this.ioControlHandler = ioControlHandler;
-    }
 
-    public IOControlHandler getIoControlHandler()
-    {
-        return ioControlHandler;
-    }
-        
     /**
      * Return the service registry
      * 
@@ -113,48 +101,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
         m_transactionService = transactionService;
     }
 
-    /**
-     * Process a filesystem I/O control request
-     * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param ctrlCode I/O control code
-     * @param fid File id
-     * @param dataBuf I/O control specific input data
-     * @param isFSCtrl true if this is a filesystem control, or false for a device control
-     * @param filter if bit0 is set indicates that the control applies to the share root handle
-     * @return DataBuffer
-     * @exception IOControlNotImplementedException
-     * @exception SMBException
-     */
-    public DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
-            boolean isFSCtrl, int filter)
-        throws IOControlNotImplementedException, SMBException
-    {
-        // Validate the file id
-        
-        NetworkFile netFile = tree.findFile(fid);
-        if ( netFile == null || netFile.isDirectory() == false)
-            throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
-        
-        // Check if the I/O control handler is enabled
-        
-        if(tree.getContext() instanceof ContentContext)
-        {
-            ContentContext ctx = (ContentContext) tree.getContext();
-        
-            if(ioControlHandler != null)
-            {
-                return ioControlHandler.processIOControl(sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter, this, ctx);
-            }
-            else
-            {
-                throw new IOControlNotImplementedException();
-            }
-        }
-        return null;
-    }
-    
     /**
      * Registers a device context object for this instance
      * of the shared device. The same DeviceInterface implementation may be used for multiple

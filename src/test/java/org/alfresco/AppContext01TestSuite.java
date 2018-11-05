@@ -62,7 +62,6 @@ import org.junit.runners.Suite;
 
     // FTPServerTest fails when run from Eclipse
     org.alfresco.filesys.FTPServerTest.class,
-    org.alfresco.filesys.repo.CifsIntegrationTest.class,
     org.alfresco.filesys.repo.ContentDiskDriverTest.class,
     org.alfresco.filesys.repo.LockKeeperImplTest.class,
     org.alfresco.repo.activities.ActivityServiceImplTest.class,

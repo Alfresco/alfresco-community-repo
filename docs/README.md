@@ -29,7 +29,6 @@
 * Meta-data Extraction
 
 ### File Protocols
-* CIFS Protocol
 * FTP Protocol
 * WebDAV Protocol
 

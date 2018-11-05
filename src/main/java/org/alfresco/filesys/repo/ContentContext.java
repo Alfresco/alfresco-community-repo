@@ -30,12 +30,9 @@ import java.util.regex.Pattern;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
-import org.alfresco.filesys.alfresco.IOControlHandler;
-import org.alfresco.filesys.alfresco.PseudoFileOverlay;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.jlan.server.config.CoreServerConfigSection;
 import org.alfresco.jlan.server.core.DeviceContextException;
-import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.FileSystem;
@@ -86,8 +83,6 @@ public class ContentContext extends AlfrescoContext
     
     private NodeMonitor m_nodeMonitor;
     
-    private PseudoFileOverlay m_PseudoFileOverlay;
-
     // Thread pool
     
     private ThreadRequestPool m_threadPool;
@@ -209,8 +204,6 @@ public class ContentContext extends AlfrescoContext
     @Override
     public void initialize(AlfrescoDiskDriver filesysDriver)
     {
-        super.initialize(filesysDriver);
-
         if (m_storeName == null || m_storeName.length() == 0)
         {
             throw new AlfrescoRuntimeException("Device missing storeName");
@@ -428,15 +421,5 @@ public class ContentContext extends AlfrescoContext
         
         if ( m_nodeMonitor != null)
             m_nodeMonitor.startMonitor();
-    }
-
-    public void setPseudoFileOverlay(PseudoFileOverlay pseudoFileOverlay)
-    {
-        this.m_PseudoFileOverlay = pseudoFileOverlay;
-    }
-
-    public PseudoFileOverlay getPseudoFileOverlay()
-    {
-        return m_PseudoFileOverlay;
     }
 }

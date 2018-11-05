@@ -66,8 +66,6 @@ import javax.sql.DataSource;
  *          <li><b>smartFoldersEnabled:</b> Boolean - Smart folder is registered or not. {@link SpringExtensionBundle#isEnabled()}</li>
  *          <li><b>serverReadOnly:</b> Boolean - Repository server read only mode. {@link RepoUsage#isReadOnly()}</li>
  *          <li><b>serverMode:</b> String - The server mode. {@link ServerModeProvider#getServerMode()}</li>
- *          <li><b>cifsEnabled:</b> Boolean - CIFS enabled state as reported by the <code>cifs.enabled</code> property
- *          of the fileServers subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
  *          <li><b>ftpEnabled:</b> Boolean - FTP enabled state as reported by the <code>ftp.enabled</code> property
  *          of the fileServers subsystem {@link ChildApplicationContextFactory#getProperty(String)}</li>
  *          <li><b>webDAVEnabled:</b> Boolean - WebDAV enabled state. {@link WebDavService#getEnabled()}</li>
@@ -306,9 +304,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
                 () -> repoUsageComponent.getUsage().isReadOnly(), true);
         configurationValues.put("serverReadOnly", readOnly);
         configurationValues.put("serverMode", serverModeProvider.getServerMode().toString());
-        boolean cifsEnabled = Boolean.valueOf(fileServersSubsystem.getProperty("cifs.enabled"));
         boolean ftpEnabled = Boolean.valueOf(fileServersSubsystem.getProperty("ftp.enabled"));
-        configurationValues.put("cifsEnabled", cifsEnabled);
         configurationValues.put("ftpEnabled", ftpEnabled);
         configurationValues.put("webDAVEnabled", webdavService.getEnabled());
         configurationValues.put("thumbnailsEnabled", thumbnailService.getThumbnailsEnabled());

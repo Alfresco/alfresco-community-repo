@@ -43,7 +43,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.AlfrescoDiskDriver;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
-import org.alfresco.filesys.alfresco.PseudoFileOverlayImpl;
 import org.alfresco.filesys.alfresco.RepositoryDiskInterface;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -66,10 +65,6 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
 import org.alfresco.jlan.server.filesys.quota.QuotaManager;
 import org.alfresco.jlan.server.filesys.quota.QuotaManagerException;
 import org.alfresco.jlan.server.locking.FileLockingInterface;
@@ -88,7 +83,6 @@ import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.node.archive.NodeArchiveService;
-import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -122,15 +116,14 @@ import org.springframework.extensions.config.ConfigElement;
 /**
  * Alfresco Content repository filesystem driver class
  * <p>
- * Provides a JLAN ContentDiskDriver for various JLAN protocols 
+ * Provides a JLAN ContentDiskDriver for various JLAN protocols
  * such as SMB/CIFS, NFS and FTP.
  *
  */
 public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedDiskInterface, 
     DiskInterface, 
     DiskSizeInterface, 
-    IOCtlInterface, 
-    RepositoryDiskInterface, 
+    RepositoryDiskInterface,
     OpLockInterface, 
     FileLockingInterface
 {
@@ -182,12 +175,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "authService", authService);
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
         PropertyCheck.mandatory(this, "m_nodeMonitorFactory", m_nodeMonitorFactory);
-        PropertyCheck.mandatory(this, "ioControlHandler", ioControlHandler);
         PropertyCheck.mandatory(this, "contentComparator", getContentComparator());
         PropertyCheck.mandatory(this, "nodeArchiveService", nodeArchiveService);
         PropertyCheck.mandatory(this, "hiddenAspect", hiddenAspect);
         PropertyCheck.mandatory(this, "lockKeeper", lockKeeper);
-        PropertyCheck.mandatory(this, "deletePseudoFileCache",  deletePseudoFileCache);
     }
     
     /**
@@ -605,15 +596,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     logger.error("Failed to start quota manager", ex);
                 }
          }
-         
-         // TODO mode to spring
-         PseudoFileOverlayImpl ps = new PseudoFileOverlayImpl();
-         ps.setContext(context);
-         ps.setNodeService(nodeService);
-         ps.setSysAdminParams(context.getSysAdminParams());
-         ps.setDeletePseudoFileCache(deletePseudoFileCache);
-         context.setPseudoFileOverlay(ps);
-         ps.init();
     }
     
     /**
@@ -662,41 +644,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         try
         {
             FileInfo finfo = null;
-            
-            // Is the node a pseudo file ?
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {   
-                String[] paths = FileName.splitPath(path);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-                
-                // Check whether we are opening a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                    PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
-                    if(logger.isDebugEnabled())
-                    {
-                        if (pfile != null)
-                        {
-                            logger.debug("returning psuedo file details:" + pfile);
-                        }
-                        else
-                        {
-                            logger.debug("Try to return deleted pseudo file :" + paths[1]);
-                        }
-                    }
-                    if (pfile != null)
-                    {
-                        return pfile.getFileInfo();
-                    }
-                    else
-                    {
-                        throw new FileNotFoundException("The pseudo file was deleted");
-                    }
-                }
-            }
-            
-            // no - this is not a specially named pseudo file.
+
             NodeRef nodeRef = getNodeForPath(tree, infoPath);
             
             if ( nodeRef != null)
@@ -829,18 +777,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             				     + ( endTime - startTime) + "ms results=" + results.size());
             	}
             }
-            
-            /**
-             * Search pseudo files if they are enabled
-             */
-            PseudoFileList pseudoList = null;
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {   
-                logger.debug("search pseudo files");
-                pseudoList = ctx.getPseudoFileOverlay().searchPseudoFiles(dirNodeRef, searchFileSpec);
-            }
-            
-            DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, pseudoList, paths[0], isLockedFilesAsOffline);          
+
+            DotDotContentSearchContext searchCtx = new DotDotContentSearchContext(getCifsHelper(), results, searchFileSpec, paths[0], isLockedFilesAsOffline);
 
             FileInfo dotInfo = getCifsHelper().getFileInformation(searchRootNodeRef, false, isLockedFilesAsOffline);
             
@@ -926,18 +864,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         int status = FileStatus.Unknown;        
         try
         {
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {
-                String[] paths = FileName.splitPath(name);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-                // Check whether we are opening a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                    return FileStatus.FileExists;
-                }
-            }
-            
 	        // Get the file information to check if the file/folder exists           
 	        FileInfo info = getFileInformation(session, tree, name);
 	        if (info.isDirectory())
@@ -1130,14 +1056,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             NodeRef nodeRef = getCifsHelper().getNodeRef(deviceRootNodeRef, dir);
             if (fileFolderService.exists(nodeRef))
             {
-                // Check if the folder is empty                        
-                // Get pseudo files
-                PseudoFileList pseudoFileList = new PseudoFileList();
-                if (session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-                {
-                    pseudoFileList = ctx.getPseudoFileOverlay().searchPseudoFiles(nodeRef, "*");
-                }
-                if (getCifsHelper().isFolderEmpty(nodeRef) && pseudoFileList.isEmpty())
+                // Check if the folder is empty
+                if (getCifsHelper().isFolderEmpty(nodeRef))
                 {                            
                     // Delete the folder node           
                     fileFolderService.delete(nodeRef);
@@ -1255,21 +1175,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         try
         {
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {
-                String[] paths = FileName.splitPath(path);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-              
-                // Check whether we are closing a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                	// pseudo delete a pseudo file
-              	    ctx.getPseudoFileOverlay().delete(dirNodeRef, paths[1]);
-                    return null;
-                }
-            }
-            
             // Check if there is a quota manager enabled, if so then we need to save the current file size
             
             final QuotaManager quotaMgr = ctx.getQuotaManager();
@@ -1556,24 +1461,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         
         try
         {
-            
-            if(sess.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {
-                String[] paths = FileName.splitPath(name);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-                
-                // Check whether we are opening a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("pseudo file so do nothing");
-                    }
-                    return;
-                }
-            }
-            
             // Get the file/folder node        
             NodeRef nodeRef = getNodeForPath(tree, name);
                     
@@ -2289,56 +2176,8 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         // Nothing to do
     }
     
-// Implementation of IOCtlInterface    
-    
-    /**
-     * Process a filesystem I/O control request
-     * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param ctrlCode I/O control code
-     * @param fid File id
-     * @param dataBuf I/O control specific input data
-     * @param isFSCtrl true if this is a filesystem control, or false for a device control
-     * @param filter if bit0 is set indicates that the control applies to the share root handle
-     * @return DataBuffer
-     * @exception IOControlNotImplementedException
-     * @exception SMBException
-     */
-    public org.alfresco.jlan.util.DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
-            boolean isFSCtrl, int filter)
-        throws IOControlNotImplementedException, SMBException
-    {
-        // Validate the file id
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("processIOControl ctrlCode: 0x" + Integer.toHexString(ctrlCode) + ", fid:" + fid);
-        }
-        
-        final ContentContext ctx = (ContentContext) tree.getContext();
-        try
-        {
-            org.alfresco.jlan.util.DataBuffer buff = ioControlHandler.processIOControl(sess, tree, ctrlCode, fid, dataBuf, isFSCtrl, filter, this, ctx);
-            
-            return buff;
-        }
-        catch(SMBException smbException)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("SMB Exception fid:" + fid, smbException);
-            }
-            throw smbException;
-        }
-        catch(IOControlNotImplementedException ioException)
-        {
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("IO Control Not Implemented Exception fid:" + fid, ioException);
-            }
-            throw ioException;
-        }
-    }
+// Implementation of IOCtlInterface
+
         
           
     public void setCheckOutCheckInService(CheckOutCheckInService service)
@@ -2570,40 +2409,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         try
         {  
             String name = path;
-
-            if(session.isPseudoFilesEnabled() && ctx.isPseudoFilesEnabled())
-            {
-                String[] paths = FileName.splitPath(name);
-                // lookup parent directory
-                NodeRef dirNodeRef = getNodeForPath(rootNode, paths[0]);
-
-                // Check whether we are opening a pseudo file
-                if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
-                {
-                    PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
-                    if(logger.isDebugEnabled())
-                    {
-                        if (pfile != null)
-                        {
-                            logger.debug("Opened pseudo file :" + pfile);
-                        }
-                        else
-                        {
-                            logger.debug("Try to open deleted pseudo file :" + paths[1]);
-                        }
-                    }
-                    if (pfile != null)
-                    {
-                        return pfile.getFile( path);
-                    }
-                    else
-                    {
-                        throw new FileNotFoundException("The pseudo file was deleted");
-                    }
-                }
-            }
-
-            // not a psudo file
 
             NodeRef nodeRef = getNodeForPath(rootNode, path);
             
@@ -2914,30 +2719,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         if ( logger.isDebugEnabled())
         {
             logger.debug("Close file:" + path + ", readOnly=" + file.isReadOnly() );
-        }
-        
-        if( file instanceof PseudoNetworkFile || file instanceof MemoryNetworkFile)
-        {
-            file.close();
-            
-            if(file.hasDeleteOnClose())
-            {
-            	if(logger.isDebugEnabled())
-            	{
-            		logger.debug("delete on close a pseudo file");
-            	}
-            	final ContentContext ctx = (ContentContext) tree.getContext();
-            	 
-            	String[] paths = FileName.splitPath(path);
-                 
-                if (paths[0] != null && paths[0].length() > 1)
-                {  
-                     // lookup parent directory
-                     NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
-                     ctx.getPseudoFileOverlay().delete(dirNodeRef, paths[1]);
-                }
-            }
-            return null;
         }
         
         /**
@@ -3287,12 +3068,4 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     {
         return nodeArchiveService;
     }
-    
-    private SimpleCache<String, String> deletePseudoFileCache;
-    
-	public void setDeletePseudoFileCache(SimpleCache<String, String> deletePseudoFileCache) 
-	{
-		this.deletePseudoFileCache = deletePseudoFileCache;
-	}
-
 }

@@ -210,7 +210,7 @@
          <!-- Explicitly turn off archiving for all nodes with this aspect -->
          <archive>false</archive>
          <properties>
-             <!-- A bit mask encoding whether clients (such as CIFS, WebDav, Share, ...) can see the node -->
+             <!-- A bit mask encoding whether clients (such as WebDav, Share, ...) can see the node -->
 	         <property name="sys:clientVisibilityMask">
 	            <type>d:int</type>
 	            <mandatory>false</mandatory>

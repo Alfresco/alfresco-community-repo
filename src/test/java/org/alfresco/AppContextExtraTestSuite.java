@@ -94,9 +94,6 @@ import org.junit.runners.Suite;
     // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/forms/MNT-7383-context.xml]
     org.alfresco.repo.forms.processor.action.ActionFormProcessorTest.class,
 
-    // [classpath:alfresco/application-context.xml, classpath:alfresco/filesys/auth/cifs/test-kerberos-context.xml]
-    org.alfresco.filesys.auth.cifs.CifsAuthenticatorKerberosTest.class,
-
     // [classpath:alfresco/application-context.xml, classpath:test-cmisinteger_modell-context.xml]
     org.alfresco.opencmis.CMISTest.class,
 

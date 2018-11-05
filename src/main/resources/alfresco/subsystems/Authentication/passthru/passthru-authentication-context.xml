@@ -112,19 +112,6 @@
       </property>
    </bean>
 
-   <!-- CIFS authentication and SMB session listener -->
-   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator" parent="cifsAuthenticatorBase">
-      <property name="active">
-         <value>${passthru.authentication.authenticateCIFS}</value>
-      </property>
-      <property name="passthruServers">
-         <ref bean="passthruServers" />
-      </property>
-	  <property name="sessionCleanup">
-         <value>${passthru.authentication.sessionCleanup}</value>
-      </property>
-   </bean>
-
    <!-- FTP authentication -->
    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.PassthruFtpAuthenticator" parent="ftpAuthenticatorBase">
       <property name="active">

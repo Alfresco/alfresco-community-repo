@@ -121,17 +121,6 @@
       </property>
    </bean>
 
-   <!-- CIFS authentication -->
-   <bean id="cifsAuthenticator" class="org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator" parent="cifsAuthenticatorBase">
-      <property name="active">
-         <value>${alfresco.authentication.authenticateCIFS}</value>
-      </property>
-
-	  <property name="sessionCleanup">
-         <value>${alfresco.authentication.sessionCleanup}</value>
-      </property>
-   </bean>
-
    <!--                                                                    -->
    <!-- The Acegi authentication manager.                                  -->
    <!--                                                                    -->

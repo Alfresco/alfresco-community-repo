@@ -25,19 +25,14 @@
  */
 package org.alfresco.filesys.alfresco;
 
-import java.util.Enumeration;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.config.GlobalDesktopActionConfigBean;
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.DiskDeviceContext;
-import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSharedDevice;
 import org.alfresco.jlan.server.filesys.FileSystem;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileInterface;
 import org.alfresco.jlan.server.locking.LockManager;
 import org.alfresco.jlan.server.locking.OpLockManager;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -53,7 +48,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
 {
     private SysAdminParams sysAdminParams;
     
-    private boolean pseudoFilesEnabled = false;
     private boolean isAlfrescoURLEnabled = false;
     private boolean isShareURLEnabled = false;
 
@@ -75,16 +69,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     
     private String m_urlFileName;
     private String m_shareUrlFileName;
-    
-    // Pseudo file interface
-    
-    private PseudoFileInterface m_pseudoFileInterface;
-
-    // Desktop actions
-    
-    private GlobalDesktopActionConfigBean m_globalDesktopActionConfig = new GlobalDesktopActionConfigBean();
-    private DesktopActionTable m_desktopActions;
-    private List<DesktopAction> m_desktopActionsToInitialize;
     
     // Debug flags
     //
@@ -124,22 +108,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      */
     public void initialize(AlfrescoDiskDriver filesysDriver)
     {
-        if (m_desktopActionsToInitialize != null)
-        {
-            for (DesktopAction desktopAction : m_desktopActionsToInitialize)
-            {
-                // Initialize the desktop action
-                try
-                {
-                    desktopAction.initializeAction(filesysDriver.getServiceRegistry(), this);
-                }
-                catch (DesktopActionException ex)
-                {
-                    throw new AlfrescoRuntimeException("Failed to initialize desktop action", ex);
-                }
-                addDesktopAction(desktopAction);
-            }
-        }
+        // no op
     }
 
     /**
@@ -151,90 +120,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return FileSystem.TypeNTFS;
     }
-
-    /**
-     * Determine if the pseudo file interface is enabled
-     * 
-     * @return boolean
-     */
-    public final boolean hasPseudoFileInterface()
-    {
-    	return m_pseudoFileInterface != null ? true : false;
-    }
-    
-    /**
-     * Return the pseudo file interface
-     * 
-     * @return PseudoFileInterface
-     */
-    public final PseudoFileInterface getPseudoFileInterface()
-    {
-    	return m_pseudoFileInterface;
-    }
-
-    /**
-     * Enable the pseudo file interface for this filesystem
-     */
-    private final void enabledPseudoFileInterface()
-    {
-    	if ( m_pseudoFileInterface == null)
-    		m_pseudoFileInterface = new PseudoFileImpl();
-    }
-    
-    /**
-     * Determine if there are desktop actins configured
-     * 
-     * @return boolean
-     */
-    public final boolean hasDesktopActions()
-    {
-    	return m_desktopActions != null ? true : false;
-    }
-    
-    /**
-     * Return the desktop actions table
-     * 
-     * @return DesktopActionTable
-     */
-    public final DesktopActionTable getDesktopActions()
-    {
-    	return m_desktopActions;
-    }
-    
-    /**
-     * Return the count of desktop actions
-     * 
-     * @return int
-     */
-    public final int numberOfDesktopActions()
-    {
-    	return m_desktopActions != null ? m_desktopActions.numberOfActions() : 0;
-    }
-
-    /**
-     * Add a desktop action
-     * 
-     * @param action DesktopAction
-     * @return boolean
-     */
-    public final boolean addDesktopAction(DesktopAction action)
-    {
-    	// Check if the desktop actions table has been created
-    	
-    	if ( m_desktopActions == null)
-    	{
-    		m_desktopActions = new DesktopActionTable();
-    		
-    		// Enable pseudo files
-    		
-    		enabledPseudoFileInterface();
-    	}
-    	
-    	// Add the action
-    	
-    	return m_desktopActions.addAction(action);
-    }
-
     
 //    /**
 //     * Determine if the URL pseudo file is enabled
@@ -299,8 +184,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         {
             if (!urlFileName.endsWith(".url"))
                 throw new AlfrescoRuntimeException("URL link file must end with .url, " + urlFileName);
-
-            enabledPseudoFileInterface();
         }
     }
     
@@ -318,62 +201,8 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         {
             if (!urlFileName.endsWith(".url"))
                 throw new AlfrescoRuntimeException("URL Share link file must end with .url, " + urlFileName);
-
-            enabledPseudoFileInterface();
         }
     }
-
-    /**
-     * Set the desktop actions
-     * 
-     * @param desktopActions DesktopActionTable
-     * @param filesysDriver DiskInterface
-     */
-    public final void setDesktopActions(DesktopActionTable desktopActions, DiskInterface filesysDriver)
-    {
-    	// Enumerate the desktop actions and add to this filesystem
-    	
-    	Enumeration<String> names = desktopActions.enumerateActionNames();
-    	
-    	while ( names.hasMoreElements())
-    	{
-    		addDesktopAction( desktopActions.getAction(names.nextElement()));
-    	}
-    	
-//    	// If there are desktop actions then create the custom I/O control handler
-//    	
-//    	if ( numberOfDesktopActions() > 0)
-//    	{
-//    		// Create the custom I/O control handler
-//    	
-//    		m_ioHandler = createIOHandler( filesysDriver);
-//    		if ( m_ioHandler != null)
-//    			m_ioHandler.initialize(( AlfrescoDiskDriver) filesysDriver, this);
-//    	}
-    }
-    
-
-    /**
-     * Set the desktop actions
-     * 
-     * @param desktopActions DesktopAction List
-     */
-    public final void setDesktopActionList(List<DesktopAction> desktopActions)
-    {
-        m_desktopActionsToInitialize = desktopActions;
-    }
-
-    public void setGlobalDesktopActionConfig(GlobalDesktopActionConfigBean desktopActionConfig)
-    {
-        m_globalDesktopActionConfig = desktopActionConfig;
-    }
-
-
-    protected GlobalDesktopActionConfigBean getGlobalDesktopActionConfig()
-    {
-        return m_globalDesktopActionConfig;
-    }
-    
     
     /**
      * Set the debug flags, also requires the logger to be enabled for debug output
@@ -481,16 +310,6 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     public void setOpLockManager(OpLockManager opLockManager) 
     {
         this.opLockManager = opLockManager;
-    }
-
-    public void setPseudoFilesEnabled(boolean enablePseudoFiles)
-    {
-        this.pseudoFilesEnabled = enablePseudoFiles;
-    }
-
-    public boolean isPseudoFilesEnabled()
-    {
-        return pseudoFilesEnabled;
     }
 
     public void setAlfrescoURLEnabled(boolean isAlfrescoURLEnabled)

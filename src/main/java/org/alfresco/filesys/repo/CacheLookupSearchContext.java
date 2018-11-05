@@ -31,7 +31,6 @@ import java.util.List;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +59,6 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
      * @param cifsHelper Filesystem helper class
      * @param results List of file/folder nodes that match the search pattern
      * @param searchStr Search path
-     * @param pseudoList List of pseudo files to be blended into the returned list of files
      * @param relPath Relative path being searched
      * @param stateCache File state cache
      */
@@ -68,12 +66,11 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
             CifsHelper cifsHelper,
             List<NodeRef> results,
             String searchStr,
-            PseudoFileList pseudoList,
             String relPath,
             FileStateCache stateCache,
             boolean lockedFilesAsOffline)
     {
-        super(cifsHelper, results, searchStr, pseudoList, relPath, lockedFilesAsOffline);
+        super(cifsHelper, results, searchStr, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
         
         m_stateCache = stateCache;
@@ -92,8 +89,6 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
     	
     	if ( super.nextFileInfo( info) == false)
     		return false;
-    	else if ( returningPseudoFiles() == true || m_stateCache == null)
-    		return true;
     	
     	// We have a real file entry, check if there is a cache entry
     	
@@ -145,11 +140,6 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
         sb.append(getSearchString());
         sb.append(", resultCount=");
         sb.append(getResultsSize());
-        sb.append(", pseudoList=");
-        if ( getPseudoListSize() != 0)
-        	sb.append( getPseudoListSize());
-        else
-        	sb.append("NULL");
         sb.append(",cache=");
         sb.append(m_stateCache);
         

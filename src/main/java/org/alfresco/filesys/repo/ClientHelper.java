@@ -33,11 +33,7 @@ public class ClientHelper
     public static Client getClient(SrvSession srvSession)
     {
         String clientStr = srvSession.getServer().getProtocolName().toLowerCase();
-        if(clientStr.equals("cifs"))
-        {
-            return Client.cifs;
-        }
-        else if(clientStr.equals("nfs"))
+        if(clientStr.equals("nfs"))
         {
             return Client.nfs;
         }

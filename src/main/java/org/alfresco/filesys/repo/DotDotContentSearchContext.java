@@ -29,9 +29,6 @@ package org.alfresco.filesys.repo;
 import java.util.List;
 
 import org.alfresco.jlan.server.filesys.FileInfo;
-import org.alfresco.jlan.server.filesys.cache.FileState;
-import org.alfresco.jlan.server.filesys.cache.FileStateCache;
-import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,7 +57,6 @@ public class DotDotContentSearchContext extends ContentSearchContext {
      * @param cifsHelper Filesystem helper class
      * @param results List of file/folder nodes that match the search pattern
      * @param searchStr Search path
-     * @param pseudoList List of pseudo files to be blended into the returned list of files
      * @param relPath Relative path being searched
      * @param lockedFilesAsOffline set state
      */
@@ -68,12 +64,11 @@ public class DotDotContentSearchContext extends ContentSearchContext {
             CifsHelper cifsHelper,
             List<NodeRef> results,
             String searchStr,
-            PseudoFileList pseudoList,
             String relPath,
             boolean lockedFilesAsOffline)
            
     {
-        super(cifsHelper, results, searchStr, pseudoList, relPath, lockedFilesAsOffline);
+        super(cifsHelper, results, searchStr, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
     }
     
@@ -161,11 +156,6 @@ public class DotDotContentSearchContext extends ContentSearchContext {
         sb.append(getSearchString());
         sb.append(", resultCount=");
         sb.append(getResultsSize());
-        sb.append(", pseudoList=");
-        if ( getPseudoListSize() != 0)
-        	sb.append( getPseudoListSize());
-        else
-        	sb.append("NULL");        
         if ( m_dotInfo != null)
         	sb.append(",Dot");
         if ( m_dotDotInfo != null)

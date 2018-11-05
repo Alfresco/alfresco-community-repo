@@ -112,22 +112,6 @@
         </property>
     </bean>
 
-    <bean id="CifsAuthenticator"
-        class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-        <property name="applicationContextManager">
-            <ref bean="Authentication" />
-        </property>
-        <property name="sourceBeanName">
-            <value>cifsAuthenticator</value>
-        </property>
-        <property name="interfaces">
-            <list>
-                <value>org.alfresco.jlan.server.auth.ICifsAuthenticator</value>
-                <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
-            </list>
-        </property>
-    </bean>
-
     <bean id="RemoteUserMapper"
        class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
        <property name="applicationContextManager">

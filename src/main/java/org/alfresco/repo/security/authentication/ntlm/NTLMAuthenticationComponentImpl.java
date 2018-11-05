@@ -444,68 +444,6 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     }
 
     /**
-     * Set the protocol order for passthru connections
-     * 
-     * @param protoOrder String
-     */
-    public void setProtocolOrder(String protoOrder)
-    {
-        // Parse the protocol order list
-        
-        StringTokenizer tokens = new StringTokenizer( protoOrder, ",");
-        int primaryProto = Protocol.None;
-        int secondaryProto = Protocol.None;
-
-        // There should only be one or two tokens
-        
-        if ( tokens.countTokens() > 2)
-            throw new AlfrescoRuntimeException("Invalid protocol order list, " + protoOrder);
-        
-        // Get the primary protocol
-        
-        if ( tokens.hasMoreTokens())
-        {
-            // Parse the primary protocol
-            
-            String primaryStr = tokens.nextToken();
-            
-            if ( primaryStr.equalsIgnoreCase( "TCPIP"))
-                primaryProto = Protocol.NativeSMB;
-            else if ( primaryStr.equalsIgnoreCase( "NetBIOS"))
-                primaryProto = Protocol.TCPNetBIOS;
-            else
-                throw new AlfrescoRuntimeException("Invalid protocol type, " + primaryStr);
-            
-            // Check if there is a secondary protocol, and validate
-            
-            if ( tokens.hasMoreTokens())
-            {
-                // Parse the secondary protocol
-                
-                String secondaryStr = tokens.nextToken();
-                
-                if ( secondaryStr.equalsIgnoreCase( "TCPIP") && primaryProto != Protocol.NativeSMB)
-                    secondaryProto = Protocol.NativeSMB;
-                else if ( secondaryStr.equalsIgnoreCase( "NetBIOS") && primaryProto != Protocol.TCPNetBIOS)
-                    secondaryProto = Protocol.TCPNetBIOS;
-                else
-                    throw new AlfrescoRuntimeException("Invalid secondary protocol, " + secondaryStr);
-            }
-        }
-        
-        // Set the protocol order used for passthru authentication sessions
-        
-        AuthSessionFactory.setProtocolOrder( primaryProto, secondaryProto);
-        
-        // DEBUG
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Protocol order primary=" + Protocol.asString(primaryProto) + ", secondary=" + Protocol.asString(secondaryProto));
-        }
-    }
-
-    /**
      * Return the authentication session timeout, in milliseconds
      * 
      * @return long

@@ -49,7 +49,6 @@ import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.config.GlobalConfigSection;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.ServerConfiguration;
-import org.alfresco.jlan.smb.server.CIFSConfigSection;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.jlan.util.Platform;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -87,14 +86,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   // IP address representing null
   
   public static final String BIND_TO_IGNORE = "0.0.0.0";
-  
-  // SMB/CIFS session debug type strings
-  //
-  // Must match the bit mask order
-  
-  protected static final String m_sessDbgStr[] = { "NETBIOS", "STATE", "RXDATA", "TXDATA", "DUMPDATA", "NEGOTIATE", "TREE", "SEARCH", "INFO", "FILE",
-          "FILEIO", "TRANSACT", "ECHO", "ERROR", "IPC", "LOCK", "PKTTYPE", "DCERPC", "STATECACHE", "TIMING", "NOTIFY",
-          "STREAMS", "SOCKET", "PKTPOOL", "PKTSTATS", "THREADPOOL", "BENCHMARK", "OPLOCK" };
 
   // FTP server debug type strings
 
@@ -116,10 +107,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   
   protected static final String m_nfsDebugStr[] = { "RXDATA", "TXDATA", "DUMPDATA", "SEARCH", "INFO", "FILE",
     "FILEIO", "ERROR", "TIMING", "DIRECTORY", "SESSION" };
-  
-  // Token name to substitute current server name into the CIFS server name
-  
-  protected static final String TokenLocalName = "${localname}";
   
   // Default thread pool size
 	
@@ -311,16 +298,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   }
 
   /**
-   * Check if the SMB server is enabled
-   * 
-   * @return boolean
-   */
-  public final boolean isSMBServerEnabled()
-  {
-      return hasConfigSection( CIFSConfigSection.SectionName);
-  }
-
-  /**
    * Check if the FTP server is enabled
    * 
    * @return boolean
@@ -446,40 +423,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
           throw new AlfrescoRuntimeException("File server configuration error, " + ex.getMessage(), ex);
       }
 
-      // Initialize the CIFS and FTP servers, if the filesystem(s) initialized successfully
-      
-      // Initialize the CIFS server
-
-      try
-      {
-
-          // Process the CIFS server configuration
-          processCIFSServerConfig();
-
-          // Log the successful startup
-          logger.info("CIFS server " + (isSMBServerEnabled() ? "" : "NOT ") + "started");
-      }
-      catch (UnsatisfiedLinkError ex)
-      {
-          // Error accessing the Win32NetBIOS DLL code
-
-          logger.error("Error accessing Win32 NetBIOS, check DLL is on the path");
-
-          // Disable the CIFS server
-
-          removeConfigSection( CIFSConfigSection.SectionName);
-      }
-      catch (Throwable ex)
-      {
-          // Configuration error
-
-          logger.error("CIFS server configuration error, " + ex.getMessage(), ex);
-
-          // Disable the CIFS server
-
-          removeConfigSection( CIFSConfigSection.SectionName);
-      }
-
       // Initialize the FTP server
 
       try
@@ -504,8 +447,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   protected abstract void processSecurityConfig();
   
   protected abstract void processFilesystemsConfig();
-
-  protected abstract void processCIFSServerConfig();
 
   protected abstract void processFTPServerConfig();
 

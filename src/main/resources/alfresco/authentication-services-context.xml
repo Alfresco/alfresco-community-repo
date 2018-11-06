@@ -608,6 +608,7 @@
                     <value>${authentication.ticket.ticketsExpire}</value>
                 </property>
                 <!-- Are tickets only valid for a single use? -->
+                <!-- This feature has been deprecated -->
                 <property name="oneOff">
                     <value>false</value>
                 </property>

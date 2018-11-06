@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
@@ -76,6 +77,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.search.SearchSqlRequest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.data.DataUser;
@@ -794,6 +796,11 @@ public class BaseRMRestTest extends RestTest
         documentLibrary.setName(nodes.get(0).onModel().getName());
         documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
         return documentLibrary;
+    }
+
+    protected RestResponse searchSql(UserModel userModel, SearchSqlRequest searchSqlRequest) throws Exception
+    {
+        return restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(searchSqlRequest);
     }
 
 }

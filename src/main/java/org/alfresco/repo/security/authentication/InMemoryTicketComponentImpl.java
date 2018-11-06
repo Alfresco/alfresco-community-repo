@@ -37,6 +37,8 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.GUID;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.safehaus.uuid.UUIDGenerator;
 
 /**
@@ -50,6 +52,8 @@ public class InMemoryTicketComponentImpl implements TicketComponent
      * Ticket prefix
      */
     public static final String GRANTED_AUTHORITY_TICKET_PREFIX = "TICKET_";
+
+    Log logger = LogFactory.getLog(getClass());
 
     private static ThreadLocal<String> currentTicket = new ThreadLocal<String>();
     private boolean ticketsExpire;
@@ -96,9 +100,15 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     /**
      * Are tickets single use
      */
+    @Deprecated
     public void setOneOff(boolean oneOff)
     {
         this.oneOff = oneOff;
+        if (this.oneOff)
+        {
+            logger.warn("The 'oneOff' feature has been deprecated and will be removed in a future version. "
+                + "This feature may not work as intended even in the current version");
+        }
     }
 
     /**
@@ -190,6 +200,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         }
         if (oneOff)
         {
+            //this feature is deprecated
             ticketsCache.remove(ticketKey);
         }
         else if (newTicket != ticket)

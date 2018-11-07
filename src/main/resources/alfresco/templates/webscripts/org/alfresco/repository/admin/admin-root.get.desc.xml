@@ -3,6 +3,7 @@
    <description><![CDATA[Admin Console WebScript that retrieves available admin console tools and redirects to the first one.]]></description>
    <url>/admin</url>
    <url>/admin/</url>
+   <family>AdminConsoleHelper</family>
    <format default="html">argument</format>
    <authentication>admin</authentication>
    <lifecycle>internal</lifecycle>

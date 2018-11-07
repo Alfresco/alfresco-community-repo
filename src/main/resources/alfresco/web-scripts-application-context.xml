@@ -201,20 +201,35 @@
    <!--  HTTP Basic Authenticator (Servlet based - stateless) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authorityService" ref="AuthorityService" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 
    <!--  HTTP Remote User Authenticator (Servlet based - stateless) -->
    <bean id="webscripts.authenticator.remoteuser" class="org.alfresco.repo.web.scripts.servlet.RemoteUserAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authorityService" ref="AuthorityService" />
       <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
       <property name="remoteUserMapper" ref="RemoteUserMapper" />
+      <property name="alwaysAllowBasicAuthForAdminConsole">
+         <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
+      </property>
+      <property name="getRemoteUserTimeoutMilliseconds">
+         <value>${authentication.getRemoteUserTimeoutMilliseconds}</value>
+      </property>
+      <property name="adminConsoleScriptFamilies">
+         <list>
+            <value>AdminConsole</value>
+            <value>AdminConsoleHelper</value>
+         </list>
+      </property>
    </bean>
 
    <!--  HTTP Basic Authenticator (Servlet based - stateless) for MT -->
    <bean id="webscripts.authenticator.basic.tenant" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authorityService" ref="AuthorityService" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 

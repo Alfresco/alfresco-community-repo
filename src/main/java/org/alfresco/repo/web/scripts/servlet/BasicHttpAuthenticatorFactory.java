@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.BasicAuthCredentials;
@@ -36,6 +37,7 @@ import org.alfresco.repo.web.auth.GuestCredentials;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Base64;
@@ -58,6 +60,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
 
     // Component dependencies
     protected AuthenticationService authenticationService;
+    protected AuthorityService authorityService;
     protected AuthenticationListener listener;
 
     
@@ -75,6 +78,16 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
     public void setAuthenticationListener(AuthenticationListener listener)
     {
     	this.listener = listener;
+    }
+
+    public AuthorityService getAuthorityService()
+    {
+        return authorityService;
+    }
+
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
     }
 
     /* (non-Javadoc)
@@ -285,6 +298,33 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
         public boolean emptyCredentials()
         {
             return ((ticket == null || ticket.length() == 0) && (authorization == null || authorization.length() == 0));
+        }
+
+        protected boolean isBasicAuthHeaderPresentForAdmin()
+        {
+            if (authorization == null || authorization.isEmpty())
+            {
+                return false;
+            }
+            String[] authorizationParts = authorization.split(" ");
+            if (!authorizationParts[0].equalsIgnoreCase("basic"))
+            {
+                return false;
+            }
+
+            String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
+            Authorization auth = new Authorization(decodedAuthorisation);
+            if (auth.isTicket() || auth.getUserName() == null || auth.getUserName().isEmpty())
+            {
+                return false;
+            }
+            // optimization: check the admin user name first
+            if (AuthenticationUtil.getAdminUserName().equals(auth.getUserName()))
+            {
+                return true;
+            }
+            // then check the admin group
+            return authorityService.isAdminAuthority(auth.getUserName());
         }
     }
 

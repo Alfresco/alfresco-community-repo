@@ -68,6 +68,7 @@ import org.junit.runners.Suite;
     // these tests run very fast once the context is up
     org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceTest.class,
     org.alfresco.repo.web.scripts.servlet.RemoteAuthenticatorFactoryTest.class,
+    org.alfresco.repo.web.scripts.servlet.RemoteAuthenticatorFactoryAdminConsoleAccessTest.class,
 
     // [classpath:alfresco/application-context.xml]
     org.alfresco.repo.webdav.GetMethodRegressionTest.class,

@@ -38,7 +38,6 @@ import org.alfresco.jlan.server.config.ServerConfiguration;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
@@ -187,20 +186,6 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
 	protected final AuthenticationComponent getAuthenticationComponent() {
 		return this.authenticationComponent;
 	}
-
-    /**
-     * Returns an SSO-enabled authentication component.
-     * 
-     * @return NLTMAuthenticator
-     */
-    protected final NLTMAuthenticator getNTLMAuthenticator()
-    {
-        if (!(this.authenticationComponent instanceof NLTMAuthenticator))
-        {
-            throw new IllegalStateException("Attempt to use non SSO-enabled authentication component for SSO");
-        }
-        return (NLTMAuthenticator)this.authenticationComponent;
-    }
 
     /**
 	 * Return the authentication service

@@ -34,11 +34,8 @@ import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
-import org.alfresco.repo.security.authentication.NTLMMode;
-import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 
 /**
  * Alfresco FTP Authenticator Class
@@ -170,16 +167,10 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
     
     if (logger.isDebugEnabled())
     {
-        AuthenticationComponent authenticationComponent = getAuthenticationComponent();
-        logger
-                .debug("Authenticated user "
+        logger.debug("Authenticated user "
                         + client.getUserName()
                         + " sts="
-                        + authSts
-                        + " via "
-                        + (authenticationComponent instanceof NLTMAuthenticator
-                                && ((NLTMAuthenticator) authenticationComponent).getNTLMMode() == NTLMMode.MD4_PROVIDER ? "MD4"
-                                : "Passthru"));
+                        + authSts);
     }
                 
     // Return the authentication status

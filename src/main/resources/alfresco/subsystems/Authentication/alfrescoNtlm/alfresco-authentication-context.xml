@@ -63,7 +63,6 @@
       <property name="proxyInterfaces">
          <list>
             <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
-            <value>org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator</value>
          </list>
       </property>
       <property name="transactionManager">

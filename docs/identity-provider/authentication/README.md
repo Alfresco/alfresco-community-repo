@@ -16,7 +16,6 @@ Alfresco provides a default Authentication implementation that uses userid's and
 to integrate with a number of external Authentication providers including
 * Active Directory
 * Kerberos
-* NTLM
 * LDAP
 
 ***
@@ -40,8 +39,6 @@ to integrate with a number of external Authentication providers including
 * [JAAS](http://docs.oracle.com/javase/8/docs/technotes/guides/security/jaas/JAASRefGuide.html)
 * [Kerberos](https://msdn.microsoft.com/en-us/library/bb742516.aspx)
 * [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol)
-* [NTLM](https://msdn.microsoft.com/en-us/library/windows/desktop/aa378749(v=vs.85).aspx)
-
 ***
 
 ### Design
@@ -56,7 +53,7 @@ are stored in the Alfresco repository.
 #### Chaining
 
 Most production systems that use Alfresco will rely upon more secure approaches, so Alfresco also allows the
-customer to integrate a choice of existing authentication providers, including *Active Directory*, *Kerberos*, *LDAP* and *NTLM*.  
+customer to integrate a choice of existing authentication providers, including *Active Directory*, *Kerberos* and *LDAP*.  
 
 The implementation of each such Authorization provider is delivered as a separate Alfresco Subsystem.  
 The Subsystems are chained together as an ordered list of providers each of which, in turn, will be given
@@ -84,9 +81,6 @@ depicted in [Client Login](../../../share/share-app/resource/sequence/client-log
 ![Note](https://img.shields.io/badge/Editor-TODO-yellow.svg?&style=flat-square?colorB=2196f3&style=flat-square)
 
 ##### Kerberos Authentication Login Flow
-![Note](https://img.shields.io/badge/Editor-TODO-yellow.svg?&style=flat-square?colorB=2196f3&style=flat-square)
-
-##### NTLM Authentication Login Flow
 ![Note](https://img.shields.io/badge/Editor-TODO-yellow.svg?&style=flat-square?colorB=2196f3&style=flat-square)
 
 #### Class Diagram

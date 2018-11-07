@@ -186,14 +186,6 @@ class javax.servlet.ServletInputStream {
 +  readLine(class [B, int, int)  : int
 
 }
-class org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter {
--  logger : i Log
---
-+   NTLMAuthenticationFilter() 
-#  getLogger()  :  Log
-#  onValidateFailed(i ServletContext, i HttpServletRequest, i HttpServletResponse, i HttpSession, i WebCredentials)  : void
-
-}
 class org.alfresco.repo.webdav.DeleteMethod {
 -  activityPoster : i WebDAVActivityPoster
 -  deleteDelayTimer : c Timer
@@ -681,39 +673,6 @@ class org.alfresco.repo.webdav.WebDAVMethod$Condition {
 +  getETagsNotMatch()  :  LinkedList
 +  getLockTokensMatch()  :  LinkedList
 +  getLockTokensNotMatch()  :  LinkedList
-
-}
-class org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter {
-#  AUTHORIZATION : c String
-#  AUTH_NTLM : c String
-#  WWW_AUTHENTICATE : c String
-+  NTLM_AUTH_DETAILS : c String
-+  NTLM_AUTH_SESSION : c String
--  NTLM_FLAGS_NTLM1 : int
--  NTLM_FLAGS_NTLM2 : int
--  m_allowGuest : boolean
--  m_disableNTLMv2 : boolean
--  m_encryptor : c PasswordEncryptor
--  m_mapUnknownUserToGuest : boolean
--  m_md4Encoder : i MD4PasswordEncoder
--  m_ntlmFlags : int
--  m_random : c Random
--  nltmAuthenticator : i NLTMAuthenticator
---
-+   BaseNTLMAuthenticationFilter() 
-#  checkNTLMv1(c String, class [B, c Type3NTLMMessage, boolean)  : boolean
-#  checkNTLMv2(c String, class [B, c Type3NTLMMessage)  : boolean
-#  checkNTLMv2SessionKey(c String, class [B, c Type3NTLMMessage)  : boolean
-#  disableNTLMv2()  : void
-#  getMD4Hash(c String)  :  String
-#  init()  : void
-#  processType1(c Type1NTLMMessage, i HttpServletRequest, i HttpServletResponse)  : void
-#  processType3(c Type3NTLMMessage, i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
-#  validateLocalHashedPassword(c Type3NTLMMessage, c NTLMLogonDetails, boolean, c String)  : boolean
-+  authenticateRequest(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : boolean
-+  restartLoginChallenge(i ServletContext, i HttpServletRequest, i HttpServletResponse)  : void
-+  setMapUnknownUserToGuest(boolean)  : void
--  clearSession(i HttpSession)  : void
 
 }
 interface org.alfresco.repo.webdav.WebDAVActivityPoster {
@@ -1460,11 +1419,9 @@ org.alfresco.repo.webdav.ActivityPosterImpl "1"  o-left-  "1" org.apache.commons
 org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" javax.servlet.http.HttpServletResponse  : response: i HttpServletResponse
 org.alfresco.repo.webdav.PropPatchMethod$PropertyAction "1"  o-left-  "1" org.alfresco.repo.webdav.WebDAVProperty  : property: c WebDAVProperty
 org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" java.util.regex.Pattern  : m_authPattern: c Pattern
-org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.MD4PasswordEncoder  : m_md4Encoder: i MD4PasswordEncoder
 org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter "1"  o-left-  "1" javax.security.auth.login.LoginContext  : m_loginContext: c LoginContext
 org.alfresco.repo.webdav.PropPatchMethod$PropertyAction "1"  o-left-  "1" org.alfresco.repo.webdav.PropPatchMethod  : this$0: c PropPatchMethod
 org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
-org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator  : nltmAuthenticator: i NLTMAuthenticator
 org.alfresco.repo.webdav.PropPatchMethod "1"  o-left-  "*" org.alfresco.repo.webdav.PropPatchMethod$PropertyAction  : m_propertyActions:  ArrayList< PropPatchMethod$PropertyAction>
 org.alfresco.repo.webdav.LockMethod "1"  o-left-  "1" java.util.Timer  : timer: c Timer
 org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
@@ -1533,13 +1490,11 @@ org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.repo.tenant
 org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
 org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilterTestFilter$Handler "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : httpReq: i HttpServletRequest
 org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
-org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.WebDAVHelper "1"  o-left-  "1" org.alfresco.service.ServiceRegistry  : m_serviceRegistry: i ServiceRegistry
 org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.MTNodesCache2 "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
 javax.servlet.http.HttpServlet "1"  o-left-  "1" java.util.ResourceBundle  : lStrings: c ResourceBundle
-org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter "1"  o-left-  "1" org.alfresco.jlan.server.auth.PasswordEncryptor  : m_encryptor: c PasswordEncryptor
 org.alfresco.repo.webdav.auth.BaseAuthenticationFilter "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
 org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "*" org.alfresco.service.cmr.repository.NodeRef  : m_childToParent:  Map< NodeRef, NodeRef>
 org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : defaultRootNode: c NodeRef
@@ -1548,7 +1503,6 @@ org.alfresco.repo.webdav.WebDavServiceImpl "1"  o-left-  "1" org.alfresco.servic
 org.alfresco.repo.webdav.WebDAVLockServiceImpl "1"  o-left-  "1" org.alfresco.service.cmr.coci.CheckOutCheckInService  : checkOutCheckInService: i CheckOutCheckInService
 org.springframework.extensions.surf.util.AbstractLifecycleBean "1"  o-left-  "1" org.springframework.context.ApplicationContext  : applicationContext: i ApplicationContext
 org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationComponent  : m_authComponent: i AuthenticationComponent
-org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter "1"  o-left-  "1" java.util.Random  : m_random: c Random
 org.alfresco.repo.webdav.ExceptionHandler "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.WebDAVServlet "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
 org.alfresco.repo.webdav.WebDAVMethod "1"  o-left-  "1" javax.servlet.http.HttpServletRequest  : m_request: i HttpServletRequest
@@ -1583,12 +1537,10 @@ org.alfresco.repo.webdav.MoveMethod  -up|>  org.alfresco.repo.webdav.Hierarchica
 org.alfresco.repo.webdav.auth.KerberosAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter
 org.alfresco.repo.webdav.WebDavBootstrap  -up|>  org.springframework.extensions.surf.util.AbstractLifecycleBean
 org.alfresco.repo.webdav.PostMethod  -up|>  org.alfresco.repo.webdav.PutMethod
-org.alfresco.repo.webdav.auth.NTLMAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter
 org.alfresco.repo.webdav.DeleteMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
 org.alfresco.repo.webdav.PropPatchMethod  -up|>  org.alfresco.repo.webdav.PropFindMethod
 org.alfresco.repo.webdav.CopyMethod  -up|>  org.alfresco.repo.webdav.MoveMethod
 org.alfresco.repo.webdav.auth.HTTPRequestAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseAuthenticationFilter
-org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter
 org.alfresco.repo.webdav.LockMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod
 org.alfresco.repo.webdav.auth.AuthenticationFilter  -up|>  org.alfresco.repo.webdav.auth.BaseAuthenticationFilter
 org.alfresco.repo.webdav.UnlockMethod  -up|>  org.alfresco.repo.webdav.WebDAVMethod

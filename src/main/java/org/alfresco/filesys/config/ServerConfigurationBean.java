@@ -51,9 +51,6 @@ import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.ftp.FTPPath;
 import org.alfresco.jlan.ftp.InvalidPathException;
 import org.alfresco.jlan.server.auth.acl.AccessControlList;
-import org.alfresco.jlan.server.auth.passthru.DomainMapping;
-import org.alfresco.jlan.server.auth.passthru.RangeDomainMapping;
-import org.alfresco.jlan.server.auth.passthru.SubnetDomainMapping;
 import org.alfresco.jlan.server.config.CoreServerConfigSection;
 import org.alfresco.jlan.server.config.InvalidConfigurationException;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
@@ -743,64 +740,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
             {
                 // Associate the share mapper
                 secConfig.setShareMapper(shareMapper);
-            }
-     
-            // Check if any domain mappings have been specified
-
-            List<DomainMappingConfigBean> mappings = securityConfigBean.getDomainMappings();
-            if (mappings != null)
-            {
-                DomainMapping mapping = null;
-
-                for (DomainMappingConfigBean domainMap : mappings)
-                {
-                    // Get the domain name
-
-                    String name = domainMap.getName();
-
-                    // Check if the domain is specified by subnet or range
-
-                    String subnetStr = domainMap.getSubnet();
-                    String rangeFromStr;
-                    if (subnetStr != null && subnetStr.length() > 0)
-                    {
-                        String maskStr = domainMap.getMask();
-
-                        // Parse the subnet and mask, to validate and convert to int values
-
-                        int subnet = IPAddress.parseNumericAddress(subnetStr);
-                        int mask = IPAddress.parseNumericAddress(maskStr);
-
-                        if (subnet == 0 || mask == 0)
-                            throw new AlfrescoRuntimeException("Invalid subnet/mask for domain mapping " + name);
-
-                        // Create the subnet domain mapping
-
-                        mapping = new SubnetDomainMapping(name, subnet, mask);
-                    }
-                    else if ((rangeFromStr = domainMap.getRangeFrom()) != null && rangeFromStr.length() > 0)
-                    {
-                        String rangeToStr = domainMap.getRangeTo();
-
-                        // Parse the range from/to values and convert to int values
-
-                        int rangeFrom = IPAddress.parseNumericAddress(rangeFromStr);
-                        int rangeTo = IPAddress.parseNumericAddress(rangeToStr);
-
-                        if (rangeFrom == 0 || rangeTo == 0)
-                            throw new AlfrescoRuntimeException("Invalid address range domain mapping " + name);
-
-                        // Create the subnet domain mapping
-
-                        mapping = new RangeDomainMapping(name, rangeFrom, rangeTo);
-                    }
-                    else
-                        throw new AlfrescoRuntimeException("Invalid domain mapping specified");
-
-                    // Add the domain mapping
-
-                    secConfig.addDomainMapping(mapping);
-                }
             }
         }
         catch (InvalidConfigurationException ex)

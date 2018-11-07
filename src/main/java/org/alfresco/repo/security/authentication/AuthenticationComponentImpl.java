@@ -38,7 +38,6 @@ import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.tenant.TenantDisabledException;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -49,7 +48,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class AuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
+public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
 {
     private static Log logger = LogFactory.getLog(AuthenticationComponentImpl.class);
     
@@ -223,14 +222,6 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
         throw new AlfrescoRuntimeException("Authentication via token not supported");
     }
     
-    /**
-     * This implementation supported MD4 password hashes.
-     */
-    public NTLMMode getNTLMMode()
-    {
-        return NTLMMode.MD4_PROVIDER;
-    }
-
     @Override
     protected boolean implementationAllowsGuestLogin()
     {

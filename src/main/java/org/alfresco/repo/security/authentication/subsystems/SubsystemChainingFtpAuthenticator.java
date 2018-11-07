@@ -80,7 +80,7 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
                 {
                     continue;
                 }
-                // Only add active authenticators. E.g. we might have an passthru FTP authenticator that is disabled.
+                // Only add active authenticators. E.g. we might have a FTP authenticator that is disabled.
                 if (!(authenticator instanceof ActivateableBean)
                         || ((ActivateableBean) authenticator).isActive())
                 {

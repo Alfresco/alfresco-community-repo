@@ -14,10 +14,9 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>6.18</version>
+            <version>7.9</version>
             <scope>provided</scope>
         </dependency>
-
 
         <!-- Events dependencies -->
         <dependency>
@@ -31,20 +30,20 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-			<version>4.12</version>SlingshotContentGet
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>6.28</version>
+            <version>7.27</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>6.18</version>
+            <version>7.9</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.Client;
-import org.alfresco.repo.Client.ClientType;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;

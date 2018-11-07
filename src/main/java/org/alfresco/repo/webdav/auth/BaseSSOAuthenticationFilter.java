@@ -43,7 +43,6 @@ import javax.transaction.UserTransaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.ExtendedServerConfigurationAccessor;
 import org.alfresco.jlan.server.auth.ntlm.NTLM;
-import org.alfresco.jlan.server.auth.passthru.DomainMapping;
 import org.alfresco.jlan.server.config.SecurityConfigSection;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.repo.SessionUser;
@@ -250,46 +249,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         throws IOException
     {
         return true;
-    }
-    
-    /**
-     * Map a client IP address to a domain
-     * 
-     * @param clientIP String
-     * @return String
-     */
-    protected final String mapClientAddressToDomain(String clientIP)
-    {
-        // Check if there are any domain mappings
-        SecurityConfigSection securityConfigSection = getSecurityConfigSection();
-        if (securityConfigSection != null && securityConfigSection.hasDomainMappings() == false)
-        {
-            return null;
-        }
-        
-        if (securityConfigSection != null)
-        {
-            // Convert the client IP address to an integer value
-            
-            int clientAddr = IPAddress.parseNumericAddress(clientIP);
-            for (DomainMapping domainMap : securityConfigSection.getDomainMappings())
-            {
-                if (domainMap.isMemberOfDomain(clientAddr))
-                {
-                    if (getLogger().isDebugEnabled())
-                        getLogger().debug("Mapped client IP " + clientIP + " to domain " + domainMap.getDomain());
-                
-                    return domainMap.getDomain();
-                }
-            }
-        }
-        
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Failed to map client IP " + clientIP + " to a domain");
-        
-        // No domain mapping for the client address
-        
-        return null;
     }
     
     /**

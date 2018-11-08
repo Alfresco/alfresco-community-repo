@@ -26,6 +26,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Add dependency to alfresco-maven-plugin, to allow AMP overlays -->
+        <dependency>
+            <groupId>org.alfresco.maven.plugin</groupId>
+            <artifactId>alfresco-maven-plugin</artifactId>
+            <version>${dependency.alfresco-sdk.version}</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>

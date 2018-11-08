@@ -2052,19 +2052,72 @@ public class CMISTest
         }
     }
 
+    /**
+     * MNT-20139
+     * CmisConnector returns wrong values for changeLogToken and hasMoreItems
+     */
+    @Test
     public void testGetContentChanges()
     {
-        // create folder with file
-        String folderName = "testfolder" + GUID.generate();
-        String docName = "testdoc.txt" + GUID.generate();
-        createContent(folderName, docName, false);
-        folderName = "testfolder" + GUID.generate();
-        docName = "testdoc.txt" + GUID.generate();
-        createContent(folderName, docName, false);
-        Holder<String> changeLogToken = new Holder<String>();
-        ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
-        assertEquals(2, ol.getNumItems());
-        assertEquals("3", changeLogToken.getValue());
+        setupAudit();
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            // create folders with files
+            createContent("testfolder" + GUID.generate(), "testdoc.txt" + GUID.generate(), false);
+            createContent("testfolder" + GUID.generate(), "testdoc.txt" + GUID.generate(), false);
+            createContent("testfolder" + GUID.generate(), "testdoc.txt" + GUID.generate(), false);
+
+            Holder<String> changeLogToken = new Holder<String>();
+
+            /*
+             * GetContentChanges with maxitems = 2 and null changeLogToken
+             * Check that changeLogToken should be the latest from the retrieved entries
+             */
+            ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
+            assertEquals(2, ol.getObjects().size());
+            assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
+            assertTrue(ol.hasMoreItems());
+
+            /*
+             * GetContentChanges with maxitems = 2 and changeLogToken = 0
+             * Check that changeLogToken should be the latest from the retrieved entries
+             */
+            changeLogToken.setValue(Integer.toString(0));
+            ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
+            assertEquals(2, ol.getObjects().size());
+            assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
+            assertTrue(ol.hasMoreItems());
+
+            /*
+             * GetContentChanges with changeLogToken = maxChangeLogToken - 2
+             * Check that changeLogToken is not null when the latest entries (fromToken) are retrieved
+             */
+            Long latestToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
+            {
+                public Long execute() throws Exception
+                {
+                    return Long.parseLong(cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken());
+                }
+            }, true, false);
+
+            Long fromToken = latestToken - 2;
+            changeLogToken.setValue(fromToken.toString());
+
+            ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("20"));
+            assertEquals(3, ol.getObjects().size());
+            assertNotNull(changeLogToken.getValue());
+            assertEquals("ChangeLogToken should be the latest from all entries.", latestToken.toString(), changeLogToken.getValue());
+            assertFalse(ol.hasMoreItems());
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        };
     }
 
     /**

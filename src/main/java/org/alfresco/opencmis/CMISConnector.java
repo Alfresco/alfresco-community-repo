@@ -3675,11 +3675,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         final ObjectListImpl result = new ObjectListImpl();
         result.setObjects(new ArrayList<ObjectData>());
 
+        // Collect entryIds to use a counter and a way to find the last changeLogToken
+        final List<Long> entryIds = new ArrayList<Long>();
+
         EntryIdCallback changeLogCollectingCallback = new EntryIdCallback(true)
         {
             @Override
             public boolean handleAuditEntry(Long entryId, String user, long time, Map<String, Serializable> values)
             {
+                entryIds.add(entryId);
                 result.getObjects().addAll(createChangeEvents(time, values));
                 return super.handleAuditEntry(entryId, user, time, values);
             }
@@ -3694,7 +3698,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
             catch (NumberFormatException e)
             {
-                throw new CmisInvalidArgumentException("Invalid change log token: " + changeLogToken);
+                throw new CmisInvalidArgumentException("Invalid change log token: " + changeLogToken.getValue());
             }
         }
 
@@ -3712,27 +3716,26 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         auditService.auditQuery(changeLogCollectingCallback, params, queryFor);
 
-        String newChangeLogToken = null;
+        int resultSize = result.getObjects().size();
+
+        // Use the entryIds as a counter is more reliable then the result.getObjects().
+        // result.getObjects() can be more or less then the requested maxResults, because it is filtered based on the content.
+        boolean hasMoreItems = entryIds.size() >= maxResults;
+        result.setHasMoreItems(hasMoreItems);
         // Check if we got more than the client requested
-        if (result.getObjects().size() >= maxResults)
+        if (hasMoreItems && resultSize >= maxResults)
         {
-            // Build the change log token from the last item
-            StringBuilder clt = new StringBuilder();
-            newChangeLogToken = (from == null ? clt.append(maxItems.intValue() + 1).toString() : clt.append(from.longValue() + maxItems.intValue()).toString());    // TODO: Make this readable
+            // We are assuming there are there is only one extra document now in line with how it used to behave
             // Remove extra item that was not actually requested
-            result.getObjects().remove(result.getObjects().size() - 1).getId();
-            // Note to client that there are more items
-            result.setHasMoreItems(true);
-        }
-        else
-        {
-            // We got the same or fewer than the number requested, so there are no more items
-            result.setHasMoreItems(false);
+            result.getObjects().remove(resultSize - 1);
+            entryIds.remove(resultSize - 1);
         }
 
         if (changeLogToken != null)
         {
-            changeLogToken.setValue(newChangeLogToken);
+            //Update the changelog after removing the last item if there are more items.
+            Long newChangeLogToken = entryIds.isEmpty() ? from : entryIds.get(entryIds.size() - 1);
+            changeLogToken.setValue(String.valueOf(newChangeLogToken));
         }
 
         return result;

@@ -4,9 +4,7 @@
     "version": "1",
     "supportedSourceAndTargetList": [
       {"sourceExt": "doc",  "targetExt": "doc" },
-      {"sourceExt": "doc",  "targetExt": "docx" },
       {"sourceExt": "docx",  "targetExt": "doc" },
-      {"sourceExt": "docx",  "targetExt": "docx" },
       {"sourceExt": "doc",  "maxSourceSizeBytes": 10485760, "targetExt": "pdf" },
       {"sourceExt": "xls",  "maxSourceSizeBytes": 10485760, "targetExt": "pdf"},
       {"sourceExt": "ppt",  "maxSourceSizeBytes":  6291456, "targetExt": "pdf" },
@@ -93,7 +91,6 @@
       {"sourceExt": "png",  "targetExt": "tiff"},
 
       {"sourceExt": "tiff", "targetExt": "gif" },
-      {"sourceExt": "tiff", "targetExt": "jpeg"},
       {"sourceExt": "tiff", "targetExt": "tiff"}
     ]
   },

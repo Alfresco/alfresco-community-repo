@@ -1,11 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 <beans>
-   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl"
+   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent"
       parent="authenticationComponentBase">
-      <property name="authenticationDao">
-         <ref bean="authenticationDao" />
-      </property>
       <property name="nodeService">
          <ref bean="nodeService" />
       </property>
@@ -17,6 +14,24 @@
       </property>
       <property name="defaultAdministratorUserNameList">
          <value>${token.authentication.defaultAdministratorUserNames}</value>
+      </property>
+      <property name="active">
+         <value>${identity-service.authentication.enabled}</value>
+      </property>
+      <property name="allowGuestLogin">
+         <value>${identity-service.authentication.allowGuestLogin}</value>
+      </property>
+      <property name="authenticatorAuthzClient">
+         <ref bean="authenticatorAuthzClient"/>
+      </property>
+   </bean>
+
+   <bean name="authenticatorAuthzClient" class="org.alfresco.repo.security.authentication.identityservice.AuthenticatorAuthzClientFactoryBean">
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
+      </property>
+      <property name="enabled">
+         <value>${identity-service.authentication.enable-username-password-authentication:true}</value>
       </property>
    </bean>
 

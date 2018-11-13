@@ -100,10 +100,11 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
         // find a webscript match for the requested URI
         String requestURI = req.getRequestURI();
         String pathInfo = requestURI.substring((req.getContextPath() + req.getServletPath()).length());
-        
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Processing request: " + requestURI + " SID:" +
-                    (req.getSession(false) != null ? req.getSession().getId() : null));
+
+        if (getLogger().isTraceEnabled())
+        {
+            getLogger().trace("Processing request: " + requestURI + " SID:" + (req.getSession(false) != null ? req.getSession().getId() : null));
+        }
         
         Match match = container.getRegistry().findWebScript(req.getMethod(), URLDecoder.decode(pathInfo));
         if (match != null && match.getWebScript() != null)
@@ -113,7 +114,9 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
             if (RequiredAuthentication.none == match.getWebScript().getDescription().getRequiredAuthentication())
             {
                 if (getLogger().isDebugEnabled())
+                {
                     getLogger().debug("Found webscript with no authentication - set NO_AUTH_REQUIRED flag.");
+                }
                 req.setAttribute(NO_AUTH_REQUIRED, Boolean.TRUE);
             }
         }

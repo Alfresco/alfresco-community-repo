@@ -190,15 +190,14 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             // DEBUG
             
-            if ( getLogger().isDebugEnabled())
-            	getLogger().debug( "HTTP Kerberos login successful");
+            if ( getLogger().isTraceEnabled())
+            {
+                getLogger().trace("HTTP Kerberos login successful");
+            }
         }
         catch ( LoginException ex)
         {
-            // Debug
-            
-            if ( getLogger().isErrorEnabled())
-                getLogger().error("HTTP Kerberos web filter error", ex);
+            getLogger().error("HTTP Kerberos web filter error", ex);
             
             throw new ServletException("Failed to login HTTP server service");
         }
@@ -209,11 +208,11 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         Principal princ = subj.getPrincipals().iterator().next();
         
         m_accountName = princ.getName();
-        
-        // DEBUG
-        
-        if ( getLogger().isDebugEnabled())
-        	getLogger().debug("Logged on using principal " + m_accountName);
+
+        if (getLogger().isTraceEnabled())
+        {
+            getLogger().trace("Logged on using principal " + AuthenticationUtil.maskUsername(m_accountName));
+        }
         
         // Create the Oid list for the SPNEGO NegTokenInit, include NTLMSSP for fallback
         
@@ -248,10 +247,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         }
         catch (IOException ex)
         {
-            // Debug
-            
-            if ( getLogger().isErrorEnabled())
-                getLogger().error("Error creating SPNEGO NegTokenInit blob", ex);
+            getLogger().error("Error creating SPNEGO NegTokenInit blob", ex);
             
             throw new ServletException("Failed to create SPNEGO NegTokenInit blob");
         }
@@ -274,8 +270,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		reqAuth = true;
         	else if ( authHdr.startsWith( "NTLM"))
         	{
-        		if ( getLogger().isDebugEnabled())
-        			getLogger().debug("Received NTLM logon from client");
+                if (getLogger().isTraceEnabled())
+                {
+                    getLogger().trace("Received NTLM logon from client");
+                }
         		
         		// Restart the authentication
         		
@@ -309,13 +307,11 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             // Filter validate hook
             onValidate( context, req, resp, new TicketCredentials(user.getTicket()));
 
-            // Debug
-            
-            if ( getLogger().isDebugEnabled())
-                getLogger().debug("Authentication not required (user), chaining ...");
-            
+            if ( getLogger().isTraceEnabled())
+            {
+                getLogger().trace("Authentication not required (user), chaining ...");
+            }
             // Chain to the next filter
-            
             return true;
         }
 
@@ -323,7 +319,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         if (checkLoginPage(req, resp))
         {
             if (getLogger().isDebugEnabled())
+            {
                 getLogger().debug("Login page requested, chaining ...");
+            }
             
             // Chain to the next filter
 
@@ -343,8 +341,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         		if (checkForTicketParameter(context, req, resp))
         		{
                     // Filter validate hook
-                    if (getLogger().isDebugEnabled())
-                        getLogger().debug("Authenticated with a ticket parameter.");
+                    if (getLogger().isTraceEnabled())
+                    {
+                        getLogger().trace("Authenticated with a ticket parameter.");
+                    }
 
                     if (user == null)
                     {
@@ -357,12 +357,12 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         	        return true;
         		}
         	}
-        	
-            // Debug
-            
-            if ( getLogger().isDebugEnabled())
-                getLogger().debug("New Kerberos auth request from " + req.getRemoteHost() + " (" +
-                        req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
+
+            if (getLogger().isTraceEnabled())
+            {
+                getLogger()
+                    .trace("New Kerberos auth request from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
+            }
             
             // Send back a request for SPNEGO authentication
             logonStartAgain(context, req, resp, true);
@@ -379,8 +379,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             if ( isNTLMSSPBlob( spnegoByts, 0))
             {
-            	if ( getLogger().isDebugEnabled())
-            		getLogger().debug( "Client sent an NTLMSSP security blob");
+            	if ( getLogger().isTraceEnabled())
+                {
+                    getLogger().trace("Client sent an NTLMSSP security blob");
+                }
             	
         		// Restart the authentication
         		
@@ -431,15 +433,19 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             {
                                 // Allow the user to access the requested page
                                 onValidate(context, req, resp, new KerberosCredentials(negToken, negTokenTarg));
-                                if (getLogger().isDebugEnabled())
-                                    getLogger().debug("Authenticated through Kerberos.");
+                                if (getLogger().isTraceEnabled())
+                                {
+                                    getLogger().trace("Authenticated through Kerberos.");
+                                }
                                 return true;
                             }
                             else
                             {
                                 // Send back a request for SPNEGO authentication
                                 if (getLogger().isDebugEnabled())
+                                {
                                     getLogger().debug("Failed SPNEGO authentication.");
+                                }
                             	restartLoginChallenge(context, req, resp);
                             	return false;
                             }
@@ -449,7 +455,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             // Even though the user successfully authenticated, the ticket may not be granted, e.g. to
                             // max user limit
                             if (getLogger().isDebugEnabled())
+                            {
                                 getLogger().debug("Validate failed.", ex);
+                            }
                             onValidateFailed(context, req, resp, httpSess, new TicketCredentials(user.getTicket()));
                             return false;
                         }
@@ -459,8 +467,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         //  Unsupported mechanism, e.g. NegoEx
                         
                         if ( getLogger().isDebugEnabled())
-                            getLogger().debug( "Unsupported SPNEGO mechanism " + oidStr);
-    
+                        {
+                            getLogger().debug("Unsupported SPNEGO mechanism " + oidStr);
+                        }
                         // Try again!
                         
                         restartLoginChallenge(context, req,  resp);
@@ -469,9 +478,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 catch ( IOException ex)
                 {
                     // Log the error
-                    
                 	if ( getLogger().isDebugEnabled())
-                    	getLogger().debug(ex);
+                    {
+                        getLogger().debug(ex);
+                    }
                 }
             }
             else
@@ -479,8 +489,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                 //  Unknown SPNEGO token type
                 
             	if ( getLogger().isDebugEnabled())
-            		getLogger().debug( "Unknown SPNEGO token type");
-
+                {
+                    getLogger().debug("Unknown SPNEGO token type");
+                }
                 // Send back a request for SPNEGO authentication
                 
             	restartLoginChallenge(context, req,  resp);
@@ -504,16 +515,20 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException
     {
         // Process the callback list
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Processing the JAAS callback list of " + callbacks.length + " items.");
+        if (getLogger().isTraceEnabled())
+        {
+            getLogger().trace("Processing the JAAS callback list of " + callbacks.length + " items.");
+        }
         for (int i = 0; i < callbacks.length; i++)
         {
             // Request for user name
             
             if (callbacks[i] instanceof NameCallback)
             {
-                if (getLogger().isDebugEnabled())
-                    getLogger().debug("Request for user name.");
+                if (getLogger().isTraceEnabled())
+                {
+                    getLogger().trace("Request for user name.");
+                }
                 NameCallback cb = (NameCallback) callbacks[i];
                 cb.setName(m_accountName);
             }
@@ -521,8 +536,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             // Request for password
             else if (callbacks[i] instanceof PasswordCallback)
             {
-                if (getLogger().isDebugEnabled())
-                    getLogger().debug("Request for password.");
+                if (getLogger().isTraceEnabled())
+                {
+                    getLogger().trace("Request for password.");
+                }
                 PasswordCallback cb = (PasswordCallback) callbacks[i];
                 cb.setPassword(m_password.toCharArray());
             }
@@ -531,8 +548,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             
             else if (callbacks[i] instanceof RealmCallback)
             {
-                if (getLogger().isDebugEnabled())
-                    getLogger().debug("Request for realm.");
+                if (getLogger().isTraceEnabled())
+                {
+                    getLogger().trace("Request for realm.");
+                }
                 RealmCallback cb = (RealmCallback) callbacks[i];
                 cb.setText(m_krbRealm);
             }
@@ -588,8 +607,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
 
                     // Debug
 
-                    if (getLogger().isDebugEnabled())
-                        getLogger().debug("User " + user.getUserName() + " logged on via Kerberos");
+                    if (getLogger().isTraceEnabled())
+                    {
+                        getLogger().trace("User " + AuthenticationUtil.maskUsername(user.getUserName()) + " logged on via Kerberos");
+                    }
                 }
             }
             else
@@ -597,23 +618,28 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             	// Debug
             	
             	if ( getLogger().isDebugEnabled())
-            		getLogger().debug( "No SPNEGO response, Kerberos logon failed");
+                {
+                    getLogger().debug("No SPNEGO response, Kerberos logon failed");
+                }
             }
         }
         catch (AuthenticationException ex)
         {
             // Pass on validation failures
             if (getLogger().isDebugEnabled())
-                getLogger().debug("Failed to validate user " + userName, ex);
+            {
+                getLogger().debug("Failed to validate user " + AuthenticationUtil.maskUsername(userName), ex);
+            }
 
             throw ex;
         }
         catch (Exception ex)
         {
             // Log the error
-
         	if ( getLogger().isDebugEnabled())
-        		getLogger().debug("Kerberos logon error", ex);
+            {
+                getLogger().debug("Kerberos logon error", ex);
+            }
         }
     
         // Return the response SPNEGO blob
@@ -635,8 +661,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         HttpSession session = req.getSession(false);
         if (session != null)
         {
-            if (getLogger().isDebugEnabled())
-                getLogger().debug("Clearing session.");
+            if (getLogger().isTraceEnabled())
+            {
+                getLogger().trace("Clearing session.");
+            }
             session.invalidate();
         }
         logonStartAgain(context, req, resp);
@@ -666,8 +694,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
      */
     private void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp, boolean ignoreFallback) throws IOException
         {
-        if (getLogger().isDebugEnabled())
-            getLogger().debug("Issuing login challenge to browser.");
+        if (getLogger().isTraceEnabled())
+        {
+            getLogger().trace("Issuing login challenge to browser.");
+        }
         // Force the logon to start again
         resp.setHeader("WWW-Authenticate", "Negotiate");
         

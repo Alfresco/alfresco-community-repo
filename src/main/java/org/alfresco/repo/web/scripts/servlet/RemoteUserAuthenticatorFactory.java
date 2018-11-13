@@ -33,6 +33,7 @@ import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
@@ -208,7 +209,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                             // Validate the ticket for the current SessionUser
                             authenticationService.validate(user.getTicket());
                             if (logger.isDebugEnabled())
-                                logger.debug("Ticket is valid; retaining cached user in session.");
+                            {
+                                logger.debug("Ticket is valid. Retaining cached user in session.");
+                            }
                             listener.userAuthenticated(new TicketCredentials(user.getTicket()));
                             authenticated = true;
                         }
@@ -220,7 +223,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     catch (AuthenticationException authErr)
                     {
                         if (logger.isDebugEnabled())
-                            logger.debug("An Authentication error occur. Removing User session: ", authErr);
+                        {
+                            logger.debug("An Authentication error occur. Removing User session.", authErr);
+                        }
                         session.removeAttribute(AuthenticationDriver.AUTHENTICATION_USER);
                         session.invalidate();
                         listener.authenticationFailed(new WebCredentials() {});
@@ -366,20 +371,21 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             {
                 userId = remoteUserMapper.getRemoteUser(this.servletReq.getHttpServletRequest());
             }
-            
+
+            logRemoteUserID(userId);
+
+            return userId;
+        }
+
+        private void logRemoteUserID(String userId)
+        {
             if (logger.isDebugEnabled())
             {
-                if (userId == null)
-                {
-                    logger.debug("No external user ID in request.");
-                }
-                else
-                {
-                    logger.debug("Extracted external user ID from request: " + userId);
-                }
+                String message = (userId == null) ?
+                    "No external user ID in request." :
+                    "Extracted external user ID from request: " + AuthenticationUtil.maskUsername(userId);
+                logger.debug(message);
             }
-            
-            return userId;
         }
 
         class GetRemoteUserRunnable implements Runnable

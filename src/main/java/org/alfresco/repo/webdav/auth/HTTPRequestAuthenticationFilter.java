@@ -44,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PersonService;
@@ -148,15 +149,15 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
             // Check for the auth header
 
             String authHdr = httpReq.getHeader(httpServletRequestAuthHeaderName);
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
                 if (authHdr == null)
                 {
-                    logger.debug("Header not found: " + httpServletRequestAuthHeaderName);
+                    logger.trace("Header not found: " + httpServletRequestAuthHeaderName);
                 }
                 else
                 {
-                    logger.debug("Header is <" + authHdr + ">");
+                    logger.trace("Header is <" + authHdr + ">");
                 }
             }
 
@@ -200,9 +201,9 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                     userName = authHdr;
                 }
 
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("User = " + userName);
+                    logger.trace("User = " + AuthenticationUtil.maskUsername(userName));
                 }
 
                 // Get the authorization header
@@ -246,9 +247,11 @@ public class HTTPRequestAuthenticationFilter extends BaseAuthenticationFilter im
                 {
                     // Debug
 
-                    if (logger.isDebugEnabled())
-                        logger.debug("Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":"
-                                + req.getRemotePort() + ")" + " ticket=" + ticket);
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":" + req.getRemotePort() + ")" +
+                            " ticket=" + ticket);
+                    }
 
                     try
                     {

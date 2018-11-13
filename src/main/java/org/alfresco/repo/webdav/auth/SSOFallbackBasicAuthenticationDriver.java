@@ -120,8 +120,10 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
     
                 try
                 {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Authenticating user '" + username + "'");
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Authenticating user '" + AuthenticationUtil.maskUsername(username) + "'");
+                    }
     
                     Authorization auth = new Authorization(username, password);
                     if (auth.isTicket())
@@ -154,8 +156,10 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                         }
                     }, AuthenticationUtil.SYSTEM_USER_NAME);
                     
-                    if (logger.isDebugEnabled())
-                        logger.debug("Authenticated user '" + username + "'");
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Authenticated user '" + AuthenticationUtil.maskUsername(username) + "'");
+                    }
                     
                     request.getSession().setAttribute(userAttributeName, user);
                     return true;
@@ -163,6 +167,10 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                 catch (AuthenticationException ex)
                 {
                     // Do nothing, user object will be null
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(ex.getMessage(), ex);
+                    }
                 }
             }
         }
@@ -176,6 +184,10 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
             catch (AuthenticationException ex)
             {
                 session.invalidate();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(ex.getMessage(), ex);
+                }
             }
         }
 

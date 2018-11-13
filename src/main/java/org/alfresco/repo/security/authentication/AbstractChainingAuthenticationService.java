@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class AbstractChainingAuthenticationService extends AbstractAuthenticationService implements MutableAuthenticationService
 {
-    private static final Log logger = LogFactory.getLog(AbstractChainingAuthenticationService.class);
+    protected final Log logger = LogFactory.getLog(getClass());
 
     /**
      * Instantiates a new abstract chaining authentication service.
@@ -181,6 +181,12 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace(
+                        "Not that important: Exception in chaining the verification of authentication enabled for user: " + AuthenticationUtil
+                            .maskUsername(userName) + " . Message: " + e.getMessage(), e);
+                }
             }
         }
         return false;
@@ -200,9 +206,9 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             {
                 counter--;
                 authService.authenticate(userName, password);
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("authenticate "+userName+" with "+getId(authService)+" SUCCEEDED");
+                    logger.trace("authenticate " + AuthenticationUtil.maskUsername(userName) + " with " + getId(authService) + " SUCCEEDED");
                 }
                 return;
             }
@@ -210,7 +216,9 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("authenticate "+userName+" with "+getId(authService)+(counter == 0 ? " FAILED (end of chain)" : " failed (try next in chain)"));
+                    logger.debug("authenticate " + AuthenticationUtil.maskUsername(userName) + " with " + getId(authService) + (counter == 0 ?
+                        " FAILED (end of chain)" :
+                        " failed (try next in chain)") + "message: " + e.getMessage(), e);
                 }
                 // Ignore and chain
             }
@@ -250,6 +258,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception in chaining the authenticate as guest. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException(GUEST_AUTHENTICATION_NOT_SUPPORTED);
@@ -301,6 +313,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception getting the current username. Message: " + e.getMessage(), e);
+                }
             }
         }
         return null;
@@ -321,6 +337,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception invalidating the user session. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Unable to invalidate user session");
@@ -342,6 +362,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception invalidating the ticket. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Unable to invalidate ticket");
@@ -363,6 +387,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception validating the ticket. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Unable to validate ticket");
@@ -383,6 +411,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception getting the current ticket. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Unable to issue ticket");
@@ -402,6 +434,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception getting a new ticket. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Unable to issue ticket");
@@ -422,6 +458,10 @@ public abstract class AbstractChainingAuthenticationService extends AbstractAuth
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception clearing the current security context. Message: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Failed to clear security context");

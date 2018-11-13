@@ -128,6 +128,7 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
             catch (UsernameNotFoundException unfe)
             {
                 // the user was not created beforehand
+                logEvent(userName);
                 userDetails = super.getUserDetails(userName);
             }
             finally
@@ -147,9 +148,20 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
             catch (UsernameNotFoundException unfe)
             {
                 // the user was not created beforehand
+                logEvent(userName);
                 userDetails = super.getUserDetails(userName);
             }
         }
         return userDetails;
+    }
+
+    private void logEvent(String userName)
+    {
+        if (logger.isTraceEnabled())
+        {
+            // we log this as trace because we expect sometimes this to happen and it is ok
+            logger.trace("The user was not created beforehand: " + AuthenticationUtil.maskUsername(userName)
+                + " . This is not a problem, we expect this to happen in some cases");
+        }
     }
 }

@@ -38,6 +38,7 @@ import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -129,7 +130,10 @@ public class JAASAuthenticationComponent extends AbstractAuthenticationComponent
      */
     protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
-
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Authentication for user: " + AuthenticationUtil.maskUsername(userName));
+        }
         LoginContext lc;
         try
         {

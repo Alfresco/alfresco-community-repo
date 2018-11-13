@@ -55,7 +55,7 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
 
             if ((allowedUsers != null) && (!allowedUsers.contains(userName)))
             {
-                throw new AuthenticationDisallowedException("Username not allowed: " + userName);
+                throw new AuthenticationDisallowedException("Username not allowed: " + AuthenticationUtil.maskUsername(userName));
             }
 
             Integer maxUsers = (Integer) sysAdminParams.getMaxUsers();

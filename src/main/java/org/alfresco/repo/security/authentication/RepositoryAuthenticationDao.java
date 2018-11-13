@@ -168,7 +168,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         CacheEntry userEntry = getUserEntryOrNull(incomingUserName);
         if (userEntry == null)
         {
-            throw new UsernameNotFoundException("Could not find user by userName: " + incomingUserName);
+            throw new UsernameNotFoundException("Could not find user by userName: " + AuthenticationUtil.maskUsername(incomingUserName));
         }
         UserDetails userDetails = userEntry.userDetails;
         if (userEntry.credentialExpiryDate == null || userEntry.credentialExpiryDate.getTime() >= System.currentTimeMillis())
@@ -327,9 +327,9 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             }
         }
         
-        // throw execption if we failed to find a password for the user
+        // throw exception if we failed to find a password for the user
         throw new AlfrescoRuntimeException("Unable to find a password for user '" +
-                    properties.get(ContentModel.PROP_USER_USERNAME) + 
+                    AuthenticationUtil.maskUsername((String) properties.get(ContentModel.PROP_USER_USERNAME)) +
                     "', please check your repository authentication settings.");
     }
 
@@ -347,7 +347,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         NodeRef userRef = getUserOrNull(caseSensitiveUserName);
         if (userRef != null)
         {
-            throw new AuthenticationException("User already exists: " + caseSensitiveUserName);
+            throw new AuthenticationException("User already exists: " + AuthenticationUtil.maskUsername(caseSensitiveUserName));
         }
         NodeRef typesNode = getUserFolderLocation(caseSensitiveUserName);
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -364,18 +364,18 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
 
         if (hashedPassword == null)
         {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug("Hashing raw password to "+compositePasswordEncoder.getPreferredEncoding()
-                +" for "+caseSensitiveUserName);
+                logger.trace("Hashing raw password to " + compositePasswordEncoder.getPreferredEncoding() + " for " + AuthenticationUtil
+                    .maskUsername(caseSensitiveUserName));
             }
             hashedPassword = compositePasswordEncoder.encodePreferred(new String(rawPassword), salt);
         }
         else
         {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug("Using hashed password for  "+caseSensitiveUserName);
+                logger.trace("Using hashed password for  " + AuthenticationUtil.maskUsername(caseSensitiveUserName));
             }
         }
         properties.put(ContentModel.PROP_PASSWORD_HASH, hashedPassword);
@@ -453,7 +453,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         NodeRef userRef = getUserOrNull(userName);
         if (userRef == null)
         {
-            throw new AuthenticationException("User name does not exist: " + userName);
+            throw new AuthenticationException("User name does not exist: " + AuthenticationUtil.maskUsername(userName));
         }
         Map<QName, Serializable> properties = nodeService.getProperties(userRef);
         String salt = GUID.generate();
@@ -472,7 +472,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         NodeRef userRef = getUserOrNull(userName);
         if (userRef == null)
         {
-            throw new AuthenticationException("User name does not exist: " + userName);
+            throw new AuthenticationException("User name does not exist: " + AuthenticationUtil.maskUsername(userName));
         }
         nodeService.deleteNode(userRef);
     }
@@ -776,22 +776,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setAccountExpires(String userName, boolean expires)
     {
         NodeRef userNode = getUserOrNull(userName);
-        if (userNode == null)
-        {
-            throw new AuthenticationException("User not found: " + userName);
-        }
+        validateUserNode(userName, userNode);
         nodeService.setProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(expires));
     }
 
     @Override
-    public void setAccountExpiryDate(String userName, Date exipryDate)
+    public void setAccountExpiryDate(String userName, Date expiryDate)
     {
         NodeRef userNode = getUserOrNull(userName);
-        if (userNode == null)
-        {
-            throw new AuthenticationException("User not found: " + userName);
-        }
-        nodeService.setProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRY_DATE, exipryDate);
+        validateUserNode(userName, userNode);
+        nodeService.setProperty(userNode, ContentModel.PROP_ACCOUNT_EXPIRY_DATE, expiryDate);
 
     }
 
@@ -799,10 +793,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setCredentialsExpire(String userName, boolean expires)
     {
         NodeRef userNode = getUserOrNull(userName);
-        if (userNode == null)
-        {
-            throw new AuthenticationException("User not found: " + userName);
-        }
+        validateUserNode(userName, userNode);
         nodeService.setProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(expires));
     }
 
@@ -810,10 +801,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setCredentialsExpiryDate(String userName, Date exipryDate)
     {
         NodeRef userNode = getUserOrNull(userName);
-        if (userNode == null)
-        {
-            throw new AuthenticationException("User not found: " + userName);
-        }
+        validateUserNode(userName, userNode);
         nodeService.setProperty(userNode, ContentModel.PROP_CREDENTIALS_EXPIRY_DATE, exipryDate);
 
     }
@@ -827,10 +815,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             return;
         }
         NodeRef userNode = getUserOrNull(userName);
-        if (userNode == null)
-        {
-            throw new AuthenticationException("User not found: " + userName);
-        }
+        validateUserNode(userName, userNode);
         nodeService.setProperty(userNode, ContentModel.PROP_ENABLED, Boolean.valueOf(enabled));
     }
 
@@ -838,11 +823,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setLocked(String userName, boolean locked)
     {
         NodeRef userNode = getUserOrNull(userName);
+        validateUserNode(userName, userNode);
+        nodeService.setProperty(userNode, ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(locked));
+    }
+
+    private void validateUserNode(String userName, NodeRef userNode)
+    {
         if (userNode == null)
         {
-            throw new AuthenticationException("User not found: " + userName);
+            throw new AuthenticationException("User not found: " + AuthenticationUtil.maskUsername(userName));
         }
-        nodeService.setProperty(userNode, ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(locked));
     }
 
     @Override
@@ -873,7 +863,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
             }
         }
 
-        logger.error("Request made of MD4 hash for "+userName+" but the unable to find it.");
+        logger.error("Request made of MD4 hash for " + AuthenticationUtil.maskUsername(userName) + " but unable to find it.");
         return null;
     }
 

@@ -77,6 +77,10 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
     @Override
     protected void authenticateImpl(String userName, char[] password)
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Chaining authentication for user: " + AuthenticationUtil.maskUsername(userName));
+        }
         for (AuthenticationComponent authComponent : getUsableAuthenticationComponents())
         {
             try
@@ -87,6 +91,10 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception chaining authentication: " + e.getMessage(), e);
+                }
             }
         }
         throw new AuthenticationException("Failed to authenticate");
@@ -165,9 +173,13 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             catch (AuthenticationException e)
             {
                 // Ignore and chain
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception chaining set current user: " + e.getMessage(), e);
+                }
             }
         }
-        throw new AuthenticationException("Failed to set current user " + userName);
+        throw new AuthenticationException("Failed to set current user " + AuthenticationUtil.maskUsername(userName));
     }
 
     /**
@@ -190,9 +202,13 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
             catch (AuthenticationException e)
             {
                 last = e;
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Not that important: Exception chaining set current user: " + e.getMessage(), e);
+                }
             }
         }
-        throw new AuthenticationException("Failed to set current user " + userName, last);
+        throw new AuthenticationException("Failed to set current user " + AuthenticationUtil.maskUsername(userName), last);
     }
 
     /**

@@ -32,6 +32,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.sync.ldap.LDAPNameResolver;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -117,6 +118,10 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
      */
     protected void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Authentication for user: " + AuthenticationUtil.maskUsername(userName));
+        }
         // Distinguished name of user.
         String userDN;
         

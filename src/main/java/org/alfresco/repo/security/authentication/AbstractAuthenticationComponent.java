@@ -81,7 +81,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     
     private UserRegistrySynchronizer userRegistrySynchronizer;
     
-    private final Log logger = LogFactory.getLog(getClass());    
+    protected final Log logger = LogFactory.getLog(getClass());
 
     public AbstractAuthenticationComponent()
     {
@@ -145,9 +145,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Authenticating user \"" + userName + '"');
+            logger.trace("Authenticating user \"" + AuthenticationUtil.maskUsername(userName) + '"');
         }
         if (userName == null)
         {
@@ -156,9 +156,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         // Support guest login from the login screen
         if (isGuestUserName(userName))
         {
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.debug("User \"" + userName + "\" recognized as a guest user");
+                logger.trace("User \"" + AuthenticationUtil.maskUsername(userName) + "\" recognized as a guest user");
             }
             setGuestUserAsCurrentUser(getUserDomain(userName));
         }
@@ -174,14 +174,15 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 onFail();
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Failed to authenticate user \"" + userName + '"', e);
+                    logger.debug("Failed to authenticate user \"" + AuthenticationUtil.maskUsername(userName) +
+                            "' , with message: " + e.getMessage(), e);
                 }
                 throw e;
             }
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("User \"" + userName + "\" authenticated successfully");
+            logger.debug("User \"" + AuthenticationUtil.maskUsername(userName) + "\" authenticated successfully");
         }
     }
 
@@ -205,6 +206,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("About to set the current user: " + AuthenticationUtil.maskUsername(userName) + " with validation mode: " + validationMode);
+        }
         if (validationMode == UserNameValidationMode.NONE || isSystemUserName(userName))
         {
             return setCurrentUserImpl(userName);
@@ -267,18 +272,18 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             if (isGuestUserName(userName))
             {
                 String tenantDomain = getUserDomain(userName);
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("Setting the current user to the guest user of tenant domain \"" + tenantDomain + '"');
+                    logger.trace("Setting the current user to the guest user of tenant domain \"" + tenantDomain + '"');
                 }
                 GrantedAuthority[] gas = new GrantedAuthority[0];
                 ud = new User(userName, "", true, true, true, true, gas);
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("Setting the current user to \"" + userName + '"');
+                    logger.trace("Setting the current user to \"" + AuthenticationUtil.maskUsername(userName) + '"');
                 }
                 ud = getUserDetails(userName);
                 if(!userName.equals(ud.getUsername()))
@@ -483,6 +488,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
         public Authentication execute() throws Throwable
         {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Check current user: " + AuthenticationUtil.maskUsername(userNameIn));
+            }
             try
             {
                 // We must set full authentication before calling runAs in order to retain tickets
@@ -501,10 +510,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         {
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("User \"" + userName
+                                logger.debug("User \"" + AuthenticationUtil.maskUsername(userName)
                                         + "\" does not exist in Alfresco. Failing validation.");
                             }
-                            throw new AuthenticationException("User \"" + userName + "\" does not exist in Alfresco");
+                            throw new AuthenticationException("User \"" +  AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
                         }
                         return null;
                     }
@@ -530,6 +539,10 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
         public Authentication execute() throws Throwable
         {
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Fix current user: " + AuthenticationUtil.maskUsername(userNameIn));
+            }
             try
             {
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
@@ -544,22 +557,21 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         {
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("User \"" + userName
+                                logger.debug("User \"" + AuthenticationUtil.maskUsername(userName)
                                         + "\" does not exist in Alfresco. Attempting to import / create the user.");
                             }
                             if (!userRegistrySynchronizer.createMissingPerson(userName))
                             {
                                 if (logger.isDebugEnabled())
                                 {
-                                    logger.debug("Failed to import / create user \"" + userName + '"');
+                                    logger.debug("Failed to import / create user \"" + AuthenticationUtil.maskUsername(userName) + '"');
                                 }
-                                throw new AuthenticationException("User \"" + userName
-                                        + "\" does not exist in Alfresco");
+                                throw new AuthenticationException(
+                                    "User \"" + AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
                             }
                         }
                         NodeRef userNode = personService.getPerson(userName);
-                        // Get the person name and use that as the current user to line up with permission
-                        // checks
+                        // Get the person name and use that as the current user to line up with permission checks
                         return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                     }
                 }, tenantDomain));
@@ -652,9 +664,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
 
     public Authentication setSystemUserAsCurrentUser(String tenantDomain)
     {
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("Setting the current user to the system user of tenant domain \"" + tenantDomain + '"');
+            logger.trace("Setting the current user to the system user of tenant domain \"" + tenantDomain + '"');
         }
         return authenticationContext.setSystemUserAsCurrentUser(tenantDomain);
     }

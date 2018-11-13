@@ -34,6 +34,7 @@ import org.alfresco.jlan.ftp.FTPSrvSession;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.auth.ClientInfo;
 import org.alfresco.jlan.server.auth.PasswordEncryptor;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoder;
 import org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl;
 
@@ -86,9 +87,10 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
             
             // DEBUG
             
-            if ( logger.isDebugEnabled())
-                logger.debug("Authenticated user " + client.getUserName() + " sts=" + authSts);
-            
+            if ( logger.isTraceEnabled())
+            {
+                logger.trace("Authenticated user " + AuthenticationUtil.maskUsername(client.getUserName()) + " sts=" + authSts);
+            }
             // Return the guest status
             
             return authSts;
@@ -165,10 +167,10 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
     
     // DEBUG
     
-    if (logger.isDebugEnabled())
+    if (logger.isTraceEnabled())
     {
-        logger.debug("Authenticated user "
-                        + client.getUserName()
+        logger.trace("Authenticated user "
+                        + AuthenticationUtil.maskUsername(client.getUserName())
                         + " sts="
                         + authSts);
     }
@@ -196,5 +198,9 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
       // Mark the client as being a guest logon
       
       client.setGuest( true);
+      if (logger.isTraceEnabled())
+      {
+          logger.trace("Guest login done for: " + AuthenticationUtil.maskUsername(client.getUserName()));
+      }
   }
 }

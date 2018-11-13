@@ -153,12 +153,20 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
         catch(AuthenticationException ae)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Exception in authenticating user: " + AuthenticationUtil.maskUsername(userName) + ", cause: " + ae.getMessage(), ae);
+            }
             clearCurrentSecurityContext();
             recordFailedAuthentication(userName);
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
         getCurrentTicket();
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Authenticated user: " + AuthenticationUtil.maskUsername(userName));
+        }
     }
 
     /**
@@ -202,17 +210,12 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 if (protectedUser.getNumLogins() == protectionLimit && logger.isWarnEnabled())
                 {
                     // Shows only first 2 symbols of the username and masks all other character with '*'
-                    if (userName.length() >= 2)
-                    {
-                        logger.warn(String.format(BRUTE_FORCE_ATTACK_DETECTED,
-                                userName.substring(0,2) + new String(new char[(userName.length() - 2)]).replace("\0", "*")));
-                    }
+                    logger.warn(String.format(BRUTE_FORCE_ATTACK_DETECTED, AuthenticationUtil.maskUsername(userName)));
                 }
             }
             protectedUsersCache.put(protectedUserKey, protectedUser);
         }
     }
-
     /**
      * Creates a key by combining the service instance ID with the username. This are the type of keys maintained by protectedUsersCache map.
      */
@@ -277,6 +280,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
         catch (AuthenticationException ae)
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Exception validating ticket: " + ticket + ", cause:" + ae.getMessage(), ae);
+            }
             clearCurrentSecurityContext();
             throw ae;
         }
@@ -298,13 +305,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         String userName = getCurrentUserName();
         
-        // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket
-        // without auto-creation
+        // So that preAuthenticationCheck can constrain the creation of new tickets, we first ask for the current ticket without auto-creation
         String ticket = ticketComponent.getCurrentTicket(userName, false);
         if (ticket == null)
         {
-            // If we get through the authentication check then it's safe to issue a new ticket (e.g. for
-            // SSO/external-based login)
+            // If we get through the authentication check then it's safe to issue a new ticket (e.g. for SSO/external-based login)
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Ticket was null, but, if we got through the authentication check, then it's safe to issue a new ticket for user: "
+                    + AuthenticationUtil.maskUsername(userName));
+            }
             return getNewTicket();
         }
         return ticket;
@@ -321,6 +331,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         catch (AuthenticationException e)
         {
             clearCurrentSecurityContext();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Exception in pre authentication check: " + e.getMessage(), e);
+            }
             throw e;
         }
         return ticketComponent.getNewTicket(userName);
@@ -349,6 +363,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         String guestUser = authenticationComponent.getCurrentUserName();
         ticketComponent.clearCurrentTicket();
         ticketComponent.getCurrentTicket(guestUser, true); // to ensure new ticket is created (even if client does not explicitly call getCurrentTicket)
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Authenticated as guest: " + guestUser);
+        }
     }
     
     public boolean guestUserAuthenticationAllowed()

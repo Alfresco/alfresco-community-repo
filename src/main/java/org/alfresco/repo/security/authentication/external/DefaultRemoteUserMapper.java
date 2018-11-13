@@ -134,28 +134,27 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
      */
     public String getRemoteUser(HttpServletRequest request)
     {
-        if (logger.isDebugEnabled())
-            logger.debug("Getting RemoteUser from http request.");
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Getting RemoteUser from http request.");
+        }
         if (!this.isEnabled)
         {
             if (logger.isDebugEnabled())
+            {
                 logger.debug("DefaultRemoteUserMapper is disabled, returning null.");
+            }
             return null;
         }
         String remoteUserId = request.getRemoteUser();
         String headerUserId = extractUserFromProxyHeader(request);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("The remote user id is: " + remoteUserId);
-            logger.debug("The header user id is: " + headerUserId);
-            logger.debug("The proxy user name is: " + this.proxyUserName);
-        }
+        logUserInfoInRequest(remoteUserId, headerUserId);
+
         if (this.proxyUserName == null)
         {
             // Normalize the user ID taking into account case sensitivity settings
             String normalizedUserId =  normalizeUserId(headerUserId != null ? headerUserId : remoteUserId);
-            if (logger.isDebugEnabled())
-                logger.debug("Returning " + normalizedUserId);
+            logReturnedUser(normalizedUserId);
             return normalizedUserId;
         }
         else if (remoteUserId == null)
@@ -166,22 +165,22 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
             X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
             if (request.getScheme().toLowerCase().equals("https") && certs != null && certs.length > 0)
             {
-                if (logger.isDebugEnabled())
+                if (logger.isTraceEnabled())
                 {
-                    logger.debug("Checking SSL certificate subject DN to match " + this.proxyUserName);
+                    logger.trace("Checking SSL certificate subject DN to match " + this.proxyUserName);
                 }
                 for (int i = 0; i < certs.length; i++)
                 {
                     String subjectDN = certs[i].getSubjectX500Principal().getName();
-                    if (logger.isDebugEnabled())
+                    if (logger.isTraceEnabled())
                     {
-                        logger.debug("Found subject DN " + subjectDN);
+                        logger.trace("Found subject DN " + subjectDN);
                     }
                     if (subjectDN.equals(this.proxyUserName))
                     {
-                        if (logger.isDebugEnabled())
+                        if (logger.isTraceEnabled())
                         {
-                            logger.debug("The subject DN " + subjectDN + " matches " + this.proxyUserName);
+                            logger.trace("The subject DN " + subjectDN + " matches " + this.proxyUserName);
                         }
                         // Found the subject distinguished name
                         remoteUserId = subjectDN;
@@ -191,17 +190,36 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
                     }
                 }
             }
-            if (logger.isDebugEnabled())
-                logger.debug("Returning " + normalizedUserId);
+            logReturnedUser(normalizedUserId);
             return normalizedUserId;
         }
         else
         {
             // Normalize the user ID taking into account case sensitivity settings
             String normalizedUserId =  normalizeUserId(remoteUserId.equals(this.proxyUserName) ? headerUserId : remoteUserId);
-            if (logger.isDebugEnabled())
-                logger.debug("Returning " + normalizedUserId);
+            logReturnedUser(normalizedUserId);
             return normalizedUserId;
+        }
+    }
+
+    private void logUserInfoInRequest(String remoteUserId, String headerUserId)
+    {
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("The remote user id is: " + remoteUserId + "\n");
+            sb.append("The header user id is: " + headerUserId + "\n");
+            sb.append("The proxy user name is: " + this.proxyUserName);
+            logger.debug(sb.toString());
+        }
+    }
+
+    private void logReturnedUser(String userId)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Returning user:" + AuthenticationUtil.maskUsername(userId));
         }
     }
 
@@ -225,8 +243,11 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
                 return personService.getUserIdentifier(userId);
             }
         }, AuthenticationUtil.getSystemUserName());
-        if (logger.isDebugEnabled())
-            logger.debug("The normalized user name is: " + normalized + " for user id " + userId);
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("The normalized user name is: " + AuthenticationUtil.maskUsername(normalized) + " for user id " + AuthenticationUtil
+                .maskUsername(userId));
+        }
         return normalized == null ? userId : normalized;
     }
 
@@ -275,7 +296,10 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         }
         catch (UnsupportedEncodingException e)
         {
-            //TODO
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(e.getMessage(), e);
+            }
         }
        
         if (this.userIdPattern == null)
@@ -291,10 +315,17 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
             }
             else
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("userId '" + AuthenticationUtil.maskUsername(userId) + "' did not match the userIdPattern '" + this.userIdPattern
+                        + "'. Returning null.");
+                }
                 return null;                
             }
         }
-        return userId.length() == 0 ? null : userId;
+        final String userIdToReturn = userId.length() == 0 ? null : userId;
+        logReturnedUser(userIdToReturn);
+        return userIdToReturn;
     }
 
 }

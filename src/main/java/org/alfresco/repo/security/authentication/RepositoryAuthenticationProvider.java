@@ -57,7 +57,8 @@ public class RepositoryAuthenticationProvider extends DaoAuthenticationProvider
             return compositePasswordEncoder.matchesPassword(authentication.getCredentials().toString(),user.getPassword(), repoUser.getSalt(), repoUser.getHashIndicator() );
         }
 
-        logger.error("Password check error for "+user.getUsername()+" unknown user type: "+user.getClass().getName());
+        logger.error(
+            "Password check error for '" + AuthenticationUtil.maskUsername(user.getUsername()) + "'; unknown user type: " + user.getClass().getName());
         return false;
     }
 }

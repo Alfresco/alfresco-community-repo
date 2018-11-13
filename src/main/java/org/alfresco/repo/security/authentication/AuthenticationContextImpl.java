@@ -100,8 +100,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
                 StringBuilder sb = new StringBuilder();
                 sb.append(ae.getMessage());
                 sb.append(" [");
-                sb.append(userId.substring(0,2));
-                sb.append(new String(new char[(userId.length() - 2)]).replace("\0", "*"));
+                sb.append(AuthenticationUtil.maskUsername(userId));
                 sb.append("] - cannot set details for user");
 
                 logger.warn(sb.toString());

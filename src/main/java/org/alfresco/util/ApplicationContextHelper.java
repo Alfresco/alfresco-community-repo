@@ -31,9 +31,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Helper class to provide static and common access to the Spring
  * {@link org.springframework.context.ApplicationContext application context}.
- * 
+ * <p>
+ *     <strong>Deprecated.</strong> It is better to use Spring annotations to define the application context to use in tests,
+ *     see {@code org.alfresco.util.BaseSpringTest}
+ * </p>
  * @author Derek Hulley
  */
+@Deprecated
 public class ApplicationContextHelper extends BaseApplicationContextHelper
 {   
     /** location of required configuration files */

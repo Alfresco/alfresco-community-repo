@@ -27,6 +27,8 @@ package org.alfresco.repo.security.authentication;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.context.ContextInvalidException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Hold an Alfresco extended security context
@@ -36,6 +38,8 @@ import net.sf.acegisecurity.context.ContextInvalidException;
  */
 public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
 {
+    Log logger = LogFactory.getLog(getClass());
+
     private static final long serialVersionUID = -8893133731693272549L;
 
     private Authentication realAuthentication;
@@ -81,11 +85,19 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
 
     public void setEffectiveAuthentication(Authentication effictiveAuthentication)
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Setting effective authentication to: " + AuthenticationUtil.getMaskedUsername(effictiveAuthentication));
+        }
         this.effectiveAuthentication = effictiveAuthentication;
     }
 
     public void setRealAuthentication(Authentication realAuthentication)
     {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Setting real authentication to: " + AuthenticationUtil.getMaskedUsername(realAuthentication));
+        }
         this.realAuthentication = realAuthentication;
     }
 
@@ -133,21 +145,21 @@ public class AlfrescoSecureContextImpl implements AlfrescoSecureContext
 
         if (realAuthentication == null)
         {
-            builder.append("Real authenticaion = null");
+            builder.append("Real authentication = null");
         }
         else
         {
-            builder.append("Real authenticaion = " + realAuthentication.toString());
+            builder.append("Real authentication = " + AuthenticationUtil.getMaskedUsername(realAuthentication));
         }
         builder.append(", ");
         
         if (effectiveAuthentication == null)
         {
-            builder.append("Effective authenticaion = null");
+            builder.append("Effective authentication = null");
         }
         else
         {
-            builder.append("Effective authenticaion = " + effectiveAuthentication.toString());
+            builder.append("Effective authentication = " +AuthenticationUtil.getMaskedUsername(effectiveAuthentication));
         }
         builder.append(", ");
         

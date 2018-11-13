@@ -54,7 +54,7 @@ import org.springframework.beans.factory.InitializingBean;
 @AlfrescoPublicApi
 public class AuthenticationUtil implements InitializingBean
 {
-    static Log s_logger = LogFactory.getLog(AuthenticationUtil.class);
+    static Log logger = LogFactory.getLog(AuthenticationUtil.class);
     @AlfrescoPublicApi
     public interface RunAsWork<Result>
     {
@@ -94,14 +94,49 @@ public class AuthenticationUtil implements InitializingBean
     
     public static void setMtEnabled(boolean mtEnabled)
     {
-        if (s_logger.isDebugEnabled())
-            s_logger.debug("MT is enabled: " + mtEnabled);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("MT is enabled: " + mtEnabled);
+        }
         AuthenticationUtil.mtEnabled = mtEnabled;
     }
 
     public static boolean isMtEnabled()
     {
         return AuthenticationUtil.mtEnabled;
+    }
+
+    public static String maskUsername(String userName)
+    {
+        if (userName != null)
+        {
+            try
+            {
+                if (userName.length() >= 2)
+                {
+                    return userName.substring(0, 2) + new String(new char[(userName.length() - 2)]).replace("\0", "*");
+                }
+            }
+            catch (Exception e)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Failed to mask the username because: " + e.getMessage(), e);
+                }
+            }
+            return userName;
+        }
+        return null;
+    }
+
+    public static String getMaskedUsername(Authentication authentication)
+    {
+        String extractedUsername = null;
+        if (authentication != null && authentication.getPrincipal() != null)
+        {
+            extractedUsername = getUserName(authentication);
+        }
+        return maskUsername(extractedUsername);
     }
 
     public AuthenticationUtil()
@@ -231,16 +266,20 @@ public class AuthenticationUtil implements InitializingBean
         }
         else
         {
-            if (s_logger.isDebugEnabled())
-                s_logger.debug("Setting fully authenticated principal: " + authentication.getName());
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Setting fully authenticated principal: " + getMaskedUsername(authentication));
+            }
             Context context = ContextHolder.getContext();
             AlfrescoSecureContext sc = null;
             if ((context == null) || !(context instanceof AlfrescoSecureContext))
             {
-                if (s_logger.isDebugEnabled())
-                    s_logger.debug("Creating new secure context.");
                 sc = new AlfrescoSecureContextImpl();
                 ContextHolder.setContext(sc);
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Setting new secure context: " + sc + " on thread: " + Thread.currentThread().getName());
+                }
             }
             else
             {
@@ -307,16 +346,20 @@ public class AuthenticationUtil implements InitializingBean
         }
         else
         {
-            if (s_logger.isDebugEnabled())
-                s_logger.debug("Setting RunAs principal: " + authentication.getName());
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Setting RunAs principal: " + getMaskedUsername(authentication));
+            }
             Context context = ContextHolder.getContext();
             AlfrescoSecureContext sc = null;
             if ((context == null) || !(context instanceof AlfrescoSecureContext))
             {
-                if (s_logger.isDebugEnabled())
-                    s_logger.debug("Creating new secure context.");
                 sc = new AlfrescoSecureContextImpl();
                 ContextHolder.setContext(sc);
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Setting new secure context: " + sc + " on thread: " + Thread.currentThread().getName());
+                }
             }
             else
             {
@@ -325,8 +368,10 @@ public class AuthenticationUtil implements InitializingBean
             authentication.setAuthenticated(true);
             if (sc.getRealAuthentication() == null)
             {
-                if (s_logger.isDebugEnabled())
-                    s_logger.debug("There is no fully authenticated prinipal. Setting fully authenticated principal: " + authentication.getName());
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("There is no fully authenticated principal. Setting fully authenticated principal: " + getMaskedUsername(authentication));
+                }
                 sc.setRealAuthentication(authentication);
             }
             sc.setEffectiveAuthentication(authentication);
@@ -500,8 +545,10 @@ public class AuthenticationUtil implements InitializingBean
      */
     public static void clearCurrentSecurityContext()
     {
-        if (s_logger.isDebugEnabled())
-            s_logger.debug("Removing the current security information.");
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Removing the current security information for thread: " + Thread.currentThread().getName());
+        }
         ContextHolder.setContext(null);
         InMemoryTicketComponentImpl.clearCurrentSecurityContext();
         
@@ -624,6 +671,10 @@ public class AuthenticationUtil implements InitializingBean
         threadLocalRunAsAuthenticationStack.get().push(originalRunAsAuthentication);
         
         threadLocalTenantDomainStack.get().push(TenantContextHolder.getTenantDomain());
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Pushed authentication in thread: " + Thread.currentThread().getName());
+        }
     }
     
     /**
@@ -646,6 +697,10 @@ public class AuthenticationUtil implements InitializingBean
         
         String originalTenantDomain = threadLocalTenantDomainStack.get().pop();
         TenantContextHolder.setTenantDomain(originalTenantDomain);
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Popped authentication in thread: " + Thread.currentThread().getName());
+        }
     }
 
     /**
@@ -653,12 +708,12 @@ public class AuthenticationUtil implements InitializingBean
      */
     public static void logAuthenticatedUsers()
     {
-        if (s_logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            s_logger.debug(
+            logger.debug(
                     "Authentication: \n" +
-                    "   Fully authenticated: " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
-                    "   Run as:              " + AuthenticationUtil.getRunAsUser());
+                    "   Fully authenticated: " + maskUsername(getFullyAuthenticatedUser()) + "\n" +
+                    "   Run as:              " + maskUsername(getRunAsUser()));
         }
     }
 
@@ -675,16 +730,16 @@ public class AuthenticationUtil implements InitializingBean
                 final String tenantDomain = userTenant.getSecond();
                 if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
                 {
-                    NDC.push("Tenant:" +tenantDomain + " User:" + userName);
+                    NDC.push("Tenant:" +tenantDomain + " User:" + maskUsername(userName));
                 }
                 else
                 {
-                    NDC.push("User:" + userName);
+                    NDC.push("User:" + maskUsername(userName));
                 }
             }
             else
             {
-                NDC.push("User:" + userNameIn);
+                NDC.push("User:" + maskUsername(userNameIn));
             }
         }
     }
@@ -711,10 +766,10 @@ public class AuthenticationUtil implements InitializingBean
                     {
                         throw new AlfrescoRuntimeException("Unexpected tenant: "+tenantDomain+" (contains @)");
                     }
-                    
-                    if (s_logger.isDebugEnabled())
+
+                    if (logger.isDebugEnabled())
                     {
-                        s_logger.debug("Tenant domain implied: userName="+userName+", tenantDomain="+tenantDomain);
+                        logger.debug("Tenant domain implied: userName=" + maskUsername(userName) + ", tenantDomain=" + tenantDomain);
                     }
                 }
             }

@@ -53,8 +53,9 @@ public class RMSite extends RestSiteModel
 
     /** Private constructor allowing Lombok to include superclass fields in the builder. */
     @Builder
-    private RMSite(String title, String description, RMSiteCompliance compliance)
+    private RMSite(String id, String title, String description, RMSiteCompliance compliance)
     {
+        this.setId(id);
         this.setTitle(title);
         this.setDescription(description);
         this.compliance = compliance;

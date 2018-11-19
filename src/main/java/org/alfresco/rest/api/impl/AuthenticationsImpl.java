@@ -26,12 +26,16 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.security.authentication.TicketComponent;
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.rest.api.Authentications;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.PublicApiTenantWebScriptServletRequest;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -43,7 +47,8 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.Base64;
-import org.springframework.extensions.webscripts.Status;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -55,6 +60,7 @@ public class AuthenticationsImpl implements Authentications
 
     private AuthenticationService authenticationService;
     private TicketComponent ticketComponent;
+    private RemoteUserMapper remoteUserMapper;
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -64,6 +70,11 @@ public class AuthenticationsImpl implements Authentications
     public void setTicketComponent(TicketComponent ticketComponent)
     {
         this.ticketComponent = ticketComponent;
+    }
+
+    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
+    {
+        this.remoteUserMapper = remoteUserMapper;
     }
 
     public void init()
@@ -184,17 +195,72 @@ public class AuthenticationsImpl implements Authentications
         }
 
         final String[] authorizationParts = authorization.split(" ");
-        if (!authorizationParts[0].equalsIgnoreCase("basic"))
+        if (authorizationParts[0].equalsIgnoreCase("basic"))
         {
-            throw new InvalidArgumentException("Authorization '" + authorizationParts[0] + "' not supported.");
+            final String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
+            Authorization authObj = new Authorization(decodedAuthorisation);
+            if (!authObj.isTicket())
+            {
+                throw new InvalidArgumentException("Ticket base authentication required.");
+            }
+            return authObj.getTicket();
+        }
+        else if (authorizationParts[0].equalsIgnoreCase("bearer"))
+        {
+            return getTicketFromRemoteUserMapperUserId(parameters);
         }
 
-        final String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
-        Authorization authObj = new Authorization(decodedAuthorisation);
-        if (!authObj.isTicket())
-        {
-            throw new InvalidArgumentException("Ticket base authentication required.");
-        }
-        return authObj.getTicket();
+        throw new InvalidArgumentException("Authorization '" + authorizationParts[0] + "' not supported.");
     }
+
+    private String getTicketFromRemoteUserMapperUserId(Parameters parameters)
+    {
+        // If we got to execute any of the code in this class, it means that, somehow, the user is authenticated;
+        // If we got this far, in this method, it means that:
+        // * there is no alf_ticket in the URL;
+        // * there is an "Authorization" header that says it is "bearer";
+        // * the authorization type in the header is not "basic"; therefore the user was not authenticated with basic auth
+
+        // We could end up here authenticated with some other mechanism (kerberos (SSO) or other custom authenticators)
+        // We need to validate the bearer token so as not to open an exploit where we return the alf_ticket even if
+        // the value of the bearer access token is not valid;
+
+        // Validate the bearer access token again and
+        // confirm that the current authenticated user is the same user specified in the bearer token
+        HttpServletRequest httpServletRequest = extractHttpServletRequestFromParameters(parameters);
+        if (httpServletRequest != null && isRemoteUserMapperActive())
+        {
+            String remoteUser = remoteUserMapper.getRemoteUser(httpServletRequest);
+            // We accept that the remoteUserMapper may have not been the IdentityServiceRemoteUserMapper,
+            // and could have been DefaultRemoteUserMapper (using External authentication), but that is ok
+            // because the business logic is similar.
+            if (remoteUser != null)
+            {
+                return ticketComponent.getCurrentTicket(remoteUser, false);
+            }
+        }
+        throw new InvalidArgumentException("Can't use Alfresco Identity Services to validate the user in the bearer access token");
+    }
+
+    private HttpServletRequest extractHttpServletRequestFromParameters(Parameters parameters)
+    {
+        // An alternative solution would be to create some sort of ServletHttpFacade object based on the information present
+        // in the parameters object. But for that we need to write a lot of code and check that we pass all the data required
+        // by the keycloak library;
+
+        // Parameters object is clearly not designed to give us access to the HttpServletRequest object,
+        // but we know that remoteUserMapper.getRemoteUser will use this in a safe way
+        if (parameters.getRequest() instanceof BufferedRequest &&
+            ((BufferedRequest) parameters.getRequest()).getNext() instanceof PublicApiTenantWebScriptServletRequest)
+        {
+            return ((PublicApiTenantWebScriptServletRequest) ((BufferedRequest) parameters.getRequest()).getNext()).getHttpServletRequest();
+        }
+        return null;
+    }
+
+    private boolean isRemoteUserMapperActive()
+    {
+        return remoteUserMapper instanceof ActivateableBean && ((ActivateableBean) remoteUserMapper).isActive();
+    }
+
 }

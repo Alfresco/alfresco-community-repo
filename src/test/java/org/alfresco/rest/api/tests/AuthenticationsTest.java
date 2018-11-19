@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -70,18 +70,18 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private static final String TICKETS_URL = "tickets";
     private static final String TICKETS_API_NAME = "authentication";
     private PublicApiAuthenticatorFactory authFactory;
-    
+
     @Before
     public void setUpAuthTest()
     {
         authFactory = (PublicApiAuthenticatorFactory) applicationContext.getBean("publicapi.authenticator");
     }
-    
+
     @Test
     public void canDisableBasicAuthChallenge() throws Exception
     {
         authFactory.setUseBasicAuth(false);
-        
+
         // Expect to be challenged for an AlfTicket (REPO-2575)
         testAuthChallenge("AlfTicket");
     }
@@ -90,23 +90,23 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     public void canEnableBasicAuthChallenge() throws Exception
     {
         authFactory.setUseBasicAuth(true);
-        
+
         // Expect to be challenged for Basic auth.
         testAuthChallenge("Basic");
     }
-    
+
     private void testAuthChallenge(String expectedScheme) throws Exception
     {
         // Unauthorized call
         setRequestContext(null);
-        
+
         HttpResponse response = getAll(SiteEntityResource.class, getPaging(0, 100), null, 401);
         String authenticateHeader = response.getHeaders().get("WWW-Authenticate");
         assertNotNull("Expected an authentication challenge", authenticateHeader);
         String authScheme = authenticateHeader.split(" ")[0]; // Other parts may contain, e.g. realm="..."
         assertEquals(expectedScheme, authScheme);
     }
-    
+
     /**
      * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
      *
@@ -197,43 +197,43 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         // Get list of site by appending the invalidated ticket
         getAll(SiteEntityResource.class, paging, ticket, 401);
     }
-        /**
-         * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
-         *
-         * <p>POST:</p>
-         * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets}
-         *
-         * <p>GET:</p>
-         * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
-         *
-         * <p>DELETE:</p>
-         * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
-         */
-        @Test
-        public void testCreateValidateDeleteTicketViaBasicAuthHeader() throws Exception
-        {
+
+    /**
+     * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
+     *
+     * <p>DELETE:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
+     */
+    @Test
+    public void testCreateValidateDeleteTicketViaBasicAuthHeader() throws Exception
+    {
         /*
          *  user2 login - Via Authorization header
          */
-            Paging paging = getPaging(0, 100);
+        Paging paging = getPaging(0, 100);
 
-            setRequestContext(null);
+        setRequestContext(null);
 
-            // Unauthorized call
-            getAll(SiteEntityResource.class, paging, null, 401);
+        // Unauthorized call
+        getAll(SiteEntityResource.class, paging, null, 401);
 
+        // login request
+        LoginTicket loginRequest = new LoginTicket();
+        // Invalid login details
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
 
-            // login request
-            LoginTicket loginRequest = new LoginTicket();
-            // Invalid login details
-            post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
+        loginRequest.setUserId(null);
+        loginRequest.setPassword("user1Password");
+        // Invalid login details
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
 
-            loginRequest.setUserId(null);
-            loginRequest.setPassword("user1Password");
-            // Invalid login details
-            post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
-
-            setRequestContext(user2);
+        setRequestContext(user2);
 
         // User2 create a folder within his home folder (-my-)
         Folder folderResp = createFolder(Nodes.PATH_MY, "F2", null);
@@ -259,8 +259,8 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         loginRequest.setUserId(user2);
         loginRequest.setPassword("user2Password");
         // Authenticate and create a ticket
-            HttpResponse response = post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
-            LoginTicketResponse loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
+        HttpResponse response = post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
+        LoginTicketResponse loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertNotNull(loginResponse.getId());
         assertNotNull(loginResponse.getUserId());
 
@@ -277,18 +277,16 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
 
         // Validate ticket - user2
         response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 200);
-            LoginTicketResponse  validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
+        LoginTicketResponse validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertEquals(loginResponse.getId(), validatedTicket.getId());
 
-            {
-                // now use the "bearer" keyword with the alf-ticket  - should not succeed
-                header = Collections.singletonMap("Authorization", "bearer " + encodedTicket);
-                response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
+        // now use the "bearer" keyword with the alf-ticket  - should not succeed
+        header = Collections.singletonMap("Authorization", "bearer " + encodedTicket);
+        response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
 
-                // now send some junk  - should not succeed
-                header = Collections.singletonMap("Authorization", "junk " + encodedTicket);
-                response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
-            }
+        // now send some junk  - should not succeed
+        header = Collections.singletonMap("Authorization", "junk " + encodedTicket);
+        response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
 
         // Try list children for user2 again.
         // Encode Alfresco predefined userId for ticket authentication, ROLE_TICKET, and the ticket
@@ -300,17 +298,15 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
 
-            {
-                // now use the "bearer" keyword with the alf-ticket  - should not succeed
-                encodedUserIdAndTicket = encodeB64("ROLE_TICKET:" + loginResponse.getId());
-                // Set the authorization (encoded userId:ticket) header rather than appending the ticket to the URL
-                header = Collections.singletonMap("Authorization", "bearer " + encodedUserIdAndTicket);
-                // Get children of user2 home folder
-                response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, null, header, 401);
-            }
+        // now use the "bearer" keyword with the alf-ticket  - should not succeed
+        encodedUserIdAndTicket = encodeB64("ROLE_TICKET:" + loginResponse.getId());
+        // Set the authorization (encoded userId:ticket) header rather than appending the ticket to the URL
+        header = Collections.singletonMap("Authorization", "bearer " + encodedUserIdAndTicket);
+        // Get children of user2 home folder
+        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, null, header, 401);
 
         // Try list children for user2 again - appending ticket
-            Map<String, String> ticket = Collections.singletonMap("alf_ticket", loginResponse.getId());
+        Map<String, String> ticket = Collections.singletonMap("alf_ticket", loginResponse.getId());
         response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, ticket, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
@@ -446,7 +442,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
 
     private String buildUserNameMultiTenancyAware()
     {
-        return "someUserName"+((useDefaultNetwork)?"":("@"+this.getClass().getName().toLowerCase()));
+        return "someUserName" + ((useDefaultNetwork) ? "" : ("@" + this.getClass().getName().toLowerCase()));
     }
 
     private void runPreCheckToEnsureBasicFunctionalityWorks(String folderName, Paging paging) throws Exception

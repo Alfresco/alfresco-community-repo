@@ -133,7 +133,7 @@
     <!-- Tagging Service Scope Updates -->
     <!-- (Catches any updates queued but not executed around repo shutdown -->
     <bean id="taggingStartupTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
-        <property name="repeatInterval" value="3600"/> <!-- 60 minutes -->
+        <property name="repeatInterval" value="3600000"/> <!-- 60 minutes -->
         <property name="startDelay" value="120"/>
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">

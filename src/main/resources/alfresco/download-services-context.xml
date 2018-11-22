@@ -121,7 +121,7 @@
         <property name="triggers">
             <list>
                 <bean id="downloadCleanerTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
-                    <property name="repeatInterval" value="${download.cleaner.repeatIntervalSeconds}"/>
+                    <property name="repeatInterval" value="${download.cleaner.repeatIntervalMilliseconds}"/>
                     <property name="startDelay" value="${download.cleaner.startDelayMilliseconds}"/>
                     <property name="jobDetail">
                         <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">

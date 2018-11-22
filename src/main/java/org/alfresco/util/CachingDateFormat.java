@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2018 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.util;
 
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -26,14 +27,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.WeakHashMap;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.ISODateTimeFormat;
-import org.springframework.extensions.surf.exception.PlatformRuntimeException;
 
 /**
  * Provides <b>thread safe</b> means of obtaining a cached date formatter.
@@ -46,6 +44,7 @@ import org.springframework.extensions.surf.exception.PlatformRuntimeException;
  */
 public class CachingDateFormat extends SimpleDateFormat
 {
+    public static final String UTC = "UTC";
     private static final long serialVersionUID = 3258415049197565235L;
 
     /** <pre> yyyy-MM-dd'T'HH:mm:ss </pre> */
@@ -235,7 +234,7 @@ public class CachingDateFormat extends SimpleDateFormat
     }
     
     /**
-     * @return Returns a thread-safe formatter for the cmis sql datetime format
+     * @return Returns a thread-safe formatter for the Solr ISO 8601 datetime format
      */
     public static SimpleDateFormat getSolrDatetimeFormat()
     {
@@ -245,11 +244,13 @@ public class CachingDateFormat extends SimpleDateFormat
         }
 
         CachingDateFormat formatter = new CachingDateFormat(FORMAT_SOLR);
-        // it must be strict
         formatter.setLenient(false);
-        // put this into the threadlocal object
+        /* Apache Solr only supports the ISO 8601 date format:
+        * UTC and western locale are mandatory (only Arabic numerals (0123456789) are supported) */
+        formatter.setTimeZone(TimeZone.getTimeZone(UTC));
+        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
+        
         s_localSolrDatetime.set(formatter);
-        // done
         return s_localSolrDatetime.get();
     }
 

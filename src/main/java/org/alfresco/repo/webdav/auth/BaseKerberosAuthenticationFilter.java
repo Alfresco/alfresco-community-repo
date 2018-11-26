@@ -58,6 +58,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.auth.KerberosCredentials;
 import org.alfresco.repo.web.auth.TicketCredentials;
+import org.alfresco.repo.web.auth.WebCredentials;
 import org.apache.commons.codec.binary.Base64;
 import org.ietf.jgss.Oid;
 
@@ -458,7 +459,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                             {
                                 getLogger().debug("Validate failed.", ex);
                             }
-                            onValidateFailed(context, req, resp, httpSess, new TicketCredentials(user.getTicket()));
+                            WebCredentials webCredentials = user == null ? null : new TicketCredentials(user.getTicket());
+                            onValidateFailed(context, req, resp, httpSess, webCredentials);
                             return false;
                         }
                     }

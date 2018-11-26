@@ -60,6 +60,7 @@ COPY target/connector/* /usr/local/tomcat/lib/
 COPY target/alfresco-mmt/* /usr/local/tomcat/alfresco-mmt/
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 COPY target/server-root/* /usr/local/tomcat/webapps
+COPY target/wti-bin/* /usr/local/tomcat/webapps
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes
@@ -102,6 +103,9 @@ RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT &&
 # Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
 # Grant only deployXmlPermission to ROOT webapp.
     sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" /usr/local/tomcat/conf/catalina.policy
+
+# Unpack wti-bin.war
+RUN mkdir /usr/local/tomcat/webapps/wti-bin && cd /usr/local/tomcat/webapps/wti-bin && jar -xvf /usr/local/tomcat/webapps/wti-bin.war && rm -f /usr/local/tomcat/webapps/wti-bin.war
 
 # To remote debug into this image add: EXPOSE 8000
 # Changes are also required to the docker-compose/docker-compose.yml file.

@@ -139,6 +139,15 @@
                                     <outputDirectory>${project.build.directory}/server-root</outputDirectory>
                                     <destFileName>ROOT.war</destFileName>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.aos-module</groupId>
+                                    <artifactId>alfresco-vti-bin</artifactId>
+                                    <version>${alfresco.aos-module.version}</version>
+                                    <type>war</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/wti-bin</outputDirectory>
+                                    <destFileName>wti-bin.war</destFileName>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

@@ -27,9 +27,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class CachingDateFormatTest
 {
@@ -39,8 +41,7 @@ public class CachingDateFormatTest
     @Test
     public void solrDatetimeFormat_DateNotUTC_shouldReturnISO8601DateString()
     {
-        Instant shanghaiInstant = REFERENCE_DATE_TIME.atZone(ZoneId.of("Asia/Shanghai")).toInstant();
-        Date shanghaiDate = Date.from(shanghaiInstant);
+        Date shanghaiDate = testDate("Asia/Shanghai");
         SimpleDateFormat solrDatetimeFormat = CachingDateFormat.getSolrDatetimeFormat();
         
         String formattedDate = solrDatetimeFormat.format(shanghaiDate);
@@ -54,8 +55,8 @@ public class CachingDateFormatTest
         for(Locale currentLocale:Locale.getAvailableLocales())
         {
             Locale.setDefault(currentLocale);
-            Instant utcInstant = REFERENCE_DATE_TIME.atZone(ZoneId.of("UTC")).toInstant();
-            Date utcDate = Date.from(utcInstant);
+
+            Date utcDate = testDate("UTC");
             SimpleDateFormat solrDatetimeFormat = CachingDateFormat.getSolrDatetimeFormat();
 
             String formattedDate = solrDatetimeFormat.format(utcDate);
@@ -64,9 +65,64 @@ public class CachingDateFormatTest
         }
     }
 
+    @Test
+    public void onlyDateFormatReturnsOnlyTheDatePart()
+    {
+        Date utcDate = testDate("UTC");
+
+        SimpleDateFormat formatter = CachingDateFormat.getDateOnlyFormat();
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        assertEquals("2018-04-01", formatter.format(utcDate));
+    }
+
+    @Test
+    public void onlyTimeFormatShouldReturnOnlyTheTimePart()
+    {
+        Date utcDate = testDate("UTC");
+
+        SimpleDateFormat formatter = CachingDateFormat.getTimeOnlyFormat();
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        assertEquals("10:00:00", formatter.format(utcDate));
+    }
+
+    @Test
+    public void dateTimeFormatShouldReturnDateAndTime()
+    {
+        Date utcDate = testDate("UTC");
+
+        SimpleDateFormat formatter = CachingDateFormat.getDateFormat();
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        assertEquals("2018-04-01T10:00:00", formatter.format(utcDate));
+    }
+
+    @Test
+    public void utcWithoutMsecsDatetimeFormat_shouldReturnStringsWithoutMsecs()
+    {
+        Date utcDate = testDate("UTC");
+
+        SimpleDateFormat formatter = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
+
+        assertEquals("2018-04-01T10:00:00Z", formatter.format(utcDate));
+    }
+
     @After 
-    public void tearDown() throws Exception
+    public void tearDown()
     {
        Locale.setDefault(defaultLocale); 
+    }
+
+    /**
+     * Creates a test date using the given timezone id.
+     *
+     * @param zoneId the timezone id.
+     * @return a test date using the given timezone id.
+     */
+    private Date testDate(String zoneId)
+    {
+        Instant utcInstant = REFERENCE_DATE_TIME.atZone(ZoneId.of(zoneId)).toInstant();
+        return Date.from(utcInstant);
     }
 }

@@ -22,16 +22,12 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+
+import static java.util.Arrays.stream;
 
 /**
  * Provides <b>thread safe</b> means of obtaining a cached date formatter.
@@ -41,88 +37,101 @@ import org.joda.time.format.ISODateTimeFormat;
  * @see java.text.DateFormat#setLenient(boolean)
  * 
  * @author Derek Hulley
+ * @author Andrea Gazzarini
  */
 public class CachingDateFormat extends SimpleDateFormat
 {
-    public static final String UTC = "UTC";
     private static final long serialVersionUID = 3258415049197565235L;
+    public static final String UTC = "UTC";
 
-    /** <pre> yyyy-MM-dd'T'HH:mm:ss </pre> */
     public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd'T'HH:mm:ss";
-
-    /** <pre> yyyy-MM-dd'T'HH:mm:ss </pre> */
     public static final String FORMAT_CMIS_SQL = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-    
     public static final String FORMAT_SOLR = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
-
-    public static final StringAndResolution[] LENIENT_FORMATS;
-    
-    
-    static
-    {
-        ArrayList<StringAndResolution> list = new ArrayList<StringAndResolution> ();
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Calendar.MILLISECOND));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss.SSS",  Calendar.MILLISECOND));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mm:ssZ", Calendar.SECOND));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss", Calendar.SECOND));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mmZ", Calendar.MINUTE));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH:mm", Calendar.MINUTE));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HHZ",  Calendar.HOUR_OF_DAY));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'HH",  Calendar.HOUR_OF_DAY));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'Z",  Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution("yyyy-MM-dd'T'",  Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution("yyyy-MM-ddZ", Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution("yyyy-MM-dd", Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution("yyyy-MMZ", Calendar.MONTH));
-        list.add( new StringAndResolution("yyyy-MM", Calendar.MONTH));
-        // year would duplicate :-) and eat stuff
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss.SSSZ", Calendar.MILLISECOND));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss.SSS", Calendar.MILLISECOND));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ssZ", Calendar.SECOND));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss", Calendar.SECOND));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mmZ", Calendar.MINUTE));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH:mm", Calendar.MINUTE));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HHZ", Calendar.HOUR_OF_DAY));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'HH", Calendar.HOUR_OF_DAY));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'Z",Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution( "yyyy-MMM-dd'T'",Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution( "yyyy-MMM-ddZ", Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution( "yyyy-MMM-dd", Calendar.DAY_OF_MONTH));
-        list.add( new StringAndResolution( "yyyy-MMMZ", Calendar.MONTH));
-        list.add( new StringAndResolution( "yyyy-MMM", Calendar.MONTH));
-        list.add( new StringAndResolution("yyyyZ", Calendar.YEAR));
-        list.add( new StringAndResolution("yyyy", Calendar.YEAR));
-       
-
-
-        LENIENT_FORMATS = list.toArray(new StringAndResolution[]{});
-    }
-    
-    /** <pre> yyyy-MM-dd </pre> */
+    public static final String UTC_WITHOUT_MSECS = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     public static final String FORMAT_DATE_GENERIC = "yyyy-MM-dd";
-
-    /** <pre> HH:mm:ss </pre> */
     public static final String FORMAT_TIME_GENERIC = "HH:mm:ss";
 
-    private static ThreadLocal<SimpleDateFormat> s_localDateFormat = new ThreadLocal<SimpleDateFormat>();
-    
-    private static ThreadLocal<SimpleDateFormat> s_localDateOnlyFormat = new ThreadLocal<SimpleDateFormat>();
-
-    private static ThreadLocal<SimpleDateFormat> s_localTimeOnlyFormat = new ThreadLocal<SimpleDateFormat>();
-    
-    private static ThreadLocal<SimpleDateFormat> s_localCmisSqlDatetime = new ThreadLocal<SimpleDateFormat>();
-    
-    private static ThreadLocal<SimpleDateFormat> s_localSolrDatetime = new ThreadLocal<SimpleDateFormat>();
-    
-    private static ThreadLocal<SimpleDateFormatAndResolution[]> s_lenientParsers = new ThreadLocal<SimpleDateFormatAndResolution[]>();
-
-    transient private Map<String, Date> cacheDates = new WeakHashMap<String, Date>(89);
-
-    private CachingDateFormat(String format)
+    public static final StringAndResolution[] LENIENT_FORMATS =
     {
-        super(format);
+        new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Calendar.MILLISECOND),
+        new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss.SSS",  Calendar.MILLISECOND),
+        new StringAndResolution("yyyy-MM-dd'T'HH:mm:ssZ", Calendar.SECOND),
+        new StringAndResolution("yyyy-MM-dd'T'HH:mm:ss", Calendar.SECOND),
+        new StringAndResolution("yyyy-MM-dd'T'HH:mmZ", Calendar.MINUTE),
+        new StringAndResolution("yyyy-MM-dd'T'HH:mm", Calendar.MINUTE),
+        new StringAndResolution("yyyy-MM-dd'T'HHZ",  Calendar.HOUR_OF_DAY),
+        new StringAndResolution("yyyy-MM-dd'T'HH",  Calendar.HOUR_OF_DAY),
+        new StringAndResolution("yyyy-MM-dd'T'Z",  Calendar.DAY_OF_MONTH),
+        new StringAndResolution("yyyy-MM-dd'T'",  Calendar.DAY_OF_MONTH),
+        new StringAndResolution("yyyy-MM-ddZ", Calendar.DAY_OF_MONTH),
+        new StringAndResolution("yyyy-MM-dd", Calendar.DAY_OF_MONTH),
+        new StringAndResolution("yyyy-MMZ", Calendar.MONTH),
+        new StringAndResolution("yyyy-MM", Calendar.MONTH),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss.SSSZ", Calendar.MILLISECOND),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss.SSS", Calendar.MILLISECOND),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ssZ", Calendar.SECOND),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mm:ss", Calendar.SECOND),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mmZ", Calendar.MINUTE),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH:mm", Calendar.MINUTE),
+        new StringAndResolution( "yyyy-MMM-dd'T'HHZ", Calendar.HOUR_OF_DAY),
+        new StringAndResolution( "yyyy-MMM-dd'T'HH", Calendar.HOUR_OF_DAY),
+        new StringAndResolution( "yyyy-MMM-dd'T'Z",Calendar.DAY_OF_MONTH),
+        new StringAndResolution( "yyyy-MMM-dd'T'",Calendar.DAY_OF_MONTH),
+        new StringAndResolution( "yyyy-MMM-ddZ", Calendar.DAY_OF_MONTH),
+        new StringAndResolution( "yyyy-MMM-dd", Calendar.DAY_OF_MONTH),
+        new StringAndResolution( "yyyy-MMMZ", Calendar.MONTH),
+        new StringAndResolution( "yyyy-MMM", Calendar.MONTH),
+        new StringAndResolution("yyyyZ", Calendar.YEAR),
+        new StringAndResolution("yyyy", Calendar.YEAR)
+    };
+
+    private static ThreadLocal<SimpleDateFormat> S_LOCAL_DATE_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_FULL_GENERIC));
+    
+    private static ThreadLocal<SimpleDateFormat> S_LOCAL_DATEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_DATE_GENERIC));
+
+    private static ThreadLocal<SimpleDateFormat> S_LOCAL_TIMEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_TIME_GENERIC));
+    
+    private static ThreadLocal<SimpleDateFormat> S_LOCAL_CMIS_SQL_DATETIME = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_CMIS_SQL));
+    
+    private static ThreadLocal<SimpleDateFormat> S_LOCAL_SOLR_DATETIME = ThreadLocal.withInitial(()->
+    {
+        CachingDateFormat formatter = newDateFormat(FORMAT_SOLR);
+        /*
+            SEARCH-1263
+            Apache Solr only supports the ISO 8601 date format:
+            UTC and western locale are mandatory (only Arabic numerals (0123456789) are supported)
+        */
+        formatter.setTimeZone(TimeZone.getTimeZone(UTC));
+        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
+        return formatter;
+    });
+
+    private static ThreadLocal<SimpleDateFormat> S_UTC_DATETIME_WITHOUT_MSECS = ThreadLocal.withInitial(() ->
+    {
+        CachingDateFormat formatter = newDateFormat(UTC_WITHOUT_MSECS);
+        formatter.setTimeZone(TimeZone.getTimeZone(UTC));
+        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
+
+        return formatter;
+    });
+
+    private static ThreadLocal<SimpleDateFormatAndResolution[]> S_LENIENT_PARSERS =
+            ThreadLocal.withInitial(() ->
+                stream(LENIENT_FORMATS)
+                    .map(format -> {
+                        CachingDateFormat formatter = new CachingDateFormat(format.string);
+                        formatter.setLenient(false);
+                        return new SimpleDateFormatAndResolution(formatter, format.resolution); })
+                    .toArray(SimpleDateFormatAndResolution[]::new));
+
+    private Map<String, Date> cacheDates = new WeakHashMap<>(89);
+
+    private CachingDateFormat(String pattern)
+    {
+        super(pattern);
     }
 
+    @Override
     public String toString()
     {
         return this.toPattern();
@@ -194,64 +203,47 @@ public class CachingDateFormat extends SimpleDateFormat
     }
 
     /**
-     * @return Returns a thread-safe formatter for the generic date/time format
-     * 
+     * Returns a thread-safe formatter for the generic date/time format.
+     *
      * @see #FORMAT_FULL_GENERIC
+     * @return a thread-safe formatter for the generic date/time format.
      */
     public static SimpleDateFormat getDateFormat()
     {
-        if (s_localDateFormat.get() != null)
-        {
-            return s_localDateFormat.get();
-        }
-
-        CachingDateFormat formatter = new CachingDateFormat(FORMAT_FULL_GENERIC);
-        // it must be strict
-        formatter.setLenient(false);
-        // put this into the threadlocal object
-        s_localDateFormat.set(formatter);
-        // done
-        return s_localDateFormat.get();
+        return S_LOCAL_DATE_FORMAT.get();
     }
     
     /**
-     * @return Returns a thread-safe formatter for the cmis sql datetime format
+     * Returns a thread-safe formatter for the cmis sql datetime format.
+     *
+     * @see #FORMAT_CMIS_SQL
+     * @return a thread-safe formatter for the cmis sql datetime format.
      */
     public static SimpleDateFormat getCmisSqlDatetimeFormat()
     {
-        if (s_localCmisSqlDatetime.get() != null)
-        {
-            return s_localCmisSqlDatetime.get();
-        }
-
-        CachingDateFormat formatter = new CachingDateFormat(FORMAT_CMIS_SQL);
-        // it must be strict
-        formatter.setLenient(false);
-        // put this into the threadlocal object
-        s_localCmisSqlDatetime.set(formatter);
-        // done
-        return s_localCmisSqlDatetime.get();
+        return S_LOCAL_CMIS_SQL_DATETIME.get();
     }
     
     /**
-     * @return Returns a thread-safe formatter for the Solr ISO 8601 datetime format
+     * Returns a thread-safe formatter for the Solr ISO 8601 datetime format (without the msecs part).
+     *
+     * @see #UTC_WITHOUT_MSECS
+     * @return Returns a thread-safe formatter for the Solr ISO 8601 datetime format (without the msecs part).
+     */
+    public static SimpleDateFormat getSolrDatetimeFormatWithoutMsecs()
+    {
+        return S_UTC_DATETIME_WITHOUT_MSECS.get();
+    }
+
+    /**
+     * Returns a thread-safe formatter for the Solr ISO 8601 datetime format.
+     *
+     * @see #FORMAT_SOLR
+     * @return a thread-safe formatter for the Solr ISO 8601 datetime format
      */
     public static SimpleDateFormat getSolrDatetimeFormat()
     {
-        if (s_localSolrDatetime.get() != null)
-        {
-            return s_localSolrDatetime.get();
-        }
-
-        CachingDateFormat formatter = new CachingDateFormat(FORMAT_SOLR);
-        formatter.setLenient(false);
-        /* Apache Solr only supports the ISO 8601 date format:
-        * UTC and western locale are mandatory (only Arabic numerals (0123456789) are supported) */
-        formatter.setTimeZone(TimeZone.getTimeZone(UTC));
-        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
-        
-        s_localSolrDatetime.set(formatter);
-        return s_localSolrDatetime.get();
+        return S_LOCAL_SOLR_DATETIME.get();
     }
 
     /**
@@ -261,39 +253,18 @@ public class CachingDateFormat extends SimpleDateFormat
      */
     public static SimpleDateFormat getDateOnlyFormat()
     {
-        if (s_localDateOnlyFormat.get() != null)
-        {
-            return s_localDateOnlyFormat.get();
-        }
-
-        CachingDateFormat formatter = new CachingDateFormat(FORMAT_DATE_GENERIC);
-        // it must be strict
-        formatter.setLenient(false);
-        // put this into the threadlocal object
-        s_localDateOnlyFormat.set(formatter);
-        // done
-        return s_localDateOnlyFormat.get();
+        return S_LOCAL_DATEONLY_FORMAT.get();
     }
 
     /**
-     * @return Returns a thread-safe formatter for the generic time format
-     * 
+     * Returns a thread-safe formatter for the generic time format.
+     *
      * @see #FORMAT_TIME_GENERIC
+     * @return a thread-safe formatter for the generic time format.
      */
     public static SimpleDateFormat getTimeOnlyFormat()
     {
-        if (s_localTimeOnlyFormat.get() != null)
-        {
-            return s_localTimeOnlyFormat.get();
-        }
-
-        CachingDateFormat formatter = new CachingDateFormat(FORMAT_TIME_GENERIC);
-        // it must be strict
-        formatter.setLenient(false);
-        // put this into the threadlocal object
-        s_localTimeOnlyFormat.set(formatter);
-        // done
-        return s_localTimeOnlyFormat.get();
+        return S_LOCAL_TIMEONLY_FORMAT.get();
     }
 
     /**
@@ -311,8 +282,7 @@ public class CachingDateFormat extends SimpleDateFormat
             if ((date != null) && (pos.getIndex() == text.length()))
             {
                 cacheDates.put(text, date);
-                Date clonedDate = (Date) date.clone();
-                return clonedDate;
+                return (Date) date.clone();
             }
             else
             {
@@ -322,8 +292,7 @@ public class CachingDateFormat extends SimpleDateFormat
         else
         {
             pos.setIndex(text.length());
-            Date clonedDate = (Date) cached.clone();
-            return clonedDate;
+            return (Date) cached.clone();
         }
     }
     
@@ -337,7 +306,7 @@ public class CachingDateFormat extends SimpleDateFormat
         }
         catch(IllegalArgumentException e)
         {
-           
+           // Nothing to be done here
         }
         
         SimpleDateFormatAndResolution[] formatters = getLenientFormatters();
@@ -362,25 +331,7 @@ public class CachingDateFormat extends SimpleDateFormat
     
     public static SimpleDateFormatAndResolution[] getLenientFormatters()
     {
-        if (s_lenientParsers.get() != null)
-        {
-            return s_lenientParsers.get();
-        }
-
-        int i = 0;
-        SimpleDateFormatAndResolution[] formatters = new SimpleDateFormatAndResolution[LENIENT_FORMATS.length];
-        for(StringAndResolution format : LENIENT_FORMATS)
-        {
-            CachingDateFormat formatter = new CachingDateFormat(format.string);
-            // it must be strict
-            formatter.setLenient(false);
-            formatters[i++] = new SimpleDateFormatAndResolution(formatter, format.resolution);
-        }
-       
-        // put this into the threadlocal object
-        s_lenientParsers.set(formatters);
-        // done
-        return s_lenientParsers.get();
+        return S_LENIENT_PARSERS.get();
     }
     
     public static class StringAndResolution
@@ -438,5 +389,18 @@ public class CachingDateFormat extends SimpleDateFormat
             return resolution;
         }
         
+    }
+
+    /**
+     * Creates a new non-lenient {@link CachingDateFormat} instance.
+     *
+     * @param pattern the date / datetime pattern.
+     * @return new non-lenient {@link CachingDateFormat} instance.
+     */
+    private static CachingDateFormat newDateFormat(String pattern)
+    {
+        CachingDateFormat formatter = new CachingDateFormat(pattern);
+        formatter.setLenient(false);
+        return formatter;
     }
 }

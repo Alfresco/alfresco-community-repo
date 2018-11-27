@@ -110,6 +110,22 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException
     {
+        try
+        {
+            doFilterInternal(context, req, resp, chain);
+        }
+        finally
+        {
+            if (logger.isTraceEnabled())
+            {
+                logger.debug("About to clear the security context");
+            }
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
+    protected void doFilterInternal(ServletContext context, ServletRequest req, ServletResponse resp, FilterChain chain)
+        throws IOException, ServletException
+    {
         if (logger.isTraceEnabled())
         {
             logger.trace("Entering AuthenticationFilter.");

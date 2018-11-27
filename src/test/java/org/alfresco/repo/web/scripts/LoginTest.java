@@ -58,7 +58,8 @@ public class LoginTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
 
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	createUser(USER_ONE, USER_ONE);
     }
     

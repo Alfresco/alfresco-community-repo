@@ -154,7 +154,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         userUsageTrackingComponent.init();
         userUsageTrackingComponent.bootstrapInternal();
 
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         // Create users
         createUser(USER_ONE);
@@ -189,7 +189,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
-        String adminUser = this.authenticationComponent.getSystemUserName();
+        String adminUser = AuthenticationUtil.getAdminUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
         
         for (String userName : this.createdPeople)
@@ -213,7 +213,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     {
         // switch to admin user to create a person
         String currentUser = this.authenticationComponent.getCurrentUserName();
-        String adminUser = this.authenticationComponent.getSystemUserName();
+        String adminUser = AuthenticationUtil.getAdminUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
         
         JSONObject person = new JSONObject();
@@ -273,7 +273,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     {
         // switch to admin user to delete a person
         String currentUser = this.authenticationComponent.getCurrentUserName();
-        String adminUser = this.authenticationComponent.getSystemUserName();
+        String adminUser = AuthenticationUtil.getAdminUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
 
         Response response = sendRequest(new DeleteRequest(URL_PEOPLE + "/" + userName), expectedStatus);
@@ -836,7 +836,7 @@ public class PersonServiceTest extends BaseWebScriptTest
                 "images/avatar.jpg", 0, Status.STATUS_OK);
 
         String currentUser = this.authenticationComponent.getCurrentUserName();
-        String adminUser = this.authenticationComponent.getSystemUserName();
+        String adminUser = AuthenticationUtil.getAdminUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
 
         // Check if user is enabled

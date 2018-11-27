@@ -99,7 +99,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
         repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
         transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");  
         
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         
         // Create some users to rate each other's content
         // and a test node which we will rate.
@@ -124,7 +124,7 @@ public class RatingRestApiTest extends BaseWebScriptTest
     {
         super.tearDown();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
                 {

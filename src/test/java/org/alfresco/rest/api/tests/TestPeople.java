@@ -1746,7 +1746,7 @@ public class TestPeople extends AbstractBaseApiTest
     public void testResetPassword() throws Exception
     {
         // As Admin, create a user
-        setRequestContext(account1.getId(), account1Admin, "admin");
+        setRequestContext(account1.getId(), account1Admin, AuthenticationUtil.getAdminUserName());
 
         Person person = new Person();
         person.setUserName("john.doe@" + account1.getId());

@@ -99,7 +99,7 @@ public abstract class AbstractTestFormRestApi extends BaseWebScriptTest
             @Override
             public Void execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
                 NodeRef companyHomeNodeRef = AbstractTestFormRestApi.this.repositoryHelper.getCompanyHome();
 

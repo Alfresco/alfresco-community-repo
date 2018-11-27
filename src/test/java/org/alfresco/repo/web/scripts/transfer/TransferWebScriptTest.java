@@ -58,7 +58,7 @@ public class TransferWebScriptTest extends BaseWebScriptTest
     {
         super.setUp();       
  
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");

@@ -163,7 +163,7 @@ public class GroupsTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
         
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Create users
         createUser(USER_ONE);
@@ -373,7 +373,7 @@ public class GroupsTest extends BaseWebScriptTest
     	}
     	
     	 
-    	this.authenticationComponent.setSystemUserAsCurrentUser();
+    	this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	
     	try
     	{
@@ -430,7 +430,7 @@ public class GroupsTest extends BaseWebScriptTest
     	
     	try 
     	{
-    		this.authenticationComponent.setSystemUserAsCurrentUser();
+    		this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     		sendRequest(new DeleteRequest(URL_ROOTGROUPS + "/" + myRootGroup), 0);
     		
     		String groupLinkFullName = "";
@@ -465,7 +465,7 @@ public class GroupsTest extends BaseWebScriptTest
     			sendRequest(new PostRequest(URL_GROUPS + "/" + myRootGroup +"/children/" + groupLinkFullName, newGroupJSON.toString(), "application/json" ), Status.STATUS_INTERNAL_SERVER_ERROR);
     		}
     		
-    		this.authenticationComponent.setSystemUserAsCurrentUser();
+    		this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     		
     		/**
     		 * Link Group B
@@ -615,7 +615,7 @@ public class GroupsTest extends BaseWebScriptTest
     	String myDisplayName = "GT_UGDisplay";
     	String myNewDisplayName = "GT_UGDisplayNew";
     
-    	this.authenticationComponent.setSystemUserAsCurrentUser();
+    	this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     	
     	try
     	{

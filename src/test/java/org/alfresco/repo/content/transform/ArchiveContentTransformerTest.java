@@ -219,7 +219,7 @@ public class ArchiveContentTransformerTest extends AbstractContentTransformerTes
             return;
         }
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         ContentTransformer transformer = serviceRegistry.getContentService().getTransformer(sourceMimetype, targetMimetype);
         assertNotNull(transformer);
 

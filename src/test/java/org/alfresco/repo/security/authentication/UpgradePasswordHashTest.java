@@ -107,7 +107,7 @@ public class UpgradePasswordHashTest extends TestCase
         upgradePasswordHashWorker = (UpgradePasswordHashWorker)ctx.getBean("upgradePasswordHashWorker");
         nodeService = serviceRegistry.getNodeService();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
     
     protected void createTestUsers(String encoding) throws Exception

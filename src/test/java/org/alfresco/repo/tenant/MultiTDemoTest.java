@@ -887,7 +887,7 @@ public class MultiTDemoTest extends TestCase
         }
         finally
         {
-            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
             deleteTenant(tenantDomain1);
             deleteTenant(tenantDomain2);

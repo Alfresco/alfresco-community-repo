@@ -84,7 +84,7 @@ public class ImporterComponentTest extends BaseSpringTest
         
         this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         
-        this.authenticationComponent.setSystemUserAsCurrentUser();
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         this.versionService = (VersionService)this.applicationContext.getBean("VersionService");
         
@@ -162,9 +162,9 @@ public class ImporterComponentTest extends BaseSpringTest
         // Check that the cm:auditable properties are correct
         assertEquals("cm:created not preserved during import", ISO8601DateFormat.format(ISO8601DateFormat.parse("2009-04-30T23:00:00.000Z")), createdDate);
         assertEquals("cm:creator not preserved during import", "Import Creator", creator);
-        assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getSystemUserName(), modifier);
+        assertEquals("cm:modifier not preserved during import", AuthenticationUtil.getFullyAuthenticatedUser(), modifier);
     }
-    
+     
     @Test
     public void testImportWithVersioning() throws Exception
     {

@@ -99,7 +99,7 @@ public class AuditMethodInterceptorTest extends TestCase
         nodeService = serviceRegistry.getNodeService();
         searchService = serviceRegistry.getSearchService();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         nodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
         // Register the models

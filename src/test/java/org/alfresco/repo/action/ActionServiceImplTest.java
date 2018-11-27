@@ -811,6 +811,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     @Test
     public void testActionResult()
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
         // Create the script node reference
         NodeRef script = this.nodeService.createNode(
                 this.folder,

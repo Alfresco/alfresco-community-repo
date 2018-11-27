@@ -154,7 +154,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     private void setupRepo() throws Exception
     {       
         AuthenticationUtil.clearCurrentSecurityContext();
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         // Create a test workspace
         this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

@@ -470,7 +470,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                                     for (String mountPointName : imapConfigMountPoints.keySet())
                                     {
                                         result.addAll(listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
-                                                .getSystemUserName(), null), mountPointName + "*", false));
+                                                .getAdminUserName(), null), mountPointName + "*", false));
                                     }
                                     
                                     return result;

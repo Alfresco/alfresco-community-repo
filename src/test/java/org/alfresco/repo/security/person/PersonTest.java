@@ -98,7 +98,7 @@ public class PersonTest extends TestCase
     @SuppressWarnings("deprecation")
     public void setUp() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
@@ -1696,4 +1696,46 @@ public class PersonTest extends TestCase
             }
         }, false, true);
     }    
+    
+    public void testPreventCreationOfBuiltInAuthorities()
+    {
+        try
+        {
+            PropertyMap systemProps = new PropertyMap();
+            systemProps.put(ContentModel.PROP_USERNAME, AuthenticationUtil.getSystemUserName());
+            systemProps.put(ContentModel.PROP_FIRSTNAME, "myFirstName");
+            systemProps.put(ContentModel.PROP_LASTNAME, "myLastName");
+            systemProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
+            systemProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
+            systemProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
+
+            personService.createPerson(systemProps);
+            fail("case fail creating SystemUserName: " + AuthenticationUtil.getSystemUserName());
+
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // expect to go here
+        }
+
+        try
+        {
+
+            PropertyMap guestProps = new PropertyMap();
+            guestProps.put(ContentModel.PROP_USERNAME, AuthenticationUtil.getGuestUserName());
+            guestProps.put(ContentModel.PROP_FIRSTNAME, "myFirstName");
+            guestProps.put(ContentModel.PROP_LASTNAME, "myLastName");
+            guestProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
+            guestProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
+            guestProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
+
+            personService.createPerson(guestProps);
+            fail("case fail creating GuestUserName: " + AuthenticationUtil.getGuestUserName());
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            // expect to go here
+        }
+
+    }
 }

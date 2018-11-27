@@ -91,7 +91,7 @@ public class SubscriptionServiceImplTest extends TestCase
         searchService = (SearchService) ctx.getBean("SearchService");
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         txn = transactionService.getNonPropagatingUserTransaction(false);
         txn.begin();

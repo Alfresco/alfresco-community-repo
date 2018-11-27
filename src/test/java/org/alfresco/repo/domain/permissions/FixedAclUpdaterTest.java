@@ -86,7 +86,7 @@ public class FixedAclUpdaterTest extends TestCase
         permissionService = (PermissionService) ctx.getBean("permissionService");
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         NodeRef home = repository.getCompanyHome();
         // create a folder hierarchy for which will change permission inheritance
@@ -319,7 +319,7 @@ public class FixedAclUpdaterTest extends TestCase
         final FixedAclUpdater fixedAclUpdater = (FixedAclUpdater) ctx.getBean("fixedAclUpdater");
         final PermissionsDaoComponent permissionsDaoComponent = (PermissionsDaoComponent) ctx.getBean("admPermissionsDaoComponent");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
         NodeRef home = repository.getCompanyHome();
         final NodeRef root = createFile(fileFolderService, home, "ROOT", ContentModel.TYPE_FOLDER);

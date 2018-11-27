@@ -125,7 +125,7 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
             public Void execute() throws Throwable
             {
                 // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
                 // Create people and users
                 fromPerson = createPerson(FROM_USER, PASSWORD, FROM_FIRST_NAME, FROM_LAST_NAME, FROM_EMAIL);
@@ -156,7 +156,7 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
             public Void execute() throws Throwable
             {
                 // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 
                 // Delete the template
                 nodeService.deleteNode(template);

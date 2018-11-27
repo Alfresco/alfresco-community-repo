@@ -624,7 +624,7 @@ public class FileFolderPerformanceTester extends TestCase
                 NodeRef folderNodeRef = null;
                 try
                 {
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                     if (selectedFolderNodeRef == null)
                     {
                         // find the guest folder

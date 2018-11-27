@@ -200,7 +200,7 @@ public class ScriptNodeTest
     @Before public void createTestContent()
     {  
         excludedOnUpdateProps = VERSIONABLE_ASPECT.getExcludedOnUpdateProps();
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // Create the store and get the root node
         storeRef = NODE_SERVICE.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = NODE_SERVICE.getRootNode(storeRef);

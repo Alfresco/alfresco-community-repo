@@ -117,7 +117,7 @@ public class PersonServiceLoader
 
             // check the lazy creation
 
-            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
             final ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
             final AuthenticationService authenticationService = serviceRegistry.getAuthenticationService();

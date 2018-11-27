@@ -667,7 +667,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             // Use the system user as the authenticated context for the filesystem initialization
             
             AuthenticationUtil.pushAuthentication();
-            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
             
             // Start the transaction
             

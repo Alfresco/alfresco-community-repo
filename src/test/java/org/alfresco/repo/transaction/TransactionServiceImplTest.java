@@ -300,7 +300,7 @@ public class TransactionServiceImplTest extends TestCase
     private void createUser(String userName)
     {
         // login as system user to create test user
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // if user with given user name doesn't already exist then create user
         if (!this.authenticationService.authenticationExists(userName))
         {

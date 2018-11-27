@@ -77,7 +77,7 @@ public class GuessMimetypeTest extends TestCase
             public Object execute() throws Throwable
             {
                 // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
                 storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
@@ -97,7 +97,7 @@ public class GuessMimetypeTest extends TestCase
             @Override
             public Object execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
                 properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
@@ -121,7 +121,7 @@ public class GuessMimetypeTest extends TestCase
             @Override
             public Object execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
                 properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");

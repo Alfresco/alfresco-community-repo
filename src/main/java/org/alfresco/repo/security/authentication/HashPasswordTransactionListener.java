@@ -94,7 +94,7 @@ public class HashPasswordTransactionListener implements TransactionListener
             public Void execute() throws Throwable
             {
                 AuthenticationUtil.pushAuthentication();
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                 try
                 {
                     if (logger.isDebugEnabled())

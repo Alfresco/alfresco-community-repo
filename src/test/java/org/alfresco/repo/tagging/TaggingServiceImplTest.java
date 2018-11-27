@@ -1935,7 +1935,7 @@ public class TaggingServiceImplTest
                     logger.debug(Thread.currentThread() + " - About to start tagging for " + tag);
 
                     // Do the updates
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
                     RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>()
                     {
                         @Override

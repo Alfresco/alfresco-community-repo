@@ -18,7 +18,8 @@
  */
 package org.alfresco.util;
 
-import java.text.NumberFormat;
+import static java.util.Arrays.stream;
+
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -26,8 +27,6 @@ import java.util.*;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
-import static java.util.Arrays.stream;
 
 /**
  * Provides <b>thread safe</b> means of obtaining a cached date formatter.
@@ -85,37 +84,34 @@ public class CachingDateFormat extends SimpleDateFormat
         new StringAndResolution("yyyy", Calendar.YEAR)
     };
 
-    private static ThreadLocal<SimpleDateFormat> S_LOCAL_DATE_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_FULL_GENERIC));
+    static ThreadLocal<SimpleDateFormat> S_LOCAL_DATE_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_FULL_GENERIC));
     
-    private static ThreadLocal<SimpleDateFormat> S_LOCAL_DATEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_DATE_GENERIC));
+    static ThreadLocal<SimpleDateFormat> S_LOCAL_DATEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_DATE_GENERIC));
 
-    private static ThreadLocal<SimpleDateFormat> S_LOCAL_TIMEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_TIME_GENERIC));
+    static ThreadLocal<SimpleDateFormat> S_LOCAL_TIMEONLY_FORMAT = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_TIME_GENERIC));
     
-    private static ThreadLocal<SimpleDateFormat> S_LOCAL_CMIS_SQL_DATETIME = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_CMIS_SQL));
+    static ThreadLocal<SimpleDateFormat> S_LOCAL_CMIS_SQL_DATETIME = ThreadLocal.withInitial(() -> newDateFormat(FORMAT_CMIS_SQL));
     
-    private static ThreadLocal<SimpleDateFormat> S_LOCAL_SOLR_DATETIME = ThreadLocal.withInitial(()->
+    static ThreadLocal<SimpleDateFormat> S_LOCAL_SOLR_DATETIME = ThreadLocal.withInitial(()->
     {
-        CachingDateFormat formatter = newDateFormat(FORMAT_SOLR);
+        CachingDateFormat formatter = newDateFormatWithLocale(FORMAT_SOLR, Locale.ENGLISH);
         /*
             SEARCH-1263
             Apache Solr only supports the ISO 8601 date format:
             UTC and western locale are mandatory (only Arabic numerals (0123456789) are supported)
         */
         formatter.setTimeZone(TimeZone.getTimeZone(UTC));
-        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
         return formatter;
     });
 
-    private static ThreadLocal<SimpleDateFormat> S_UTC_DATETIME_WITHOUT_MSECS = ThreadLocal.withInitial(() ->
+    static ThreadLocal<SimpleDateFormat> S_UTC_DATETIME_WITHOUT_MSECS = ThreadLocal.withInitial(() ->
     {
-        CachingDateFormat formatter = newDateFormat(UTC_WITHOUT_MSECS);
+        CachingDateFormat formatter = newDateFormatWithLocale(UTC_WITHOUT_MSECS, Locale.ENGLISH);
         formatter.setTimeZone(TimeZone.getTimeZone(UTC));
-        formatter.setNumberFormat(NumberFormat.getNumberInstance(Locale.ENGLISH));
-
         return formatter;
     });
 
-    private static ThreadLocal<SimpleDateFormatAndResolution[]> S_LENIENT_PARSERS =
+    static ThreadLocal<SimpleDateFormatAndResolution[]> S_LENIENT_PARSERS =
             ThreadLocal.withInitial(() ->
                 stream(LENIENT_FORMATS)
                     .map(format -> {
@@ -125,6 +121,11 @@ public class CachingDateFormat extends SimpleDateFormat
                     .toArray(SimpleDateFormatAndResolution[]::new));
 
     private Map<String, Date> cacheDates = new WeakHashMap<>(89);
+
+    private CachingDateFormat(String pattern, Locale locale)
+    {
+        super(pattern, locale);
+    }
 
     private CachingDateFormat(String pattern)
     {
@@ -325,8 +326,6 @@ public class CachingDateFormat extends SimpleDateFormat
         }
         
         throw new ParseException("Unknown date format", 0);
-        
-        
     }
     
     public static SimpleDateFormatAndResolution[] getLenientFormatters()
@@ -400,6 +399,20 @@ public class CachingDateFormat extends SimpleDateFormat
     private static CachingDateFormat newDateFormat(String pattern)
     {
         CachingDateFormat formatter = new CachingDateFormat(pattern);
+        formatter.setLenient(false);
+        return formatter;
+    }
+
+    /**
+     * Creates a new non-lenient localised {@link CachingDateFormat} instance.
+     *
+     * @param pattern the date / datetime pattern.
+     * @param locale the locale.
+     * @return new non-lenient {@link CachingDateFormat} instance.
+     */
+    private static CachingDateFormat newDateFormatWithLocale(String pattern, Locale locale)
+    {
+        CachingDateFormat formatter = new CachingDateFormat(pattern, locale);
         formatter.setLenient(false);
         return formatter;
     }

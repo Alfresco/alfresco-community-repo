@@ -18,7 +18,12 @@
  */
 package org.alfresco.util;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -29,24 +34,26 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-
 public class CachingDateFormatTest
 {
     private final LocalDateTime REFERENCE_DATE_TIME = LocalDateTime.of(2018, 4, 1, 10, 0); //2018-04-01 at 10:00am
     private final Locale defaultLocale = Locale.getDefault();
-    
+
+    @Before
+    public void setUp()
+    {
+        CachingDateFormat.S_LOCAL_SOLR_DATETIME.remove();
+    }
+
     @Test
-    public void solrDatetimeFormat_DateNotUTC_shouldReturnISO8601DateString()
+    public void solrDatetimeFormat_shouldFormatTheMinDate()
     {
         Date shanghaiDate = testDate("Asia/Shanghai");
-        SimpleDateFormat solrDatetimeFormat = CachingDateFormat.getSolrDatetimeFormat();
-        
+        SimpleDateFormat solrDatetimeFormat = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
+
         String formattedDate = solrDatetimeFormat.format(shanghaiDate);
-        
-        assertThat(formattedDate,is("2018-04-01T02:00:00.000Z"));
+
+        assertThat(formattedDate,is("2018-04-01T02:00:00Z"));
     }
 
     @Test
@@ -54,6 +61,7 @@ public class CachingDateFormatTest
     {
         for(Locale currentLocale:Locale.getAvailableLocales())
         {
+            CachingDateFormat.S_LOCAL_SOLR_DATETIME.remove();
             Locale.setDefault(currentLocale);
 
             Date utcDate = testDate("UTC");

@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api;
 
-import java.io.IOException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,17 +49,7 @@ public class PublicApiWebScriptServlet extends TenantWebScriptServlet
         container = (RuntimeContainer)context.getBean("publicapi.container");
         apiAssistant = (ApiAssistant) context.getBean("apiAssistant");
     }
-    
-    /* (non-Javadoc) 
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
-    {
-		// make the request input stream a BufferedInputStream so that the first x bytes can be reused.
-    	PublicApiHttpServletRequest wrapped = new PublicApiHttpServletRequest(req);
-        super.service(wrapped, res);
-    }
-    
+
     protected WebScriptServletRuntime getRuntime(HttpServletRequest req, HttpServletResponse res)
     {
         WebScriptServletRuntime runtime = new PublicApiTenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties, apiAssistant);

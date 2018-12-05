@@ -25,63 +25,30 @@
  */
 package org.alfresco.repo.security.authority;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
-import org.alfresco.query.*;
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.cache.TransactionalCache;
-import org.alfresco.repo.domain.permissions.AclDAO;
-import org.alfresco.repo.domain.qname.QNameDAO;
-import org.alfresco.repo.domain.query.CannedQueryDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.security.person.PersonServiceImpl;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
-import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.*;
-import org.alfresco.util.cache.RefreshableCacheEvent;
-import org.alfresco.util.cache.RefreshableCacheListener;
-import org.alfresco.util.registry.NamedObjectRegistry;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
 
 public class AuthorityTypeBehaviour implements NodeServicePolicies.OnUpdatePropertiesPolicy, InitializingBean
 {
     private static Log logger = LogFactory.getLog(AuthorityTypeBehaviour.class);
+
+    private static final String USERNAME_FIELD = "userName";
+    private static final String INVALID_USERNAME_VALUE = "";
 
     private PolicyComponent policyComponent;
 
@@ -112,10 +79,40 @@ public class AuthorityTypeBehaviour implements NodeServicePolicies.OnUpdatePrope
 
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if(!(AuthenticationUtil.isRunAsUserTheSystemUser() || authorityService.hasAdminAuthority()))
+        if (modifyingOwnAccount(before, after))
+        {
+            return;
+        }
+
+        if (!(AuthenticationUtil.isRunAsUserTheSystemUser() || authorityService.hasAdminAuthority()))
         {
             throw new AccessDeniedException("Only users with ROLE_ADMINISTRATOR are allowed to manage users.");
         }
+    }
+
+    private boolean modifyingOwnAccount(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        String beforeUsername = findUsernameInProperties(before, USERNAME_FIELD, INVALID_USERNAME_VALUE);
+        String afterUsername = findUsernameInProperties(after, USERNAME_FIELD, INVALID_USERNAME_VALUE);
+        if (afterUsername.equals(beforeUsername))
+        {
+            String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            return beforeUsername.equals(authenticatedUser);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private String findUsernameInProperties(Map<QName, Serializable> map, String usernameField, String invalidValue)
+    {
+        Optional<QName> first = map.keySet().stream().filter(q -> q.getLocalName().equals(usernameField)).findFirst();
+        if (first.isPresent())
+        {
+            return map.get(first.get()).toString();
+        }
+        return invalidValue;
     }
 
     @Override

@@ -142,12 +142,12 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
             {
                 versionString = result.getSecond();
                 setAvailable(true);
-                logger.info("Using Alfresco PDF Renderer: "+versionString);
+                logger.info("Using remote Alfresco PDF Renderer: "+versionString);
             }
             else
             {
                 setAvailable(false);
-                String message = "Alfresco PDF Renderer is not available for transformations. " + result.getSecond();
+                String message = "Remote Alfresco PDF Renderer is not available for transformations. " + result.getSecond();
                 if (isAvailable == null)
                 {
                     logger.debug(message);
@@ -161,7 +161,7 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
         catch (Throwable e)
         {
             setAvailable(false);
-            logger.error(getClass().getSimpleName() + " not available: " + (e.getMessage() != null ? e.getMessage() : ""));
+            logger.error("Remote Alfresco PDF Renderer is not available: " + (e.getMessage() != null ? e.getMessage() : ""));
             // debug so that we can trace the issue if required
             logger.debug(e);
         }
@@ -253,7 +253,6 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
                 "   target: " + writer + "\n" +
                 "   options: " + options);
         }
-
     }
 
     private void transformLocal(ContentReader reader, ContentWriter writer, TransformationOptions options,
@@ -374,8 +373,8 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
                 "page", page,
                 "width", width,
                 "height", height,
-                "allowEnlargement", allowEnlargement,
-                "maintainAspectRatio", maintainAspectRatio);
+                "allowPdfEnlargement", allowEnlargement,
+                "maintainPdfAspectRatio", maintainAspectRatio);
     }
 
     @Override

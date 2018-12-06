@@ -119,103 +119,115 @@
         <property name="transformServiceRegistry" ref="transformServiceRegistry" />
     </bean>
 
-    <!-- The definitions -->
-
-    <bean id="baseRenditionDefinition2" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl" abstract="true">
-        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
-        <constructor-arg name="transformOptions">
-            <map>
-                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="baseResizeRenditionDefinition2" parent="baseRenditionDefinition2" abstract="true">
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="maintainAspectRatio" value="true"/>
-                <entry key="thumbnail" value="true"/>
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Medium" parent="baseResizeRenditionDefinition2">
-        <constructor-arg name="renditionName" value="medium"/>
-        <constructor-arg name="targetMimetype" value="image/jpeg"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="resizeWidth" value="100"/>
-                <entry key="resizeHeight" value="100"/>
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2DocLib" parent="baseResizeRenditionDefinition2">
-        <constructor-arg name="renditionName" value="doclib"/>
-        <constructor-arg name="targetMimetype" value="image/png"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="resizeWidth" value="100"/>
-                <entry key="resizeHeight" value="100"/>
-                <entry key="allowEnlargement" value="false" />
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Imgpreview" parent="baseResizeRenditionDefinition2">
-        <constructor-arg name="renditionName" value="imgpreview"/>
-        <constructor-arg name="targetMimetype" value="image/jpeg"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="resizeWidth" value="960"/>
-                <entry key="resizeHeight" value="960"/>
-                <entry key="allowEnlargement" value="false" />
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Avatar" parent="baseResizeRenditionDefinition2">
-        <constructor-arg name="renditionName" value="avatar"/>
-        <constructor-arg name="targetMimetype" value="image/png"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="resizeWidth" value="64"/>
-                <entry key="resizeHeight" value="64"/>
-                <entry key="allowEnlargement" value="false" />
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Avatar32" parent="baseResizeRenditionDefinition2">
-        <constructor-arg name="renditionName" value="avatar32"/>
-        <constructor-arg name="targetMimetype" value="image/png"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="resizeWidth" value="32"/>
-                <entry key="resizeHeight" value="32"/>
-                <entry key="allowEnlargement" value="false" />
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Webpreview" parent="baseRenditionDefinition2">
-        <constructor-arg name="renditionName" value="webpreview"/>
-        <constructor-arg name="targetMimetype" value="application/x-shockwave-flash"/>
-        <constructor-arg name="transformOptions">
-            <map merge="true">
-                <entry key="flashVersion" value="9"/>
-            </map>
-        </constructor-arg>
-    </bean>
-
-    <bean id="renditionDefinition2Pdf" parent="baseRenditionDefinition2">
-        <constructor-arg name="renditionName" value="pdf"/>
-        <constructor-arg name="targetMimetype" value="application/pdf"/>
-    </bean>
-
+    <!-- Process raw content update events -->
     <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">
         <property name="renditionService2" ref="renditionService2" />
         <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
         <property name="transactionService" ref="transactionService" />
     </bean>
+
+    <!-- The definitions -->
+
+    <bean id="renditionDefinition2Medium" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="medium"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="100"/>
+                <entry key="resizeHeight" value="100"/>
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2DocLib" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="doclib"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="100"/>
+                <entry key="resizeHeight" value="100"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Imgpreview" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="imgpreview"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="960"/>
+                <entry key="resizeHeight" value="960"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="avatar"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="64"/>
+                <entry key="resizeHeight" value="64"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar32" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="avatar32"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="32"/>
+                <entry key="resizeHeight" value="32"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Webpreview" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="webpreview"/>
+        <constructor-arg name="targetMimetype" value="application/x-shockwave-flash"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="flashVersion" value="9"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Pdf" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="pdf"/>
+        <constructor-arg name="targetMimetype" value="application/pdf"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
 </beans>

@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_ENLARGEMENT;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_PDF_ENLARGEMENT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.AUTO_ORIENT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_GRAVITY;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.CROP_HEIGHT;
@@ -59,6 +60,7 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.HEIGHT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.INCLUDE_CONTENTS;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.MAINTAIN_ASPECT_RATIO;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.MAINTAIN_PDF_ASPECT_RATIO;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.MAX_SOURCE_SIZE_K_BYTES;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.OFFSET;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.PAGE;
@@ -96,7 +98,8 @@ public class TransformationOptionsConverter implements InitializingBean
 
     private static Set<String> RESIZE_OPTIONS = new HashSet<>(Arrays.asList(new String[]
             {
-                    WIDTH, HEIGHT,
+                    WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO,
+
                     THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
                     ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
             }));
@@ -112,7 +115,7 @@ public class TransformationOptionsConverter implements InitializingBean
 
     private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
             {
-                    PAGE, WIDTH, HEIGHT
+                    PAGE, WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO
             }));
 
     private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]
@@ -192,13 +195,16 @@ public class TransformationOptionsConverter implements InitializingBean
         boolean hasOptions = !subclassOptionNames.isEmpty();
         if (isPdfRendition || hasOptions)
         {
+            // The "pdf" rendition used the wrong TransformationOptions subclass.
             if (isPdfRendition || FLASH_OPTIONS.containsAll(subclassOptionNames))
             {
                 SWFTransformationOptions opts = new SWFTransformationOptions();
                 transformationOptions = opts;
                 opts.setFlashVersion(isPdfRendition ? "9" : options.get(FLASH_VERSION));
             }
-            else if (IMAGE_OPTIONS.containsAll(subclassOptionNames) ||  PDF_OPTIONS.containsAll(subclassOptionNames))
+            // Even though the only standard rendition to use the pdf-renderer is "pdf" there may be custom renditions
+            // that use ImageTransformOptions to specify width, height etc.
+            else if (IMAGE_OPTIONS.containsAll(subclassOptionNames) || PDF_OPTIONS.containsAll(subclassOptionNames))
             {
                 ImageTransformationOptions opts = new ImageTransformationOptions();
                 transformationOptions = opts;

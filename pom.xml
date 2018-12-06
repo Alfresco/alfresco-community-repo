@@ -72,7 +72,7 @@
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
-        <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
+        <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.9</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-api-explorer.version>6.1.0-ea</dependency.alfresco-api-explorer.version>
 

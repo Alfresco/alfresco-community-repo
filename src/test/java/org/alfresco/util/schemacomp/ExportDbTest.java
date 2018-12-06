@@ -29,14 +29,12 @@ package org.alfresco.util.schemacomp;
 import javax.sql.DataSource;
 
 import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.repo.domain.dialect.MariaDBDialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.test.exportdb.AbstractExportTester;
-import org.alfresco.util.schemacomp.test.exportdb.AlfrescoMariaDBDialectExportTester;
 import org.alfresco.util.schemacomp.test.exportdb.MySQLDialectExportTester;
 import org.alfresco.util.schemacomp.test.exportdb.PostgreSQLDialectExportTester;
 import org.alfresco.util.testing.category.DBTests;
@@ -97,10 +95,6 @@ public class ExportDbTest
         if (PostgreSQLDialect.class.isAssignableFrom(dialectClass))
         {
             exportTester = new PostgreSQLDialectExportTester(exporter, tx, jdbcTemplate);
-        }
-        else if (MariaDBDialect.class.isAssignableFrom(dialectClass))
-        {
-            exportTester = new AlfrescoMariaDBDialectExportTester(exporter, tx, jdbcTemplate);
         }
         else if (MySQLInnoDBDialect.class.isAssignableFrom(dialectClass))
         {

@@ -7,35 +7,34 @@
         "group": {
           "required": true,
           "transformOptions": [
-            {"value": {"required": false, "name": "alphaRemove"}},
-            {"value": {"required": false, "name": "autoOrient"}},
-            {"value": {"required": false, "name": "startPage"}},
-            {"value": {"required": false, "name": "endPage"}},
-            {"group": {"required": false, "transformOptions": [
-              {"value": {"required": false, "name": "cropGravity"}},
-              {"value": {"required": false, "name": "cropWidth"}},
-              {"value": {"required": false, "name": "cropHeight"}},
-              {"value": {"required": false, "name": "cropPercentage"}},
-              {"value": {"required": false, "name": "cropXOffset"}},
-              {"value": {"required": false, "name": "cropYOffset"}}
+            {"value": {"name": "alphaRemove"}},
+            {"value": {"name": "autoOrient"}},
+            {"value": {"name": "startPage"}},
+            {"value": {"name": "endPage"}},
+            {"group": {"transformOptions": [
+              {"value": {"required": "true", "name": "cropGravity"}},
+              {"value": {"name": "cropWidth"}},
+              {"value": {"name": "cropHeight"}},
+              {"value": {"name": "cropPercentage"}},
+              {"value": {"name": "cropXOffset"}},
+              {"value": {"name": "cropYOffset"}}
             ]}},
-            {"group": {"required": false, "transformOptions": [
-              {"value": {"required": false, "name": "thumbnail"}},
-              {"value": {"required": false, "name": "resizeHeight"}},
-              {"value": {"required": false, "name": "resizeWidth"}},
-              {"value": {"required": false, "name": "resizePercentage"}},
-              {"value": {"required": false, "name": "allowEnlargement"}},
-              {"value": {"required": false, "name": "maintainAspectRatio"}}
+            {"group": {"transformOptions": [
+              {"value": {"name": "thumbnail"}},
+              {"value": {"name": "resizeHeight"}},
+              {"value": {"name": "resizeWidth"}},
+              {"value": {"name": "resizePercentage"}},
+              {"value": {"name": "allowEnlargement"}},
+              {"value": {"name": "maintainAspectRatio"}}
             ]}}
           ]}},{
         "group": {
-          "required": false,
           "transformOptions": [
-            {"value": {"required": false, "name": "page"}},
-            {"value": {"required": false, "name": "width"}},
-            {"value": {"required": false, "name": "height"}},
-            {"value": {"required": false, "name": "allowEnlargement"}},
-            {"value": {"required": false, "name": "maintainAspectRatio"}}
+            {"value": {"name": "page"}},
+            {"value": {"name": "width"}},
+            {"value": {"name": "height"}},
+            {"value": {"name": "allowPdfEnlargement"}},
+            {"value": {"name": "maintainPdfAspectRatio"}}
           ]
         }
       }

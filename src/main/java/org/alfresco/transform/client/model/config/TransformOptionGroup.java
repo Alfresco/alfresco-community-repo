@@ -35,7 +35,7 @@ import java.util.List;
 public class TransformOptionGroup implements TransformOption
 {
     private boolean required;
-    private List<TransformOption> transformOptions;
+    List<TransformOption> transformOptions;
 
     public TransformOptionGroup()
     {

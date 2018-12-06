@@ -115,6 +115,7 @@ public class RemoteTransformerClient
             if (args[i+1] != null)
             {
                 builder.addTextBody(args[i], args[i + 1]);
+
                 sj.add(args[i] + '=' + args[i + 1]);
             }
         }

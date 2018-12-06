@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * Represents an individual transformer option or group of options that are required or optional.
+ * Represents an individual transformer option or group of options that are required or optional (default).
  */
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,

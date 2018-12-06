@@ -265,8 +265,8 @@ public class TransformServiceRegistryImplTest
                         new TransformOptionValue(false, "page"),
                         new TransformOptionValue(false, "width"),
                         new TransformOptionValue(false, "height"),
-                        new TransformOptionValue(false, "allowEnlargement"),
-                        new TransformOptionValue(false, "maintainAspectRatio")),
+                        new TransformOptionValue(false, "allowPdfEnlargement"),
+                        new TransformOptionValue(false, "maintainPdfAspectRatio")),
                 Arrays.asList(
                         new SupportedSourceAndTarget(PDF, PNG, -1)));
 
@@ -415,6 +415,34 @@ public class TransformServiceRegistryImplTest
             assertEquals("The number of source to target mimetypes transforms has changed. " +
                             "There may be multiple transformers for the same combination. Config change?",
                     4, countSupportedTransforms(false));
+
+            ConcurrentMap<String, List<TransformServiceRegistryImpl.SupportedTransform>> transformer =
+                    registry.transformers.get("officeToImageViaPdf");
+
+            // Check required and optional default correctly
+            ConcurrentMap<String, List<TransformServiceRegistryImpl.SupportedTransform>> transformsToWord =
+                    registry.transformers.get("application/msword");
+            List<TransformServiceRegistryImpl.SupportedTransform> supportedTransforms = transformsToWord.get("image/gif");
+            TransformServiceRegistryImpl.SupportedTransform supportedTransform = supportedTransforms.get(0);
+
+            TransformOptionGroup imageMagick = (TransformOptionGroup)supportedTransform.transformOptions.transformOptions.get(0);
+            TransformOptionGroup pdf         = (TransformOptionGroup)supportedTransform.transformOptions.transformOptions.get(1);
+
+            TransformOptionValue alphaRemove = (TransformOptionValue)imageMagick.transformOptions.get(0);
+            TransformOptionGroup crop = (TransformOptionGroup)imageMagick.transformOptions.get(4);
+            TransformOptionValue cropGravity = (TransformOptionValue)crop.transformOptions.get(0);
+            TransformOptionValue cropWidth = (TransformOptionValue)crop.transformOptions.get(1);
+
+            assertTrue("The holding group should be required", supportedTransform.transformOptions.isRequired());
+            assertTrue("imageMagick should be required as it is set", imageMagick.isRequired());
+            assertFalse("pdf should be optional as required is not set", pdf.isRequired());
+            assertEquals("alphaRemove", alphaRemove.getName());
+            assertEquals("cropGravity", cropGravity.getName());
+            assertEquals("cropWidth", cropWidth.getName());
+            assertFalse("alphaRemove should be optional as required is not set", alphaRemove.isRequired());
+            assertFalse("crop should be optional as required is not set", crop.isRequired());
+            assertTrue("cropGravity should be required as it is set", cropGravity.isRequired());
+            assertFalse("cropWidth should be optional as required is not set", cropWidth.isRequired());
 
             // Check a supported transform for each transformer.
             assertSupported(DOC,1234, GIF,  null, null, "");

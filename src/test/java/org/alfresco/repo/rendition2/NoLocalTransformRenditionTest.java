@@ -74,4 +74,10 @@ public class NoLocalTransformRenditionTest extends RenditionTest
     {
         internalTestGifRenditions(0, 0);
     }
+
+    @Test
+    public void testAllTransformServiceConfigRenditions() throws Exception
+    {
+        internalTestTasRestApiRenditions(0, 0);
+    }
 }

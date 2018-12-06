@@ -28,16 +28,19 @@ package org.alfresco.repo.rendition2;
 import junit.framework.AssertionFailedError;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.transform.client.model.config.TransformServiceRegistry;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -48,6 +51,47 @@ import java.util.StringJoiner;
  */
 public class RenditionTest extends AbstractRenditionIntegrationTest
 {
+    // This is the same order as produced by MimetypeMap
+    public static final List<String> TAS_REST_API_SOURCE_EXTENSIONS = Arrays.asList(
+            "gif", "jpg", "png", "msg", "doc","ppt", "xls", "docx", "pptx", "xlsx");
+
+    public static final List<String> TAS_REST_API_EXCLUDE_LIST = Collections.EMPTY_LIST;
+
+    public static final List<String> ALL_SOURCE_EXTENSIONS_EXCLUDE_LIST = Arrays.asList(
+            "key jpg imgpreview",
+            "key jpg medium",
+            "key png doclib",
+            "key png avatar",
+            "key png avatar32",
+
+            "pages jpg imgpreview",
+            "pages jpg medium",
+            "pages png doclib",
+            "pages png avatar",
+            "pages png avatar32",
+
+            "numbers jpg imgpreview",
+            "numbers jpg medium",
+            "numbers png doclib",
+            "numbers png avatar",
+            "numbers png avatar32",
+
+            "tiff jpg imgpreview",
+            "tiff jpg medium",
+            "tiff png doclib",
+            "tiff png avatar",
+            "tiff png avatar32",
+
+            "wpd pdf pdf",
+            "wpd jpg medium",
+            "wpd png doclib",
+            "wpd png avatar",
+            "wpd png avatar32",
+            "wpd jpg imgpreview");
+
+    @Autowired
+    private TransformServiceRegistry transformServiceRegistry;
+
     @Before
     public void setUp() throws Exception
     {
@@ -70,10 +114,10 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
     private void assertRenditionsOkayFromSourceExtension(List<String> sourceExtensions, List<String> excludeList, List<String> expectedToFail,
                                                          int expectedRenditionCount, int expectedFailedCount) throws Exception
     {
-        int expectedSuccessCount = expectedRenditionCount - Math.min(excludeList.size(), expectedRenditionCount) - expectedFailedCount;
         int renditionCount = 0;
         int failedCount = 0;
         int successCount = 0;
+        int excludedCount = 0;
         RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
         StringJoiner failures = new StringJoiner("\n");
         StringJoiner successes = new StringJoiner("\n");
@@ -98,7 +142,11 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
                     String targetExtension = mimetypeMap.getExtension(targetMimetype);
 
                     String sourceTragetRendition = sourceExtension + ' ' + targetExtension + ' ' + renditionName;
-                    if (!excludeList.contains(sourceTragetRendition))
+                    if (excludeList.contains(sourceTragetRendition))
+                    {
+                        excludedCount++;
+                    }
+                    else
                     {
                         String task = sourceExtension + " " + targetExtension + " " + renditionName;
 
@@ -117,6 +165,8 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
                 }
             }
         }
+
+        int expectedSuccessCount = expectedRenditionCount - excludedCount - expectedFailedCount;
         System.out.println("FAILURES:\n"+failures+"\n");
         System.out.println("SUCCESSES:\n"+successes+"\n");
         System.out.println("renditionCount: "+renditionCount+" expected "+expectedRenditionCount);
@@ -140,7 +190,7 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
         assertEquals("Added or removed a definition (rendition-service2-contex.xml)?", 7, renditionNames.size());
     }
 
-    @Test
+    @Category(DebugTests.class)
     public void testTasRestApiRenditions() throws Exception
     {
         internalTestTasRestApiRenditions(62, 0);
@@ -148,15 +198,7 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
 
     protected void internalTestTasRestApiRenditions(int expectedRenditionCount, int expectedFailedCount) throws Exception
     {
-        assertRenditionsOkayFromSourceExtension(Arrays.asList("doc", "xls", "ppt", "docx", "xlsx", "pptx", "msg", "pdf", "png", "gif", "jpg"),
-                Arrays.asList(new String[]{
-                        "docx jpg imgpreview",
-                        "docx jpg medium",
-
-                        "xlsx jpg imgpreview",
-                        "xlsx jpg medium",
-
-                }),
+        assertRenditionsOkayFromSourceExtension(TAS_REST_API_SOURCE_EXTENSIONS, TAS_REST_API_EXCLUDE_LIST,
                 Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
     }
 
@@ -169,52 +211,63 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
 
     protected void internalTestAllSourceExtensions(int expectedRenditionCount, int expectedFailedCount) throws Exception
     {
+        List<String> sourceExtensions = getAllSourceMimetypes();
+        assertRenditionsOkayFromSourceExtension(sourceExtensions,
+                ALL_SOURCE_EXTENSIONS_EXCLUDE_LIST,
+                Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
+    }
+
+    @Category(DebugTests.class)
+    @Test
+    public void testTransformServiceConfig() throws Exception
+    {
+        internalTestTransformServiceConfig(57, 0);
+    }
+
+    // Tests all renditions supported by the TransformServiceRegistry (in the case of Transform Service, see
+    // transform-service-config.json and the LegacyLocalTransformServiceRegistry see the original ACS config).
+    protected void internalTestTransformServiceConfig(int expectedRenditionCount, int expectedFailedCount) throws Exception
+    {
+        List<String> sourceExtensions = getAllSourceMimetypes();
+        List<String> excludeList = new ArrayList<>();
+
+        for (String sourceExtension : sourceExtensions)
+        {
+            String sourceMimetype = mimetypeMap.getMimetype(sourceExtension);
+            String testFileName = getTestFileName(sourceMimetype);
+            if (testFileName != null)
+            {
+                Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, -1);
+                for (String renditionName : renditionNames)
+                {
+                    RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+                    String targetMimetype = renditionDefinition.getTargetMimetype();
+                    String targetExtension = mimetypeMap.getExtension(targetMimetype);
+
+                    String sourceTragetRendition = sourceExtension + ' ' + targetExtension + ' ' + renditionName;
+                    Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
+                    if (!transformServiceRegistry.isSupported(sourceMimetype, -1L, targetMimetype,
+                            actualOptions, null))
+                    {
+                        excludeList.add(sourceTragetRendition);
+                    }
+                }
+            }
+        }
+
+        assertRenditionsOkayFromSourceExtension(sourceExtensions, excludeList,
+                Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
+    }
+
+    private List<String> getAllSourceMimetypes()
+    {
         List<String> sourceExtensions = new ArrayList<>();
         for (String sourceMimetype : mimetypeMap.getMimetypes())
         {
             String sourceExtension = mimetypeMap.getExtension(sourceMimetype);
             sourceExtensions.add(sourceExtension);
         }
-        assertRenditionsOkayFromSourceExtension(sourceExtensions,
-                Arrays.asList(new String[]{
-                        "docx jpg imgpreview",
-                        "docx jpg medium",
-
-                        "xlsx jpg imgpreview",
-                        "xlsx jpg medium",
-
-                        "key jpg imgpreview",
-                        "key jpg medium",
-                        "key png doclib",
-                        "key png avatar",
-                        "key png avatar32",
-
-                        "pages jpg imgpreview",
-                        "pages jpg medium",
-                        "pages png doclib",
-                        "pages png avatar",
-                        "pages png avatar32",
-
-                        "numbers jpg imgpreview",
-                        "numbers jpg medium",
-                        "numbers png doclib",
-                        "numbers png avatar",
-                        "numbers png avatar32",
-
-                        "tiff jpg imgpreview",
-                        "tiff jpg medium",
-                        "tiff png doclib",
-                        "tiff png avatar",
-                        "tiff png avatar32",
-
-                        "wpd pdf pdf",
-                        "wpd jpg medium",
-                        "wpd png doclib",
-                        "wpd png avatar",
-                        "wpd png avatar32",
-                        "wpd jpg imgpreview"
-                }),
-                Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
+        return sourceExtensions;
     }
 
     @Test

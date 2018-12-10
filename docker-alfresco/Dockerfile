@@ -104,6 +104,16 @@ RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT &&
 # Grant only deployXmlPermission to ROOT webapp.
     sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" /usr/local/tomcat/conf/catalina.policy
 
+# fontconfig is required by Activiti worflow diagram generator
+# installing pinned dependencies as well
+RUN yum install -y fontconfig-2.13.0-4.3.el7 \
+                   dejavu-fonts-common-2.33-6.el7 \
+                   fontpackages-filesystem-1.44-8.el7 \
+                   freetype-2.8-12.el7 \
+                   libpng-1.5.13-7.el7_2 \
+                   dejavu-sans-fonts-2.33-6.el7 && \
+    yum clean all
+
 # Unpack wti-bin.war
 RUN mkdir /usr/local/tomcat/webapps/wti-bin && cd /usr/local/tomcat/webapps/wti-bin && jar -xvf /usr/local/tomcat/webapps/wti-bin.war && rm -f /usr/local/tomcat/webapps/wti-bin.war
 

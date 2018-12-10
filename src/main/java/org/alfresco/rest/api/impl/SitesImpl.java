@@ -1058,8 +1058,9 @@ public class SitesImpl implements Sites
 
     public void deleteSite(String siteId, Parameters parameters)
     {
+        boolean isSiteAdmin = siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser());
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
@@ -1068,10 +1069,11 @@ public class SitesImpl implements Sites
 
         NodeRef siteNodeRef = siteInfo.getNodeRef();
 
-        // belt-and-braces - double-check before purge/delete (rather than rollback)
-        if (permissionService.hasPermission(siteNodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+        // belt-and-braces - double-check before purge/delete (rather than
+        // rollback)
+        if ((isSiteAdmin == false) && (permissionService.hasPermission(siteNodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED))
         {
-            throw new AccessDeniedException("Cannot delete site: "+siteId);
+            throw new AccessDeniedException("Cannot delete site: " + siteId);
         }
 
         // default false (if not provided)
@@ -1082,13 +1084,13 @@ public class SitesImpl implements Sites
             // Set as temporary to delete node instead of archiving.
             nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
 
-            // bypassing trashcan means that purge behaviour will not fire, so explicitly force cleanup here
+            // bypassing trashcan means that purge behaviour will not fire, so
+            // explicitly force cleanup here
             siteServiceImpl.beforePurgeNode(siteNodeRef);
         }
 
         siteService.deleteSite(siteId);
     }
-
 
     /**
      * Uses site service for creating site info

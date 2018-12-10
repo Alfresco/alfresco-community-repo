@@ -1535,4 +1535,29 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         }
     }
     
+    public void testDeleteSiteAsAdministrator() throws Exception {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        String shortName  = GUID.generate();
+        createSite("mySite", shortName, "myTitle", "myDescription", SiteVisibility.MODERATED, 200);
+        
+        // Do tests as site admin
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        
+        //Get the site
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 200);
+        
+        // we should get AccessDeniedException
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 500);
+   
+        
+        this.authenticationComponent.setCurrentUser(USER_FOUR_AS_SITE_ADMIN);
+        
+        // Delete the site
+        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 200);
+   
+       
+        // Get the site
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName), 404);
+    }
+    
 }

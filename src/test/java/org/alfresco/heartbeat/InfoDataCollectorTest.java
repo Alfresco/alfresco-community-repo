@@ -123,7 +123,7 @@ public class InfoDataCollectorTest
     public void testInfoDataIsCollected()
     {
         mockVersionDetails("5","1","2",".4");
-        mockDatabaseMetaData("PostgreSQL","10.1","PostgreSQL JDBC Driver","42.2.1");
+        mockDatabaseMetaData("PostgreSQL","10.1","PostgreSQL JDBC Driver","42.2.5");
         collectedData = infoCollector.collectData();
 
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
@@ -160,7 +160,7 @@ public class InfoDataCollectorTest
         assertEquals("PostgreSQL", db.get("vendor"));
         assertEquals("10.1", db.get("version"));
         assertEquals("PostgreSQL JDBC Driver", db.get("driverName"));
-        assertEquals("42.2.1", db.get("driverVersion"));
+        assertEquals("42.2.5", db.get("driverVersion"));
         
     }
     

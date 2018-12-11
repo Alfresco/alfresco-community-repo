@@ -57,6 +57,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.person.UserNameMatcherImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -102,6 +103,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -3157,5 +3159,30 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
         assertNull("GROUP_EVERYONE shouldn't have any permissions on a moderated site's containers", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));        
 
+    }
+    
+    @Test
+    public void testDeleteSiteAsAdministrator() throws Exception {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        String shortName = GUID.generate();
+        createSite(shortName, "doclib", SiteVisibility.MODERATED);
+        // Do tests as site admin
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+
+        try
+        {
+            // try to delete the site permission denied
+            siteService.deleteSite(shortName);
+
+            fail("We should not reach this point. the user that tries to run this code, add the file, is not yet a member of the site");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Expected
+        }
+
+        this.authenticationComponent.setCurrentUser(USER_SITE_ADMIN);
+
+        siteService.deleteSite(shortName);
     }
 }

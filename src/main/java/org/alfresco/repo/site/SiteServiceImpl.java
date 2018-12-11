@@ -1623,10 +1623,30 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * @see org.alfresco.service.cmr.site.SiteService#deleteSite(java.lang.String)
      */
     public void deleteSite(final String shortName)
+    {     
+        if (isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
+        {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    // Delete the site
+                    deleteSiteImpl(shortName);
+                    return null;
+                }
+            }, AuthenticationUtil.getAdminUserName());
+        }
+        else
+        {
+            // Delete the site
+            deleteSiteImpl(shortName);
+        }
+    }
+    
+    protected void deleteSiteImpl(final String shortName)
     {
         // In deleting the site node, we have to jump through a few hoops to manage the site groups.
         // The order of execution is important here.
-        
         logger.debug("delete site :" + shortName);
         final NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)

@@ -335,25 +335,9 @@ public class Site implements Serializable
      */
     public void deleteSite()
     {
-        if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
-        {
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-            {
-                public Void doWork() throws Exception
-                {
-                    // Delete the site
-                    siteService.deleteSite(siteInfo.getShortName());
-                    return null;
-                }
-            }, AuthenticationUtil.getAdminUserName());
-        }
-        else
-        {
-            // Delete the site
-            this.siteService.deleteSite(this.siteInfo.getShortName());
-        }
+        siteService.deleteSite(siteInfo.getShortName());
     }
-    
+
     /**
      * Gets a map of members of the site with their role within the site.  This list can
      * be filtered by name and/or role.

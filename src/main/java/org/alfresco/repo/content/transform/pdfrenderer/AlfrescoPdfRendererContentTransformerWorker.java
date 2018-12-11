@@ -373,6 +373,8 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
                 "page", page,
                 "width", width,
                 "height", height,
+                "allowEnlargement", allowEnlargement,        // deprecated option
+                "maintainAspectRatio", maintainAspectRatio,  // deprecated option
                 "allowPdfEnlargement", allowEnlargement,
                 "maintainPdfAspectRatio", maintainAspectRatio);
     }

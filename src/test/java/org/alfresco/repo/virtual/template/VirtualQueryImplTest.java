@@ -164,7 +164,7 @@ public class VirtualQueryImplTest extends TestCase
         assertNotNull(sortDefinitions);
         assertEquals(1,
                      sortDefinitions.size());
-        assertEquals(withSortDefinitions.getFirst().getLocalName(),
+        assertEquals(withSortDefinitions.getFirst().getPrefixString(),
                      sortDefinitions.get(0).getField());
 
         assertEquals(withSortDefinitions.getSecond(),
@@ -172,7 +172,7 @@ public class VirtualQueryImplTest extends TestCase
     }
 
     @Test
-    public void testPerform_deprecated_1() throws Exception
+    public void testPerform_deprecated_1()
     {
         Pair<QName, Boolean> withSortDefinitions = new Pair<QName, Boolean>(testQName2,
                                                                             true);
@@ -191,7 +191,7 @@ public class VirtualQueryImplTest extends TestCase
     }
 
     @Test
-    public void testPerform_deprecated_2() throws Exception
+    public void testPerform_deprecated_2()
     {
         query.perform(mockitoActualEnvironment,
                       false,

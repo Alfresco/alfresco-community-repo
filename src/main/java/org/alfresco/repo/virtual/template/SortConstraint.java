@@ -67,7 +67,7 @@ public class SortConstraint extends VirtualQueryConstraintDecorator
             if (!IGNORED_SORT_PROPERTIES.contains(sort.getFirst()))
             {
                 SortDefinition sortDefinition = new SortDefinition(SortType.FIELD,
-                                                                   sort.getFirst().getLocalName(),
+                                                                   sort.getFirst().getPrefixString(),
                                                                    sort.getSecond());
                 searchParametersCopy.addSort(sortDefinition);
             }

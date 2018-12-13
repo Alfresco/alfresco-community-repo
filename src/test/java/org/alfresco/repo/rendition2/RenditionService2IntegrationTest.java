@@ -25,36 +25,23 @@
  */
 package org.alfresco.repo.rendition2;
 
-import java.util.List;
-
-import junit.framework.AssertionFailedError;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.thumbnail.ThumbnailRegistry;
-import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.util.List;
 
-import static java.lang.Thread.sleep;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Integration tests for {@link RenditionService2}
@@ -148,7 +135,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
     }
 
     @Test
@@ -156,30 +143,50 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
         clearContent(ADMIN, sourceNodeRef);
         render(ADMIN, sourceNodeRef, DOC_LIB);
         ChildAssociationRef assoc = AuthenticationUtil.runAs(() ->
                 renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);
         assertNull("There should be no rendition as there was no content", assoc);
     }
 
     @Test
-    public void changedSourceToNonNull() 
+    public void changedSourceToNonNull()
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+        NodeRef rendition1 = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
+        ContentData contentData1 = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(rendition1, PROP_CONTENT));
+
+        updateContent(ADMIN, sourceNodeRef, "quick.png");
+        render(ADMIN, sourceNodeRef, DOC_LIB);
+        NodeRef rendition2 = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
+        ContentData contentData2 = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(rendition2, PROP_CONTENT));
+
+        assertEquals("The rendition node should not change", rendition1, rendition2);
+        assertNotEquals("The content should have change", contentData1.toString(), contentData2.toString());
+    }
+
+    @Test
+    public void changedSourceFromNull()
+    {
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
+        render(ADMIN, sourceNodeRef, DOC_LIB);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
         clearContent(ADMIN, sourceNodeRef);
         render(ADMIN, sourceNodeRef, DOC_LIB);
         ChildAssociationRef assoc = AuthenticationUtil.runAs(() ->
                 renditionService2.getRenditionByName(sourceNodeRef, DOC_LIB), ADMIN);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);
         assertNull("There should be no rendition as there was no content", assoc);
 
         updateContent(ADMIN, sourceNodeRef, "quick.png");
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+        render(ADMIN, sourceNodeRef, DOC_LIB);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
     }
 
     @Test
@@ -188,7 +195,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         String userName = createRandomUser();
         NodeRef sourceNodeRef = createSource(userName, "quick.jpg");
         render(userName, sourceNodeRef, DOC_LIB);
-        NodeRef renditionNodeRef = waitForRendition(userName, sourceNodeRef, DOC_LIB);
+        NodeRef renditionNodeRef = waitForRendition(userName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition was not generated for non-admin user", renditionNodeRef);
     }
 
@@ -204,9 +211,9 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             return null;
         });
         render(ownerUserName, sourceNodeRef, DOC_LIB);
-        NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
+        NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition is not visible for owner of source node", renditionNodeRef);
-        renditionNodeRef = waitForRendition(otherUserName, sourceNodeRef, DOC_LIB);
+        renditionNodeRef = waitForRendition(otherUserName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition is not visible for non-owner user with read permissions", renditionNodeRef);
         assertEquals("The creator of the rendition is not correct",
                 ownerUserName, nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CREATOR));
@@ -224,9 +231,9 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             return null;
         });
         render(otherUserName, sourceNodeRef, DOC_LIB);
-        NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
+        NodeRef renditionNodeRef = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition is not visible for owner of source node", renditionNodeRef);
-        renditionNodeRef = waitForRendition(otherUserName, sourceNodeRef, DOC_LIB);
+        renditionNodeRef = waitForRendition(otherUserName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition is not visible for owner of rendition node", renditionNodeRef);
         assertEquals("The creator of the rendition is not correct",
                 ownerUserName, nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CREATOR));
@@ -246,7 +253,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         });
         try
         {
-            waitForRendition(noPermissionsUser, sourceNodeRef, DOC_LIB);
+            waitForRendition(noPermissionsUser, sourceNodeRef, DOC_LIB, true);
             fail("The rendition should not be visible for user with no permissions");
         }
         catch (AccessDeniedException ade)
@@ -272,7 +279,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 AuthenticationUtil.runAs(() -> nodeService.hasAspect(oldRendition, RenditionModel.ASPECT_RENDITION2), ownerUserName));
 
         updateContent(ownerUserName, sourceNodeRef, "quick.png");
-        NodeRef newRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
+        NodeRef newRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB, true);
         assertNotNull("The rendition should be reported via RenditionService2", newRendition);
         Thread.sleep(200);
         boolean hasRenditionedAspect = false;
@@ -307,7 +314,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                     .doInTransaction(() ->
                             AuthenticationUtil.runAs(() ->
                                     renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
-            assertNotNull("The old renditions service did not render", waitForRendition(ADMIN, sourceNodeRef, DOC_LIB));
+            assertNotNull("The old renditions service did not render", waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true));
             List<String> lastThumbnailModification = transactionService.getRetryingTransactionHelper()
                     .doInTransaction(() ->
                             AuthenticationUtil.runAs(() ->
@@ -349,14 +356,14 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
         renditionService2.setEnabled(false);
         try
         {
             updateContent(ADMIN, sourceNodeRef, "quick.png");
             Thread.sleep(200);
-            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
             boolean hasRendition2Aspect = true;
             for (int i = 0; i < 5; i++)
             {
@@ -394,12 +401,12 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                     .doInTransaction(() ->
                             AuthenticationUtil.runAs(() ->
                                     renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
-            waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+            waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
             renditionService2.setEnabled(true);
 
             updateContent(ADMIN, sourceNodeRef, "quick.png");
-            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
             boolean hasAspect = nodeService.hasAspect(renditionNodeRef, RenditionModel.ASPECT_RENDITION2);
             assertFalse("Should have switched to the old rendition service", hasAspect);
         }
@@ -419,7 +426,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
         render(ownerUserName, sourceNodeRef, DOC_LIB);
-        NodeRef newRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
+        NodeRef newRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB, true);
         boolean hasRendition2Aspect = AuthenticationUtil.runAs(() -> nodeService.hasAspect(newRendition, RenditionModel.ASPECT_RENDITION2), ownerUserName);
         assertTrue("The source should have the old renditioned aspect",
                 AuthenticationUtil.runAs(() -> nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED), ownerUserName));
@@ -428,7 +435,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         {
             renditionService2.setEnabled(false);
             updateContent(ownerUserName, sourceNodeRef, "quick.png");
-            NodeRef oldRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB);
+            NodeRef oldRendition = waitForRendition(ownerUserName, sourceNodeRef, DOC_LIB, true);
             Thread.sleep(200);
             hasRendition2Aspect = false;
             for (int i = 0; i < 5; i++)
@@ -467,12 +474,12 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                     .doInTransaction(() ->
                             AuthenticationUtil.runAs(() ->
                                     renditionService.render(sourceNodeRef, doclibRendDefQName), ADMIN));
-            waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+            waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
 
             renditionService2.setEnabled(true);
             render(ADMIN, sourceNodeRef, DOC_LIB);
             Thread.sleep(200);
-            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB);
+            NodeRef renditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
             boolean hasRendition2Aspect = false;
             for (int i = 0; i < 5; i++)
             {

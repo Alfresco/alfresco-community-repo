@@ -62,15 +62,15 @@ public class SwitchingTransformClient implements TransformClient
     }
 
     @Override
-    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentUrlHashCode)
+    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
     {
         if (usePrimary.get())
         {
-            primary.transform(sourceNodeRef, renditionDefinition, user, sourceContentUrlHashCode);
+            primary.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
         }
         else
         {
-            secondary.transform(sourceNodeRef, renditionDefinition, user, sourceContentUrlHashCode);
+            secondary.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
         }
     }
 }

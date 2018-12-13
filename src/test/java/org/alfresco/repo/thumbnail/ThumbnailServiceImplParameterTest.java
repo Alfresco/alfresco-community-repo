@@ -26,17 +26,6 @@
 
 package org.alfresco.repo.thumbnail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
@@ -45,9 +34,9 @@ import org.alfresco.repo.rendition.MockedTestServiceRegistry;
 import org.alfresco.repo.rendition.RenditionServiceImpl;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
+import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -67,6 +56,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 /**
  * Thumbnail service implementation unit test
  * 
@@ -79,6 +80,7 @@ public class ThumbnailServiceImplParameterTest
 {
     // Mocked services.
     private ActionService mockActionService = mock(ActionService.class);
+    private RenditionService2Impl mockRenditionService2 = mock(RenditionService2Impl.class);
 
     // Real services - backed by mocked services.
     private RenditionServiceImpl renditionService;
@@ -103,6 +105,8 @@ public class ThumbnailServiceImplParameterTest
 
         renditionService.setActionService(mockActionService);
         renditionService.setServiceRegistry(new MockedTestServiceRegistry());
+        renditionService.setRenditionService2(mockRenditionService2);
+        when(mockRenditionService2.isCreatedByRenditionService2(any(), any())).thenReturn(false);
 
         ThumbnailServiceImpl thumbs = new ThumbnailServiceImpl()
         {

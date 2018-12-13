@@ -271,14 +271,16 @@ public class RenditionServiceImpl implements
     public ChildAssociationRef render(NodeRef sourceNode, RenditionDefinition definition)
     {
         checkSourceNodeForPreventionClass(sourceNode);
-        
+        log.debug("Original RenditionService render no callback START");
+
         ChildAssociationRef result = executeRenditionAction(sourceNode, definition, false);
         
         if (log.isDebugEnabled())
         {
             log.debug("Produced rendition " + result);
         }
-        
+
+        log.debug("Original RenditionService render no callback END");
         return result;
     }
 
@@ -286,14 +288,14 @@ public class RenditionServiceImpl implements
             RenderCallback callback)
     {
         checkSourceNodeForPreventionClass(sourceNode);
-        
+        log.debug("Original RenditionService render    callback START");
+
         // The asynchronous render can't return a ChildAssociationRef as it is created
         // asynchronously after this method returns.
         definition.setCallback(callback);
         
         executeRenditionAction(sourceNode, definition, true);
-        
-        return;
+        log.debug("Original RenditionService render   callback END");
     }
     
     /*

@@ -128,7 +128,7 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
     }
 
     @Override
-    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentUrlHashCode)
+    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
     {
         executorService.submit(() ->
         {
@@ -155,7 +155,7 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
                         contentService.transform(reader, writer, transformationOptions);
 
                         InputStream inputStream = writer.getReader().getContentInputStream();
-                        renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentUrlHashCode);
+                        renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
                     }
                     catch (Exception e)
                     {
@@ -164,7 +164,7 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
                             String renditionName = renditionDefinition.getRenditionName();
                             logger.debug("Rendition of "+renditionName+" failed", e);
                         }
-                        renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentUrlHashCode);
+                        renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
                         throw e;
                     }
                     return null;

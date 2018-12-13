@@ -153,7 +153,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         {
             NodeRef sourceNodeRef = createSource(ADMIN, testFileName);
             render(ADMIN, sourceNodeRef, renditionName);
-            waitForRendition(ADMIN, sourceNodeRef, renditionName);
+            waitForRendition(ADMIN, sourceNodeRef, renditionName, true);
             if (!expectedToPass)
             {
                 fail("The " + renditionName + " rendition should NOT be supported for " + testFileName);
@@ -241,11 +241,11 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     // As a given user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    protected NodeRef waitForRendition(String user, NodeRef sourceNodeRef, String renditionName) throws AssertionFailedError
+    protected NodeRef waitForRendition(String user, NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws AssertionFailedError
     {
         try
         {
-            return AuthenticationUtil.runAs(() -> waitForRendition(sourceNodeRef, renditionName), user);
+            return AuthenticationUtil.runAs(() -> waitForRendition(sourceNodeRef, renditionName, shouldExist), user);
         }
         catch (RuntimeException e)
         {
@@ -259,7 +259,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     }
 
     // As the current user waitForRendition for a rendition to appear. Creates new transactions to do this.
-    private NodeRef waitForRendition(NodeRef sourceNodeRef, String renditionName) throws InterruptedException
+    private NodeRef waitForRendition(NodeRef sourceNodeRef, String renditionName, boolean shouldExist) throws InterruptedException
     {
         long maxMillis = 10000;
         ChildAssociationRef assoc = null;
@@ -275,8 +275,16 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
             logger.debug("RenditionService2.getRenditionByName(...) sleep "+i);
             sleep(1000);
         }
-        assertNotNull("Rendition " + renditionName + " failed", assoc);
-        return assoc.getChildRef();
+        if (shouldExist)
+        {
+            assertNotNull("Rendition " + renditionName + " failed", assoc);
+            return assoc.getChildRef();
+        }
+        else
+        {
+            assertNull("Rendition " + renditionName + " did not fail", assoc);
+            return null;
+        }
     }
 
     protected String getTestFileName(String sourceMimetype) throws FileNotFoundException

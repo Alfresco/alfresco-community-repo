@@ -53,7 +53,7 @@ public interface TransformClient
      * @param sourceNodeRef the source node
      * @param renditionDefinition which rendition to perform
      * @param user that requested the transform.
-     * @param sourceContentUrlHashCode the hash code of the source node's content URL. Used to check the transform result
+     * @param sourceContentHashCode the hash code of the source node's content URL. Used to check the transform result
      */
-    void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentUrlHashCode);
+    void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode);
 }

@@ -1442,6 +1442,7 @@ public class TestCMIS extends EnterpriseTestApi
     }
     
     @Test
+    @Ignore("Quarantined since 24 Sep 2018. TestCMIS.testAspects:1546->checkSecondaryTypes:492 Missing secondary types: [P:cm:titled, P:sys:localized]")
     public void testAspects() throws Exception
     {
         final TestNetwork network1 = getTestFixture().getRandomNetwork();

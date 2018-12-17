@@ -4,28 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.tenant;
-
-import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -49,22 +47,20 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
  * A test for MultiTServiceImpl class.
- * 
+ *
  * @author alex.mukha
  * @since 4.2.3
  */
-public class MultiTServiceImplTest
+public class MultiTServiceImplTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private MultiTServiceImpl multiTServiceImpl;
     private TenantAdminService tenantAdminService;
     private PersonService personService;
@@ -74,10 +70,10 @@ public class MultiTServiceImplTest
     private NodeService nodeService;
     private SearchService searchService;
     private NamespaceService namespaceService;
-    
+
     private boolean mtEnabled;
-    
-    // Test variables 
+
+    // Test variables
     private static final String DEFAULT_ADMIN_PW = "admin";
     private static final String PASS = "password";
     private static final String PROTOCOL = "testprotocol";
@@ -112,15 +108,15 @@ public class MultiTServiceImplTest
     @Before
     public void setUp() throws Exception
     {
-        multiTServiceImpl = ctx.getBean("tenantService", MultiTServiceImpl.class);
-        tenantAdminService = ctx.getBean("tenantAdminService", TenantAdminService.class);
-        personService = ctx.getBean("PersonService", PersonService.class);
-        tenantService = ctx.getBean("tenantService", TenantService.class);
-        authenticationService = ctx.getBean("AuthenticationService", MutableAuthenticationService.class);
-        transactionService = ctx.getBean("TransactionService", TransactionService.class);
-        nodeService = ctx.getBean("NodeService", NodeService.class);
-        searchService = ctx.getBean("SearchService", SearchService.class);
-        namespaceService = ctx.getBean("NamespaceService", NamespaceService.class);
+        multiTServiceImpl = applicationContext.getBean("tenantService", MultiTServiceImpl.class);
+        tenantAdminService = applicationContext.getBean("tenantAdminService", TenantAdminService.class);
+        personService = applicationContext.getBean("PersonService", PersonService.class);
+        tenantService = applicationContext.getBean("tenantService", TenantService.class);
+        authenticationService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
+        transactionService = applicationContext.getBean("TransactionService", TransactionService.class);
+        nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        searchService = applicationContext.getBean("SearchService", SearchService.class);
+        namespaceService = applicationContext.getBean("NamespaceService", NamespaceService.class);
 
         DOMAIN = GUID.generate();
         USER1 = GUID.generate();
@@ -140,11 +136,11 @@ public class MultiTServiceImplTest
         tenantChildAssocRef = new ChildAssociationRef(QNAME, TENANT_NODE_REF, QNAME, TENANT_NODE_REF);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         mtEnabled = AuthenticationUtil.isMtEnabled();
         AuthenticationUtil.setMtEnabled(false);
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
@@ -152,7 +148,7 @@ public class MultiTServiceImplTest
         AuthenticationUtil.setMtEnabled(mtEnabled);
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     @Test
     public void testIsTenantUser()
     {
@@ -163,27 +159,27 @@ public class MultiTServiceImplTest
             {
 
 
-        // Create a user with a plain user name without a domain
-        NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER1));
-        
-        // Create a user with a name as an email, but not from tenant
-        userNodeRef =  createUser(USER2_WITH_DOMAIN, TenantService.DEFAULT_DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER2_WITH_DOMAIN));
-        
-        // Create a tenant and a user in it
-        createTenant(DOMAIN);
-        userNodeRef = createUser(USER3, DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        assertTrue("The user is from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER3 + MultiTServiceImpl.SEPARATOR + DOMAIN));
+                // Create a user with a plain user name without a domain
+                NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER1));
+
+                // Create a user with a name as an email, but not from tenant
+                userNodeRef =  createUser(USER2_WITH_DOMAIN, TenantService.DEFAULT_DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                assertFalse("The user is not from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER2_WITH_DOMAIN));
+
+                // Create a tenant and a user in it
+                createTenant(DOMAIN);
+                userNodeRef = createUser(USER3, DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                assertTrue("The user is from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER3 + MultiTServiceImpl.SEPARATOR + DOMAIN));
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetCurrentUserDomain()
     {
@@ -193,45 +189,45 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        // Test a tenant user
-        createTenant(DOMAIN);
-        NodeRef userNodeRef = createUser(USER1, DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        
-        TenantRunAsWork<String> work = new TenantRunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return tenantService.getCurrentUserDomain();
-            }
-        };
-        
-        String result = TenantUtil.runAsUserTenant(work, USER1, DOMAIN);
-        assertEquals("The domains do not match.", DOMAIN, result);
-        
-        // Test a default user
-        userNodeRef = createUser(USER2, TenantService.DEFAULT_DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        
-        work = new TenantRunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return tenantService.getCurrentUserDomain();
-            }
-        };
-        
-        result = TenantUtil.runAsUserTenant(work, USER2, TenantService.DEFAULT_DOMAIN);
-        assertEquals("The domains do not match.", TenantService.DEFAULT_DOMAIN, result);
+                // Test a tenant user
+                createTenant(DOMAIN);
+                NodeRef userNodeRef = createUser(USER1, DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+
+                TenantRunAsWork<String> work = new TenantRunAsWork<String>()
+                {
+                    @Override
+                    public String doWork() throws Exception
+                    {
+                        return tenantService.getCurrentUserDomain();
+                    }
+                };
+
+                String result = TenantUtil.runAsUserTenant(work, USER1, DOMAIN);
+                assertEquals("The domains do not match.", DOMAIN, result);
+
+                // Test a default user
+                userNodeRef = createUser(USER2, TenantService.DEFAULT_DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+
+                work = new TenantRunAsWork<String>()
+                {
+                    @Override
+                    public String doWork() throws Exception
+                    {
+                        return tenantService.getCurrentUserDomain();
+                    }
+                };
+
+                result = TenantUtil.runAsUserTenant(work, USER2, TenantService.DEFAULT_DOMAIN);
+                assertEquals("The domains do not match.", TenantService.DEFAULT_DOMAIN, result);
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
-		assertEquals("fred", multiTServiceImpl.getMultiTenantDomainName("@fred@bloggs"));
+        assertEquals("fred", multiTServiceImpl.getMultiTenantDomainName("@fred@bloggs"));
     }
-    
+
     @Test
     public void testGetName()
     {
@@ -241,120 +237,120 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getName(NODE_REF);
-            }
-        };
-        NodeRef result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
-        assertEquals("The NodeRef should contain domain.", NODE_REF, result);
-        
-        createTenant(DOMAIN);
-        userNodeRef = createUser(USER2, DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getName(NODE_REF);
-            }
-        };
-        result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
-        assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
+                NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getName(NODE_REF);
+                    }
+                };
+                NodeRef result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
+                assertEquals("The NodeRef should contain domain.", NODE_REF, result);
 
-        work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getName(TENANT_NODE_REF, NODE_REF);
-            }
-        };
-        result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
-        assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
-        
-        TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
-        {
-            @Override
-            public StoreRef doWork() throws Exception
-            {
-                return tenantService.getName(STORE_REF);
-            }
-        };
-        StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
-        assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result2);
-        
-        TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
-        {
-            @Override
-            public ChildAssociationRef doWork() throws Exception
-            {
-                return tenantService.getName(childAssocRef);
-            }
-        };
-        ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
-        assertEquals("The ChildAssociationRef should contain domain.", tenantChildAssocRef, result3);
-        
-        TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
-        {
-            @Override
-            public AssociationRef doWork() throws Exception
-            {
-                return tenantService.getName(assocRef);
-            }
-        };
-        AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
-        assertEquals("The AssociationRef should contain domain.", tenantAssocRef, result4);
-        
-        TenantRunAsWork<StoreRef> work5 = new TenantRunAsWork<StoreRef>()
-        {
-            @Override
-            public StoreRef doWork() throws Exception
-            {
-                return tenantService.getName(USER2_WITH_DOMAIN, STORE_REF);
-            }
-        };
-        StoreRef result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
-        assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result5);
-        
-        TenantRunAsWork<QName> work6 = new TenantRunAsWork<QName>()
-        {
-            @Override
-            public QName doWork() throws Exception
-            {
-                return tenantService.getName(QNAME);
-            }
-        };
-        QName result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
-        assertEquals("The QName should contain domain.", TENANT_QNAME, result6);
-        
-        TenantRunAsWork<QName> work7 = new TenantRunAsWork<QName>()
-        {
-            @Override
-            public QName doWork() throws Exception
-            {
-                return tenantService.getName(TENANT_NODE_REF, QNAME);
-            }
-        };
-        QName result7 = TenantUtil.runAsUserTenant(work7, USER2, DOMAIN);
-        assertEquals("The QName should contain domain.", TENANT_QNAME, result7);
-        
-        TenantRunAsWork<String> work8 = new TenantRunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return tenantService.getName(STRING);
-            }
-        };
-        String result8 = TenantUtil.runAsUserTenant(work8, USER2, DOMAIN);
-        assertEquals("The String should contain domain.", TENANT_STRING, result8);
+                createTenant(DOMAIN);
+                userNodeRef = createUser(USER2, DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getName(NODE_REF);
+                    }
+                };
+                result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
+                assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
+
+                work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getName(TENANT_NODE_REF, NODE_REF);
+                    }
+                };
+                result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
+                assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
+
+                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
+                {
+                    @Override
+                    public StoreRef doWork() throws Exception
+                    {
+                        return tenantService.getName(STORE_REF);
+                    }
+                };
+                StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
+                assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result2);
+
+                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
+                {
+                    @Override
+                    public ChildAssociationRef doWork() throws Exception
+                    {
+                        return tenantService.getName(childAssocRef);
+                    }
+                };
+                ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
+                assertEquals("The ChildAssociationRef should contain domain.", tenantChildAssocRef, result3);
+
+                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
+                {
+                    @Override
+                    public AssociationRef doWork() throws Exception
+                    {
+                        return tenantService.getName(assocRef);
+                    }
+                };
+                AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
+                assertEquals("The AssociationRef should contain domain.", tenantAssocRef, result4);
+
+                TenantRunAsWork<StoreRef> work5 = new TenantRunAsWork<StoreRef>()
+                {
+                    @Override
+                    public StoreRef doWork() throws Exception
+                    {
+                        return tenantService.getName(USER2_WITH_DOMAIN, STORE_REF);
+                    }
+                };
+                StoreRef result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
+                assertEquals("The StoreRef should contain domain.", TENANT_STORE_REF, result5);
+
+                TenantRunAsWork<QName> work6 = new TenantRunAsWork<QName>()
+                {
+                    @Override
+                    public QName doWork() throws Exception
+                    {
+                        return tenantService.getName(QNAME);
+                    }
+                };
+                QName result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
+                assertEquals("The QName should contain domain.", TENANT_QNAME, result6);
+
+                TenantRunAsWork<QName> work7 = new TenantRunAsWork<QName>()
+                {
+                    @Override
+                    public QName doWork() throws Exception
+                    {
+                        return tenantService.getName(TENANT_NODE_REF, QNAME);
+                    }
+                };
+                QName result7 = TenantUtil.runAsUserTenant(work7, USER2, DOMAIN);
+                assertEquals("The QName should contain domain.", TENANT_QNAME, result7);
+
+                TenantRunAsWork<String> work8 = new TenantRunAsWork<String>()
+                {
+                    @Override
+                    public String doWork() throws Exception
+                    {
+                        return tenantService.getName(STRING);
+                    }
+                };
+                String result8 = TenantUtil.runAsUserTenant(work8, USER2, DOMAIN);
+                assertEquals("The String should contain domain.", TENANT_STRING, result8);
                 return null;
             }
         };
@@ -388,7 +384,7 @@ public class MultiTServiceImplTest
         }
         catch (AlfrescoRuntimeException are)
         {
-           are.getMessage().contains("Invalid base username");
+            are.getMessage().contains("Invalid base username");
         }
         try
         {
@@ -411,115 +407,115 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(NODE_REF);
-            }
-        };
-        NodeRef result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
-        assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
-        
-        createTenant(DOMAIN);
-        userNodeRef = createUser(USER2, DOMAIN, PASS);
-        assertNotNull("The user was not created.", userNodeRef);
-        work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_NODE_REF);
-            }
-        };
-        result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
-        assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
+                NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(NODE_REF);
+                    }
+                };
+                NodeRef result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
+                assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
 
-        work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_NODE_REF, true);
-            }
-        };
-        result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
-        assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
-        
-        work1 = new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_NODE_REF, false);
-            }
-        };
-        result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
-        assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
-        
-        TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
-        {
-            @Override
-            public StoreRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_STORE_REF);
-            }
-        };
-        StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
-        assertEquals("The StoreRef should not contain domain.", STORE_REF, result2);
-        
-        TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
-        {
-            @Override
-            public ChildAssociationRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(tenantChildAssocRef);
-            }
-        };
-        ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
-        assertEquals("The ChildAssociationRef not should contain domain.", childAssocRef, result3);
-        
-        TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
-        {
-            @Override
-            public AssociationRef doWork() throws Exception
-            {
-                return tenantService.getBaseName(tenantAssocRef);
-            }
-        };
-        AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
-        assertEquals("The AssociationRef should not contain domain.", assocRef, result4);
-        
-        TenantRunAsWork<QName> work5 = new TenantRunAsWork<QName>()
-        {
-            @Override
-            public QName doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_QNAME, false);
-            }
-        };
-        QName result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
-        assertEquals("The QName should not contain domain.", QNAME, result5);
-        
-        TenantRunAsWork<String> work6 = new TenantRunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return tenantService.getBaseName(TENANT_STRING);
-            }
-        };
-        String result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
-        assertEquals("The String should not contain domain.", STRING, result6);
+                createTenant(DOMAIN);
+                userNodeRef = createUser(USER2, DOMAIN, PASS);
+                assertNotNull("The user was not created.", userNodeRef);
+                work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_NODE_REF);
+                    }
+                };
+                result = TenantUtil.runAsUserTenant(work1, USER2, DOMAIN);
+                assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
+
+                work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_NODE_REF, true);
+                    }
+                };
+                result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
+                assertEquals("The NodeRef should not contain domain.", NODE_REF, result);
+
+                work1 = new TenantRunAsWork<NodeRef>()
+                {
+                    @Override
+                    public NodeRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_NODE_REF, false);
+                    }
+                };
+                result = TenantUtil.runAsUserTenant(work1, USER1, TenantService.DEFAULT_DOMAIN);
+                assertEquals("The NodeRef should contain domain.", TENANT_NODE_REF, result);
+
+                TenantRunAsWork<StoreRef> work2 = new TenantRunAsWork<StoreRef>()
+                {
+                    @Override
+                    public StoreRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_STORE_REF);
+                    }
+                };
+                StoreRef result2 = TenantUtil.runAsUserTenant(work2, USER2, DOMAIN);
+                assertEquals("The StoreRef should not contain domain.", STORE_REF, result2);
+
+                TenantRunAsWork<ChildAssociationRef> work3 = new TenantRunAsWork<ChildAssociationRef>()
+                {
+                    @Override
+                    public ChildAssociationRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(tenantChildAssocRef);
+                    }
+                };
+                ChildAssociationRef result3 = TenantUtil.runAsUserTenant(work3, USER2, DOMAIN);
+                assertEquals("The ChildAssociationRef not should contain domain.", childAssocRef, result3);
+
+                TenantRunAsWork<AssociationRef> work4 = new TenantRunAsWork<AssociationRef>()
+                {
+                    @Override
+                    public AssociationRef doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(tenantAssocRef);
+                    }
+                };
+                AssociationRef result4 = TenantUtil.runAsUserTenant(work4, USER2, DOMAIN);
+                assertEquals("The AssociationRef should not contain domain.", assocRef, result4);
+
+                TenantRunAsWork<QName> work5 = new TenantRunAsWork<QName>()
+                {
+                    @Override
+                    public QName doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_QNAME, false);
+                    }
+                };
+                QName result5 = TenantUtil.runAsUserTenant(work5, USER2, DOMAIN);
+                assertEquals("The QName should not contain domain.", QNAME, result5);
+
+                TenantRunAsWork<String> work6 = new TenantRunAsWork<String>()
+                {
+                    @Override
+                    public String doWork() throws Exception
+                    {
+                        return tenantService.getBaseName(TENANT_STRING);
+                    }
+                };
+                String result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
+                assertEquals("The String should not contain domain.", STRING, result6);
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testCheckDomainUser()
     {
@@ -529,45 +525,45 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        String nonExistentDomain = "nonExistentDomain";
-        createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        createTenant(DOMAIN);
-        createUser(USER2, DOMAIN, PASS);
-        createUser(USER3, nonExistentDomain, PASS);
-        String username3WithDomain = USER3 + TenantService.SEPARATOR + nonExistentDomain;
-        try
-        {
-            checkDomainUserWork(USER1, TenantService.DEFAULT_DOMAIN, USER1);
-        }
-        catch (Exception e)
-        {
-            fail("The user is not from domain and is not a tenant.");
-        }
+                String nonExistentDomain = "nonExistentDomain";
+                createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                createTenant(DOMAIN);
+                createUser(USER2, DOMAIN, PASS);
+                createUser(USER3, nonExistentDomain, PASS);
+                String username3WithDomain = USER3 + TenantService.SEPARATOR + nonExistentDomain;
+                try
+                {
+                    checkDomainUserWork(USER1, TenantService.DEFAULT_DOMAIN, USER1);
+                }
+                catch (Exception e)
+                {
+                    fail("The user is not from domain and is not a tenant.");
+                }
 
-        try
-        {
-            checkDomainUserWork(USER2_WITH_DOMAIN, DOMAIN, USER2);
-        }
-        catch (Exception e)
-        {
-            fail("The user is from domain and is a tenant.");
-        }
-        
-        try
-        {
-            checkDomainUserWork(username3WithDomain, DOMAIN, USER2);
-            fail("The user is not from this domain.");
-        }
-        catch (Exception e)
-        {
-            // Expected
-        }
+                try
+                {
+                    checkDomainUserWork(USER2_WITH_DOMAIN, DOMAIN, USER2);
+                }
+                catch (Exception e)
+                {
+                    fail("The user is from domain and is a tenant.");
+                }
+
+                try
+                {
+                    checkDomainUserWork(username3WithDomain, DOMAIN, USER2);
+                    fail("The user is not from this domain.");
+                }
+                catch (Exception e)
+                {
+                    // Expected
+                }
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testCheckDomain()
     {
@@ -613,7 +609,7 @@ public class MultiTServiceImplTest
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetRootNode()
     {
@@ -623,24 +619,24 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        NodeRef rootNodeRefDefault = nodeService.getRootNode(DEFAULT_STORE);
-        NodeRef rootNodeRef = new NodeRef(DEFAULT_STORE, IDENTIFIER);
-        NodeRef nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
-        assertEquals("The reported rootNodeRef for the default domain is not correct.", rootNodeRefDefault, nodeRef);
-        
-        createTenant(DOMAIN);
-        rootNodeRefDefault = nodeService.getRootNode(TENANT_STORE);
-        rootNodeRef = new NodeRef(TENANT_STORE, IDENTIFIER);
-        nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
-        assertEquals("The reported rootNodeRef for the tenant domain is not correct.", rootNodeRefDefault, nodeRef);
+                NodeRef rootNodeRefDefault = nodeService.getRootNode(DEFAULT_STORE);
+                NodeRef rootNodeRef = new NodeRef(DEFAULT_STORE, IDENTIFIER);
+                NodeRef nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
+                assertEquals("The reported rootNodeRef for the default domain is not correct.", rootNodeRefDefault, nodeRef);
+
+                createTenant(DOMAIN);
+                rootNodeRefDefault = nodeService.getRootNode(TENANT_STORE);
+                rootNodeRef = new NodeRef(TENANT_STORE, IDENTIFIER);
+                nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
+                assertEquals("The reported rootNodeRef for the tenant domain is not correct.", rootNodeRefDefault, nodeRef);
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     /**
-     * Format of a valid domain string is "@domain@" 
+     * Format of a valid domain string is "@domain@"
      */
     @Test
     public void testIsTenantName()
@@ -651,17 +647,17 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        boolean result = tenantService.isTenantName(STRING);
-        assertFalse("The string was reported as domain, but it is not", result);
-        
-        result = tenantService.isTenantName(STRING_WITH_EXISTENT_DOMAIN);
-        assertTrue("The string was not reported as domain.", result);
+                boolean result = tenantService.isTenantName(STRING);
+                assertFalse("The string was reported as domain, but it is not", result);
+
+                result = tenantService.isTenantName(STRING_WITH_EXISTENT_DOMAIN);
+                assertTrue("The string was not reported as domain.", result);
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetPrimaryDomain()
     {
@@ -687,7 +683,7 @@ public class MultiTServiceImplTest
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetDomain() throws Exception
     {
@@ -697,43 +693,43 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        String result = getDomainWork(STRING, TenantService.DEFAULT_DOMAIN, USER1, false);
-        assertEquals("The domain should be reported as default.", TenantService.DEFAULT_DOMAIN, result);
+                createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                String result = getDomainWork(STRING, TenantService.DEFAULT_DOMAIN, USER1, false);
+                assertEquals("The domain should be reported as default.", TenantService.DEFAULT_DOMAIN, result);
 
-        createUser(USER2, DOMAIN, PASS);
-        result = getDomainWork(STRING, TenantService.DEFAULT_DOMAIN, USER2, false);
-        assertEquals("The domain should be reported as default as the tenant was not created yet.", TenantService.DEFAULT_DOMAIN, result);
+                createUser(USER2, DOMAIN, PASS);
+                result = getDomainWork(STRING, TenantService.DEFAULT_DOMAIN, USER2, false);
+                assertEquals("The domain should be reported as default as the tenant was not created yet.", TenantService.DEFAULT_DOMAIN, result);
 
-        createTenant(DOMAIN);
-        result = getDomainWork(STRING_WITH_EXISTENT_DOMAIN, DOMAIN, USER2, false);
-        assertEquals("The USER2 domain should be reported as " + DOMAIN, DOMAIN, result);
+                createTenant(DOMAIN);
+                result = getDomainWork(STRING_WITH_EXISTENT_DOMAIN, DOMAIN, USER2, false);
+                assertEquals("The USER2 domain should be reported as " + DOMAIN, DOMAIN, result);
 
-        try
-        {
-            result = getDomainWork(STRING_WITH_EXISTENT_DOMAIN, TenantService.DEFAULT_DOMAIN, USER1, true);
-            assertEquals("The domain should be reported as " + DOMAIN, DOMAIN, result);
-        }
-        catch (Exception e)
-        {
-            fail("An exception should not be thrown.");
-        }
-        
-        try
-        {
-            result = getDomainWork(STRING_WITH_NONEXITENT_DOMAIN, DOMAIN, USER2, true);
-            fail("An exception should be thrown as the domains do not match.");
-        }
-        catch (Exception e)
-        {
-            // Expected
-        }
+                try
+                {
+                    result = getDomainWork(STRING_WITH_EXISTENT_DOMAIN, TenantService.DEFAULT_DOMAIN, USER1, true);
+                    assertEquals("The domain should be reported as " + DOMAIN, DOMAIN, result);
+                }
+                catch (Exception e)
+                {
+                    fail("An exception should not be thrown.");
+                }
+
+                try
+                {
+                    result = getDomainWork(STRING_WITH_NONEXITENT_DOMAIN, DOMAIN, USER2, true);
+                    fail("An exception should be thrown as the domains do not match.");
+                }
+                catch (Exception e)
+                {
+                    // Expected
+                }
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetTenant()
     {
@@ -755,7 +751,7 @@ public class MultiTServiceImplTest
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     @Test
     public void testGetUserDomain()
     {
@@ -765,24 +761,24 @@ public class MultiTServiceImplTest
             public Void execute() throws Throwable
             {
 
-        String result = tenantService.getUserDomain(USER1);
-        assertEquals("The user domain should be the default one for a non tenant user without a tenant in name.", TenantService.DEFAULT_DOMAIN, result);
-        
-        result = tenantService.getUserDomain(USER2_WITH_DOMAIN);
-        assertEquals("The user domain should be the default one for a user with email like name if multi tenancy is not enabled.", TenantService.DEFAULT_DOMAIN, result);
-        
-        createTenant(DOMAIN);
-        result = tenantService.getUserDomain(USER2_WITH_DOMAIN);
-        assertEquals("The user domain should be of the USER2 is " + DOMAIN + ", but was reported as " + result, DOMAIN, result);
-        
-        result = tenantService.getUserDomain(USER1);
-        assertTrue("The user domain should be the default one (empty string) for a non tenant user without a tenant in name.", result.equals(TenantService.DEFAULT_DOMAIN));
+                String result = tenantService.getUserDomain(USER1);
+                assertEquals("The user domain should be the default one for a non tenant user without a tenant in name.", TenantService.DEFAULT_DOMAIN, result);
+
+                result = tenantService.getUserDomain(USER2_WITH_DOMAIN);
+                assertEquals("The user domain should be the default one for a user with email like name if multi tenancy is not enabled.", TenantService.DEFAULT_DOMAIN, result);
+
+                createTenant(DOMAIN);
+                result = tenantService.getUserDomain(USER2_WITH_DOMAIN);
+                assertEquals("The user domain should be of the USER2 is " + DOMAIN + ", but was reported as " + result, DOMAIN, result);
+
+                result = tenantService.getUserDomain(USER1);
+                assertTrue("The user domain should be the default one (empty string) for a non tenant user without a tenant in name.", result.equals(TenantService.DEFAULT_DOMAIN));
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
     /**
      * Runs {@link TenantService#getDomain(String)} as a specified tenant.
      * @param user The input parameter to the {@link TenantService#getDomain(String)}
@@ -804,7 +800,7 @@ public class MultiTServiceImplTest
         };
         return TenantUtil.runAsUserTenant(work, runAsUsername, domain);
     }
-    
+
     /**
      * Runs {@link TenantService#checkDomain(String)} as a specified tenant.
      * @param string The input parameter to the {@link TenantService#checkDomain(String)}
@@ -825,7 +821,7 @@ public class MultiTServiceImplTest
         };
         TenantUtil.runAsUserTenant(work, runAsUsername, domain);
     }
-    
+
     /**
      * Runs {@link TenantService#checkDomainUser(String)} as a specified tenant.
      * @param username The input parameter to the {@link TenantService#checkDomainUser(String)}
@@ -846,10 +842,10 @@ public class MultiTServiceImplTest
         };
         TenantUtil.runAsUserTenant(work, runAsUsername, domain);
     }
-    
+
     /**
      * Create a tenant domain, if not already created
-     * 
+     *
      * @param tenantDomain String
      */
     private void createTenant(final String tenantDomain)
@@ -867,10 +863,10 @@ public class MultiTServiceImplTest
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Crate a user and authentication
-     * 
+     *
      * @param baseUserName String
      * @param tenantDomain String
      * @param password String
@@ -920,7 +916,7 @@ public class MultiTServiceImplTest
                             // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
                             //       PersonService prevents 'guest' authorities from being deleted
                             {
-                                BehaviourFilter behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
+                                BehaviourFilter behaviourFilter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
                                 behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
                                 behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
                             }

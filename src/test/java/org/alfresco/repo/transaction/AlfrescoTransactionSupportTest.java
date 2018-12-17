@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,40 +31,35 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
+import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests integration between our <tt>UserTransaction</tt> implementation and
  * our <tt>TransactionManager</tt>.
- * 
- * @see org.alfresco.repo.transaction.AlfrescoTransactionManager
+ *
  * @see org.alfresco.util.transaction.SpringAwareUserTransaction
- * 
+ *
  * @author Derek Hulley
  */
-@Category(OwnJVMTestsCategory.class)
-public class AlfrescoTransactionSupportTest extends TestCase
+public class AlfrescoTransactionSupportTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
     private ServiceRegistry serviceRegistry;
     TransactionService transactionService;
-    
+
+    @Before
     public void setUp() throws Exception
     {
-        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
     }
-    
+
+    @Test
     public void testTransactionId() throws Exception
     {
         // get a user transaction
@@ -72,29 +67,29 @@ public class AlfrescoTransactionSupportTest extends TestCase
         UserTransaction txn = transactionService.getUserTransaction();
         assertNull("Thread shouldn't have a txn ID", AlfrescoTransactionSupport.getTransactionId());
         assertEquals("No transaction start time expected", -1, AlfrescoTransactionSupport.getTransactionStartTime());
-        
+
         // begin the txn
         txn.begin();
         String txnId = AlfrescoTransactionSupport.getTransactionId();
         assertNotNull("Expected thread to have a txn id", txnId);
         long txnStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
         assertTrue("Expected a transaction start time", txnStartTime > 0);
-        
+
         // check that the txn id and time doesn't change
         String txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
         assertEquals("Transaction ID changed on same thread", txnId, txnIdCheck);
         long txnStartTimeCheck = AlfrescoTransactionSupport.getTransactionStartTime();
         assertEquals("Transaction start time changed on same thread", txnStartTime, txnStartTimeCheck);
-        
+
         // begin a new, inner transaction
         {
             UserTransaction txnInner = transactionService.getNonPropagatingUserTransaction();
-            
+
             String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
             assertEquals("Inner transaction not started, so txn ID should not change", txnId, txnIdInner);
             long txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
             assertEquals("Inner transaction not started, so txn start time should not change", txnStartTime, txnStartTimeInner);
-            
+
             // begin the nested txn
             txnInner.begin();
             // check the ID for the outer transaction
@@ -105,28 +100,29 @@ public class AlfrescoTransactionSupportTest extends TestCase
             assertTrue(
                     "Inner transaction start time should be greater or equal (accuracy) to the outer's",
                     txnStartTime <= txnStartTimeInner);
-            
+
             // rollback the nested txn
             txnInner.rollback();
             txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
             assertEquals("Txn ID not popped inner txn completion", txnId, txnIdCheck);
         }
-        
+
         // rollback
         txn.rollback();
         assertNull("Thread shouldn't have a txn ID after rollback", AlfrescoTransactionSupport.getTransactionId());
-        
+
         // start a new transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
         txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
         assertNotSame("New transaction has same ID", txnId, txnIdCheck);
-        
+
         // rollback
         txn.rollback();
         assertNull("Thread shouldn't have a txn ID after rollback", AlfrescoTransactionSupport.getTransactionId());
     }
-    
+
+    @Test
     public void testListener() throws Exception
     {
         final List<String> strings = new ArrayList<String>(1);
@@ -160,11 +156,11 @@ public class AlfrescoTransactionSupportTest extends TestCase
                 strings.add("afterRollback");
             }
         };
-        
+
         // begin a transaction
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // register it
         AlfrescoTransactionSupport.bindListener(listener);
 
@@ -174,7 +170,8 @@ public class AlfrescoTransactionSupportTest extends TestCase
         assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
         assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
     }
-    
+
+    @Test
     public void testListenerNew() throws Exception
     {
         final List<String> strings = new ArrayList<String>(1);
@@ -203,11 +200,11 @@ public class AlfrescoTransactionSupportTest extends TestCase
                 strings.add("afterRollback");
             }
         };
-        
+
         // begin a transaction
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // register it
         AlfrescoTransactionSupport.bindListener(listener);
 
@@ -217,24 +214,25 @@ public class AlfrescoTransactionSupportTest extends TestCase
         assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
         assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
     }
-    
+
     /**
      * Tests the condition whereby a listener can cause failure by attempting to bind itself to
      * the transaction in the pre-commit callback.  This is caused by the listener set being
      * modified during calls to the listeners.
      */
+    @Test
     public void testPreCommitListenerBinding() throws Exception
     {
         final String beforeCommit = "beforeCommit";
         final String afterCommitInner = "afterCommit - inner";
         final String afterCommitOuter = "afterCommit = outer";
-        
+
         // the listeners will play with this
         final List<String> testList = new ArrayList<String>(1);
         testList.add(beforeCommit);
         testList.add(afterCommitInner);
         testList.add(afterCommitOuter);
-        
+
         final TransactionListener listener = new TransactionListenerAdapter()
         {
             @Override
@@ -286,11 +284,12 @@ public class AlfrescoTransactionSupportTest extends TestCase
         };
         // kick it all off
         transactionService.getRetryingTransactionHelper().doInTransaction(bindWork);
-        
+
         // make sure that the binding all worked
         assertTrue("Expected callbacks not all processed: " + testList, testList.size() == 0);
     }
-    
+
+    @Test
     public void testReadWriteStateRetrieval() throws Exception
     {
         final TxnReadState[] postCommitReadState = new TxnReadState[1];
@@ -315,7 +314,7 @@ public class AlfrescoTransactionSupportTest extends TestCase
             {
                 // Register to list to post-commit
                 AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
-                
+
                 return AlfrescoTransactionSupport.getTransactionReadState();
             }
         };
@@ -347,7 +346,8 @@ public class AlfrescoTransactionSupportTest extends TestCase
         txn.commit();
         assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
     }
-    
+
+    @Test
     public void testResourceHelper() throws Exception
     {
         // start a transaction

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,8 +32,6 @@ import java.util.Map;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
-import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
@@ -51,32 +49,29 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.ISO9075;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @see org.alfresco.repo.search.SearcherComponent
- * 
+ *
  * @author Derek Hulley
  */
-@Category({OwnJVMTestsCategory.class})
-public class SearcherComponentTest extends TestCase
+public class SearcherComponentTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
     //private static String COMPLEX_LOCAL_NAME = " `¬¦!\"£$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|\u0123\u4567\u8900\uabcd\uefff_xT65A_";
     // \u0123 and \u8900 removed
 
     //private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u4567\uabcd\uefff\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
-    
+
     private static String COMPLEX_LOCAL_NAME = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u0000\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
-    
+
     private static String COMPLEX_LOCAL_NAME_NO_U0000 = "\u0020\u0060\u00ac\u00a6\u0021\"\u00a3\u0024\u0025\u005e\u0026\u002a\u0028\u0029\u002d\u005f\u003d\u002b\t\n\\\u005b\u005d\u007b\u007d\u003b\u0027\u0023\u003a\u0040\u007e\u002c\u002e\u002f\u003c\u003e\u003f\\u007c\u005f\u0078\u0054\u0036\u0035\u0041\u005f";
 
-    
+
     private ServiceRegistry serviceRegistry;
 
     private TransactionService transactionService;
@@ -92,30 +87,31 @@ public class SearcherComponentTest extends TestCase
     private NodeRef rootNodeRef;
 
     private UserTransaction txn;
-    
+
     // TODO: pending replacement
     private Dialect dialect;
 
+    @Before
     public void setUp() throws Exception
     {
-        dialect = (Dialect) ctx.getBean("dialect");
+        dialect = (Dialect) applicationContext.getBean("dialect");
         if (dialect instanceof PostgreSQLDialect)
         {
             // Note: PostgreSQL does not support \u0000 char embedded in a string
             // http://archives.postgresql.org/pgsql-jdbc/2007-02/msg00115.php
             COMPLEX_LOCAL_NAME = COMPLEX_LOCAL_NAME_NO_U0000;
         }
-        
-        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+
+        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
-        dictionaryService = BaseNodeServiceTest.loadModel(ctx);
+        dictionaryService = BaseNodeServiceTest.loadModel(applicationContext);
         nodeService = serviceRegistry.getNodeService();
 
-        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // get the indexer and searcher factory
-        IndexerAndSearcher indexerAndSearcher = (IndexerAndSearcher) ctx.getBean("indexerAndSearcherFactory");
+        IndexerAndSearcher indexerAndSearcher = (IndexerAndSearcher) applicationContext.getBean("indexerAndSearcherFactory");
         searcher = new SearcherComponent();
         searcher.setIndexerAndSearcherFactory(indexerAndSearcher);
         // create a test workspace
@@ -127,6 +123,7 @@ public class SearcherComponentTest extends TestCase
         txn.begin();
     }
 
+    @After
     public void tearDown() throws Exception
     {
         if (txn.getStatus() == Status.STATUS_ACTIVE)
@@ -137,6 +134,7 @@ public class SearcherComponentTest extends TestCase
         super.tearDown();
     }
 
+    @Test
     public void testNodeXPath() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = BaseNodeServiceTest.buildNodeGraph(nodeService, rootNodeRef);
@@ -291,7 +289,7 @@ public class SearcherComponentTest extends TestCase
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
         list = xpath.selectNodes(assocRefs.get(qname));
         assertEquals(1, list.size());
-        
+
         xpathStr = "test:root_p_n1 | test:root_p_n2";
         xpath = new NodeServiceXPath(xpathStr, documentNavigator, null);
         xpath.addNamespace(BaseNodeServiceTest.TEST_PREFIX, BaseNodeServiceTest.NAMESPACE);
@@ -299,6 +297,7 @@ public class SearcherComponentTest extends TestCase
         assertEquals(2, list.size());
     }
 
+    @Test
     public void testSelectAPI() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = BaseNodeServiceTest.buildNodeGraph(nodeService, rootNodeRef);
@@ -319,33 +318,33 @@ public class SearcherComponentTest extends TestCase
         List<Serializable> attributes = searcher.selectProperties(rootNodeRef, "//@test:animal", null,
                 namespacePrefixResolver, false);
         assertEquals(1, attributes.size());
-        
+
         NodeRef n1 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
         NodeRef n2 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n2")).getChildRef();
-        
+
         answer = searcher.selectNodes(rootNodeRef, "test:root_p_n1 | test:root_p_n2", null, namespacePrefixResolver, false);
         assertEquals(2, answer.size());
         assertTrue(answer.contains(n1));
         assertTrue(answer.contains(n2));
-        
+
         NodeRef n3 = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3")).getChildRef();
-        
+
         answer = searcher.selectNodes(rootNodeRef, "//@test:animal", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n3));
-        
+
         answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal]", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n3));
-        
+
         answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n3));
-        
+
         answer = searcher.selectNodes(rootNodeRef, "//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n3));
-        
+
         answer = searcher.selectNodes(rootNodeRef, "*//.[@test:animal='monkey']", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n3));
@@ -354,23 +353,23 @@ public class SearcherComponentTest extends TestCase
 //        answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:animal, 'monk*')]", null, namespacePrefixResolver, false);
 //        assertEquals(1, answer.size());
 //        assertTrue(answer.contains(n3));
-        
+
         answer = searcher.selectNodes(rootNodeRef, "//@*", null, namespacePrefixResolver, false);
         assertEquals(9, answer.size());
-        
+
         QName qname = QName.createQName(BaseNodeServiceTest.NAMESPACE, "my@test_with_at_sign");
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(QName.createQName(BaseNodeServiceTest.NAMESPACE, "mytest"), "my@test_value_with_at_sign");
-        
+
         ChildAssociationRef assoc = nodeService.createNode(n1, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, ContentModel.TYPE_CONTAINER, properties);
         NodeRef n4 = assoc.getChildRef();
-        
+
         StringBuffer path = new StringBuffer().append("test:root_p_n1/").append(ISO9075.getXPathName(qname, namespacePrefixResolver));
         answer = searcher.selectNodes(rootNodeRef, path.toString(), null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
         assertTrue(answer.contains(n4));
-        
+
         String xpathQuery = "//*[@test:mytest='my@test_value_with_at_sign']";
         answer = searcher.selectNodes(rootNodeRef, xpathQuery, null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());
@@ -409,9 +408,9 @@ public class SearcherComponentTest extends TestCase
         {
             System.out.println("Char at "+i+" = "+Integer.toHexString(COMPLEX_LOCAL_NAME.charAt(i))+ "   ...    "+Integer.toHexString(roundTrip.charAt(i)));
         }
-        
+
         assertEquals( COMPLEX_LOCAL_NAME, roundTrip);
-        
+
         answer = searcher.selectNodes(rootNodeRef, "//*[like(@test:"
                 + ISO9075.encode(COMPLEX_LOCAL_NAME) + ", 'm__k%', false)]", null, namespacePrefixResolver, false);
         assertEquals(1, answer.size());

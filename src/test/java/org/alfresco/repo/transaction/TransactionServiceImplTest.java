@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -47,7 +47,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -57,61 +60,60 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @see org.alfresco.repo.transaction.TransactionServiceImpl
- * 
+ *
  * @author Derek Hulley
  */
-@Category(OwnJVMTestsCategory.class)
-public class TransactionServiceImplTest extends TestCase
+public class TransactionServiceImplTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
     private PlatformTransactionManager transactionManager;
     private TransactionServiceImpl transactionService;
     private NodeService nodeService;
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
-    
+
     private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TransactionServiceImplTest");
     private static final String USER_ALFRESCO = "AlfrescoUser";
-    
+
     private Dialect dialect;
-    
+
+    @Before
     public void setUp() throws Exception
     {
-        transactionManager = (PlatformTransactionManager) ctx.getBean("transactionManager");
+        transactionManager = (PlatformTransactionManager) applicationContext.getBean("transactionManager");
         transactionService = new TransactionServiceImpl();
-        transactionService.setTransactionManager(transactionManager);   
+        transactionService.setTransactionManager(transactionManager);
         transactionService.setAllowWrite(true, vetoName);
-        
-        nodeService = (NodeService) ctx.getBean("dbNodeService");
-        authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
-        personService = (PersonService) ctx.getBean("PersonService");
-        
-        dialect = (Dialect) ctx.getBean("dialect");
+
+        nodeService = (NodeService) applicationContext.getBean("dbNodeService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) applicationContext.getBean("PersonService");
+
+        dialect = (Dialect) applicationContext.getBean("dialect");
     }
-    
+
+    @Test
     public void testPropagatingTxn() throws Exception
     {
         // start a transaction
         UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
         String txnIdOuter = AlfrescoTransactionSupport.getTransactionId();
-        
+
         // start a propagating txn
         UserTransaction txnInner = transactionService.getUserTransaction();
         txnInner.begin();
         String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
-        
+
         // the txn IDs should be the same
         assertEquals("Txn ID not propagated", txnIdOuter, txnIdInner);
-        
+
         // rollback the inner
         txnInner.rollback();
-        
+
         // check both transactions' status
         assertEquals("Inner txn not marked rolled back", Status.STATUS_ROLLEDBACK, txnInner.getStatus());
         assertEquals("Outer txn not marked for rolled back", Status.STATUS_MARKED_ROLLBACK, txnOuter.getStatus());
-        
+
         try
         {
             txnOuter.commit();
@@ -123,37 +125,39 @@ public class TransactionServiceImplTest extends TestCase
             txnOuter.rollback();
         }
     }
-    
+
+    @Test
     public void testNonPropagatingTxn() throws Exception
     {
         // start a transaction
         UserTransaction txnOuter = transactionService.getUserTransaction();
         txnOuter.begin();
         String txnIdOuter = AlfrescoTransactionSupport.getTransactionId();
-        
+
         // start a propagating txn
         UserTransaction txnInner = transactionService.getNonPropagatingUserTransaction();
         txnInner.begin();
         String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
-        
+
         // the txn IDs should be different
         assertNotSame("Txn ID not propagated", txnIdOuter, txnIdInner);
-        
+
         // rollback the inner
         txnInner.rollback();
 
         // outer should commit without problems
         txnOuter.commit();
     }
-    
+
+    @Test
     public void testReadOnlyTxn() throws Exception
     {
         // start a read-only transaction
         transactionService.setAllowWrite(false, vetoName);
-        
+
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // do some writing
         try
         {
@@ -196,7 +200,7 @@ public class TransactionServiceImplTest extends TestCase
                 // ALF-4226
                 @SuppressWarnings("unused")
                 int i = 0;
-                
+
             }
             else
             {
@@ -213,14 +217,15 @@ public class TransactionServiceImplTest extends TestCase
             catch (Throwable e) {}
         }
     }
-    
+
     /**
      * Test the write veto
      * @throws Exception
      */
+    @Test
     public void testReadOnlyVetoTxn() throws Exception
     {
-       
+
         QName v1 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V1");
         QName v2 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
         QName v3 = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "V2");
@@ -229,22 +234,22 @@ public class TransactionServiceImplTest extends TestCase
             // start a read-only transaction
             transactionService.setAllowWrite(false, v1);
             transactionService.setAllowWrite(false, v2);
-        
+
             assertFalse("v1 AND v2 veto not read only", transactionService.getAllowWrite());
-            
+
             transactionService.setAllowWrite(true, v2);
             assertFalse("v1 not read only", transactionService.getAllowWrite());
-            
+
             transactionService.setAllowWrite(true, v1);
             assertTrue("v1 still read only", transactionService.getAllowWrite());
-        
+
             /**
              * Remove non existent veto
              */
             transactionService.setAllowWrite(true, v3);
             assertTrue("v3 veto", transactionService.getAllowWrite());
-            
-            
+
+
         }
         finally
         {
@@ -253,7 +258,8 @@ public class TransactionServiceImplTest extends TestCase
             transactionService.setAllowWrite(true, v3);
         }
     }
-           
+
+    @Test
     public void testGetRetryingTransactionHelper()
     {
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
@@ -263,15 +269,15 @@ public class TransactionServiceImplTest extends TestCase
                 return null;
             }
         };
-        
+
         // Ensure that we always get a new instance of the RetryingTransactionHelper
         assertFalse("Retriers must be new instances",
                 transactionService.getRetryingTransactionHelper() == transactionService.getRetryingTransactionHelper());
         // The same must apply when using the ServiceRegistry (ALF-18718)
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         assertFalse("Retriers must be new instance when retrieved from ServiceRegistry",
                 serviceRegistry.getRetryingTransactionHelper() == serviceRegistry.getRetryingTransactionHelper());
-        
+
         transactionService.setAllowWrite(true, vetoName);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false);
@@ -287,20 +293,20 @@ public class TransactionServiceImplTest extends TestCase
         {
             // Expected
         }
-        
+
         // Now check that we can force writable transactions
         RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
         helper.setForceWritable(true);
         helper.doInTransaction(callback, true);
         helper.doInTransaction(callback, false);
-        
+
         transactionService.setAllowWrite(true, vetoName);
     }
 
     private void createUser(String userName)
     {
         // login as system user to create test user
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         // if user with given user name doesn't already exist then create user
         if (!this.authenticationService.authenticationExists(userName))
         {
@@ -322,12 +328,13 @@ public class TransactionServiceImplTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
+    @Test
     public void testSystemUserHasWritePermissionsInReadOnlyMode()
     {
         createUser(USER_ALFRESCO);
         // login as user
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ALFRESCO);
-        
+
         // start a read-only transaction
         transactionService.setAllowWrite(false, vetoName);
         try

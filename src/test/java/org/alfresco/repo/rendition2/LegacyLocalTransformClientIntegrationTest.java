@@ -137,10 +137,8 @@ public class LegacyLocalTransformClientIntegrationTest extends AbstractRendition
             // split into separate transactions as the client is async
             NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                     createContentNodeFromQuickFile(testFileName));
-            int sourceContentHashCode = DefaultTypeConverter.INSTANCE.convert(
-                    ContentData.class,
-                    nodeService.getProperty(sourceNode, PROP_CONTENT))
-                    .toString().hashCode();
+            ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(sourceNode, PROP_CONTENT));
+            int sourceContentHashCode = (contentData == null ? "" : contentData.getContentUrl()+contentData.getMimetype()).hashCode();
             transactionService.getRetryingTransactionHelper().doInTransaction(() ->
             {
                 RenditionDefinition2 renditionDefinition =

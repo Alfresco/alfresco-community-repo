@@ -494,7 +494,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         if (contentData != null)
         {
             // Originally we used the contentData URL, but that is not enough if the mimetype changes.
-            String contentString = contentData.toString();
+            String contentString = contentData.getContentUrl()+contentData.getMimetype();
             if (contentString != null)
             {
                 hashCode = contentString.hashCode();

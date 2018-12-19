@@ -27,10 +27,14 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Rendition;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.List;
 
 /**
  * Renditions API
@@ -79,6 +83,18 @@ public interface Renditions
      * @param parameters
      */
     void createRendition(NodeRef nodeRef, Rendition rendition, boolean executeAsync, Parameters parameters);
+
+    /**
+     * Creates renditions that don't already exist for the given node asynchronously.
+     *
+     * @param nodeRef
+     * @param renditions the {@link Rendition} request
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     * @throws NotFoundException if any of the rendition id do not exist.
+     * @throws ConstraintViolatedException if all of the renditions already exist.
+     */
+    void createRenditions(NodeRef nodeRef, List<Rendition> renditions, Parameters parameters)
+            throws NotFoundException, ConstraintViolatedException;
 
     /**
      * Downloads rendition.

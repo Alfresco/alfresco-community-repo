@@ -76,11 +76,14 @@ import org.springframework.core.io.ResourceLoader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 
 /**
@@ -280,7 +283,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
         if (renditionNodeRef != null)
         {
-            throw new ConstraintViolatedException(rendition.getId() + " rendition already exists.");
+            throw new ConstraintViolatedException(rendition.getId() + " rendition already exists."); // 409
         }
 
         try
@@ -299,6 +302,116 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         {
             throw new StaleEntityException(e.getMessage()); // 409
         }
+    }
+
+    @Override
+    public void createRenditions(NodeRef nodeRef, List<Rendition> renditions, Parameters parameters)
+            throws NotFoundException, ConstraintViolatedException
+    {
+        if (renditions.isEmpty())
+        {
+            return;
+        }
+
+        if (!renditionService2.isEnabled())
+        {
+            throw new DisabledServiceException("Rendition generation has been disabled.");
+        }
+
+        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+
+        // So that POST /nodes/{nodeId}/renditions can specify rendition names as a comma separated list just like
+        // POST /nodes/{nodId}/children can specify a comma separated list, the following code checks to see if the
+        // supplied Rendition names are actually comma separated lists. The following example shows it is possible to
+        // use both approaches.
+        // [
+        //  { "id": "doclib" },
+        //  { "id": "avatar,avatar32" }
+        // ]
+        Set<String> renditionNames = new HashSet<>();
+        for (Rendition rendition : renditions)
+        {
+            String name = getName(rendition);
+            Set<String> requestedRenditions = NodesImpl.getRequestedRenditions(name);
+            if (requestedRenditions == null)
+            {
+                renditionNames.add(null);
+            }
+            else
+            {
+                renditionNames.addAll(requestedRenditions);
+            }
+        }
+
+        StringJoiner renditionNamesAlreadyExist = new StringJoiner(",");
+        StringJoiner renditionNamesNotRegistered = new StringJoiner(",");
+        List<String> renditionNamesToCreate = new ArrayList<>();
+        for (String renditionName : renditionNames)
+        {
+            System.err.println("renditionName="+renditionName);
+            if (renditionName == null)
+            {
+                throw new IllegalArgumentException(("Null rendition name supplied")); // 400
+            }
+
+            RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+            if (renditionDefinition == null)
+            {
+                renditionNamesNotRegistered.add(renditionName);
+            }
+
+            final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionName, parameters);
+            if (renditionNodeRef == null)
+            {
+                renditionNamesToCreate.add(renditionName);
+            }
+            else
+            {
+                renditionNamesAlreadyExist.add(renditionName);
+            }
+        }
+
+        if (renditionNamesNotRegistered.length() != 0)
+        {
+            throw new NotFoundException("Renditions not registered: " + renditionNamesNotRegistered); // 404
+        }
+
+        if (renditionNamesToCreate.size() == 0)
+        {
+            throw new ConstraintViolatedException("All renditions requested already exist: " + renditionNamesAlreadyExist); // 409
+        }
+
+        for (String renditionName : renditionNamesToCreate)
+        {
+            try
+            {
+                renditionService2.render(sourceNodeRef, renditionName);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                throw new IllegalArgumentException((e.getMessage())); // 400
+            }
+            catch (IllegalStateException e)
+            {
+                throw new StaleEntityException(e.getMessage()); // 409
+            }
+        }
+
+    }
+
+    private String getName(Rendition rendition)
+    {
+        String renditionName = rendition.getId();
+        if (renditionName != null)
+        {
+            renditionName = renditionName.trim();
+            if (renditionName.isEmpty())
+            {
+                renditionName = null;
+            }
+        }
+        return renditionName;
     }
 
     @Override

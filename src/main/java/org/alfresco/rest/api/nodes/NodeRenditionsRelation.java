@@ -90,17 +90,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     public List<Rendition> create(String nodeId, List<Rendition> entity, Parameters parameters)
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        // Temporary - pending future improvements to thumbnail service to minimise chance of
-        // missing/failed thumbnails (when requested/generated 'concurrently')
-        if (entity.size() > 1)
-        {
-            throw new InvalidArgumentException("Please specify one rendition entity id only");
-        }
-
-        for (Rendition rendition : entity)
-        {
-            renditions.createRendition(nodeRef, rendition, parameters);
-        }
+        renditions.createRenditions(nodeRef, entity, parameters);
         return null;
     }
 

@@ -64,6 +64,9 @@ import org.alfresco.repo.node.getchildren.FilterPropBoolean;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -92,7 +95,6 @@ import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.nodes.NodeAssocService;
-import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -101,6 +103,7 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
+import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
@@ -207,6 +210,7 @@ public class NodesImpl implements Nodes
     private OwnableService ownableService;
     private AuthorityService authorityService;
     private ThumbnailService thumbnailService;
+    private RenditionService2 renditionService2;
     private SiteService siteService;
     private ActivityPoster poster;
     private RetryingTransactionHelper retryingTransactionHelper;
@@ -261,6 +265,7 @@ public class NodesImpl implements Nodes
         this.ownableService = sr.getOwnableService();
         this.authorityService = sr.getAuthorityService();
         this.thumbnailService = sr.getThumbnailService();
+        this.renditionService2 = sr.getRenditionService2();
         this.siteService =  sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
         this.lockService = sr.getLockService();
@@ -2991,21 +2996,8 @@ public class NodesImpl implements Nodes
             // Create the response
             final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
 
-            // RA-1052
-            try
-            {
-                List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditions);
-                requestRenditions(thumbnailDefs, fileNode);
-            }
-            catch (Exception ex)
-            {
-                // Note: The log level is not 'error' as it could easily fill out the log file, especially in the Cloud.
-                if (logger.isDebugEnabled())
-                {
-                    // Don't throw the exception as we don't want the the upload to fail, just log it.
-                    logger.debug("Asynchronous request to create a rendition upon upload failed: " + ex.getMessage());
-                }
-            }
+            checkRenditionNames(renditions);
+            requestRenditions(renditions, fileNode);
 
             return fileNode;
 
@@ -3073,38 +3065,28 @@ public class NodesImpl implements Nodes
         return null;
     }
 
-    private List<ThumbnailDefinition> getThumbnailDefs(Set<String> renditionNames)
+    private void checkRenditionNames(Set<String> renditionNames)
     {
-        List<ThumbnailDefinition> thumbnailDefs = null;
-
         if (renditionNames != null)
         {
-            // If thumbnail generation has been configured off, then don't bother.
-            if (!thumbnailService.getThumbnailsEnabled())
+            if (!renditionService2.isEnabled())
             {
                 throw new DisabledServiceException("Thumbnail generation has been disabled.");
             }
 
-            thumbnailDefs = new ArrayList<>(renditionNames.size());
-            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
             for (String renditionName : renditionNames)
             {
-                // Use the thumbnail registry to get the details of the thumbnail
-                ThumbnailDefinition thumbnailDef = registry.getThumbnailDefinition(renditionName);
-                if (thumbnailDef == null)
+                RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+                if (renditionDefinition == null)
                 {
                     throw new NotFoundException(renditionName + " is not registered.");
                 }
-
-                thumbnailDefs.add(thumbnailDef);
-
             }
         }
-
-        return thumbnailDefs;
     }
 
-    private Set<String> getRequestedRenditions(String renditionsParam)
+    static Set<String> getRequestedRenditions(String renditionsParam)
     {
         if (renditionsParam == null)
         {
@@ -3112,13 +3094,6 @@ public class NodesImpl implements Nodes
         }
 
         String[] renditionNames = renditionsParam.split(",");
-
-        // Temporary - pending future improvements to thumbnail service to minimise chance of
-        // missing/failed thumbnails (when requested/generated 'concurrently')
-        if (renditionNames.length > 1)
-        {
-            throw new InvalidArgumentException("Please specify one rendition entity id only");
-        }
 
         Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
         for (String name : renditionNames)
@@ -3132,28 +3107,39 @@ public class NodesImpl implements Nodes
         return renditions;
     }
 
-    private void requestRenditions(List<ThumbnailDefinition> thumbnailDefs, Node fileNode)
+    private void requestRenditions(Set<String> renditionNames, Node fileNode)
     {
-        if (thumbnailDefs != null)
+        if (renditionNames != null)
         {
-            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
-            for (ThumbnailDefinition thumbnailDef : thumbnailDefs)
+            NodeRef sourceNodeRef = fileNode.getNodeRef();
+            String mimeType = fileNode.getContent().getMimeType();
+            long size = fileNode.getContent().getSizeInBytes();
+            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+            Set<String> availableRenditions = renditionDefinitionRegistry2.getRenditionNamesFrom(mimeType, size);
+
+            for (String renditionName : renditionNames)
             {
-                NodeRef sourceNodeRef = fileNode.getNodeRef();
-                String mimeType = fileNode.getContent().getMimeType();
-                long size = fileNode.getContent().getSizeInBytes();
-
-                // Check if anything is currently available to generate thumbnails for the specified mimeType
-                if (! registry.isThumbnailDefinitionAvailable(null, mimeType, size, sourceNodeRef, thumbnailDef))
+                // RA-1052 (REPO-47)
+                try
                 {
-                    throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDef.getName() + "' for " +
-                            mimeType + " as no transformer is currently available.");
+                    // File may be to big
+                    if (!availableRenditions.contains(renditionName))
+                    {
+                        throw new InvalidArgumentException("Unable to create thumbnail '" + renditionName + "' for " +
+                                mimeType + " as no transformer is currently available.");
+                    }
+
+                    renditionService2.render(sourceNodeRef, renditionName);
                 }
-
-                Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, sr);
-
-                // Queue async creation of thumbnail
-                actionService.executeAction(action, sourceNodeRef, true, true);
+                catch (Exception ex)
+                {
+                    // Note: The log level is not 'error' as it could easily fill out the log file.
+                    if (logger.isDebugEnabled())
+                    {
+                        // Don't throw the exception as we don't want the the upload to fail, just log it.
+                        logger.debug("Asynchronous request to create a rendition upon upload failed: " + ex.getMessage());
+                    }
+                }
             }
         }
     }
@@ -3522,6 +3508,7 @@ public class NodesImpl implements Nodes
         return authorityService;
     }
 
+    @Deprecated
     protected ThumbnailService getThumbnailService()
     {
         return thumbnailService;

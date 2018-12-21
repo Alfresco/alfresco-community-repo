@@ -121,7 +121,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
 {
     private static Log logger = LogFactory.getLog(PersonServiceImpl.class);
     
-    private static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
+    static final String CANNED_QUERY_PEOPLE_LIST = "getPeopleCannedQueryFactory";
 
     private static final String DELETE = "DELETE";
     private static final String SPLIT = "SPLIT";

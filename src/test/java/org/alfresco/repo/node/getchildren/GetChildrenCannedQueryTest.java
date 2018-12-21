@@ -86,6 +86,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.registry.NamedObjectRegistry;
+import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -100,7 +101,7 @@ import junit.framework.TestCase;
  * @author janv
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class GetChildrenCannedQueryTest extends TestCase
 {
     private Log logger = LogFactory.getLog(getClass());

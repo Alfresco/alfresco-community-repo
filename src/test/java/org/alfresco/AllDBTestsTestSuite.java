@@ -45,10 +45,11 @@ import org.junit.runners.Suite;
     org.alfresco.repo.lock.JobLockServiceTest.class,
     org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class,
 
-//	// From AppContext04TestSuite
+	// From AppContext04TestSuite
     org.alfresco.util.schemacomp.DbToXMLTest.class,
     org.alfresco.util.schemacomp.ExportDbTest.class,
     org.alfresco.util.schemacomp.SchemaReferenceFileTest.class,
+    org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
 
 	// From AppContext05TestSuite
     org.alfresco.repo.domain.node.NodeDAOTest.class,
@@ -80,7 +81,8 @@ import org.junit.runners.Suite;
     // Moved at the bottom of the suite because DbNodeServiceImplTest.testNodeCleanupRegistry() takes a long time on a clean DB.
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
 
-    org.alfresco.repo.node.cleanup.TransactionCleanupTest.class
+    org.alfresco.repo.node.cleanup.TransactionCleanupTest.class,
+    org.alfresco.repo.security.person.GetPeopleCannedQueryTest.class
 })
 public class AllDBTestsTestSuite
 {

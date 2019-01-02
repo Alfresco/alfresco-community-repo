@@ -158,8 +158,5 @@ public class DialectFactory
         MAPPERS.put( "Microsoft SQL Server Database", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
         MAPPERS.put( "Microsoft SQL Server", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
         MAPPERS.put( "Oracle", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.Oracle9Dialect" ) );
-
-        // MariaDB is distinguished by driver name
-        MAPPERS.put( "MariaDB connector/J", new VersionInsensitiveMapper("org.alfresco.repo.domain.dialect.MariaDBDialect"));
     }
 }

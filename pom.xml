@@ -54,7 +54,7 @@
         <dependency.activiti.version>5.22.0</dependency.activiti.version>
         <dependency.postgresql.version>42.2.5</dependency.postgresql.version>
         <dependency.mysql.version>5.1.47</dependency.mysql.version>
-        <dependency.mariadb.version>2.0.1</dependency.mariadb.version>
+        <dependency.mariadb.version>2.2.5</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.keycloak.version>4.5.0.Final</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.3.2.Final</dependency.jboss.logging.version>

@@ -59,7 +59,7 @@
         <dependency.keycloak.version>4.5.0.Final</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.3.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.22.1</dependency.camel.version>
-        <dependency.activemq.version>5.15.7</dependency.activemq.version>
+        <dependency.activemq.version>5.15.8</dependency.activemq.version>
     </properties>
 
     <dependencyManagement>

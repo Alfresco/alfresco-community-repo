@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -72,16 +72,17 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
             firstName = "";
             lastName = "";
         }
+        // Check for System before going to the PersonService
+        else if (username.equals("System") || username.startsWith("System@"))
+        {
+            firstName = "System";
+            lastName = "User";
+        }
         else if (this.personService.personExists(username))
         {
             NodeRef personRef = this.personService.getPerson(username, false);
             firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
             lastName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
-        }
-        else if (username.equals("System") || username.startsWith("System@"))
-        {
-            firstName = "System";
-            lastName = "User";
         }
         else
         {

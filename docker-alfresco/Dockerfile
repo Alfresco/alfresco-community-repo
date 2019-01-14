@@ -58,9 +58,6 @@ RUN touch /usr/local/tomcat/shared/classes/alfresco-global.properties
 COPY target/war /usr/local/tomcat/webapps
 COPY target/connector/* /usr/local/tomcat/lib/
 COPY target/alfresco-mmt/* /usr/local/tomcat/alfresco-mmt/
-RUN rm -rf /usr/local/tomcat/webapps/ROOT
-COPY target/server-root/* /usr/local/tomcat/webapps
-COPY target/vti-bin/* /usr/local/tomcat/webapps
 
 # Change the value of the shared.loader= property to the following:
 # shared.loader=${catalina.base}/shared/classes
@@ -97,8 +94,8 @@ RUN java -jar /usr/local/tomcat/alfresco-mmt/alfresco-mmt*.jar install \
 
 # Docker CMD from parent image starts the server
 
-# Unpack ROOT.war and make alfresco and ROOT read-only.
-RUN mkdir /usr/local/tomcat/webapps/ROOT && cd /usr/local/tomcat/webapps/ROOT && jar -xvf /usr/local/tomcat/webapps/ROOT.war && rm -f /usr/local/tomcat/webapps/ROOT.war && chmod -R =r /usr/local/tomcat/webapps && \
+# Make webapps folder read-only.
+RUN chmod -R =r /usr/local/tomcat/webapps && \
 # Add catalina.policy to ROOT.war and alfresco.war
 # Grant all security permissions to alfresco webapp because of numerous permissions required in order to work properly.
 # Grant only deployXmlPermission to ROOT webapp.
@@ -113,9 +110,6 @@ RUN yum install -y fontconfig-2.13.0-4.3.el7 \
                    libpng-1.5.13-7.el7_2 \
                    dejavu-sans-fonts-2.33-6.el7 && \
     yum clean all
-
-# Unpack _vti_bin.war
-RUN mkdir /usr/local/tomcat/webapps/_vti_bin && cd /usr/local/tomcat/webapps/_vti_bin && jar -xvf /usr/local/tomcat/webapps/_vti_bin.war && rm -f /usr/local/tomcat/webapps/_vti_bin.war
 
 # To remote debug into this image add: EXPOSE 8000
 # Changes are also required to the docker-compose/docker-compose.yml file.

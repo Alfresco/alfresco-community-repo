@@ -1,12 +1,56 @@
-<h1>        6.1.N
+<h1>        Release Notes - Alfresco - Version Community Edition 201901 GA
 </h1>
 <h2>
   New Features
 </h2>
 <ul>
   <li>
-    ActiveMQ:
+    <h4>ActiveMQ:</h4>
+    Alfresco ActiveMQ Docker images: <a href='https://github.com/Alfresco/alfresco-docker-activemq'>GitHub Repo</a> <a href='https://hub.docker.com/r/alfresco/alfresco-activemq/'>DockerHub Repo</a><p>
   </li>
+    <li>
+    <h4>Alfresco Benchmark Framework:</h4>
+    <p>The benchmark framework project provides a way to run highly scalable, easy-to-run Java-based load and benchmark tests on an Alfresco instance.</p>
+    <p>It comprises the following: <a href='https://github.com/Alfresco/alfresco-bm-manager'>Alfresco BM Manager</a> and Alfresco BM Drivers.</p> 
+    <p>The currently provided drivers are:</p>
+      <ul>
+        <li><a href='https://github.com/Alfresco/alfresco-bm-load-data'>Alfresco Benchmark Load Data</a></li>
+        <li><a href='https://github.com/Alfresco/alfresco-bm-rest-api'>Alfresco Benchmark Rest Api</a></li>
+        <li><a href='https://github.com/Alfresco/alfresco-bm-load-users'>Alfresco Benchmark Load Users</a></li>
+      </ul>	 
+  </li>
+    <li>
+    <h4>Java 11 support</h4>
+    <p>ACS is now runnable with OpenJDK 11.0.1. It still remains compatible with JDK 1.8.</p>
+  </li>
+</ul>
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22049'>ALF-22049</a>] -         Alfresco does not start
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22041'>ALF-22041</a>] -         EKS deployment - SOLR_ALFRESCO_HOST set to wrong host name
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22031'>ALF-22031</a>] -         REST API calls silently rollback after the returning a success status
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-21963'>ALF-21963</a>] -         Workflow - backslash in nodeRef properties url.
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-21803'>ALF-21803</a>] -         Unable to add users to sites whose 'short name' is a substring of 'site'
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-21664'>ALF-21664</a>] -         Exception on workflow image by REST API
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-20854'>ALF-20854</a>] -         webdav error opening Spanish Accent files
+</li>
+</ul>
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='https://issues.alfresco.com/jira/browse/REPO-3668'>REPO-3668</a>] -         Renditions: Transform event consumer
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/REPO-7'>REPO-7</a>] -         Embed ActiveMQ in the Platform
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/REPO-1957'>REPO-1957</a>] -         Transformations Improvement Plan
+</li>
 </ul>
 <h2>
   Deprecations
@@ -89,4 +133,3 @@
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22008'>ALF-22008</a>] -         It is not possible to upload a document without versions using CMIS
 </li>
 </ul>
-                                                                                

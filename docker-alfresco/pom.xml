@@ -79,7 +79,7 @@
                 <version>3.0.2</version>
                 <executions>
                     <execution>
-                        <id>unpack-resources</id>
+                        <id>unpack-war-files</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>unpack</goal>
@@ -93,7 +93,6 @@
                                     <type>war</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/war/alfresco</outputDirectory>
-                                    <destFileName>alfresco.war</destFileName>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
@@ -101,13 +100,26 @@
                                     <version>${dependency.alfresco-api-explorer.version}</version>
                                     <type>war</type>
                                     <outputDirectory>${project.build.directory}/war/api-explorer</outputDirectory>
-                                    <destFileName>api-explorer.war</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-server-root</artifactId>
+                                    <version>${dependency.alfresco-server-root.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/war/ROOT</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.aos-module</groupId>
+                                    <artifactId>alfresco-vti-bin</artifactId>
+                                    <version>${alfresco.aos-module.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/war/_vti_bin</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>copy-resources-war</id>
+                        <id>copy-jdbc-connectors</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy</goal>
@@ -130,30 +142,12 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/alfresco-mmt</outputDirectory>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-server-root</artifactId>
-                                    <version>${dependency.alfresco-server-root.version}</version>
-                                    <type>war</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/server-root</outputDirectory>
-                                    <destFileName>ROOT.war</destFileName>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco.aos-module</groupId>
-                                    <artifactId>alfresco-vti-bin</artifactId>
-                                    <version>${alfresco.aos-module.version}</version>
-                                    <type>war</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/vti-bin</outputDirectory>
-                                    <destFileName>_vti_bin.war</destFileName>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>copy-resources-amps</id>
+                        <id>copy-amps</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy</goal>

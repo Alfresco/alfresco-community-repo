@@ -1068,8 +1068,8 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                         String facetValue = f.getFirst();
                         FacetLabelDisplayHandler handler = facetLabelDisplayHandlerRegistry.getDisplayHandler(ff.getField());
                         String label = (handler == null) ? facetValue : handler.getDisplayLabel(facetValue).getLabel();
-                        
-                        facets.add(new ScriptFacetResult(facetValue, label, -1, f.getSecond()));
+                        Integer labelIndex = (handler == null)? -1 : handler.getDisplayLabel(facetValue).getLabelIndex();
+                        facets.add(new ScriptFacetResult(facetValue, label, labelIndex, f.getSecond()));
                     }
                 }
                 // store facet results per field

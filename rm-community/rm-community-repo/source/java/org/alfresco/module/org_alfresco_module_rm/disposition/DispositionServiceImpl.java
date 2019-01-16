@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -348,9 +348,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         return ds;
     }
 
-
-
-
     /**
      * This method returns a NodeRef
      * Gets the disposition instructions
@@ -383,7 +380,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 NodeRef result = getAssociatedDispositionScheduleImpl(parent);
                 if (result == null)
                 {
-                    return null;
+                    return getOriginDispositionSchedule(parent);
                 }
                 return new DispositionScheduleImpl(serviceRegistry, nodeService, result);
             }

@@ -1707,7 +1707,7 @@ public class PersonTest extends TestCase
             systemProps.put(ContentModel.PROP_LASTNAME, "myLastName");
             systemProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
             systemProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
-            systemProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
+            systemProps.put(ContentModel.PROP_ORGANIZATION, "myOrganisation");
 
             personService.createPerson(systemProps);
             fail("case fail creating SystemUserName: " + AuthenticationUtil.getSystemUserName());
@@ -1727,7 +1727,7 @@ public class PersonTest extends TestCase
             guestProps.put(ContentModel.PROP_LASTNAME, "myLastName");
             guestProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
             guestProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
-            guestProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
+            guestProps.put(ContentModel.PROP_ORGANIZATION, "myOrganisation");
 
             personService.createPerson(guestProps);
             fail("case fail creating GuestUserName: " + AuthenticationUtil.getGuestUserName());
@@ -1736,6 +1736,56 @@ public class PersonTest extends TestCase
         {
             // expect to go here
         }
+    }
 
+    public void testUserShouldBeAbleToUpdateTheProfile()
+    {
+        final String USERNAME = GUID.generate();
+
+        NodeRef personRef = personService.createPerson(createDefaultProperties(USERNAME, "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USERNAME);
+
+        nodeService.setProperty(personRef, ContentModel.PROP_FIRSTNAME, "myUpdatedFirstName");
+    }
+
+    public void testPreventChangesToUsernameWithoutHavingAdminRights()
+    {
+        try
+        {
+            final String USERNAME = GUID.generate();
+            final String UPDATED_USERNAME = USERNAME + "1";
+
+            NodeRef personRef = personService.createPerson(createDefaultProperties(USERNAME, "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+
+            AuthenticationUtil.setFullyAuthenticatedUser(USERNAME);
+
+            nodeService.setProperty(personRef, ContentModel.PROP_USERNAME, UPDATED_USERNAME);
+        }
+        catch (RuntimeException e)
+        {
+            // expect to go here
+        }
+    }
+
+    public void testPreventChangesToOtherUsersPropertiesWithoutHavingAdminRights()
+    {
+        try
+        {
+            final String USERNAME = GUID.generate();
+            final String USERNAME_1 = USERNAME + "1";
+            final String USERNAME_2 = USERNAME + "2";
+
+            personService.createPerson(createDefaultProperties(USERNAME_1, "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
+            NodeRef user2 = personService.createPerson(createDefaultProperties(USERNAME_2, "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
+
+            AuthenticationUtil.setFullyAuthenticatedUser(USERNAME_1);
+
+            nodeService.setProperty(user2, ContentModel.PROP_FIRSTNAME, "Cc");
+        }
+        catch (RuntimeException e)
+        {
+            //  expect to go here
+        }
     }
 }

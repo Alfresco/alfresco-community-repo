@@ -475,7 +475,7 @@
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <version>1.2.15</version>
+            <version>1.2.16</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>

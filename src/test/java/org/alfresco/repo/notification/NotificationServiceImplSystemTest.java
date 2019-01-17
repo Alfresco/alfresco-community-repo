@@ -33,6 +33,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.notification.NotificationContext;
@@ -197,19 +198,23 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
         return true;
     }
     
-    public void testSimpleEmailNotification()
+    public void testSimpleEmailNotificationSystem()
     {
-        doTestInTransaction(new Test<Void>()
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void run()
+            public Void doWork()
             {
                 NotificationContext context = new NotificationContext();
                 
                 context.setFrom(FROM_EMAIL);
                 context.addTo(TO_USER1);
                 context.setSubject(SUBJECT);
-                context.setBody(BODY);
+                context.setBodyTemplate(template.toString());
+                
+                Map<String, Serializable> templateArgs = new HashMap<String, Serializable>(1);
+                templateArgs.put("template", template);
+                context.setTemplateArgs(templateArgs);
                 
                 notificationService.sendNotification(EMailNotificationProvider.NAME, context);
                 
@@ -217,6 +222,8 @@ public class NotificationServiceImplSystemTest extends BaseAlfrescoTestCase
             }
         });
     }
+    
+    
     
     public void testTemplateEmailNotification()
     {

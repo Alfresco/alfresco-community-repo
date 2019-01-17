@@ -47,6 +47,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -1787,5 +1788,28 @@ public class PersonTest extends TestCase
         {
             //  expect to go here
         }
+    }
+    
+    public void testBuitInSystemUser()
+    {
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                try
+                {
+                    NodeRef person = personService.getPerson(AuthenticationUtil.SYSTEM_USER_NAME);
+                    fail("A NoSuchPersonException should have been thrown for " + AuthenticationUtil.SYSTEM_USER_NAME +
+                            " but " + person + " was returned");
+                }
+                catch(NoSuchPersonException ignore)
+                {
+                    // This is expected for system.;
+                }
+                return null;
+            }
+        });
     }
 }

@@ -45,7 +45,6 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.1.1.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>42.2.5</dependency.postgresql.version>
-        <dependency.mysql.version>5.1.40</dependency.mysql.version>
     </properties>
 
     <dependencyManagement>
@@ -215,12 +214,6 @@
             <artifactId>spring-webscripts</artifactId>
             <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${dependency.mysql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

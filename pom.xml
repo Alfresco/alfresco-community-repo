@@ -503,6 +503,11 @@
             <artifactId>htmlparser</artifactId>
             <version>2.1</version>
         </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.10.1</version>
+        </dependency>
         <!-- Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>

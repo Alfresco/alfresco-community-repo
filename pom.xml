@@ -31,7 +31,7 @@
    
    <properties>
       <dependency.spring.version>5.1.3.RELEASE</dependency.spring.version>
-      <dependency.surf.version>6.8</dependency.surf.version>
+      <dependency.surf.version>6.20</dependency.surf.version>
    </properties>
 
    <dependencies>

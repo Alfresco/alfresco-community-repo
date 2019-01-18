@@ -1,5 +1,6 @@
 ### Alfresco Core
 [![Build Status](https://travis-ci.com/Alfresco/alfresco-core.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-core)
+
 Alfresco Core is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
 The library contains the following:
 * Various helpers and utils

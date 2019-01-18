@@ -368,6 +368,11 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>woodstox-core-asl</artifactId>
+                <version>4.4.1</version>
+            </dependency>
             <!-- Newer cxf libs, see REPO-3131 -->
             <dependency>
                 <groupId>org.apache.cxf</groupId>

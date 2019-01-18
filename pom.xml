@@ -28,7 +28,7 @@
 
     <properties>
         <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
-
+        <dependency.cxf.version>3.2.7</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
@@ -145,17 +145,17 @@
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
-                <version>3.0.12</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
-                <version>3.0.12</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
-                <version>3.0.12</version>
+                <version>${dependency.cxf.version}</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

@@ -78,7 +78,7 @@
 
         <dependency.spring.version>5.1.3.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
-        <dependency.jackson.version>2.9.7</dependency.jackson.version>
+        <dependency.jackson.version>2.9.8</dependency.jackson.version>
         <dependency.cxf.version>3.2.7</dependency.cxf.version>
 
         <!-- Alfresco Share version -->

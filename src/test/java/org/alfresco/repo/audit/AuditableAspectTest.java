@@ -281,7 +281,7 @@ public class AuditableAspectTest extends TestCase
         String modifiedBy = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
         assertEquals(
                     "The modifier should have changed to reflect the current user",
-                    AuthenticationUtil.getFullyAuthenticatedUser(), modifiedBy);
+                    AuthenticationUtil.getRunAsUser(), modifiedBy);
         
         RetryingTransactionCallback<Void> setAuditableCallback1 = new RetryingTransactionCallback<Void>()
         {

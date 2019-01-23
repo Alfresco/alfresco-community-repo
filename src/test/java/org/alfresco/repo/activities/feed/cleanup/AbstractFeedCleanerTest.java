@@ -622,7 +622,7 @@ public abstract class AbstractFeedCleanerTest
                 
                 if (type == 2)
                 {
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                     
                     int deleteCount = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
                     {

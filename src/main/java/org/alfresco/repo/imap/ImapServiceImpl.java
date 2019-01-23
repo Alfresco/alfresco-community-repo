@@ -98,6 +98,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -470,7 +471,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                                     for (String mountPointName : imapConfigMountPoints.keySet())
                                     {
                                         result.addAll(listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
-                                                .getAdminUserName(), null), mountPointName + "*", false));
+                                                .getSystemUserName(), null), mountPointName + "*", false));
                                     }
                                     
                                     return result;
@@ -1388,13 +1389,23 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         Set<NodeRef> result = new HashSet<NodeRef>();
         PersonService personService = serviceRegistry.getPersonService();
-        NodeRef userRef = personService.getPerson(userName);
-        List<AssociationRef> unsubscribedFodlers = nodeService.getTargetAssocs(userRef, ImapModel.ASSOC_IMAP_UNSUBSCRIBED);
-        for (AssociationRef asocRef : unsubscribedFodlers)
+
+        NodeRef userRef = null;
+
+        if (personService.personExists(userName))
         {
-            result.add(asocRef.getTargetRef());
+            userRef = personService.getPerson(userName);
         }
-    
+
+        if (userRef != null)
+        {
+            List<AssociationRef> unsubscribedFodlers = nodeService.getTargetAssocs(userRef, ImapModel.ASSOC_IMAP_UNSUBSCRIBED);
+            for (AssociationRef asocRef : unsubscribedFodlers)
+            {
+                result.add(asocRef.getTargetRef());
+            }
+        }
+
         return result;
     }
     
@@ -1412,6 +1423,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
      */
     private List<NodeRef> getFavouriteSites(final String userName)
     {
+        PersonService personService = serviceRegistry.getPersonService();
+        
         if (logger.isDebugEnabled())
         {
             logger.debug("[getFavouriteSites] entry for user: " + userName);
@@ -1431,48 +1444,49 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         if (favSites == null)
         {
             favSites = new LinkedList<NodeRef>();
-
-            PreferenceService preferenceService = (PreferenceService) serviceRegistry
-                    .getService(ServiceRegistry.PREFERENCE_SERVICE);
-            Map<String, Serializable> prefs = preferenceService.getPreferences(
-                    userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
-    
-            for (String key : prefs.keySet())
+            
+            if (personService.personExists(userName))
             {
-                Boolean isImapFavourite = (Boolean) prefs.get(key);
-                if (isImapFavourite != null && isImapFavourite)
+                PreferenceService preferenceService = (PreferenceService) serviceRegistry.getService(ServiceRegistry.PREFERENCE_SERVICE);
+                Map<String, Serializable> prefs = preferenceService.getPreferences(userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
+
+                for (String key : prefs.keySet())
                 {
-                    String siteName = key.substring(AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES.length() + 1); // count the dot
-                    boolean isMember = false;
-                    try
+                    Boolean isImapFavourite = (Boolean) prefs.get(key);
+                    if (isImapFavourite != null && isImapFavourite)
                     {
-                        isMember = serviceRegistry.getSiteService().isMember(siteName, userName);
-                    }
-                    catch (SiteDoesNotExistException sdne)
-                    {
-                        // Ignore, see MNT-13579
-                        // The site might be archived. In this case it will still be in user's preferences.
-                    }
-                    
-                    if (isMember)
-                    {
-                        SiteInfo siteInfo = serviceRegistry.getSiteService().getSite(siteName);
-                        if (siteInfo != null)
+                        String siteName = key.substring(AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES.length() + 1); // count the dot
+                        boolean isMember = false;
+                        try
                         {
-                            if(logger.isDebugEnabled())
+                            isMember = serviceRegistry.getSiteService().isMember(siteName, userName);
+                        }
+                        catch (SiteDoesNotExistException sdne)
+                        {
+                            // Ignore, see MNT-13579
+                            // The site might be archived. In this case it will still be in user's preferences.
+                        }
+
+                        if (isMember)
+                        {
+                            SiteInfo siteInfo = serviceRegistry.getSiteService().getSite(siteName);
+                            if (siteInfo != null)
                             {
-                                logger.debug("[getFavouriteSites] User: " + userName + " Favourite site: " + siteInfo.getShortName());
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("[getFavouriteSites] User: " + userName + " Favourite site: " + siteInfo.getShortName());
+                                }
+                                favSites.add(siteInfo.getNodeRef());
                             }
-                            favSites.add(siteInfo.getNodeRef());
                         }
                     }
                 }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("[getFavouriteSites] Bind new Favorite sites' list to transaction " + AlfrescoTransactionSupport.getTransactionId());
+                }
+                AlfrescoTransactionSupport.bindResource(FAVORITE_SITES, favSites);
             }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("[getFavouriteSites] Bind new Favorite sites' list to transaction " + AlfrescoTransactionSupport.getTransactionId());
-            }
-            AlfrescoTransactionSupport.bindResource(FAVORITE_SITES, favSites);
         }
         if (logger.isDebugEnabled())
         {

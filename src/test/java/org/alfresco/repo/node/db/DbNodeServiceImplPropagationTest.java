@@ -86,7 +86,7 @@ public class DbNodeServiceImplPropagationTest extends BaseSpringTest
         
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         
-        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
         
         DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
         // load the system model

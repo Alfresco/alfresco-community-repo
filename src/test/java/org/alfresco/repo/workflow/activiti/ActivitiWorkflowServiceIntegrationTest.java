@@ -178,7 +178,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     @Test
     public void testReviewAndPooledNotModifiedDate()
     {
-        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
         
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, "MNT-11522-testfile.txt");

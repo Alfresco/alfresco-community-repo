@@ -137,6 +137,7 @@ public class ImapServiceImplTest extends TestCase
 
     private NodeRef testImapFolderNodeRef;
     private Flags flags;
+    private ImapServiceImpl imapServiceImpl;
     
     String anotherUserName;
 
@@ -171,28 +172,28 @@ public class ImapServiceImplTest extends TestCase
 
         // downgrade integrity
         IntegrityChecker.setWarnInTransaction();
-
-        anotherUserName = "user" + System.currentTimeMillis();
         
+        anotherUserName = "user" + System.currentTimeMillis();
+
         PropertyMap testUser = new PropertyMap();
         testUser.put(ContentModel.PROP_USERNAME, anotherUserName);
         testUser.put(ContentModel.PROP_FIRSTNAME, anotherUserName);
         testUser.put(ContentModel.PROP_LASTNAME, anotherUserName);
         testUser.put(ContentModel.PROP_EMAIL, anotherUserName + "@alfresco.com");
         testUser.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-        
+
         personService.createPerson(testUser);
-        
+
         // create the ACEGI Authentication instance for the new user
         authenticationService.createAuthentication(anotherUserName, anotherUserName.toCharArray());
-        
+
         user = new AlfrescoImapUser(anotherUserName + "@alfresco.com", anotherUserName, anotherUserName);
 
         NodeRef companyHomeNodeRef = findCompanyHomeNodeRef();
 
         ChildApplicationContextFactory imap = (ChildApplicationContextFactory) ctx.getBean("imap");
         ApplicationContext imapCtx = imap.getApplicationContext();
-        ImapServiceImpl imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
+        imapServiceImpl = (ImapServiceImpl)imapCtx.getBean("imapService");
 
         // Creating IMAP test folder for IMAP root
         LinkedList<String> folders = new LinkedList<String>();
@@ -307,7 +308,7 @@ public class ImapServiceImplTest extends TestCase
     }
     
     public void testListMailbox() throws Exception
-    {
+    {   
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
         imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true);
         List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
@@ -1006,6 +1007,12 @@ public class ImapServiceImplTest extends TestCase
         assertTrue("New node should have original node aspects", nodeService.hasAspect(copiedNode.getNodeRef(), ContentModel.ASPECT_TAGGABLE));
     }
     
+    public void testListMailboxOnStartup()
+    {
+        authenticationService.clearCurrentSecurityContext();
+        // Starting IMAP
+        imapServiceImpl.startupInTxn(true);
+    }    
     
     /**
      * @param mailbox - {@link AlfrescoImapFolder} instance which should be checked

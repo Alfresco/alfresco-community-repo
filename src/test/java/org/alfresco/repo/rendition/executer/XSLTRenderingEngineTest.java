@@ -32,6 +32,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -121,6 +122,10 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
     @Test
     public void testSimplestTemplateWithTargetPath() throws Exception
     {
+        // We need to run this test as Administrator. The ScriptAction has to run as a full user (instead of as System)
+        // so that we can setup the Person object in the ScriptNode
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
         try
         {
             FileInfo file = createXmlFile(companyHome);
@@ -147,6 +152,11 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             log.error("Error!", ex);
             fail();
         }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+
     }
 
 

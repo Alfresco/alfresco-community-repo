@@ -104,9 +104,9 @@ public class SpecialiseTypeActionExecuterTest extends BaseAlfrescoSpringTest
             checkActionAgainAndExpectTypeToChange(action, nodeRef1);
         }
 
-        // check with "Admin user"
+        // check with "System user"
         {
-            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
             // Check the type of the node
             ActionImpl action = checkActionToChangeNodeType(nodeRef2);

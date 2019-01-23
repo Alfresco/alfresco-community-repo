@@ -264,7 +264,7 @@ public class SiteLoadPatch extends AbstractPatch
         );
         
         // At this point we can go back to being the system
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         // Setup the Importer Bootstrap Beans
         for(ImporterBootstrap bootstrap : new ImporterBootstrap[] { spacesBootstrap, usersBootstrap })

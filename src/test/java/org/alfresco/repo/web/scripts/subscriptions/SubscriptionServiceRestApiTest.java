@@ -68,7 +68,7 @@ public class SubscriptionServiceRestApiTest extends BaseWebScriptTest
         // Get the required services
         personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
         createPerson(USER_BOB);
         createPerson(USER_TOM);

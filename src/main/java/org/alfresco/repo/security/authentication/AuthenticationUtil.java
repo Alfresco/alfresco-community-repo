@@ -571,54 +571,33 @@ public class AuthenticationUtil implements InitializingBean
     {
         Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
         Authentication originalRunAsAuthentication = AuthenticationUtil.getRunAsAuthentication();
-
+        
         final R result;
         try
         {
             if (originalFullAuthentication == null)
             {
-                // exclude authentication as System, the System user is a
-                // concept not an entity
-                if (initialized && uid.equals(AuthenticationUtil.getSystemUserName()))
-                {
-                    AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-                }
-                else
-                {
-                    AuthenticationUtil.setFullyAuthenticatedUser(uid);
-                }
+                AuthenticationUtil.setFullyAuthenticatedUser(uid);
             }
             else
             {
-                String originalFullAuthUserName = getUserName(originalFullAuthentication);
-                // exclude authentication as System, the System user is a
-                // concept not an entity
-                if (initialized && (originalFullAuthUserName.equals(AuthenticationUtil.getSystemUserName())))
-                {
-                    originalFullAuthentication = AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-                }
-                else if (initialized && isMtEnabled() && originalFullAuthUserName.equals(AuthenticationUtil.defaultAdminUserName))
-                {
-                    //recalculate in case of isMtEnabled
-                    originalFullAuthentication = AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-                }
-
-                // TODO remove - this should be obsolete now we're using
-                // TenantContextHolder
+                // TODO remove - this should be obsolete now we're using TenantContextHolder
                 /*
-                 * if ((originalRunAsAuthentication != null) && (isMtEnabled()))
-                 * { String originalRunAsUserName =
-                 * getUserName(originalRunAsAuthentication); int idx =
-                 * originalRunAsUserName.indexOf(TenantService.SEPARATOR); if
-                 * ((idx != -1) && (idx < (originalRunAsUserName.length() - 1)))
-                 * { if (uid.equals(AuthenticationUtil.getSystemUserName())) {
-                 * uid = uid + TenantService.SEPARATOR +
-                 * originalRunAsUserName.substring(idx + 1); } } }
-                 */
+                if ((originalRunAsAuthentication != null) && (isMtEnabled()))
+                {
+                    String originalRunAsUserName = getUserName(originalRunAsAuthentication);
+                    int idx = originalRunAsUserName.indexOf(TenantService.SEPARATOR);
+                    if ((idx != -1) && (idx < (originalRunAsUserName.length() - 1)))
+                    {
+                        if (uid.equals(AuthenticationUtil.getSystemUserName()))
+                        {
+                            uid = uid + TenantService.SEPARATOR + originalRunAsUserName.substring(idx + 1);
+                        }
+                    }
+                }
+                */
+                AuthenticationUtil.setRunAsUser(uid);
             }
-
-            AuthenticationUtil.setRunAsUser(uid);
-
             logNDC(uid);
             result = runAsWork.doWork();
             return result;
@@ -646,7 +625,7 @@ public class AuthenticationUtil implements InitializingBean
             {
                 AuthenticationUtil.setFullAuthentication(originalFullAuthentication);
                 AuthenticationUtil.setRunAsAuthentication(originalRunAsAuthentication);
-
+                
                 logNDC(getUserName(originalFullAuthentication));
             }
         }

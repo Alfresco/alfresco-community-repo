@@ -115,10 +115,6 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     @BeforeClass
     public static void before()
     {
-        // Ensure other applications contexts are closed...
-        // Multiple consumers not supported for same direct vm in different Camel contexts.
-        ApplicationContextHelper.closeApplicationContext();
-
         // Use the docker images for transforms
         System.setProperty("alfresco-pdf-renderer.url", "http://localhost:8090/");
         System.setProperty("img.url", "http://localhost:8091");

@@ -25,11 +25,6 @@
  */
 package org.alfresco.repo.rawevents;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
@@ -44,7 +39,6 @@ import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -53,64 +47,49 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-import org.springframework.context.ApplicationContext;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Provides a base set of tests for {@link EventBehaviour}
- * 
+ *
  * @author Cristian Turlica
  */
-@Category(OwnJVMTestsCategory.class)
-public class EventBehaviourTest
+public class EventBehaviourTest extends BaseSpringTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/EventBehaviourTest";
 
+    @Autowired
     private RetryingTransactionHelper retryingTransactionHelper;
+    @Autowired
     private ContentService contentService;
+    @Autowired
     private PolicyComponent policyComponent;
+    @Autowired
     private NodeService nodeService;
+    @Autowired
     private AuthenticationComponent authenticationComponent;
     private NodeRef rootNodeRef;
     private NodeRef contentNodeRef;
 
+    @Autowired
     private CamelContext camelContext;
+    @Autowired
     private AbstractEventProducer eventProducer;
-    private ObjectMapper messagingObjectMapper;
 
     private boolean policyFired = false;
     private boolean newContent = true;
 
-    @Rule
-    public TestName name = new TestName();
-
     @Before
     public void setUp() throws Exception
     {
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
-        nodeService = (NodeService) ctx.getBean("NodeService");
-        contentService = (ContentService) ctx.getBean(ServiceRegistry.CONTENT_SERVICE.getLocalName());
-        policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-
-        camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
-        eventProducer = (AbstractEventProducer) ctx.getBean("transactionAwareEventProducer");
-        messagingObjectMapper = (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
-
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
     }
@@ -142,7 +121,7 @@ public class EventBehaviourTest
     private void setupTestData()
     {
         // create a store and get the root node
-        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, name.getMethodName());
+        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, this.getClass().getName());
         if (!nodeService.exists(storeRef))
         {
             storeRef = nodeService.createStore(storeRef.getProtocol(), storeRef.getIdentifier());
@@ -397,7 +376,7 @@ public class EventBehaviourTest
 
     private String getMockEndpointUri()
     {
-        return "mock:" + this.getClass().getSimpleName() + "_" + name.getMethodName();
+        return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
     }
 
     @SuppressWarnings("unused")

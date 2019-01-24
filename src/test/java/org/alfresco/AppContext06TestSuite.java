@@ -35,10 +35,23 @@ import org.junit.runners.Suite;
  * Repository project tests using the main context alfresco/application-context.xml.
  * To balance test jobs tests using this context have been split into multiple test suites.
  * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ *
+ * <p>
+ *    All of the tests are using Spring annotations to load full application context, see BaseSpringTest
+ *    Any new tests included in this test suite must follow the same pattern
+ * </p>
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
+    // Requires a running ActiveMQ
+    org.alfresco.repo.rawevents.EventBehaviourTest.class,
+    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
+    // Requires running transformers
+    org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
+    org.alfresco.repo.rendition2.LegacyLocalTransformClientIntegrationTest.class,
+    org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistryTest.class,
+    org.alfresco.repo.rendition2.RenditionTest.class,
     org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
     org.alfresco.repo.tagging.TaggingServiceImplTest.class,
     org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,

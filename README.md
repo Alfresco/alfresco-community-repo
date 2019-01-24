@@ -1,4 +1,6 @@
 ### Alfresco Repository
+[![Build Status](https://travis-ci.com/Alfresco/alfresco-repository.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-repository)
+
 Repository is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
 The library contains the following:
 * DAOs and SQL scripts

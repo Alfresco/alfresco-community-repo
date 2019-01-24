@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -58,7 +58,8 @@ import org.springframework.context.ApplicationContext;
     org.alfresco.repo.content.transform.EMLTransformerTest.class,
     org.alfresco.repo.content.transform.MediaWikiContentTransformerTest.class,
     org.alfresco.repo.content.transform.OpenOfficeContentTransformerTest.class,
-    org.alfresco.repo.content.transform.PdfBoxContentTransformerTest.class,
+    // Requires a transformer to be installed in the system
+    //org.alfresco.repo.content.transform.PdfBoxContentTransformerTest.class,
     org.alfresco.repo.content.transform.PoiContentTransformerTest.class,
     org.alfresco.repo.content.transform.PoiHssfContentTransformerTest.class,
     org.alfresco.repo.content.transform.PoiOOXMLContentTransformerTest.class,
@@ -138,22 +139,7 @@ import org.springframework.context.ApplicationContext;
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
     // [ibatis/hierarchy-test/hierarchy-test-context.xml]
-    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class,
-    // [classpath:/test-messaging-context.xml]
-    // TODO enable in REPO-3811
-    //org.alfresco.messaging.camel.CamelRoutesTest.class,
-    // Requires a running ActiveMQ
-    org.alfresco.repo.rawevents.EventBehaviourTest.class,
-    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
-    // Requires running transformers
-    org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalTransformClientIntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistryTest.class,
-
-    // Due to problems reloading the context (bits of it remain), NoLocalTransformRenditionTest has been commented out.
-    // It works on its own.
-    org.alfresco.repo.rendition2.RenditionTest.class,
-//   org.alfresco.repo.rendition2.NoLocalTransformRenditionTest.class,
+    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class
 })
 public class MiscContextTestSuite
 {

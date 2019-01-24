@@ -164,7 +164,8 @@ public class RepositoryStartStopTest extends TestCase
      *  a context twice without error, using it
      *  when running. 
      */
-    public void testOpenCloseOpenCloseFull() throws Exception
+    // test ignored from 24 Oct 2018
+    public void ignoredTestOpenCloseOpenCloseFull() throws Exception
     {
        assertNoCachedApplicationContext();
 

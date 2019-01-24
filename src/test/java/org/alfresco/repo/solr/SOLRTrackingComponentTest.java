@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -34,8 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -62,26 +60,24 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Tests tracking component
  *
  * @since 4.0
  */
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
-public class SOLRTrackingComponentTest extends TestCase
+public class SOLRTrackingComponentTest extends BaseSpringTest
 {
     private static final Log logger = LogFactory.getLog(SOLRTrackingComponentTest.class);
 
-    private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
     private static enum NodeStatus
     {
         UPDATED, DELETED;
@@ -103,24 +99,24 @@ public class SOLRTrackingComponentTest extends TestCase
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
 
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
 
-        solrTrackingComponent = (SOLRTrackingComponent) ctx.getBean("solrTrackingComponent");
-        nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
-        qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
-        dictionaryDAO =  (DictionaryDAO)ctx.getBean("dictionaryDAO");
-        nodeService = (NodeService)ctx.getBean("NodeService");
-        fileFolderService = (FileFolderService)ctx.getBean("FileFolderService");
+        solrTrackingComponent = (SOLRTrackingComponent) applicationContext.getBean("solrTrackingComponent");
+        nodeDAO = (NodeDAO)applicationContext.getBean("nodeDAO");
+        qnameDAO = (QNameDAO) applicationContext.getBean("qnameDAO");
+        dictionaryDAO =  (DictionaryDAO)applicationContext.getBean("dictionaryDAO");
+        nodeService = (NodeService)applicationContext.getBean("NodeService");
+        fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
         dictionaryService = serviceRegistry.getDictionaryService();
         namespaceService = serviceRegistry.getNamespaceService();
-        authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
+        authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
 
-        dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
+        dbNodeService = (DbNodeServiceImpl)applicationContext.getBean("dbNodeService");
         dbNodeService.setEnableTimestampPropagation(false);
 
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -129,6 +125,7 @@ public class SOLRTrackingComponentTest extends TestCase
         rootNodeRef = nodeService.getRootNode(storeRef);
     }
 
+    @Test
     public void testAclChangeSetLimits()
     {
         List<AclChangeSet> aclChangeSets = getAclChangeSets(null, null, null, null, 50);
@@ -145,9 +142,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
     }
 
-    // This test is no longer valid as we may or may include shared acls not linked to defining ones 
+    // This test is no longer valid as we may or may include shared acls not linked to defining ones
     // If they are not linked to a node they will be counted wring ...
-    
+
+//    @Test
 //    public void testGetAcls_Simple()
 //    {
 //        List<AclChangeSet> cs = getAclChangeSets(null, null, null, null, 50);
@@ -158,18 +156,19 @@ public class SOLRTrackingComponentTest extends TestCase
 //            totalAcls += aclChangeSet.getAclCount();
 //        }
 //        int totalAclsCheck = 0;
-//        
+//
 //        for (AclChangeSet aclChangeSet : cs)
 //        {
 //            List<Acl> acls = getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
 //            assertEquals(aclChangeSet.getAclCount(), acls.size());
 //            totalAclsCheck += acls.size();
 //        }
-//        
+//
 //        // Double check number of ACLs
 //        assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
 //    }
 
+    @Test
     public void testGetNodeMetaData()
     {
         long startTime = System.currentTimeMillis();
@@ -205,7 +204,7 @@ public class SOLRTrackingComponentTest extends TestCase
         }
         return txIds;
     }
-    
+
     /**
      * Call {@link SOLRTrackingComponent#getTransactions(Long, Long, Long, Long, int)} in a transaction
      */
@@ -283,6 +282,7 @@ public class SOLRTrackingComponentTest extends TestCase
         return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
     }
 
+    @Test
     public void testGetTransactionLimits()
     {
         long startTime = System.currentTimeMillis();
@@ -341,6 +341,7 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals(0, txns.size());
     }
 
+    @Test
     public void testGetNodeMetaDataExludesResidualProperties()
     {
         long startTime = System.currentTimeMillis();
@@ -365,6 +366,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
     }
 
+    @Test
     public void testGetNodeMetaData100Nodes()
     {
         long startTime = System.currentTimeMillis();
@@ -394,6 +396,8 @@ public class SOLRTrackingComponentTest extends TestCase
         //        assertEquals("Unxpected number of nodes", 3, bt.getSuccessCount());
     }
 
+    @Category(PerformanceTests.class)
+    @Test
     public void testNodeMetaDataManyNodes() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
@@ -427,21 +431,21 @@ public class SOLRTrackingComponentTest extends TestCase
         nodeMetaDataParams.setMaxResults(800);
         getNodeMetaData(nodeMetaDataParams, null, st);
         getNodeMetaData(nodeMetaDataParams, null, st);
-        logger.debug("Warm cache");        
+        logger.debug("Warm cache");
         getNodeMetaData(nodeMetaDataParams, null, st);
 
         logger.debug("Cold cache - explicit clear");
         nodeMetaDataParams.setMaxResults(500);
         getNodeMetaData(nodeMetaDataParams, null, st);
         getNodeMetaData(nodeMetaDataParams, null, st);
-        logger.debug("Warm cache");        
+        logger.debug("Warm cache");
         getNodeMetaData(nodeMetaDataParams, null, st);
 
         logger.debug("Cold cache - explicit clear");
         nodeMetaDataParams.setMaxResults(200);
         getNodeMetaData(nodeMetaDataParams, null, st);
         getNodeMetaData(nodeMetaDataParams, null, st);
-        logger.debug("Warm cache");        
+        logger.debug("Warm cache");
         getNodeMetaData(nodeMetaDataParams, null, st);
 
         // clear out node caches
@@ -451,6 +455,8 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
 
+    @Category(PerformanceTests.class)
+    @Test
     public void testNodeMetaDataCache() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
@@ -481,6 +487,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, filter, st);
     }
 
+    @Test
     public void testNodeMetaDataNullPropertyValue() throws Exception
     {
         long fromCommitTime = System.currentTimeMillis();
@@ -503,6 +510,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
 
+    @Test
     public void testFilters()
     {
         long startTime = System.currentTimeMillis();
@@ -525,6 +533,7 @@ public class SOLRTrackingComponentTest extends TestCase
         getNodeMetaData(nodeMetaDataParams, null, st);
     }
 
+    @Test
     public void testModelDiffs()
     {
         Collection<QName> allModels = dictionaryService.getAllModels();
@@ -573,7 +582,7 @@ public class SOLRTrackingComponentTest extends TestCase
         assertEquals("Old checksum value is incorrect", testModelChecksum.longValue(), changedModel.getOldChecksum().longValue());
         assertNotSame("Expected checksums to be different", changedModel.getOldChecksum(), changedModel.getNewChecksum());
 
-        // remove the model        
+        // remove the model
         dictionaryDAO.removeModel(QName.createQName(testModel.getName(), namespaceService));
 
         // call model diffs - check that the model has been removed
@@ -765,14 +774,14 @@ public class SOLRTrackingComponentTest extends TestCase
 
         long startTime = System.currentTimeMillis();
         txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
+        {
             @Override
             public Void execute() throws Throwable
             {
                 solrTrackingComponent.getNodesMetadata(params, filter, bt);
                 return null;
             }
-                }, true, true);
+        }, true, true);
         long endTime = System.currentTimeMillis();
 
         bt.runNodeMetaDataChecks(params.getMaxResults());
@@ -811,7 +820,7 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             this.txnHelper = txnHelper;
             this.nodeService = nodeService;
             this.rootNodeRef = rootNodeRef;
@@ -827,7 +836,7 @@ public class SOLRTrackingComponentTest extends TestCase
             this.doNodeChecks = doNodeChecks;
             this.doMetaDataChecks = doMetaDataChecks;
             this.doChecks = doNodeChecks || doMetaDataChecks;
-                }
+        }
 
         void runNodeChecks(int maxResults)
         {
@@ -901,14 +910,14 @@ public class SOLRTrackingComponentTest extends TestCase
             {
                 expectedNumMetaDataNodes++;
             }
-            
+
             /*
             if(nodeStatus == NodeStatus.DELETED)
             {
                 expectedNumMetaDataNodes++;
             }
             */
-            
+
             if(doChecks)
             {
                 NodeAssertions nodeAssertions = getNodeAssertions(nodeRef);
@@ -1017,7 +1026,7 @@ public class SOLRTrackingComponentTest extends TestCase
                     //                List<Path> actualPaths = nodeMetaData.getPaths();
                     //                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
                     //                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
-                    
+
                     // Include negative checks i.e. make sure we get null if we do NOT expect paths
                     boolean expectPaths = assertions.isExpectPaths();
                     assertTrue("Expecting paths but didn't get any.", expectPaths == (nodeMetaData.getPaths() != null));
@@ -1025,7 +1034,7 @@ public class SOLRTrackingComponentTest extends TestCase
                     if (expectPaths)
                     {
                         // Check QName paths
-                            // TODO: Check paths
+                        // TODO: Check paths
                         // Check name paths
                         Collection<Collection<String>> namePaths = nodeMetaData.getNamePaths();
                         if (nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) == null)
@@ -1137,9 +1146,9 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1151,7 +1160,7 @@ public class SOLRTrackingComponentTest extends TestCase
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1168,10 +1177,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-                    }));
+            }));
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
@@ -1181,7 +1190,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-                    }));
+            }));
 
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content1, NodeStatus.DELETED);
@@ -1198,11 +1207,11 @@ public class SOLRTrackingComponentTest extends TestCase
 
         SOLRTest3(
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
-                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService, 
+                NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1214,7 +1223,7 @@ public class SOLRTrackingComponentTest extends TestCase
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1235,10 +1244,10 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-                    }));
+            }));
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     FileInfo contentInfo = fileFolderService.create(container, "Content2", ContentModel.TYPE_CONTENT);
@@ -1249,7 +1258,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(content1).getDbTxnId();
                 }
-                    }));
+            }));
 
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content1, NodeStatus.DELETED);
@@ -1265,9 +1274,9 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1279,7 +1288,7 @@ public class SOLRTrackingComponentTest extends TestCase
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1302,7 +1311,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-                    }));
+            }));
             return txs;
         }
     }
@@ -1315,9 +1324,9 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1329,7 +1338,7 @@ public class SOLRTrackingComponentTest extends TestCase
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1358,7 +1367,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-                    }));
+            }));
             return txs;
         }
 
@@ -1372,9 +1381,9 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService, rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1385,13 +1394,13 @@ public class SOLRTrackingComponentTest extends TestCase
         {
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
-            final String titles[] = 
-            {
-                    "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6",
-                    "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6"
-            };
-            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+            final String titles[] =
                     {
+                            "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6",
+                            "caf\u00E9", "\u00E7edilla", "\u00E0\u00E1\u00E2\u00E3", "\u00EC\u00ED\u00EE\u00EF", "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6"
+                    };
+            txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1426,7 +1435,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-                    }));
+            }));
 
             return txs;
         }
@@ -1441,9 +1450,9 @@ public class SOLRTrackingComponentTest extends TestCase
                 RetryingTransactionHelper txnHelper, FileFolderService fileFolderService,
                 NodeDAO nodeDAO, QNameDAO qnameDAO, NodeService nodeService, DictionaryService dictionaryService,
                 NodeRef rootNodeRef, String containerName, boolean doNodeChecks, boolean doMetaDataChecks)
-                {
+        {
             super(txnHelper, fileFolderService, nodeDAO, qnameDAO, nodeService, dictionaryService,rootNodeRef, containerName, doNodeChecks, doMetaDataChecks);
-                }
+        }
 
         public int getExpectedNumNodes()
         {
@@ -1455,7 +1464,7 @@ public class SOLRTrackingComponentTest extends TestCase
             ArrayList<Long> txs = new ArrayList<Long>(2);
 
             txs.add(txnHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+            {
                 public Long execute() throws Throwable
                 {
                     PropertyMap props = new PropertyMap();
@@ -1474,7 +1483,7 @@ public class SOLRTrackingComponentTest extends TestCase
 
                     return nodeDAO.getNodeRefStatus(container).getDbTxnId();
                 }
-                    }));
+            }));
 
             setExpectedNodeStatus(container, NodeStatus.UPDATED);
             setExpectedNodeStatus(content, NodeStatus.UPDATED);

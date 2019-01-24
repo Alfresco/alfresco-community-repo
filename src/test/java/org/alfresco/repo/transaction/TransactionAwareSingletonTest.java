@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,49 +29,46 @@ import java.util.Random;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
+import org.alfresco.util.BaseSpringTest;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @see org.alfresco.repo.transaction.TransactionAwareSingleton
- * 
+ *
  * @author Derek Hulley
  */
-@Category(OwnJVMTestsCategory.class)
-public class TransactionAwareSingletonTest extends TestCase
+public class TransactionAwareSingletonTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private static Random rand = new Random();
-    
+
     /** the instance to test */
     private TransactionAwareSingleton<Integer> singleton = new TransactionAwareSingleton<Integer>();
     private static final Integer INTEGER_ONE = new Integer(1);
     private static final Integer INTEGER_TWO = new Integer(2);
-    
+
     private TransactionService transactionService;
-    
+
+    @Before
     public void setUp() throws Exception
     {
-        transactionService = (TransactionService) ctx.getBean("transactionComponent");
+        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
     }
-    
+
+    @Test
     public void testCommit() throws Throwable
     {
         UserTransaction txn = transactionService.getUserTransaction();
         try
         {
             txn.begin();
-            
+
             singleton.put(INTEGER_ONE);
             check(INTEGER_ONE, true);
             check(null, false);
-            
+
             // commit
             txn.commit();
         }
@@ -83,18 +80,19 @@ public class TransactionAwareSingletonTest extends TestCase
         check(INTEGER_ONE, true);
         check(INTEGER_ONE, false);
     }
-    
+
+    @Test
     public void testRollback() throws Throwable
     {
         UserTransaction txn = transactionService.getUserTransaction();
         try
         {
             txn.begin();
-            
+
             singleton.put(INTEGER_TWO);
             check(INTEGER_TWO, true);
             check(null, false);
-            
+
             // rollback
             txn.rollback();
         }
@@ -106,8 +104,9 @@ public class TransactionAwareSingletonTest extends TestCase
         check(null, true);
         check(null, false);
     }
-    
+
     private static final int THREAD_COUNT = 20;
+    @Test
     public void testThreadsCommit() throws Throwable
     {
         TestThread[] threads = new TestThread[THREAD_COUNT];
@@ -133,6 +132,7 @@ public class TransactionAwareSingletonTest extends TestCase
             }
         }
     }
+    @Test
     public void testThreadsRollback() throws Throwable
     {
         TestThread[] threads = new TestThread[THREAD_COUNT];
@@ -143,9 +143,9 @@ public class TransactionAwareSingletonTest extends TestCase
             threads[i] = thread;
         }
     }
-    
+
     /**
-     * Dumps random values into 
+     * Dumps random values into
      * @author Derek Hulley
      */
     private class TestThread extends Thread
@@ -154,7 +154,7 @@ public class TransactionAwareSingletonTest extends TestCase
         private Throwable error;
         private boolean commit;
         private Integer value = new Integer((int)System.nanoTime());
-        
+
         public TestThread(boolean commit)
         {
             this.commit = commit;
@@ -166,9 +166,9 @@ public class TransactionAwareSingletonTest extends TestCase
             try
             {
                 txn.begin();
-                
+
                 singleton.put(value);
-                
+
                 // wait for some random time
                 try
                 {
@@ -182,7 +182,7 @@ public class TransactionAwareSingletonTest extends TestCase
 
                 // check
                 check(value, true);
-                
+
                 if (commit)
                 {
                     txn.commit();
@@ -213,7 +213,7 @@ public class TransactionAwareSingletonTest extends TestCase
             finished = true;
         }
     }
-    
+
     private void check(final Integer expected, boolean inTransaction)
     {
         RetryingTransactionCallback<Object> checkWork = new RetryingTransactionCallback<Object>()

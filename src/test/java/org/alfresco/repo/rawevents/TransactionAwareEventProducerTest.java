@@ -25,23 +25,15 @@
  */
 package org.alfresco.repo.rawevents;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -50,26 +42,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Cristian Turlica
  */
-@Category(OwnJVMTestsCategory.class)
-public class TransactionAwareEventProducerTest
+public class TransactionAwareEventProducerTest extends BaseSpringTest
 {
+    @Autowired
     private RetryingTransactionHelper retryingTransactionHelper;
+    @Autowired
     private CamelContext camelContext;
+    @Autowired
     private TransactionAwareEventProducer eventProducer;
+    @Autowired
     private ObjectMapper messagingObjectMapper;
-
-    @Rule
-    public TestName name = new TestName();
-
-    @Before
-    public void setUp() throws Exception
-    {
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
-        camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
-        eventProducer = (TransactionAwareEventProducer) ctx.getBean("transactionAwareEventProducer");
-        messagingObjectMapper = (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
-    }
 
     @Test
     public void send() throws Exception
@@ -127,6 +109,6 @@ public class TransactionAwareEventProducerTest
 
     private String getMockEndpointUri()
     {
-        return "mock:" + this.getClass().getSimpleName() + "_" + name.getMethodName();
+        return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
     }
 }

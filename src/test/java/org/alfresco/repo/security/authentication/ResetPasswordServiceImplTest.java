@@ -78,7 +78,7 @@ public class ResetPasswordServiceImplTest
     public static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
 
     @Rule
-    public final RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getAdminUserName());
+    public final RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(AuthenticationUtil.getSystemUserName());
 
     private static final String DEFAULT_SENDER = "noreply@test-alfresco.test";
 
@@ -161,7 +161,7 @@ public class ResetPasswordServiceImplTest
 
         // Make sure to run as system
         AuthenticationUtil.clearCurrentSecurityContext();
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setRunAsUserSystem();
 
         // Request password reset
         resetPasswordService.requestReset(testPerson.userName, "share");

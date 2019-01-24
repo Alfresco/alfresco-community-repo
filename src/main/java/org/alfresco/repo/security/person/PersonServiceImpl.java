@@ -493,8 +493,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             return null;
         }
-        if (EqualsHelper.nullSafeEquals(userName, AuthenticationUtil.getSystemUserName()))
+        if (isSystemUserName(userName))
         {
+            // The built-in authority SYSTEM is a user, but not a Person (i.e. it does not have a profile).
             if (exceptionOrNull)
             {
                 throw new NoSuchPersonException(userName);
@@ -532,12 +533,12 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      */
     public boolean personExists(String caseSensitiveUserName)
     {
-        if (isBuiltInAuthorities(caseSensitiveUserName))
+        if (isSystemUserName(caseSensitiveUserName))
         {
-            return true;
+            return false;
         }
-
-        NodeRef person = getPersonOrNullImpl(caseSensitiveUserName);
+        
+        NodeRef person = getPersonOrNullImpl(caseSensitiveUserName); 
         if (person != null)
         {
             // re: THOR-293
@@ -545,21 +546,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         }
         return false;
     }
-
-    private boolean isBuiltInAuthorities(String caseSensitiveUserName)
-    {
-        if (EqualsHelper.nullSafeEquals(caseSensitiveUserName, AuthenticationUtil.getSystemUserName()))
-        {
-            return true;
-        }
-        else if (EqualsHelper.nullSafeEquals(caseSensitiveUserName, AuthenticationUtil.getGuestUserName()))
-        {
-            return true;
-        }
-        return false;
-
-    }
-
+    
     private NodeRef getPersonOrNullImpl(String searchUserName)
     {
         Set<NodeRef> allRefs = getFromCache(searchUserName);
@@ -991,6 +978,11 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         if (userName == null)
         {
             throw new IllegalArgumentException("No username specified when creating the person.");
+        }
+        
+        if (EqualsHelper.nullSafeEquals(userName, AuthenticationUtil.getSystemUserName()))
+        {
+            throw new AlfrescoRuntimeException("The built-in authority '" + AuthenticationUtil.getSystemUserName()  + "' is a user, but not a Person (i.e. it does not have a profile).");
         }
 
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
@@ -2190,10 +2182,14 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return true;
     }
 
-	public void setEventPublisher(EventPublisher eventPublisher) 
-	{
-		this.eventPublisher = eventPublisher;
-	}
-    
-    
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+
+    private boolean isSystemUserName(String userName)
+    {
+        return EqualsHelper.nullSafeEquals(userName, AuthenticationUtil.getSystemUserName(), true);
+    }
+
 }

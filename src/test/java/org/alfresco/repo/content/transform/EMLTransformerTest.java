@@ -135,7 +135,7 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
             return;
         }
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         ContentTransformer transformer = serviceRegistry.getContentService().getTransformer(sourceMimetype, targetMimetype);
         assertNotNull(transformer);
 

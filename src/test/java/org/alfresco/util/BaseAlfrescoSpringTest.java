@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -94,7 +93,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         // Authenticate as the system user
         authenticationComponent = (AuthenticationComponent) this.applicationContext
                 .getBean("authenticationComponent");
-        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());

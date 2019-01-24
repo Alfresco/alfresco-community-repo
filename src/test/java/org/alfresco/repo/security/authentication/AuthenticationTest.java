@@ -194,7 +194,7 @@ public class AuthenticationTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 try
                 {
                     deleteAndy();
@@ -224,7 +224,7 @@ public class AuthenticationTest extends TestCase
         personAndyNodeRef = nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
         assertNotNull(personAndyNodeRef);
         
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         authenticationComponent.clearCurrentSecurityContext();
     }

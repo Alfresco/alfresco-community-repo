@@ -811,31 +811,39 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     @Test
     public void testActionResult()
     {
+        // We need to run this test as Administrator. The ScriptAction has to run as a full user (instead of as System)
+        // so that we can setup the Person object in the ScriptNode
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            // Create the script node reference
+            NodeRef script = this.nodeService.createNode(
+                    this.folder,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testScript.js"),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+            this.nodeService.setProperty(script, ContentModel.PROP_NAME, "testScript.js");
+            ContentWriter contentWriter = this.contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
+            contentWriter.setMimetype("text/plain");
+            contentWriter.setEncoding("UTF-8");
+            contentWriter.putContent("\"VALUE\";");
 
-        // Create the script node reference
-        NodeRef script = this.nodeService.createNode(
-                this.folder,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "testScript.js"),
-                ContentModel.TYPE_CONTENT).getChildRef();
-        this.nodeService.setProperty(script, ContentModel.PROP_NAME, "testScript.js");
-        ContentWriter contentWriter = this.contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
-        contentWriter.setMimetype("text/plain");
-        contentWriter.setEncoding("UTF-8");
-        contentWriter.putContent("\"VALUE\";");
-        
-        // Create the action
-        Action action1 = this.actionService.createAction(ScriptActionExecuter.NAME);
-        action1.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, script);
-        
-        // Execute the action
-        this.actionService.executeAction(action1, this.nodeRef);
-        
-        // Get the result
-        String result = (String)action1.getParameterValue(ActionExecuter.PARAM_RESULT);
-        assertNotNull(result);
-        assertEquals("VALUE", result);                
+            // Create the action
+            Action action1 = this.actionService.createAction(ScriptActionExecuter.NAME);
+            action1.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, script);
+
+            // Execute the action
+            this.actionService.executeAction(action1, this.nodeRef);
+
+            // Get the result
+            String result = (String)action1.getParameterValue(ActionExecuter.PARAM_RESULT);
+            assertNotNull(result);
+            assertEquals("VALUE", result);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
     }
     
     /** ===================================================================================

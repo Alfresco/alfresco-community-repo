@@ -457,8 +457,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @Test
     public void testCreateAndUpdateDictionaryModelNodeContent() throws Exception
     {
-        // just to make sure we don't regress ACE-5852, some tests should run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        // just to make sure we don't regress ACE-5852, some tests should run as System
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         try
         {
             // Check that the model has not yet been loaded into the dictionary
@@ -609,8 +609,8 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     @Test
     public void testUpdateDictionaryModelPropertyDelete() throws Exception
     {
-        // just to make sure we don't regress ACE-5852, some tests should run as Admin
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        // just to make sure we don't regress ACE-5852, some tests should run as System
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         try
         {
             // Check that the model has not yet been loaded into the dictionary
@@ -1105,7 +1105,7 @@ public class DictionaryModelTypeTest extends BaseSpringTest
     public void testImportingSameNamespaceFails() throws Exception
     {
         // just to make sure we don't regress ACE-5852, some tests should run as System
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
         // Create model
         final NodeRef modelNode = createActiveModel("dictionary/testModel.xml");

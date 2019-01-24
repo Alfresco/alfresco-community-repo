@@ -85,7 +85,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         // Create users
         createUser(USER_ONE);

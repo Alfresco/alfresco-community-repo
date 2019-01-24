@@ -93,7 +93,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
             throw new AlfrescoRuntimeException("The ThumbnailServiceTest needs direct access to the TransactionServiceImpl");
         }
         
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         this.testRoot = this.repositoryHelper.getCompanyHome();
         

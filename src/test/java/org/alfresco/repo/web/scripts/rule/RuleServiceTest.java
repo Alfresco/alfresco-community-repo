@@ -31,7 +31,6 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.action.Action;
@@ -103,7 +102,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         this.actionService = (ActionService) getServer().getApplicationContext().getBean("ActionService");
         this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("authenticationComponent");
 
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        this.authenticationComponent.setSystemUserAsCurrentUser();
 
         createTestFolders();
 

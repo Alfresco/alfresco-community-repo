@@ -135,7 +135,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
         transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
         fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         createUser(USER_ONE);
         createUser(USER_TWO);
@@ -175,7 +175,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
             }
         });
         
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         deleteUser(USER_ONE);
         deleteUser(USER_TWO);

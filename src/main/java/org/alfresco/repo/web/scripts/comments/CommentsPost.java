@@ -243,7 +243,7 @@ public class CommentsPost extends AbstractCommentsWebScript
                 try
                 {  
                     // MNT-12082: set System user for creating forumFolder and commentsFolder nodes
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                     
                     nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable"), null);
                     nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "commentsRollup"), null);

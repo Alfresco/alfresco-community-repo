@@ -71,6 +71,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -269,7 +270,7 @@ public class DBQueryTest  implements DictionaryListener
         txn = transactionService.getUserTransaction();
         txn.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
         
@@ -899,7 +900,53 @@ public class DBQueryTest  implements DictionaryListener
         aftsQueryWithCount("=ASPECT:\"test:testSuperAspect\" AND =test:orderMLText:\""+stringValue+"\"", 1);
         
     }
-    
+
+    /**
+     * Test that when a query is performed with a limit parameter, the number of results in the resultset
+     * is influenced by limit while the numberOfFound value is not.
+     */
+    @Test
+    public void testAftsPagination()
+    {
+        String query = "=TYPE:\"cm:folder\" ";
+
+        // this value is equals to the numer of folders inserted in createTestData method.
+        int numFolders = 6;
+        int count = 4;
+        ResultSet results = query(SearchService.LANGUAGE_FTS_ALFRESCO, query, count);
+        assertEquals("The number of results should be equal to count",
+                results.length(), count);
+        assertEquals("The number of founds should be equal to the number of folders, and not influenced"
+                + "by the limit set to the query.",
+                results.getNumberFound(), numFolders);
+    }
+
+    /**
+     * This method performs a query with a selected searchService.
+     *
+     * @param ql Search services
+     * @param query
+     * @param limit limits the result set to a maximum number.
+     * @return
+     */
+    public ResultSet query(String ql, String query, Integer limit)
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(ql);
+        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+        sp.setQuery(query);
+        sp.addStore(rootNodeRef.getStoreRef());
+
+        // set limit parameter if different from null.
+        if (limit != null)
+        {
+            sp.setLimit(limit);
+            sp.setLimitBy(LimitBy.FINAL_SIZE);
+        }
+
+        return serviceRegistry.getSearchService().query(sp);
+    }
+
     
     public void aftsQueryWithCount(String query, int count)
     {

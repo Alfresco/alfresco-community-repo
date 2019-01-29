@@ -195,18 +195,9 @@ public class ResultMapper
         {
             //We used Solr for this query
             context = toSearchContext(solrResultSet, searchRequestContext, searchQuery, notFound);
-            total = setTotal(solrResultSet);
         }
-        else
-        {
-            //This probably wasn't solr
-            if (!results.hasMore())
-            {
-                //If there are no more results then we are confident that the number found is correct
-                //otherwise we are not confident enough that its accurate
-                total = setTotal(results);
-            }
-        }
+
+        total = setTotal(results);
 
         return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), total, null, context);
     }

@@ -75,6 +75,30 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                   <execution>
+                      <id>copy-licenses</id>
+                      <phase>process-resources</phase>
+                      <goals>
+                          <goal>copy-resources</goal>
+                      </goals>
+                      <configuration>
+                          <resources>
+                              <resource>
+                                  <!-- Extract licenses directory -->
+                                  <directory>../distribution/src/main/resources/licenses</directory>
+                                  <filtering>false</filtering>
+                              </resource>
+                          </resources>
+                          <outputDirectory>${project.build.directory}/licenses</outputDirectory>
+                      </configuration>
+                   </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.0.2</version>
                 <executions>

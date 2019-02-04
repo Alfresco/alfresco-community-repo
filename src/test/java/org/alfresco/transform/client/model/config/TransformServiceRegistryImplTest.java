@@ -70,7 +70,7 @@ public class TransformServiceRegistryImplTest
     public static final String JPEG_MIMETYPE = "image/jpeg";
     public static final String PNG_MIMETYPE = "image/png";
     public static final String TIFF_MIMETYPE = "image/tiff";
-    public static final String PDF_MIMETYPE = "appliction/pdf";
+    public static final String PDF_MIMETYPE = "application/pdf";
     public static final String DOC_MIMETYPE = "application/msword";
     public static final String XLS_MIMETYPE = "application/vnd.ms-excel";
     public static final String PPT_MIMETYPE = "application/vnd.ms-powerpoint";

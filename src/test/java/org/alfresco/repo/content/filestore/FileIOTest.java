@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashSet;
@@ -86,8 +87,10 @@ public class FileIOTest extends TestCase
         int countB = 0;
         do
         {
-            countA = channelA.read((ByteBuffer)bufferA.clear());
-            countB = channelB.read((ByteBuffer)bufferB.clear());
+            ((Buffer) bufferA).clear();
+            countA = channelA.read(bufferA);
+            ((Buffer) bufferB).clear();
+            countB = channelB.read(bufferB);
             assertEquals("Should read same number of bytes", countA, countB);
         } while (countA > 6);
         

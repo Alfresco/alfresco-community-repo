@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.solr;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
@@ -54,14 +53,12 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -71,8 +68,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements SolrQueryClient
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrSQLHttpClient.class);
     private HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<StoreRef, SolrStoreMappingWrapper>();
-    static Log logger = LogFactory.getLog(SolrSQLHttpClient.class);
     private List<SolrStoreMapping> storeMappings;
     private BeanFactory beanFactory;
     private PermissionService permissionService;
@@ -200,10 +197,16 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
                 locales.put(I18NUtil.getLocale());
             }
             body.put("locales", locales);
-            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, json ->
+
+            JSONArray filterQueries = new JSONArray();
+            for (String filterQuery : searchParameters.getFilterQueries())
             {
-                return new SolrSQLJSONResultSet(json, searchParameters);
-            });
+                filterQueries.put(filterQuery);
+            }
+            body.put("filterQueries", filterQueries);
+
+            return postSolrQuery(httpClient, url.toString(), body,
+                        json -> new SolrSQLJSONResultSet(json, searchParameters));
         }
         catch (ConnectException ce)
         {
@@ -216,20 +219,15 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         
     }
 
-    protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, 
-            SolrJsonProcessor<?> jsonProcessor)
-            throws UnsupportedEncodingException, IOException, HttpException, URIException,
-            JSONException
+    protected ResultSet postSolrQuery(HttpClient httpClient, String url, JSONObject body,
+                SolrJsonProcessor<?> jsonProcessor) throws IOException, JSONException
     {
         JSONObject json = postQuery(httpClient, url, body);
         JSONResult results = jsonProcessor.getResult(json);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Sent :" + url);
-            logger.debug("with: " + body.toString());
-            logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
-        }
-        return results;
+        LOGGER.debug("Sent : {}", url);
+        LOGGER.debug("with: {}", body);
+        LOGGER.debug("Got: {} in {} ms", results.getNumberFound(), results.getQueryTime());
+        return (ResultSet) results;
     }
     
     

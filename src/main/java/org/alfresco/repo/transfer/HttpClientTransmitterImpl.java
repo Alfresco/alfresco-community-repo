@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -817,7 +818,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         while (src.read(buffer) != -1)
         {
             // prepare the buffer to be drained
-            buffer.flip();
+            ((Buffer) buffer).flip();
             // write to the channel, may block
              dest.write(buffer);
 
@@ -827,7 +828,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         }
 
         // EOF will leave buffer in fill state
-        buffer.flip();
+        ((Buffer) buffer).flip();
 
         // make sure the buffer is fully drained.
         while (buffer.hasRemaining())

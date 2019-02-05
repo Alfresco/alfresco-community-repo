@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -2428,10 +2429,10 @@ public class IndexInfo implements IndexMonitor
             {
                 buffer = ByteBuffer.wrap(new byte[8]);
                 channel.read(buffer);
-                buffer.position(0);
+                ((Buffer) buffer).position(0);
             }
 
-            buffer.position(0);
+            ((Buffer) buffer).position(0);
             long onDiskVersion = buffer.getLong();
             return (version == onDiskVersion);
         }
@@ -2455,10 +2456,10 @@ public class IndexInfo implements IndexMonitor
             {
                 buffer = ByteBuffer.wrap(new byte[(int) channel.size()]);
                 channel.read(buffer);
-                buffer.position(0);
+                ((Buffer) buffer).position(0);
             }
 
-            buffer.position(0);
+            ((Buffer) buffer).position(0);
             long onDiskVersion = buffer.getLong();
             if (version != onDiskVersion)
             {
@@ -2604,7 +2605,7 @@ public class IndexInfo implements IndexMonitor
             buffer = ByteBuffer.wrap(new byte[(int) size]);
         }
 
-        buffer.position(0);
+        ((Buffer) buffer).position(0);
 
         buffer.putLong(version);
         CRC32 crc32 = new CRC32();
@@ -2647,7 +2648,7 @@ public class IndexInfo implements IndexMonitor
         }
         else
         {
-            buffer.rewind();
+            ((Buffer) buffer).rewind();
             channel.position(0);
             channel.write(buffer);
         }

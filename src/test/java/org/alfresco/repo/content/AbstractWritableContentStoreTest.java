@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -731,7 +732,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         int count = fileChannel.read(buffer);
         assertEquals("Incorrect number of bytes read", bytes.length, count);
         // transfer back to array
-        buffer.rewind();
+        ((Buffer) buffer).rewind();
         buffer.get(bytes);
         String checkContent = new String(bytes);
         assertEquals("Content read failure", content, checkContent);

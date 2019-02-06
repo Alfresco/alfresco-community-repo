@@ -853,7 +853,7 @@ public class ResultMapperTests
     {
         JSONObject response = new JSONObject("{\"docs\":[{\"SITE\":\"_REPOSITORY_\"},{\"SITE\":\"surf-config\"},{\"SITE\":\"swsdp\"},{\"EOF\":true,\"RESPONSE_TIME\":96}]}");
         JSONArray docs = response.getJSONArray("docs");
-        SearchSQLQuery query = new SearchSQLQuery("select SITE from alfresco group by SITE", null, null, 100, false, null);
+        SearchSQLQuery query = new SearchSQLQuery("select SITE from alfresco group by SITE", null, null, 100, false, null, null);
         CollectionWithPagingInfo<TupleList> info = mapper.toCollectionWithPagingInfo(docs, query);
         assertEquals(100, info.getPaging().getMaxItems());
         assertEquals(0, info.getPaging().getSkipCount());

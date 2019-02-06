@@ -142,6 +142,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             Locale locale = new Locale(action);
             sparams.addLocale(locale);
         });
+        searchQuery.getFilterQueries().forEach(sparams::addFilterQuery);
         
         sparams.setIncludeMetadata(searchQuery.isIncludeMetadata());
         return sparams;

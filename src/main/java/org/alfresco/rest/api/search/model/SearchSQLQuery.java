@@ -43,13 +43,15 @@ public class SearchSQLQuery
     private List<String> locales;
     private boolean includeMetadata;
     private String timezone;
+    private List<String> filterQueries;
     
     public SearchSQLQuery(@JsonProperty("stmt") String stmt,
                           @JsonProperty("format") String format,
                           @JsonProperty("locales") List<String> locales,
                           @JsonProperty("limit") Integer itemLimit,
                           @JsonProperty("includeMetadata") boolean includeMetadata,
-                          @JsonProperty("timezone") String timezone)
+                          @JsonProperty("timezone") String timezone,
+                          @JsonProperty("filterQueries") List<String> filterQueries)
     {
         this.stmt = stmt;
         this.format = format != null ? format : "default";
@@ -57,6 +59,7 @@ public class SearchSQLQuery
         this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
         this.includeMetadata = includeMetadata;
         this.timezone = timezone;
+        this.filterQueries = filterQueries != null ? filterQueries : Collections.emptyList();
     }
 
     public String getStmt()
@@ -87,5 +90,10 @@ public class SearchSQLQuery
     public String getTimezone()
     {
         return timezone;
+    }
+
+    public List<String> getFilterQueries()
+    {
+        return filterQueries;
     }
 }

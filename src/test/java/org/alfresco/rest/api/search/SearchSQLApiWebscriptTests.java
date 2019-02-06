@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.search;
 
+import static java.util.Collections.emptyList;
+
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
@@ -47,7 +49,7 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParams() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false, "");
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", emptyList(), 1000, false, "", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
@@ -61,7 +63,7 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParamsTimezone() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", Collections.emptyList(), 1000, false, "Israel");
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", emptyList(), 1000, false, "Israel", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
@@ -75,7 +77,7 @@ public class SearchSQLApiWebscriptTests
     public void testSearchQueryParamsFormatNull() throws Exception
     {
         String query = "select SITE from alfresco";
-        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "", Collections.emptyList(), 1000, false, "");
+        SearchSQLQuery searchQuery = new SearchSQLQuery(query, "", emptyList(), 1000, false, "", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
@@ -85,7 +87,7 @@ public class SearchSQLApiWebscriptTests
         assertEquals(null, sparams.getExtraParameters().get("format"));
         assertEquals(null, sparams.getTimezone());
         
-        searchQuery = new SearchSQLQuery(query, null, Collections.emptyList(), 1000, true, "");
+        searchQuery = new SearchSQLQuery(query, null, emptyList(), 1000, true, "", emptyList());
         sparams = webscript.buildSearchParameters(searchQuery);
         
         assertNotNull(sparams);
@@ -98,7 +100,7 @@ public class SearchSQLApiWebscriptTests
     @Test
     public void testSearchQueryNullStmt() throws Exception
     {
-        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", Collections.emptyList(), null, false, null);
+        SearchSQLQuery searchQuery = new SearchSQLQuery(null, "solr", emptyList(), null, false, null, emptyList());
         try
         {
             webscript.buildSearchParameters(searchQuery);

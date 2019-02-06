@@ -35,8 +35,8 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicUnfiledContainerChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
@@ -46,6 +46,8 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
@@ -59,6 +61,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -285,6 +288,43 @@ public class DeleteRecordTests extends BaseRMRestTest
         getNodeContent(recordId);
     }
 
+
+    /**
+     * <pre>
+     * Given a file that has  copy
+     * And the original file is declared as record
+     * When I delete the original
+     * Then it is still possible to view the content of the copy
+     * </pre>
+     */
+    @Test (description = "Deleting record doesn't delete the copied filed")
+    @AlfrescoTest (jira = "MNT-20145")
+    public void deleteOriginOfRecord() throws Exception
+    {
+        Step.STEP("Create a file.");
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
+        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        Step.STEP("Create a file copy.");
+        String postBody = JsonBodyGenerator.keyValueJson("targetParentId", testSite.getGuid());
+        RestNodeModel copyOfTestFile = getRestAPIFactory().getNodeAPI(testFile).copyNode(postBody);
+
+        Step.STEP("Declare original file as record");
+        getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
+
+        Step.STEP("Delete the record.");
+        getRestAPIFactory().getRecordsAPI().deleteRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(NO_CONTENT);
+
+        Step.STEP("Check that it's possible to load the copy content.");
+        getNodeContent(copyOfTestFile.getId());
+        assertStatusCode(OK);
+
+        Step.STEP("Clean up.");
+        dataSite.deleteSite(testSite);
+    }
+
     /**
      * Utility method to delete a record and verify successful deletion
      *
@@ -299,7 +339,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(NO_CONTENT);
 
         // Try to get deleted record
-        recordsAPI.deleteRecord(recordId);
+        recordsAPI.getRecord(recordId);
         assertStatusCode(NOT_FOUND);
     }
 

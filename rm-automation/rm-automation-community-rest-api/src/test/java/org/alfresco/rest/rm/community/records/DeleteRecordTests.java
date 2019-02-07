@@ -297,7 +297,7 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the copy
      * </pre>
      */
-    @Test (description = "Deleting record doesn't delete the copied filed")
+    @Test (description = "Deleting record doesn't delete the content for the copies")
     @AlfrescoTest (jira = "MNT-20145")
     public void deleteOriginOfRecord() throws Exception
     {
@@ -305,7 +305,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        Step.STEP("Create a file copy.");
+        Step.STEP("Create a copy for the file created.");
         String postBody = JsonBodyGenerator.keyValueJson("targetParentId", testSite.getGuid());
         RestNodeModel copyOfTestFile = getRestAPIFactory().getNodeAPI(testFile).copyNode(postBody);
 

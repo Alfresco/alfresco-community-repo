@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -214,16 +215,22 @@ public class ContentDestructionComponent
                 // get content data
                 ContentData dataContent = (ContentData)entry.getValue();
 
-                // if enabled cleanse content
-                if (isCleansingEnabled())
-                {
-                    // register for cleanse then immediate destruction
-                    getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
-                }
-                else
-                {
-                    // register for immediate destruction
-                    getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                // destroy the nodes content properties only if it doesn't have copies or it is a copy
+                // destroy the nodes content properties only if the versionedNodeRef is deleted
+                if (getNodeService().getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() &&
+                        getNodeService().getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() &&
+                        getNodeService().getProperty(nodeRef, RecordableVersionModel.PROP_VERSIONED_NODEREF) == null)
+                {                // if enabled cleanse content
+                    if (isCleansingEnabled())
+                    {
+                        // register for cleanse then immediate destruction
+                        getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
+                    }
+                    else
+                    {
+                        // register for immediate destruction
+                        getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                    }
                 }
 
                 // clear the property

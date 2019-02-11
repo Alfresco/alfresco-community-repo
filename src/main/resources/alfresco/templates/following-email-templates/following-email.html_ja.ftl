@@ -1,4 +1,4 @@
-﻿<html>
+<html>
    <#assign followerFullName>${followerFirstName} ${followerLastName}</#assign>
    <#assign followerLink><a href="${shareUrl}/page/user/${followerUserName?url('ISO-8859-1')}/profile">${(followerFullName?trim)?html}</a></#assign>
 

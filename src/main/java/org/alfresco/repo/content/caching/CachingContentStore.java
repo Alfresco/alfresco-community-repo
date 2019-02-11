@@ -206,7 +206,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                     return backingStoreReader;
                 }
                 
-                ContentReader reader = attemptCacheAndRead(url);
+                ContentReader reader = attemptCacheAndRead(url, backingStoreReader);
                 
                 if (reader != null)
                 {
@@ -254,14 +254,14 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * @param url URL to cache.
      * @return A reader onto the cached content file or null if unable to provide one.
      */
-    private ContentReader attemptCacheAndRead(String url)
+    private ContentReader attemptCacheAndRead(String url, ContentReader backingStoreReader)
     {
         ContentReader reader = null;
         try
         {
             if (!cache.contains(url))
             {
-                if (cache.put(url, backingStore.getReader(url)))
+                if (cache.put(url, backingStoreReader))
                 {
                     reader = cache.getReader(url);
                 }

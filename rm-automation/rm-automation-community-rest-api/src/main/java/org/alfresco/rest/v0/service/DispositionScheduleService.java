@@ -30,7 +30,6 @@ package org.alfresco.rest.v0.service;
 import java.util.HashMap;
 
 import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +82,24 @@ public class DispositionScheduleService extends BaseAPI
         cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Cut off after a period step");
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
                 dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
+    }
+
+    /**
+     * Helper method for adding a destroy with ghosting after period 
+     *
+     * @param categoryName the category in whose schedule the step will be added
+     * @param period
+     * @return
+     */
+    public void addDestroyWithGhostingAfterPeriodStep(String categoryName, String period)
+    {
+        HashMap<RETENTION_SCHEDULE, String> destroyStep = new HashMap<>();
+        destroyStep.put(RETENTION_SCHEDULE.NAME, "destroy");
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, "immediately|");
+        destroyStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Destroy immediately");
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_GHOST, "on");
+        recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(), categoryName, destroyStep);
     }
 
     /**

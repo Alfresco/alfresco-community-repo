@@ -40,6 +40,8 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -49,23 +51,29 @@ import static org.springframework.http.HttpStatus.OK;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestResponse;
+import org.alfresco.rest.core.v0.BaseAPI.RM_ACTIONS;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.record.RecordBodyFile;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.log.Step;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -76,6 +84,13 @@ import org.testng.annotations.Test;
  */
 public class DeleteRecordTests extends BaseRMRestTest
 {
+    @Autowired
+    private DispositionScheduleService dispositionScheduleService;
+    @Autowired
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
+    @Autowired
+    private org.alfresco.rest.v0.RecordsAPI recordsAPI;
+
     /**
      * <pre>
      * Given an electronic record
@@ -266,24 +281,24 @@ public class DeleteRecordTests extends BaseRMRestTest
     @AlfrescoTest(jira="MNT-18806")
     public void deleteCopyOfRecord()
     {
-        Step.STEP("Create two record categories and folders.");
+        STEP("Create two record categories and folders.");
         RecordCategoryChild recordFolderA = createCategoryFolderInFilePlan();
         RecordCategoryChild recordFolderB = createCategoryFolderInFilePlan();
 
-        Step.STEP("Create a record in folder A and copy it into folder B.");
+        STEP("Create a record in folder A and copy it into folder B.");
         String recordId = getRestAPIFactory().getRecordFolderAPI()
                     .createRecord(createElectronicRecordModel(), recordFolderA.getId(), getFile(IMAGE_FILE)).getId();
         String copyId = copyRecord(recordId, recordFolderB.getId()).getId();
         assertStatusCode(CREATED);
 
-        Step.STEP("Check that it's possible to load the original content.");
+        STEP("Check that it's possible to load the original content.");
         getNodeContent(recordId);
         assertStatusCode(OK);
 
-        Step.STEP("Delete the copy.");
+        STEP("Delete the copy.");
         deleteAndVerify(copyId);
 
-        Step.STEP("Check that the original record node and content still exist.");
+        STEP("Check that the original record node and content still exist.");
         checkNodeExists(recordId);
         getNodeContent(recordId);
     }
@@ -301,29 +316,125 @@ public class DeleteRecordTests extends BaseRMRestTest
     @AlfrescoTest (jira = "MNT-20145")
     public void deleteOriginOfRecord() throws Exception
     {
-        Step.STEP("Create a file.");
+        STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        Step.STEP("Create a copy for the file created.");
+        STEP("Create a copy for the file created.");
         String postBody = JsonBodyGenerator.keyValueJson("targetParentId", testSite.getGuid());
         RestNodeModel copyOfTestFile = getRestAPIFactory().getNodeAPI(testFile).copyNode(postBody);
 
-        Step.STEP("Declare original file as record");
+        STEP("Declare original file as record");
         getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
-        Step.STEP("Delete the record.");
-        getRestAPIFactory().getRecordsAPI().deleteRecord(testFile.getNodeRefWithoutVersion());
-        assertStatusCode(NO_CONTENT);
+        STEP("Delete the record.");
+        deleteAndVerify(testFile.getNodeRefWithoutVersion());
 
-        Step.STEP("Check that it's possible to load the copy content.");
+        STEP("Check that it's possible to load the copy content.");
         getNodeContent(copyOfTestFile.getId());
         assertStatusCode(OK);
 
-        Step.STEP("Clean up.");
+        STEP("Clean up.");
         dataSite.deleteSite(testSite);
     }
+
+    /**
+     * <pre>
+     * Given a file that has  copy
+     * And the original file is declared as record
+     * And the file becomes part of a disposition schedule with a destroy step
+     * When the record is destroyed
+     * Then it is still possible to view the content of the copy
+     * </pre>
+     */
+    @Test (description = "Destroying record doesn't delete the content for the associated copy")
+    @AlfrescoTest (jira = "MNT-20145")
+    public void destroyOfRecord() throws Exception
+    {
+        STEP("Create a file.");
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
+        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FolderModel folderModel =dataContent.usingSite(testSite).createFolder();
+
+        STEP("Create a copy for the file created.");
+        RestNodeModel copy = copyRecord(testFile.getNodeRefWithoutVersion(), folderModel.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
+
+        STEP("Declare the file as record.");
+        getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
+
+        STEP("Create a record category with a disposition schedule.");
+        RecordCategory  recordCategory = createRootCategory(getRandomName("Category with disposition"));
+        dispositionScheduleService.createCategoryRetentionSchedule(recordCategory.getName(), true);
+
+        STEP("Add retention schedule cut off and destroy step with immediate period.");
+        dispositionScheduleService.addCutOffAfterPeriodStep(recordCategory.getName(), "immediately");
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(recordCategory.getName(), "immediately");
+
+        STEP("Create a record folder and file the record");
+        RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));
+        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(recFolder.getId()).build();
+        Record recordFiled = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, testFile.getNodeRefWithoutVersion());
+        getRestAPIFactory().getRecordsAPI().completeRecord(recordFiled.getId());
+        assertStatusCode(CREATED);
+
+        STEP("Execute the disposition schedule steps .");
+        rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
+                RM_ACTIONS.CUT_OFF);
+        rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
+                RM_ACTIONS.DESTROY);
+
+        STEP("Check that it's possible to load the copy content.");
+        getNodeContent(copy.getId());
+        assertStatusCode(OK);
+
+        STEP("Clean up.");
+        dataSite.deleteSite(testSite);
+
+    }
+
+    /**
+     * <pre>
+     * Given a file that is declared version as record
+     * When the record is deleted
+     * Then it is still possible to view the content of the file
+     * </pre>
+     */
+    @Test (description = "Destroying record doesn't delete the content for the associated copy")
+    @AlfrescoTest (jira = "MNT-20145")
+    public void deleteVersionDeclaredAsRecord() throws Exception
+    {
+        STEP("Create a file.");
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
+        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FolderModel folderModel = dataContent.usingSite(testSite).createFolder();
+
+        STEP("Declare the file as record.");
+        // declare documents as records
+        recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
+                testFile.getName());
+        UnfiledContainerChild unfiledContainerChild = getRestAPIFactory().getUnfiledContainersAPI()
+                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                                                       .getEntries().stream()
+                                                                       .filter(child -> child.getEntry().getName()
+                                                                                             .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
+                                                                       .findFirst()
+                                                                       .get().getEntry();
+
+        STEP("Delete the record.");
+        deleteAndVerify(unfiledContainerChild.getId());
+
+        STEP("Check that it's possible to load the file declared version as record.");
+        getNodeContent(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(OK);
+
+        STEP("Clean up.");
+        dataSite.deleteSite(testSite);
+
+    }
+
 
     /**
      * Utility method to delete a record and verify successful deletion

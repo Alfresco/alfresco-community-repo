@@ -55,16 +55,15 @@ public class DispositionScheduleService extends BaseAPI
      *
      * @param categoryName the category in whose schedule the step will be added
      * @param period
-     * @return
      */
     public void addRetainAfterPeriodStep(String categoryName, String period)
     {
-        HashMap<RETENTION_SCHEDULE, String> cutOffStep = new HashMap<>();
-        cutOffStep.put(RETENTION_SCHEDULE.NAME, "retain");
-        cutOffStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
-        cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Retain after a period step");
+        HashMap<RETENTION_SCHEDULE, String> retainStep = new HashMap<>();
+        retainStep.put(RETENTION_SCHEDULE.NAME, "retain");
+        retainStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        retainStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Retain after a period step");
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
+                dataUser.getAdminUser().getPassword(), categoryName, retainStep);
     }
 
     /**
@@ -72,7 +71,6 @@ public class DispositionScheduleService extends BaseAPI
      *
      * @param categoryName the category in whose schedule the step will be added
      * @param period
-     * @return
      */
     public void addCutOffAfterPeriodStep(String categoryName, String period)
     {
@@ -89,14 +87,13 @@ public class DispositionScheduleService extends BaseAPI
      *
      * @param categoryName the category in whose schedule the step will be added
      * @param period
-     * @return
      */
     public void addDestroyWithGhostingAfterPeriodStep(String categoryName, String period)
     {
         HashMap<RETENTION_SCHEDULE, String> destroyStep = new HashMap<>();
         destroyStep.put(RETENTION_SCHEDULE.NAME, "destroy");
-        destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, "immediately|");
-        destroyStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Destroy immediately");
+        destroyStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        destroyStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Destroy after a period step");
         destroyStep.put(RETENTION_SCHEDULE.RETENTION_GHOST, "on");
         recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
                 dataUser.getAdminUser().getPassword(), categoryName, destroyStep);

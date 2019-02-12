@@ -16,6 +16,7 @@
 	<#if item.properties.modifier??>"modifier": "${item.properties.modifier}",</#if>
 	<#if item.siteShortName??>"site": "${item.siteShortName}",</#if>
 	"displayPath": "${item.displayPath!""}",
+	"qnamePath": "${item.qnamePath}",
 	"nodeRef": "${item.nodeRef}",
 	"selectable" : true
 }

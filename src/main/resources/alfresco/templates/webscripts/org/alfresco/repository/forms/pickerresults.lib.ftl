@@ -13,6 +13,7 @@
 		<#if node.properties.modified??>${indent}"modified": "${xmldate(node.properties.modified)}",</#if>
 		<#if node.properties.modifier??>${indent}"modifier": "${node.properties.modifier}",</#if>
 		${indent}"displayPath": "${node.displayPath!""}",
+		${indent}"qnamePath": "${node.qnamePath!""}",
 		<#if node.aspects??>
         ${indent}"aspects": 
         ${indent}[
@@ -62,6 +63,7 @@
 				<#if row.item.siteShortName??>"site": "${row.item.siteShortName}",</#if>
 				<#if row.item.properties["ia:fromDate"]??>"fromDate": "${xmldate(row.item.properties["ia:fromDate"])}",</#if>
 				"displayPath": "${row.item.displayPath!""}",
+				"qnamePath": "${row.item.qnamePath!""}",
 				<#if row.item.typeShort != "cm:person" && row.item.typeShort != "cm:authorityContainer">
 					"userAccess":
 					{

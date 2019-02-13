@@ -215,12 +215,11 @@ public class ContentDestructionComponent
                 // get content data
                 ContentData dataContent = (ContentData)entry.getValue();
 
-                // destroy the nodes content properties only if it doesn't have copies or it is a copy
-                // destroy the nodes content properties only if the versionedNodeRef is deleted
+                // destroy the node's content properties only if it doesn't have copies or it is a copy
                 if (getNodeService().getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() &&
-                        getNodeService().getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() &&
-                        getNodeService().getProperty(nodeRef, RecordableVersionModel.PROP_VERSIONED_NODEREF) == null)
-                {                // if enabled cleanse content
+                        getNodeService().getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
+                {
+                    // if enabled cleanse content
                     if (isCleansingEnabled())
                     {
                         // register for cleanse then immediate destruction

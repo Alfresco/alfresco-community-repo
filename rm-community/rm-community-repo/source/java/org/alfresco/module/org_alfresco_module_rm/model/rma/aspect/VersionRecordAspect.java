@@ -34,12 +34,17 @@ import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.namespace.QName;
 
 /**
  * rmv:versionRecord behaviour bean
@@ -52,14 +57,18 @@ import org.alfresco.service.cmr.version.Version;
    defaultType = "rmv:versionRecord"
 )
 public class VersionRecordAspect extends    BaseBehaviourBean
-                                 implements NodeServicePolicies.BeforeDeleteNodePolicy
+                                 implements NodeServicePolicies.BeforeAddAspectPolicy,
+                                            NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
     
     /** relationship service */
     private RelationshipService relationshipService;
-    
+
+    /** File folder service */
+    private FileFolderService fileFolderService;
+
     /**
      * @param recordableVersionService  recordable version service
      */
@@ -75,7 +84,16 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     {
         this.relationshipService = relationshipService;
     }
-    
+
+    /**
+     *
+     * @param fileFolderService file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
     /**
      * If the record is a version record then delete the associated version entry
      * 
@@ -128,5 +146,24 @@ public class VersionRecordAspect extends    BaseBehaviourBean
                 }
             });
         }         
+    }
+
+    /**
+     * Behaviour to duplicate the bin before declaring a version record
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeAddAspect(NodeRef nodeRef, QName qName)
+    {
+        //create a new content URL for the version record
+        ContentReader reader = fileFolderService.getReader(nodeRef);
+        if (reader != null)
+        {
+            ContentWriter writer = fileFolderService.getWriter(nodeRef);
+            writer.putContent(reader);
+        }
     }
 }

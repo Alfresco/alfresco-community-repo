@@ -30,7 +30,7 @@
    </distributionManagement>
    
    <properties>
-      <dependency.spring.version>5.1.4.RELEASE</dependency.spring.version>
+      <dependency.spring.version>5.1.5.RELEASE</dependency.spring.version>
       <dependency.surf.version>6.20</dependency.surf.version>
    </properties>
 

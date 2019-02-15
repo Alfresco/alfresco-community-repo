@@ -45,6 +45,7 @@
         <property name="authenticationUtil" ref="rm.authenticationUtil"/>
         <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
         <property name="renditionService" ref="RenditionService" />
+        <property name="fileFolderService" ref="FileFolderService" />
      </bean>
 
     <!-- Records Management Service Registry -->

@@ -215,21 +215,16 @@ public class ContentDestructionComponent
                 // get content data
                 ContentData dataContent = (ContentData)entry.getValue();
 
-                // destroy the node's content properties only if it doesn't have copies or it is a copy
-                if (getNodeService().getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() &&
-                        getNodeService().getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
+                // if enabled cleanse content
+                if (isCleansingEnabled())
                 {
-                    // if enabled cleanse content
-                    if (isCleansingEnabled())
-                    {
-                        // register for cleanse then immediate destruction
-                        getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
-                    }
-                    else
-                    {
-                        // register for immediate destruction
-                        getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
-                    }
+                    // register for cleanse then immediate destruction
+                    getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
+                }
+                else
+                {
+                    // register for immediate destruction
+                    getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
                 }
 
                 // clear the property

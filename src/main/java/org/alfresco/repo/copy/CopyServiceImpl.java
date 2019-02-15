@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -254,8 +255,8 @@ public class CopyServiceImpl extends AbstractBaseCopyService implements CopyServ
         // Clear out any record of copied associations
         TransactionalResourceHelper.getList(KEY_POST_COPY_ASSOCS).clear();
         
-        // Keep track of copied children
-        Map<NodeRef, NodeRef> copiesByOriginals = new HashMap<NodeRef, NodeRef>(17);
+        // Keep track of copied children in order of copying
+        Map<NodeRef, NodeRef> copiesByOriginals = new LinkedHashMap<NodeRef, NodeRef>(17);
         Set<NodeRef> copies = new HashSet<NodeRef>(17);
 
         NodeRef copiedNodeRef = copyImpl(

@@ -36,8 +36,11 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -73,7 +76,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     protected AuthenticationUtil authenticationUtil;
     
     /** transactional resource helper */
-    protected TransactionalResourceHelper transactionalResourceHelper; 
+    protected TransactionalResourceHelper transactionalResourceHelper;
+
+    /** File folder service */
+    protected FileFolderService fileFolderService;
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -122,6 +128,16 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
         this.transactionalResourceHelper = transactionalResourceHelper;
+    }
+
+    /**
+     * Set the file folder service
+     *
+     * @param fileFolderService file folder service
+     */
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -536,5 +552,16 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         Set<QName> result = nodeService.getAspects(nodeRef);
         result.add(nodeService.getType(nodeRef));
         return result;
+    }
+
+    protected void createNewContentURL(NodeRef nodeRef)
+    {
+        //create a new content URL for the copy
+        ContentReader reader = fileFolderService.getReader(nodeRef);
+        if (reader != null)
+        {
+            ContentWriter writer = fileFolderService.getWriter(nodeRef);
+            writer.putContent(reader);
+        }
     }
 }

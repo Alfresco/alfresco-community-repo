@@ -39,9 +39,6 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
@@ -66,9 +63,6 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     /** relationship service */
     private RelationshipService relationshipService;
 
-    /** File folder service */
-    private FileFolderService fileFolderService;
-
     /**
      * @param recordableVersionService  recordable version service
      */
@@ -83,15 +77,6 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     public void setRelationshipService(RelationshipService relationshipService)
     {
         this.relationshipService = relationshipService;
-    }
-
-    /**
-     *
-     * @param fileFolderService file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -159,11 +144,6 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     public void beforeAddAspect(NodeRef nodeRef, QName qName)
     {
         //create a new content URL for the version record
-        ContentReader reader = fileFolderService.getReader(nodeRef);
-        if (reader != null)
-        {
-            ContentWriter writer = fileFolderService.getWriter(nodeRef);
-            writer.putContent(reader);
-        }
+        createNewContentURL(nodeRef);
     }
 }

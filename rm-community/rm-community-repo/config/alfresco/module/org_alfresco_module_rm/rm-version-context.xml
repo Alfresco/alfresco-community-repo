@@ -16,7 +16,6 @@
    <bean id="rmv.versionRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VersionRecordAspect" parent="rm.baseBehaviour">
         <property name="recordableVersionService" ref="RecordableVersionService" />
         <property name="relationshipService" ref="RelationshipService" />
-        <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
 
    <!-- extended version service bean definition -->

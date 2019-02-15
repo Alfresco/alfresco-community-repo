@@ -74,7 +74,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
-    
+
     /** transactional resource helper */
     protected TransactionalResourceHelper transactionalResourceHelper;
 
@@ -554,9 +554,14 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         return result;
     }
 
+    /**
+     * Helper to create a new content URL for the node
+     *
+     * @param nodeRef the node
+     */
     protected void createNewContentURL(NodeRef nodeRef)
     {
-        //create a new content URL for the copy
+        //create a new content URL for the node
         ContentReader reader = fileFolderService.getReader(nodeRef);
         if (reader != null)
         {

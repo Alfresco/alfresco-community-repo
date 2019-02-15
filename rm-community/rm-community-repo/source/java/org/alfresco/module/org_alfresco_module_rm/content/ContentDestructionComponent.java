@@ -33,7 +33,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

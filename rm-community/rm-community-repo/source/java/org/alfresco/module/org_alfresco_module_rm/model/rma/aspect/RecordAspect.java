@@ -335,11 +335,7 @@ public class RecordAspect extends    AbstractDisposableItem
     /**
      * On copy complete behaviour for record aspect.
      *
-     * @param classRef
-     * @param sourceNodeRef
-     * @param targetNodeRef
-     * @param copyToNewNode
-     * @param copyMap
+     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(QName, NodeRef, NodeRef, boolean, Map)
      */
     @Override
     @Behaviour
@@ -405,7 +401,7 @@ public class RecordAspect extends    AbstractDisposableItem
                 if (!nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() ||
                         !nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
                 {
-                    //disabling versioning and auditing
+                    //disable versioning and auditing
                     behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
                     behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                     try

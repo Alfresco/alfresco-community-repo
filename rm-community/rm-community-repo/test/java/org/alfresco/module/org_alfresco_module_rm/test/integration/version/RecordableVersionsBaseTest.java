@@ -240,7 +240,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                 Serializable frozenValue = frozenProperties.get(beforePropertyName);
                 if(beforePropertyName.equals(ContentModel.PROP_CONTENT))
                 {
-                    assertTrue("Frozen property " + beforePropertyName.getLocalName() + " value is incorrect.",
+                    assertTrue("Content property value should be different.",
                             entry.getValue() != frozenValue);
                 }
                 else

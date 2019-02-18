@@ -28,9 +28,11 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -40,6 +42,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -78,8 +81,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /** transactional resource helper */
     protected TransactionalResourceHelper transactionalResourceHelper;
 
-    /** File folder service */
-    protected FileFolderService fileFolderService;
+    /** Content service */
+    protected ContentService contentService;
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -131,13 +134,13 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * Set the file folder service
+     * Set the content service
      *
-     * @param fileFolderService file folder service
+     * @param contentService content service
      */
-    public void setFileFolderService(FileFolderService fileFolderService)
+    public void setContentService(ContentService contentService)
     {
-        this.fileFolderService = fileFolderService;
+        this.contentService = contentService;
     }
 
     /**
@@ -555,18 +558,28 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
+     * Helper to update the given content property for the node
+     *
+     * @param nodeRef the node
+     * @param contentProperty the property to be updated
+     */
+    protected void updateContentProperty(NodeRef nodeRef, QName contentProperty)
+    {
+        ContentReader reader = contentService.getReader(nodeRef, contentProperty);
+        if (reader != null)
+        {
+            ContentWriter writer = contentService.getWriter(nodeRef, contentProperty, true);
+            writer.putContent(reader);
+        }
+    }
+
+    /**
      * Helper to create a new content URL for the node
      *
      * @param nodeRef the node
      */
     protected void createNewContentURL(NodeRef nodeRef)
     {
-        //create a new content URL for the node
-        ContentReader reader = fileFolderService.getReader(nodeRef);
-        if (reader != null)
-        {
-            ContentWriter writer = fileFolderService.getWriter(nodeRef);
-            writer.putContent(reader);
-        }
+        updateContentProperty(nodeRef, ContentModel.PROP_CONTENT);
     }
 }

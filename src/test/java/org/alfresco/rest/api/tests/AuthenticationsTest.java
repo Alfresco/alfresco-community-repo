@@ -30,6 +30,7 @@ import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextMan
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
@@ -45,6 +46,8 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
@@ -70,11 +73,13 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private static final String TICKETS_URL = "tickets";
     private static final String TICKETS_API_NAME = "authentication";
     private PublicApiAuthenticatorFactory authFactory;
+    private TransactionServiceImpl transactionService;
 
     @Before
     public void setUpAuthTest()
     {
         authFactory = (PublicApiAuthenticatorFactory) applicationContext.getBean("publicapi.authenticator");
+        transactionService = (TransactionServiceImpl) applicationContext.getBean("transactionService");
     }
 
     @Test
@@ -356,6 +361,37 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         {
             //reset authentication chain
             resetAuthentication(originalRemoteUserMapper);
+        }
+    }
+
+    // REPO-4168 / MNT-20308
+    @Test
+    public void testTicketLoginSystemReadOnly() throws Exception
+    {
+        QName veto = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "TestVeto");
+
+        try
+        {
+            // Set transactions to read-only
+            transactionService.setAllowWrite(false, veto);
+
+            // Set the login details
+            LoginTicket loginRequest = new LoginTicket();
+            loginRequest.setUserId(user1);
+            loginRequest.setPassword("user1Password");
+
+            // Authenticate and create a ticket
+            HttpResponse response = post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
+            LoginTicketResponse validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
+            Map<String, String> ticket = Collections.singletonMap("alf_ticket", validatedTicket.getId());
+
+            // Delete the ticket - logout
+            delete(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 204);
+        }
+        finally
+        {
+            // Set transactions back to write allow write
+            transactionService.setAllowWrite(true, veto);
         }
     }
 

@@ -166,7 +166,11 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
         final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT,CACHE_NEVER);
-        Object toReturn = transactionService.getRetryingTransactionHelper().doInTransaction(
+
+        // MNT-20308 - allow write transactions for authentication api
+        RetryingTransactionHelper transHelper = getTransactionHelper(resource.getMetaData().getApi().getName());
+
+        Object toReturn = transHelper.doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
                     @Override
@@ -183,6 +187,16 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }, isReadOnly, true);
         setResponse(res,callBack);
         return toReturn;
+    }
+
+    protected RetryingTransactionHelper getTransactionHelper(String api)
+    {
+        RetryingTransactionHelper transHelper = transactionService.getRetryingTransactionHelper();
+        if (api.equals("authentication"))
+        {
+            transHelper.setForceWritable(true);
+        }
+        return transHelper;
     }
 
     protected void streamResponse(final WebScriptRequest req, final WebScriptResponse res, BinaryResource resource) throws IOException

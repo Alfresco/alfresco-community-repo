@@ -288,7 +288,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         STEP("Create a record in folder A and copy it into folder B.");
         String recordId = getRestAPIFactory().getRecordFolderAPI()
                     .createRecord(createElectronicRecordModel(), recordFolderA.getId(), getFile(IMAGE_FILE)).getId();
-        String copyId = copyRecord(recordId, recordFolderB.getId()).getId();
+        String copyId = copyNode(recordId, recordFolderB.getId()).getId();
         assertStatusCode(CREATED);
 
         STEP("Check that it's possible to load the original content.");
@@ -306,7 +306,7 @@ public class DeleteRecordTests extends BaseRMRestTest
 
     /**
      * <pre>
-     * Given a file that has  copy
+     * Given a file that has a copy
      * And the original file is declared as record
      * When I delete the original
      * Then it is still possible to view the content of the copy
@@ -320,9 +320,8 @@ public class DeleteRecordTests extends BaseRMRestTest
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        STEP("Create a copy for the file created.");
-        String postBody = JsonBodyGenerator.keyValueJson("targetParentId", testSite.getGuid());
-        RestNodeModel copyOfTestFile = getRestAPIFactory().getNodeAPI(testFile).copyNode(postBody);
+        STEP("Create a copy of the file.");
+        RestNodeModel copyOfTestFile = copyNode(testFile.getNodeRefWithoutVersion(), testSite.getGuid());
 
         STEP("Declare original file as record");
         getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
@@ -341,9 +340,9 @@ public class DeleteRecordTests extends BaseRMRestTest
 
     /**
      * <pre>
-     * Given a file that has  copy
+     * Given a file that has a copy
      * And the original file is declared as record
-     * And the file becomes part of a disposition schedule with a destroy step
+     * And the record becomes part of a disposition schedule with a destroy step
      * When the record is destroyed
      * Then it is still possible to view the content of the copy
      * </pre>
@@ -355,10 +354,10 @@ public class DeleteRecordTests extends BaseRMRestTest
         STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        FolderModel folderModel =dataContent.usingSite(testSite).createFolder();
+        FolderModel folderModel = dataContent.usingSite(testSite).createFolder();
 
-        STEP("Create a copy for the file created.");
-        RestNodeModel copy = copyRecord(testFile.getNodeRefWithoutVersion(), folderModel.getNodeRefWithoutVersion());
+        STEP("Create a copy of the file.");
+        RestNodeModel copy = copyNode(testFile.getNodeRefWithoutVersion(), folderModel.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Declare the file as record.");
@@ -366,7 +365,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(CREATED);
 
         STEP("Create a record category with a disposition schedule.");
-        RecordCategory  recordCategory = createRootCategory(getRandomName("Category with disposition"));
+        RecordCategory recordCategory = createRootCategory(getRandomName("Category with disposition"));
         dispositionScheduleService.createCategoryRetentionSchedule(recordCategory.getName(), true);
 
         STEP("Add retention schedule cut off and destroy step with immediate period.");
@@ -380,7 +379,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         getRestAPIFactory().getRecordsAPI().completeRecord(recordFiled.getId());
         assertStatusCode(CREATED);
 
-        STEP("Execute the disposition schedule steps .");
+        STEP("Execute the disposition schedule steps.");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
                 RM_ACTIONS.CUT_OFF);
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
@@ -397,22 +396,20 @@ public class DeleteRecordTests extends BaseRMRestTest
 
     /**
      * <pre>
-     * Given a file that is declared version as record
+     * Given a file that has version declared as record
      * When the record is deleted
      * Then it is still possible to view the content of the file
      * </pre>
      */
-    @Test (description = "Destroying record doesn't delete the content for the associated copy")
+    @Test (description = "Deleting record made from version doesn't delete the content for the file")
     @AlfrescoTest (jira = "MNT-20145")
     public void deleteVersionDeclaredAsRecord() throws Exception
     {
         STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        FolderModel folderModel = dataContent.usingSite(testSite).createFolder();
 
-        STEP("Declare the file as record.");
-        // declare documents as records
+        STEP("Declare file version as record.");
         recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
                 testFile.getName());
         UnfiledContainerChild unfiledContainerChild = getRestAPIFactory().getUnfiledContainersAPI()
@@ -455,15 +452,15 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Copy a record to a record folder.
+     * Copy a node to a folder.
      *
-     * @param recordId The id of the record to copy.
-     * @param destinationFolder The id of the record folder to copy it to.
+     * @param nodeId The id of the node to copy.
+     * @param destinationFolder The id of the folder to copy it to.
      * @return The model returned by the copy API.
      */
-    private RestNodeModel copyRecord(String recordId, String destinationFolder)
+    private RestNodeModel copyNode(String nodeId, String destinationFolder)
     {
-        Node node = getNode(recordId);
+        Node node = getNode(nodeId);
         RestNodeBodyMoveCopyModel copyBody = new RestNodeBodyMoveCopyModel();
         copyBody.setTargetParentId(destinationFolder);
         try

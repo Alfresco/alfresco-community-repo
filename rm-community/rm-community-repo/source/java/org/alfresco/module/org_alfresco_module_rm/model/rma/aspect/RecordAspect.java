@@ -51,13 +51,9 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
@@ -98,9 +94,6 @@ public class RecordAspect extends    AbstractDisposableItem
     /** quickShare service */
     private QuickShareService quickShareService;
 
-    /** File folder service */
-    private FileFolderService fileFolderService;
-
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
@@ -135,15 +128,6 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setQuickShareService(QuickShareService quickShareService)
     {
         this.quickShareService = quickShareService;
-    }
-
-    /**
-     *
-     * @param fileFolderService file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
     }
 
     /**
@@ -351,11 +335,7 @@ public class RecordAspect extends    AbstractDisposableItem
     /**
      * On copy complete behaviour for record aspect.
      *
-     * @param classRef
-     * @param sourceNodeRef
-     * @param targetNodeRef
-     * @param copyToNewNode
-     * @param copyMap
+     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(QName, NodeRef, NodeRef, boolean, Map)
      */
     @Override
     @Behaviour
@@ -376,12 +356,7 @@ public class RecordAspect extends    AbstractDisposableItem
             extendedSecurityService.remove(targetNodeRef);
 
             //create a new content URL for the copy
-            ContentReader reader = fileFolderService.getReader(targetNodeRef);
-            if (reader != null)
-            {
-                ContentWriter writer = fileFolderService.getWriter(targetNodeRef);
-                writer.putContent(reader);
-            }
+            createNewContentURL(targetNodeRef);
         }
     }
 
@@ -402,6 +377,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /**
      * Behaviour to remove the shared link before declare a record
+     * and to create new bin if the node is a copy or has copies
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
      *      org.alfresco.service.namespace.QName)
@@ -419,6 +395,26 @@ public class RecordAspect extends    AbstractDisposableItem
                 if (sharedId != null)
                 {
                     quickShareService.unshareContent(sharedId);
+                }
+
+                // if the node has a copy or is a copy of an existing node
+                if (!nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() ||
+                        !nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
+                {
+                    //disable versioning and auditing
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    try
+                    {
+                        //create a new content URL for the copy/original node
+                        createNewContentURL(nodeRef);
+                    }
+                    finally
+                    {
+                        //enable versioning and auditing
+                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    }
                 }
 
                 return null;

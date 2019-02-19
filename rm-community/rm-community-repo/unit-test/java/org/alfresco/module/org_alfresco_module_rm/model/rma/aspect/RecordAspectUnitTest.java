@@ -27,6 +27,7 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.mockito.Matchers.eq;
@@ -95,13 +96,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(1)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(1)).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(1)).putContent(mockContentReader);
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+         verifyBeforeAddAspectMethodsInvocations(1);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file is a copy. */
@@ -114,18 +109,12 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(1)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(1)).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(1)).putContent(mockContentReader);
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+         verifyBeforeAddAspectMethodsInvocations(1);
     }
 
     /** Check that no content bin is created if the file does not have content. */
     @Test
-    public void testFileWithNoContent()
+    public void testBeforeAddAspectOnFileWithNoContent()
     {
         when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
         when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
@@ -138,6 +127,18 @@ public class RecordAspectUnitTest
         verify(mockContentService, never()).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
         verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
         verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+    }
+
+    /** Check that the bin is not duplicated before adding the aspect if the node has no copies. */
+    @Test
+    public void testNotDuplicateBinForFileWithNoCopies()
+    {
+        when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(emptyList());
+        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(emptyList());
+
+        recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
+
+        verifyBeforeAddAspectMethodsInvocations(0);
     }
 
     /** Check that the bin is duplicated when copying a record. */
@@ -155,5 +156,21 @@ public class RecordAspectUnitTest
         verify(mockContentService, times(1)).getReader(COPY_REF, ContentModel.PROP_CONTENT);
         verify(mockContentService, times(1)).getWriter(COPY_REF, ContentModel.PROP_CONTENT, true);
         verify(mockContentWriter, times(1)).putContent(mockContentReader);
+    }
+
+    /**
+     * Helper to verify beforeAddAspect methods invocations
+     *
+     * @param wantedNumberOfInvocations wanted number of invocations for each method
+     */
+    private void verifyBeforeAddAspectMethodsInvocations(int wantedNumberOfInvocations)
+    {
+        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
+        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+        verify(mockContentService, times(wantedNumberOfInvocations)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
+        verify(mockContentService, times(wantedNumberOfInvocations)).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
+        verify(mockContentWriter, times(wantedNumberOfInvocations)).putContent(mockContentReader);
+        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
+        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
     }
 }

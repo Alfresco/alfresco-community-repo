@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.webscripts;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -262,7 +263,11 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     {
         final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
         final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT,CACHE_NEVER);
-        transactionService.getRetryingTransactionHelper().doInTransaction(
+
+        // MNT-20308 - allow write transactions for authentication api
+        RetryingTransactionHelper transHelper = getTransactionHelper(resource.getMetaData().getApi().getName());
+
+        transHelper.doInTransaction(
             new RetryingTransactionCallback<Void>()
             {
                 @Override

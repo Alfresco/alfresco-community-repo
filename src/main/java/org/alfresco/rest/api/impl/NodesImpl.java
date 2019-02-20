@@ -1855,6 +1855,8 @@ public class NodesImpl implements Nodes
 
         addCustomAspects(nodeRef, nodeInfo.getAspectNames(), EXCLUDED_ASPECTS);
 
+        processNodePermissions(nodeRef, nodeInfo);
+
         // eg. to create mandatory assoc(s)
 
         if (nodeInfo.getTargets() != null)
@@ -2270,6 +2272,66 @@ public class NodesImpl implements Nodes
             props.put(ContentModel.PROP_NAME, name);
         }
 
+        String nodeType = nodeInfo.getNodeType();
+        if ((nodeType != null) && (! nodeType.isEmpty()))
+        {
+            // update node type - ensure that we are performing a specialise (we do not support generalise)
+            QName destNodeTypeQName = createQName(nodeType);
+
+            if ((! destNodeTypeQName.equals(nodeTypeQName)) &&
+                 isSubClass(destNodeTypeQName, nodeTypeQName) &&
+                 (! isSubClass(destNodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER)))
+            {
+                nodeService.setType(nodeRef, destNodeTypeQName);
+            }
+            else if (! destNodeTypeQName.equals(nodeTypeQName))
+            {
+                throw new InvalidArgumentException("Failed to change (specialise) node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
+            }
+        }
+
+        NodeRef parentNodeRef = nodeInfo.getParentId();
+        if (parentNodeRef != null)
+        {
+            NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
+            if (currentParentNodeRef == null)
+            {
+                // implies root (Company Home) hence return 403 here
+                throw new PermissionDeniedException();
+            }
+
+            if (! currentParentNodeRef.equals(parentNodeRef))
+            {
+                //moveOrCopy(nodeRef, parentNodeRef, name, false); // not currently supported - client should use explicit POST /move operation instead
+                throw new InvalidArgumentException("Cannot update parentId of "+nodeId+" via PUT /nodes/{nodeId}. Please use explicit POST /nodes/{nodeId}/move operation instead");
+            }
+        }
+
+        List<String> aspectNames = nodeInfo.getAspectNames();
+        updateCustomAspects(nodeRef, aspectNames, EXCLUDED_ASPECTS);
+
+        if (props.size() > 0)
+        {
+            validatePropValues(props);
+
+            try
+            {
+                // update node properties - note: null will unset the specified property
+                nodeService.addProperties(nodeRef, props);
+            }
+            catch (DuplicateChildNodeNameException dcne)
+            {
+                throw new ConstraintViolatedException(dcne.getMessage());
+            }
+        }
+
+        processNodePermissions(nodeRef, nodeInfo);
+        
+        return nodeRef;
+    }
+
+    protected void processNodePermissions(NodeRef nodeRef, Node nodeInfo)
+    {
         NodePermissions nodePerms = nodeInfo.getPermissions();
         if (nodePerms != null)
         {
@@ -2385,61 +2447,6 @@ public class NodesImpl implements Nodes
                 }
             }
         }
-
-        String nodeType = nodeInfo.getNodeType();
-        if ((nodeType != null) && (! nodeType.isEmpty()))
-        {
-            // update node type - ensure that we are performing a specialise (we do not support generalise)
-            QName destNodeTypeQName = createQName(nodeType);
-
-            if ((! destNodeTypeQName.equals(nodeTypeQName)) &&
-                 isSubClass(destNodeTypeQName, nodeTypeQName) &&
-                 (! isSubClass(destNodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER)))
-            {
-                nodeService.setType(nodeRef, destNodeTypeQName);
-            }
-            else
-            {
-                throw new InvalidArgumentException("Failed to change (specialise) node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
-            }
-        }
-
-        NodeRef parentNodeRef = nodeInfo.getParentId();
-        if (parentNodeRef != null)
-        {
-            NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
-            if (currentParentNodeRef == null)
-            {
-                // implies root (Company Home) hence return 403 here
-                throw new PermissionDeniedException();
-            }
-
-            if (! currentParentNodeRef.equals(parentNodeRef))
-            {
-                //moveOrCopy(nodeRef, parentNodeRef, name, false); // not currently supported - client should use explicit POST /move operation instead
-                throw new InvalidArgumentException("Cannot update parentId of "+nodeId+" via PUT /nodes/{nodeId}. Please use explicit POST /nodes/{nodeId}/move operation instead");
-            }
-        }
-
-        List<String> aspectNames = nodeInfo.getAspectNames();
-        updateCustomAspects(nodeRef, aspectNames, EXCLUDED_ASPECTS);
-
-        if (props.size() > 0)
-        {
-            validatePropValues(props);
-
-            try
-            {
-                // update node properties - note: null will unset the specified property
-                nodeService.addProperties(nodeRef, props);
-            }
-            catch (DuplicateChildNodeNameException dcne)
-            {
-                throw new ConstraintViolatedException(dcne.getMessage());
-            }
-        }
-        
-        return nodeRef;
     }
 
     @Override

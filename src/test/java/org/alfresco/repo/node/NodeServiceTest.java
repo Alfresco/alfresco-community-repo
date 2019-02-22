@@ -395,13 +395,6 @@ public class NodeServiceTest
      */
     public void testConcurrentArchive() throws Exception
     {
-        Dialect dialect = (Dialect) APP_CONTEXT_INIT.getApplicationContext().getBean("dialect");
-        if (dialect.getClass().getName().contains("DB2"))
-        {
-            // See ALF-16888.  DB2 fails this test persistently.
-            return;
-        }
-
         final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         final NodeRef[] nodesPrimer = new NodeRef[2];
         buildNodeHierarchy(workspaceRootNodeRef, nodesPrimer);

@@ -75,7 +75,6 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.domain.dialect.MySQLClusterNDBDialect;
 import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.repo.domain.dialect.SQLServerDialect;
-import org.alfresco.repo.domain.dialect.DB2Dialect;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
@@ -1645,13 +1644,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // string_value nvarchar(1024) null,
             // serializable_value image null,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
-        }
-        else if (dialect instanceof DB2Dialect)
-        {
-            // string_value varchar(1024),
-            // serializable_value varchar(8192) for bit data,
-            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
-            serializableType = Types.BLOB;
         }
         else if (dialect instanceof MySQLClusterNDBDialect)
         {

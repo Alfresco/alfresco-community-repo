@@ -125,36 +125,7 @@ public class DialectFactory
         // detectors...
         MAPPERS.put( "PostgreSQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.PostgreSQLDialect" ) );
 
-        MAPPERS.put( "DB2/NT", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/LINUX", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/6000", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/HPUX", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/SUN", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/LINUX390", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/AIX64", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/NT",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/NT64",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2 UDP",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/LINUX",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/LINUX390",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/LINUXZ64",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/400 SQL",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/6000",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2 UDB iSeries",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/AIX64",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/HPUX",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/HP64",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/SUN",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/SUN64",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/PTX",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/2",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-        MAPPERS.put( "DB2/LINUXX8664",new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ));
-
         MAPPERS.put( "MySQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" ) );
-        MAPPERS.put( "DB2/NT64", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
-        MAPPERS.put( "DB2/LINUX", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.DB2Dialect" ) );
         MAPPERS.put( "Microsoft SQL Server Database", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
         MAPPERS.put( "Microsoft SQL Server", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
         MAPPERS.put( "Oracle", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.Oracle9Dialect" ) );

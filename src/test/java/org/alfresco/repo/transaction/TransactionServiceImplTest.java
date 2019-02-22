@@ -188,7 +188,7 @@ public class TransactionServiceImplTest extends BaseSpringTest
         }
         catch (IllegalStateException e)
         {
-            // or this - for MS SQLServer, DB2, Oracle (via AbstractNodeDAOImpl.getCurrentTransaction)
+            // or this - for MS SQLServer, Oracle (via AbstractNodeDAOImpl.getCurrentTransaction)
             @SuppressWarnings("unused")
             int i = 0;
         }

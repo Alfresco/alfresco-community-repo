@@ -163,8 +163,8 @@ public class ActivitiSpringTest extends TestCase
                 {
                     public Void execute() throws Throwable
                     {
-                        ProcessInstance instanceInDb2 = findProcessInstance(id);
-                        assertNull("Should not be able to read process instance in inner transaction!", instanceInDb2);
+                        ProcessInstance instanceInDb = findProcessInstance(id);
+                        assertNull("Should not be able to read process instance in inner transaction!", instanceInDb);
                         return null;
                     }
                 };

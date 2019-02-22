@@ -46,7 +46,6 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.domain.dialect.DB2Dialect;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.repo.domain.dialect.SQLServerDialect;
@@ -1589,8 +1588,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private boolean shouldTestBeSkippedForCurrentDB()
     {
         Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-        return dialect instanceof Oracle9Dialect
-                || dialect instanceof SQLServerDialect
-                || dialect instanceof DB2Dialect;
+        return dialect instanceof Oracle9Dialect ||
+               dialect instanceof SQLServerDialect;
     }
 }

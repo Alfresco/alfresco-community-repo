@@ -476,7 +476,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         String uuid = nodeRef.getId();
         if (uuid.length() > 36)
         {
-            return null;            // Avoid DB2 query failure if someone passes in a made-up UUID
+            return null;            // Avoid query failure if someone passes in a made-up UUID.
+                                    // Originally for DB2 which has been EOLed, but might now be used by other databases.
         }
         node.setUuid(uuid);
         

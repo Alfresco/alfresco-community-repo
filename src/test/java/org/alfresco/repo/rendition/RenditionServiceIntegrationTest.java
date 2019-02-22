@@ -634,7 +634,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     return null;
                 }
             };
-            // MNT-9598: RenditionServiceIntegrationTest failing on DB2
+            // MNT-9598: RenditionServiceIntegrationTest
             //           We have to give the transaction reties a chance i.e. DO NOT ABSORB EXCEPTIONS inside transaction.
             //           Retrying is standard behaviour so absorbing the exception but still testing for it is guaranteeing failure.
             try

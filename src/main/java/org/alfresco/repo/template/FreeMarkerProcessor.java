@@ -139,6 +139,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             
             // localized template lookups off by default - as they create strange noderef lookups
             // such as workspace://SpacesStore/01234_en_GB - causes problems for ns.exists() on DB2
+            // DB2 has be EOLed in Alfresco, but might now be used by other databases.
             config.setLocalizedLookup(localizedLookup);
             
             // set default template encoding

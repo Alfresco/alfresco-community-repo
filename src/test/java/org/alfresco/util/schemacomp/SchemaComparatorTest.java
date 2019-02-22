@@ -379,8 +379,8 @@ public class SchemaComparatorTest
     }
     
     /**
-     * Tests index of primary key validation, problem found when comparing DB2 schemas which has 
-     * system generated indexes for primary keys
+     * Tests index of primary key validation, problem found when comparing DB2 schemas (now EOLed) which has
+     * system generated indexes for primary keys, but might still be useful as a test.
      */
     @Test
     public void systemGeneratedPrimaryKeyAndIndex()

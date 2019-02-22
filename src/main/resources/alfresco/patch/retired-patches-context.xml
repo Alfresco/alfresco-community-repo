@@ -1317,16 +1317,6 @@
             <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
-        <property name="id" value="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
-        <property name="description" value="patch.varcharFieldSizesQuadrupleIncreasing.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="5005" />
-        <property name="targetSchema" value="5006" />
-        <property name="lastSupportedVersion" >
-            <value>4.2.x</value>
-        </property>
-    </bean>
     <bean id="patch.fixAclInheritance" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.fixAclInheritance</value></property>
         <property name="description"><value>patch.fixAclInheritance.description</value></property>
@@ -1529,32 +1519,12 @@
             <value>5.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V4.1-remove-column-activiti" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
-        <property name="id" value="patch.db-V4.1-remove-column-activiti" />
-        <property name="description" value="patch.removeColumnActiviti.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="6017" />
-        <property name="targetSchema" value="6018" />
-        <property name="lastSupportedVersion" >
-            <value>5.2.x</value>
-        </property>
-    </bean>
     <bean id="patch.db-V4.2-upgrade-to-activiti-5.10" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.2-upgrade-to-activiti-5.10</value></property>
         <property name="description"><value>patch.upgradeToActiviti5-10.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>6018</value></property>
         <property name="targetSchema"><value>6019</value></property>
-        <property name="lastSupportedVersion" >
-            <value>5.2.x</value>
-        </property>
-    </bean>
-    <bean id="patch.db-V4.1-rename-constraint-activiti" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V4.1-rename-constraint-activiti</value></property>
-        <property name="description"><value>patch.renameConstraintActiviti.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>6020</value></property>
-        <property name="targetSchema"><value>6021</value></property>
         <property name="lastSupportedVersion" >
             <value>5.2.x</value>
         </property>

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -38,6 +39,9 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -71,9 +75,12 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
-    
+
     /** transactional resource helper */
-    protected TransactionalResourceHelper transactionalResourceHelper; 
+    protected TransactionalResourceHelper transactionalResourceHelper;
+
+    /** Content service */
+    protected ContentService contentService;
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -122,6 +129,16 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
         this.transactionalResourceHelper = transactionalResourceHelper;
+    }
+
+    /**
+     * Set the content service
+     *
+     * @param contentService content service
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /**
@@ -536,5 +553,31 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         Set<QName> result = nodeService.getAspects(nodeRef);
         result.add(nodeService.getType(nodeRef));
         return result;
+    }
+
+    /**
+     * Helper to update the given content property for the node
+     *
+     * @param nodeRef the node
+     * @param contentProperty the property to be updated
+     */
+    protected void updateContentProperty(NodeRef nodeRef, QName contentProperty)
+    {
+        ContentReader reader = contentService.getReader(nodeRef, contentProperty);
+        if (reader != null)
+        {
+            ContentWriter writer = contentService.getWriter(nodeRef, contentProperty, true);
+            writer.putContent(reader);
+        }
+    }
+
+    /**
+     * Helper to create a new content URL for the node
+     *
+     * @param nodeRef the node
+     */
+    protected void createNewContentURL(NodeRef nodeRef)
+    {
+        updateContentProperty(nodeRef, ContentModel.PROP_CONTENT);
     }
 }

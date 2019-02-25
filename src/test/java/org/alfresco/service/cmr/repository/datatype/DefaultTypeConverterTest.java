@@ -122,6 +122,10 @@ public class DefaultTypeConverterTest extends TestCase
         // Period
         assertEquals("period", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period")));
         assertEquals("period|12", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period|12")));
+        Map<String,String> periodMap = new HashMap<>();
+        periodMap.put("periodType","month");
+        periodMap.put("expression","1");
+        assertEquals(new Period("month|1"), DefaultTypeConverter.INSTANCE.convert(Period.class, new Period(periodMap)));
         // Java Class
         assertEquals(this.getClass(), DefaultTypeConverter.INSTANCE.convert(Class.class, this.getClass().getName()));
     }

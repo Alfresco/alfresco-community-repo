@@ -115,7 +115,7 @@
       </init-param>
       <init-param>
          <param-name>cors.allowOrigin</param-name>
-         <param-value>http://localhost:8081</param-value>
+         <param-value>http://localhost:8081,http://myapp.example.com</param-value>
       </init-param>
       <init-param>
          <param-name>cors.allowSubdomains</param-name>
@@ -127,7 +127,11 @@
       </init-param>
       <init-param>
          <param-name>cors.supportedHeaders</param-name>
-         <param-value>origin, authorization, x-file-size, x-file-name, content-type, accept, x-file-type</param-value>
+         <param-value>origin, authorization, x-file-size, x-file-name, content-type, accept, x-file-type, range</param-value>
+      </init-param>
+      <init-param>
+         <param-name>cors.exposedHeaders</param-name>
+         <param-value>Accept-Ranges, Content-Encoding, Content-Length, Content-Range</param-value>
       </init-param>
       <init-param>
          <param-name>cors.supportsCredentials</param-name>
@@ -159,6 +163,7 @@
       <url-pattern>/service/*</url-pattern>
       <url-pattern>/s/*</url-pattern>
       <url-pattern>/cmisbrowser/*</url-pattern>
+      <url-pattern>/definitions/*</url-pattern>
    </filter-mapping>-->
    <!-- CORS Filter Mappings End -->
 

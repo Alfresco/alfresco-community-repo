@@ -463,6 +463,11 @@ public class Person implements Serializable
 		return (b != null ? b : false);
 	}
 
+    public String getDisplayName()
+    {
+        return ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
+    }
+
 	@Override
 	public String toString()
 	{

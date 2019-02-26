@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -370,6 +371,8 @@ public class TestNodeComments extends EnterpriseTestApi
 				Comment resp = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
 				// check response
 				assertEquals(comment.getContent(), resp.getContent());
+				assertFalse(StringUtils.isEmpty(resp.getCreatedBy().getDisplayName()));
+				assertEquals(resp.getCreatedBy().getDisplayName(), person11.getDisplayName());
 				assertTrue(format.parse(resp.getCreatedAt()).after(time));
 				person11.expected(resp.getCreatedBy());
 				assertNotNull(resp.getId());

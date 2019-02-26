@@ -300,6 +300,7 @@ public class TestPeople extends AbstractBaseApiTest
         assertEquals("myUserName00@"+account1.getId(), p.getId());
         assertEquals("Firstname", p.getFirstName());
         assertEquals("Lastname", p.getLastName());
+        assertEquals("Firstname Lastname", p.getDisplayName());
         assertEquals("my description", p.getDescription());
         assertEquals("email@example.com", p.getEmail());
         assertEquals("my.skype.id", p.getSkypeId());
@@ -444,6 +445,7 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals("joe.bloggs@" + account1.getId(), p.getId());
             assertEquals("Joe", p.getFirstName());
             assertEquals("Bloggs", p.getLastName());
+            assertEquals("Joe Bloggs", p.getDisplayName());
             assertEquals(null, p.getDescription());
             assertEquals("joe.bloggs@example.com", p.getEmail());
             assertEquals("jb.skype.id", p.getSkypeId());
@@ -483,6 +485,7 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals("joe.bloggs.2@" + account1.getId(), p.getId());
             assertEquals("Joe", p.getFirstName());
             assertEquals(null, p.getLastName());
+            assertEquals("Joe", p.getDisplayName());
             assertEquals(null, p.getDescription());
             assertEquals("joe.bloggs.2@example.com", p.getEmail());
             assertEquals(null, p.getSkypeId());
@@ -1192,6 +1195,7 @@ public class TestPeople extends AbstractBaseApiTest
         assertNotNull(updatedPerson.getId());
         assertEquals(firstName, updatedPerson.getFirstName());
         assertEquals(lastName, updatedPerson.getLastName());
+        assertEquals(firstName + " " + lastName, updatedPerson.getDisplayName());
         assertEquals(description, updatedPerson.getDescription());
         assertEquals(email, updatedPerson.getEmail());
         assertEquals(skypeId, updatedPerson.getSkypeId());
@@ -1240,6 +1244,7 @@ public class TestPeople extends AbstractBaseApiTest
 
         assertNotNull(updatedPerson.getId());
         assertNull(updatedPerson.getLastName());
+        assertEquals(updatedPerson.getFirstName(), updatedPerson.getDisplayName());
         assertNull(updatedPerson.getDescription());
         assertNull(updatedPerson.getSkypeId());
         assertNull(updatedPerson.getGoogleId());
@@ -2341,7 +2346,26 @@ public class TestPeople extends AbstractBaseApiTest
             assertFalse(personGuest.getCapabilities().get("isMutable").booleanValue());
         }
     }
-    
+
+    @Test
+    public void testDisplayName()
+    {
+        Person person = new Person();
+        assertEquals("", person.getDisplayName());
+
+        String firstName = "First";
+        person.setFirstName(firstName);
+        assertEquals(firstName, person.getDisplayName());
+
+        String lastName = "Last";
+        person.setLastName(lastName);
+        assertEquals(firstName + " " + lastName, person.getDisplayName());
+
+        person = new Person();
+        person.setLastName(lastName);
+        assertEquals(lastName, person.getDisplayName());
+    }
+
     @Override
     public String getScope()
     {

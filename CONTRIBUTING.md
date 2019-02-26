@@ -14,8 +14,7 @@ Useful but not necessary:
 
 ## Making changes
 
-We use GitHub's issue to track issues. If you are committing a fix for a raised issue please include the ticket number in both the merge requests and the git commit messages.
-For example a fix for the ticket [ALF-21953](https://issues.alfresco.com/jira/browse/ALF-21953) might have the git commit message: "ALF-21953 Updated to use super pom v9".
+We use GitHub's issues to track community contributions and issues. If you are committing a fix for a raised issue please reference the issue number in the pull request.
 
 If you are adding in a new feature or bug fix please raise an issue in the issues tab. By raising an issue in this project you will be agreeing to the Alfresco Contribution Agreement which can be found [here](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement).
 

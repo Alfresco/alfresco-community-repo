@@ -47,6 +47,7 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.util.DialectUtil;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
@@ -58,8 +59,6 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 public class ScriptExecutorImpl implements ScriptExecutor
 {
-    /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
-    private static final String PLACEHOLDER_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
     /** The global property containing the default batch size used by --FOREACH */
     private static final String PROPERTY_DEFAULT_BATCH_SIZE = "system.upgrade.default.batchsize";
     private static final String MSG_EXECUTING_GENERATED_SCRIPT = "schema.update.msg.executing_generated_script";
@@ -186,66 +185,9 @@ public class ScriptExecutorImpl implements ScriptExecutor
             try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
         }
         // now execute it
-        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
+        String dialectScriptUrl = scriptUrl.replaceAll(DialectUtil.PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
         executeScriptFile(connection, tempFile, dialectScriptUrl);
-    }
-    
-    /**
-     * Replaces the dialect placeholder in the resource URL and attempts to find a file for
-     * it.  If not found, the dialect hierarchy will be walked until a compatible resource is
-     * found.  This makes it possible to have resources that are generic to all dialects.
-     * 
-     * @return The Resource, otherwise null
-     */
-    private Resource getDialectResource(Class dialectClass, String resourceUrl)
-    {
-        // replace the dialect placeholder
-        String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
-        // get a handle on the resource
-        Resource resource = rpr.getResource(dialectResourceUrl);
-        if (!resource.exists())
-        {
-            // it wasn't found.  Get the superclass of the dialect and try again
-            Class superClass = dialectClass.getSuperclass();
-            if (Dialect.class.isAssignableFrom(superClass))
-            {
-                // we still have a Dialect - try again
-                return getDialectResource(superClass, resourceUrl);
-            }
-            else
-            {
-                // we have exhausted all options
-                return null;
-            }
-        }
-        else
-        {
-            // we have a handle to it
-            return resource;
-        }
-    }
-
-    /**
-     * Takes resource URL containing the {@link ScriptExecutorImpl#PLACEHOLDER_DIALECT dialect placeholder text}
-     * and substitutes the placeholder with the name of the given dialect's class.
-     * <p/>
-     * For example:
-     * <pre>
-     *   resolveDialectUrl(MySQLInnoDBDialect.class, "classpath:alfresco/db/${db.script.dialect}/myfile.xml")
-     * </pre>
-     * would give the following String:
-     * <pre>
-     *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
-     * </pre>
-     * 
-     * @param dialectClass Class
-     * @param resourceUrl String
-     * @return String
-     */
-    private String resolveDialectUrl(Class dialectClass, String resourceUrl)
-    {
-        return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
     }
     
     /**
@@ -257,7 +199,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
      */
     private InputStream getScriptInputStream(Class dialectClazz, String scriptUrl) throws Exception
     {
-        Resource resource = getDialectResource(dialectClazz, scriptUrl);
+        Resource resource = DialectUtil.getDialectResource(rpr, dialectClazz, scriptUrl);
         if (resource == null)
         {
             return null;

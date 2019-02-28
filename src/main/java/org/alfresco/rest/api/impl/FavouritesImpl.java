@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -57,9 +58,11 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper.WalkerCallbackAdapter;
 import org.alfresco.service.cmr.favourites.FavouritesService;
+import org.alfresco.service.cmr.favourites.FavouritesService.SortFields;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -307,7 +310,9 @@ public class FavouritesImpl implements Favourites
     	personId = people.validatePerson(personId, true);
 
     	Paging paging = parameters.getPaging();
-    	
+
+    	List<Pair<FavouritesService.SortFields, Boolean>> sortProps = getSortProps(parameters);
+
     	final Set<Type> filteredByClientQuery = new HashSet<Type>();
     	Set<Type> filterTypes = FavouritesService.Type.ALL_FILTER_TYPES;  //Default all
     	
@@ -345,8 +350,8 @@ public class FavouritesImpl implements Favourites
     	    filterTypes = filteredByClientQuery;
     	}
 
-    	final PagingResults<PersonFavourite> favourites = favouritesService.getPagedFavourites(personId, filterTypes, FavouritesService.DEFAULT_SORT_PROPS,
-    			Util.getPagingRequest(paging));
+        final PagingResults<PersonFavourite> favourites = favouritesService.getPagedFavourites(personId, filterTypes, sortProps, Util.getPagingRequest(paging));
+
     	return wrap(paging, favourites, parameters);
     }
 
@@ -369,5 +374,33 @@ public class FavouritesImpl implements Favourites
                     false);
         Parameters parameters = Params.valueOf(recognizedParams, personId, favouriteId, null);
         return parameters;
+    }
+
+    private List<Pair<FavouritesService.SortFields, Boolean>> getSortProps(Parameters parameters)
+    {
+        List<Pair<FavouritesService.SortFields, Boolean>> sortProps = new ArrayList<>();
+        List<SortColumn> sortCols = parameters.getSorting();
+        if ((sortCols != null) && (sortCols.size() > 0))
+        {
+            for (SortColumn sortCol : sortCols)
+            {
+                SortFields sortField;
+                try
+                {
+                    sortField = SortFields.valueOf(sortCol.column);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
+                }
+                sortProps.add(new Pair<>(sortField, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE)));
+            }
+        }
+        else
+        {
+            // default sort order
+            sortProps = FavouritesService.DEFAULT_SORT_PROPS;
+        }
+        return sortProps;
     }
 }

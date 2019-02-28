@@ -52,7 +52,6 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
-import java.sql.Types;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,6 +81,7 @@ import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.DatabaseMetaDataHelper;
+import org.alfresco.util.DialectUtil;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
@@ -111,9 +111,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class SchemaBootstrap extends AbstractLifecycleBean
 {
-    /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
-    private static final String PLACEHOLDER_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
-    
     /** The global property containing the default batch size used by --FOREACH */
     private static final String PROPERTY_DEFAULT_BATCH_SIZE = "system.upgrade.default.batchsize";
 
@@ -323,7 +320,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * type (e.g. PostgreSQL)
      * 
      * @param schemaReferenceUrls the schemaReferenceUrls to set
-     * @see #PLACEHOLDER_DIALECT
      */
     public void setSchemaReferenceUrls(List<String> schemaReferenceUrls)
     {
@@ -1155,62 +1151,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             try { scriptInputStream.close(); } catch (Throwable e) {}  // usually a duplicate close
         }
         // now execute it
-        String dialectScriptUrl = scriptUrl.replaceAll(PLACEHOLDER_DIALECT, dialect.getClass().getName());
+        String dialectScriptUrl = scriptUrl.replaceAll(DialectUtil.PLACEHOLDER_DIALECT, dialect.getClass().getName());
         // Replace the script placeholders
         executeScriptFile(connection, tempFile, dialectScriptUrl);
-    }
-    
-    /**
-     * Replaces the dialect placeholder in the resource URL and attempts to find a file for
-     * it.  If not found, the dialect hierarchy will be walked until a compatible resource is
-     * found.  This makes it possible to have resources that are generic to all dialects.
-     * 
-     * @return The Resource, otherwise null
-     */
-    private Resource getDialectResource(Class<?> dialectClass, String resourceUrl)
-    {
-        // replace the dialect placeholder
-        String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
-        // get a handle on the resource
-        Resource resource = rpr.getResource(dialectResourceUrl);
-        if (!resource.exists())
-        {
-            // it wasn't found.  Get the superclass of the dialect and try again
-            Class<?> superClass = dialectClass.getSuperclass();
-            if (Dialect.class.isAssignableFrom(superClass))
-            {
-                // we still have a Dialect - try again
-                return getDialectResource(superClass, resourceUrl);
-            }
-            else
-            {
-                // we have exhausted all options
-                return null;
-            }
-        }
-        else
-        {
-            // we have a handle to it
-            return resource;
-        }
-    }
-
-    /**
-     * Takes resource URL containing the {@link SchemaBootstrap#PLACEHOLDER_DIALECT dialect placeholder text}
-     * and substitutes the placeholder with the name of the given dialect's class.
-     * <p/>
-     * For example:
-     * <pre>
-     *   resolveDialectUrl(MySQLInnoDBDialect.class, "classpath:alfresco/db/${db.script.dialect}/myfile.xml")
-     * </pre>
-     * would give the following String:
-     * <pre>
-     *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
-     * </pre>
-     */
-    private String resolveDialectUrl(Class<?> dialectClass, String resourceUrl)
-    {
-        return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
     }
     
     /**
@@ -1222,7 +1165,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private InputStream getScriptInputStream(Class<?> dialectClazz, String scriptUrl) throws Exception
     {
-        Resource resource = getDialectResource(dialectClazz, scriptUrl);
+        Resource resource = DialectUtil.getDialectResource(rpr, dialectClazz, scriptUrl);
         if (resource == null)
         {
             throw new AlfrescoRuntimeException("Script [ " + scriptUrl + " ] can't be found for " + dialectClazz);
@@ -1749,8 +1692,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 {
                     // Remove the flag indicating a running bootstrap
                     setBootstrapCompleted(connection);
+
+                    // Validate the schema, post-upgrade
+                    validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-", null);
+                    // 4.0+ schema dump
+                    dumpSchema("post-upgrade");
                 }
-                reportNormalizedDumps();
             }
             else
             {
@@ -1804,17 +1751,6 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         }
     }
 
-    private void reportNormalizedDumps()
-    {
-        if (executedStatementsThreadLocal.get() != null)
-        {
-            // Validate the schema, post-upgrade
-            validateSchema("Alfresco-{0}-Validation-Post-Upgrade-{1}-", null);
-            // 4.0+ schema dump
-            dumpSchema("post-upgrade");
-        }
-    }
-
     private void writeLogsWithDBStatementExecuted()
     {
         // Copy the executed statements to the output file
@@ -1861,11 +1797,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // and process each in turn.
         for (String schemaReferenceUrl : schemaReferenceUrls)
         {
-            Resource referenceResource = getDialectResource(dialect.getClass(), schemaReferenceUrl);
+            Resource referenceResource = DialectUtil.getDialectResource(rpr, dialect.getClass(), schemaReferenceUrl);
             
             if (referenceResource == null || !referenceResource.exists())
             {
-                String resourceUrl = resolveDialectUrl(dialect.getClass(), schemaReferenceUrl);
+                String resourceUrl = DialectUtil.resolveDialectUrl(dialect.getClass(), schemaReferenceUrl);
                 LogUtil.debug(logger, DEBUG_SCHEMA_COMP_NO_REF_FILE, resourceUrl);
             }
             else

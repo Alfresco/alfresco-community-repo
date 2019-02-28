@@ -25,9 +25,11 @@
  */
 package org.alfresco.util.schemacomp;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -40,7 +42,9 @@ import org.alfresco.repo.domain.dialect.TypeNames;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.DatabaseMetaDataHelper;
+import org.alfresco.util.DialectUtil;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.DBScriptUtil;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
 import org.alfresco.util.schemacomp.model.Index;
@@ -51,7 +55,10 @@ import org.alfresco.util.schemacomp.model.Table;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
-
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * Exports a database schema to an in-memory {@link Schema} object.
@@ -60,6 +67,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class ExportDb
 {
+    private static final String SCHEMA_REFERENCE_SEQUENCES_SQL_FILE = "classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-Sequences.sql";
+
     /** Reverse map from database types to JDBC types (loaded from a Hibernate dialect). */
     private final Map<String, Integer> reverseTypeMap = new TreeMap<String, Integer>();
 
@@ -85,8 +94,9 @@ public class ExportDb
     private String dbSchemaName;
 
     private final static Log log = LogFactory.getLog(ExportDb.class);
-    
-    
+
+    private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+
     public ExportDb(ApplicationContext context)
     {
         this((DataSource) context.getBean("dataSource"),
@@ -224,23 +234,42 @@ public class ExportDb
             extractSchema(dbmd, schemaName, filter);
         }
     }
-
+    
     
     private void extractSchema(DatabaseMetaData dbmd, String schemaName, String prefixFilter)
-                throws SQLException, IllegalArgumentException, IllegalAccessException
+                throws SQLException, IllegalArgumentException, IllegalAccessException, IOException
     {
         if (log.isDebugEnabled())
         {
             log.debug("Retrieving tables: schemaName=[" + schemaName + "], prefixFilter=[" + prefixFilter + "]");
         }
-        
-        
-        final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, new String[]
+
+        final String[] tableTypes;
+        Resource sequencesRefResource = getSequencesReferenceResource();
+        if (sequencesRefResource != null && sequencesRefResource.exists())
         {
-            "TABLE", "VIEW", "SEQUENCE"
-        });
+            tableTypes = new String[] {"TABLE", "VIEW"};
+
+            retrieveAndProcessSequences(dbmd, sequencesRefResource, schemaName, prefixFilter);
+        }
+        else
+        {
+            tableTypes = new String[] { "TABLE", "VIEW", "SEQUENCE" };
+        }
         
-        
+        final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, tableTypes);
+
+        processTables(dbmd, tables);
+    }
+
+    private void processTables(DatabaseMetaData dbmd, ResultSet tables) 
+                throws SQLException, IllegalArgumentException, IllegalAccessException
+    {    
+        if (tables == null)
+        {
+            return;
+        }
+
         while (tables.next())
         {
             final String tableName = tables.getString("TABLE_NAME");
@@ -511,5 +540,102 @@ public class ExportDb
     public void setDbSchemaName(String dbSchemaName)
     {
         this.dbSchemaName = dbSchemaName;
+    }
+
+    /**
+     * Attempts to find the schema reference sequences sql file. If not found, the
+     * dialect hierarchy will be walked until a compatible resource is found. This
+     * makes it possible to have resources that are generic to all dialects.
+     *
+     * @return The Resource, otherwise null
+     */
+    private Resource getSequencesReferenceResource()
+    {
+        return DialectUtil.getDialectResource(rpr, dialect.getClass(), SCHEMA_REFERENCE_SEQUENCES_SQL_FILE);
+    }
+
+    /**
+     * Retrieves and process DB sequences for the schema validation check.
+     * 
+     * @param dbmd
+     *            the database meta data
+     * @param resource
+     *            the resource to load the SQL script from
+     * @param schemaName
+     *            the DB schema name
+     * @param prefixFilter
+     *            the DB tables prefix filter
+     */
+    private void retrieveAndProcessSequences(DatabaseMetaData dbmd, Resource resource, String schemaName, String prefixFilter)
+            throws SQLException, IllegalArgumentException, IllegalAccessException, IOException
+    {
+        final String script = DBScriptUtil.readScript(new EncodedResource(resource, "UTF-8"));
+
+        if (!script.isEmpty())
+        {
+            retrieveAndProcessSequences(dbmd, script, schemaName, prefixFilter);
+        }
+    }
+
+    /**
+     * Retrieves and process DB sequences for the schema validation check.
+     * 
+     * @param dbmd
+     *            the database meta data
+     * @param script
+     *            the SQL script
+     * @param schemaName
+     *            the DB schema name
+     * @param prefixFilter
+     *            the DB tables prefix filter
+     */
+    private void retrieveAndProcessSequences(DatabaseMetaData dbmd, String script, String schemaName, String prefixFilter)
+            throws SQLException, IllegalArgumentException, IllegalAccessException
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug("Retrieving DB sequences...");
+        }
+
+        PreparedStatement stmt = null;
+        try
+        {
+            stmt = dbmd.getConnection().prepareStatement(script);
+            stmt.setString(1, schemaName);
+            stmt.setString(2, prefixFilter);
+
+            boolean haveResults = stmt.execute();
+
+            if (haveResults)
+            {
+                ResultSet sequences = stmt.getResultSet();
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Sequences processing started...");
+                }
+
+                processTables(dbmd, sequences);
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Sequences processing completed.");
+                }
+            }
+        }
+        finally
+        {
+            if (stmt != null)
+            {
+                try
+                {
+                    stmt.close();
+                }
+                catch (Throwable e)
+                {
+                    // Little can be done at this stage.
+                }
+            }
+        }
     }
 }

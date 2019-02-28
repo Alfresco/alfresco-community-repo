@@ -72,13 +72,13 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
     private HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<StoreRef, SolrStoreMappingWrapper>();
     private List<SolrStoreMapping> storeMappings;
     private BeanFactory beanFactory;
-    private PermissionService permissionService;
     private RepositoryState repositoryState;
     private boolean includeGroupsForRoleAdmin = false;
     private boolean anyDenyDenies;
     private boolean useDynamicShardRegistration;
     private ShardRegistry shardRegistry;
     private TenantService tenantService;
+    private PermissionService permissionService;
     
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     @Override
@@ -229,7 +229,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         LOGGER.debug("Got: {} in {} ms", results.getNumberFound(), results.getQueryTime());
         return (ResultSet) results;
     }
-    
+
     
     public void setStoreMappings(List<SolrStoreMapping> storeMappings)
     {
@@ -278,6 +278,41 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         this.shardRegistry = shardRegistry;
     }
 
+    public RepositoryState getRepositoryState()
+    {
+        return repositoryState;
+    }
+
+    public boolean isIncludeGroupsForRoleAdmin()
+    {
+        return includeGroupsForRoleAdmin;
+    }
+
+    public boolean isAnyDenyDenies()
+    {
+        return anyDenyDenies;
+    }
+
+    public boolean isUseDynamicShardRegistration()
+    {
+        return useDynamicShardRegistration;
+    }
+
+    public ShardRegistry getShardRegistry()
+    {
+        return shardRegistry;
+    }
+
+    public TenantService getTenantService()
+    {
+        return tenantService;
+    }
+
+    public PermissionService getPermissionService()
+    {
+        return permissionService;
+    }
+
     @Override
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters)
     {
@@ -312,6 +347,7 @@ public class SolrSQLHttpClient extends AbstractSolrQueryHTTPClient implements So
         }
         
     }
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;

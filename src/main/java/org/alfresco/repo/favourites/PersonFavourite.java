@@ -67,6 +67,7 @@ public class PersonFavourite
 			this.type = type;
 			this.nodeRef = nodeRef;
 			this.createdAt = createdAt;
+			this.title = title;
 		}
 		
 		public String getTitle()

@@ -4,20 +4,19 @@ For the details on the Records Management project see [here](https://community.a
 ## Getting started
 What you need to get started:
 
-* A [Jira](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues) account;
-
 * A [GitHub](https://github.com/) account.
 
 Useful but not necessary:
 
 * An [Alfresco community](https://community.alfresco.com/) account - this is a good place to ask questions and find answers. 
 
+* A [Jira](https://issues.alfresco.com/jira/projects/RM/issues/?filter=allopenissues) account - Good place to look at what the team is working on;
+
 ## Making changes
 
-We use Jira to track issues. If you are committing a fix for a raised issue please include the ticket number in both the merge requests and the git commit messages.
-For example a fix for the ticket [ALF-21953](https://issues.alfresco.com/jira/browse/ALF-21953) might have the git commit message: "ALF-21953 Updated to use super pom v9".
+We use GitHub's issues to track community contributions and issues. If you are committing a fix for a raised issue please reference the issue number in the pull request.
 
-If you are adding in a new feature or bug fix please do so [here](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues). By raising a ticket in this project you will be agreeing to the Alfresco Contribution Agreement which can be found at the bottom of the 'Create Issue' form or alternatively attached to [this](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement) page.
+If you are adding in a new feature or bug fix please raise an issue in the issues tab. By raising an issue in this project you will be agreeing to the Alfresco Contribution Agreement which can be found [here](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement).
 
 When you are ready to make a change you just need to fork the [records-management](https://github.com/Alfresco/records-management) repository and then make your changes into your copy of the code.
 
@@ -54,8 +53,6 @@ Occasionally we may have to revert a change after it has been accepted. This wil
 [GitHub "Records Management" code repository](https://github.com/Alfresco/records-management)
 
 [IDE settings for Eclipse and Intellij](https://github.com/Alfresco/records-management/tree/master/ide-config)
-
-[Jira project for raising issues/features](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues)
 
 [Jira project used by GS team](https://issues.alfresco.com/jira/projects/RM/issues)
 

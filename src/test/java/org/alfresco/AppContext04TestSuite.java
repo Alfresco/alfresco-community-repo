@@ -42,6 +42,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.audit.AuditWebScriptTest.class,
     org.alfresco.repo.web.scripts.blogs.BlogServiceTest.class,
     org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest.class,
+    org.alfresco.repo.web.scripts.discussion.DiscussionRestApiTest.class,
     org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest.class,
     org.alfresco.repo.web.scripts.forms.FormRestApiGet_Test.class,
     org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test.class,

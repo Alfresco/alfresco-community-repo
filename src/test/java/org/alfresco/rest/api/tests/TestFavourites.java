@@ -115,6 +115,8 @@ public class TestFavourites extends AbstractBaseApiTest
     private String person12Id;
     private TestPerson person14;
     private String person14Id;
+    private TestPerson person15;
+    private String person15Id;
 
     private TestNetwork network2;
     private TestPerson person21;
@@ -176,6 +178,11 @@ public class TestFavourites extends AbstractBaseApiTest
                     TestFavourites.this.person14 = network1.createUser(personInfo);
                     assertNotNull(TestFavourites.this.person14);
                     TestFavourites.this.person14Id = TestFavourites.this.person14.getId();
+                    name = GUID.generate();
+                    personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+                    TestFavourites.this.person15 = network1.createUser(personInfo);
+                    assertNotNull(TestFavourites.this.person15);
+                    TestFavourites.this.person15Id = TestFavourites.this.person15.getId();
 
                     TestFavourites.this.network2 = networksIt.next();
                     name = GUID.generate();
@@ -947,6 +954,22 @@ public class TestFavourites extends AbstractBaseApiTest
             catch(PublicApiException e)
             {
                 assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+            }
+        }
+
+        // invalid orderBy param
+        {
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
+
+            try
+            {
+                Map<String, String> params = new HashMap<>();
+                params.put("orderBy", "invalid ASC");
+                favouritesProxy.getFavourites(person10Id, createParams(null, params));
+            }
+            catch(PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
         }
     }
@@ -1910,6 +1933,60 @@ public class TestFavourites extends AbstractBaseApiTest
         response = getAll(getNode(nodeRef1.getId()), null, params, 200);
         Node node1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertTrue(node1.getIsFavorite());
+    }
+
+    /**
+     * Test sort favourites using 'orderBy' parameter.
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?orderBy}
+     */
+    @Test
+    public void testSortFavourites() throws Exception
+    {
+        setRequestContext(network1.getId(), person15Id, "password");
+
+        final NodeRef folderNodeRef1 = person1PublicFolders.get(0); // person1's folder (Test Folder1)
+        final NodeRef folderNodeRef2 = person1PublicFolders.get(1); // person1's folder (Test Folder2)
+        final NodeRef folderNodeRef3 = person1PublicFolders.get(2); // person1's folder (Test Folder3)
+        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file (Test Doc1)
+        final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2)
+
+        // Favourite the docs and folders
+        Favourite folder1Favourite = makeFolderFavourite(folderNodeRef1.getId());
+        favouritesProxy.createFavourite(person15Id, folder1Favourite);
+        Favourite folder2Favourite = makeFolderFavourite(folderNodeRef2.getId());
+        favouritesProxy.createFavourite(person15Id, folder2Favourite);
+        Favourite folder3Favourite = makeFolderFavourite(folderNodeRef3.getId());
+        favouritesProxy.createFavourite(person15Id, folder3Favourite);
+        Favourite file1Favourite = makeFileFavourite(nodeRef1.getId());
+        favouritesProxy.createFavourite(person15Id, file1Favourite);
+        Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
+        favouritesProxy.createFavourite(person15Id, file2Favourite);
+
+        // Order by title ASC
+        Map<String, String> params = new HashMap<>();
+        params.put("orderBy", "title ASC");
+
+        List<Favourite> favourites = favouritesProxy.getFavourites(person15Id, createParams(null,params)).getList();
+        assertTrue(favourites.size() == 5);
+        assertTrue(favourites.get(0).getTargetGuid().equals(nodeRef1.getId()));
+        assertTrue(favourites.get(1).getTargetGuid().equals(nodeRef2.getId()));
+        assertTrue(favourites.get(2).getTargetGuid().equals(folderNodeRef1.getId()));
+        assertTrue(favourites.get(3).getTargetGuid().equals(folderNodeRef2.getId()));
+        assertTrue(favourites.get(4).getTargetGuid().equals(folderNodeRef3.getId()));
+
+        // Order by type ASC, title DESC
+        params = new HashMap<>();
+        params.put("orderBy", "type DESC, title DESC");
+
+        favourites = favouritesProxy.getFavourites(person15Id, createParams(null,params)).getList();
+        assertTrue(favourites.size() == 5);
+        assertTrue(favourites.get(0).getTargetGuid().equals(folderNodeRef3.getId()));
+        assertTrue(favourites.get(1).getTargetGuid().equals(folderNodeRef2.getId()));
+        assertTrue(favourites.get(2).getTargetGuid().equals(folderNodeRef1.getId()));
+        assertTrue(favourites.get(3).getTargetGuid().equals(nodeRef2.getId()));
+        assertTrue(favourites.get(4).getTargetGuid().equals(nodeRef1.getId()));
     }
 
     private void assertPathInfo(PathInfo expectedPathInfo, String expectedPathName, boolean expectedIsComplete)

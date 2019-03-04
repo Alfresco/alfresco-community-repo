@@ -75,7 +75,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.imap.ImapServiceImplCacheTest.class,
     org.alfresco.repo.imap.ImapServiceImplTest.class,
     org.alfresco.repo.bulkimport.impl.BulkImportTest.class,
-    org.alfresco.repo.discussion.DiscussionServiceImplTest.class,
     org.alfresco.repo.transfer.NodeCrawlerTest.class,
     org.alfresco.repo.transfer.TransferServiceCallbackTest.class,
     org.alfresco.repo.transfer.TransferServiceImplTest.class,

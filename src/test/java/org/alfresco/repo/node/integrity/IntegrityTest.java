@@ -70,7 +70,7 @@ public class IntegrityTest extends TestCase
     private static Log logger = LogFactory.getLog(IntegrityTest.class);
     
     public static final String NAMESPACE = "http://www.alfresco.org/test/IntegrityTest";
-    public static final String TEST_PREFIX = "test";
+    public static final String TEST_PREFIX = "integrity-test";
     
     public static final QName TEST_TYPE_WITHOUT_ANYTHING = QName.createQName(NAMESPACE, "typeWithoutAnything");
     public static final QName TEST_TYPE_WITH_ASPECT = QName.createQName(NAMESPACE, "typeWithAspect");

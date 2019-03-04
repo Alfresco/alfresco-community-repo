@@ -11,7 +11,6 @@
     <import resource="classpath:alfresco/blog-context.xml"/>
     <import resource="classpath:alfresco/calendar-services-context.xml"/>
     <import resource="classpath:alfresco/comment-services-context.xml"/>
-    <import resource="classpath:alfresco/discussions-services-context.xml"/>
     <import resource="classpath:alfresco/download-services-context.xml"/>
     <import resource="classpath:alfresco/links-services-context.xml"/>
     <import resource="classpath:alfresco/quickshare-services-context.xml"/>

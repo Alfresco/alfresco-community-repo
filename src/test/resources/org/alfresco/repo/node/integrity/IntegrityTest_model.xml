@@ -1,4 +1,4 @@
-<model name="test:integrity" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="integrity-test:integrity" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>Test Model for Integrity tests</description>
    <author>Alfresco</author>
@@ -12,11 +12,11 @@
    </imports>
    
    <namespaces>
-      <namespace uri="http://www.alfresco.org/test/IntegrityTest" prefix="test"/>
+      <namespace uri="http://www.alfresco.org/test/IntegrityTest" prefix="integrity-test"/>
    </namespaces>
 
    <constraints>
-      <constraint name="test:lov1" type="LIST">
+      <constraint name="integrity-test:lov1" type="LIST">
          <title>lov11 title</title>
          <description>lov1 description</description>
          <parameter name="allowedValues">
@@ -33,95 +33,95 @@
 
    <types>
       <!-- Type without anyting -->
-      <type name="test:typeWithoutAnything">
+      <type name="integrity-test:typeWithoutAnything">
          <title>Type Without Anything</title>
          <parent>sys:base</parent>
       </type>
       <!-- Type with mandatory properties -->
-      <type name="test:typeWithProperties">
+      <type name="integrity-test:typeWithProperties">
          <title>Type With Properties</title>
          <parent>sys:base</parent>
          <properties>
-            <property name="test:prop-text-a">
+            <property name="integrity-test:prop-text-a">
                <type>d:text</type>
                <mandatory enforced="true">true</mandatory>
             </property>
-            <property name="test:prop-text-b">
+            <property name="integrity-test:prop-text-b">
                <type>d:text</type>
             </property>
-            <property name="test:prop-text-c">
+            <property name="integrity-test:prop-text-c">
                <type>d:text</type>
                <mandatory enforced="false">true</mandatory>
             </property>
-            <property name="test:prop-text-d">
+            <property name="integrity-test:prop-text-d">
                <type>d:text</type>
                <mandatory enforced="false">false</mandatory>
                <constraints>
-                  <constraint ref="test:lov1"/>
+                  <constraint ref="integrity-test:lov1"/>
                </constraints>
             </property>
          </properties>
       </type>
       <!-- Type with encrypted properties -->
-      <type name="test:typeWithEncryptedProperties">
+      <type name="integrity-test:typeWithEncryptedProperties">
          <title>Type With Encrypted Properties</title>
          <parent>sys:base</parent>
          <properties>
-            <property name="test:prop-encrypted-a">
+            <property name="integrity-test:prop-encrypted-a">
                <type>d:encrypted</type>
                <mandatory enforced="true">true</mandatory>
             </property>
-            <property name="test:prop-encrypted-b">
+            <property name="integrity-test:prop-encrypted-b">
                <type>d:encrypted</type>
             </property>
-            <property name="test:prop-encrypted-c">
+            <property name="integrity-test:prop-encrypted-c">
                <type>d:encrypted</type>
                <mandatory enforced="false">true</mandatory>
             </property>
          </properties>
       </type>
       <!-- Type with mandatory aspect -->
-      <type name="test:typeWithAspect">
+      <type name="integrity-test:typeWithAspect">
          <title>Type With Aspect</title>
          <parent>sys:base</parent>
          <mandatory-aspects>
-            <aspect>test:aspectWithProperties</aspect>
+            <aspect>integrity-test:aspectWithProperties</aspect>
          </mandatory-aspects>
       </type>
       <!-- Type with assocs -->
-      <type name="test:typeWithAssocs">
+      <type name="integrity-test:typeWithAssocs">
          <title>Type With Assocs</title>
          <parent>sys:base</parent>
          <associations>
-            <association name="test:assoc-0to* - 0to*">
+            <association name="integrity-test:assoc-0to* - 0to*">
                <source>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
             </association>
-            <association name="test:assoc-1to1 - 1to1">
+            <association name="integrity-test:assoc-1to1 - 1to1">
                <source>
                   <mandatory>true</mandatory>
                   <many>false</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>true</mandatory>
                   <many>false</many>
                </target>
             </association>
-            <association name="test:assoc-1to1 - 0to*">
+            <association name="integrity-test:assoc-1to1 - 0to*">
                <source>
                   <mandatory>true</mandatory>
                   <many>false</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
@@ -129,29 +129,29 @@
          </associations>
       </type>
       <!-- Type with child assocs -->
-      <type name="test:typeWithChildAssocs">
+      <type name="integrity-test:typeWithChildAssocs">
          <title>Type With Child Assocs</title>
          <parent>sys:base</parent>
          <associations>
-            <child-association name="test:child-0to* - 0to*">
+            <child-association name="integrity-test:child-0to* - 0to*">
                <source>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </target>
                <duplicate>false</duplicate>
             </child-association>
-            <child-association name="test:child-1to1 - 1to1">
+            <child-association name="integrity-test:child-1to1 - 1to1">
                <source>
                   <mandatory>true</mandatory>
                   <many>false</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>true</mandatory>
                   <many>false</many>
                </target>
@@ -160,17 +160,17 @@
          </associations>
       </type>
       <!-- Type with mandatory non-enforced child assocs -->
-      <type name="test:typeWithNonEnforcedChildAssocs">
+      <type name="integrity-test:typeWithNonEnforcedChildAssocs">
          <title>Type With Child Assocs</title>
          <parent>sys:base</parent>
          <associations>
-            <child-association name="test:child-non-enforced">
+            <child-association name="integrity-test:child-non-enforced">
                <source>
                   <mandatory>false</mandatory>
                   <many>true</many>
                </source>
                <target>
-                  <class>test:typeWithoutAnything</class>
+                  <class>integrity-test:typeWithoutAnything</class>
                   <mandatory>true</mandatory>
                   <many>true</many>
                </target>
@@ -179,11 +179,11 @@
          </associations>
       </type>
       <!-- Type with mandatory non-enforced assocs -->
-      <type name="test:typeWithNonEnforcedTargetAssocs">
+      <type name="integrity-test:typeWithNonEnforcedTargetAssocs">
          <title>Type With Non Enforced Assocs</title>
          <parent>cm:content</parent>
          <associations>
-            <association name="test:target-non-enforced">
+            <association name="integrity-test:target-non-enforced">
                <source>
                   <mandatory>false</mandatory>
                   <many>true</many>
@@ -200,33 +200,33 @@
    
    <aspects>
       <!-- aspect with properties -->
-      <aspect name="test:aspectWithProperties">
+      <aspect name="integrity-test:aspectWithProperties">
          <title>Aspect with Properties</title>
          <properties>
-            <property name="test:prop-int-a">
+            <property name="integrity-test:prop-int-a">
                <type>d:int</type>
                <mandatory enforced="true">true</mandatory>
             </property>
-            <property name="test:prop-int-b">
+            <property name="integrity-test:prop-int-b">
                <type>d:int</type>
             </property>
-            <property name="test:prop-int-c">
+            <property name="integrity-test:prop-int-c">
                <type>d:int</type>
                <mandatory enforced="false">true</mandatory>
             </property>
          </properties>
       </aspect>
       <!-- aspect with associations -->
-      <aspect name="test:aspectWithAssoc">
+      <aspect name="integrity-test:aspectWithAssoc">
          <title>Aspect with associations</title>
          <associations>
-             <association name="test:aspect-assoc-1to1 - 1to1">
+             <association name="integrity-test:aspect-assoc-1to1 - 1to1">
                 <source>
                    <mandatory>true</mandatory>
                    <many>false</many>
                 </source>
                 <target>
-                   <class>test:typeWithoutAnything</class>
+                   <class>integrity-test:typeWithoutAnything</class>
                    <mandatory>true</mandatory>
                    <many>false</many>
                 </target>
@@ -234,10 +234,10 @@
          </associations>
       </aspect>
       <!-- aspect with aspects -->
-      <aspect name="test:aspectWithAspect">
+      <aspect name="integrity-test:aspectWithAspect">
          <title>Aspect with aspects</title>
          <mandatory-aspects>
-            <aspect>test:aspectWithProperties</aspect>
+            <aspect>integrity-test:aspectWithProperties</aspect>
          </mandatory-aspects>
       </aspect>
    </aspects>

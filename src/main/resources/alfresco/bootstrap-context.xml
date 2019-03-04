@@ -420,9 +420,6 @@
                 <entry key="filesystem.acl.global.userAccessControls">
                     <value>org.alfresco.filesys.config.acl.UserAccessControlBean</value>
                 </entry>
-                <entry key="filesystem.domainMappings">
-                    <value>org.alfresco.filesys.config.DomainMappingConfigBean</value>
-                </entry>
             </map>
         </property>
         <property name="persister">

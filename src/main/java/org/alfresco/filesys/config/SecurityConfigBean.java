@@ -25,8 +25,6 @@
  */
 package org.alfresco.filesys.config;
 
-import java.util.List;
-
 import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.jlan.server.core.ShareMapper;
 
@@ -46,9 +44,6 @@ public class SecurityConfigBean
 
     /** The share mapper. */
     private ShareMapper shareMapper;
-
-    /** The domain mappings. */
-    private List<DomainMappingConfigBean> domainMappings;
 
     /**
      * Gets the global access control.
@@ -112,26 +107,4 @@ public class SecurityConfigBean
     {
         this.shareMapper = shareMapper;
     }
-
-    /**
-     * Gets the domain mappings.
-     * 
-     * @return the domain mappings
-     */
-    public List<DomainMappingConfigBean> getDomainMappings()
-    {
-        return domainMappings;
-    }
-
-    /**
-     * Sets the domain mappings.
-     * 
-     * @param domainMappings
-     *            the new domain mappings
-     */
-    public void setDomainMappings(List<DomainMappingConfigBean> domainMappings)
-    {
-        this.domainMappings = domainMappings;
-    }
-
 }

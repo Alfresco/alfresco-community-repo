@@ -191,15 +191,7 @@
 
    <bean id="filesystem.acl.global.userAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
 
-   <!-- Domain mappings used for passthru authentication routing -->
-   <!-- Used when the client does not provide a domain name in the NTLM logon -->
-   <bean id="filesystem.domainMappings" class="org.springframework.beans.factory.config.ListFactoryBean" />
-
    <bean id="fileSecurityConfig" class="org.alfresco.filesys.config.SecurityConfigBean">
-      <property name="domainMappings">
-         <ref bean="filesystem.domainMappings" />
-      </property>
-
       <!-- Custom share mapper when multi-tenancy is enabled -->
       <property name="shareMapper">
           <ref bean="filesystemMTShareMapper" />

@@ -327,16 +327,7 @@
             </list>
         </property>
     </bean>
-
-    <bean id="discussionsActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.DiscussionsActivitySummaryProcessor">
-        <property name="registry" ref="activitySummaryParser" />
-        <property name="eventTypes">
-            <list>
-                <value>org.alfresco.discussions.reply-created</value>
-            </list>
-        </property>
-    </bean>
-
+    
     <bean id="subscriptionsActivitySummaryProcessor" class="org.alfresco.rest.api.impl.activities.SubscriptionsActivitySummaryProcessor">
         <property name="registry" ref="activitySummaryParser" />
         <property name="eventTypes">

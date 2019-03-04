@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Calendar Subscriptions</shortname>
+   <description>Calendar Subscriptions</description>
+   <url>/calendar/setColor</url>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -161,6 +161,12 @@
                 <artifactId>cxf-rt-ws-policy</artifactId>
                 <version>${dependency.cxf.version}</version>
             </dependency>
+            <!-- Newer bouncycastle, used in TIKA, see REPO-4241 -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk15on</artifactId>
+                <version>1.61</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

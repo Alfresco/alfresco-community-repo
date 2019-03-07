@@ -28,10 +28,12 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
+import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
@@ -39,8 +41,12 @@ import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.Favourite;
+import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
+import org.alfresco.rest.api.tests.client.data.FileFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.QuickShareLinkEmailRequest;
@@ -51,6 +57,10 @@ import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
 import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryActionPersister;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -64,12 +74,14 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -77,9 +89,13 @@ import java.util.Map;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * V1 REST API tests for Shared Links (aka public "quick shares")
@@ -620,7 +636,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // (else need to verify test mechanism for enterprise admin via jmx ... etc)
 
         setRequestContext(user1);
-        
+
         QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
         try
         {
@@ -1302,6 +1318,278 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             assertEquals("The quick brown fox jumps over the lazy dog", sharedLink.getTitle());
             assertEquals("Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
         });
+    }
+
+
+    @Test
+    public void testSharedLinkFindIncludeNodeProperties() throws Exception
+    {
+        QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
+        ServiceDescriptorRegistry serviceRegistry = applicationContext.getBean("ServiceRegistry", ServiceDescriptorRegistry.class);
+        SearchService mockSearchService = mock(SearchService.class);
+        serviceRegistry.setMockSearchService(mockSearchService);
+
+        // As user 1 ...
+        setRequestContext(user1);
+
+        Paging paging = getPaging(0, 100);
+
+        String content = "The quick brown fox jumps over the lazy dog.";
+        String fileName1 = "fileOne_" + RUNID + ".txt";
+        String fileName2 = "fileTwo_" + RUNID + ".txt";
+
+        // As user 1 create 2 text files in -my- folder (i.e. User's Home)
+        setRequestContext(user1);
+        Map<String, String> file1Props = new HashMap<>();
+        file1Props.put("cm:title", "File one title");
+        file1Props.put("cm:lastThumbnailModification", "doclib:1549351708998");
+        String file1Id = createTextFile(getMyNodeId(), fileName1, content,"UTF-8", file1Props).getId();
+        String file2Id = createTextFile(getMyNodeId(), fileName2, content).getId();
+
+        // Create shared links to file 1 and 2
+        QuickShareLink body = new QuickShareLink();
+        body.setNodeId(file1Id);
+        HttpResponse  response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+        QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        String shared1Id = resp.getId();
+
+        body = new QuickShareLink();
+        body.setNodeId(file2Id);
+        post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+
+        // Lock text file 1
+        LockInfo lockInfo = new LockInfo();
+        lockInfo.setTimeToExpire(60);
+        lockInfo.setType("FULL");
+        lockInfo.setLifetime("PERSISTENT");
+        post(getNodeOperationUrl(file1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+
+        // Find shared links without include=properties
+        ResultSet mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        QuickShareLink resQuickShareLink1 = sharedLinks.get(0);
+        QuickShareLink resQuickShareLink2 = sharedLinks.get(1);
+
+        assertNull("Properties were not requested therefore they should not be included", resQuickShareLink1.getProperties());
+        assertNull("Properties were not requested therefore they should not be included", resQuickShareLink2.getProperties());
+
+        // Find the shared links with include=properties
+        mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "properties,allowableOperations");
+        response = getAll(URL_SHARED_LINKS, paging, params, 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        resQuickShareLink1 = sharedLinks.get(0);
+
+        // Check the 1st shared link and properties (properties should include a title, lastThumbnailModification and lock info)
+        assertEquals(shared1Id, resQuickShareLink1.getId());
+        assertEquals(file1Id, resQuickShareLink1.getNodeId());
+        Map<String, Object> resQuickShareLink1Props =  resQuickShareLink1.getProperties();
+        assertNotNull("Properties were requested to be included but are null.", resQuickShareLink1Props);
+        assertNotNull("Properties should include cm:lockType", resQuickShareLink1Props.get("cm:lockType"));
+        assertNotNull("Properties should include cm:lockOwner", resQuickShareLink1Props.get("cm:lockOwner"));
+        assertNotNull("Properties should include cm:lockLifetime", resQuickShareLink1Props.get("cm:lockLifetime"));
+        assertNotNull("Properties should include cm:title", resQuickShareLink1Props.get("cm:title"));
+        assertNotNull("Properties should include cm:versionType", resQuickShareLink1Props.get("cm:versionType"));
+        assertNotNull("Properties should include cm:versionLabel", resQuickShareLink1Props.get("cm:versionLabel"));
+        assertNotNull("Properties should include cm:lastThumbnailModification", resQuickShareLink1Props.get("cm:lastThumbnailModification"));
+        // Properties that should be excluded
+        assertNull("Properties should NOT include cm:name", resQuickShareLink1Props.get("cm:name"));
+        assertNull("Properties should NOT include qshare:sharedBy", resQuickShareLink1Props.get("qshare:sharedBy"));
+        assertNull("Properties should NOT include qshare:sharedId", resQuickShareLink1Props.get("qshare:sharedId"));
+        assertNull("Properties should NOT include cm:content", resQuickShareLink1Props.get("cm:content"));
+        assertNull("Properties should NOT include cm:created", resQuickShareLink1Props.get("cm:created"));
+        assertNull("Properties should NOT include cm:creator", resQuickShareLink1Props.get("cm:creator"));
+        assertNull("Properties should NOT include cm:modifier", resQuickShareLink1Props.get("cm:modifier"));
+        assertNull("Properties should NOT include cm:modified", resQuickShareLink1Props.get("cm:modified"));
+        assertNull("Properties should NOT include cm:autoVersion", resQuickShareLink1Props.get("cm:autoVersion"));
+        assertNull("Properties should NOT include cm:initialVersion", resQuickShareLink1Props.get("cm:initialVersion"));
+        assertNull("Properties should NOT include cm:autoVersionOnUpdateProps", resQuickShareLink1Props.get("cm:autoVersionOnUpdateProps"));
+        // System properties should be excluded
+        boolean foundSysProp = resQuickShareLink1Props.keySet().stream().anyMatch( (s) -> s.startsWith("sys:"));
+        assertFalse("System properties should be excluded", foundSysProp);
+
+        serviceRegistry.setMockSearchService(null);
+        quickShareLinks.afterPropertiesSet();
+    }
+
+    @Test
+    public void testSharedLinkFindIncludeIsFavorite() throws Exception
+    {
+        PublicApiClient.Favourites favouritesProxy = publicApiClient.favourites();
+        QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
+        ServiceDescriptorRegistry serviceRegistry = applicationContext.getBean("ServiceRegistry", ServiceDescriptorRegistry.class);
+        SearchService mockSearchService = mock(SearchService.class);
+        serviceRegistry.setMockSearchService(mockSearchService);
+
+        // As user 1 ...
+        setRequestContext(user1);
+
+        Paging paging = getPaging(0, 100);
+
+        String content = "The quick brown fox jumps over the lazy dog.";
+        String fileName1 = "fileOne_" + RUNID + ".txt";
+        String fileName2 = "fileTwo_" + RUNID + ".txt";
+
+        // As user 1 create 2 text files in -my- folder (i.e. User's Home)
+        setRequestContext(user1);
+        String file1Id = createTextFile(getMyNodeId(), fileName1, content).getId();
+        String file2Id = createTextFile(getMyNodeId(), fileName2, content).getId();
+
+        // Create shared links to file 1 and 2
+        QuickShareLink body = new QuickShareLink();
+        body.setNodeId(file1Id);
+        post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+
+        body = new QuickShareLink();
+        body.setNodeId(file2Id);
+        post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+
+        // Favourite file with file1Id file as user 1
+        Favourite file1Favourite = makeFileFavourite(file1Id);
+        favouritesProxy.createFavourite(user1, file1Favourite, null);
+
+
+        // Find shared links without include=isFavorite
+        ResultSet mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        HttpResponse  response = response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        QuickShareLink resQuickShareLink1 = sharedLinks.get(0);
+        QuickShareLink resQuickShareLink2 = sharedLinks.get(1);
+
+        assertNull("isFavorite was not requested therefore it should not be included", resQuickShareLink1.getIsFavorite());
+        assertNull("isFavorite was not requested therefore it should not be included", resQuickShareLink2.getIsFavorite());
+
+        // Find shared links with include=isFavorite
+        mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "isFavorite");
+        response = getAll(URL_SHARED_LINKS, paging, params, 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        resQuickShareLink1 = sharedLinks.get(0);
+        resQuickShareLink2 = sharedLinks.get(1);
+
+        assertTrue("Document should be marked as favorite.",resQuickShareLink1.getIsFavorite());
+        assertFalse("Document should not be marked as favorite.", resQuickShareLink2.getIsFavorite());
+
+        serviceRegistry.setMockSearchService(null);
+        quickShareLinks.afterPropertiesSet();
+    }
+
+    @Test
+    public void testSharedLinkFindIncludeAspects() throws Exception
+    {
+        PublicApiClient.Favourites favouritesProxy = publicApiClient.favourites();
+        QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
+        ServiceDescriptorRegistry serviceRegistry = applicationContext.getBean("ServiceRegistry", ServiceDescriptorRegistry.class);
+        SearchService mockSearchService = mock(SearchService.class);
+        serviceRegistry.setMockSearchService(mockSearchService);
+
+        // As user 1 ...
+        setRequestContext(user1);
+
+        Paging paging = getPaging(0, 100);
+
+        String content = "The quick brown fox jumps over the lazy dog.";
+        String fileName1 = "fileOne_" + RUNID + ".txt";
+        String fileName2 = "fileTwo_" + RUNID + ".txt";
+
+        // As user 1 create 2 text files in -my- folder (i.e. User's Home)
+        setRequestContext(user1);
+        String file1Id = createTextFile(getMyNodeId(), fileName1, content).getId();
+        String file2Id = createTextFile(getMyNodeId(), fileName2, content).getId();
+
+        // Create shared links to file 1 and 2
+        QuickShareLink body = new QuickShareLink();
+        body.setNodeId(file1Id);
+        post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+
+        body = new QuickShareLink();
+        body.setNodeId(file2Id);
+        post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+
+        // Favourite file with file1Id file as user 1
+        Favourite file1Favourite = makeFileFavourite(file1Id);
+        favouritesProxy.createFavourite(user1, file1Favourite, null);
+
+
+        // Find shared links without include=isFavorite
+        ResultSet mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        HttpResponse  response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        QuickShareLink resQuickShareLink1 = sharedLinks.get(0);
+        QuickShareLink resQuickShareLink2 = sharedLinks.get(1);
+
+        assertNull("aspectNames was not requested therefore it should not be included", resQuickShareLink1.getAspectNames());
+        assertNull("aspectNames was not requested therefore it should not be included", resQuickShareLink2.getAspectNames());
+
+        // Find shared links with include=isFavorite
+        mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        quickShareLinks.afterPropertiesSet();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "aspectNames");
+        response = getAll(URL_SHARED_LINKS, paging, params, 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(2, sharedLinks.size());
+        resQuickShareLink1 = sharedLinks.get(0);
+        resQuickShareLink2 = sharedLinks.get(1);
+
+        assertNotNull("aspectNames was not requested therefore it should not be included", resQuickShareLink1.getAspectNames());
+        assertNotNull("aspectNames was not requested therefore it should not be included", resQuickShareLink2.getAspectNames());
+
+        serviceRegistry.setMockSearchService(null);
+        quickShareLinks.afterPropertiesSet();
+    }
+
+    // A one time use ResultSet of nodes with specified node ids
+    private static ResultSet mockResultSet(List<String> nodeIds)
+    {
+        List<ResultSetRow> resultSetRows = new LinkedList<>();
+        for (String nodeId : nodeIds)
+        {
+            ResultSetRow mockResultSetRow1 = mock(ResultSetRow.class);
+            when(mockResultSetRow1.getNodeRef()).thenReturn(new NodeRef("workspace","SpacesStore" ,nodeId));
+            resultSetRows.add(mockResultSetRow1);
+        }
+
+        ResultSet mockSearchServiceQueryResultSet = mock(ResultSet.class);
+        when(mockSearchServiceQueryResultSet.hasMore()).thenReturn(false);
+        when(mockSearchServiceQueryResultSet.getNumberFound()).thenReturn(Long.valueOf(nodeIds.size()));
+        when(mockSearchServiceQueryResultSet.length()).thenReturn(nodeIds.size());
+        when(mockSearchServiceQueryResultSet.iterator()).thenReturn(resultSetRows.iterator());
+        return mockSearchServiceQueryResultSet;
+    }
+
+    private static Favourite makeFileFavourite(String targetGuid) throws ParseException
+    {
+        FavouriteDocument document = new FavouriteDocument(targetGuid);
+        FileFavouriteTarget target = new FileFavouriteTarget(document);
+        Date creationData = new Date();
+        Favourite favourite = new Favourite(creationData, null, target);
+        return favourite;
     }
 
     private String getEmailSharedLinkUrl(String sharedId)

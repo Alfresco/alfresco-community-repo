@@ -480,6 +480,7 @@
       <maven.resources.version>2.7</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
+      <jackson.version>2.9.8</jackson.version>
       <fabric8.docker.version>0.25.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.1</postgresql.version>

@@ -27,6 +27,7 @@ package org.alfresco.rest.api.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Representation of quick share link
@@ -65,7 +66,9 @@ public class QuickShareLink
     private List<String> allowableOperations;
 
     private List<String> allowableOperationsOnTarget;
-
+    private Map<String, Object> properties;
+    private List<String> aspectNames;
+    private Boolean isFavorite;
 
     public QuickShareLink()
     {
@@ -75,6 +78,36 @@ public class QuickShareLink
     {
         this.sharedId = sharedId;
         this.nodeId = nodeId;
+    }
+
+    public List<String> getAspectNames()
+    {
+        return aspectNames;
+    }
+
+    public void setAspectNames(List<String> aspectNames)
+    {
+        this.aspectNames = aspectNames;
+    }
+
+    public Map<String, Object> getProperties()
+    {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties)
+    {
+        this.properties = properties;
+    }
+
+    public Boolean getIsFavorite()
+    {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean isFavorite)
+    {
+        this.isFavorite = isFavorite;
     }
 
     public String getId() {
@@ -185,14 +218,14 @@ public class QuickShareLink
 
     /**
      * Retrieve the allowable operations for the shared link.
-     * 
+     *
      * @return List of operation labels, e.g. "delete"
      */
     public List<String> getAllowableOperations()
     {
         return allowableOperations;
     }
-    
+
     public void setAllowableOperations(List<String> allowableOperations)
     {
         this.allowableOperations = allowableOperations;
@@ -200,7 +233,7 @@ public class QuickShareLink
 
     /**
      * Retrieve the allowable operations for the actual file being shared.
-     * 
+     *
      * @return List of operation labels, e.g. "delete"
      */
     public List<String> getAllowableOperationsOnTarget()

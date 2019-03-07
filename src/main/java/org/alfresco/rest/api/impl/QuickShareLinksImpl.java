@@ -95,9 +95,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Centralises access to shared link (public "quick share") services and maps between representations.
@@ -125,6 +127,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     private SearchService searchService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
+
+    // additional exclude properties for share links as these are already top-level properties
+    private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
+            QuickShareModel.PROP_QSHARE_SHAREDBY,
+            QuickShareModel.PROP_QSHARE_SHAREDID);
+
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -581,28 +589,57 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
             if (!noAuth)
             {
+                // Cached document
+                Node doc = null;
+
                 if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
                 {
                     if (quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
                     {
                         // the allowable operations for the shared link
-                    qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
-                }
-
-                    Node doc = nodes.getFolderOrDocument(nodeRef, null, null, includeParam, null);
+                        qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
+                    }
+                    doc = getNode(nodeRef, includeParam, mapUserInfo);
                     List<String> allowableOps = doc.getAllowableOperations();
                     // the allowable operations for the actual file being shared
                     qs.setAllowableOperationsOnTarget(allowableOps);
                 }
 
-                
                 // in noAuth mode we don't return the path info
                 if (includeParam.contains(PARAM_INCLUDE_PATH))
                 {
                     qs.setPath(nodes.lookupPathInfo(nodeRef, null));
                 }
-            }
 
+                if (includeParam.contains(PARAM_INCLUDE_PROPERTIES))
+                {
+                    if (doc == null)
+                    {
+                        doc = getNode(nodeRef, includeParam, mapUserInfo);
+                    }
+                    // Create a map from node properties excluding properties already in this QuickShareLink
+                    Map<String, Object> filteredNodeProperties = filterProps(doc.getProperties(), EXCLUDED_PROPS);
+                    qs.setProperties(filteredNodeProperties);
+                }
+
+                if (includeParam.contains(PARAM_INCLUDE_ISFAVORITE))
+                {
+                    if (doc == null)
+                    {
+                        doc = getNode(nodeRef, includeParam, mapUserInfo);
+                    }
+                    qs.setIsFavorite(doc.getIsFavorite());
+                }
+
+                if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
+                {
+                    if (doc == null)
+                    {
+                        doc = getNode(nodeRef, includeParam, mapUserInfo);
+                    }
+                    qs.setAspectNames(doc.getAspectNames());
+                }
+            }
 
             return qs;
         }
@@ -616,6 +653,22 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
             throw new EntityNotFoundException(sharedId);
         }
+    }
+
+    private Map<String, Object> filterProps(Map<String, Object> properties, List<QName> toRemove)
+    {
+        Map<String, Object> filteredProps = new HashMap<>(properties);
+        List<String> propsToRemove = toRemove.stream().map(e -> e.toPrefixString(namespaceService)).collect(Collectors.toList());
+        filteredProps.keySet().removeAll(propsToRemove);
+        return filteredProps;
+    }
+
+    private Node getNode(NodeRef nodeRef, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
+    {
+        List<String> modifiedIncludeParams = new LinkedList<>(includeParam);
+        // Remove path as this information is already retrieved elsewhere
+        modifiedIncludeParams.remove(PARAM_INCLUDE_PATH);
+        return nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo);
     }
 
     private void checkEnabled()

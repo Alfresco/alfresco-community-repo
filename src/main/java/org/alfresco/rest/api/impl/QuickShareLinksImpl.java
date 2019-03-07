@@ -668,7 +668,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         List<String> modifiedIncludeParams = new LinkedList<>(includeParam);
         // Remove path as this information is already retrieved elsewhere
         modifiedIncludeParams.remove(PARAM_INCLUDE_PATH);
-        return nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo);
+        return nodes.getFolderOrDocument(nodeRef, null, null, modifiedIncludeParams, mapUserInfo);
     }
 
     private void checkEnabled()

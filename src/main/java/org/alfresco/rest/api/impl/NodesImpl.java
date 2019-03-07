@@ -2933,12 +2933,6 @@ public class NodesImpl implements Nodes
             }
         }
 
-        // MNT-7213 When alf_data runs out of disk space, Share uploads
-        // result in a success message, but the files do not appear.
-        if (formData.getFields().length == 0)
-        {
-            throw new ConstraintViolatedException("No disk space available");
-        }
         // Ensure mandatory file attributes have been located. Need either
         // destination, or site + container or updateNodeRef
         if ((fileName == null) || fileName.isEmpty() || (content == null))

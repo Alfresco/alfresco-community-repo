@@ -34,6 +34,7 @@ import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.FileModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -69,5 +70,12 @@ public class DeclareRecordTests extends BaseRMRestTest
         STEP("Declare file as record and check that record is successfully created.");
         recordsAPI.declareDocumentAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
                 testFile.getName());
+    }
+
+    @AfterClass
+    public void cleanUp()
+    {
+        STEP("Clean up.");
+        dataSite.deleteSite(testSite);
     }
 }

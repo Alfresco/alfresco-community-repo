@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
@@ -143,7 +144,11 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeAddAspect(NodeRef nodeRef, QName qName)
     {
-        //create a new content URL for the version record
-        createNewContentURL(nodeRef);
+        // if the node is a record the behaviour shouldn't be triggered
+        if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
+        {
+            //create a new content URL for the version record
+            createNewContentURL(nodeRef);
+        }
     }
 }

@@ -144,8 +144,8 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeAddAspect(NodeRef nodeRef, QName qName)
     {
-        // if the node is a record the behaviour shouldn't be triggered
-        if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
+        // if the node is the originating one the behaviour shouldn't be triggered
+        if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD_ORIGINATING_DETAILS))
         {
             //create a new content URL for the version record
             createNewContentURL(nodeRef);

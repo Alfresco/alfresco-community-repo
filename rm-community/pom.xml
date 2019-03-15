@@ -73,7 +73,6 @@
    </dependencyManagement>
 
    <properties>
-      <jackson.version>2.9.5</jackson.version>
       <spring.version>5.0.4.RELEASE</spring.version>
 
       <alfresco.version>6.0.7-ga</alfresco.version>

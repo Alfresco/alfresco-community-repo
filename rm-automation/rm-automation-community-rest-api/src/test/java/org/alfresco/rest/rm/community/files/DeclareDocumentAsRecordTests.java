@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.files;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -45,6 +46,7 @@ import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
+import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
@@ -54,6 +56,7 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.SecondaryType;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -68,6 +71,9 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     private UserModel testUser, testUserReadOnly;
     private SiteModel testSite;
     private FolderModel testFolder;
+
+    @Autowired
+    RecordsAPI recordsAPI;
 
     @BeforeClass(alwaysRun=true)
     public void declareDocumentAsRecordSetup() throws Exception
@@ -237,6 +243,27 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         // try to declare otherTestFolder as a record
         getRestAPIFactory().getFilesAPI().declareAsRecord(otherTestFolder.getNodeRefWithoutVersion());
         assertStatusCode(UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * Given a file that has version declared as record
+     * When the file is declared as record
+     * Then the action is successful
+     */
+    @Test (description = "Declaring as record a file that already has its version declared as record is successful")
+    @AlfrescoTest (jira = "RM-6786")
+    public void declareAsRecordAFileWithARecordVersion() throws Exception
+    {
+        STEP("Create a file.");
+        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare file version as record and check that record is successfully created.");
+        recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
+                testFile.getName());
+
+        STEP("Declare file as record and check that record is successfully created.");
+        getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
     }
 
 //    @Test(description = "Create 500 documents and declare them ass records concurently.")

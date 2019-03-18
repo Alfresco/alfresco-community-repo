@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -156,6 +157,23 @@ public class RecordAspectUnitTest
         verify(mockContentService, times(1)).getReader(COPY_REF, ContentModel.PROP_CONTENT);
         verify(mockContentService, times(1)).getWriter(COPY_REF, ContentModel.PROP_CONTENT, true);
         verify(mockContentWriter, times(1)).putContent(mockContentReader);
+    }
+
+    /**
+     * This is testing the fix for RM-6788 where archived content couldn't be declared as a record
+     * This was caused by attempting to copy the bin file and updating the content url of the
+     * archived piece of content which failed as this is a protected property. This is done if
+     * the node is/has a copy but the same duplication already happens during archive.
+     */
+    @Test
+    public void testBinFileNotDuplicatedForArchivedContent()
+    {
+        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
+        when(mockNodeService.hasAspect(NODE_REF, ASPECT_ARCHIVED)).thenReturn(true);
+        recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
+
+        verifyBeforeAddAspectMethodsInvocations(0);
     }
 
     /**

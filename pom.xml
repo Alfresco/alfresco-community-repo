@@ -483,7 +483,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>1.0.1</version>
+                <version>4.0.0</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>

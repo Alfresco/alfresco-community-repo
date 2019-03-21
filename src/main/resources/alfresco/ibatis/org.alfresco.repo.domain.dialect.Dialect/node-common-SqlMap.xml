@@ -825,7 +825,7 @@
             join alf_node sourceNode on (sourceNode.id = assoc.source_node_id)
             join alf_store sourceStore on (sourceStore.id = sourceNode.store_id) 
             join alf_node targetNode on (targetNode.id = assoc.target_node_id)
-            join alf_store targetStore on (targetStore.id = targetNode.store_id)
+            left join alf_store targetStore on (targetStore.id = targetNode.store_id)
     </sql>
     <sql id="select_NodeAssoc_OrderBy">
         order by

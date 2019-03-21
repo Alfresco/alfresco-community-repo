@@ -51,6 +51,7 @@ public class Person implements Serializable
 	protected NodeRef avatarId;
 	protected String firstName;
 	protected String lastName;
+	protected String displayName;
 	protected String jobTitle;
 	protected String location;
 	protected String telephone;
@@ -130,6 +131,7 @@ public class Person implements Serializable
 		// system-maintained / derived
 		setStatusUpdatedAt(statusUpdatedAt);
 		setQuota(quota);
+		updateDisplayName();
         if (quotaUsed != null)
         {
             setQuotaUsed(quotaUsed);
@@ -140,6 +142,7 @@ public class Person implements Serializable
     {
         mapProperties(nodeProps);
 		this.enabled = enabled;
+	    updateDisplayName();
 	}
 
 	protected void mapProperties(Map<QName, Serializable> nodeProps)
@@ -304,12 +307,14 @@ public class Person implements Serializable
 	{
 		this.firstName = firstName;
 		setFields.put(ContentModel.PROP_FIRSTNAME, true);
+		updateDisplayName();
 	}
 
 	public void setLastName(String lastName)
 	{
 		this.lastName = lastName;
 		setFields.put(ContentModel.PROP_LASTNAME, true);
+		updateDisplayName();
 	}
 
 	public String getLastName()
@@ -463,10 +468,10 @@ public class Person implements Serializable
 		return (b != null ? b : false);
 	}
 
-    public String getDisplayName()
-    {
-        return ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
-    }
+	public String getDisplayName()
+	{
+		return displayName;
+	}
 
 	@Override
 	public String toString()
@@ -604,5 +609,10 @@ public class Person implements Serializable
 
         Boolean isEmailNotificationsEnabled = isEmailNotificationsEnabled();
         addToMap(properties, ContentModel.PROP_EMAIL_FEED_DISABLED, (isEmailNotificationsEnabled == null ? null : !isEmailNotificationsEnabled.booleanValue()));
+	}
+
+	private void updateDisplayName()
+	{
+		displayName = ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
 	}
 }

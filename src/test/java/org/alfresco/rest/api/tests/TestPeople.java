@@ -2351,7 +2351,7 @@ public class TestPeople extends AbstractBaseApiTest
     public void testDisplayName()
     {
         Person person = new Person();
-        assertEquals("", person.getDisplayName());
+        assertNull(person.getDisplayName());
 
         String firstName = "First";
         person.setFirstName(firstName);

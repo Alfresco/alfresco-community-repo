@@ -265,6 +265,7 @@
                      <attachClasses>true</attachClasses>
                      <attachConfig>true</attachConfig>
                      <includeDependencies>true</includeDependencies>
+                     <ampBuildDirectory>${project.build.directory}/${project.build.finalName}</ampBuildDirectory>
                   </configuration>
                </execution>
                <execution>

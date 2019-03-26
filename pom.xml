@@ -157,11 +157,13 @@
 
                <plugin>
                   <artifactId>maven-javadoc-plugin</artifactId>
-                  <version>2.10.3</version>
+                  <version>${maven.javadoc.version}</version>
                   <configuration>
                      <doclet>com.docflex.javadoc.Doclet</doclet>
                      <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
-                     <additionalparam>
+                     <doclint>none</doclint>
+                     <additionalOptions>
+
                          -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
                          -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
                          -nodialog
@@ -169,7 +171,8 @@
                          -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
                          -p:docTitle "${project.name} ${project.version} Public API"
                          -p:windowTitle "${project.name} ${project.version} Public API"
-                     </additionalparam>
+
+                     </additionalOptions>
                   </configuration>
                </plugin>
             </plugins>
@@ -471,6 +474,8 @@
 
       <share.client.contextPath>/share</share.client.contextPath>
 
+      <maven.javadoc.version>3.0.1</maven.javadoc.version>
+      <maven.war.plugin.version>2.6</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
@@ -512,6 +517,8 @@
       <image.name>imageNameNotSet</image.name>
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>
+
+      <javax-jaxb.version>2.3.1</javax-jaxb.version>
    </properties>
 
    <dependencyManagement>
@@ -551,6 +558,33 @@
          <artifactId>junit</artifactId>
          <version>4.12</version>
          <scope>test</scope>
+      </dependency>
+      <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
+      <dependency>
+         <groupId>javax.xml.bind</groupId>
+         <artifactId>jaxb-api</artifactId>
+         <version>${javax-jaxb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-impl</artifactId>
+         <version>${javax-jaxb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-core</artifactId>
+         <version>${javax-jaxb.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.bcel</groupId>
+         <artifactId>bcel</artifactId>
+         <version>6.2.99</version>
+         <scope>provided</scope>
       </dependency>
    </dependencies>
 
@@ -640,21 +674,27 @@
          </plugin>
          <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.4</version>
+            <version>${maven.javadoc.version}</version>
+            <configuration>
+               <doclint>none</doclint>
+               <!--<additionalparam>-Xdoclint:none</additionalparam>-->
+            </configuration>
             <executions>
                <execution>
                   <id>attach-javadocs</id>
+                  <configuration>
+                     <doclint>none</doclint>
+
+                     <failOnWarnings>false</failOnWarnings>
+                     <failOnError>false</failOnError>
+                     <!--<additionalparam>-Xdoclint:none</additionalparam>-->
+                  </configuration>
                   <goals>
                      <goal>jar</goal>
                   </goals>
-                  <configuration>
-                     <additionalparam>-Xdoclint:none</additionalparam>
-                  </configuration>
+
                </execution>
             </executions>
-            <configuration>
-               <additionalparam>-Xdoclint:none</additionalparam>
-            </configuration>
          </plugin>
          <plugin>
             <artifactId>maven-clean-plugin</artifactId>
@@ -790,7 +830,7 @@
             <plugin>
                <groupId>org.alfresco.maven.plugin</groupId>
                <artifactId>alfresco-maven-plugin</artifactId>
-               <version>2.1.1</version>
+               <version>2.2.0</version>
                <extensions>true</extensions>
                <configuration>
                   <snapshotToTimestamp>true</snapshotToTimestamp>
@@ -901,7 +941,8 @@
             <plugin>
                <artifactId>maven-javadoc-plugin</artifactId>
                <configuration>
-                  <additionalparam>-Xdoclint:none</additionalparam>
+                  <doclint>none</doclint>
+                  <!--<additionalparam>-Xdoclint:none</additionalparam>-->
                </configuration>
             </plugin>
 
@@ -1000,12 +1041,12 @@
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
-               <version>2.5</version>
+               <version>${maven.war.plugin.version}</version>
                <dependencies>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>
-                     <version>2.1.1</version>
+                     <version>2.2.0</version>
                   </dependency>
                </dependencies>
                <configuration>

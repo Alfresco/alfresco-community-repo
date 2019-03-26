@@ -37,7 +37,13 @@ import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 public class CMISResultSetColumn implements ResultSetColumn
 {
 
+    // Constant used at alfresco-data-model > org.alfresco.opencmis.search.CMISQueryParser.buildColumns()
+    public static final String SCORE_SELECTOR_ID = "SEARCH_SCORE";
+    public static final String SCORE_SELECTOR_FUNCTION = "Score";
+
     private String name;
+    
+    private String functionName;
 
     private PropertyDefinitionWrapper propertyDefinition;
 
@@ -47,10 +53,11 @@ public class CMISResultSetColumn implements ResultSetColumn
 
     private QName alfrescoDataTypeQName;
 
-    CMISResultSetColumn(String name, PropertyDefinitionWrapper propertyDefinition, PropertyType dataType,
+    CMISResultSetColumn(String name, String functionName, PropertyDefinitionWrapper propertyDefinition, PropertyType dataType,
             QName alfrescoPropertyQName, QName alfrescoDataTypeQName)
     {
         this.name = name;
+        this.functionName = functionName;
         this.propertyDefinition = propertyDefinition;
         this.dataType = dataType;
         this.alfrescoPropertyQName = alfrescoPropertyQName;
@@ -60,6 +67,11 @@ public class CMISResultSetColumn implements ResultSetColumn
     public String getName()
     {
         return name;
+    }
+    
+    public String getFunctionName()
+    {
+        return functionName;
     }
 
     public PropertyDefinitionWrapper getCMISPropertyDefinition()
@@ -81,4 +93,5 @@ public class CMISResultSetColumn implements ResultSetColumn
     {
         return alfrescoPropertyQName;
     }
+
 }

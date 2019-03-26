@@ -59,7 +59,7 @@ public class CMISResultSetRow implements ResultSetRow
     private int index;
 
     private Map<String, Float> scores;
-
+    
     private NodeService nodeService;
 
     private Map<String, NodeRef> nodeRefs;
@@ -119,7 +119,7 @@ public class CMISResultSetRow implements ResultSetRow
         }
         return overall;
     }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -176,7 +176,14 @@ public class CMISResultSetRow implements ResultSetRow
         context.setScore(getScore());
         for (Column column : query.getColumns())
         {
-            if (column.getAlias().equals(columnName))
+            
+            // When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
+            if (column.getAlias().equals(CMISResultSetColumn.SCORE_SELECTOR_ID) ||
+                column.getFunction().getName().equals(CMISResultSetColumn.SCORE_SELECTOR_FUNCTION))
+            {
+                return getNormalisedScore();
+            }
+            else if (column.getAlias().equals(columnName))
             {
                 return column.getFunction().getValue(column.getFunctionArguments(), context);
             }
@@ -220,6 +227,17 @@ public class CMISResultSetRow implements ResultSetRow
             }
         }
         return null;
+    }
+    
+    /**
+    /**
+     * CMIS Specification states that scoring results must be in a 0..1 range
+     * This function re-adapt the scores when any scoring field or expression is requested by the query. 
+     * It's a safe approach, as includes negative numbers and also paged requests.
+     * @return
+     */
+    private float getNormalisedScore() {
+        return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;  
     }
 
     /*
@@ -288,5 +306,5 @@ public class CMISResultSetRow implements ResultSetRow
     {
         throw new UnsupportedOperationException();
     }
-
+    
 }

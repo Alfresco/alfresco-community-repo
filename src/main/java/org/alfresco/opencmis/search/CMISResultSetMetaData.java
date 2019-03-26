@@ -106,8 +106,7 @@ public class CMISResultSetMetaData implements ResultSetMetaData
             {
                 alfrescoDataTypeQName = cmisDictionaryService.findAlfrescoDataType(type);
             }
-            CMISResultSetColumn cmd = new CMISResultSetColumn(column.getAlias(), column.getFunction().getName(), 
-                    propertyDefinition, type,
+            CMISResultSetColumn cmd = new CMISResultSetColumn(column.getAlias(), propertyDefinition, type,
                     alfrescoPropertyQName, alfrescoDataTypeQName);
             columnMetaData.put(cmd.getName(), cmd);
         }

@@ -246,6 +246,45 @@ public abstract class AbstractMailActionExecuterTest
         Assert.assertEquals("Bonjour 1 janv. 1970", (String) message.getContent());
     }
 
+    @Test
+    public void testHTMLDetection() throws IOException, MessagingException
+    {
+        String from = "some.body@example.com";
+        Serializable recipients = (Serializable) Arrays.asList(FRENCH_USER.getUsername());
+        String subject = "";
+
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, recipients);
+
+        // First with plain text
+        String text = "This is plain text\nOnly\nBut it mentions HTML and <html>";
+
+        MimeMessage message = sendMessage(from, subject, null, text, mailAction);
+
+        Assert.assertNotNull(message);
+        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals("text/plain", // Ignore charset 
+                            message.getDataHandler().getContentType().substring(0, 10));
+
+        // HTML opening tag
+        text = "<html><body>HTML emails are great</body></html>";
+        message = sendMessage(from, subject, null, text, mailAction);
+
+        Assert.assertNotNull(message);
+        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals("text/html", // Ignore charset 
+                            message.getDataHandler().getContentType().substring(0, 9));
+
+        // HTML Doctype
+        text = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<body>More complex HTML</body></html>";
+        message = sendMessage(from, subject, null, text, mailAction);
+
+        Assert.assertNotNull(message);
+        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals("text/html", // Ignore charset 
+                            message.getDataHandler().getContentType().substring(0, 9));
+    }
+
     protected MimeMessage sendMessage(String from, Serializable recipients, String subject, String template)
     {
         Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
@@ -256,13 +295,24 @@ public abstract class AbstractMailActionExecuterTest
 
     protected MimeMessage sendMessage(String from, String subject, String template, final Action mailAction)
     {
+        return sendMessage(from, subject, template, null, mailAction);
+    }
+    protected MimeMessage sendMessage(String from, String subject, String template, String bodyText, final Action mailAction)
+    {
         if (from != null)
         {
             mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, from);
         }
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subject);
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, template);
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
+        if (template != null)
+        {
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, template);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
+        }
+        else
+        {
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, bodyText);
+        }
 
         RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 

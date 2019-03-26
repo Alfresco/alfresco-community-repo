@@ -35,6 +35,7 @@ import org.alfresco.repo.search.impl.querymodel.Column;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
+import org.alfresco.repo.search.impl.querymodel.impl.functions.Score;
 import org.alfresco.repo.search.results.ResultSetSPIWrapper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -176,7 +177,12 @@ public class CMISResultSetRow implements ResultSetRow
         context.setScore(getScore());
         for (Column column : query.getColumns())
         {
-            if (column.getAlias().equals(columnName))
+            // When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
+            if (column.getFunction()!= null && column.getFunction().getName().equals(Score.NAME)) 
+            {
+                return getNormalisedScore();
+            }
+            else if (column.getAlias().equals(columnName))
             {
                 return column.getFunction().getValue(column.getFunctionArguments(), context);
             }
@@ -220,6 +226,17 @@ public class CMISResultSetRow implements ResultSetRow
             }
         }
         return null;
+    }
+    
+    /**
+     * CMIS Specification states that scoring results must be in a 0..1 range
+     * This function re-adapt the scores when any scoring field or expression is requested by the query. 
+     * It's a safe approach, as includes negative numbers and also paged requests.
+     * @return A value between 0 and 1
+     */
+    private float getNormalisedScore() 
+    {
+        return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;  
     }
 
     /*

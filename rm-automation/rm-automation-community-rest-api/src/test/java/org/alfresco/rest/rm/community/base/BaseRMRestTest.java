@@ -161,6 +161,7 @@ public class BaseRMRestTest extends RestTest
     @BeforeClass (alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
+        super.checkServerHealth();
         // Create RM Site if not exist
         createRMSiteIfNotExists();
     }

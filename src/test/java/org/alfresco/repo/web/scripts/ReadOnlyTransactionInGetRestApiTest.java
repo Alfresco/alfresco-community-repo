@@ -57,7 +57,6 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
 {
     private static final String TEST_SITE_NAME = "readOnlyTestSite";
     
-    private static final String URL_GET_SITE_BLOG = "/api/blog/site/" + TEST_SITE_NAME + "/blog";
     private static final String URL_GET_SITE_LINKS = "/api/links/site/" + TEST_SITE_NAME + "/links?page=1&pageSize=10";
     private static final String URL_GET_SITE_LINK = "/api/links/link/site/" + TEST_SITE_NAME + "/links/123456789";
     private static final String URL_GET_SITE_TAGS = "/api/tagscopes/site/" + TEST_SITE_NAME + "/tags";
@@ -129,16 +128,6 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
         nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
         
         AuthenticationUtil.clearCurrentSecurityContext();
-    }
-    
-    public void testGetSiteBlog() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        //       Also add tests for all other blog GET REST APIs
-        
-        Response response = sendRequest(new GetRequest(URL_GET_SITE_BLOG), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
     }
     
     public void testGetSiteLinks() throws Exception

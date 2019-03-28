@@ -33,7 +33,6 @@ import org.alfresco.repo.web.scripts.action.RunningActionRestApiTest;
 import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
 import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
 import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
-import org.alfresco.repo.web.scripts.blogs.BlogServiceTest;
 import org.alfresco.repo.web.scripts.comment.CommentsApiTest;
 import org.alfresco.repo.web.scripts.custommodel.CustomModelImportTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
@@ -79,7 +78,6 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( QuickShareRestApiTest.class );
         suite.addTestSuite( AdminWebScriptTest.class );
         suite.addTestSuite( AuditWebScriptTest.class );
-        suite.addTestSuite( BlogServiceTest.class );
         suite.addTestSuite( DictionaryRestApiTest.class );
         suite.addTestSuite( FeedControlTest.class );
         suite.addTestSuite( FormRestApiGet_Test.class );

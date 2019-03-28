@@ -592,25 +592,24 @@
    <build>
       <finalName>${project.artifactId}-${project.version}</finalName>
       <plugins>
-         <!--<plugin>-->
-            <!--<artifactId>maven-enforcer-plugin</artifactId>-->
-            <!--<version>1.4</version>-->
-            <!--<executions>-->
-               <!--<execution>-->
-                  <!--<id>enforce-java</id>-->
-                  <!--<goals>-->
-                     <!--<goal>enforce</goal>-->
-                  <!--</goals>-->
-                  <!--<configuration>-->
-                     <!--<rules>-->
-                        <!--<requireJavaVersion>-->
-                           <!--<version>1.8</version>-->
-                        <!--</requireJavaVersion>-->
-                     <!--</rules>-->
-                  <!--</configuration>-->
-               <!--</execution>-->
-            <!--</executions>-->
-         <!--</plugin>-->
+         <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-java</id>
+                  <goals>
+                     <goal>enforce</goal>
+                  </goals>
+                  <configuration>
+                     <rules>
+                        <requireJavaVersion>
+                           <version>[1.8.0,)</version>
+                        </requireJavaVersion>
+                     </rules>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>

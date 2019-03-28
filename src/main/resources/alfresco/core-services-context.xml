@@ -698,7 +698,7 @@
                 <value>alfresco/model/calendarModel.xml</value>
 
                 <!-- Blog Integration model -->
-                <value>alfresco/model/blogIntegrationModel.xml</value>
+                <value>alfresco/model/deprecated/blogIntegrationModel.xml</value>
 
                 <!-- Links model -->
                 <value>alfresco/model/linksModel.xml</value>

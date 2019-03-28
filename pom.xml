@@ -481,7 +481,7 @@
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
       <maven.compiler.version>3.8.0</maven.compiler.version>
-      <maven.enforcer.plugin>1.4</maven.enforcer.plugin>
+      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
       <maven.resources.version>2.7</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 

@@ -474,7 +474,7 @@
 
       <share.client.contextPath>/share</share.client.contextPath>
 
-      <maven.javadoc.version>3.0.1</maven.javadoc.version>
+      <maven.javadoc.version>3.1.0</maven.javadoc.version>
       <maven.war.plugin.version>2.6</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
@@ -683,9 +683,6 @@
                   <id>attach-javadocs</id>
                   <configuration>
                      <doclint>none</doclint>
-
-                     <failOnWarnings>false</failOnWarnings>
-                     <failOnError>false</failOnError>
                      <!--<additionalparam>-Xdoclint:none</additionalparam>-->
                   </configuration>
                   <goals>

@@ -464,8 +464,8 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>6.19</alfresco-spring-webscripts.version>
-      <api.explorer.version>6.0.7-ga</api.explorer.version>
+      <alfresco-spring-webscripts.version>6.20</alfresco-spring-webscripts.version>
+      <api.explorer.version>6.1.0</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.version>0.0</alfresco.version>
 
@@ -483,7 +483,7 @@
       <jackson.version>2.9.8</jackson.version>
       <fabric8.docker.version>0.25.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
-      <postgresql.version>42.2.1</postgresql.version>
+      <postgresql.version>42.2.5</postgresql.version>
       <postgresql.port>5432</postgresql.port>
       <mysql.version>5.1.40</mysql.version>
       <mysql.port>3306</mysql.port>

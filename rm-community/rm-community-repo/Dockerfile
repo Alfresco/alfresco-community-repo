@@ -1,4 +1,4 @@
-FROM alfresco/alfresco-content-repository-community:6.0.7-ga
+FROM alfresco/alfresco-content-repository-community:6.1.2-ga
 
 COPY target/alfresco-governance-services-community-repo-*.amp /usr/local/tomcat/amps/
 
@@ -11,3 +11,4 @@ COPY target/gs-api-explorer-*.war /usr/local/tomcat/webapps/
 ### Unpack gs-api-explorer.war
 RUN mkdir /usr/local/tomcat/webapps/gs-api-explorer && cd /usr/local/tomcat/webapps/gs-api-explorer && \
     jar -xvf /usr/local/tomcat/webapps/gs-api-explorer-*.war && rm -f /usr/local/tomcat/webapps/gs-api-explorer-*.war
+alfresco-repository.version

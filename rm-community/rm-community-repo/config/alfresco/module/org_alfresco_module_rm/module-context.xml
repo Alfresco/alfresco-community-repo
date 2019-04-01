@@ -248,6 +248,11 @@
       </property>
    </bean>
 
+   <bean name="contentBinDuplicationUtility" class="org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility">
+      <property name="behaviourFilter" ref="policyBehaviourFilter"/>
+      <property name="contentService" ref="contentService"/>
+   </bean>
+
    <!--  Prevent ghosted records being renditioned -->
    <bean id="noRenditionsForGhosts" parent="baseRenditionPreventionClass">
       <constructor-arg value="rma:ghosted"/>

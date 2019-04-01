@@ -30,8 +30,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +37,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -70,8 +68,6 @@ public class RecordAspectUnitTest
     @Mock
     private NodeService mockNodeService;
     @Mock
-    private BehaviourFilter mockBehaviorFilter;
-    @Mock
     private ContentService mockContentService;
     @Mock
     private ContentReader mockContentReader;
@@ -79,6 +75,8 @@ public class RecordAspectUnitTest
     private ContentWriter mockContentWriter;
     @Mock
     private ExtendedSecurityService mockExtendedSecurityService;
+    @Mock
+    private ContentBinDuplicationUtility contentBinDuplicationUtility;
 
     @Before
     public void setUp()
@@ -96,7 +94,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-         verifyBeforeAddAspectMethodsInvocations(1);
+        verify(contentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file is a copy. */
@@ -109,24 +107,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-         verifyBeforeAddAspectMethodsInvocations(1);
-    }
-
-    /** Check that no content bin is created if the file does not have content. */
-    @Test
-    public void testBeforeAddAspectOnFileWithNoContent()
-    {
-        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
-
-        recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
-
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(1)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, never()).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+        verify(contentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is not duplicated before adding the aspect if the node has no copies. */
@@ -138,7 +119,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verifyBeforeAddAspectMethodsInvocations(0);
+        verify(contentBinDuplicationUtility, times(0)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated when copying a record. */
@@ -156,21 +137,5 @@ public class RecordAspectUnitTest
         verify(mockContentService, times(1)).getReader(COPY_REF, ContentModel.PROP_CONTENT);
         verify(mockContentService, times(1)).getWriter(COPY_REF, ContentModel.PROP_CONTENT, true);
         verify(mockContentWriter, times(1)).putContent(mockContentReader);
-    }
-
-    /**
-     * Helper to verify beforeAddAspect methods invocations
-     *
-     * @param wantedNumberOfInvocations wanted number of invocations for each method
-     */
-    private void verifyBeforeAddAspectMethodsInvocations(int wantedNumberOfInvocations)
-    {
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(wantedNumberOfInvocations)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(wantedNumberOfInvocations)).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(wantedNumberOfInvocations)).putContent(mockContentReader);
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
     }
 }

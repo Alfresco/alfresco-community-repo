@@ -26,7 +26,10 @@
 
 package org.alfresco.repo.node;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -56,7 +59,7 @@ public abstract class SystemNodeUtils
     
     private static QName SYSTEM_FOLDER_QNAME =
             QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
-    
+
     /**
      * Returns the System Container for the current tenant
      */
@@ -83,23 +86,67 @@ public abstract class SystemNodeUtils
      */
     public static NodeRef getSystemChildContainer(final QName childName, final NodeService nodeService, final Repository repositoryHelper)
     {
-        NodeRef system = getSystemContainer(nodeService, repositoryHelper);
-
-        // Find the container, under system
-        List<ChildAssociationRef> containerRefs = nodeService.getChildAssocs(
-                system, ContentModel.ASSOC_CHILDREN, childName);
+        List<ChildAssociationRef> containerRefs = getChildAssociationRefs(childName, nodeService, repositoryHelper);
 
         NodeRef container = null;
         if (containerRefs.size() > 0)
         {
             container = containerRefs.get(0).getChildRef();
-            if (containerRefs.size() > 1)
-                logger.warn("Duplicate Shared Credentials Containers found: " + containerRefs);
+            warnIfDuplicates(containerRefs);
         }
 
         return container;
     }
-    
+
+    /**
+     * MNT-20212
+     * Avoid using this method. It is meant only to fix that bug reported in the MNT
+     *
+     * Returns the list with all the NodeRef of a given Child Container within the current Tenant's
+     *  System Container, if found
+     */
+    public static List<NodeRef> getSystemChildContainers(final QName childName, final NodeService nodeService, final Repository repositoryHelper)
+    {
+        List<NodeRef> allChildContainers = new ArrayList<NodeRef>();
+
+        List<ChildAssociationRef> containerRefs = getChildAssociationRefs(childName, nodeService, repositoryHelper);
+
+        if (containerRefs.size() > 0)
+        {
+            for (ChildAssociationRef containerRef : containerRefs)
+            {
+                allChildContainers.add(containerRef.getChildRef());
+            }
+            warnIfDuplicates(containerRefs);
+        }
+
+        return allChildContainers;
+    }
+
+    private static void warnIfDuplicates(List<ChildAssociationRef> containerRefs)
+    {
+        if (containerRefs.size() > 1)
+        {
+            logger.warn("Duplicate system containers found: " + containerRefs);
+        }
+    }
+
+    private static List<ChildAssociationRef> getChildAssociationRefs(final QName childName, final NodeService nodeService,
+        final Repository repositoryHelper)
+    {
+        final NodeRef system = getSystemContainer(nodeService, repositoryHelper);
+
+        List<ChildAssociationRef> containerRefs = AuthenticationUtil.runAsSystem(new RunAsWork<List<ChildAssociationRef>>()
+        {
+            @Override
+            public List<ChildAssociationRef> doWork() throws Exception
+            {
+                return nodeService.getChildAssocs(system, ContentModel.ASSOC_CHILDREN, childName);
+            }
+        });
+        return containerRefs;
+    }
+
     /**
      * Returns the NodeRef of a given Child Container within the current Tenant's System Container,
      *  creating the Container as System if required.

@@ -26,6 +26,7 @@
 package org.alfresco.repo.download;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -205,9 +206,9 @@ public class DownloadStorage
 
     private void validateNode(NodeRef downloadNodeRef)
     {
-        if (nodeService.getType(downloadNodeRef).equals(DownloadModel.TYPE_DOWNLOAD) == false)
+        if (!nodeService.getType(downloadNodeRef).equals(DownloadModel.TYPE_DOWNLOAD))
         {
-            throw new IllegalArgumentException("Invlaid node type for nodeRef:-" + downloadNodeRef);    
+            throw new IllegalArgumentException("Invalid node type for nodeRef: " + downloadNodeRef);
         }
     }
 
@@ -250,26 +251,74 @@ public class DownloadStorage
     /**
      * Get all the downloads created before before.
      */
-    public List<List<DownloadEntity>> getDownloadsCreatedBefore(Date before)
+    public List<List<DownloadEntity>> getDownloadsCreatedBefore(Date before, int batchSize, boolean cleanAllSysDownloadFolders)
     {
-        NodeRef container = getContainer();
-        
-        if (container == null)
+        List<NodeRef> allFoldersToBeCleaned = getAllFoldersToBeCleaned(cleanAllSysDownloadFolders);
+
+        if (allFoldersToBeCleaned.isEmpty())
         {
             return Collections.emptyList();
         }
+        List<List<DownloadEntity>> childDownloads = new ArrayList<>();
 
+        for (NodeRef folderToBeCleaned : allFoldersToBeCleaned)
+        {
+            gatherDownloadFilesToBeCleanedFromFolder(childDownloads, before, batchSize, folderToBeCleaned);
+        }
+        return childDownloads;
+    }
+
+    private void gatherDownloadFilesToBeCleanedFromFolder(final List<List<DownloadEntity>> childDownloads, final Date before, final int batchSize,
+        final NodeRef folderToBeCleaned)
+    {
         // Grab the factory
-        GetDownloadsCannedQueryFactory getDownloadCannedQueryFactory = 
-                    (GetDownloadsCannedQueryFactory)queryRegistry.getNamedObject("downloadGetDownloadsCannedQueryFactory");
-        
+        GetDownloadsCannedQueryFactory getDownloadCannedQueryFactory = (GetDownloadsCannedQueryFactory) queryRegistry
+            .getNamedObject("downloadGetDownloadsCannedQueryFactory");
+
         // Run the canned query
-        GetDownloadsCannedQuery cq = (GetDownloadsCannedQuery)getDownloadCannedQueryFactory.getDownloadsCannedQuery(container, before);
-        
+        GetDownloadsCannedQuery cq = (GetDownloadsCannedQuery) getDownloadCannedQueryFactory.getDownloadsCannedQuery(folderToBeCleaned, before);
+
         // Execute the canned query
         CannedQueryResults<DownloadEntity> results = cq.execute();
-        
-        return results.getPages();
+
+        List<List<DownloadEntity>> downloadsInThisFolder = results.getPages();
+        if (batchSize > 0)
+        {
+            int i = 0;
+            while (childDownloads.size() < batchSize && downloadsInThisFolder.size() > i)
+            {
+                childDownloads.add(downloadsInThisFolder.get(i++));
+            }
+        }
+        else
+        {
+            childDownloads.addAll(downloadsInThisFolder);
+        }
+    }
+
+    private List<NodeRef> getAllFoldersToBeCleaned(boolean cleanAllSysDownloadFolders)
+    {
+        List<NodeRef> allFoldersToBeCleaned = new ArrayList<NodeRef>();
+
+        if (cleanAllSysDownloadFolders)
+        {
+            for (NodeRef nodeRef : SystemNodeUtils.getSystemChildContainers(getContainerQName(), nodeService, repositoryHelper))
+            {
+                if (nodeRef != null)
+                {
+                    allFoldersToBeCleaned.add(nodeRef);
+                }
+            }
+        }
+        else
+        {
+            NodeRef container = getContainer();
+            if (container != null)
+            {
+                allFoldersToBeCleaned.add(container);
+            }
+        }
+        return allFoldersToBeCleaned;
     }
 
     /**

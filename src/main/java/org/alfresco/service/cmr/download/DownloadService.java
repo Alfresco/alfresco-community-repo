@@ -66,7 +66,18 @@ public interface DownloadService
      * @param before Date
      */
     public void deleteDownloads(Date before);
-    
+
+    /**
+     * Delete downloads created before the specified date.
+     *
+     * It also limits the number of deleted files for this batch of work to
+     * the specified batchSize;
+     *
+     * It can also look into deleting downloads files from all sys:Download folders
+     * affected by MNT-20212
+     */
+    void deleteDownloads(Date before, int batchSize, boolean cleanAllSysDownloadFolders);
+
     /**
      * Cancel a download request
      * 

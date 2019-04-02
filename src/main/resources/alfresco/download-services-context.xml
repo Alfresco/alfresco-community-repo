@@ -131,6 +131,8 @@
                                     <entry key="downloadService" value-ref="DownloadService" />
                                     <entry key="tenantAdminService" value-ref="tenantAdminService"/>
                                     <entry key="maxAgeInMinutes" value="${download.cleaner.maxAgeMins}"/>
+                                    <entry key="batchSize" value="${download.cleaner.batchSize}"/>
+                                    <entry key="cleanAllSysDownloadFolders" value="${download.cleaner.cleanAllSysDownloadFolders}"/>
                                 </map>
                             </property>
                         </bean>

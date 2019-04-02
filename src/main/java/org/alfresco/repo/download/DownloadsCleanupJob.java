@@ -51,6 +51,8 @@ public class DownloadsCleanupJob implements Job
     private static final String KEY_DOWNLOAD_SERVICE = "downloadService";
     private static final String KEY_TENANT_ADMIN_SERVICE = "tenantAdminService";
     private static final String KEY_MAX_AGE = "maxAgeInMinutes";
+    private static final String BATCH_SIZE = "batchSize";
+    private static final String CLEAN_All_SYS_DOWNLOAD_FOLDERS = "cleanAllSysDownloadFolders";
     
 
     /*
@@ -65,6 +67,8 @@ public class DownloadsCleanupJob implements Job
         final DownloadService downloadService = (DownloadService)jobData.get(KEY_DOWNLOAD_SERVICE);
         final TenantAdminService tenantAdminService = (TenantAdminService)jobData.get(KEY_TENANT_ADMIN_SERVICE);
         final int maxAgeInMinutes = Integer.parseInt((String)jobData.get(KEY_MAX_AGE));
+        final int batchSize = Integer.parseInt((String)jobData.get(BATCH_SIZE));
+        final boolean cleanAllSysDownloadFolders = Boolean.parseBoolean((String)jobData.get(CLEAN_All_SYS_DOWNLOAD_FOLDERS));
         
         final DateTime before = new DateTime().minusMinutes(maxAgeInMinutes);
 
@@ -72,7 +76,7 @@ public class DownloadsCleanupJob implements Job
         {
             public Object doWork() throws Exception
             {
-                downloadService.deleteDownloads(before.toDate());
+                downloadService.deleteDownloads(before.toDate(), batchSize, cleanAllSysDownloadFolders);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -86,7 +90,7 @@ public class DownloadsCleanupJob implements Job
                 {
                     public Object doWork() throws Exception
                     {
-                        downloadService.deleteDownloads(before.toDate());
+                        downloadService.deleteDownloads(before.toDate(), batchSize, cleanAllSysDownloadFolders);
                         return null;
                     }
                 }, tenant.getTenantDomain());

@@ -109,22 +109,27 @@ public class DownloadServiceImpl implements DownloadService {
 		
 		return downloadStorage.getDownloadStatus(downloadNode);
     }
-	
+
     /*
      * @see org.alfresco.service.cmr.download.DownloadService#deleteDownloads(java.util.Date)
      */
     @Override
     public void deleteDownloads(Date before)
     {
-        List<List<DownloadEntity>> downloadPages = downloadStorage.getDownloadsCreatedBefore(before);
+        deleteDownloads(before, -1, false);
+    }
+
+    @Override
+    public void deleteDownloads(Date before, int batchSize, boolean cleanAllSysDownloadFolders)
+    {
+        List<List<DownloadEntity>> downloadPages = downloadStorage.getDownloadsCreatedBefore(before, batchSize, cleanAllSysDownloadFolders);
         for (List<DownloadEntity> page : downloadPages)
         {
-            for (DownloadEntity download : page) 
+            for (DownloadEntity download : page)
             {
                 downloadStorage.delete(download.getNodeRef());
             }
         }
-        
     }
 
     /*

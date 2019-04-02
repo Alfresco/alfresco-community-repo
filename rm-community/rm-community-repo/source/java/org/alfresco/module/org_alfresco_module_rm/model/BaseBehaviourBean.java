@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -142,4 +143,32 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
         //no match was found in sub-types of permitted types list
         throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
     }
+
+    /**
+     * Helper method to duplicate the bin file of a node and replace the contenturl property with the new reference
+     *
+     * @param nodeRef The node to update with a new copy of the bin file
+     */
+    protected void duplicateContentFileIfRequired(NodeRef nodeRef)
+    {
+        //Adding fix for RM-6788 where too many duplicates are being made this is a workaround waiting on a full solution
+        if (!nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
+        {
+            //disable versioning and auditing
+            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            try
+            {
+                //create a new content URL for the copy/original node
+                createNewContentURL(nodeRef);
+            }
+            finally
+            {
+                //enable versioning and auditing
+                behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            }
+        }
+    }
+
 }

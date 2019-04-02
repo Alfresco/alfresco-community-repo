@@ -401,20 +401,7 @@ public class RecordAspect extends    AbstractDisposableItem
                 if (!nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() ||
                         !nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
                 {
-                    //disable versioning and auditing
-                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-                    try
-                    {
-                        //create a new content URL for the copy/original node
-                        createNewContentURL(nodeRef);
-                    }
-                    finally
-                    {
-                        //enable versioning and auditing
-                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-                    }
+                    duplicateContentFileIfRequired(nodeRef);
                 }
 
                 return null;

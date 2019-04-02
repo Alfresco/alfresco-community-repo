@@ -369,7 +369,7 @@ public class RecordAspect extends    AbstractDisposableItem
             extendedSecurityService.remove(targetNodeRef);
 
             //create a new content URL for the copy
-            createNewContentURL(targetNodeRef);
+            contentBinDuplicationUtility.duplicate(targetNodeRef);
         }
     }
 

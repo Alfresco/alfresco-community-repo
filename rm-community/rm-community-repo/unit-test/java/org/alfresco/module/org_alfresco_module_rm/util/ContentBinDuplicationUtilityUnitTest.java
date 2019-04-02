@@ -105,9 +105,7 @@ public class ContentBinDuplicationUtilityUnitTest
      */
     private void checkBehaviours(int times)
     {
-        verify(behaviourFilter, times(times)).disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-        verify(behaviourFilter, times(times)).disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-        verify(behaviourFilter, times(times)).enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-        verify(behaviourFilter, times(times)).enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+        verify(behaviourFilter, times(times)).disableBehaviour();
+        verify(behaviourFilter, times(times)).enableBehaviour();
     }
 }

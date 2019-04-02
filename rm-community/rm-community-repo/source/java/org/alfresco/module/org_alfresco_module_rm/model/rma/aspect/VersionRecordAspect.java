@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -65,6 +66,11 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     private RelationshipService relationshipService;
 
     /**
+     * Utility class for duplicating content
+     */
+    private ContentBinDuplicationUtility contentBinDuplicationUtility;
+
+    /**
      * @param recordableVersionService  recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
@@ -78,6 +84,16 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     public void setRelationshipService(RelationshipService relationshipService)
     {
         this.relationshipService = relationshipService;
+    }
+
+    /**
+     * Setter for content duplication utility class
+     *
+     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
+     */
+    public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
+    {
+        this.contentBinDuplicationUtility = contentBinDuplicationUtility;
     }
 
     /**
@@ -148,7 +164,7 @@ public class VersionRecordAspect extends    BaseBehaviourBean
         if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD_ORIGINATING_DETAILS))
         {
             //create a new content URL for the version record
-            createNewContentURL(nodeRef);
+            contentBinDuplicationUtility.duplicate(nodeRef);
         }
     }
 }

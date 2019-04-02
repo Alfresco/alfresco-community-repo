@@ -76,7 +76,7 @@ public class RecordAspectUnitTest
     @Mock
     private ExtendedSecurityService mockExtendedSecurityService;
     @Mock
-    private ContentBinDuplicationUtility contentBinDuplicationUtility;
+    private ContentBinDuplicationUtility mockContentBinDuplicationUtility;
 
     @Before
     public void setUp()
@@ -94,7 +94,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verify(contentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file is a copy. */
@@ -107,7 +107,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verify(contentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is not duplicated before adding the aspect if the node has no copies. */
@@ -119,7 +119,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verify(contentBinDuplicationUtility, times(0)).duplicate(NODE_REF);
+        verify(mockContentBinDuplicationUtility, times(0)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated when copying a record. */
@@ -134,8 +134,6 @@ public class RecordAspectUnitTest
         recordAspect.onCopyComplete(null, NODE_REF, COPY_REF, true, null);
 
         verify(mockExtendedSecurityService, times(1)).remove(COPY_REF);
-        verify(mockContentService, times(1)).getReader(COPY_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(1)).getWriter(COPY_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(1)).putContent(mockContentReader);
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(COPY_REF);
     }
 }

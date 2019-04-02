@@ -28,6 +28,9 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,21 +38,35 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Ross Gale
  * @since 2.7.2
  */
-public class ContentBinDuplicationUtility extends ServiceBaseImpl
+public class ContentBinDuplicationUtility
 {
 
     /**
      * Behaviour filter
      */
-    protected BehaviourFilter behaviourFilter;
+    private BehaviourFilter behaviourFilter;
+
+    /**
+     * Provides methods for accessing and transforming content.
+     */
+    private ContentService contentService;
 
     /**
      * Setter for behaviour filter
-     * @param behaviourFilter
+     * @param behaviourFilter BehaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * Setter for content service
+     * @param contentService ContentService
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /**
@@ -60,19 +77,31 @@ public class ContentBinDuplicationUtility extends ServiceBaseImpl
     public void duplicate(NodeRef nodeRef)
     {
         //disabling versioning and auditing
-        behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-        behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-
+        behaviourFilter.disableBehaviour();
         try
         {
             //create a new content URL for the copy/original node
-            createNewContentURL(nodeRef);
+            updateContentProperty(nodeRef);
         }
         finally
         {
             //enable versioning and auditing
-            behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+            behaviourFilter.enableBehaviour();
+        }
+    }
+
+    /**
+     * Helper to update the content property for the node
+     *
+     * @param nodeRef         the node
+     */
+    private void updateContentProperty(NodeRef nodeRef)
+    {
+        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+        if (reader != null)
+        {
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            writer.putContent(reader);
         }
     }
 }

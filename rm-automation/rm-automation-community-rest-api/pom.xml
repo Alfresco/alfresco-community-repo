@@ -13,9 +13,9 @@
 
    <properties>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
-      <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
-      <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
-      <tas.restapi.version>5.2.0-10</tas.restapi.version>
+      <ags.share>alfresco-governance-services-community-share</ags.share>
+      <ags.repo>alfresco-governance-services-community-repo</ags.repo>
+      <tas.restapi.version>6.0.0.3</tas.restapi.version>
       <fluent.json.version>2.0.0</fluent.json.version>
    </properties>
 
@@ -59,7 +59,7 @@
       <dependency>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.16.10</version>
+         <version>1.18.6</version>
          <scope>provided</scope>
       </dependency>
       <!-- FIXME: Remove this dependency once RMUserAPI.java has been refactored -->
@@ -72,6 +72,11 @@
          <groupId>org.alfresco.test</groupId>
          <artifactId>alfresco-testng</artifactId>
          <version>1.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-collections4</artifactId>
+         <version>4.1</version>
       </dependency>
    </dependencies>
 </project>

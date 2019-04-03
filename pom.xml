@@ -31,7 +31,7 @@
    </ciManagement>
 
    <prerequisites>
-      <maven>3.2.5</maven>
+      <maven>3.3.9</maven>
    </prerequisites>
 
    <repositories>
@@ -131,7 +131,7 @@
             <plugins>
                <plugin>
                   <artifactId>maven-dependency-plugin</artifactId>
-                  <version>2.10</version>
+                  <version>3.1.1</version>
                   <executions>
                      <!-- Unzips the docflex/javadoc doclet -->
                      <execution>
@@ -157,11 +157,13 @@
 
                <plugin>
                   <artifactId>maven-javadoc-plugin</artifactId>
-                  <version>2.10.3</version>
+                  <version>${maven.javadoc.version}</version>
                   <configuration>
                      <doclet>com.docflex.javadoc.Doclet</doclet>
                      <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
-                     <additionalparam>
+                     <doclint>none</doclint>
+                     <additionalOptions>
+
                          -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
                          -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
                          -nodialog
@@ -169,7 +171,8 @@
                          -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
                          -p:docTitle "${project.name} ${project.version} Public API"
                          -p:windowTitle "${project.name} ${project.version} Public API"
-                     </additionalparam>
+
+                     </additionalOptions>
                   </configuration>
                </plugin>
             </plugins>
@@ -471,19 +474,21 @@
 
       <share.client.contextPath>/share</share.client.contextPath>
 
+      <maven.javadoc.version>3.1.0</maven.javadoc.version>
+      <maven.war.plugin.version>2.6</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
-      <maven.compiler.version>3.2</maven.compiler.version>
-      <maven.enforcer.plugin>1.4</maven.enforcer.plugin>
-      <maven.resources.version>2.7</maven.resources.version>
+      <maven.compiler.version>3.8.0</maven.compiler.version>
+      <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
+      <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
       <jackson.version>2.9.8</jackson.version>
       <fabric8.docker.version>0.25.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
-      <postgresql.version>42.2.1</postgresql.version>
+      <postgresql.version>42.2.5</postgresql.version>
       <postgresql.port>5432</postgresql.port>
       <mysql.version>5.1.40</mysql.version>
       <mysql.port>3306</mysql.port>
@@ -512,6 +517,8 @@
       <image.name>imageNameNotSet</image.name>
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>
+
+      <javax-jaxb.version>2.3.0</javax-jaxb.version>
    </properties>
 
    <dependencyManagement>
@@ -552,6 +559,27 @@
          <version>4.12</version>
          <scope>test</scope>
       </dependency>
+      <!-- XML jars removed in Java 11 but are provided by alfresco-content-services -->
+      <dependency>
+         <groupId>javax.xml.bind</groupId>
+         <artifactId>jaxb-api</artifactId>
+         <version>${javax-jaxb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-impl</artifactId>
+         <version>${javax-jaxb.version}</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.apache.bcel</groupId>
+         <artifactId>bcel</artifactId>
+         <version>6.2.99</version>
+         <scope>provided</scope>
+      </dependency>
    </dependencies>
 
    <build>
@@ -559,7 +587,6 @@
       <plugins>
          <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>1.4</version>
             <executions>
                <execution>
                   <id>enforce-java</id>
@@ -569,7 +596,7 @@
                   <configuration>
                      <rules>
                         <requireJavaVersion>
-                           <version>1.8</version>
+                           <version>[1.8.0,)</version>
                         </requireJavaVersion>
                      </rules>
                   </configuration>
@@ -619,7 +646,6 @@
          </plugin>
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.18</version>
             <configuration>
                <includes>
                   <include>**/*UnitTest.java</include>
@@ -640,25 +666,26 @@
          </plugin>
          <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.4</version>
+            <version>${maven.javadoc.version}</version>
+            <configuration>
+               <doclint>none</doclint>
+            </configuration>
             <executions>
                <execution>
                   <id>attach-javadocs</id>
+                  <configuration>
+                     <doclint>none</doclint>
+                  </configuration>
                   <goals>
                      <goal>jar</goal>
                   </goals>
-                  <configuration>
-                     <additionalparam>-Xdoclint:none</additionalparam>
-                  </configuration>
+
                </execution>
             </executions>
-            <configuration>
-               <additionalparam>-Xdoclint:none</additionalparam>
-            </configuration>
          </plugin>
          <plugin>
             <artifactId>maven-clean-plugin</artifactId>
-            <version>2.6.1</version>
+            <version>3.1.0</version>
             <executions>
                <execution>
                   <id>default-clean</id>
@@ -697,7 +724,7 @@
          </plugin>
          <plugin>
             <artifactId>maven-site-plugin</artifactId>
-            <version>3.3</version>
+            <version>3.7.1</version>
             <executions>
                <execution>
                   <id>default-site</id>
@@ -773,7 +800,12 @@
          <plugins>
             <plugin>
                <artifactId>maven-surefire-plugin</artifactId>
-               <version>2.18</version>
+               <version>2.22.1</version>
+               <configuration>
+                  <argLine>
+                     --illegal-access=permit
+                  </argLine>
+               </configuration>
             </plugin>
             <plugin>
                <artifactId>maven-install-plugin</artifactId>
@@ -781,11 +813,11 @@
             </plugin>
             <plugin>
                <artifactId>maven-jar-plugin</artifactId>
-               <version>2.5</version>
+               <version>3.1.0</version>
             </plugin>
             <plugin>
                <artifactId>maven-assembly-plugin</artifactId>
-               <version>2.2-beta-5</version>
+               <version>3.1.0</version>
             </plugin>
             <plugin>
                <groupId>org.alfresco.maven.plugin</groupId>
@@ -871,7 +903,12 @@
             </plugin>
             <plugin>
                <artifactId>maven-failsafe-plugin</artifactId>
-               <version>2.19</version>
+               <version>2.22.1</version>
+               <configuration>
+                  <argLine>
+                     --illegal-access=permit
+                  </argLine>
+               </configuration>
             </plugin>
             <plugin>
                <artifactId>maven-antrun-plugin</artifactId>
@@ -901,14 +938,14 @@
             <plugin>
                <artifactId>maven-javadoc-plugin</artifactId>
                <configuration>
-                  <additionalparam>-Xdoclint:none</additionalparam>
+                  <doclint>none</doclint>
                </configuration>
             </plugin>
 
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>license-maven-plugin</artifactId>
-               <version>1.8</version>
+               <version>1.16</version>
                <configuration>
 
                    <verbose>${license.verbose}</verbose>
@@ -1000,7 +1037,7 @@
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
-               <version>2.5</version>
+               <version>${maven.war.plugin.version}</version>
                <dependencies>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
@@ -1019,11 +1056,11 @@
             </plugin>
             <plugin>
                <artifactId>maven-clean-plugin</artifactId>
-               <version>2.6.1</version>
+               <version>3.1.0</version>
             </plugin>
             <plugin>
                <artifactId>maven-dependency-plugin</artifactId>
-               <version>2.9</version>
+               <version>3.1.1</version>
             </plugin>
             <plugin>
                <artifactId>maven-archetype-plugin</artifactId>

@@ -27,6 +27,8 @@
 package org.alfresco.rest.core.v0;
 
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -44,6 +46,10 @@ public class APIUtils
 {
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(APIUtils.class);
+    /** The ISO instant formatter that formats or parses an instant in UTC, such as '2011-12-03T10:15:305Z'
+     * similar with {@link DateTimeFormatter#ISO_INSTANT}, but with only 3 nanoseconds*/
+    public static final DateTimeFormatter ISO_INSTANT_FORMATTER =
+            new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
 
     /** Private constructor for helper class. */
     private APIUtils()

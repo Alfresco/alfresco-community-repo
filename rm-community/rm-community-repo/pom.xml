@@ -265,6 +265,7 @@
                      <attachClasses>true</attachClasses>
                      <attachConfig>true</attachConfig>
                      <includeDependencies>true</includeDependencies>
+
                   </configuration>
                </execution>
                <execution>

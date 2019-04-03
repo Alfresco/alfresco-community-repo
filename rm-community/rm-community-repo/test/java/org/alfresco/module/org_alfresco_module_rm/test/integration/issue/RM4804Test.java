@@ -46,7 +46,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.GUID;
 
-import javax.xml.soap.Node;
 
 /**
  * Integration test for RM-4804

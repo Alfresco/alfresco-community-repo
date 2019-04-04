@@ -12,12 +12,18 @@ cache:
   directories:
     - $HOME/.m2
 
+branches:
+  only:
+    - master
+    - /support\/.*/
+
 matrix:
   include:
   - name: "AllUnitTestsSuite"
     script: mvn test -B -Dtest=AllUnitTestsSuite
   - name: "WhiteSource scan"
-    if: fork = false AND branch = master
+    # only on master and if it is not a PR
+    if: fork = false AND branch = master AND type != pull_request
     script:
       # Download the latest version of WhiteSource FS Agent
       - curl -LJO https://github.com/whitesource/fs-agent-distribution/raw/master/standAlone/whitesource-fs-agent.jar

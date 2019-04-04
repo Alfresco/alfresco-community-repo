@@ -89,7 +89,7 @@ public class ActivitiSmokeTest extends TestCase
 
     private ProcessEngine buildProcessEngine()
     {
-        String properties = "org/alfresco/repo/workflow/activiti/activiti.cfg.xml";
+        String properties = "activiti/activiti.cfg.xml";
         ProcessEngine engine = ProcessEngineConfiguration.createProcessEngineConfigurationFromResource(properties).buildProcessEngine();
         return engine;
     }

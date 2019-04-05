@@ -27,10 +27,10 @@
       <skip.integrationtests>true</skip.integrationtests>
 
       <!-- 6.0 changes -->
-      <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>7.43</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>7.35</dependency.alfresco-remote-api.version>
-      <alfresco.alfresco-share-services.version>6.1.0-RC3</alfresco.alfresco-share-services.version>
+      <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>7.33.12</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>7.34.1</dependency.alfresco-remote-api.version>
+      <alfresco.alfresco-share-services.version>6.1.0</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
    </properties>
@@ -153,6 +153,15 @@
                            <log>database system is ready to accept connections</log>
                            <time>20000</time>
                         </wait>
+                     </run>
+                  </image>
+                  <image>
+                     <name>alfresco/alfresco-activemq:5.15.6</name>
+                     <run>
+                        <ports>
+                           <port>61616:61616</port>
+                           <port>5672:5672</port>
+                        </ports>
                      </run>
                   </image>
                </images>

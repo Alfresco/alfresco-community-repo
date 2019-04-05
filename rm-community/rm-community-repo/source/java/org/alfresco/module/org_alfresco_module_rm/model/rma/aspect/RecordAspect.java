@@ -38,7 +38,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -95,9 +94,6 @@ public class RecordAspect extends    AbstractDisposableItem
     /** quickShare service */
     private QuickShareService quickShareService;
 
-    /** Utility class for duplicating content */
-    private ContentBinDuplicationUtility contentBinDuplicationUtility;
-
     /** I18N */
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
@@ -132,15 +128,6 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setQuickShareService(QuickShareService quickShareService)
     {
         this.quickShareService = quickShareService;
-    }
-
-    /**
-     * Setter for content duplication utility class
-     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
-     */
-    public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
-    {
-        this.contentBinDuplicationUtility = contentBinDuplicationUtility;
     }
 
     /**
@@ -369,7 +356,7 @@ public class RecordAspect extends    AbstractDisposableItem
             extendedSecurityService.remove(targetNodeRef);
 
             //create a new content URL for the copy
-            contentBinDuplicationUtility.duplicate(targetNodeRef);
+            createNewContentURL(targetNodeRef);
         }
     }
 
@@ -414,7 +401,20 @@ public class RecordAspect extends    AbstractDisposableItem
                 if (!nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() ||
                         !nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
                 {
-                    contentBinDuplicationUtility.duplicate(nodeRef);
+                    //disable versioning and auditing
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    try
+                    {
+                        //create a new content URL for the copy/original node
+                        createNewContentURL(nodeRef);
+                    }
+                    finally
+                    {
+                        //enable versioning and auditing
+                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    }
                 }
 
                 return null;

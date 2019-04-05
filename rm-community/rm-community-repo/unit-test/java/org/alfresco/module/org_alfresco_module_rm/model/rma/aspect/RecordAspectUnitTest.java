@@ -39,9 +39,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
@@ -68,12 +65,6 @@ public class RecordAspectUnitTest
     @Mock
     private NodeService mockNodeService;
     @Mock
-    private ContentService mockContentService;
-    @Mock
-    private ContentReader mockContentReader;
-    @Mock
-    private ContentWriter mockContentWriter;
-    @Mock
     private ExtendedSecurityService mockExtendedSecurityService;
     @Mock
     private ContentBinDuplicationUtility mockContentBinDuplicationUtility;
@@ -89,8 +80,6 @@ public class RecordAspectUnitTest
     public void testDuplicateBinBeforeAddingAspectForFileWithCopy()
     {
         when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(SOURCE_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
@@ -102,8 +91,6 @@ public class RecordAspectUnitTest
     public void testDuplicateBinBeforeAddingAspectForCopy()
     {
         when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
@@ -128,8 +115,6 @@ public class RecordAspectUnitTest
     {
         when(mockNodeService.exists(COPY_REF)).thenReturn(true);
         when(mockNodeService.hasAspect(COPY_REF, ASPECT_RECORD)).thenReturn(true);
-        when(mockContentService.getReader(COPY_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(COPY_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.onCopyComplete(null, NODE_REF, COPY_REF, true, null);
 

@@ -548,11 +548,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected void setupTestDataImpl()
     {
         AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
-        if (!authDao.authorityExists(AuthenticationUtil.getSystemUserName()))
-        {
-            createPerson(AuthenticationUtil.getSystemUserName(), false);
-        }
-        assertTrue("No person object for System available.", authDao.authorityExists(AuthenticationUtil.getSystemUserName()));
 
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);

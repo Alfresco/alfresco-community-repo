@@ -539,7 +539,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                     assertNotNull(transfersContainer);
                 }
             }
-        }, AuthenticationUtil.getSystemUserName());
+        }, AuthenticationUtil.getAdminUserName());
     }
 
     /**
@@ -547,8 +547,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestDataImpl()
     {
-        AuthorityDAO authDao = (AuthorityDAO)applicationContext.getBean("authorityDAO");
-
         storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
         rootNodeRef = nodeService.getRootNode(storeRef);
 

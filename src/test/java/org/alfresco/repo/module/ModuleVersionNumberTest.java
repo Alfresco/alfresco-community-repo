@@ -167,13 +167,15 @@ public class ModuleVersionNumberTest extends TestCase
         assertTrue(version1point4.compareTo(version1point4snapshot) > 0);
 
         assertTrue(version1point4b.compareTo(version1point4a) > 0);
-        assertTrue(version1point4b.compareTo(version1point4snapshot) > 0);
+        assertTrue(version1point4b.compareTo(version1point4snapshot) < 0);
 
         assertTrue(version1point4c.compareTo(version1point4b) > 0);
         assertTrue(version1point4c.compareTo(version1point4d) < 0);
+        assertTrue(version1point4c.compareTo(version1point4snapshot) < 0);
 
         assertTrue(version1point4d.compareTo(version1point4c) > 0);
         assertTrue(version1point40.compareTo(version1point4) == 0);// the same
+        assertTrue(version1point4d.compareTo(version1point4snapshot) < 0);
 
         ModuleVersionNumber versionBase = new ModuleVersionNumber("0.1");
         ModuleVersionNumber versionMixed = new ModuleVersionNumber("0.1-incubating-unreleased");

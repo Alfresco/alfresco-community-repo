@@ -655,7 +655,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>5.1.4.RELEASE</version>
+            <version>5.1.5.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>

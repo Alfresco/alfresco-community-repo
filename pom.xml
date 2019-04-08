@@ -91,6 +91,12 @@
                 <artifactId>jsoup</artifactId>
                 <version>1.11.3</version>
             </dependency>
+            <!-- update dependency from opencmis-extension -->
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1-HTTPCLIENT-1265</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

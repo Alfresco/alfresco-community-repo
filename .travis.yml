@@ -1,0 +1,39 @@
+dist: trusty
+sudo: required
+language: java
+services:
+  - docker
+
+cache:
+  directories:
+    - $HOME/.m2
+
+env:
+  global:
+    - VERSION_EDITION=Community
+    - DOCKER_IMAGE_TAG=latest
+    - DOCKER_IMAGE_REGISTRY=quay.io
+    - DOCKER_COMPOSE_VERSION=1.23.2
+    - ALFRESCO_IMAGE_NAME=alfresco/alfresco-content-repository-community
+
+branches:
+  only:
+    - master
+
+# This should not be required on community build
+before_install:
+  - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+
+matrix:
+  include:
+    - name: "WhiteSource scan"
+      # only on master and if it is not a PR
+      if: fork = false AND branch = master AND type != pull_request
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 20 mvn -q install -Dbuild-number=${TRAVIS_BUILD_NUMBER} "-Dbuild-key=${TRAVIS_COMMIT}" "-Dbuild-name=${TRAVIS_BUILD_WEB_URL}" "-Dscm-path=${TRAVIS_REPO_SLUG}" "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
+      script:
+        # Download the latest version of WhiteSource FS Agent
+        - curl -LJO https://github.com/whitesource/fs-agent-distribution/raw/master/standAlone/whitesource-fs-agent.jar
+        # Run WhiteSource FS Agent
+        - java -jar whitesource-fs-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .whitesource-fs-agent.config -d ./war

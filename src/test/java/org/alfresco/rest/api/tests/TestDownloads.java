@@ -61,6 +61,7 @@ import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -368,8 +369,13 @@ public class TestDownloads extends AbstractBaseApiTest
         setRequestContext(user2);
         
         deleteNode(download.getId(), true, HttpServletResponse.SC_FORBIDDEN);
-        
+
+        setRequestContext(user1);
         assertDoneDownload(download, 1, 13);
+
+        // user2 should not be able to read information about downloads started by other users
+        setRequestContext(user2);
+        getDownload(download.getId(), HttpServletResponse.SC_FORBIDDEN);
     }
     
     protected ZipInputStream getZipStreamFromResponse(HttpResponse response)

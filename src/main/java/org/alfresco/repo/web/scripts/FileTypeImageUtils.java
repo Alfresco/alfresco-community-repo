@@ -28,7 +28,6 @@ package org.alfresco.repo.web.scripts;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
 import org.alfresco.api.AlfrescoPublicApi;   
@@ -52,49 +51,7 @@ public class FileTypeImageUtils
     private static final String DEFAULT_FILE_IMAGE64 = IMAGE_PREFIX64 + "_default" + IMAGE_POSTFIX_PNG;
     
     private static final Map<String, String> s_fileExtensionMap = new HashMap<String, String>(89, 1.0f);
-    
-    /**
-     * Return the image path to the filetype icon for the specified file name string
-     * 
-     * @param name       File name to build filetype icon path for
-     * @param small      True for the small 16x16 icon or false for the large 32x32 
-     * 
-     * @return the image path for the specified node type or the default icon if not found
-     */
-    public static String getFileTypeImage(String name, boolean small)
-    {
-       return getFileTypeImage(FacesContext.getCurrentInstance(), null, name,
-              (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
-    }
-    
-    /**
-     * Return the image path to the filetype icon for the specified file name string
-     * 
-     * @param fc         FacesContext
-     * @param name       File name to build filetype icon path for
-     * @param small      True for the small 16x16 icon or false for the large 32x32 
-     * 
-     * @return the image path for the specified node type or the default icon if not found
-     */
-    public static String getFileTypeImage(FacesContext fc, String name, boolean small)
-    {
-       return getFileTypeImage(fc, null, name, (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
-    }
-    
-    /**
-     * Return the image path to the filetype icon for the specified file name string
-     * 
-     * @param fc         FacesContext
-     * @param name       File name to build filetype icon path for
-     * @param size       Size of the icon to return
-     * 
-     * @return the image path for the specified node type or the default icon if not found
-     */
-    public static String getFileTypeImage(FacesContext fc, String name, FileTypeImageSize size)
-    {
-       return getFileTypeImage(fc, null, name, size);
-    }
-    
+
     /**
      * Return the image path to the filetype icon for the specified file name string
      * 
@@ -106,7 +63,7 @@ public class FileTypeImageUtils
      */
     public static String getFileTypeImage(ServletContext sc, String name, boolean small)
     {
-       return getFileTypeImage(null, sc, name, (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
+       return getFileTypeImage(sc, name, (small ? FileTypeImageSize.Small : FileTypeImageSize.Medium));
     }
     
     /**
@@ -119,11 +76,6 @@ public class FileTypeImageUtils
      * @return the image path for the specified node type or the default icon if not found
      */
     public static String getFileTypeImage(ServletContext sc, String name, FileTypeImageSize size)
-    {
-       return getFileTypeImage(null, sc, name, size);
-    }
-    
-    private static String getFileTypeImage(FacesContext fc, ServletContext sc, String name, FileTypeImageSize size)
     {
        String image = null;
        String defaultImage = null;
@@ -161,15 +113,14 @@ public class FileTypeImageUtils
                 }
                 
                 // does this image exist on the web-server?
-                if ((fc != null && fc.getExternalContext().getResourceAsStream(image) != null) ||
-                    (sc != null && sc.getResourceAsStream(image) != null))
+                if (sc != null && sc.getResourceAsStream(image) != null)
                 {
                    // found the image for this extension - save it for later
                    s_fileExtensionMap.put(key, image);
                 }
-                else if ((fc == null) && (sc == null))
+                else if (sc == null)
                 {
-                   // we have neither FacesContext nor ServerContext so return the default image but don't cache it
+                   // we have no ServerContext so return the default image but don't cache it
                    image = defaultImage;
                 }
                 else
@@ -184,5 +135,4 @@ public class FileTypeImageUtils
        
        return (image != null ? image : defaultImage);
     }
-
 }

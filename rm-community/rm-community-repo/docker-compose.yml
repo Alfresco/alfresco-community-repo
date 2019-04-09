@@ -61,9 +61,9 @@ services:
             - 8083:8983 #Browser port
 
     activemq:
-      image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
-      ports:
-      - 8161:8161 # Web Console
-      - 5672:5672 # AMQP
-      - 61616:61616 # OpenWire
-      - 61613:61613 # STOMP
+        image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
+        ports:
+            - 8161:8161 # Web Console
+            - 5672:5672 # AMQP
+            - 61616:61616 # OpenWire
+            - 61613:61613 # STOMP

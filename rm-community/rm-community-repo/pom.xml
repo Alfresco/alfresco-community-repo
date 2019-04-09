@@ -25,6 +25,10 @@
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
+      <postgres.version>9.4.12</postgres.version>
+      <activemq.version>5.15.6</activemq.version>
+      <activemq.port1>61616</activemq.port1>
+      <activemq.port2>5672</activemq.port2>
 
       <!-- 6.0 changes -->
       <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
@@ -136,7 +140,7 @@
                <images>
                   <image>
                      <alias>test-database</alias>
-                     <name>postgres:9.4.12</name>
+                     <name>postgres:${postgres.version}</name>
                      <run>
                         <ports>
                            <port>${database.port}:${postgresql.port}</port>
@@ -156,11 +160,11 @@
                      </run>
                   </image>
                   <image>
-                     <name>alfresco/alfresco-activemq:5.15.6</name>
+                     <name>alfresco/alfresco-activemq:${activemq.version}</name>
                      <run>
                         <ports>
-                           <port>61616:61616</port>
-                           <port>5672:5672</port>
+                           <port>${activemq.port1}:${activemq.port1}</port>
+                           <port>${activemq.port2}:${activemq.port2}</port>
                         </ports>
                      </run>
                   </image>

@@ -472,6 +472,12 @@
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.version>0.0</alfresco.version>
 
+      <skip.integrationtests>true</skip.integrationtests>
+      <postgres.version>9.4.12</postgres.version>
+      <activemq.version>5.15.6</activemq.version>
+      <activemq.port1>61616</activemq.port1>
+      <activemq.port2>5672</activemq.port2>
+
       <share.client.contextPath>/share</share.client.contextPath>
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
@@ -1103,6 +1109,62 @@
                         <warSourceDirectory>src/main/resources/META-INF</warSourceDirectory>
                         <jswarn>false</jswarn>
                      </configuration>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>io.fabric8</groupId>
+               <artifactId>docker-maven-plugin</artifactId>
+               <version>${fabric8.docker.version}</version>
+               <configuration>
+                  <images>
+                     <image>
+                        <alias>test-database</alias>
+                        <name>postgres:${postgres.version}</name>
+                        <run>
+                           <ports>
+                              <port>${database.port}:${postgresql.port}</port>
+                           </ports>
+                           <env>
+                              <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
+                              <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
+                              <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
+                           </env>
+                           <cmd>
+                              <shell>-c max_connections=300</shell>
+                           </cmd>
+                           <wait>
+                              <log>database system is ready to accept connections</log>
+                              <time>20000</time>
+                           </wait>
+                        </run>
+                     </image>
+                     <image>
+                        <name>alfresco/alfresco-activemq:${activemq.version}</name>
+                        <run>
+                           <ports>
+                              <port>${activemq.port1}:${activemq.port1}</port>
+                              <port>${activemq.port2}:${activemq.port2}</port>
+                           </ports>
+                        </run>
+                     </image>
+                  </images>
+                  <skip>${skip.integrationtests}</skip>
+               </configuration>
+               <executions>
+                  <execution>
+                     <id>start</id>
+                     <phase>pre-integration-test</phase>
+                     <goals>
+                        <goal>start</goal>
+                     </goals>
+                  </execution>
+                  <execution>
+                     <id>stop</id>
+                     <phase>post-integration-test</phase>
+                     <goals>
+                        <goal>stop</goal>
+                     </goals>
                   </execution>
                </executions>
             </plugin>

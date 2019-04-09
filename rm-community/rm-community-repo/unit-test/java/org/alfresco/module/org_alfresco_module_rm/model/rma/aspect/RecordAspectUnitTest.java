@@ -31,8 +31,6 @@ import static java.util.Collections.emptyList;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,11 +38,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
@@ -71,15 +66,9 @@ public class RecordAspectUnitTest
     @Mock
     private NodeService mockNodeService;
     @Mock
-    private BehaviourFilter mockBehaviorFilter;
-    @Mock
-    private ContentService mockContentService;
-    @Mock
-    private ContentReader mockContentReader;
-    @Mock
-    private ContentWriter mockContentWriter;
-    @Mock
     private ExtendedSecurityService mockExtendedSecurityService;
+    @Mock
+    private ContentBinDuplicationUtility mockContentBinDuplicationUtility;
 
     @Before
     public void setUp()
@@ -92,12 +81,10 @@ public class RecordAspectUnitTest
     public void testDuplicateBinBeforeAddingAspectForFileWithCopy()
     {
         when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(SOURCE_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-         verifyBeforeAddAspectMethodsInvocations(1);
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file is a copy. */
@@ -105,29 +92,10 @@ public class RecordAspectUnitTest
     public void testDuplicateBinBeforeAddingAspectForCopy()
     {
         when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-         verifyBeforeAddAspectMethodsInvocations(1);
-    }
-
-    /** Check that no content bin is created if the file does not have content. */
-    @Test
-    public void testBeforeAddAspectOnFileWithNoContent()
-    {
-        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
-
-        recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
-
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(1)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, never()).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(1)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is not duplicated before adding the aspect if the node has no copies. */
@@ -139,7 +107,7 @@ public class RecordAspectUnitTest
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verifyBeforeAddAspectMethodsInvocations(0);
+        verify(mockContentBinDuplicationUtility, times(0)).duplicate(NODE_REF);
     }
 
     /** Check that the bin is duplicated when copying a record. */
@@ -148,47 +116,12 @@ public class RecordAspectUnitTest
     {
         when(mockNodeService.exists(COPY_REF)).thenReturn(true);
         when(mockNodeService.hasAspect(COPY_REF, ASPECT_RECORD)).thenReturn(true);
-        when(mockContentService.getReader(COPY_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(COPY_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
 
         recordAspect.onCopyComplete(null, NODE_REF, COPY_REF, true, null);
 
         verify(mockExtendedSecurityService, times(1)).remove(COPY_REF);
-        verify(mockContentService, times(1)).getReader(COPY_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(1)).getWriter(COPY_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(1)).putContent(mockContentReader);
+        verify(mockContentBinDuplicationUtility, times(1)).duplicate(COPY_REF);
     }
 
-    /**
-     * This is testing the fix for RM-6788 where archived content couldn't be declared as a record
-     * This was caused by attempting to copy the bin file and updating the content url of the
-     * archived piece of content which failed as this is a protected property. This is done if
-     * the node is/has a copy but the same duplication already happens during archive.
-     */
-    @Test
-    public void testBinFileNotDuplicatedForArchivedContent()
-    {
-        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
-        when(mockNodeService.hasAspect(NODE_REF, ASPECT_ARCHIVED)).thenReturn(true);
-        recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
-        verifyBeforeAddAspectMethodsInvocations(0);
-    }
-
-    /**
-     * Helper to verify beforeAddAspect methods invocations
-     *
-     * @param wantedNumberOfInvocations wanted number of invocations for each method
-     */
-    private void verifyBeforeAddAspectMethodsInvocations(int wantedNumberOfInvocations)
-    {
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).disableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-        verify(mockContentService, times(wantedNumberOfInvocations)).getReader(NODE_REF, ContentModel.PROP_CONTENT);
-        verify(mockContentService, times(wantedNumberOfInvocations)).getWriter(NODE_REF, ContentModel.PROP_CONTENT, true);
-        verify(mockContentWriter, times(wantedNumberOfInvocations)).putContent(mockContentReader);
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_AUDITABLE));
-        verify(mockBehaviorFilter, times(wantedNumberOfInvocations)).enableBehaviour(eq(ContentModel.ASPECT_VERSIONABLE));
-    }
 }

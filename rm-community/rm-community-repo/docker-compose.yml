@@ -25,7 +25,9 @@ services:
                 -Dftp.enabled=true
                 -Dftp.dataPortFrom=30000
                 -Dftp.dataPortTo=30099
-                -Dcifs.enabled=true
+                -Dshare.host=localhost
+                -Daos.baseUrlOverwrite=http://localhost:8080/alfresco/aos
+                -Dmessaging.broker.url=\"failover:(tcp://activemq:61616)?timeout=3000&jms.useCompression=true\"
                 "
         ports:
             - 8080:8080
@@ -36,7 +38,7 @@ services:
             - "30000-30099:30000-30099"
 
     postgres:
-        image: library/postgres:10.1
+        image: library/postgres:${POSTGRES_TAG}
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
@@ -45,7 +47,7 @@ services:
             - 5432:5432
 
     solr6:
-        image: alfresco/alfresco-search-services:1.1.1
+        image: alfresco/alfresco-search-services:${SOLR6_TAG}
         environment:
             #Solr needs to know how to register itself with Alfresco
             - SOLR_ALFRESCO_HOST=alfresco
@@ -57,3 +59,11 @@ services:
             - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
         ports:
             - 8083:8983 #Browser port
+
+    activemq:
+        image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
+        ports:
+            - 8161:8161 # Web Console
+            - 5672:5672 # AMQP
+            - 61616:61616 # OpenWire
+            - 61613:61613 # STOMP

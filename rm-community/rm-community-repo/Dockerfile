@@ -1,4 +1,4 @@
-FROM alfresco/alfresco-content-repository-community:6.0.7-ga
+FROM alfresco/alfresco-content-repository-community:6.1.2-ga
 
 COPY target/alfresco-governance-services-community-repo-*.amp /usr/local/tomcat/amps/
 

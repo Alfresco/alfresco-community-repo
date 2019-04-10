@@ -24,13 +24,11 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
-      <skip.integrationtests>true</skip.integrationtests>
-
       <!-- 6.0 changes -->
-      <dependency.alfresco-core.version>7.3</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>6.55</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>6.38</dependency.alfresco-remote-api.version>
-      <alfresco.alfresco-share-services.version>6.0.b</alfresco.alfresco-share-services.version>
+      <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>7.33.12</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>7.34.1</dependency.alfresco-remote-api.version>
+      <alfresco.alfresco-share-services.version>6.1.0</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
    </properties>
@@ -131,49 +129,6 @@
          <plugin>
             <groupId>io.fabric8</groupId>
             <artifactId>docker-maven-plugin</artifactId>
-            <version>${fabric8.docker.version}</version>
-            <configuration>
-               <images>
-                  <image>
-                     <alias>test-database</alias>
-                     <name>postgres:9.4.12</name>
-                     <run>
-                        <ports>
-                           <port>${database.port}:${postgresql.port}</port>
-                        </ports>
-                        <env>
-                           <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
-                           <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
-                           <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
-                        </env>
-                        <cmd>
-                           <shell>-c max_connections=300</shell>
-                        </cmd>
-                        <wait>
-                           <log>database system is ready to accept connections</log>
-                           <time>20000</time>
-                        </wait>
-                     </run>
-                  </image>
-               </images>
-               <skip>${skip.integrationtests}</skip>
-            </configuration>
-            <executions>
-               <execution>
-                  <id>start</id>
-                  <phase>pre-integration-test</phase>
-                  <goals>
-                     <goal>start</goal>
-                  </goals>
-               </execution>
-               <execution>
-                  <id>stop</id>
-                  <phase>post-integration-test</phase>
-                  <goals>
-                     <goal>stop</goal>
-                  </goals>
-               </execution>
-            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

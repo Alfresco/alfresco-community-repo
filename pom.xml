@@ -7,9 +7,9 @@
     <name>Alfresco Community Repo Parent</name>
 
     <parent>
-      <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-super-pom</artifactId>
-      <version>12</version>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>12</version>
     </parent>
 
     <modules>
@@ -267,7 +267,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-<!--                <version>${dependency.httpclient.version}</version>-->
+                <!--                <version>${dependency.httpclient.version}</version>-->
                 <version>4.5.2</version>
             </dependency>
             <dependency>
@@ -369,7 +369,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
                 <artifactId>jackson-module-jaxb-annotations</artifactId>
-<!--                <version>${dependency.jackson.version}</version>-->
+                <!--                <version>${dependency.jackson.version}</version>-->
                 <version>2.9.5</version>
             </dependency>
             <!-- Newer cxf libs, see REPO-3131 -->
@@ -382,13 +382,13 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxrs</artifactId>
                 <version>3.0.16</version>
-<!--                <version>${dependency.cxf.version}</version>-->
+                <!--                <version>${dependency.cxf.version}</version>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-rs-client</artifactId>
                 <version>3.0.16</version>
-<!--                <version>${dependency.cxf.version}</version>-->
+                <!--                <version>${dependency.cxf.version}</version>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>

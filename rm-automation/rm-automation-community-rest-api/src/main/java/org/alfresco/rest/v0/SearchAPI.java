@@ -241,7 +241,6 @@ public class SearchAPI extends BaseAPI
      * Helper method to extract list of names from search result.
      * 
      * @param searchResult
-     * @param getProperties
      * @return
      */
     private List<String> getItemNames(JSONObject searchResult)
@@ -253,7 +252,8 @@ public class SearchAPI extends BaseAPI
      * Helper method to extract list of property values from search result for the given nodeRef.
      * 
      * @param searchResult
-     * @param getProperties
+     * @param nodeRef
+     * @param propertyName
      * @return
      */
     private String getItemProperty(JSONObject searchResult, String nodeRef, String propertyName)

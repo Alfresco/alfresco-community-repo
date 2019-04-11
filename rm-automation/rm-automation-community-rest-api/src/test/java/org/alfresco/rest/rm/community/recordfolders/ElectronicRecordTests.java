@@ -71,7 +71,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
 
     /** Invalid parent containers where electronic records can't be created */
     @DataProvider(name = "invalidParentContainers")
-    public  Object[][] invalidParentContainers() throws Exception
+    public  Object[][] invalidParentContainers()
     {
         return new String[][]
         {
@@ -99,7 +99,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         dataProvider = "invalidParentContainers",
         description = "Electronic records can't be created in invalid parent containers"
     )
-    public void cantCreateElectronicRecordsInInvalidContainers(String container) throws Exception
+    public void cantCreateElectronicRecordsInInvalidContainers(String container)
     {
         // Create an electronic record in the given container, this should throw an IllegalArgumentException
         getRestAPIFactory().getRecordFolderAPI().createRecord(createElectronicRecordModel(), container, getFile(IMAGE_FILE));
@@ -158,7 +158,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And an error is reported
      * </pre>
-     * @param folderid The folder, which the record will be created in
+     * @param folderId The folder, which the record will be created in
      * @param type The type of the record folder, which the record will be created in
      * @throws Exception if record can't be created
      */
@@ -405,7 +405,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      */
     @Test(description = "Electronic records can be created in record folder with duplicate name")
     @Bug(id ="RM-5116, RM-5012")
-    public void canCreateElectronicRecordsWithDuplicateName() throws Exception
+    public void canCreateElectronicRecordsWithDuplicateName()
     {
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
 

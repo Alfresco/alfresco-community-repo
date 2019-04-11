@@ -96,7 +96,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.solr.common.params.HighlightParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -950,49 +949,49 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
     {
         if (searchParameters.getHighlight() != null)
         {
-            url.append("&").append(HighlightParams.HIGHLIGHT+"=true");
-            url.append("&"+HighlightParams.HIGHLIGHT+".q=").append(encoder.encode(searchParameters.getSearchTerm(), "UTF-8"));
+            url.append("&").append(HIGHLIGHT_PARAMS_HIGHLIGHT+"=true");
+            url.append("&"+HIGHLIGHT_PARAMS_HIGHLIGHT+".q=").append(encoder.encode(searchParameters.getSearchTerm(), "UTF-8"));
 
             if (searchParameters.getHighlight().getSnippetCount() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.SNIPPETS+"=")
+                   .append(HIGHLIGHT_PARAMS_SNIPPETS+"=")
                    .append(searchParameters.getHighlight().getSnippetCount());
             }
             if (searchParameters.getHighlight().getFragmentSize() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.FRAGSIZE+"=")
+                   .append(HIGHLIGHT_PARAMS_FRAGSIZE+"=")
                    .append(searchParameters.getHighlight().getFragmentSize());
             }
             if (searchParameters.getHighlight().getMaxAnalyzedChars() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.MAX_CHARS+"=")
+                   .append(HIGHLIGHT_PARAMS_MAX_CHARS+"=")
                    .append(searchParameters.getHighlight().getMaxAnalyzedChars());
             }
             if (searchParameters.getHighlight().getMergeContiguous() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS+"=")
+                   .append(HIGHLIGHT_PARAMS_MERGE_CONTIGUOUS_FRAGMENTS+"=")
                    .append(searchParameters.getHighlight().getMergeContiguous());
             }
             if (searchParameters.getHighlight().getUsePhraseHighlighter() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
+                   .append(HIGHLIGHT_PARAMS_USE_PHRASE_HIGHLIGHTER+"=")
                    .append(searchParameters.getHighlight().getUsePhraseHighlighter());
             }
             if (searchParameters.getHighlight().getPrefix() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.SIMPLE_PRE+"=")
+                   .append(HIGHLIGHT_PARAMS_SIMPLE_PRE+"=")
                    .append(encoder.encode(searchParameters.getHighlight().getPrefix(), "UTF-8"));
             }
             if (searchParameters.getHighlight().getPostfix() != null)
             {
                 url.append("&")
-                   .append(HighlightParams.SIMPLE_POST+"=")
+                   .append(HIGHLIGHT_PARAMS_SIMPLE_POST+"=")
                    .append(encoder.encode(searchParameters.getHighlight().getPostfix(), "UTF-8"));
             }
             if (searchParameters.getHighlight().getFields() != null && !searchParameters.getHighlight().getFields().isEmpty())
@@ -1006,47 +1005,47 @@ public class SolrQueryHTTPClient extends AbstractSolrQueryHTTPClient implements 
                     if (aField.getSnippetCount() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                           .append("."+HighlightParams.SNIPPETS+"=")
+                           .append("."+HIGHLIGHT_PARAMS_SNIPPETS+"=")
                            .append(aField.getSnippetCount());
                     }
 
                     if (aField.getFragmentSize() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                                    .append("."+HighlightParams.FRAGSIZE+"=")
+                                    .append("."+HIGHLIGHT_PARAMS_FRAGSIZE+"=")
                                     .append(aField.getFragmentSize());
                     }
 
                     if (aField.getFragmentSize() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                                    .append("."+HighlightParams.FRAGSIZE+"=")
+                                    .append("."+HIGHLIGHT_PARAMS_FRAGSIZE+"=")
                                     .append(aField.getFragmentSize());
                     }
 
                     if (aField.getMergeContiguous() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                                    .append("."+HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS+"=")
+                                    .append("."+HIGHLIGHT_PARAMS_MERGE_CONTIGUOUS_FRAGMENTS+"=")
                                     .append(aField.getMergeContiguous());
                     }
 
                     if (aField.getPrefix() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                                    .append("."+HighlightParams.SIMPLE_PRE+"=")
+                                    .append("."+HIGHLIGHT_PARAMS_SIMPLE_PRE+"=")
                                     .append(encoder.encode(aField.getPrefix(), "UTF-8"));
                     }
 
                     if (aField.getPostfix() != null)
                     {
                         url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
-                                    .append("."+HighlightParams.SIMPLE_POST+"=")
+                                    .append("."+HIGHLIGHT_PARAMS_SIMPLE_POST+"=")
                                     .append(encoder.encode(aField.getPostfix(), "UTF-8"));
                     }
                 }
                 url.append("&")
-                   .append(HighlightParams.FIELDS+"=")
+                   .append(HIGHLIGHT_PARAMS_FIELDS+"=")
                    .append(encoder.encode(String.join(",", fieldNames), "UTF-8"));
             }
         }

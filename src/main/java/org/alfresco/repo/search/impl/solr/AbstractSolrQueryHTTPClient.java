@@ -51,6 +51,35 @@ public abstract class AbstractSolrQueryHTTPClient
 {
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     
+    // Constants copied from org.apache.solr.common.params.HighlightParams (solr-solrj:1.4.1)
+    // These values have been moved to this Alfresco class to avoid using solr-solrj library as dependency
+    public static final String HIGHLIGHT_PARAMS_HIGHLIGHT = "hl";
+    public static final String HIGHLIGHT_PARAMS_FIELDS = HIGHLIGHT_PARAMS_HIGHLIGHT + ".fl";
+    public static final String HIGHLIGHT_PARAMS_SNIPPETS = HIGHLIGHT_PARAMS_HIGHLIGHT + ".snippets";
+    public static final String HIGHLIGHT_PARAMS_FRAGSIZE = HIGHLIGHT_PARAMS_HIGHLIGHT + ".fragsize";
+    public static final String HIGHLIGHT_PARAMS_INCREMENT = HIGHLIGHT_PARAMS_HIGHLIGHT + ".increment";
+    public static final String HIGHLIGHT_PARAMS_MAX_CHARS = HIGHLIGHT_PARAMS_HIGHLIGHT + ".maxAnalyzedChars";
+    public static final String HIGHLIGHT_PARAMS_FORMATTER = HIGHLIGHT_PARAMS_HIGHLIGHT + ".formatter";
+    public static final String HIGHLIGHT_PARAMS_FRAGMENTER = HIGHLIGHT_PARAMS_HIGHLIGHT + ".fragmenter";
+    public static final String HIGHLIGHT_PARAMS_FIELD_MATCH = HIGHLIGHT_PARAMS_HIGHLIGHT + ".requireFieldMatch";
+    public static final String HIGHLIGHT_PARAMS_ALTERNATE_FIELD = HIGHLIGHT_PARAMS_HIGHLIGHT + ".alternateField";
+    public static final String HIGHLIGHT_PARAMS_ALTERNATE_FIELD_LENGTH = HIGHLIGHT_PARAMS_HIGHLIGHT + ".maxAlternateFieldLength";
+
+    public static final String HIGHLIGHT_PARAMS_USE_PHRASE_HIGHLIGHTER = HIGHLIGHT_PARAMS_HIGHLIGHT + ".usePhraseHighlighter";
+    public static final String HIGHLIGHT_PARAMS_HIGHLIGHT_MULTI_TERM = HIGHLIGHT_PARAMS_HIGHLIGHT + ".highlightMultiTerm";
+
+    public static final String HIGHLIGHT_PARAMS_MERGE_CONTIGUOUS_FRAGMENTS = HIGHLIGHT_PARAMS_HIGHLIGHT + ".mergeContiguous";
+    // Formatter
+    public static final String HIGHLIGHT_PARAMS_SIMPLE = "simple";
+    public static final String HIGHLIGHT_PARAMS_SIMPLE_PRE = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_SIMPLE + ".pre";
+    public static final String HIGHLIGHT_PARAMS_SIMPLE_POST = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_SIMPLE + ".post";
+
+    // Regex fragmenter
+    public static final String HIGHLIGHT_PARAMS_REGEX = "regex";
+    public static final String HIGHLIGHT_PARAMS_SLOP = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".slop";
+    public static final String HIGHLIGHT_PARAMS_PATTERN = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".pattern";
+    public static final String HIGHLIGHT_PARAMS_MAX_RE_CHARS = HIGHLIGHT_PARAMS_HIGHLIGHT + "." + HIGHLIGHT_PARAMS_REGEX + ".maxAnalyzedChars";
+    
     protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
     IOException, HttpException, URIException, JSONException
     {

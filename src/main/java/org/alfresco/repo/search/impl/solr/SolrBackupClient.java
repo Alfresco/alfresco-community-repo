@@ -25,20 +25,19 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.search.impl.lucene.JSONAPIResultFactory;
 import org.alfresco.repo.solr.SOLRAdminClient;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -166,41 +165,32 @@ public class SolrBackupClient implements InitializingBean
         
         try
         {
-            ModifiableSolrParams params = new ModifiableSolrParams();
-            params.set("qt", "/"+core+"/replication");
-            params.set("command", "backup"); 
-            params.set("location", remoteBackupLocation);
-            if(fixNumberToKeepOffByOneError)
-            {
-                params.set("numberToKeep", numberToKeep > 1 ? (numberToKeep + 1) : numberToKeep);
-            }
-            else
-            {
-                params.set("numberToKeep", numberToKeep);
-            }
-            
-            try
-            {
-                // MNT-6468 fix, ensure that backup job takes at least one second to execute
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e)
-            {
-                // ignore
-            }
-
-            QueryResponse response = solrAdminClient.query(params);
-            
-            
-            if(logger.isInfoEnabled())
-            {
-                logger.info("Back up of SOLR core completed: "+core);
-            }
-    
+            // MNT-6468 fix, ensure that backup job takes at least one second to execute
+            Thread.sleep(1000);
         }
-        catch(SolrServerException e)
+        catch (InterruptedException e)
         {
-            throw new AlfrescoRuntimeException("Backup for core "+core+ " failed .... ", e);
+            // ignore
+        }
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("wt","json");
+        parameters.put("location", remoteBackupLocation);
+        if(fixNumberToKeepOffByOneError)
+        {
+            parameters.put("numberToKeep", String.valueOf(numberToKeep > 1 ? (numberToKeep + 1) : numberToKeep));
+        }
+        else
+        {
+            parameters.put("numberToKeep", String.valueOf(numberToKeep));
+        }
+
+        solrAdminClient.executeCommand(core, JSONAPIResultFactory.HANDLER.REPLICATION, JSONAPIResultFactory.COMMAND.BACKUP, parameters);
+
+
+        if(logger.isInfoEnabled())
+        {
+            logger.info("Back up of SOLR core completed: "+core);
         }
 
     }

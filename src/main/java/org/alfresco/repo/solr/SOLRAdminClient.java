@@ -25,27 +25,32 @@
  */
 package org.alfresco.repo.solr;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.util.ParameterCheck;
-import org.apache.commons.httpclient.Credentials;
+import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.search.impl.lucene.JSONAPIResult;
+import org.alfresco.repo.search.impl.lucene.JSONAPIResultFactory;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
+import org.alfresco.repo.search.impl.lucene.SolrActionStatusResult;
+import org.alfresco.repo.search.impl.lucene.SolrCommandBackupResult;
+import org.alfresco.repo.search.impl.solr.AbstractSolrAdminHTTPClient;
+import org.alfresco.repo.search.impl.solr.ExplicitSolrStoreMappingWrapper;
+import org.alfresco.repo.search.impl.solr.SolrAdminClientInterface;
+import org.alfresco.repo.search.impl.solr.SolrClientUtil;
+import org.alfresco.repo.search.impl.solr.SolrStoreMapping;
+import org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.apache.commons.codec.EncoderException;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
-import org.apache.solr.client.solrj.impl.XMLResponseParser;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.apache.solr.common.util.NamedList;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
@@ -55,10 +60,11 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-
 /**
  * Provides an interface to the Solr admin APIs, used by the Alfresco Enterprise JMX layer.
  * Also tracks whether Solr is available, sending Spring events when its availability changes.
@@ -66,57 +72,30 @@ import org.springframework.context.ApplicationEventPublisherAware;
  * @since 4.0
  *
  */
-public class SOLRAdminClient implements ApplicationEventPublisherAware, DisposableBean
+public class SOLRAdminClient extends AbstractSolrAdminHTTPClient
+        implements ApplicationEventPublisherAware, DisposableBean, SolrAdminClientInterface 
 {
-	private String solrHost;
-	private int solrPort;
-	private int solrSSLPort;
-	private String solrUrl;
-	private String solrUser;
-	private String solrPassword;
+
 	private String solrPingCronExpression;
 	private String baseUrl;
-	private CommonsHttpSolrServer server;
-	private int solrConnectTimeout = 30000; // ms
 
 	private ApplicationEventPublisher applicationEventPublisher;
 	private SolrTracker solrTracker;
 	
-	private HttpClientFactory httpClientFactory;
     private Scheduler scheduler;
+    
+    private List<SolrStoreMapping> storeMappings;
+    
+    private HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<>();
 
-	public SOLRAdminClient()
+    private BeanFactory beanFactory;
+    
+    private ShardRegistry shardRegistry;
+    
+    private boolean useDynamicShardRegistration;
+    
+    public SOLRAdminClient()
 	{
-	}
-
-	public void setSolrHost(String solrHost)
-	{
-		this.solrHost = solrHost;
-	}
-	
-	public void setSolrPort(String solrPort)
-	{
-		this.solrPort = Integer.parseInt(solrPort);
-	}
-	
-	public void setSolrsslPort(int solrSSLPort)
-	{
-		this.solrSSLPort = solrSSLPort;
-	}
-
-	public void setSolrUser(String solrUser)
-	{
-		this.solrUser = solrUser;
-	}
-
-	public void setSolrPassword(String solrPassword)
-	{
-		this.solrPassword = solrPassword;
-	}
-	
-	public void setSolrConnectTimeout(String solrConnectTimeout)
-	{
-		this.solrConnectTimeout = Integer.parseInt(solrConnectTimeout);
 	}
 
 	@Override
@@ -130,11 +109,6 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
         this.solrPingCronExpression = solrPingCronExpression;
     }
 
-    public void setHttpClientFactory(HttpClientFactory httpClientFactory)
-	{
-		this.httpClientFactory = httpClientFactory;
-	}
-   
     public void setBaseUrl(String baseUrl)
     {
         this.baseUrl = baseUrl;
@@ -147,76 +121,180 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
     {
         this.scheduler = scheduler;
     }
+    
+    /**
+     * SOLR properties identified by store like "alfresco" or "archive"
+     * @param storeMappings
+     */
+    public void setStoreMappings(List<SolrStoreMapping> storeMappings) {
+        this.storeMappings = storeMappings;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.BeanFactoryAware#setBeanFactory(org.springframework.beans.factory.BeanFactory)
+     */
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
+    {
+        this.beanFactory = beanFactory;
+    }
+    
+    public void setShardRegistry(ShardRegistry shardRegistry) {
+        this.shardRegistry = shardRegistry;
+    }
+    
+    public void setUseDynamicShardRegistration(boolean useDynamicShardRegistration) {
+        this.useDynamicShardRegistration = useDynamicShardRegistration;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        mappingLookup.clear();
+        for(SolrStoreMapping mapping : storeMappings)
+        {
+            mappingLookup.put(mapping.getStoreRef(), new ExplicitSolrStoreMappingWrapper(mapping, beanFactory));
+        }
+    }
 
     public void init()
 	{
-    	ParameterCheck.mandatory("solrHost", solrHost);
-    	ParameterCheck.mandatory("solrPort", solrPort);
-    	ParameterCheck.mandatory("solrUser", solrUser);
-    	ParameterCheck.mandatory("solrPassword", solrPassword);
-    	ParameterCheck.mandatory("solrPingCronExpression", solrPingCronExpression);
-    	ParameterCheck.mandatory("solrConnectTimeout", solrConnectTimeout);
-
-		try
-		{
-	    	StringBuilder sb = new StringBuilder();
-	    	sb.append(httpClientFactory.isSSL() ? "https://" : "http://");
-	    	sb.append(solrHost);
-	    	sb.append(":");
-	    	sb.append(httpClientFactory.isSSL() ? solrSSLPort: solrPort);
-	    	sb.append(baseUrl);
-			this.solrUrl = sb.toString();
-			HttpClient httpClient = httpClientFactory.getHttpClient();
-
-			server = new CommonsHttpSolrServer(solrUrl, httpClient);
-			server.setParser(new XMLResponseParser());
-			// TODO remove credentials because we're using SSL?
-			Credentials defaultcreds = new UsernamePasswordCredentials(solrUser, solrPassword); 
-			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 
-					defaultcreds);
-			server.setConnectionTimeout(solrConnectTimeout);
-			server.setSoTimeout(20000);
-
-			this.solrTracker = new SolrTracker(scheduler);
-		}
-		catch(MalformedURLException e)
-		{
-			throw new AlfrescoRuntimeException("Cannot initialise Solr admin http client", e);
-		}
+		this.solrTracker = new SolrTracker(scheduler);
 	}
+    
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.solr.SolrAdminClient#executeAction(org.alfresco.repo.search.impl.solr.SolrAdminClient.ACTION, java.util.Map)
+     */
+    @Override
+    public JSONAPIResult executeAction(String core, JSONAPIResultFactory.ACTION action, Map<String, String> parameters) {
+        
+        StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        SolrStoreMappingWrapper mapping = 
+                SolrClientUtil.extractMapping(store, 
+                                              mappingLookup,
+                                              shardRegistry, 
+                                              useDynamicShardRegistration,
+                                              beanFactory);
+        
+        HttpClient httpClient = mapping.getHttpClientAndBaseUrl().getFirst();
+        
+        StringBuilder url = new StringBuilder();
+        url.append(baseUrl);
+     
+        if(!url.toString().endsWith("/"))
+        {
+            url.append("/");
+        }
+        url.append("admin/cores");
+        
+        URLCodec encoder = new URLCodec();
+        url.append("?action=" + action);
+        parameters.forEach((key, value) -> {
+            try {
+                url.append("&" + key + "=" + encoder.encode(value));
+            } catch (EncoderException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-	public QueryResponse basicQuery(ModifiableSolrParams params)
-	{
-    	try
-    	{
-		    QueryResponse response = server.query(params);
-		    return response;
-		}
-		catch(SolrServerException e)
-		{
-			return null;
-		}
-	}
+        url.append("&alfresco.shards=");
+        if(mapping.isSharded())
+        {
+            url.append(mapping.getShards());
+        }
+        else
+        {
+            String solrurl = httpClient.getHostConfiguration().getHostURL() + mapping.getHttpClientAndBaseUrl().getSecond();
+            url.append(solrurl);
+        }
+        if (core != null)
+        {
+            url.append("&core=" + core);
+        }
+        
+        try 
+        {   
+            
+            return JSONAPIResultFactory.buildActionResult(action, getOperation(httpClient, url.toString()));
+        
+        }
+        catch (IOException e)
+        {
+            throw new LuceneQueryParserException("action", e);
+        }
+        
+    }
 
-	public QueryResponse query(ModifiableSolrParams params) throws SolrServerException
-	{
-    	try
-    	{
-		    QueryResponse response = server.query(params);
-		    if(response.getStatus() != 0)
-		    {
-		    	solrTracker.setSolrActive(false);
-		    }
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.search.impl.solr.SolrAdminClient#executeCommand(java.lang.String, org.alfresco.repo.search.impl.solr.SolrAdminClient.HANDLER, org.alfresco.repo.search.impl.solr.SolrAdminClient.COMMAND, java.util.Map)
+     */
+    @Override
+    public JSONAPIResult executeCommand(String core, JSONAPIResultFactory.HANDLER handler, JSONAPIResultFactory.COMMAND command, Map<String, String> parameters) {
+        
+        StoreRef store = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        SolrStoreMappingWrapper mapping = 
+                SolrClientUtil.extractMapping(store, 
+                                              mappingLookup,
+                                              shardRegistry, 
+                                              useDynamicShardRegistration,
+                                              beanFactory);
+        
+        HttpClient httpClient = mapping.getHttpClientAndBaseUrl().getFirst();
+        
+        StringBuilder url = new StringBuilder();
+        url.append(baseUrl);
+        
+        if(!url.toString().endsWith("/"))
+        {
+            url.append("/");
+        }
+        
+        url.append(core + "/" + handler.toString().toLowerCase());
+        
+        URLCodec encoder = new URLCodec();
+        url.append("?command=" + command.toString().toLowerCase());
+        parameters.forEach((key, value) -> {
+            try {
+                url.append("&" + key + "=" + encoder.encode(value));
+            } catch (EncoderException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-		    return response;
-		}
-		catch(SolrServerException e)
-		{
-			solrTracker.setSolrActive(false);
-			throw e;
-		}
-	}
-	
+        url.append("&alfresco.shards=");
+        if(mapping.isSharded())
+        {
+            url.append(mapping.getShards());
+        }
+        else
+        {
+           String solrurl = httpClient.getHostConfiguration().getHostURL() + mapping.getHttpClientAndBaseUrl().getSecond();
+            url.append(solrurl);
+        }
+        
+        try {
+        
+            JSONAPIResult response = new SolrCommandBackupResult(getOperation(httpClient, url.toString()));
+    
+            if(response.getStatus() != 0)
+            {
+                solrTracker.setSolrActive(false);
+            }
+            
+            return response;
+            
+        }
+        catch (IOException e)
+        {
+            throw new LuceneQueryParserException("action", e);
+        }
+        
+        
+    }
+
 	public List<String> getRegisteredCores()
 	{
 		return solrTracker.getRegisteredCores();
@@ -251,25 +329,12 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 		
 		protected void pingSolr()
 		{
-		    ModifiableSolrParams params = new ModifiableSolrParams();
-		    params.set("qt", "/admin/cores");
-		    params.set("action", "STATUS");
-			
-		    QueryResponse response = basicQuery(params);
-		    if(response != null && response.getStatus() == 0)
+		    
+		    SolrActionStatusResult result = (SolrActionStatusResult) executeAction(null, JSONAPIResultFactory.ACTION.STATUS, JSON_PARAM);
+		    
+		    if(result != null)
 		    {
-			    NamedList<Object> results = response.getResponse();
-			    @SuppressWarnings("unchecked")
-                NamedList<Object> report = (NamedList<Object>)results.get("status");
-			    Iterator<Map.Entry<String, Object>> coreIterator = report.iterator();
-			    List<String> cores = new ArrayList<String>(report.size());
-			    while(coreIterator.hasNext())
-			    {
-			    	Map.Entry<String, Object> core = coreIterator.next();
-			    	cores.add(core.getKey());
-			    }
-			    
-			    registerCores(cores);
+			    registerCores(result.getCores());
 		    	setSolrActive(true);
 		    }
 		    else

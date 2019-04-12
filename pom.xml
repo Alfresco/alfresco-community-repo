@@ -482,7 +482,7 @@
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
       <maven.javadoc.skip>true</maven.javadoc.skip>
-      <maven.war.plugin.version>2.6</maven.war.plugin.version>
+      <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
@@ -1045,6 +1045,12 @@
                <artifactId>maven-war-plugin</artifactId>
                <version>${maven.war.plugin.version}</version>
                <dependencies>
+                  <!-- Needed when creating the community and enterprise rest api wars  -->
+                  <dependency>
+                     <groupId>org.apache.commons</groupId>
+                     <artifactId>commons-compress</artifactId>
+                     <version>1.18</version>
+                  </dependency>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>
                      <artifactId>alfresco-maven-plugin</artifactId>

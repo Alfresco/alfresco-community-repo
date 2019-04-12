@@ -481,6 +481,7 @@
       <share.client.contextPath>/share</share.client.contextPath>
 
       <maven.javadoc.version>3.1.0</maven.javadoc.version>
+      <maven.javadoc.skip>true</maven.javadoc.skip>
       <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
@@ -685,7 +686,6 @@
                   <goals>
                      <goal>jar</goal>
                   </goals>
-
                </execution>
             </executions>
          </plugin>

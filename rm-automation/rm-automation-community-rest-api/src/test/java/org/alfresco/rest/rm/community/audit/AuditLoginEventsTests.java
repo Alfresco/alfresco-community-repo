@@ -48,7 +48,7 @@ import org.testng.annotations.Test;
  * @since 2.7
  */
 @AlfrescoTest (jira = "RM-5234")
-public class AuditLoginEvents extends BaseRMRestTest
+public class AuditLoginEventsTests extends BaseRMRestTest
 {
     @Autowired
     private RMAuditAPI rmAuditAPI;

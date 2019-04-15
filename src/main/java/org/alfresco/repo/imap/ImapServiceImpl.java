@@ -1227,7 +1227,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
 
         List<AlfrescoImapFolder> fullList = new LinkedList<AlfrescoImapFolder>();
-        ImapSubFolderFilter filter = new ImapSubFolderFilter(viewMode, name.replace('%', '*'));
+        ImapSubFolderFilter filter = new ImapSubFolderFilter(viewMode, name.replace('%', '*'), Arrays.asList("calendar", "dataLists"));
         List<FileInfo> list;
         // Only list this folder if we have a wildcard name. Otherwise do a direct lookup by name.
         if (name.contains("*") || name.contains("%"))
@@ -1652,6 +1652,10 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         private List<NodeRef> favs;
         private String mailboxPattern;
         private ImapViewMode imapViewMode;
+        /**
+         * Exclude folders which represent components with these IDs
+         */
+        private List<String> excludedComponentIds;
         
         ImapSubFolderFilter(ImapViewMode imapViewMode)
         {
@@ -1665,11 +1669,22 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             this(imapViewMode);
             this.mailboxPattern = mailboxPattern.replaceAll("\\*", "(.)*");;
         }
+
+        ImapSubFolderFilter(ImapViewMode imapViewMode, String mailboxPattern, List<String> excludedComponentIds)
+        {
+            this(imapViewMode, mailboxPattern);
+            this.excludedComponentIds = excludedComponentIds;
+        }
         
         @Override
         public boolean isEnterSubfolder(ChildAssociationRef subfolderRef)
         {
             return isEnterSubfolder(subfolderRef.getChildRef());
+        }
+
+        private boolean containsIgnoreCase(String s, List<String> list)
+        {
+            return list.stream().anyMatch((e) -> e.equalsIgnoreCase(s));
         }
         
         public boolean isEnterSubfolder(NodeRef folder)
@@ -1685,6 +1700,25 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 if (!name.matches(mailboxPattern))
                     return false;
             }
+
+            /**
+             * Exclude folders which represent unsupported components, like calendar and dataLists.
+             * See REPO-830
+             */
+            if (excludedComponentIds != null && !excludedComponentIds.isEmpty())
+            {
+                String componentId = (String) nodeService.getProperty(folder, SiteModel.PROP_COMPONENT_ID);
+                if (componentId != null && containsIgnoreCase(componentId, excludedComponentIds))
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("[ImapSubFolderFilter] Excluding folder with name: " + name
+                                + " because its componentID is: " + componentId);
+                    }
+                    return false;
+                }
+            }
+
             QName typeOfFolder = nodeService.getType(folder);
             if (typesToExclude.contains(typeOfFolder))
             {

@@ -67,6 +67,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -350,6 +351,25 @@ public class ImapServiceImplTest extends TestCase
         imapService.unsubscribe(user, MAILBOX_NAME_B);
         List<AlfrescoImapFolder> aif2 = imapService.listMailboxes(user, MAILBOX_PATTERN, true);
         assertEquals("not subscribed to one mailbox", 1, aif2.size());
+    }
+
+    public void testExcludeFoldersByComponentIt()
+    {
+        NodeRef imapFolderA =  imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderB =  imapService.getOrCreateMailbox(user, MAILBOX_NAME_B, false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderC =  imapService.getOrCreateMailbox(user, "mailboxCalendarFolder", false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderD =  imapService.getOrCreateMailbox(user, "mailboxDataListsFolder", false, true).getFolderInfo().getNodeRef();
+        NodeRef imapFolderE =  imapService.getOrCreateMailbox(user, "mailboxDocumentLibraryFolder", false, true).getFolderInfo().getNodeRef();
+
+        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
+        assertEquals(5, mf.size());
+
+        nodeService.setProperty(imapFolderC, SiteModel.PROP_COMPONENT_ID, "calendar");
+        nodeService.setProperty(imapFolderD, SiteModel.PROP_COMPONENT_ID, "dataLists");
+        nodeService.setProperty(imapFolderE, SiteModel.PROP_COMPONENT_ID, "documentLibrary");
+
+        mf = imapService.listMailboxes(user, MAILBOX_PATTERN, false);
+        assertEquals("Imap folders with component IDs 'calendar' or 'dataLists' were not excluded.", 3, mf.size());
     }
     
     public void testListSubscribedMailbox() throws Exception

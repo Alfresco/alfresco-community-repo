@@ -695,7 +695,7 @@ public class BaseRMRestTest extends RestTest
         List<String> results = new ArrayList<>();
         // wait for solr indexing
         int counter = 0;
-        int waitInMilliSeconds = 6000;
+        int waitInMilliSeconds = 7000;
         while (counter < 4)
         {
             synchronized (this)

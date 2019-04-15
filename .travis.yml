@@ -20,7 +20,7 @@ matrix:
     - name: "Build and test"
       script: travis_retry mvn test
     - name: "WhiteSource scan"
-      # only on master and if it is not a PR
+      # only on support branches or master and if it is not a PR
       if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request
       script:
         # Download the latest version of WhiteSource Unified Agent

@@ -788,6 +788,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- required by keycloak -->
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>

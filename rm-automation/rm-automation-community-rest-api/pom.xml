@@ -13,6 +13,7 @@
 
    <properties>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
+      <maven.javadoc.skip>false</maven.javadoc.skip>
       <ags.share>alfresco-governance-services-community-share</ags.share>
       <ags.repo>alfresco-governance-services-community-repo</ags.repo>
       <tas.restapi.version>6.0.0.3</tas.restapi.version>

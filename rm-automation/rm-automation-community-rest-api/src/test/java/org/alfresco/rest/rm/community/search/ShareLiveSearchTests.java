@@ -38,7 +38,7 @@ import org.alfresco.test.AlfrescoTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-public class ShareLiveSearch extends BaseRMRestTest
+public class ShareLiveSearchTests extends BaseRMRestTest
 {
     @Autowired
     SearchAPI searchApi;

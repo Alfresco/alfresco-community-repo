@@ -29,8 +29,7 @@ package org.alfresco.rest.rm.community.unfiledcontainers;
 import static java.time.LocalDateTime.now;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias
-        .UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
@@ -67,7 +66,6 @@ import org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil;
 import org.alfresco.utility.report.Bug;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -464,9 +462,8 @@ public class UnfiledContainerTests extends BaseRMRestTest
         assertEquals(child.getName(), recordName + " (" + customIdentifier + ")");
     }
 
-    @AfterMethod
     @AfterClass (alwaysRun = true)
-    public void tearDown() throws Exception
+    public void tearDown()
     {
         UnfiledContainerChildCollection listedChildren = getRestAPIFactory().getUnfiledContainersAPI()
                 .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS);

@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.tests.util;
 
 
+
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
@@ -36,6 +37,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -258,6 +260,7 @@ public class MultiPartBuilder
         }
     }
 
+    @SuppressWarnings("deprecation")
     public MultiPartRequest build() throws IOException
     {
         List<Part> parts = new ArrayList<>();
@@ -282,11 +285,30 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "nodetype", nodeType);
         addPartIfNotNull(parts, "renditions", getCommaSeparated(renditionIds));
 
+        HttpMethodParams params = new HttpMethodParams();
+
         if (!properties.isEmpty())
         {
-            for (Entry<String, String> prop : properties.entrySet())
+            for (String propertyName : properties.keySet())
             {
-                parts.add(new StringPart(prop.getKey(), prop.getValue()));
+
+                Serializable expected = properties.get(propertyName);
+                if (expected instanceof List)
+                {
+
+                    List<String> multipleValues = (List<String>) expected;
+                    for (String value : multipleValues)
+                    {
+                        {
+                            parts.add(new StringPart(propertyName, value));
+                        }
+                    }
+                }
+                else
+                {
+                    parts.add(new StringPart(propertyName, (String) expected));
+                }
+
             }
         }
 

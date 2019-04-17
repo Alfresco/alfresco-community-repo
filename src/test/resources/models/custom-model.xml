@@ -40,6 +40,20 @@
             </property>
          </properties>
       </type> 
+      
+      <type name="custom:destination">
+      	<title>Standard Destination</title>
+      	<parent>cm:content</parent>
+      	<properties>
+      		<property name="custom:name">
+      			 <type>d:text</type>
+      		</property>
+      		<property name="custom:locations">
+      			<type>d:text</type>
+      			<multiple>true</multiple>
+      		</property>
+         </properties>
+      </type>
 	  
 	</types>
 	 

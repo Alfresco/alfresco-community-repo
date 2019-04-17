@@ -2869,6 +2869,7 @@ public class NodesImpl implements Nodes
 
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
+        Map<String, String[]> formDataParameters = formData.getParameters();
 
         for (FormData.FormField field : formData.getFields())
         {
@@ -2925,9 +2926,17 @@ public class NodesImpl implements Nodes
                 default:
                 {
                     final String propName = field.getName();
-                    if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1)
+                    if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1 && !qnameStrProps.containsKey(propName))
                     {
-                        qnameStrProps.put(propName, field.getValue());
+                        String[] fieldValue = formDataParameters.get(propName);
+                        if (fieldValue.length > 1)
+                        {
+                            qnameStrProps.put(propName, Arrays.asList(fieldValue));
+                        }
+                        else
+                        {
+                            qnameStrProps.put(propName, fieldValue[0]);
+                        }
                     }
                 }
             }

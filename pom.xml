@@ -209,7 +209,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>64.1</version>
+            <version>64.2</version>
         </dependency>
         <dependency>
             <groupId>oro</groupId>

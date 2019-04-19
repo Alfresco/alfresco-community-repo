@@ -464,7 +464,7 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>6.19</alfresco-spring-webscripts.version>
+      <alfresco-spring-webscripts.version>6.20</alfresco-spring-webscripts.version>
       <api.explorer.version>6.0.7-ga</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.version>0.0</alfresco.version>

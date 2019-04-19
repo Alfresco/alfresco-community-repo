@@ -26,6 +26,11 @@ services:
                 -Dftp.dataPortFrom=30000
                 -Dftp.dataPortTo=30099
                 -Dcifs.enabled=true
+                -Dcsrf.filter.enabled=false
+                -Dalfresco.host=localhost
+                -Dalfresco.port.ssl=80
+                -Dalfresco.protocol=http
+                -Dalfresco.port=8080
                 "
         ports:
             - 8080:8080
@@ -36,7 +41,7 @@ services:
             - "30000-30099:30000-30099"
 
     postgres:
-        image: library/postgres:10.1
+        image: library/postgres:${POSTGRES_TAG}
         environment:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
@@ -45,7 +50,7 @@ services:
             - 5432:5432
 
     solr6:
-        image: alfresco/alfresco-search-services:1.1.1
+        image: alfresco/alfresco-search-services:${SOLR6_TAG}
         environment:
             #Solr needs to know how to register itself with Alfresco
             - SOLR_ALFRESCO_HOST=alfresco

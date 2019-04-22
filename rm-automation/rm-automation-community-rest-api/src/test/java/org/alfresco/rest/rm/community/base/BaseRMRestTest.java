@@ -141,7 +141,7 @@ public class BaseRMRestTest extends RestTest
 
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
-    public String[][] getValidRootContainers() throws Exception
+    public Object[][] getValidRootContainers() throws Exception
     {
         return new String[][]
         {
@@ -647,27 +647,25 @@ public class BaseRMRestTest extends RestTest
         List<String> names = new ArrayList<>();
         // wait for solr indexing
         int counter = 0;
-        int waitInMilliSeconds = 6000;
-        while (counter < 3)
+        int waitInMilliSeconds = 7000;
+        while (counter < 4)
         {
             synchronized (this)
             {
                 try
                 {
                     this.wait(waitInMilliSeconds);
-                } catch (InterruptedException e)
+                }
+                catch (InterruptedException e)
                 {
                 }
             }
 
             List<SearchNodeModel> searchResults = getRestAPIFactory().getRmRestWrapper().withSearchAPI().search(query)
                                                                      .getEntries();
-            if ((searchResults != null && !searchResults.isEmpty()))
+            if (searchResults != null && !searchResults.isEmpty())
             {
-                searchResults.forEach(childNode ->
-                {
-                    names.add(childNode.onModel().getName());
-                });
+                searchResults.forEach(childNode -> names.add(childNode.onModel().getName()));
                 break;
             }
             else
@@ -675,7 +673,7 @@ public class BaseRMRestTest extends RestTest
                 counter++;
             }
             // double wait time to not overdo solr search
-            waitInMilliSeconds = (waitInMilliSeconds * 2);
+            waitInMilliSeconds = waitInMilliSeconds * 2;
         }
         return names;
     }
@@ -697,8 +695,8 @@ public class BaseRMRestTest extends RestTest
         List<String> results = new ArrayList<>();
         // wait for solr indexing
         int counter = 0;
-        int waitInMilliSeconds = 6000;
-        while (counter < 3)
+        int waitInMilliSeconds = 7000;
+        while (counter < 4)
         {
             synchronized (this)
             {
@@ -711,8 +709,8 @@ public class BaseRMRestTest extends RestTest
                 }
             }
 
-                results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
-                            includeFolders, includeCategories);
+            results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
+                    includeFolders, includeCategories);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;
@@ -722,7 +720,7 @@ public class BaseRMRestTest extends RestTest
                 counter++;
             }
             // double wait time to not overdo solr search
-            waitInMilliSeconds = (waitInMilliSeconds * 2);
+            waitInMilliSeconds = waitInMilliSeconds * 2;
         }
         return results;
     }
@@ -746,8 +744,8 @@ public class BaseRMRestTest extends RestTest
         String result = "";
         // wait for solr indexing
         int counter = 0;
-        int waitInMilliSeconds = 6000;
-        while (counter < 3)
+        int waitInMilliSeconds = 5000;
+        while (counter < 4)
         {
             synchronized (this)
             {

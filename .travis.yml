@@ -3,4 +3,4 @@ jdk:
   - openjdk11
 sudo: false
 install: true
-script: travis_wait 30 mvn -B clean verify -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+script: travis_wait 35 mvn -B clean verify -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn

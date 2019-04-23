@@ -66,7 +66,7 @@ public class RMSiteUtil
     /**
      * Creates an RM Site for the given compliance and default title and description
      *
-     * @param The RM site compliance
+     * @param compliance The RM site compliance
      * @return The {@link RMSite} with the given details
      */
     private static RMSite createRMSiteModel(RMSiteCompliance compliance)

@@ -234,14 +234,11 @@ public class UpdateRecordsTests extends BaseRMRestTest
     public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
     {
         RMUserAPI rmUserAPI = getRestAPIFactory().getRMUserAPI();
-        // Create test user and add it with collab. privileges
-        UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
+        // Create test user and add it with collab. privileges.
+        // RM Security Officer is the lowest role with Edit Record Metadata capabilities
+        UserModel updateUser = createUserWithRMRole(ROLE_RM_SECURITY_OFFICER.roleId);
         updateUser.setUserRole(UserRole.SiteCollaborator);
         getDataUser().addUserToSite(updateUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
-
-        // RM Security Officer is the lowest role with Edit Record Metadata capabilities
-        rmUserAPI.assignRoleToUser(updateUser.getUsername(), ROLE_RM_SECURITY_OFFICER.roleId);
-        assertStatusCode(OK);
 
         // Create random folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();

@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
@@ -69,6 +70,7 @@ import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -87,8 +89,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-
-import lombok.Getter;
 
 /**
  * Base class for all GS REST API Tests
@@ -615,18 +615,34 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Assign filling permission on a record category and give the user RM_USER role
+     * Helper method to create a test user with rm role
      *
-     * @param user the user to assign the permission to
-     * @param categoryId the id of the category to assign permissions for
-     * @throws Exception
+     * @param userRole the rm role
+     * @return the created user model
      */
-    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId,
-                                                   String userPermission, String userRole) throws Exception
+    protected UserModel createUserWithRMRole(String userRole)
     {
-        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
-        rmRolesAndActionsAPI.assignRoleToUser(getAdminUser().getUsername(),
-                    getAdminUser().getPassword(), user.getUsername(), userRole);
+        UserModel rmUser = getDataUser().createRandomTestUser();
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), userRole);
+        assertStatusCode(OK);
+        return rmUser;
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the record category
+     *
+     * @param userRole the rm role
+     * @param userPermission the permissions over the record category
+     * @param recordCategory the category on which user has permissions
+     * @return the created user model
+     */
+    protected UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
+                                                                  UserPermissions userPermission)
+    {
+        UserModel rmUser = createUserWithRMRole(userRole);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
+        assertStatusCode(OK);
+        return rmUser;
     }
 
     /**
@@ -793,5 +809,4 @@ public class BaseRMRestTest extends RestTest
         documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
         return documentLibrary;
     }
-
 }

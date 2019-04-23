@@ -87,7 +87,6 @@ public class RMUserAPI extends RMModelRequest
      *
      * @param userName User's username
      * @param userRole User's RM role, one of {@link UserRoles} roles
-     * @throws Exception for failed requests
      */
     public void assignRoleToUser(String userName, String userRole)
     {
@@ -118,12 +117,11 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Helper method to add permission on a component to user
-     *
      * @param filePlanComponentId The id of the file plan component on which permission should be given
-     * @param user                {@link UserModel} for a user to be granted permission
-     * @param permission          {@link UserPermissions} to be granted
+     * @param user {@link UserModel} for a user to be granted permission
+     * @param permission {@link UserPermissions} to be granted
      */
-    public void addUserPermission(String filePlanComponentId, UserModel user, String permission)
+    public void addUserPermission(String filePlanComponentId, UserModel user, UserPermissions permission)
     {
         UserModel adminUser = getRmRestWrapper().getTestUser();
 
@@ -134,7 +132,7 @@ public class RMUserAPI extends RMModelRequest
                 .addArray("permissions")
                 .addObject()
                 .add("authority", (user != null ? user.getUsername() : null))
-                .add("role", permission)
+                .add("role", permission.permissionId)
                 .end()
                 .getJson();
 

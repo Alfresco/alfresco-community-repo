@@ -105,7 +105,7 @@ public class DataProviderClass
      * @return file plan component alias
      */
     @DataProvider
-    public static String[][] categoryTypes()
+    public static Object[][] categoryTypes()
     {
         return new String[][] {
             { FOLDER_TYPE },

@@ -615,6 +615,22 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
+     * Assign permission on a record category and give the user RM role
+     *
+     * @param user the user to assign rm role and permissions
+     * @param categoryId the id of the category to assign permissions for
+     * @param userPermission the permissions to be assigned to the user
+     * @param userRole the rm role to be assigned to the user
+     */
+    public void assignUserPermissionsOnCategoryAndRMRole(UserModel user, String categoryId, UserPermissions userPermission,
+                                                         String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
+        rmRolesAndActionsAPI.assignRoleToUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                user.getUsername(), userRole);
+    }
+
+    /**
      * Helper method to create a test user with rm role
      *
      * @param userRole the rm role

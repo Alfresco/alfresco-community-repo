@@ -77,12 +77,6 @@
             <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
-        <!-- CORS Filter Libraries -->
-        <dependency>
-            <groupId>com.thetransactioncompany</groupId>
-            <artifactId>cors-filter</artifactId>
-            <version>2.5</version>
-        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>

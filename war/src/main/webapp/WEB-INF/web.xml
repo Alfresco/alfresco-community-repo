@@ -104,46 +104,6 @@
       <filter-class>org.springframework.extensions.webscripts.servlet.CSRFFilter</filter-class>
    </filter>
 
-
-   <!-- CORS Filter Begin -->
-   <!--<filter>
-      <filter-name>CORS</filter-name>
-      <filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
-      <init-param>
-         <param-name>cors.allowGenericHttpRequests</param-name>
-         <param-value>true</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.allowOrigin</param-name>
-         <param-value>http://localhost:8081,http://myapp.example.com</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.allowSubdomains</param-name>
-         <param-value>true</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.supportedMethods</param-name>
-         <param-value>GET, HEAD, POST, PUT, DELETE, OPTIONS</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.supportedHeaders</param-name>
-         <param-value>origin, authorization, x-file-size, x-file-name, content-type, accept, x-file-type, range</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.exposedHeaders</param-name>
-         <param-value>Accept-Ranges, Content-Encoding, Content-Length, Content-Range</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.supportsCredentials</param-name>
-         <param-value>true</param-value>
-      </init-param>
-      <init-param>
-         <param-name>cors.maxAge</param-name>
-         <param-value>3600</param-value>
-      </init-param>
-   </filter>-->
-   <!-- CORS Filter End -->
-
    <!-- Enterprise filter placeholder -->
    <filter-mapping>
       <filter-name>Clear security context filter</filter-name>
@@ -155,17 +115,6 @@
       <url-pattern>/*</url-pattern>
       <dispatcher>REQUEST</dispatcher>
    </filter-mapping>
-   
-   <!-- CORS Filter Mappings Begin -->
-   <!--<filter-mapping>
-      <filter-name>CORS</filter-name>
-      <url-pattern>/api/*</url-pattern>
-      <url-pattern>/service/*</url-pattern>
-      <url-pattern>/s/*</url-pattern>
-      <url-pattern>/cmisbrowser/*</url-pattern>
-      <url-pattern>/definitions/*</url-pattern>
-   </filter-mapping>-->
-   <!-- CORS Filter Mappings End -->
 
    <!-- Activiti Global Authentication Filter mapping placeholder -->
 
@@ -286,6 +235,11 @@
    <!-- WebDAV session listener - ensures that no locked resources is left after session expires -->
    <listener>
       <listener-class>org.alfresco.repo.webdav.WebDAVSessionListener</listener-class>
+   </listener>
+
+   <!-- CORS session listener - enables and configures CORS -->
+   <listener>
+      <listener-class>org.alfresco.web.app.servlet.CORSContextListener</listener-class>
    </listener>
 
    <!-- Enterprise listener placeholder -->

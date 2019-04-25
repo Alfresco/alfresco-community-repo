@@ -1,0 +1,431 @@
+/*
+ * #%L
+ * Alfresco Records Management Module
+ * %%
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.rest.rm.community.files;
+
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.core.service.ActionsService;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderEntry;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
+import org.alfresco.rest.rm.community.model.user.UserRoles;
+import org.alfresco.rest.rm.community.util.DockerHelper;
+import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
+/**
+ * API tests for declaring document as record and filing it immediately to a record folder location within the file plan
+ *
+ * @author Claudia Agache
+ * @since 3.1
+ */
+@AlfrescoTest (jira = "RM-6779")
+public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
+{
+    private final static String DESTINATION_PATH_NOT_RESOLVED_EXC = "Unable to execute create-record action, because the destination path could not be resolved.";
+    private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
+    private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
+    private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder";
+
+    private UserModel userFillingPermission, userReadOnlyPermission;
+    private SiteModel publicSite;
+    private RecordCategory recordCategory;
+    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory;
+    private UnfiledContainerChild unfiledContainerFolder;
+
+    @Autowired
+    private ActionsService actionsService;
+    @Autowired
+    private DockerHelper dockerHelper;
+
+    /**
+     * Invalid  containers where in-place records can't be filed
+     */
+    @DataProvider (name = "invalidFileLocations")
+    public Object[][] getInvalidFileLocations() throws Exception
+    {
+        RecordCategoryChild closedFolder = createFolder(recordCategory.getId(), getRandomName("closedFolder"));
+        closeFolder(closedFolder.getId());
+
+        unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
+                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
+        return new String[][]
+            {
+                { "/", DESTINATION_PATH_NOT_RESOLVED_EXC},
+                { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
+                { "Transfers", INVALID_DESTINATION_PATH_EXC },
+                { "Holds", INVALID_DESTINATION_PATH_EXC },
+                { "rm/documentlibrary", DESTINATION_PATH_NOT_RESOLVED_EXC },
+                { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
+                // a closed record folder
+                { Utility.buildPath(recordCategory.getName(), closedFolder.getName()), CLOSED_RECORD_FOLDER_EXC},
+                // an arbitrary unfiled records folder
+                { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
+                // a collaboration site folder
+                { dataContent.usingAdmin().usingSite(publicSite).createFolder().getCmisLocation(), DESTINATION_PATH_NOT_RESOLVED_EXC }
+            };
+    }
+
+    @BeforeClass (alwaysRun = true)
+    public void declareAndFileDocumentAsRecordSetup() throws Exception
+    {
+        STEP("Create test collaboration site to store documents in.");
+        publicSite = dataSite.usingAdmin().createPublicRandomSite();
+
+        STEP("Create a record category with 2 record folders");
+        recordCategory = createRootCategory(getRandomName("recordCategory"));
+        subCategory = createRecordCategory(recordCategory.getId(), getRandomName("subCategory"));
+        recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+        subcategoryRecordFolder = createFolder(subCategory.getId(), getRandomName("recordFolder"));
+
+        STEP("Create rm users with different permissions on the record category");
+        userFillingPermission = createCollaboratorWithRMRoleAndPermission(ROLE_RM_POWER_USER, PERMISSION_FILING);
+        userReadOnlyPermission = createCollaboratorWithRMRoleAndPermission(ROLE_RM_USER, PERMISSION_READ_RECORDS);
+    }
+
+    /**
+     * Given I am calling the "declare as record" action
+     * And I am not providing a location parameter value
+     * When I execute the action
+     * Then the document is declared as a record
+     * And is placed in the Unfiled Records location
+     */
+    @Test
+    public void declareAndFileNoLocationUsingActionsAPI() throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite)
+                                        .usingUser(userReadOnlyPermission)
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record without providing a location parameter value using v1 actions api");
+        actionsService.declareAsRecord(userReadOnlyPermission, testFile);
+
+        STEP("Verify the declared record is placed in the Unfiled Records folder");
+        assertTrue(isMatchingRecordInUnfiledRecords(testFile), "Record should be filed to Unfiled Records folder");
+
+        STEP("Verify the document in collaboration site is now a record");
+        assertTrue(hasRecordAspect(testFile), "File should have record aspect");
+    }
+
+    /**
+     * Given I am calling the "declare as record" action
+     * And I provide a valid record folder in the location parameter
+     * When I execute the action
+     * Then the document is declared as a record
+     * And is filed to the record folder specified
+     */
+    @Test
+    public void declareAndFileToValidLocationUsingActionsAPI() throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite)
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with a location parameter value");
+        actionsService.declareAndFile(userFillingPermission, testFile,
+                Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
+
+        STEP("Verify the declared record is placed in the record folder");
+        assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record should be filed to record folder");
+
+        STEP("Verify the document in collaboration site is now a record");
+        assertTrue(hasRecordAspect(testFile), "File should have record aspect");
+    }
+
+    /**
+     * Given I am calling the "declare as record" action
+     * And I provide an invalid record folder in the location parameter
+     * When I execute the action
+     * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
+     * And the document is not declared as a record
+     */
+    @Test (dataProvider = "invalidFileLocations")
+    public void declareAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite)
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with an invalid location parameter value");
+        actionsService.declareAndFile(getAdminUser(), testFile, containerPath);
+
+        STEP("Check the exception thrown in alfresco logs");
+        //Retry the operation because sometimes it takes few seconds to throw the exception
+        Utility.sleep(6000, 30000, () ->
+        {
+            List<String> alfrescoLogs = dockerHelper.getAlfrescoLogs();
+            assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));
+        });
+
+        STEP("Check that the file is not a record");
+        assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
+    }
+
+    /**
+     * Given I declare a record using the v1 API
+     * When I provide a location parameter
+     * Then the record is declared in the correct location
+     */
+    @Test
+    public void declareAndFileToValidLocationUsingFilesAPI() throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite)
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with a location parameter value");
+        //TODO add recordFolder location parameter value
+        Record record = getRestAPIFactory().getFilesAPI(userFillingPermission)
+                                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
+
+        STEP("Verify the declared record is placed in the record folder");
+        assertEquals(record.getParentId(), recordFolder.getId(), "Record should be filed to record folder");
+
+        STEP("Verify the document in collaboration site is now a record");
+        assertTrue(hasRecordAspect(testFile), "File should have record aspect");
+    }
+
+    /**
+     * Given I am an user with read only permissions on a record folder
+     * When I declare and file a record to the record folder
+     * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
+     * And the document is not declared as a record
+     */
+    @Test
+    public void declareAndFileByUserWithReadOnlyPermission() throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite).usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with a record folder as location parameter");
+        //TODO add recordFolder location parameter value
+        getRestAPIFactory().getFilesAPI(userReadOnlyPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        //TODO check what status code should be returned
+        assertStatusCode(FORBIDDEN);
+
+        STEP("Check that the file is not a record");
+        assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
+    }
+
+    /**
+     * Given I am a non RM user
+     * When I declare and file a record to the record folder
+     * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
+     * And the document is not declared as a record
+     */
+    @Test
+    public void declareAndFileByNonRMUser() throws Exception
+    {
+        STEP("Create an user with no rm rights");
+        UserModel nonRMUser = getDataUser().createRandomTestUser();
+        getDataUser().addUserToSite(nonRMUser, publicSite, UserRole.SiteContributor);
+
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite).usingUser(nonRMUser)
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with a record folder as location parameter");
+        //TODO add recordFolder location parameter value
+        getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(FORBIDDEN);
+
+        STEP("Check that the file is not a record");
+        assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
+    }
+
+    /**
+     * Given I declare a record using the v1 API
+     * When I provide a location parameter
+     * Then the record is declared in the correct location
+     * And when I declare it again using a different location
+     * Then I get an invalid operation exception
+     */
+    @Test
+    public void declareAndFileTwiceDifferentLocations() throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite).usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with a record folder as location parameter");
+        //TODO add subcategoryRecordFolder as location parameter value
+        getRestAPIFactory().getFilesAPI(userFillingPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
+
+        STEP("Declare it again using a different record folder as location parameter");
+        //TODO add recordFolder as location parameter value
+        getRestAPIFactory().getFilesAPI(userFillingPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(UNPROCESSABLE_ENTITY);
+
+        STEP("Verify the declared record is placed in the first record folder");
+        assertTrue(isMatchingRecordInRecordFolder(testFile, subcategoryRecordFolder),
+                "Record should be filed to recordFolder");
+        assertFalse(isMatchingRecordInRecordFolder(testFile, recordFolder),
+                "Record should not be filed to subcategoryRecordFolder");
+    }
+
+    /**
+     * Helper method to verify if the declared record is in Unfiled Records location
+     *
+     * @param testFile the file declared as record
+     * @return true if the matching record is found in Unfiled Records, false otherwise
+     */
+    private boolean isMatchingRecordInUnfiledRecords(FileModel testFile)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                () -> {
+                    Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
+                                                                                             .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                                                                             .getEntries()
+                                                                                             .stream()
+                                                                                             .filter(e -> e.getEntry().getId()
+                                                                                                           .equals(testFile.getNodeRefWithoutVersion()))
+                                                                                             .findAny();
+                    assertTrue(matchingRecord.isPresent());
+                });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Helper method to verify if the declared record is filed to the record folder location
+     *
+     * @param testFile the file declared as record
+     * @param recFolder the record folder where the declared record has been filed
+     * @return true if matching record is found in record folder, null otherwise
+     */
+    private boolean isMatchingRecordInRecordFolder(FileModel testFile, RecordCategoryChild recFolder)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                () -> {
+                    Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
+                                                                                    .getRecordFolderChildren(recFolder.getId())
+                                                                                    .getEntries()
+                                                                                    .stream()
+                                                                                    .filter(e -> e.getEntry().getId()
+                                                                                                  .equals(testFile.getNodeRefWithoutVersion()))
+                                                                                    .findAny();
+                    assertTrue(matchingRecord.isPresent());
+                });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
+     * in collaboration site
+     *
+     * @param userRole the rm role
+     * @param userPermission the permissions over the recordCategory
+     * @return the created user model
+     * @throws Exception
+     */
+    private UserModel createCollaboratorWithRMRoleAndPermission(UserRoles userRole, UserPermissions userPermission)
+    {
+        UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory, userPermission);
+        getDataUser().addUserToSite(rmUser, publicSite, UserRole.SiteCollaborator);
+        return rmUser;
+    }
+
+    /**
+     * Checks if the given file has record aspect
+     *
+     * @param testFile the file to be checked
+     * @return true if the file has the aspect, false otherwise
+     */
+    private boolean hasRecordAspect(FileModel testFile) throws Exception
+    {
+        return getRestAPIFactory().getNodeAPI(testFile).getNode()
+                                  .getAspectNames().contains(RECORD_TYPE);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void declareAndFileDocumentAsRecordCleanup()
+    {
+        //delete rm items
+        deleteRecordCategory(recordCategory.getId());
+        getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledContainerFolder.getId());
+
+        //delete created collaboration site
+        dataSite.deleteSite(publicSite);
+
+        //delete users
+        getDataUser().deleteUser(userFillingPermission);
+        getDataUser().deleteUser(userReadOnlyPermission);
+    }
+}

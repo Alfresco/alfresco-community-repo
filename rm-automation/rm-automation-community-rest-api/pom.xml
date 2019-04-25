@@ -85,5 +85,10 @@
          <artifactId>commons-collections4</artifactId>
          <version>4.1</version>
       </dependency>
+      <dependency>
+         <groupId>com.github.docker-java</groupId>
+         <artifactId>docker-java</artifactId>
+         <version>3.0.14</version>
+      </dependency>
    </dependencies>
 </project>

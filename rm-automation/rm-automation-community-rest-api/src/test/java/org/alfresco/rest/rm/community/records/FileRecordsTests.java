@@ -68,7 +68,7 @@ public class FileRecordsTests extends BaseRMRestTest
 {
     private UnfiledContainerChild electronicRecord = UnfiledContainerChild.builder()
                                                                   .name(ELECTRONIC_RECORD_NAME)
-                                                                  .nodeType(CONTENT_TYPE.toString())
+                                                                  .nodeType(CONTENT_TYPE)
                                                                   .content(RecordContent.builder().mimeType("text/plain").build())
                                                                   .build();
 
@@ -78,14 +78,14 @@ public class FileRecordsTests extends BaseRMRestTest
                                                                                                             .title("Title")
                                                                                                             .build())
                                                                      .name(NONELECTRONIC_RECORD_NAME)
-                                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
+                                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                                                      .build();
 
     /**
      * Invalid  containers where electronic and non-electronic records can be filed
      */
     @DataProvider (name = "invalidContainersToFile")
-    public String[][] getFolderContainers() throws Exception
+    public Object[][] getFolderContainers() throws Exception
     {
         return new String[][] {
             { FILE_PLAN_ALIAS},

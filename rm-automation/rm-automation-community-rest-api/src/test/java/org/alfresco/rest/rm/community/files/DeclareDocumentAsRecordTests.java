@@ -100,10 +100,16 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * And it is now a record
      * And it remains a secondary child of the starting location where I can still view it
      * <pre>
+     *
+     * RM-6779
+     * Given I declare a record using the v1 API
+     * When I do not provide a location parameter
+     * Then the record is declared in the unfiled folder
+     *
      * @throws Exception for malformed JSON API response
      */
     @Test(description = "User with correct permissions can declare document as a record")
-    @AlfrescoTest(jira = "RM-4429")
+    @AlfrescoTest(jira = "RM-4429, RM-6779")
     public void userWithPrivilegesCanDeclareDocumentAsRecord() throws Exception
     {
         // create document in a folder in a collaboration site

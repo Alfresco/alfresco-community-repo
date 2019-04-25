@@ -56,4 +56,7 @@ public class RMRestProperties extends RestProperties
 
     @Value ("${rest.rmPath}")
     private String restRmPath;
+
+    @Value ("${docker.host}")
+    private String dockerHost;
 }

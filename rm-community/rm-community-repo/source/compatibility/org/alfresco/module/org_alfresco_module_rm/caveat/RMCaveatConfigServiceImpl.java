@@ -201,7 +201,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
+     * @param value
      * @throws AlfrescoRuntimeException if either the list or the authority do not already exist.
      */
     public void addRMConstraintListValue(String listName, String authorityName, String value)
@@ -251,7 +251,6 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
      */
     public void removeRMConstraintListAuthority(String listName, String authorityName)
     {

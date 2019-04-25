@@ -22,6 +22,7 @@
  * -
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+
  * #L%
  */
 
@@ -252,7 +253,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getHold(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#getHolds(NodeRef)
      */
     @Override
     public Set<NodeRef> getHolds(NodeRef filePlan)

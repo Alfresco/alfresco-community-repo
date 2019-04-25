@@ -77,6 +77,7 @@ public class RMSearchGet extends DeclarativeWebScript
     private static final String PARAM_SORTBY = "sortby";
     private static final String PARAM_FILTERS = "filters";
     private static final String PARAM_MAX_ITEMS = "maxitems";
+    private static final String SYSTEM = "System";
 
     /** Records management search service */
     protected RecordsManagementSearchService recordsManagementSearchService;
@@ -373,6 +374,12 @@ public class RMSearchGet extends DeclarativeWebScript
 
         private String getDisplayName(String userName)
         {
+            //Fix for RM-6834
+            if(userName.equals(SYSTEM))
+            {
+                return SYSTEM;
+            }
+
             String result = personDataCache.get(userName);
             if (result == null)
             {

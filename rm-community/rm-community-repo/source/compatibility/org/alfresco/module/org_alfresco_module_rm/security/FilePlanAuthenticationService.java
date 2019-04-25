@@ -53,7 +53,10 @@ public interface FilePlanAuthenticationService
      * @param runAsWork work to execute as the rm admin user
      * @return R        result of work execution
      *
-     * @deprecated as of 2.2, use {@link AuthenticationUtil#runAs(RunAsWork, AuthenticationUtil#getAdminUserName())}
+     * @deprecated as of 2.2, use
+     *
+     *
+     * {@link AuthenticationUtil#runAs(RunAsWork, String)}
      */
     <R> R runAsRmAdmin(RunAsWork<R> runAsWork);
 }

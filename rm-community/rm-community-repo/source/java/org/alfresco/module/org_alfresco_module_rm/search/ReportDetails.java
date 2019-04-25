@@ -97,7 +97,7 @@ public class ReportDetails
     }
 
 	/**
-	 * @param query query string
+	 * @param search query string
 	 */
 	public void setSearch(String search)
     {

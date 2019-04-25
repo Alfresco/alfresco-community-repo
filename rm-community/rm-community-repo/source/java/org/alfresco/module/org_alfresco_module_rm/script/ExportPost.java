@@ -78,7 +78,9 @@ public class ExportPost extends StreamACP
     }
 
     /**
-     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
      */
     @SuppressWarnings("deprecation")
     @Override

@@ -95,7 +95,6 @@ public interface RMCaveatConfigService
     /**
      * update RM constraint Title
      * @param listName the name of the RMConstraintList - can not be changed
-     * @param allowedValues
      */
     RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle);
 
@@ -112,7 +111,7 @@ public interface RMCaveatConfigService
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
+     * @param value
      * @throws AlfrescoRuntimeException if either the list or the authority do not already exist.
      */
     void addRMConstraintListValue(String listName, String authorityName, String value);
@@ -134,7 +133,6 @@ public interface RMCaveatConfigService
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
      */
     void removeRMConstraintListAuthority(String listName, String authorityName);
 
@@ -154,8 +152,7 @@ public interface RMCaveatConfigService
      * Remove an authority from a list
      *
      * @param listName the name of the RMConstraintList
-     * @param authorityName
-     * @param value
+     * @param valueName
      */
     void removeRMConstraintListValue(String listName, String valueName);
 }

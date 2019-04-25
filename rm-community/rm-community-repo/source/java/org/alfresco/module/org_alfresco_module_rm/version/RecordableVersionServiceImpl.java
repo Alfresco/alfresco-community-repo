@@ -620,7 +620,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#isLatestVersionRecorded(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#isCurrentVersionRecorded(NodeRef)
      */
     @Override
     public boolean isCurrentVersionRecorded(NodeRef nodeRef)
@@ -672,7 +672,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Create Version Store Ref
      * 
-     * @param store ref
+     * @param storeRef store ref
      * @return store ref for version store
      */
     public StoreRef convertStoreRef(StoreRef storeRef)
@@ -693,7 +693,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, autoVersion)
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(NodeRef, NodeRef, boolean autoVersion)
      */
     @Override
     public NodeRef createRecordFromLatestVersion(final NodeRef filePlan, final NodeRef nodeRef, final boolean isEnableAutoVersionOnRecordCreation)

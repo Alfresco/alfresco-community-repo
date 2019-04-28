@@ -30,7 +30,6 @@ import java.util.Date;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.blog.BlogIntegrationService;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,8 +38,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * The Blog Service handles the management (CRUD) of Alfresco blog data, namely the blog posts which are
- * exposed in the Share UI under the "Blog" heading. The {@link BlogIntegrationService}, a separate service, is
- * concerned with the integration of Alfresco blog content with external Blog-hosting sites.
+ * exposed in the Share UI under the "Blog" heading.
  * <p/>
  * Please note that this service is a work in progress and currently exists primarily to support the blogs REST API.
  * 
@@ -168,30 +166,6 @@ public interface BlogService
      * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
     */
     PagingResults<BlogPostInfo> getPublished(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq);
-    
-    /**
-     * Gets blog posts published externally (i.e. to an external blog hosting site).
-     * 
-     * @param siteShortName     the name of the site to add the post to. 
-     * @param pagingReq         an object defining the paging parameters for the result set.
-     * 
-     * @return a {@link PagingResults} object containing some or all of the results (subject to paging).
-     * 
-     * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
-     */
-    PagingResults<BlogPostInfo> getPublishedExternally(String siteShortName, PagingRequest pagingReq);
-    
-    /**
-     * Gets blog posts published externally (i.e. to an external blog hosting site).
-     * 
-     * @param blogContainerNode the container node for blog posts (under the site).
-     * @param pagingReq         an object defining the paging parameters for the result set.
-     * 
-     * @return a {@link PagingResults} object containing some or all of the results (subject to paging).
-     * 
-     * @see SiteService#getContainer(String, String) to retrieve the blogContainerNode
-     */
-    PagingResults<BlogPostInfo> getPublishedExternally(NodeRef blogContainerNode, PagingRequest pagingReq);
     
     /**
      * Gets draft blog posts by the currently authenticated user along with all published posts.

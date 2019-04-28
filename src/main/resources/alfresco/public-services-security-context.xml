@@ -990,7 +990,6 @@
             <value>
                org.alfresco.service.cmr.blog.BlogService.getDrafts=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.blog.BlogService.getPublished=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
-               org.alfresco.service.cmr.blog.BlogService.getPublishedExternally=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.blog.BlogService.getMyDraftsAndAllPublished=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.blog.BlogService.*=ACL_ALLOW
             </value>

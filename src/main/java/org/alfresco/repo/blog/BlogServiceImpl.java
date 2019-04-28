@@ -391,36 +391,7 @@ public class BlogServiceImpl implements BlogService
         CannedQueryResults<BlogEntity> results = cq.execute();
         return wrap(results, blogContainerNode);
     }
-    
-    @Override
-    public PagingResults<BlogPostInfo> getPublishedExternally(
-          String siteShortName, PagingRequest pagingReq) 
-    {
-       NodeRef container = getSiteBlogContainer(siteShortName, false);
-       if (container == null)
-       {
-          // No blog posts yet
-          return new EmptyPagingResults<BlogPostInfo>();
-       }
-       
-       // We can now fetch by parent nodeRef
-       return getPublishedExternally(container, pagingReq);
-    }
 
-    @Override
-    public PagingResults<BlogPostInfo> getPublishedExternally(NodeRef blogContainerNode, PagingRequest pagingReq)
-    {
-        ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
-        ParameterCheck.mandatory("pagingReq", pagingReq);
-        
-        // get canned query
-        GetBlogPostsCannedQuery cq = (GetBlogPostsCannedQuery)publishedExternallyPostsCannedQueryFactory.getGetPublishedExternallyCannedQuery(blogContainerNode, pagingReq);
-            
-        // execute canned query
-        CannedQueryResults<BlogEntity> results = cq.execute();
-        return wrap(results, blogContainerNode);
-    }
-    
     @Override
     public PagingResults<BlogPostInfo> getPublished(String siteShortName,
          Date fromDate, Date toDate, String byUser, PagingRequest pagingReq) 

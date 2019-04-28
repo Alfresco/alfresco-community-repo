@@ -88,43 +88,6 @@ public class GetBlogPostsCannedQueryFactory extends AbstractBlogPostsCannedQuery
         return getCannedQuery(params);
     }
     
-    public CannedQuery<BlogEntity> getGetPublishedExternallyCannedQuery(NodeRef blogContainerNode, PagingRequest pagingReq)
-    {
-        ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
-        ParameterCheck.mandatory("pagingReq", pagingReq);
-        
-        int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
-        boolean isPublished = true;
-        
-        Long blogIntAspectQNameId = getQNameId(BlogIntegrationModel.ASPECT_BLOG_POST);
-        if (blogIntAspectQNameId == null)
-        {
-            // possible if no blogs have ever been published externally
-            blogIntAspectQNameId = -1L; // run the query but should return empty results
-        }
-        
-        // published externally if it has the BLOG_POST aspect
-        GetBlogPostsCannedQueryParams paramBean = new GetBlogPostsCannedQueryParams(getNodeId(blogContainerNode),
-                                                                                    getQNameId(ContentModel.PROP_NAME),
-                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
-                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
-                                                                                    null,
-                                                                                    isPublished,
-                                                                                    null, null,
-                                                                                    blogIntAspectQNameId,
-                                                                                    getQNameId(BlogIntegrationModel.PROP_POSTED));
-        
-        CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
-        CannedQuerySortDetails cqsd = createCQSortDetails(BlogIntegrationModel.PROP_POSTED, SortOrder.DESCENDING);
-        
-        // create query params holder
-        CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
-        // return canned query instance
-        return getCannedQuery(params);
-    }
-    
     public CannedQuery<BlogEntity> getGetPublishedCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);

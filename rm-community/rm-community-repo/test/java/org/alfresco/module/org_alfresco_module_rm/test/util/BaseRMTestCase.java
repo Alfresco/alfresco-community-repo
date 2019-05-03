@@ -123,6 +123,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     /** test data */
     protected String NAME_DM_DOCUMENT = "collabDocument.txt";
+    protected String NAME_DM_DOCUMENT1 = "collabDocument1.txt";
 
     /** admin user */
     protected static final String ADMIN_USER = "admin";
@@ -274,6 +275,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef documentLibrary;
     protected NodeRef dmFolder;
     protected NodeRef dmDocument;
+    protected NodeRef dmDocument1;
 
     /** collaboration site users */
     protected String dmConsumer;
@@ -779,6 +781,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // create a folder and documents
         dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
         dmDocument = fileFolderService.create(dmFolder, NAME_DM_DOCUMENT, ContentModel.TYPE_CONTENT).getNodeRef();
+        dmDocument1 = fileFolderService.create(dmFolder, NAME_DM_DOCUMENT1, ContentModel.TYPE_CONTENT).getNodeRef();
 
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);

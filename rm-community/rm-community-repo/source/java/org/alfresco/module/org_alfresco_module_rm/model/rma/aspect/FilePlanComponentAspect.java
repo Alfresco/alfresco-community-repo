@@ -83,9 +83,6 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     /** file plan service */
     private FilePlanService filePlanService;
 
-    /** rendition service */
-    private RenditionService renditionService;
-
     /**
      * @param scriptService set script service
      */
@@ -108,14 +105,6 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param renditionService   rendition service
-     */
-    public void setRenditionService(RenditionService service)
-    {
-        this.renditionService = service;
     }
 
     /**

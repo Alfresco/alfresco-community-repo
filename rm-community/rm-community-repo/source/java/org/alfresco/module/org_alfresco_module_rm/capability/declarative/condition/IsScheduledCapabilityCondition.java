@@ -42,23 +42,12 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     /** Disposition action */
     private String dispositionAction;
 
-    /** Disposition service */
-    private DispositionService dispositionService;
-
     /**
      * @param dispositionAction     disposition action
      */
     public void setDispositionAction(String dispositionAction)
     {
         this.dispositionAction = dispositionAction;
-    }
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
     }
 
     /**

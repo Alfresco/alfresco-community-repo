@@ -49,13 +49,6 @@ import org.alfresco.service.namespace.QName;
 @BehaviourBean(defaultType = "qshare:shared")
 public class QShareAspect extends BaseBehaviourBean implements NodeServicePolicies.BeforeAddAspectPolicy
 {
-    private NodeService nodeService;
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
     /**
      * Behaviour to prevent sharing a record
      *

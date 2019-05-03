@@ -34,6 +34,7 @@ import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
@@ -224,5 +225,15 @@ public class RestAPIFactory
     public UnfiledRecordFolderAPI getUnfiledRecordFoldersAPI(UserModel userModel)
     {
         return getGSCoreAPI(userModel).usingUnfiledRecordFolder();
+    }
+
+    public ActionsExecutionAPI getActionsAPI(UserModel userModel)
+    {
+        return getGSCoreAPI(userModel).usingActionsExecutionsAPI();
+    }
+
+    public ActionsExecutionAPI getActionsAPI()
+    {
+        return getGSCoreAPI(null).usingActionsExecutionsAPI();
     }
 }

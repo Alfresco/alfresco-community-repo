@@ -49,7 +49,6 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.v0.BaseAPI.RM_ACTIONS;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
@@ -66,6 +65,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
+import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
@@ -90,6 +90,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
     private org.alfresco.rest.v0.RecordsAPI recordsAPI;
+    @Autowired
+    private RoleService roleService;
 
     /**
      * <pre>
@@ -237,7 +239,7 @@ public class DeleteRecordTests extends BaseRMRestTest
     {
         // Create test user and add it with collaboration privileges
         // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
-        UserModel deleteUser = createUserWithRMRole(ROLE_RM_POWER_USER.roleId);
+        UserModel deleteUser = roleService.createUserWithRMRole(ROLE_RM_POWER_USER.roleId);
         getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), SiteCollaborator);
         String username = deleteUser.getUsername();
         logger.info("Test user: " + username);

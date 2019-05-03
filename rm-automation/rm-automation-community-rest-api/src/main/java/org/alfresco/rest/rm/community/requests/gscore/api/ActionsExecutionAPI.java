@@ -24,18 +24,16 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.core.service;
+package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.core.RestAPIFactory;
+import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.utility.model.RepoTestModel;
-import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 /**
  * Produces processed results from Core Actions API calls
@@ -43,43 +41,43 @@ import org.springframework.stereotype.Service;
  * @author Claudia Agache
  * @since 3.1
  */
-@Service
-public class ActionsService
+@Component
+public class ActionsExecutionAPI extends ModelRequest
 {
-    @Autowired
-    private RestAPIFactory restAPIFactory;
+
+    /**
+     * @param rmRestWrapper
+     */
+    public ActionsExecutionAPI(RestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
+
 
     /**
      * Declares and files a document as record to a record folder using v1 actions api
      *
-     * @param userModel       user who executes the action
      * @param targetNode      the node on which the action is executed
      * @param destinationPath the path to the record folder
      * @throws Exception
      */
-    public void declareAndFile(UserModel userModel, RepoTestModel targetNode, String destinationPath) throws Exception
+    public JSONObject declareAndFile(RepoTestModel targetNode, String destinationPath) throws Exception
     {
-        RMRestWrapper rmRestWrapper = restAPIFactory.getRmRestWrapper();
-        rmRestWrapper.getRestWrapper()
-                     .authenticateUser(userModel).withCoreAPI().usingActions()
+       return restWrapper.withCoreAPI().usingActions()
                      .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
                              ImmutableMap.of("path", destinationPath));
-        rmRestWrapper.assertStatusCodeIs(HttpStatus.ACCEPTED);
+
     }
 
     /**
      * Declares a document as record using v1 actions api
      *
-     * @param userModel  user who executes the action
      * @param targetNode the node on which the action is executed
      * @throws Exception
      */
-    public void declareAsRecord(UserModel userModel, RepoTestModel targetNode) throws Exception
+    public JSONObject declareAsRecord(RepoTestModel targetNode) throws Exception
     {
-        RMRestWrapper rmRestWrapper = restAPIFactory.getRmRestWrapper();
-        rmRestWrapper.getRestWrapper()
-                                     .authenticateUser(userModel).withCoreAPI().usingActions()
-                       .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
-        rmRestWrapper.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        return restWrapper.withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
     }
 }

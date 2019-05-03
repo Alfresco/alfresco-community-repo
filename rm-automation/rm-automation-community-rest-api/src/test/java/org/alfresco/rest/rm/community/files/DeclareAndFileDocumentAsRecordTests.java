@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.files;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
@@ -36,6 +35,7 @@ import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -44,20 +44,15 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.core.service.ActionsService;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderEntry;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
-import org.alfresco.rest.rm.community.model.user.UserPermissions;
-import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.util.DockerHelper;
+import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
@@ -91,9 +86,10 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private UnfiledContainerChild unfiledContainerFolder;
 
     @Autowired
-    private ActionsService actionsService;
-    @Autowired
     private DockerHelper dockerHelper;
+
+    @Autowired
+    private RoleService roleService;
 
     /**
      * Invalid  containers where in-place records can't be filed
@@ -136,8 +132,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         subcategoryRecordFolder = createFolder(subCategory.getId(), getRandomName("recordFolder"));
 
         STEP("Create rm users with different permissions on the record category");
-        userFillingPermission = createCollaboratorWithRMRoleAndPermission(ROLE_RM_POWER_USER, PERMISSION_FILING);
-        userReadOnlyPermission = createCollaboratorWithRMRoleAndPermission(ROLE_RM_USER, PERMISSION_READ_RECORDS);
+        userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);
+        userReadOnlyPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,ROLE_RM_USER, PERMISSION_READ_RECORDS);
     }
 
     /**
@@ -156,7 +152,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record without providing a location parameter value using v1 actions api");
-        actionsService.declareAsRecord(userReadOnlyPermission, testFile);
+        getRestAPIFactory().getActionsAPI(userReadOnlyPermission).declareAsRecord(testFile);
 
         STEP("Verify the declared record is placed in the Unfiled Records folder");
         assertTrue(isMatchingRecordInUnfiledRecords(testFile), "Record should be filed to Unfiled Records folder");
@@ -181,7 +177,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a location parameter value");
-        actionsService.declareAndFile(userFillingPermission, testFile,
+        getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFile(testFile,
                 Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
         STEP("Verify the declared record is placed in the record folder");
@@ -207,7 +203,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with an invalid location parameter value");
-        actionsService.declareAndFile(getAdminUser(), testFile, containerPath);
+        getRestAPIFactory().getActionsAPI().declareAndFile(testFile, containerPath);
+        assertStatusCode(ACCEPTED);
 
         STEP("Check the exception thrown in alfresco logs");
         //Retry the operation because sometimes it takes few seconds to throw the exception
@@ -327,92 +324,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 "Record should not be filed to subcategoryRecordFolder");
     }
 
-    /**
-     * Helper method to verify if the declared record is in Unfiled Records location
-     *
-     * @param testFile the file declared as record
-     * @return true if the matching record is found in Unfiled Records, false otherwise
-     */
-    private boolean isMatchingRecordInUnfiledRecords(FileModel testFile)
-    {
-        try
-        {
-            Utility.sleep(5000, 15000,
-                () -> {
-                    Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                                             .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                                                                                             .getEntries()
-                                                                                             .stream()
-                                                                                             .filter(e -> e.getEntry().getId()
-                                                                                                           .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                             .findAny();
-                    assertTrue(matchingRecord.isPresent());
-                });
-            return true;
-        }
-        catch (AssertionError | Exception e)
-        {
-            return false;
-        }
-    }
 
-    /**
-     * Helper method to verify if the declared record is filed to the record folder location
-     *
-     * @param testFile the file declared as record
-     * @param recFolder the record folder where the declared record has been filed
-     * @return true if matching record is found in record folder, null otherwise
-     */
-    private boolean isMatchingRecordInRecordFolder(FileModel testFile, RecordCategoryChild recFolder)
-    {
-        try
-        {
-            Utility.sleep(5000, 15000,
-                () -> {
-                    Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
-                                                                                    .getRecordFolderChildren(recFolder.getId())
-                                                                                    .getEntries()
-                                                                                    .stream()
-                                                                                    .filter(e -> e.getEntry().getId()
-                                                                                                  .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                    .findAny();
-                    assertTrue(matchingRecord.isPresent());
-                });
-            return true;
-        }
-        catch (AssertionError | Exception e)
-        {
-            return false;
-        }
-    }
-
-    /**
-     * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
-     * in collaboration site
-     *
-     * @param userRole the rm role
-     * @param userPermission the permissions over the recordCategory
-     * @return the created user model
-     * @throws Exception
-     */
-    private UserModel createCollaboratorWithRMRoleAndPermission(UserRoles userRole, UserPermissions userPermission)
-    {
-        UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory, userPermission);
-        getDataUser().addUserToSite(rmUser, publicSite, UserRole.SiteCollaborator);
-        return rmUser;
-    }
-
-    /**
-     * Checks if the given file has record aspect
-     *
-     * @param testFile the file to be checked
-     * @return true if the file has the aspect, false otherwise
-     */
-    private boolean hasRecordAspect(FileModel testFile) throws Exception
-    {
-        return getRestAPIFactory().getNodeAPI(testFile).getNode()
-                                  .getAspectNames().contains(RECORD_TYPE);
-    }
 
     @AfterClass(alwaysRun = true)
     public void declareAndFileDocumentAsRecordCleanup()

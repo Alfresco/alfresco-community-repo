@@ -26,12 +26,22 @@
  */
 package org.alfresco.rest.v0.service;
 
+import static lombok.AccessLevel.PROTECTED;
+import static org.springframework.http.HttpStatus.OK;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import org.alfresco.rest.core.RestAPIFactory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +59,10 @@ public class RoleService
 
     @Autowired
     private DataUser dataUser;
+
+    @Autowired
+    @Getter (value = PROTECTED)
+    private RestAPIFactory restAPIFactory;
 
     /**
      * Add capabilities to a role
@@ -81,4 +95,72 @@ public class RoleService
         rmRolesAndActionsAPI.updateRole(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);
     }
+
+    /**
+     * Assign permission on a record category and give the user RM role
+     *
+     * @param user           the user to assign rm role and permissions
+     * @param categoryId     the id of the category to assign permissions for
+     * @param userPermission the permissions to be assigned to the user
+     * @param userRole       the rm role to be assigned to the user
+     */
+    public void assignUserPermissionsOnCategoryAndRMRole(UserModel user, String categoryId, UserPermissions userPermission,
+                                                         String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
+        rmRolesAndActionsAPI.assignRoleToUser(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+                user.getUsername(), userRole);
+    }
+
+    /**
+     * Helper method to create a test user with rm role
+     *
+     * @param userRole the rm role
+     * @return the created user model
+     */
+    public UserModel createUserWithRMRole(String userRole)
+    {
+        UserModel rmUser = dataUser.createRandomTestUser();
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), userRole);
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
+        return rmUser;
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the record category
+     *
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the record category
+     * @param recordCategory the category on which user has permissions
+     * @return the created user model
+     */
+    public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
+                                                                  UserPermissions userPermission)
+    {
+        UserModel rmUser = createUserWithRMRole(userRole);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
+        return rmUser;
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
+     * in collaboration site
+     *
+     * @param siteModel collaboration site
+     * @param recordCategory  the category  on which permission should be given
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the recordCategory
+     * @return the created user model
+     * @throws Exception
+     */
+    public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
+                                                                UserRoles userRole, UserPermissions userPermission)
+    {
+        UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory,
+                userPermission);
+        dataUser.addUserToSite(rmUser, siteModel, UserRole.SiteCollaborator);
+        return rmUser;
+    }
+
 }

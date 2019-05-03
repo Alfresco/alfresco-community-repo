@@ -45,12 +45,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.collections.CollectionUtils;
@@ -69,6 +72,9 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 {
     private NodeRef nonStandardFilePlanComponent;
     private NodeRef nonStandardFilePlan;
+    private NodeRef dmNodeRef;
+    private NodeRef unfiledRecordFolder;
+    private ChildAssociationRef parentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
@@ -84,6 +90,9 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
         nonStandardFilePlanComponent = generateNodeRef(TYPE_RECORD_CATEGORY);
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
+        dmNodeRef = generateNodeRef(TYPE_CONTENT);
+        unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER);
+        parentAssoc = mock(ChildAssociationRef.class);
 
         // set-up node service
         when(mockedNodeService.getProperty(nonStandardFilePlanComponent, PROP_ROOT_NODEREF)).thenReturn(nonStandardFilePlan);
@@ -461,5 +470,104 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         
         // verify
         verify(values, never()).add(nodeRef);        
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record without specifying a location
+     * Then the record is created in the unfiled record folder
+     */
+    @Test
+    public void createRecordIntoUnfiledRecordFolder()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(nonStandardFilePlan, dmNodeRef);
+
+        // verify record was created in unfiled record container
+        verify(mockedNodeService, times(1)).moveNode(
+                dmNodeRef,
+                unfiledRecordFolder,
+                ContentModel.ASSOC_CONTAINS,
+                parentAssoc.getQName());
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying the unfiled record folder
+     * Then the record is created in the unfiled record folder
+     */
+    @Test
+    public void createRecordIntoSpecifiedUnfiledRecordFolder()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(nonStandardFilePlan, dmNodeRef, unfiledRecordFolder);
+
+        // verify record was created in specified record folder
+        verify(mockedNodeService, times(1)).moveNode(
+                dmNodeRef,
+                unfiledRecordFolder,
+                ContentModel.ASSOC_CONTAINS,
+                parentAssoc.getQName());
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a location
+     * Then the record is created in the specified record folder
+     */
+    @Test
+    public void createRecordIntoSpecifiedRecordFolder()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(nonStandardFilePlan, dmNodeRef, recordFolder);
+
+        // verify record was created in specified record folder
+        verify(mockedNodeService, times(1)).moveNode(
+                dmNodeRef,
+                recordFolder,
+                ContentModel.ASSOC_CONTAINS,
+                parentAssoc.getQName());
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying an invalid location
+     * Then an exception is thrown
+     */
+    @Test(expected=AlfrescoRuntimeException.class)
+    public void createRecordIntoInvalidRecordFolder()
+    {
+        mocksForRecordCreation();
+        NodeRef recordCategory = generateNodeRef(TYPE_RECORD_CATEGORY);
+
+        // create the record
+        recordService.createRecord(nonStandardFilePlan, dmNodeRef, recordCategory);
+    }
+
+    /* Helper method to set up the mocks for record creation */
+    private void mocksForRecordCreation()
+    {
+        when(mockedNodeService.getPrimaryParent(dmNodeRef))
+                .thenReturn(parentAssoc);
+        when(parentAssoc.getQName()).thenReturn(generateQName());
+
+        // mocks for sanity checks on node and fileplan
+        when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedFilePlanService.isFilePlan(nonStandardFilePlan)).thenReturn(true);
+
+        // mocks for policies
+        doNothing().when(recordService).invokeBeforeRecordDeclaration(dmNodeRef);
+        doNothing().when(recordService).invokeOnRecordDeclaration(dmNodeRef);
+
+        when(mockedFilePlanService.getUnfiledContainer(nonStandardFilePlan)).thenReturn(unfiledRecordFolder);
+
+        when(mockedVersionService.getVersionHistory(dmNodeRef)).thenReturn(null);
     }
 }

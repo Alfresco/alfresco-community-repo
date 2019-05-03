@@ -142,9 +142,9 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
 
     public void register(RecordsManagementActionCondition rmCondition)
     {
-        if (!rmConditions.containsKey(rmCondition.getName()))
+        if (!rmConditions.containsKey(rmCondition.getBeanName()))
         {
-            rmConditions.put(rmCondition.getName(), rmCondition);
+            rmConditions.put(rmCondition.getBeanName(), rmCondition);
         }
     }
 

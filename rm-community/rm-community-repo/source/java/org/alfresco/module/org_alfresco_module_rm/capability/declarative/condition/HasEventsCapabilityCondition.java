@@ -39,17 +39,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class HasEventsCapabilityCondition extends AbstractCapabilityCondition
 {
-    /** Disposition service */
-    private DispositionService dispositionService;
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */

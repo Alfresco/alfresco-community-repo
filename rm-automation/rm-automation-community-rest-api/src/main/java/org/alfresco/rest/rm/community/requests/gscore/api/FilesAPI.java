@@ -44,7 +44,7 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
 public class FilesAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public FilesAPI(RMRestWrapper rmRestWrapper)
     {

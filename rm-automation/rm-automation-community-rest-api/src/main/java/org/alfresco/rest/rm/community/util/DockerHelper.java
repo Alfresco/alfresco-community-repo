@@ -42,6 +42,7 @@ import com.github.dockerjava.core.command.LogContainerResultCallback;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +59,7 @@ public class DockerHelper
     private static final String REPO_IMAGE_NAME = "repository";
     private DockerClient dockerClient;
 
+    @Autowired
     public DockerHelper(@Value ("${docker.host}") String dockerHost)
     {
         if (SystemUtils.IS_OS_WINDOWS)

@@ -188,6 +188,6 @@ public class GSCoreAPI extends RMModelRequest
      */
     public ActionsExecutionAPI usingActionsExecutionsAPI()
     {
-        return new ActionsExecutionAPI(restWrapper);
+        return new ActionsExecutionAPI(getRmRestWrapper());
     }
 }

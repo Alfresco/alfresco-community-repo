@@ -28,12 +28,11 @@ package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.requests.ModelRequest;
+import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.RepoTestModel;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 /**
  * Produces processed results from Core Actions API calls
@@ -41,18 +40,15 @@ import org.springframework.stereotype.Component;
  * @author Claudia Agache
  * @since 3.1
  */
-@Component
-public class ActionsExecutionAPI extends ModelRequest
+public class ActionsExecutionAPI extends RMModelRequest
 {
-
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
-    public ActionsExecutionAPI(RestWrapper rmRestWrapper)
+    public ActionsExecutionAPI(RMRestWrapper rmRestWrapper)
     {
         super(rmRestWrapper);
     }
-
 
     /**
      * Declares and files a document as record to a record folder using v1 actions api

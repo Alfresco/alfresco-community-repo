@@ -59,10 +59,9 @@ public class ActionsExecutionAPI extends RMModelRequest
      */
     public JSONObject declareAndFile(RepoTestModel targetNode, String destinationPath) throws Exception
     {
-       return restWrapper.withCoreAPI().usingActions()
-                     .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
-                             ImmutableMap.of("path", destinationPath));
-
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
+                                         ImmutableMap.of("path", destinationPath));
     }
 
     /**
@@ -73,7 +72,7 @@ public class ActionsExecutionAPI extends RMModelRequest
      */
     public JSONObject declareAsRecord(RepoTestModel targetNode) throws Exception
     {
-        return restWrapper.withCoreAPI().usingActions()
+        return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
     }
 }

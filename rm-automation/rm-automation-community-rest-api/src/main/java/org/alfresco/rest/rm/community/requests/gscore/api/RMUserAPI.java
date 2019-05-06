@@ -59,7 +59,7 @@ import org.alfresco.utility.model.UserModel;
 public class RMUserAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public RMUserAPI(RMRestWrapper rmRestWrapper)
     {

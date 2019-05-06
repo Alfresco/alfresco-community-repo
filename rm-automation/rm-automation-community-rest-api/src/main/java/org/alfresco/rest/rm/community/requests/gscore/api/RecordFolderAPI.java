@@ -66,7 +66,7 @@ public class RecordFolderAPI extends RMModelRequest
     /**
      * Constructor.
      *
-     * @param restWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public RecordFolderAPI(RMRestWrapper rmRestWrapper)
     {

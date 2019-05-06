@@ -95,6 +95,7 @@ public interface RMCaveatConfigService
     /**
      * update RM constraint Title
      * @param listName the name of the RMConstraintList - can not be changed
+     * @param newTitle the new value for the title constraint
      */
     RMConstraintInfo updateRMConstraintTitle(String listName, String newTitle);
 

@@ -136,7 +136,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     /**
      * Indicates whether a particular event display label exists.  Returns true if it does, false otherwise.
      *
-     * @param eventDisplayLabel vent display label
+     * @param eventDisplayLabel event display label
      * @return boolean      true if event exists, false otherwise
      */
     public boolean existsEventDisplayLabel(String eventDisplayLabel)

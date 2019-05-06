@@ -110,7 +110,9 @@ public interface RecordsManagementAdminService
      * Therefore custom properties created in the current transaction will not appear
      * in the result of this method.
      *
+     * </p>
      * @param customisableType
+     * @return Map of &lt;{@link QName}, {@link PropertyDefinition}&gt;s of custom properties definitions
      */
     Map<QName, PropertyDefinition> getCustomPropertyDefinitions(QName customisableType);
 
@@ -124,6 +126,7 @@ public interface RecordsManagementAdminService
      * in the result of this method.
      * </p>
      *
+     * @return Map of &lt;{@link QName}, {@link PropertyDefinition}&gt;s of custom properties definitions
      */
     Map<QName, PropertyDefinition> getCustomPropertyDefinitions();
 

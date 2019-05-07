@@ -47,7 +47,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
     private Set<Capability> capabilities;
 
     /**
-     * @param capabilites   set of capabilities
+     * @param capabilities   set of capabilities
      */
     public void setCapabilities(Set<Capability> capabilities)
     {

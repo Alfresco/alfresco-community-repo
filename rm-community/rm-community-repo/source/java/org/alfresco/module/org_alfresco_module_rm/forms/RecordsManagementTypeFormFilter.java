@@ -143,7 +143,7 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
      * Adds a property definition for each of the custom properties for the
      * given RM type to the given form.
      *
-     * @param rmTypeCustomAspect Enum representing the RM type to add custom
+     * @param customisableType Enum representing the RM type to add custom
      *            properties for
      * @param form The form to add the properties to
      */

@@ -57,7 +57,7 @@ public interface ExtendedSecurityService extends DeprecatedExtendedSecurityServi
      * Gets the set of authorities that are extended readers for the given node.
      *
      * @param nodeRef   node reference
-     * @return {@link Set}<{@link String}>  set of extended readers
+     * @return {@link Set}&lt;{@link String}&gt;  set of extended readers
      */
     Set<String> getReaders(NodeRef nodeRef);
 
@@ -65,7 +65,7 @@ public interface ExtendedSecurityService extends DeprecatedExtendedSecurityServi
      * Get the set of authorities that are extended writers for the given node.
      *
      * @param nodeRef   node reference
-     * @return {@link Set}<{@link String}>  set of extended writers
+     * @return {@link Set}&lt;{@link String}&gt; set of extended writers
      */
     Set<String> getWriters(NodeRef nodeRef);
     

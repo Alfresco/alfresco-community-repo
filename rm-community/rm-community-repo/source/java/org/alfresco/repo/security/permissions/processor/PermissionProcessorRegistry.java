@@ -67,7 +67,7 @@ public class PermissionProcessorRegistry
 	/**
 	 * Get a list of the registered permission pre-processors.
 	 * 
-	 * @return {@link List}<{@link PermissionPreProcessor}>	list of permission pre-processors
+	 * @return {@link List}&lt;{@link PermissionPreProcessor}&gt;	list of permission pre-processors
 	 */
 	public List<PermissionPreProcessor> getPermissionPreProcessors()
 	{
@@ -77,7 +77,7 @@ public class PermissionProcessorRegistry
 	/**
 	 * Get a list of the registered permission post-processors.
 	 * 
-	 * @return <{@link List}>{@link PermissionPreProcessor} list of permission post-processors
+	 * @return &lt;{@link List}&gt;{@link PermissionPreProcessor} list of permission post-processors
 	 */
 	public List<PermissionPostProcessor> getPermissionPostProcessors() 
 	{

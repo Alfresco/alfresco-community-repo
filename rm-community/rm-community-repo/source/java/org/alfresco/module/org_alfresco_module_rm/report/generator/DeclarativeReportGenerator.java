@@ -175,7 +175,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportName(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#generateReportName(org.alfresco.service.cmr.repository.NodeRef, String)
      */
     @Override
     protected String generateReportName(NodeRef reportedUponNodeRef, String mimetype)

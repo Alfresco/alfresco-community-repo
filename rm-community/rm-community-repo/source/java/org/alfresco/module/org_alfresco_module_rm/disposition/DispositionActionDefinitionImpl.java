@@ -78,7 +78,9 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * Constructor
      *
-     * @param services  service registry
+     * @param recordsManagementEventService  records management event service
+     * @param recordsManagementActionService records management action service
+     * @param nodeService  node service
      * @param nodeRef   disposition action node reference
      * @param index     index of disposition action
      */

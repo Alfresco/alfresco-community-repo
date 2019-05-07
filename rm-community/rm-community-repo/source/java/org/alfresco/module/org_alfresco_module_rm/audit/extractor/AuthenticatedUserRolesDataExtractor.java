@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -123,5 +124,25 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
 
         // Done
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (!super.equals(o))
+            return false;
+        AuthenticatedUserRolesDataExtractor that = (AuthenticatedUserRolesDataExtractor) o;
+        return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
+            && Objects.equals(filePlanRoleService, that.filePlanRoleService);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(nodeService, filePlanService, filePlanRoleService);
     }
 }

@@ -60,6 +60,7 @@ public class TransferContainer
 
     public TransferContainer()
     {
+        //Default constructor
     }
 
     @JsonProperty ("id")

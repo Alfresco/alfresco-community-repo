@@ -98,6 +98,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     public void afterPropertiesSet()
     {
+        //Do nothing
     }
 
     /**

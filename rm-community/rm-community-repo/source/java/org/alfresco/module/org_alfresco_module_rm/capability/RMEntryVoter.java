@@ -284,6 +284,10 @@ public class RMEntryVoter extends RMSecurityCommon
 		                {
 		                    break;
 		                }
+                        default:
+                        {
+                            //do nothing
+                        }
 	                }
 	            }
 	            else if (cad.getTypeString().equals(ConfigAttributeDefinition.RM))
@@ -317,6 +321,10 @@ public class RMEntryVoter extends RMSecurityCommon
 		                {
 		                    break;
 		                }
+		                default:
+                        {
+                            //do nothing
+                        }
 	                }
 	            }
 	        }
@@ -385,6 +393,7 @@ public class RMEntryVoter extends RMSecurityCommon
      */
     public void afterPropertiesSet()
     {
+        //Do nothing
     }
 
     /**

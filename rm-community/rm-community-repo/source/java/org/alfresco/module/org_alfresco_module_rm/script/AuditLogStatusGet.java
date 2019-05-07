@@ -55,7 +55,7 @@ public class AuditLogStatusGet extends DeclarativeWebScript
     /**
      * Sets the RecordsManagementAuditService instance
      * 
-     * @param auditService The RecordsManagementAuditService instance
+     * @param rmAuditService The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {

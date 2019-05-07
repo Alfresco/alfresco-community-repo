@@ -92,7 +92,7 @@ public class DeclarativeCapability extends AbstractCapability
     }
 
     /**
-     * @return  {@link Map}<String, Boolean>    conditions and expected values
+     * @return  {@link Map} &lt;String, Boolean &gt;    conditions and expected values
      */
     public Map<String, Boolean> getConditions()
     {
@@ -108,7 +108,7 @@ public class DeclarativeCapability extends AbstractCapability
     }
 
     /**
-     * @return {@link List}<@link String>   list of expected file plan component kinds
+     * @return {@link List} &lt;@link String &gt;  list of expected file plan component kinds
      */
     public List<String> getKinds()
     {

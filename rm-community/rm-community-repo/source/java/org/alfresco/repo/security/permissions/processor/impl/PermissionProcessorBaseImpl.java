@@ -41,7 +41,7 @@ import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegis
 	private PermissionProcessorRegistry permissionProcessorRegistry;
 	
 	/**
-	 * @param PermissionProcessorRegistry	permission processor registry
+	 * @param permissionProcessorRegistry	permission processor registry
 	 */
 	public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry) 
 	{

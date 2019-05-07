@@ -143,7 +143,7 @@ public interface FilePlanService
      * Creates, and returns, a unfiled container for a given file plan.
      *
      * @param filePlan      file plan
-     * @return {@link Node} unfiled container
+     * @return {@link NodeRef} unfiled container
      */
     NodeRef createUnfiledContainer(NodeRef filePlan);
 
@@ -260,7 +260,7 @@ public interface FilePlanService
      * @param recordCategory record category node reference
      * @param deep if true then return all children including sub-categories and their children in turn, if false then just
      *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of contained node references
+     * @return {@link List}&lt;{@link NodeRef}&gt; list of contained node references
      */
     List<NodeRef> getAllContained(NodeRef recordCategory, boolean deep);
 
@@ -268,7 +268,7 @@ public interface FilePlanService
      * Only return the immediate children.
      *
      * @param recordCategory record category node reference
-     * @return {@link List}<{@link NodeRef>} list of contained node references
+     * @return {@link List}&lt;{@link NodeRef}&gt; list of contained node references
      */
     List<NodeRef> getAllContained(NodeRef recordCategory);
 
@@ -278,7 +278,7 @@ public interface FilePlanService
      * @param recordCategory record category node reference
      * @param deep if true then return all children including sub-categories and their children in turn, if false then just
      *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of container node references
+     * @return {@link List}&lt;{@link NodeRef}&gt; list of container node references
      */
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory, boolean deep);
 
@@ -286,7 +286,7 @@ public interface FilePlanService
      * Only return immediate children.
      *
      * @param recordCategory container node reference
-     * @return {@link List}<{@link NodeRef>} list of container node references
+     * @return {@link List}&lt;{@link NodeRef}&gt; list of container node references
      */
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory);
 
@@ -296,7 +296,7 @@ public interface FilePlanService
      * @param container container node reference
      * @param deep if true then return all children including sub-containers and their children in turn, if false then just
      *             return the immediate children
-     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     * @return {@link List}&lt;{@link NodeRef}&gt; list of record folder node references
      */
     List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep);
 
@@ -304,7 +304,7 @@ public interface FilePlanService
      * Only return immediate children.
      *
      * @param container container node reference
-     * @return {@link List}<{@link NodeRef>} list of record folder node references
+     * @return {@link List}&lt;{@link NodeRef}&gt;  list of record folder node references
      */
     List<NodeRef> getContainedRecordFolders(NodeRef container);
 

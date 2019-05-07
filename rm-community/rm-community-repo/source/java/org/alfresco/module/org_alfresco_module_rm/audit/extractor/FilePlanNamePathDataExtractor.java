@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -125,5 +126,25 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         }
 
         return extractedData;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        if (!super.equals(o))
+            return false;
+        FilePlanNamePathDataExtractor that = (FilePlanNamePathDataExtractor) o;
+        return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
+            && Objects.equals(ruleService, that.ruleService);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(nodeService, filePlanService, ruleService);
     }
 }

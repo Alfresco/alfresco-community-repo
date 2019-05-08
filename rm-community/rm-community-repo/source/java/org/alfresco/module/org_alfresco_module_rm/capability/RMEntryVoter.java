@@ -288,10 +288,10 @@ public class RMEntryVoter extends RMSecurityCommon
                         {
                             //do nothing
                         }
-	                }
+                    }
 	            }
 	            else if (cad.getTypeString().equals(ConfigAttributeDefinition.RM))
-	            {
+                {
                     switch (checkPolicy(invocation, params, cad))
                     {
                         case AccessDecisionVoter.ACCESS_DENIED:
@@ -325,8 +325,8 @@ public class RMEntryVoter extends RMSecurityCommon
                         {
                             //do nothing
                         }
-	                }
-	            }
+                    }
+                }
 	        }
     	}
     	finally

@@ -701,7 +701,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Get map containing record metadata aspects.
      *
-     * @return  {@link Map}<{@link QName}, {@link Set}<{@link QName}>>  map containing record metadata aspects
+     * @return  {@link Map}&lt;{@link QName}, {@link Set}&lt;{@link QName} &gt;&gt;  map containing record metadata aspects
      *
      * @since 2.2
      */
@@ -812,7 +812,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetadataAspects(NodeRef)
      */
     @Override
     public Set<QName> getRecordMetadataAspects(NodeRef nodeRef)
@@ -1202,7 +1202,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createNewRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromContent(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
      */
     @Override
     public NodeRef createRecordFromContent(NodeRef parent, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
@@ -1322,7 +1322,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService#isFiled(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isFiled(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public boolean isFiled(final NodeRef nodeRef)

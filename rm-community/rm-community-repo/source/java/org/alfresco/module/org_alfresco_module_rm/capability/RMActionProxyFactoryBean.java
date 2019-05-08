@@ -60,7 +60,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
     /**
      * Set action service
      *
-     * @param actionService
+     * @param runtimeActionService
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {

@@ -683,7 +683,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return padded string or the original if already at &gt;= len characters
      *
-     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang.StringUtils.leftPad}
+     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang.StringUtils#leftPad(String, int)}
      */
     @Deprecated
     protected String padString(String s, int len)

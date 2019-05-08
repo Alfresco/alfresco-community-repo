@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.freeze;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -102,13 +103,14 @@ public interface FreezeService
    void freeze(NodeRef hold, NodeRef nodeRef);
 
    /**
-    * @deprecated as of 2.2, use {@link HoldService#createHold(NodeRef, String, String, String)} and {@link HoldService#addToHold(NodeRef, List<NodeRef>)} instead.
+    * @deprecated as of 2.2, use {@link HoldService#createHold(NodeRef, String, String, String)} and
+    * {@link HoldService#addToHold(NodeRef, List)} instead.
     */
    @Deprecated
    NodeRef freeze(String reason, Set<NodeRef> nodeRefs);
 
    /**
-    * @deprecated as of 2.2, use {@link HoldService#addToHold(NodeRef, List<NodeRef>)} instead.
+    * @deprecated as of 2.2, use {@link HoldService#addToHold(NodeRef, List)} instead.
     */
    @Deprecated
    void freeze(NodeRef hold, Set<NodeRef> nodeRefs);

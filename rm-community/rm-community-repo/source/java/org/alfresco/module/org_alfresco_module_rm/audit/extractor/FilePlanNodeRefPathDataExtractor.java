@@ -118,11 +118,17 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         if (!super.equals(o))
+        {
             return false;
+        }
         FilePlanNodeRefPathDataExtractor that = (FilePlanNodeRefPathDataExtractor) o;
         return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
             && Objects.equals(ruleService, that.ruleService);

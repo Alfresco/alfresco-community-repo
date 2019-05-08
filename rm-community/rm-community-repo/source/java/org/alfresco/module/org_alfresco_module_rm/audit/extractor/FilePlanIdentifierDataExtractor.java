@@ -82,11 +82,17 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         if (!super.equals(o))
+        {
             return false;
+        }
         FilePlanIdentifierDataExtractor that = (FilePlanIdentifierDataExtractor) o;
         return Objects.equals(nodeService, that.nodeService);
     }

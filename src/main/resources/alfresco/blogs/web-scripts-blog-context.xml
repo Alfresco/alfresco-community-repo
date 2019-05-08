@@ -12,8 +12,7 @@
        <property name="serviceRegistry" ref="ServiceRegistry"/>
        <property name="activityService" ref="activityService"/>
     </bean>
-    
-    
+
     <!-- repository/blogs/blog -->
     <bean id="webscript.org.alfresco.repository.blogs.blog.blog.get"
           class="org.alfresco.repo.web.scripts.blogs.blog.BlogGet"
@@ -51,11 +50,6 @@
     
     <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-mypublished.get"
           class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsMyPublishedGet"
-          parent="abstractBlogWebScript">
-    </bean>
-    
-    <bean id="webscript.org.alfresco.repository.blogs.posts.blog-posts-publishedext.get"
-          class="org.alfresco.repo.web.scripts.blogs.posts.BlogPostsPublishedExtGet"
           parent="abstractBlogWebScript">
     </bean>
     

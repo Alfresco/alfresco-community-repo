@@ -55,7 +55,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     /** File Plan Service */
     private FilePlanService filePlanService;
 
-    /** bean beanName */
+    /** bean name */
     private String beanName;
 
     /** public condition */

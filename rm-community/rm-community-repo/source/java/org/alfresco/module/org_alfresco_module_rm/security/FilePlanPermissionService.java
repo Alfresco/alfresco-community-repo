@@ -42,7 +42,7 @@ public interface FilePlanPermissionService
     /**
      * Setup permissions for a record category
      *
-     * @param nodeRef   record category node reference
+     * @param recordCategory   record category node reference
      */
     void setupRecordCategoryPermissions(NodeRef recordCategory);
 

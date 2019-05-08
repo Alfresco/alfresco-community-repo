@@ -91,9 +91,9 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     }
 
     /**
-     * Set the parameter processor component bean
+     * Set the node service
      *
-     * @param parameterProcessorComponent
+     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -109,7 +109,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param capabilityService   file plan service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -119,7 +119,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     /**
      * Set the minimum fragment size to process for suggestion processing
      *
-     * @param maximumNumberSuggestions
+     * @param substitutionMinimumFragmentSize
      */
     public void setSubstitutionMinimumFragmentSize(int substitutionMinimumFragmentSize)
     {
@@ -129,7 +129,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     /**
      * Set the maxmimum number of suggestions returned from the global property
      *
-     * @param maximumNumberSuggestions
+     * @param pathSubstitutionMaximumNumberSuggestions
      */
     public void setPathSubstitutionMaximumNumberSuggestions(int pathSubstitutionMaximumNumberSuggestions)
     {

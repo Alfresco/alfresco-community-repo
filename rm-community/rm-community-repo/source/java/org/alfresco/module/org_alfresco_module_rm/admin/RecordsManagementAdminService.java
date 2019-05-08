@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.namespace.QNamePattern;
 
 /**
  * Records management custom model service interface. Implementations of this class are responsible
@@ -58,7 +58,7 @@ public interface RecordsManagementAdminService
     /**
      * Get a list of all registered customisable types and aspects.
      *
-     * @return Set of <{@link QName}>s of customisable types and aspects
+     * @return Set of &lt;{@link QName}&gt;s of customisable types and aspects
      */
     Set<QName> getCustomisable();
 
@@ -67,7 +67,7 @@ public interface RecordsManagementAdminService
      * node reference.
      *
      * @param nodeRef  node reference
-     * @return Set of <{@link QName}>s of customisable types and aspects, empty if none
+     * @return Set of &lt;{@link QName}&gt;s of customisable types and aspects, empty if none
      */
     Set<QName> getCustomisable(NodeRef nodeRef);
 
@@ -110,22 +110,23 @@ public interface RecordsManagementAdminService
      * Therefore custom properties created in the current transaction will not appear
      * in the result of this method.
      *
+     * </p>
      * @param customisableType
-     * @return
-     * @see CustomisableRmElement
+     * @return Map of &lt;{@link QName}, {@link PropertyDefinition}&gt;s of custom properties definitions
      */
     Map<QName, PropertyDefinition> getCustomPropertyDefinitions(QName customisableType);
 
     /**
      * This method returns the custom properties that have been defined for all of
      * the specified customisable RM elements.
+     * <p>
      * Note: the custom property definitions are retrieved from the dictionaryService
      * which is notified of any newly created definitions on transaction commit.
      * Therefore custom properties created in the current transaction will not appear
      * in the result of this method.
+     * </p>
      *
-     * @return
-     * @see CustomisableRmElement
+     * @return Map of &lt;{@link QName}, {@link PropertyDefinition}&gt;s of custom properties definitions
      */
     Map<QName, PropertyDefinition> getCustomPropertyDefinitions();
 
@@ -138,7 +139,7 @@ public interface RecordsManagementAdminService
      *                 within URLs and in QNames. Therefore it must contain URL/QName-valid characters
      *                 only. It must also be unique.
      *                 If a null value is passed, an id will be generated.
-     * @param aspectName - mandatory. The aspect within which the property is to be defined.
+     * @param typeName - mandatory. The aspect within which the property is to be defined.
      *                   This must be one of the CustomisableRmElements.
      * @param label - mandatory
      * @param dataType - mandatory
@@ -146,7 +147,6 @@ public interface RecordsManagementAdminService
      * @param description - optional
      *
      * @return the propId, whether supplied as a parameter or generated.
-     * @see CustomisableRmElement#getCorrespondingAspect()
      */
     QName addCustomPropertyDefinition(QName propId, QName typeName, String label, QName dataType, String title, String description) throws CustomMetadataException;
 
@@ -157,7 +157,7 @@ public interface RecordsManagementAdminService
      *                 within URLs and in QNames. Therefore it must contain URL/QName-valid characters
      *                 only. It must also be unique.
      *                 If a null value is passed, an id will be generated.
-     * @param aspectName - mandatory. The aspect within which the property is to be defined.
+     * @param typeName - mandatory. The aspect within which the property is to be defined.
      *                   This must be one of the CustomisableRmElements.
      * @param label - mandatory
      * @param dataType - mandatory
@@ -170,7 +170,6 @@ public interface RecordsManagementAdminService
      * @param lovConstraintQName - optional custom constraint
      *
      * @return the propId, whether supplied as a parameter or generated.
-     * @see CustomisableRmElement#getCorrespondingAspect()
      */
 
     // TODO propId string (not QName) ?
@@ -248,7 +247,9 @@ public interface RecordsManagementAdminService
      *
      * @param node the node from which the associations start.
      * @return a List of associations.
-     * @deprecated as of RM 2.3, please use {@link NodeService#getTargetAssocs(NodeRef, RegexQNamePattern.MATCH_ALL)} instead.
+     * @deprecated as of RM 2.3, please
+     * use{@link NodeService#getTargetAssocs(NodeRef, QNamePattern)} with QNamePattern RegexQNamePattern.MATCH_ALL
+     * instead
      */
     List<AssociationRef> getCustomReferencesFrom(NodeRef node);
 
@@ -267,7 +268,8 @@ public interface RecordsManagementAdminService
      *
      * @param node the node to which the associations point.
      * @return a List of associations.
-     * @deprecated as of RM 2.3, please use {@link NodeService#getSourceAssocs(NodeRef, RegexQNamePattern.MATCH_ALL)} instead.
+     * @deprecated as of RM 2.3, please use
+     * {@link NodeService#getSourceAssocs(NodeRef, QNamePattern)} with QNamePattern RegexQNamePattern.MATCH_ALL instead.
      */
     List<AssociationRef> getCustomReferencesTo(NodeRef node);
 

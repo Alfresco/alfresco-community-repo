@@ -108,6 +108,14 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     }
 
     /**
+     * @param service   rendition service
+     */
+    public void setRenditionService(RenditionService service)
+    {
+        this.renditionService = service;
+    }
+
+    /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
@@ -142,7 +150,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @param oldProps the old properties and their values.
      * @param newProps the new properties and their values.
      *
-     * @see #lookupScripts(Map<QName, Serializable>, Map<QName, Serializable>)
+     * @see #lookupScripts(Map, Map)
      */
     private void lookupAndExecuteScripts(NodeRef nodeWithChangedProperties,
                                          Map<QName, Serializable> oldProps,
@@ -168,7 +176,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @param newProps the new properties and their values.
      * @return A list of nodeRefs corresponding to the Script resources.
      *
-     * @see #determineChangedProps(Map<QName, Serializable>, Map<QName, Serializable>)
+     * @see  org.alfresco.util.PropertyMap#getChangedProperties(Map, Map)
      */
     private List<NodeRef> lookupScripts(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
@@ -276,7 +284,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * Copy behaviour call back
      *
      * @param   classRef    class reference
-     * @param   copyDetail  details of the information being copied
+     * @param   copyDetails  details of the information being copied
      * @return  CopyBehaviourCallback
      */
     @Behaviour

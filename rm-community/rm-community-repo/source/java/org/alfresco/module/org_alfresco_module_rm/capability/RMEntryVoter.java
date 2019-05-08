@@ -280,10 +280,10 @@ public class RMEntryVoter extends RMSecurityCommon
 		                    // abstain denies
 		                    return AccessDecisionVoter.ACCESS_DENIED;
 		                }
-		                case AccessDecisionVoter.ACCESS_GRANTED:
-		                {
-		                    break;
-		                }
+                        case AccessDecisionVoter.ACCESS_GRANTED:
+                        {
+                            break;
+                        }
                         default:
                         {
                             //do nothing
@@ -317,11 +317,11 @@ public class RMEntryVoter extends RMSecurityCommon
 		                    // abstain denies
 		                    return AccessDecisionVoter.ACCESS_DENIED;
 		                }
-		                case AccessDecisionVoter.ACCESS_GRANTED:
-		                {
-		                    break;
-		                }
-		                default:
+                        case AccessDecisionVoter.ACCESS_GRANTED:
+                        {
+                            break;
+                        }
+                        default:
                         {
                             //do nothing
                         }

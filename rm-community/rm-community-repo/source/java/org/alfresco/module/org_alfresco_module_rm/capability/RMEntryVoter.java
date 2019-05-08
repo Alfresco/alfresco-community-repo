@@ -258,28 +258,28 @@ public class RMEntryVoter extends RMSecurityCommon
 	            }
 	            else if (cad.getTypeString().equals(ConfigAttributeDefinition.RM_CAP))
 	            {
-	                switch(checkCapability(invocation, params, cad))
-	                {
-		                case  AccessDecisionVoter.ACCESS_DENIED:
-		                {
-		                    return AccessDecisionVoter.ACCESS_DENIED;
-		                }
-		                case AccessDecisionVoter.ACCESS_ABSTAIN:
-		                {
-		                    if(logger.isDebugEnabled())
-		                    {
-		                        if(logger.isTraceEnabled())
-		                        {
-		                            logger.trace("Capability " + cad.getRequired() + " abstained for " + invocation.getMethod(), new IllegalStateException());
-		                        }
-		                        else
-		                        {
-		                            logger.debug("Capability " + cad.getRequired() + " abstained for " + invocation.getMethod());
-		                        }
-		                    }
-		                    // abstain denies
-		                    return AccessDecisionVoter.ACCESS_DENIED;
-		                }
+                    switch (checkCapability(invocation, params, cad))
+                    {
+                        case AccessDecisionVoter.ACCESS_DENIED:
+                        {
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
+                        case AccessDecisionVoter.ACCESS_ABSTAIN:
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                if (logger.isTraceEnabled())
+                                {
+                                    logger.trace("Capability " + cad.getRequired() + " abstained for " + invocation.getMethod(), new IllegalStateException());
+                                }
+                                else
+                                {
+                                    logger.debug("Capability " + cad.getRequired() + " abstained for " + invocation.getMethod());
+                                }
+                            }
+                            // abstain denies
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
                         case AccessDecisionVoter.ACCESS_GRANTED:
                         {
                             break;
@@ -292,31 +292,31 @@ public class RMEntryVoter extends RMSecurityCommon
 	            }
 	            else if (cad.getTypeString().equals(ConfigAttributeDefinition.RM))
 	            {
-	                switch(checkPolicy(invocation, params, cad))
-	                {
-		                case  AccessDecisionVoter.ACCESS_DENIED:
-		                {
-		                    // log message
-		                    RMMethodSecurityInterceptor.addMessage("Policy " + cad.getPolicyName() + " denied.");
+                    switch (checkPolicy(invocation, params, cad))
+                    {
+                        case AccessDecisionVoter.ACCESS_DENIED:
+                        {
+                            // log message
+                            RMMethodSecurityInterceptor.addMessage("Policy " + cad.getPolicyName() + " denied.");
 
-		                    return AccessDecisionVoter.ACCESS_DENIED;
-		                }
-		                case AccessDecisionVoter.ACCESS_ABSTAIN:
-		                {
-		                    if(logger.isDebugEnabled())
-		                    {
-		                        if(logger.isTraceEnabled())
-		                        {
-		                            logger.trace("Policy " + cad.getPolicyName() + " abstained for " + invocation.getMethod(), new IllegalStateException());
-		                        }
-		                        else
-		                        {
-		                            logger.debug("Policy " + cad.getPolicyName() + " abstained for " + invocation.getMethod());
-		                        }
-		                    }
-		                    // abstain denies
-		                    return AccessDecisionVoter.ACCESS_DENIED;
-		                }
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
+                        case AccessDecisionVoter.ACCESS_ABSTAIN:
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                if (logger.isTraceEnabled())
+                                {
+                                    logger.trace("Policy " + cad.getPolicyName() + " abstained for " + invocation.getMethod(), new IllegalStateException());
+                                }
+                                else
+                                {
+                                    logger.debug("Policy " + cad.getPolicyName() + " abstained for " + invocation.getMethod());
+                                }
+                            }
+                            // abstain denies
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
                         case AccessDecisionVoter.ACCESS_GRANTED:
                         {
                             break;

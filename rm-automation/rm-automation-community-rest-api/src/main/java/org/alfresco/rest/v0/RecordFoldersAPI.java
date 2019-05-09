@@ -28,14 +28,12 @@ package org.alfresco.rest.v0;
 
 import static org.apache.http.HttpStatus.SC_OK;
 
-import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -48,9 +46,6 @@ import org.springframework.stereotype.Component;
 public class RecordFoldersAPI extends BaseAPI
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordFoldersAPI.class);
-
-    @Autowired
-    private ContentService contentService;
 
     /**
      * Close the record folder

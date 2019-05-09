@@ -55,14 +55,28 @@ import org.springframework.stereotype.Service;
 public class RoleService
 {
     @Autowired
+    @Getter (value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @Autowired
+    @Getter (value = PROTECTED)
     private DataUser dataUser;
 
     @Autowired
     @Getter (value = PROTECTED)
     private RestAPIFactory restAPIFactory;
+
+    /**
+     * Get the capabilities for a role
+     *
+     * @param roleName the role name
+     * @return the list of capabilities
+     */
+    public Set<String> getRoleCapabilities(String roleName)
+    {
+        return getRmRolesAndActionsAPI().getCapabilitiesForRole(getDataUser().getAdminUser().getUsername(),
+                getDataUser().getAdminUser().getPassword(), roleName);
+    }
 
     /**
      * Add capabilities to a role
@@ -72,12 +86,10 @@ public class RoleService
      */
     public void addCapabilitiesToRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = new HashSet<>();
-        roleCapabilities.addAll(rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), role.roleId));
-        capabilities.stream().forEach(cap -> roleCapabilities.add(cap));
+        Set<String> roleCapabilities = new HashSet<>(getRoleCapabilities(role.roleId));
+        roleCapabilities.addAll(capabilities);
 
-        rmRolesAndActionsAPI.updateRole(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+        getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);
     }
 
@@ -89,10 +101,9 @@ public class RoleService
      */
     public void removeCapabilitiesFromRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), role.roleId);
+        Set<String> roleCapabilities = getRoleCapabilities(role.roleId);
         roleCapabilities.removeAll(capabilities);
-        rmRolesAndActionsAPI.updateRole(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+        getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);
     }
 
@@ -108,7 +119,7 @@ public class RoleService
                                                          String userRole)
     {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
-        rmRolesAndActionsAPI.assignRoleToUser(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+        getRmRolesAndActionsAPI().assignRoleToUser(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 user.getUsername(), userRole);
     }
 
@@ -120,7 +131,7 @@ public class RoleService
      */
     public UserModel createUserWithRMRole(String userRole)
     {
-        UserModel rmUser = dataUser.createRandomTestUser();
+        final UserModel rmUser = getDataUser().createRandomTestUser();
         getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), userRole);
         getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
         return rmUser;
@@ -137,7 +148,7 @@ public class RoleService
     public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
                                                                   UserPermissions userPermission)
     {
-        UserModel rmUser = createUserWithRMRole(userRole);
+        final UserModel rmUser = createUserWithRMRole(userRole);
         getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
         getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
         return rmUser;
@@ -152,15 +163,13 @@ public class RoleService
      * @param userRole       the rm role
      * @param userPermission the permissions over the recordCategory
      * @return the created user model
-     * @throws Exception
      */
     public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
                                                                 UserRoles userRole, UserPermissions userPermission)
     {
-        UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory,
+        final UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory,
                 userPermission);
-        dataUser.addUserToSite(rmUser, siteModel, UserRole.SiteCollaborator);
+        getDataUser().addUserToSite(rmUser, siteModel, UserRole.SiteCollaborator);
         return rmUser;
     }
-
 }

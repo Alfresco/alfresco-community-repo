@@ -113,7 +113,6 @@ xbean   http://geronimo.apache.org/xbean/
 xercesImpl  http://xerces.apache.org/xerces2-j
 XML Commons External Components http://xml.apache.org/commons/components/external/
 XMLBeans    http://xmlbeans.apache.org/
-XML-RPC http://ws.apache.org/xmlrpc/
 XML Schema  http://ws.apache.org/commons/XmlSchema/
 Santuario   http://santuario.apache.org/
 OpenSSL http://www.openssl.org/

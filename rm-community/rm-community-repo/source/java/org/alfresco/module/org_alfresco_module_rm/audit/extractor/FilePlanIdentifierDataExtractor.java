@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
@@ -75,5 +76,30 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
 
         // Done
         return identifier;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        if (!super.equals(o))
+        {
+            return false;
+        }
+        FilePlanIdentifierDataExtractor that = (FilePlanIdentifierDataExtractor) o;
+        return Objects.equals(nodeService, that.nodeService);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(nodeService);
     }
 }

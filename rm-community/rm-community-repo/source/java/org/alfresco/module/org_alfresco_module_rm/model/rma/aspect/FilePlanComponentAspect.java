@@ -83,9 +83,6 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     /** file plan service */
     private FilePlanService filePlanService;
 
-    /** rendition service */
-    private RenditionService renditionService;
-
     /**
      * @param scriptService set script service
      */

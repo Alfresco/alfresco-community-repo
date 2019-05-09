@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condit
 
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -39,14 +38,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class LastDispositionActionCondition extends AbstractCapabilityCondition
 {
-    private DispositionService dispositionService;
 
     private String dispositionActionName;
-
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
 
     public void setDispositionActionName(String dispositionActionName)
     {

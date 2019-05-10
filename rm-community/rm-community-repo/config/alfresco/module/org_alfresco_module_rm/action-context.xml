@@ -16,9 +16,6 @@
    <!--  TODO rename -->
    <bean id="create-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction">
       <property name="recordService" ref="RecordService" />
-       <property name="authenticationUtil" ref="rm.authenticationUtil" />
-       <property name="filePlanService" ref="FilePlanService" />
-       <property name="nodeService" ref="NodeService" />
       <property name="applicableTypes">
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}content</value>

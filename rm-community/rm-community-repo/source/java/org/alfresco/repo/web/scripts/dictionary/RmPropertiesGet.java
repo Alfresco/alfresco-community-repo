@@ -44,7 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Webscript to get the Propertydefinitions for a given classname eg. =>cm_person
+ * Webscript to get the Propertydefinitions for a given classname eg. =&gt;cm_person
  *
  * This class makes it possible to get only RM related property definitions
  * @see PropertiesGet for the original implementation

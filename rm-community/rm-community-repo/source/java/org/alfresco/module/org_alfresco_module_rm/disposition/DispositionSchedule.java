@@ -70,7 +70,7 @@ public interface DispositionSchedule
     /**
      * Gets all the disposition action definitions for the schedule
      *
-     * @return  List<{@link DispositionActionDefinition}>   disposition action definitions
+     * @return  List&lt;{@link DispositionActionDefinition}&gt;   disposition action definitions
      */
     List<DispositionActionDefinition> getDispositionActionDefinitions();
 

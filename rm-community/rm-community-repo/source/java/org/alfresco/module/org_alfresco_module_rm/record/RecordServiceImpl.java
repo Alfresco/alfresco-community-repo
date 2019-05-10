@@ -701,7 +701,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Get map containing record metadata aspects.
      *
-     * @return  {@link Map}<{@link QName}, {@link Set}<{@link QName}>>  map containing record metadata aspects
+     * @return  {@link Map}&lt;{@link QName}, {@link Set}&lt;{@link QName} &gt;&gt;  map containing record metadata aspects
      *
      * @since 2.2
      */
@@ -812,7 +812,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetadataAspects(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetadataAspects(NodeRef)
      */
     @Override
     public Set<QName> getRecordMetadataAspects(NodeRef nodeRef)

@@ -39,6 +39,7 @@ public class TargetContainer
 
     public TargetContainer()
     {
+        //Default constructor
     }
 
     public String getTargetParentId()

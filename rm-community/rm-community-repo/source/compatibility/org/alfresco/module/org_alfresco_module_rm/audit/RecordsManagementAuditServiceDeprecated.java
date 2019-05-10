@@ -46,31 +46,31 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface RecordsManagementAuditServiceDeprecated
 {
     /**
-     * @deprecated as of 2.1, see {@link #stop(NodeRef)}
+     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#stopAuditLog(NodeRef)}
      */
     @Deprecated
     void stop();
 
     /**
-     * @deprecated as of 2.1, see {@link #clear(NodeRef)}
+     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#clearAuditLog(NodeRef)}
      */
     @Deprecated
     void clear();
 
     /**
-     * @deprecated as of 2.1, see {@link #isEnabled(NodeRef)}
+     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#isAuditLogEnabled(NodeRef)}
      */
     @Deprecated
     boolean isEnabled();
 
     /**
-     * @deprecated as of 2.1, see {@link #getDateLastStarted(NodeRef)}
+     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#getDateAuditLogLastStarted(NodeRef)}
      */
     @Deprecated
     Date getDateLastStarted();
 
     /**
-     * @deprecated as of 2.1, see {@link #getDateLastStopped(NodeRef)}
+     * @deprecated as of 2.1, see {@link RecordsManagementAuditService#getDateLastStopped()}
      */
     Date getDateLastStopped();
 

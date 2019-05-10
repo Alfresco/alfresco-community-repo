@@ -59,12 +59,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 
-import com.google.common.collect.Sets;
-
 /**
  * Behaviour associated with the RM Site type
  *
- * @author Roy Wetherall
+ * @author Roy Wetherall, Silviu Dinuta
  * @since 2.2
  */
 @BehaviourBean
@@ -318,8 +316,6 @@ public class RmSiteType extends    BaseBehaviourBean
      *
      *
      * Other than this nothing can be created under rm site nodeRef
-     *
-     * @author Silviu Dinuta
      * @since 2.6
      */
     @Override

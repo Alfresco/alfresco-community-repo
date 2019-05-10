@@ -56,7 +56,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     private FilePlanService filePlanService;
 
     /** bean name */
-    private String name;
+    private String beanName;
 
     /** public condition */
     private boolean publicCondition = true;
@@ -145,16 +145,16 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     @Override
     public void setBeanName(String name)
     {
-        this.name = name;
+        this.beanName = name;
         super.setBeanName(name);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getName()
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getBeanName()
      */
-    public String getName()
+    public String getBeanName()
     {
-        return this.name;
+        return this.beanName;
     }
 
     /**
@@ -184,11 +184,11 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         if (this.actionConditionDefinition == null)
         {
-            this.actionConditionDefinition = new RecordsManagementActionConditionDefinitionImpl(name);
+            this.actionConditionDefinition = new RecordsManagementActionConditionDefinitionImpl(beanName);
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setTitleKey(getTitleKey());
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setDescriptionKey(getDescriptionKey());
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setConditionEvaluator(name);
+            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setConditionEvaluator(beanName);
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
         }
         return this.actionConditionDefinition;

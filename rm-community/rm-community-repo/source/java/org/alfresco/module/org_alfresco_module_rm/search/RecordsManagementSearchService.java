@@ -45,14 +45,14 @@ public interface RecordsManagementSearchService
 	 * @param siteId           the id of the rm site to query
 	 * @param query	           search query string
 	 * @param searchParameters search parameters
-	 * @return {@link List}<{@link Pair}<{@link NodeRef}, {@link NodeRef}> search results as pairs for parent and child nodes
+	 * @return {@link List}&lt;{@link Pair} &lt;{@link NodeRef}, {@link NodeRef}&gt;&gt; search results as pairs for parent and child nodes
 	 */
 	List<Pair<NodeRef, NodeRef>> search(String siteId, String query, RecordsManagementSearchParameters searchParameters);
 
 	/**
 	 * Get all the searches saved on the given records management site.
 	 * @param siteId   site id
-	 * @return {@link List<{@link SavedSearchDetails}>}    list of saved search details
+	 * @return {@link List}&lt;{@link SavedSearchDetails}&gt;    list of saved search details
 	 */
 	List<SavedSearchDetails> getSavedSearches(String siteId);
 

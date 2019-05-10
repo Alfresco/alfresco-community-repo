@@ -45,27 +45,27 @@ public interface RMPermissionModel
 
     // Roles
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_USER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_USER} instead
      */
     @Deprecated
     String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_POWER_USER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_POWER_USER} instead
      */
     @Deprecated
     String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_SECURITY_OFFICER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_SECURITY_OFFICER} instead
      */
     @Deprecated
     String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_RECORDS_MANAGER} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_RECORDS_MANAGER} instead
      */
     @Deprecated
     String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
     /**
-     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_ADMIN} instead
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService#ROLE_ADMIN} instead
      */
     @Deprecated
     String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;

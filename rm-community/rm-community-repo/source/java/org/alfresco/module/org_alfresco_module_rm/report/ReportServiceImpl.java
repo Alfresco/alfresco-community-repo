@@ -117,7 +117,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#fileReport(org.alfresco.module.org_alfresco_module_rm.report.Report)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportService#fileReport(NodeRef, org.alfresco.module.org_alfresco_module_rm.report.Report)
      */
     @Override
     public NodeRef fileReport(NodeRef nodeRef, Report report)

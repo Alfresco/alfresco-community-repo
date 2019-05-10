@@ -281,7 +281,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      * Validate the caveat config and optionally update the cache.
      *
      * @param nodeRef The nodeRef of the config
-     * @param updateCache Set to <code>true</code> to update the cache
     */
     @SuppressWarnings("unchecked")
     protected void validateAndReset(NodeRef nodeRef)
@@ -988,7 +987,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      *
      * @param listName the name of the RMConstraintList
      * @param authorityName
-     * @param values
      */
     public void removeRMConstraintListAuthority(String listName, String authorityName)
     {

@@ -156,8 +156,8 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         try
         (
             InputStream recordInputStream = getRestAPIFactory().getRecordsAPI().getRecordContent(record.getId()).asInputStream();
-            InputStream documentInputStream = documentPostFiling.getContentStream().getStream();
-            )
+            InputStream documentInputStream = documentPostFiling.getContentStream().getStream()
+        )
         {
             assertEquals(DigestUtils.sha1(recordInputStream), DigestUtils.sha1(documentInputStream));
         }

@@ -66,7 +66,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGeneratorUnitTest#generateReportTemplateContext(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGenerator#generateReportTemplateContext(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected Map<String, Serializable> generateReportTemplateContext(NodeRef reportedUponNodeRef)

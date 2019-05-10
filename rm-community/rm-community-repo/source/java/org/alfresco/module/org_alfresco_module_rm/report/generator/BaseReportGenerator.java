@@ -102,7 +102,7 @@ public abstract class BaseReportGenerator implements ReportGenerator
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportGenerator#generateReport(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
+     * @see org.alfresco.module.org_alfresco_module_rm.report.ReportGenerator#generateReport(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     public Report generateReport(NodeRef reportedUponNodeRef, String mimetype)

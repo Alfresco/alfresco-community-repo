@@ -96,7 +96,7 @@ public abstract class IdentifierGeneratorBase implements IdentifierGenerator
      * 
      * @param s String to pad with leading zero '0' characters
      * @param len Length to pad to
-     * @return padded string or the original if already at >=len characters
+     * @return padded string or the original if already at &gt;=len characters
      */
     protected String padString(String s, int len)
     {

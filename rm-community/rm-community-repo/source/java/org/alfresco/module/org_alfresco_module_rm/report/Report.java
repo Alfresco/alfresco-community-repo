@@ -54,7 +54,7 @@ public interface Report
     String getReportName();
 
     /**
-     * @return  {@link Map}<{@link QName},{@link Serializable}>  report properties
+     * @return  {@link Map}&lt;{@link QName},{@link Serializable}&gt;  report properties
      */
     Map<QName, Serializable> getReportProperties();
 

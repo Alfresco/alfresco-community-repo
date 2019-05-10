@@ -134,8 +134,7 @@ public class ScriptConstraint implements Serializable
 
     /**
      * Update a value
-     * @param values
-     * @param authorities
+     * @param bodge
      */
     public void updateValues(JSONArray bodge) throws Exception
     {
@@ -156,7 +155,7 @@ public class ScriptConstraint implements Serializable
 
     /**
      * Update a value
-     * @param values
+     * @param value
      * @param authorities
      */
     public void updateValues(String value, String[] authorities)
@@ -171,7 +170,7 @@ public class ScriptConstraint implements Serializable
      */
     public void deleteAuthority(String authority)
     {
-
+        //Do nothing
     }
 
     /**
@@ -180,7 +179,7 @@ public class ScriptConstraint implements Serializable
      */
     public void deleteValue(String value)
     {
-
+        //Do nothing
     }
 
 

@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condit
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -43,23 +42,12 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     /** Disposition action */
     private String dispositionAction;
 
-    /** Disposition service */
-    private DispositionService dispositionService;
-
     /**
      * @param dispositionAction     disposition action
      */
     public void setDispositionAction(String dispositionAction)
     {
         this.dispositionAction = dispositionAction;
-    }
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
     }
 
     /**

@@ -86,7 +86,7 @@ public interface RecordService
     /**
     * Gets a list of all the record meta-data aspects
     *
-    * @return {@link Set}<{@link QName}>   list of record meta-data aspects
+    * @return {@link Set}&lt;{@link QName}&gt;   list of record meta-data aspects
     *
     * @deprecated since 2.2, file plan component required to provide context
     */
@@ -124,7 +124,7 @@ public interface RecordService
     * recommended.
     *
     * @param  nodeRef                      node reference to file plan component providing context
-    * @return {@link Set}<{@link QName}>   list of record meta-data aspects
+    * @return {@link Set}&lt;{@link QName} &gt;   list of record meta-data aspects
     *
     * @since 2.2
     */
@@ -137,7 +137,7 @@ public interface RecordService
     * file plan type (rma:filePlan) are returned.
     *
     * @param filePlanType                   file plan type
-    * @return{@link Set}<{@link QName}>     list of record meta-data aspects
+    * @return {@link Set} &lt;{@link QName} &gt;     list of record meta-data aspects
     *
     * @since 2.2
     */
@@ -267,7 +267,7 @@ public interface RecordService
     * Gets a list of all the records within a record folder
     *
     * @param recordFolder      record folder
-    * @return List<NodeRef>    list of records in the record folder
+    * @return List&lt;NodeRef&gt;    list of records in the record folder
     */
    List<NodeRef> getRecords(NodeRef recordFolder);
 

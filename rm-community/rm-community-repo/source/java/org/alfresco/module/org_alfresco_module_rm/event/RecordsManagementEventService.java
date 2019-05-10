@@ -56,7 +56,7 @@ public interface RecordsManagementEventService
     /**
      * Get the records management event type
      *
-     * @param eventType                     name
+     * @param eventTypeName                     name
      * @return RecordsManagementEventType   event type
      */
     RecordsManagementEventType getEventType(String eventTypeName);

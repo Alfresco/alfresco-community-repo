@@ -53,6 +53,13 @@ public class CreateRecordActionTest extends BaseRMTestCase
         return true;
     }
 
+    /**
+     * Test create record action
+     *
+     * Given a collaboration site document
+     * When the create record action is executed for that document
+     * Then a record is created for it
+     */
     public void testCreateRecordAction()
     {
         doTestInTransaction(new Test<Void>()

@@ -60,7 +60,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                                 implements RecordsManagementModel
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(CreateRecordAction.class);
+    private static final Log LOGGER = LogFactory.getLog(CreateRecordAction.class);
 
     /** Action name */
     public static final String NAME = "create-record";
@@ -125,9 +125,9 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         // resolve destination record folder if path supplied
         NodeRef destinationRecordFolder = null;
         String pathParameter = (String) action.getParameterValue(PARAM_PATH);
-        if (pathParameter != null)
+        if (pathParameter != null && !pathParameter.isEmpty())
         {
-            destinationRecordFolder = resolvePath(action, filePlan, pathParameter);
+            destinationRecordFolder = resolvePath(filePlan, pathParameter);
         }
 
         // indicate whether the record should be hidden or not (default not)
@@ -162,37 +162,49 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
     }
 
-    /* Helper method to get the target record folder node reference from the action path parameter */
-    private NodeRef resolvePath(final Action action, NodeRef filePlan, final String pathParameter)
+    /**
+     * Helper method to get the target record folder node reference from the action path parameter
+     *
+     * @param filePlan The filePlan containing the path
+     * @param pathParameter The path
+     * @return The NodeRef of the resolved path
+     */
+    private NodeRef resolvePath(NodeRef filePlan, final String pathParameter)
     {
         NodeRef destinationFolder;
 
         if (filePlan == null)
         {
-            filePlan = getDefaultFilePlan(action);
+            filePlan = getDefaultFilePlan();
         }
 
         final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if ((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
-            destinationFolder = resolvePath(action, filePlan, Arrays.asList(pathElementsArray));
+            destinationFolder = resolvePath(filePlan, Arrays.asList(pathElementsArray));
 
             // destination must be a record folder
             QName nodeType = nodeService.getType(destinationFolder);
             if (!nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
             {
-                throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path is not a record folder.");
+                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path is not a record folder.");
             }
         }
         else
         {
-            throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be resolved.");
+            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be found.");
         }
         return destinationFolder;
     }
 
-    /* Helper method to recursively get the next path element node reference from the action path parameter */
-    private NodeRef resolvePath(Action action, NodeRef parent, List<String> pathElements)
+    /**
+     * Helper method to recursively get the next path element node reference from the action path parameter
+     *
+     * @param parent The parent of the path elements
+     * @param pathElements The path elements still to be resolved
+     * @return The NodeRef of the resolved path element
+     */
+    private NodeRef resolvePath(NodeRef parent, List<String> pathElements)
     {
         NodeRef nodeRef;
         String childName = pathElements.get(0);
@@ -201,7 +213,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
         if (nodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be resolved.");
+            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be resolved.");
         }
         else
         {
@@ -210,33 +222,37 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                     nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
                     nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
             {
-                throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path is invalid.");
+                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path is invalid.");
             }
         }
         if (pathElements.size() > 1)
         {
-            nodeRef = resolvePath(action, nodeRef, pathElements.subList(1, pathElements.size()));
+            nodeRef = resolvePath(nodeRef, pathElements.subList(1, pathElements.size()));
         }
         return nodeRef;
     }
 
-    /* Helper method to get the default RM filePlan */
-    private NodeRef getDefaultFilePlan(final Action action)
+    /**
+     * Helper method to get the default RM filePlan
+     *
+     * @return The NodeRef of the default RM filePlan
+     */
+    private NodeRef getDefaultFilePlan()
     {
-        NodeRef filePlan = authenticationUtil.runAs(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
+        NodeRef filePlan = authenticationUtil.runAsSystem(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
         {
             @Override
             public NodeRef doWork()
             {
                 return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             }
-        }, authenticationUtil.getAdminUserName());
+        });
 
         // if the file plan is still null, raise an exception
         if (filePlan == null)
         {
-            logger.debug("Unable to execute " + action.getActionDefinitionName() + " action, because the path fileplan could not be determined.  Make sure at least one file plan has been created.");
-            throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the path fileplan could not be determined.");
+            LOGGER.debug("Unable to execute " + NAME + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
+            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the fileplan path could not be determined.");
         }
         return filePlan;
     }

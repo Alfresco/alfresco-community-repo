@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -97,6 +97,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private int memoryThreshold = 4 * 1024 * 1024; // 4mb
     private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
     private TempStoreOutputStreamFactory streamFactory = null;
+    private String preserveHeadersPattern = null;
 
     private Class<?>[] notPublicExceptions = new Class<?>[] {};
     private Class<?>[] publicExceptions = new Class<?>[] {};
@@ -138,6 +139,11 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 			this.maxContentSize = maxContentSize.longValue();
 		}
 	}
+
+    public void setPreserveHeadersPattern(String preserveHeadersPattern)
+    {
+        this.preserveHeadersPattern = preserveHeadersPattern;
+    }
 
 	/**
      * @param repository Repository
@@ -515,7 +521,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                             {
                                 // Reset the request and response in case of a transaction retry
                                 bufferedReq.reset();
-                                bufferedRes.reset();
+                                // REPO-4388 don't reset specified headers
+                                bufferedRes.reset(preserveHeadersPattern);
                                 script.execute(bufferedReq, bufferedRes);
                             }
                         }

@@ -269,7 +269,7 @@ public class ReadRecordTests extends BaseRMRestTest
         try
         (
             InputStream recordContentStream = recordsAPI.getRecordContent(binaryRecordId).asInputStream();
-            FileInputStream localFileStream = new FileInputStream(getFile(IMAGE_FILE));
+            FileInputStream localFileStream = new FileInputStream(getFile(IMAGE_FILE))
         )
         {
             assertEquals(DigestUtils.sha1(recordContentStream), DigestUtils.sha1(localFileStream));

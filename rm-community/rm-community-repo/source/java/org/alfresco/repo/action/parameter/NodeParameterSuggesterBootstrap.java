@@ -52,7 +52,7 @@ public class NodeParameterSuggesterBootstrap
     private NodeParameterProcessor nodeParameterProcessor;
 
     /**
-     * @param recordMetadataAspects map of record metadata aspects against file plan types
+     * @param nodeParameterProcessorAspectsNames map of record metadata aspects against file plan types
      */
     public void setNodeParameterProcessorAspects(String nodeParameterProcessorAspectsNames)
     {

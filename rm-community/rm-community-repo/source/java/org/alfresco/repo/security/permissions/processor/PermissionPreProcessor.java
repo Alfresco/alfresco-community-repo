@@ -41,8 +41,7 @@ public interface PermissionPreProcessor
 {
 	/**
 	 * Process permission.
-	 * 
-	 * @param  accessStatus			current access status
+	 *
 	 * @param  nodeRef				node reference
 	 * @param  perm					permission
 	 * @return {@link AccessStatus}

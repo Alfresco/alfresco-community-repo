@@ -118,7 +118,7 @@ public class DispositionScheduleImpl implements DispositionSchedule,
                 {
                     return value.booleanValue();
                 }
-                return null;
+                return false;
             }
         });
     }

@@ -277,7 +277,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.email.EmailMappingKeyService#registerEMailMappingKey(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService#registerEMailMappingKey(java.lang.String)
      */
     @Override
     public void registerEMailMappingKey(String emailMappingKey)

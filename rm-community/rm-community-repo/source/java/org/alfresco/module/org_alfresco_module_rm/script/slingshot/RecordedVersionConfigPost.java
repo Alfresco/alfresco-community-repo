@@ -76,7 +76,9 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
     }
 
     /**
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *          org.springframework.extensions.webscripts.Status,
+     *          org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -90,7 +92,7 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
     /**
      * Gets the recordable version policy from the request
      *
-     * @param The webscript request
+     * @param req  The webscript request
      * @return The recordable version policy
      */
     private String getRecordableVersionPolicy(WebScriptRequest req)

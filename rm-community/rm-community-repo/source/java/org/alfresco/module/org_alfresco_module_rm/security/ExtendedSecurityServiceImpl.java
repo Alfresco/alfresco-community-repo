@@ -184,7 +184,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getReaders(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#getReaders(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
     @Override

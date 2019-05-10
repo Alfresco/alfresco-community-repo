@@ -74,7 +74,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *             searchparams contains the filters, sort, etc information about the query
  *             query is there for backward compatibility
  *      note:
- *            "params": "terms=keywords:xyz&undeclared=true",
+ *            "params": "terms=keywords:xyz&amp;undeclared=true",
  *            "sort": "cm:name/asc"
  *            "query": "the complete search query string",
  *            ... are sometimes found in the place of searchparams and are migrated to the new format when re-saved

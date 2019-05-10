@@ -101,7 +101,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
      * Process properties map before returning as frozen state.
      *
      * @param properties                                        properties map
-     * @return {@link Map}<{@link QName}, {@link Serializable}> processed property map
+     * @return {@link Map}&lt;{@link QName}, {@link Serializable}&gt; processed property map
      */
     protected Map<QName, Serializable> processProperties(NodeRef version, Map<QName, Serializable> properties)
     {
@@ -229,7 +229,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
      * Process frozen aspects.
      *
      * @param aspects                       aspect set
-     * @return {@link Set}<{@link QName}>   processed aspect set
+     * @return {@link Set}&lt;{@link QName}&gt;   processed aspect set
      */
     protected Set<QName> processAspects(Set<QName> aspects)
     {

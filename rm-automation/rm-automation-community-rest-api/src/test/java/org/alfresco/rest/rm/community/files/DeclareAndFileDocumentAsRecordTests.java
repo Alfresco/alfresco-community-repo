@@ -146,7 +146,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
 
-        STEP("Create a test foloder within the collaboration site");
+        STEP("Create a test folder within the collaboration site");
         testFolder = dataContent.usingAdmin().usingSite(publicSite).createFolder();
 
         STEP("Create record categories and record folders");

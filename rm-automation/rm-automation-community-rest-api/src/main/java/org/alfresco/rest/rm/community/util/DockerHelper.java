@@ -39,6 +39,8 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +57,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class DockerHelper
 {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DockerHelper.class);
     private static final String REPO_IMAGE_NAME = "repository";
+    @Getter
+    @Setter
     private DockerClient dockerClient;
 
     @Autowired
@@ -82,9 +86,9 @@ public class DockerHelper
     {
         final List<String> logs = new ArrayList<>();
         // get the logs since current time - 10 seconds
-        int timeStamp = (int) (System.currentTimeMillis() / 1000) - 10;
+        final int timeStamp = (int) (System.currentTimeMillis() / 1000) - 10;
 
-        LogContainerCmd logContainerCmd = dockerClient.logContainerCmd(containerId);
+        final LogContainerCmd logContainerCmd = getDockerClient().logContainerCmd(containerId);
         logContainerCmd.withStdOut(true)
                        .withStdErr(true)
                        .withSince(timeStamp) // UNIX timestamp to filter logs. Output log-entries since that timestamp.
@@ -104,7 +108,7 @@ public class DockerHelper
         catch (InterruptedException e)
         {
             Thread.currentThread().interrupt();  // set interrupt flag
-            logger.error("Failed to retrieve logs of container " + containerId, e);
+            LOGGER.error("Failed to retrieve logs of container " + containerId, e);
         }
 
         return logs;
@@ -117,7 +121,7 @@ public class DockerHelper
      */
     public List<String> getAlfrescoLogs()
     {
-        Optional<Container> alfrescoContainer = findContainerByImageName(REPO_IMAGE_NAME);
+        final Optional<Container> alfrescoContainer = findContainerByImageName(REPO_IMAGE_NAME);
         return (alfrescoContainer.isPresent()) ? getDockerLogs(alfrescoContainer.get().getId()) : Collections.emptyList();
     }
 
@@ -129,7 +133,7 @@ public class DockerHelper
      */
     private Optional<Container> findContainerByImageName(String imageName)
     {
-        List<Container> containers = dockerClient.listContainersCmd().withShowAll(true).exec();
+        final List<Container> containers = getDockerClient().listContainersCmd().withShowAll(true).exec();
 
         return containers.stream()
                          .filter(container -> container.getImage().contains(imageName))

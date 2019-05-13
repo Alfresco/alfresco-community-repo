@@ -911,17 +911,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             {
                                 throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
                             }
-
                         }
-                        // if optional location supplied, check that it is a folder
+                        // if optional location supplied, check that it is a valid record folder
                         else
                         {
-                            // first look to see if the destination record folder has been specified
                             QName nodeType = nodeService.getType(newRecordContainer);
                             if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
                                         nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)))
                             {
                                 throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
+                            }
+
+                            Boolean isClosed = (Boolean) nodeService.getProperty(newRecordContainer, PROP_IS_CLOSED);
+                            if (isClosed != null && isClosed)
+                            {
+                                throw new AlfrescoRuntimeException("Unable to create record, because container is closed.");
                             }
                         }
 

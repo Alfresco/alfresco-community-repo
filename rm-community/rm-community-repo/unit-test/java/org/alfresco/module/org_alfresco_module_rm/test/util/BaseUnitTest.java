@@ -72,12 +72,10 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -124,8 +122,6 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="copyService")                    protected CopyService                  mockedCopyService;
     @Mock(name="fileFolderService")              protected FileFolderService            mockedFileFolderService;
     @Mock(name="modelSecurityService")           protected ModelSecurityService         mockedModelSecurityService;
-    @Mock(name="ruleService")                    protected RuleService                  mockedRuleService;
-    @Mock(name="versionService")                 protected VersionService               mockedVersionService;
 
     /** rm service mocks */
     @Mock(name="filePlanService")                protected FilePlanService              mockedFilePlanService;

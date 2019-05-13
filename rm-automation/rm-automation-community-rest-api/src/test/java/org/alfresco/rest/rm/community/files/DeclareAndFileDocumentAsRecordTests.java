@@ -26,16 +26,19 @@
  */
 package org.alfresco.rest.rm.community.files;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
-import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -57,6 +60,7 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,10 +81,11 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String DESTINATION_PATH_NOT_RESOLVED_EXC = "Unable to execute create-record action, because the destination path could not be resolved.";
     private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
-    private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder";
+    private final static String CLOSED_RECORD_FOLDER_EXC = "Unable to create record, because container is closed";
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
+    private FolderModel testFolder;
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory;
     private UnfiledContainerChild unfiledContainerFolder;
@@ -92,16 +97,14 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private RoleService roleService;
 
     /**
-     * Invalid  containers where in-place records can't be filed
+     * Invalid destination paths where in-place records can't be filed
      */
-    @DataProvider (name = "invalidFileLocations")
-    public Object[][] getInvalidFileLocations() throws Exception
+    @DataProvider (name = "invalidDestinationPaths")
+    public Object[][] getInvalidDestinationPaths() throws Exception
     {
         RecordCategoryChild closedFolder = createFolder(recordCategory.getId(), getRandomName("closedFolder"));
         closeFolder(closedFolder.getId());
 
-        unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
-                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
         return new String[][]
             {
                 { "/", DESTINATION_PATH_NOT_RESOLVED_EXC},
@@ -115,8 +118,26 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 // an arbitrary unfiled records folder
                 { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
                 // a collaboration site folder
-                { dataContent.usingAdmin().usingSite(publicSite).createFolder().getCmisLocation(), DESTINATION_PATH_NOT_RESOLVED_EXC }
+                { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_RESOLVED_EXC }
             };
+    }
+
+    /**
+     * Invalid destination ids where in-place records can't be filed
+     */
+    @DataProvider (name = "invalidDestinationIds")
+    public Object[][] getInvalidDestinationIds()
+    {
+        return new String[][]
+            {
+                { getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS).getId() },
+                { getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId() },
+                { getRestAPIFactory().getTransferContainerAPI().getTransferContainer(TRANSFERS_ALIAS).getId() },
+                { getContentService().getNodeRefByPath(getAdminUser().getUsername(), getAdminUser().getPassword(), "/Sites/rm/documentLibrary/Holds") },
+                { recordCategory.getId() },
+                { unfiledContainerFolder.getId() },
+                { testFolder.getNodeRef() }
+        };
     }
 
     @BeforeClass (alwaysRun = true)
@@ -125,15 +146,21 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
 
+        STEP("Create a test foloder within the collaboration site");
+        testFolder = dataContent.usingAdmin().usingSite(publicSite).createFolder();
+
         STEP("Create record categories and record folders");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         subCategory = createRecordCategory(recordCategory.getId(), getRandomName("subCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         subcategoryRecordFolder = createFolder(subCategory.getId(), getRandomName("recordFolder"));
+        unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
+                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
 
         STEP("Create rm users with different permissions on the record category");
         userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);
-        userReadOnlyPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,ROLE_RM_USER, PERMISSION_READ_RECORDS);
+        userReadOnlyPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,
+                ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS);
     }
 
     /**
@@ -194,7 +221,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
      * And the document is not declared as a record
      */
-    @Test (dataProvider = "invalidFileLocations")
+    @Test (dataProvider = "invalidDestinationPaths")
     public void declareAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Create a document in the collaboration site");
@@ -232,8 +259,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a location parameter value");
-        //TODO add recordFolder location parameter value
         Record record = getRestAPIFactory().getFilesAPI(userFillingPermission)
+                                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
                                            .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
@@ -242,6 +269,30 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
         STEP("Verify the document in collaboration site is now a record");
         assertTrue(hasRecordAspect(testFile), "File should have record aspect");
+    }
+
+    /**
+     * Given I declare a record using the v1 API
+     * When I provide an invalid record folder in the location parameter
+     * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
+     * And the document is not declared as a record
+     */
+    @Test (dataProvider = "invalidDestinationIds")
+    public void declareAndFileToInvalidLocationUsingFilesAPI(String containerID) throws Exception
+    {
+        STEP("Create a document in the collaboration site");
+        FileModel testFile = dataContent.usingSite(publicSite)
+                                        .usingAdmin()
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        STEP("Declare document as record with an invalid location parameter value");
+        getRestAPIFactory().getFilesAPI()
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, containerID))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(BAD_REQUEST);
+
+        STEP("Check that the file is not a record");
+        assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
     }
 
     /**
@@ -258,9 +309,9 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a record folder as location parameter");
-        //TODO add recordFolder location parameter value
-        getRestAPIFactory().getFilesAPI(userReadOnlyPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
-        //TODO check what status code should be returned
+        getRestAPIFactory().getFilesAPI(userReadOnlyPermission)
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(FORBIDDEN);
 
         STEP("Check that the file is not a record");
@@ -285,8 +336,9 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a record folder as location parameter");
-        //TODO add recordFolder location parameter value
-        getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        getRestAPIFactory().getFilesAPI(nonRMUser)
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(FORBIDDEN);
 
         STEP("Check that the file is not a record");
@@ -308,13 +360,15 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a record folder as location parameter");
-        //TODO add subcategoryRecordFolder as location parameter value
-        getRestAPIFactory().getFilesAPI(userFillingPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        getRestAPIFactory().getFilesAPI(userFillingPermission)
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, subcategoryRecordFolder.getId()))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Declare it again using a different record folder as location parameter");
-        //TODO add recordFolder as location parameter value
-        getRestAPIFactory().getFilesAPI(userFillingPermission).declareAsRecord(testFile.getNodeRefWithoutVersion());
+        getRestAPIFactory().getFilesAPI(userFillingPermission)
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(UNPROCESSABLE_ENTITY);
 
         STEP("Verify the declared record is placed in the first record folder");
@@ -323,8 +377,6 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         assertFalse(isMatchingRecordInRecordFolder(testFile, recordFolder),
                 "Record should not be filed to subcategoryRecordFolder");
     }
-
-
 
     @AfterClass(alwaysRun = true)
     public void declareAndFileDocumentAsRecordCleanup()

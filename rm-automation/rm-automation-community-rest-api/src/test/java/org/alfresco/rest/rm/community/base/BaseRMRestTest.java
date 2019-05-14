@@ -480,32 +480,32 @@ public class BaseRMRestTest extends RestTest
         return createCategoryFolderInFilePlan(getAdminUser());
     }
 
-    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getUnfiledContainersAPI(user).getUnfiledContainer(componentId);
     }
 
-    public UnfiledContainer getUnfiledContainer(String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainer(String componentId)
     {
         return getUnfiledContainerAsUser(getAdminUser(), componentId);
     }
 
-    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId) throws Exception
+    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getTransferContainerAPI(user).getTransferContainer(componentId);
     }
 
-    public TransferContainer getTransferContainer(String componentId) throws Exception
+    public TransferContainer getTransferContainer(String componentId)
     {
         return getTransferContainerAsUser(getAdminUser(), componentId);
     }
 
-    public FilePlan getFilePlanAsUser(UserModel user, String componentId) throws Exception
+    public FilePlan getFilePlanAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getFilePlansAPI(user).getFilePlan(componentId);
     }
 
-    public FilePlan getFilePlan(String componentId) throws Exception
+    public FilePlan getFilePlan(String componentId)
     {
         return getFilePlanAsUser(getAdminUser(), componentId);
     }

@@ -87,7 +87,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private SiteModel publicSite;
     private FolderModel testFolder;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory;
+    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory, closedFolder;
     private UnfiledContainerChild unfiledContainerFolder;
 
     @Autowired
@@ -100,11 +100,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * Invalid destination paths where in-place records can't be filed
      */
     @DataProvider (name = "invalidDestinationPaths")
-    public Object[][] getInvalidDestinationPaths() throws Exception
+    public Object[][] getInvalidDestinationPaths()
     {
-        RecordCategoryChild closedFolder = createFolder(recordCategory.getId(), getRandomName("closedFolder"));
-        closeFolder(closedFolder.getId());
-
         return new String[][]
             {
                 { "/", DESTINATION_PATH_NOT_RESOLVED_EXC},
@@ -135,6 +132,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 { getRestAPIFactory().getTransferContainerAPI().getTransferContainer(TRANSFERS_ALIAS).getId() },
                 { getContentService().getNodeRefByPath(getAdminUser().getUsername(), getAdminUser().getPassword(), "/Sites/rm/documentLibrary/Holds") },
                 { recordCategory.getId() },
+                { closedFolder.getId() },
                 { unfiledContainerFolder.getId() },
                 { testFolder.getNodeRef() }
         };
@@ -156,6 +154,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         subcategoryRecordFolder = createFolder(subCategory.getId(), getRandomName("recordFolder"));
         unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
+        closedFolder = createFolder(recordCategory.getId(), getRandomName("closedFolder"));
+        closeFolder(closedFolder.getId());
 
         STEP("Create rm users with different permissions on the record category");
         userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);

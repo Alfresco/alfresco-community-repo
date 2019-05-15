@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.alfresco.tas</groupId>
+    <artifactId>restapi</artifactId>
+    <name>alfresco-tas-restapi</name>
+    <version>1.0-SNAPSHOT</version>
+	<organization>
+        <name>Alfresco Software</name>
+        <url>http://www.alfresco.com/</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Paul Brodner</name>
+            <roles>
+                <role>Test Automation Architect</role>
+            </roles>
+        </developer>
+    </developers>
+    <properties>
+        <!-- please run mvn clean install -DSkipTests in order to have shared-resources available -->
+        <suiteXmlFile>src/main/resources/shared-resources/testCount.xml</suiteXmlFile>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <tas.utility.version>2.0.12</tas.utility.version>
+        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+        <rest-assured.version>3.3.0</rest-assured.version>
+        <httpclient-osgi-version>4.5.2</httpclient-osgi-version>
+        <json-path.version>3.3.0</json-path.version>
+        <xml-path.version>3.3.0</xml-path.version>
+        <json-schema-validator.version>3.3.0</json-schema-validator.version>
+        <jackson-databind.version>2.9.8</jackson-databind.version>
+        <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
+        <maven-release.version>2.5.3</maven-release.version>
+        <org.glassfish.version>1.0.4</org.glassfish.version>
+        <maven-remote-resources.version>1.6.0</maven-remote-resources.version>
+        <commons-lang3.version>3.8</commons-lang3.version>
+        <scribejava-apis.version>6.5.1</scribejava-apis.version>
+        <test.exclude />
+        <test.include />
+        <java.version>11</java.version>
+    </properties>
+
+    <scm>
+        <connection>scm:git:git@github.com:Alfresco/alfresco-tas-restapi.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-tas-restapi.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-tas-restapi</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.alfresco.com/jira/browse/</url>
+    </issueManagement>
+
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>alfresco-public-snapshots</id>
+            <url>https://nexus.alfresco.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>alfresco-public-releases</id>
+            <url>https://nexus.alfresco.com/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-remote-resources-plugin</artifactId>
+                    <version>${maven-remote-resources.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <release>${java.version}</release>                    
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>                    
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven-release.version}</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>shared-resources/**/*</include>
+                    </includes>
+                    <resourceBundles>
+                        <resourceBundle>org.alfresco.tas:utility:${tas.utility.version}</resourceBundle>
+                    </resourceBundles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process</goal>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <arguments>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-auth.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-core.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-discovery.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-search.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/5.2.N/src/main/webapp/definitions/alfresco-workflow.yaml</argument>
+                    </arguments>
+                    <mainClass>org.alfresco.rest.core.swagger.Generator</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-enforcer-plugin</artifactId>
+			  <version>3.0.0-M2</version>
+			  <executions>
+			    <execution>
+			      <id>enforce-maven</id>
+			      <goals>
+			        <goal>enforce</goal>
+			      </goals>
+			      <configuration>
+			        <rules>
+			          <requireMavenVersion>
+			            <version>3.3</version>
+			          </requireMavenVersion>
+			        </rules>
+			      </configuration>
+			    </execution>
+			  </executions>
+			</plugin>			
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>shared-resources/**/*</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+    <dependencies>
+        <!-- fix the info log messages related to Could not instantiate TestExecutionListener 
+            [org.springframework.test.context.web.ServletTestExecutionListener -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- alfresco tester settings -->
+        <dependency>
+            <groupId>org.alfresco.tas</groupId>
+            <artifactId>utility</artifactId>
+            <version>${tas.utility.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-lang3</artifactId>
+                	<groupId>org.apache.commons</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-lang</artifactId>
+                	<groupId>commons-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <!-- REST ASSURED -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-osgi</artifactId>
+            <version>${httpclient-osgi-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <version>${json-path.version}</version>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>commons-lang3</artifactId>
+            		<groupId>org.apache.commons</groupId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>xml-path</artifactId>
+            <version>${xml-path.version}</version>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>commons-lang3</artifactId>
+            		<groupId>org.apache.commons</groupId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>${json-schema-validator.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.scribejava</groupId>
+            <artifactId>scribejava-apis</artifactId>
+            <version>${scribejava-apis.version}</version>
+        </dependency>
+
+        <!-- JSON to Object -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>${org.glassfish.version}</version>
+        </dependency>
+
+        <!-- needed for swagger parser bellow -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+        
+		<!-- swagger parser -->
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-parser</artifactId>
+			<version>1.0.23</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>commons-lang3</artifactId>
+					<groupId>org.apache.commons</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+        <!-- Alfresco Solr JDBC Driver needed for Solr SQL Test-->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-insight-jdbc</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tika</groupId>
+                    <artifactId>tika-parsers</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0-alfresco-patched-20180402</version>
+        </dependency>
+        
+		<!--fixing java.lang.ClassCastException: class [B cannot be cast to class [C ([B and [C are in module java.base of loader 'bootstrap')  -->              
+       	<!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy -->
+		<dependency>
+		    <groupId>org.codehaus.groovy</groupId>
+		    <artifactId>groovy</artifactId>
+		    <version>2.5.5</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-json-->
+		<dependency>
+		    <groupId>org.codehaus.groovy</groupId>
+		    <artifactId>groovy-json</artifactId>
+		    <version>2.5.5</version>
+		</dependency>	
+
+	</dependencies>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>issue-tracking</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+
+</project>

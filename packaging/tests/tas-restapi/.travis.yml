@@ -26,9 +26,10 @@ jobs:
     - stage: release
       name: "Push to Nexus"
       if: fork = false AND branch = master AND type != pull_request
+      before_install:
+        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
       script:
         # Use full history for release
         - git checkout -B "${TRAVIS_BRANCH}"
         # Skip building of release commits
-        - mvn --batch-mode -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform \
-          -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}"
+        - mvn --batch-mode  -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform

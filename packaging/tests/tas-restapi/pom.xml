@@ -5,6 +5,12 @@
     <artifactId>restapi</artifactId>
     <name>alfresco-tas-restapi</name>
     <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>10</version>
+    </parent>
+
 	<organization>
         <name>Alfresco Software</name>
         <url>http://www.alfresco.com/</url>
@@ -22,7 +28,6 @@
         <suiteXmlFile>src/main/resources/shared-resources/testCount.xml</suiteXmlFile>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tas.utility.version>2.0.22</tas.utility.version>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <rest-assured.version>3.3.0</rest-assured.version>
         <httpclient-osgi-version>4.5.2</httpclient-osgi-version>
         <json-path.version>3.3.0</json-path.version>
@@ -41,8 +46,8 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-tas-restapi.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-tas-restapi.git</developerConnection>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-tas-restapi</url>
         <tag>HEAD</tag>
     </scm>
@@ -52,39 +57,30 @@
         <url>https://issues.alfresco.com/jira/browse/</url>
     </issueManagement>
 
-
     <distributionManagement>
-        <snapshotRepository>
-            <id>alfresco-public-snapshots</id>
-            <url>https://nexus.alfresco.com/nexus/content/repositories/snapshots/</url>
-        </snapshotRepository>
         <repository>
-            <id>alfresco-public-releases</id>
-            <url>https://nexus.alfresco.com/nexus/content/repositories/releases/</url>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
+        <snapshotRepository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-remote-resources-plugin</artifactId>
-                    <version>${maven-remote-resources.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>${maven-jar-plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+    <!-- Alfresco Repository -->
+    <repositories>
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
 
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <release>${java.version}</release>                    
                     <showWarnings>true</showWarnings>
@@ -113,6 +109,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>${maven-remote-resources.version}</version>
                 <configuration>
                     <includes>
                         <include>shared-resources/**/*</include>
@@ -133,7 +130,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -155,7 +151,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -168,7 +163,6 @@
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-enforcer-plugin</artifactId>
-			  <version>3.0.0-M2</version>
 			  <executions>
 			    <execution>
 			      <id>enforce-maven</id>

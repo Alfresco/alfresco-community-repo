@@ -28,8 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.security;
 
 import static java.util.Collections.singletonMap;
-import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority.EXTENDED_READER;
-import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority.EXTENDED_WRITER;
+
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.CLASS;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName;
@@ -589,7 +588,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setPermission(NodeRef, String, String)
      */
     @Override
     public void setPermission(final NodeRef nodeRef, final String authority, final String permission)

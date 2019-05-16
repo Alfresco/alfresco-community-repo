@@ -68,7 +68,7 @@ public class CustomisableTypesBootstrap
 	}
 	
 	/**
-	 * @param customizable	list of types and aspects to register as customisable
+	 * @param customisable	list of types and aspects to register as customisable
 	 */
 	public void setCustomisable(List<String> customisable)
 	{

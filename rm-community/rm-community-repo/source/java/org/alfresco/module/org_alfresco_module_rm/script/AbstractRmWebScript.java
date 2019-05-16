@@ -29,9 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getTemplateVars;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,6 +46,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
+ * @author Gavin Cornwell
  */
 public abstract class AbstractRmWebScript extends DeclarativeWebScript
 {
@@ -133,7 +133,6 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      * @param req The webscript request
      * @return The NodeRef passed in the request
      *
-     * @author Gavin Cornwell
      */
     protected NodeRef parseRequestForNodeRef(WebScriptRequest req)
     {

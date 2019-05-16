@@ -76,7 +76,7 @@ public interface ModelSecurityService
     /**
      * Indicates whether a property is protected or not.
      *
-     * @param name  name of property
+     * @param property  name of property
      * @return boolean  true if property is protected, false otherwise
      */
     boolean isProtectedProperty(QName property);
@@ -84,7 +84,7 @@ public interface ModelSecurityService
     /**
      * Get the protected properties
      *
-     * @return  {@link Set}<{@link QName}>  all the protected properties
+     * @return  {@link Set}&lt;{@link QName} &gt;  all the protected properties
      */
     Set<QName> getProtectedProperties();
 
@@ -121,7 +121,7 @@ public interface ModelSecurityService
     /**
      * Get the protected aspects.
      *
-     * @return  {@link Set}<{@link QName}>  all the protected aspects
+     * @return  {@link Set}&lt;{@link QName}&gt;  all the protected aspects
      */
     Set<QName> getProtectedAspects();
 

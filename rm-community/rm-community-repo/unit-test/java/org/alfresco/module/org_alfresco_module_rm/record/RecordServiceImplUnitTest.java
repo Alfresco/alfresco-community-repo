@@ -475,10 +475,10 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     /**
      * Given a file that is not yet a record
      * When I create the record without specifying a location
-     * Then the record is created in the unfiled record folder
+     * Then the record is created in the unfiled record container
      */
     @Test
-    public void createRecordIntoUnfiledRecordFolder()
+    public void createRecordIntoUnfiledRecordContainer()
     {
         mocksForRecordCreation();
 
@@ -495,18 +495,18 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
     /**
      * Given a file that is not yet a record
-     * When I create the record specifying the unfiled record folder
-     * Then the record is created in the unfiled record folder
+     * When I create the record specifying the unfiled record container
+     * Then the record is created in the unfiled record container
      */
     @Test
-    public void createRecordIntoSpecifiedUnfiledRecordFolder()
+    public void createRecordIntoSpecifiedUnfiledRecordContainer()
     {
         mocksForRecordCreation();
 
         // create the record
-        recordService.createRecord(nonStandardFilePlan, dmNodeRef, unfiledRecordFolder);
+        recordService.createRecord(filePlan, dmNodeRef, unfiledRecordFolder);
 
-        // verify record was created in specified record folder
+        // verify record was created in specified unfiled record container
         verify(mockedNodeService, times(1)).moveNode(
                 dmNodeRef,
                 unfiledRecordFolder,
@@ -525,7 +525,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         mocksForRecordCreation();
 
         // create the record
-        recordService.createRecord(nonStandardFilePlan, dmNodeRef, recordFolder);
+        recordService.createRecord(filePlan, dmNodeRef, recordFolder);
 
         // verify record was created in specified record folder
         verify(mockedNodeService, times(1)).moveNode(
@@ -547,7 +547,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         NodeRef recordCategory = generateNodeRef(TYPE_RECORD_CATEGORY);
 
         // create the record
-        recordService.createRecord(nonStandardFilePlan, dmNodeRef, recordCategory);
+        recordService.createRecord(filePlan, dmNodeRef, recordCategory);
     }
 
     /* Helper method to set up the mocks for record creation */

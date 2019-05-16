@@ -881,7 +881,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final NodeRef destinationNodeRef, final boolean isLinked)
     {
         // filePlan can be null. In this case the default RM site will be used.
-        // locationNodeRef can be null. In this case the unfiled record container will be used
+        // destinationNodeRef can be null. In this case the unfiled record container will be used
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
 
@@ -909,7 +909,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
                             if (newRecordContainer == null)
                             {
-                                throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
+                                throw new AlfrescoRuntimeException("Unable to create record, because record container could not be found.");
                             }
                         }
                         // if optional location supplied, check that it is a valid record folder

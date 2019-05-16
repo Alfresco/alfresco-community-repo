@@ -213,7 +213,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
         if (nodeRef == null)
         {
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be resolved.");
+            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be found.");
         }
         else
         {
@@ -251,8 +251,11 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         // if the file plan is still null, raise an exception
         if (filePlan == null)
         {
-            LOGGER.debug("Unable to execute " + NAME + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the fileplan path could not be determined.");
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Unable to execute " + NAME + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
+                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the fileplan path could not be determined.");
+            }
         }
         return filePlan;
     }

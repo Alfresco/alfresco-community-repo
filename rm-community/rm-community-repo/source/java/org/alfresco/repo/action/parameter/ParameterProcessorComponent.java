@@ -137,7 +137,7 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     /**
      * Return a list of substitution suggestions for the passed string fragment.
      *
-     * @param subtitutionFragment  Text fragment to search on.
+     * @param substitutionFragment  Text fragment to search on.
      * @return A list of substitutions that match the substitution fragment.
      */
     public List<String> getSubstitutionSuggestions(final String substitutionFragment)

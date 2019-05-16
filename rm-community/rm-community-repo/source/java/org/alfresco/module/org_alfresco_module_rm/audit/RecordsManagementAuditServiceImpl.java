@@ -1696,8 +1696,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * Returns the display label for a property QName
      *
      * @param property The property to get label for
-     * @param ddService DictionaryService instance
-     * @param namespaceService NamespaceService instance
      * @return The label
      */
     private String getPropertyLabel(QName property)
@@ -1830,7 +1828,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * {@inheritDoc}
+     * use {@link #startAuditLog(NodeRef)} instead
+     *
      */
     @Deprecated
     public void start()

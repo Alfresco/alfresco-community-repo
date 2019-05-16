@@ -60,7 +60,7 @@ public class RecordsManagementPermissionPostProcessor extends PermissionPostProc
     public void setPermissionModel(PermissionModel permissionModel) {this.permissionModel=permissionModel;}
 
     /**
-     * @see org.alfresco.repo.security.permissions.processor.PermissionPostProcessor#process(org.alfresco.service.cmr.security.AccessStatus, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.repo.security.permissions.processor.PermissionPostProcessor#process(AccessStatus, NodeRef, String, List, List)
      */
     @Override
     public AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,

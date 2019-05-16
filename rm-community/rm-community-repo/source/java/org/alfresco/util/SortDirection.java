@@ -72,7 +72,7 @@ public enum SortDirection
 
         if (sortDirection == null)
         {
-            throw new AlfrescoRuntimeException("Sort direction '" + sortDirection +"' unknown.");
+            throw new AlfrescoRuntimeException("Sort direction unknown.");
         }
 
         return sortDirection;

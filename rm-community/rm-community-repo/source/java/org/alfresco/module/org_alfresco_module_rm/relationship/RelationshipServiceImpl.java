@@ -263,7 +263,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#updateReleationshipDefinition(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#updateRelationshipDefinition(java.lang.String, RelationshipDisplayName)
      */
     @Override
     public RelationshipDefinition updateRelationshipDefinition(String uniqueName, RelationshipDisplayName displayName)

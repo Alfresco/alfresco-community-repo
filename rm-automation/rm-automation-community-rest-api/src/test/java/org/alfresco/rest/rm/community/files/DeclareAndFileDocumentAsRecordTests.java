@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
+import static org.alfresco.rest.v0.RMRolesAndActionsAPI.HOLDS_CONTAINER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -56,6 +57,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.util.DockerHelper;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
@@ -84,6 +86,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "Unable to create record, because container is closed";
+    private final static String HOLD_NAME = "holdName";
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
@@ -98,6 +101,9 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     /**
      * Invalid destination paths where in-place records can't be filed
@@ -133,7 +139,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 { getFilePlan(FILE_PLAN_ALIAS).getId() },
                 { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId() },
                 { getTransferContainer(TRANSFERS_ALIAS).getId() },
-                { getContentService().getNodeRefByPath(getAdminUser().getUsername(), getAdminUser().getPassword(), "/Sites/rm/documentLibrary/Holds") },
+                { rmRolesAndActionsAPI.getItemNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                        "/" + HOLDS_CONTAINER) },
                 { recordCategory.getId() },
                 { unfiledContainerFolder.getId() },
                 { testFolder.getNodeRef() }
@@ -345,7 +352,6 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
     }
 
-
     /**
      * Given I declare a record using the v1 API
      * When I provide a closed record folder in the location parameter
@@ -363,6 +369,31 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         getRestAPIFactory().getRmRestWrapper()
                            .assertLastError()
                            .containsSummary(CLOSED_RECORD_FOLDER_EXC);
+
+        STEP("Check that the file is not a record");
+        assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
+    }
+
+    /**
+     * Given I declare a record using the v1 API
+     * When I provide a held record folder in the location parameter
+     * Then I receive an error indicating that the record folder is held
+     * And the document is not declared as a record
+     */
+    @Test
+    public void declareAndFileToHeldRecordFolderUsingFilesAPI() throws Exception
+    {
+        RecordCategoryChild heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
+        rmRolesAndActionsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME,
+                "hold reason", "hold description");
+        rmRolesAndActionsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                heldRecordFolder.getId(), HOLD_NAME);
+
+        STEP("Declare document as record with a frozen location parameter value");
+        getRestAPIFactory().getFilesAPI()
+                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, heldRecordFolder.getId()))
+                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(UNPROCESSABLE_ENTITY);
 
         STEP("Check that the file is not a record");
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");

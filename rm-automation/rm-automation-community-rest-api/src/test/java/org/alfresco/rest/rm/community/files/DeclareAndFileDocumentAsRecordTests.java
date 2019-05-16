@@ -82,7 +82,7 @@ import org.testng.annotations.Test;
 @AlfrescoTest (jira = "RM-6779")
 public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 {
-    private final static String DESTINATION_PATH_NOT_RESOLVED_EXC = "Unable to execute create-record action, because the destination path could not be resolved.";
+    private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute create-record action, because the destination path could not be found.";
     private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "Unable to create record, because container is closed";
@@ -113,18 +113,18 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     {
         return new String[][]
             {
-                { "/", DESTINATION_PATH_NOT_RESOLVED_EXC},
+                { "/", DESTINATION_PATH_NOT_FOUND_EXC },
                 { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
                 { "Transfers", INVALID_DESTINATION_PATH_EXC },
                 { "Holds", INVALID_DESTINATION_PATH_EXC },
-                { "rm/documentlibrary", DESTINATION_PATH_NOT_RESOLVED_EXC },
+                { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
                 { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
                 // a closed record folder
                 { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()), CLOSED_RECORD_FOLDER_EXC},
                 // an arbitrary unfiled records folder
                 { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
                 // a collaboration site folder
-                { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_RESOLVED_EXC }
+                { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC }
             };
     }
 

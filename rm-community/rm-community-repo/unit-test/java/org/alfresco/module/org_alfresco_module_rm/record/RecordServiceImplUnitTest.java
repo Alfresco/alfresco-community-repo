@@ -47,9 +47,11 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -548,6 +550,21 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
         // create the record
         recordService.createRecord(filePlan, dmNodeRef, recordCategory);
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a location
+     * Then the record is created in the specified record folder
+     */
+    @Test (expected = AccessDeniedException.class)
+    public void createRecordIntoSpecifiedRecordFolderWithoutFilePermission()
+    {
+        mocksForRecordCreation();
+        when(mockedExtendedPermissionService.hasPermission(recordFolder, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef, recordFolder);
     }
 
     /* Helper method to set up the mocks for record creation */

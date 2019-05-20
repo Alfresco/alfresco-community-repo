@@ -465,8 +465,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public HttpResponse createHold(String user, String password, String holdName, String reason, String description)
     {
         // if the hold already exists don't try to create it again
-        final String holdsContainerPath = Utility.buildPath(getFilePlanPath(), HOLDS_CONTAINER);
-        final String fullHoldPath = holdsContainerPath + holdName;
+        final String fullHoldPath = Utility.buildPath(getFilePlanPath(), HOLDS_CONTAINER) + holdName;
         final CmisObject hold = getObjectByPath(user, password, fullHoldPath);
         if (hold != null)
         {

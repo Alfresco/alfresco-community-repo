@@ -915,7 +915,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // if optional location supplied, check that it is a valid record folder
                         else
                         {
-                            QName nodeType = nodeService.getType(newRecordContainer);
+                            final QName nodeType = nodeService.getType(newRecordContainer);
                             if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
                                         nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)))
                             {

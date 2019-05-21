@@ -159,6 +159,31 @@ public interface RecordService
     */
    boolean isDeclared(NodeRef nodeRef);
 
+    /**
+     * Creates a new record from an existing node and files it into the specified location.
+     * <p>
+     * Note that the node reference of the record will be the same as the original
+     * document.
+     *
+     * @param filePlan  The filePlan in which the record should be placed. filePlan can be <code>null</code> in this case the default RM site will be used.
+     * @param nodeRef   The node from which the record will be created
+     * @param locationNodeRef   The container in which the record will be created
+     * @param isLinked  indicates if the newly created record is linked to it's original location or not.
+     */
+    void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final NodeRef locationNodeRef, final boolean isLinked);
+
+    /**
+     * Creates a new record from an existing node and files it into the specified location.
+     * <p>
+     * Note that the node reference of the record will be the same as the original
+     * document.
+     *
+     * @param filePlan  The filePlan in which the record should be placed. filePlan can be <code>null</code> in this case the default RM site will be used.
+     * @param nodeRef   The node from which the record will be created
+     * @param locationNodeRef   The container in which the record will be created
+     */
+    void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final NodeRef locationNodeRef);
+
    /**
     * Creates a new unfiled record from an existing node.
     * <p>

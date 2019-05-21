@@ -1037,14 +1037,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (newRecordContainer == null)
         {
             // get the new record container for the file plan
-            newRecordContainer = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
-                @Override
-                public NodeRef doWork()
-                {
-                    return filePlanService.getUnfiledContainer(checkedFilePlan);
-                }
-            }, AuthenticationUtil.getAdminUserName());
+            newRecordContainer = AuthenticationUtil.runAsSystem(() -> filePlanService.getUnfiledContainer(checkedFilePlan));
 
             if (newRecordContainer == null)
             {

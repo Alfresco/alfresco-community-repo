@@ -148,7 +148,7 @@ public class FilesEntityResource implements InitializingBean
     {
         // Get record folder, if provided
         NodeRef targetParent = null;
-        String targetParentId = parameters.getParameter(RMNode.PARAM_PARENT_ID);
+        final String targetParentId = parameters.getParameter(RMNode.PARAM_PARENT_ID);
         if (targetParentId != null)
         {
             targetParent = apiUtils.lookupAndValidateNodeType(targetParentId, RecordsManagementModel.TYPE_RECORD_FOLDER);

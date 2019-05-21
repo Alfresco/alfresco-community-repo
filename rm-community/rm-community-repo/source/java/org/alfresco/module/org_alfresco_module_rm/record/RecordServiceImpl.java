@@ -917,7 +917,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         {
                             final QName nodeType = nodeService.getType(newRecordContainer);
                             if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
-                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)))
+                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
+                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER)))
                             {
                                 throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
                             }

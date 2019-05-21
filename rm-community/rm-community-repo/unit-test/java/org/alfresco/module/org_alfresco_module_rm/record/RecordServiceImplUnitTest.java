@@ -73,6 +73,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef nonStandardFilePlanComponent;
     private NodeRef nonStandardFilePlan;
     private NodeRef dmNodeRef;
+    private NodeRef unfiledRecordContainer;
     private NodeRef unfiledRecordFolder;
     private ChildAssociationRef parentAssoc;
 
@@ -91,6 +92,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         nonStandardFilePlanComponent = generateNodeRef(TYPE_RECORD_CATEGORY);
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
+        unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
         unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER);
         parentAssoc = mock(ChildAssociationRef.class);
 
@@ -483,12 +485,12 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         mocksForRecordCreation();
 
         // create the record
-        recordService.createRecord(nonStandardFilePlan, dmNodeRef);
+        recordService.createRecord(filePlan, dmNodeRef);
 
         // verify record was created in unfiled record container
         verify(mockedNodeService, times(1)).moveNode(
                 dmNodeRef,
-                unfiledRecordFolder,
+                unfiledRecordContainer,
                 ContentModel.ASSOC_CONTAINS,
                 parentAssoc.getQName());
     }
@@ -504,12 +506,12 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         mocksForRecordCreation();
 
         // create the record
-        recordService.createRecord(filePlan, dmNodeRef, unfiledRecordFolder);
+        recordService.createRecord(filePlan, dmNodeRef, unfiledRecordContainer);
 
         // verify record was created in specified unfiled record container
         verify(mockedNodeService, times(1)).moveNode(
                 dmNodeRef,
-                unfiledRecordFolder,
+                unfiledRecordContainer,
                 ContentModel.ASSOC_CONTAINS,
                 parentAssoc.getQName());
     }
@@ -566,7 +568,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         doNothing().when(recordService).invokeBeforeRecordDeclaration(dmNodeRef);
         doNothing().when(recordService).invokeOnRecordDeclaration(dmNodeRef);
 
-        when(mockedFilePlanService.getUnfiledContainer(nonStandardFilePlan)).thenReturn(unfiledRecordFolder);
+        when(mockedFilePlanService.getUnfiledContainer(filePlan)).thenReturn(unfiledRecordContainer);
 
         when(mockedVersionService.getVersionHistory(dmNodeRef)).thenReturn(null);
     }

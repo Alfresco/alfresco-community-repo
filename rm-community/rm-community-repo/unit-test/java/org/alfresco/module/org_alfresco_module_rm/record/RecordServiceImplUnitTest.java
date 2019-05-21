@@ -554,8 +554,8 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
     /**
      * Given a file that is not yet a record
-     * When I create the record specifying a location
-     * Then the record is created in the specified record folder
+     * When I create the record specifying a location where I don't have permissions
+     * Then an exception is thrown
      */
     @Test (expected = AccessDeniedException.class)
     public void createRecordIntoSpecifiedRecordFolderWithoutFilePermission()

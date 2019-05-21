@@ -1036,7 +1036,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // if optional location not specified, use the unfiledContainer
         if (newRecordContainer == null)
         {
-            // get the new record container for the file plan
+            // get the unfiled record container node for the file plan
             newRecordContainer = AuthenticationUtil.runAsSystem(() -> filePlanService.getUnfiledContainer(checkedFilePlan));
 
             if (newRecordContainer == null)
@@ -1044,12 +1044,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 throw new AlfrescoRuntimeException("Unable to create record, because record container could not be found.");
             }
         }
-        // if optional location supplied, check that it is a valid record folder
+        // if optional location supplied, check that it is a valid record folder, unfiled record container or folder
         else
         {
-            QName nodeType = nodeService.getType(newRecordContainer);
-            if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
-                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)))
+            final QName nodeType = nodeService.getType(newRecordContainer);
+            if (!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER)))
             {
                 throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
             }

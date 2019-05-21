@@ -339,7 +339,6 @@
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.closed" value="false"/>
             <entry key="capabilityCondition.declared" value="false"/>
-            <entry key="capabilityCondition.recordFiled" value="false"/>
             <entry key="capabilityCondition.isRecordOriginatingLocationSet" value="true" />
          </map>
       </property>

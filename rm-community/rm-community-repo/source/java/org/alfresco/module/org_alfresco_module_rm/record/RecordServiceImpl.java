@@ -862,7 +862,26 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final boolean isLinked)
     {
+        createRecord(filePlan, nodeRef, null, isLinked);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final NodeRef destinationNodeRef)
+    {
+        createRecord(filePlan, nodeRef, destinationNodeRef, true);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final NodeRef destinationNodeRef, final boolean isLinked)
+    {
         // filePlan can be null. In this case the default RM site will be used.
+        // destinationNodeRef can be null. In this case the unfiled record container will be used
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
 
@@ -882,11 +901,33 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     ruleService.disableRuleType("outbound");
                     try
                     {
-                        // get the new record container for the file plan
-                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
+                        NodeRef newRecordContainer = destinationNodeRef;
+                        // if optional location not specified, use the unfiledContainer
                         if (newRecordContainer == null)
                         {
-                            throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
+                            // get the unfiled record container node for the file plan
+                            newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
+                            if (newRecordContainer == null)
+                            {
+                                throw new AlfrescoRuntimeException("Unable to create record, because record container could not be found.");
+                            }
+                        }
+                        // if optional location supplied, check that it is a valid record folder, unfiled record container or folder
+                        else
+                        {
+                            final QName nodeType = nodeService.getType(newRecordContainer);
+                            if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
+                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER)))
+                            {
+                                throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
+                            }
+
+                            Boolean isClosed = (Boolean) nodeService.getProperty(newRecordContainer, PROP_IS_CLOSED);
+                            if (isClosed != null && isClosed)
+                            {
+                                throw new AlfrescoRuntimeException("Unable to create record, because container is closed.");
+                            }
                         }
 
                         // get the documents readers and writers

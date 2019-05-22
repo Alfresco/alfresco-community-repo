@@ -50,7 +50,7 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
 public class TransferContainerAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public TransferContainerAPI(RMRestWrapper rmRestWrapper)
     {

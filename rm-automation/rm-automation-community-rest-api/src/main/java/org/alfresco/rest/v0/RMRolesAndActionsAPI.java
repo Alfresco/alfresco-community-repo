@@ -30,6 +30,7 @@ import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
 import static org.alfresco.rest.core.v0.APIUtils.ISO_INSTANT_FORMATTER;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
@@ -44,10 +45,10 @@ import java.util.Set;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.core.v0.RMEvents;
+import org.alfresco.utility.Utility;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
@@ -73,6 +74,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class RMRolesAndActionsAPI extends BaseAPI
 {
+    public static final String HOLDS_CONTAINER = "Holds";
+
     /** The URI to view the configured roles and capabilities. */
     private static final String RM_ROLES = "{0}rma/admin/rmroles";
     /** The URI for REST requests about a particular configured role. */
@@ -83,6 +86,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
     private static final Logger LOGGER = LoggerFactory.getLogger(RMRolesAndActionsAPI.class);
     private static final String MOVE_ACTIONS_API = "action/rm-move-to/site/rm/documentLibrary/{0}";
     private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
+    /** The URI to view the configured roles and capabilities. */
+    private static final String RM_HOLDS_API = "{0}rma/holds";
 
     /** http client factory */
     @Autowired
@@ -91,9 +96,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /** user service */
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private ContentService contentService;
 
     /**
      * Get all the configured RM roles.
@@ -105,7 +107,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
     {
         // Using "is=true" includes the in-place readers and writers.
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
+        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject(
+                "data");
         return jsonObject.toMap().keySet();
     }
 
@@ -119,9 +122,29 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
     {
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
+        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject(
+                "data");
         assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
         return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
+    }
+
+    /**
+     * Creates the body for PUT/POST Roles API requests
+     *
+     * @param roleName         the role name
+     * @param roleDisplayLabel a human-readable label for the role
+     * @param capabilities     a list of capabilities for the role
+     * @return
+     */
+    private JSONObject roleRequestBody(String roleName, String roleDisplayLabel, Set<String> capabilities)
+    {
+        final JSONObject requestBody = new JSONObject();
+        requestBody.put("name", roleName);
+        requestBody.put("displayLabel", roleDisplayLabel);
+        final JSONArray capabilitiesArray = new JSONArray();
+        capabilities.forEach(capabilitiesArray::put);
+        requestBody.put("capabilities", capabilitiesArray);
+        return requestBody;
     }
 
     /**
@@ -135,13 +158,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void createRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("name", roleName);
-        requestBody.put("displayLabel", roleDisplayLabel);
-        JSONArray capabilitiesArray = new JSONArray();
-        capabilities.forEach(capabilitiesArray::put);
-        requestBody.put("capabilities", capabilitiesArray);
-        doPostJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES);
+        doPostJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, roleRequestBody(roleName, roleDisplayLabel, capabilities),
+                RM_ROLES);
     }
 
     /**
@@ -155,13 +173,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void updateRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("name", roleName);
-        requestBody.put("displayLabel", roleDisplayLabel);
-        JSONArray capabilitiesArray = new JSONArray();
-        capabilities.forEach(capabilitiesArray::put);
-        requestBody.put("capabilities", capabilitiesArray);
-        doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES_ROLE, roleName);
+        doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, roleRequestBody(roleName, roleDisplayLabel, capabilities),
+                RM_ROLES_ROLE, roleName);
     }
 
     /**
@@ -174,8 +187,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public void deleteRole(String adminUser, String adminPassword, String roleName)
     {
         doDeleteRequest(adminUser, adminPassword, MessageFormat.format(RM_ROLES_ROLE, "{0}", roleName));
-        boolean success = !getConfiguredRoles(adminUser, adminPassword).contains(roleName);
-        assertTrue("Failed to delete role " + roleName + " with " + adminUser, success);
+        assertFalse("Failed to delete role " + roleName + " with " + adminUser,
+                getConfiguredRoles(adminUser, adminPassword).contains(roleName));
     }
 
     /**
@@ -274,7 +287,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         }
         catch (JSONException | IOException e)
         {
-            e.printStackTrace();
+            LOGGER.error(e.toString());
         }
         finally
         {
@@ -312,16 +325,40 @@ public class RMRolesAndActionsAPI extends BaseAPI
     }
 
     /**
-     * Perform an action on the record folder
+     * Perform an action on the given content
      *
      * @param user        the user executing the action
      * @param password    the user's password
      * @param contentName the content name
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS rm_action)
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action)
     {
-        return executeAction(user, password, contentName, rm_action, null);
+        return executeAction(user, password, contentName, action, null);
+    }
+
+    /**
+     * Creates the body for Actions API requests
+     *
+     * @param user          the user executing the action
+     * @param password      the user's password
+     * @param contentName   the content on which the action is executed
+     * @param action        the action executed
+     * @param actionsParams the request parameters
+     * @return the JSONObject created
+     */
+    private JSONObject actionsRequestBody(String user, String password, String contentName, RM_ACTIONS action,
+                                          JSONObject actionsParams)
+    {
+        final String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+        final JSONObject requestParams = new JSONObject();
+        requestParams.put("name", action.getAction());
+        requestParams.put("nodeRef", recNodeRef);
+        if (actionsParams != null)
+        {
+            requestParams.put("params", actionsParams);
+        }
+        return requestParams;
     }
 
     /**
@@ -335,19 +372,12 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action, ZonedDateTime date)
     {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
-        JSONObject requestParams = new JSONObject();
-        requestParams.put("name", action.getAction());
-        requestParams.put("nodeRef", recNodeRef);
+        final JSONObject actionParams = new JSONObject();
         if (date != null)
         {
-            String thisMoment = date.format(ISO_INSTANT_FORMATTER);
-            requestParams.put("params", new JSONObject()
-                            .put("asOfDate", new JSONObject()
-                                    .put("iso8601", thisMoment)
-                                )
-                             );
+            actionParams.put("asOfDate", new JSONObject().put("iso8601", ISO_INSTANT_FORMATTER.format(date)));
         }
+        final JSONObject requestParams = actionsRequestBody(user, password, contentName, action, actionParams);
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
@@ -363,20 +393,14 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public HttpResponse completeEvent(String user, String password, String nodeName, RMEvents event, Instant date)
     {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, nodeName);
-        JSONObject requestParams = new JSONObject();
-        requestParams.put("name", RM_ACTIONS.COMPLETE_EVENT.getAction());
-        requestParams.put("nodeRef", recNodeRef);
         date = (date != null) ? date : Instant.now();
-        String formattedDate = ISO_INSTANT_FORMATTER.format(date);
-        requestParams.put("params", new JSONObject()
-                        .put("eventName", event.getEventName())
-                        .put("eventCompletedBy", user)
-                        .put("eventCompletedAt", new JSONObject()
-                                .put("iso8601", formattedDate)
-                            )
-                         );
-
+        final JSONObject actionParams = new JSONObject().put("eventName", event.getEventName())
+                                                        .put("eventCompletedBy", user)
+                                                        .put("eventCompletedAt", new JSONObject()
+                                                                .put("iso8601", ISO_INSTANT_FORMATTER.format(date))
+                                                            );
+        final JSONObject requestParams = actionsRequestBody(user, password, nodeName, RM_ACTIONS.COMPLETE_EVENT,
+                actionParams);
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
@@ -391,13 +415,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public HttpResponse undoEvent(String user, String password, String contentName, RMEvents event)
     {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
-        JSONObject requestParams = new JSONObject();
-        requestParams.put("name", RM_ACTIONS.UNDO_EVENT.getAction());
-        requestParams.put("nodeRef", recNodeRef);
-        requestParams.put("params", new JSONObject()
-                        .put("eventName", event.getEventName()));
-
+        final JSONObject requestParams = actionsRequestBody(user, password, contentName, RM_ACTIONS.UNDO_EVENT,
+                new JSONObject().put("eventName", event.getEventName()));
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
@@ -416,8 +435,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
         {
             item.delete();
         }
-        boolean success = !(contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
-        assertTrue("Not all items were deleted from " + containerName, success);
+        assertFalse("Not all items were deleted from " + containerName,
+                contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
     }
 
     /**
@@ -430,9 +449,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void deleteHold(String username, String password, String holdName)
     {
-        deleteItem(username, password, "/Holds/" + holdName);
+        deleteItem(username, password, String.format("/%s/%s", HOLDS_CONTAINER, holdName));
     }
-
 
     /**
      * Util method to create a hold
@@ -447,27 +465,47 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public HttpResponse createHold(String user, String password, String holdName, String reason, String description)
     {
         // if the hold already exists don't try to create it again
-        String holdsContainerPath = getFilePlanPath() + "/Holds";
-        String fullHoldPath = holdsContainerPath + "/" + holdName;
-        CmisObject hold = getObjectByPath(user, password, fullHoldPath);
+        final String fullHoldPath = Utility.buildPath(getFilePlanPath(), HOLDS_CONTAINER) + holdName;
+        final CmisObject hold = getObjectByPath(user, password, fullHoldPath);
         if (hold != null)
         {
             return null;
         }
         // retrieve the Holds container nodeRef
-        String parentNodeRef = getItemNodeRef(user, password, "/Holds");
+        final String parentNodeRef = getItemNodeRef(user, password, "/" + HOLDS_CONTAINER);
 
-        JSONObject requestParams = new JSONObject();
+        final JSONObject requestParams = new JSONObject();
         requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
         requestParams.put("prop_cm_name", holdName);
         requestParams.put("prop_cm_description", description);
         requestParams.put("prop_rma_holdReason", reason);
 
         // Make the POST request and throw an assertion error if it fails.
-        HttpResponse httpResponse = doPostJsonRequest(user, password, SC_OK, requestParams, CREATE_HOLDS_API);
+        final HttpResponse httpResponse = doPostJsonRequest(user, password, SC_OK, requestParams, CREATE_HOLDS_API);
         assertNotNull("Expected object to have been created at " + fullHoldPath,
                     getObjectByPath(user, password, fullHoldPath));
         return httpResponse;
+    }
+
+    /**
+     * Adds item (record/ record folder) to the hold
+     *
+     * @param user        the user who adds the item to the hold
+     * @param password    the user's password
+     * @param itemNodeRef the nodeRef of the item to be added to hold
+     * @param holdName    the hold name
+     * @return The HTTP response
+     */
+    public HttpResponse addItemToHold(String user, String password, String itemNodeRef, String holdName)
+    {
+        final JSONArray nodeRefs = new JSONArray().put(getNodeRefSpacesStore() + itemNodeRef);
+        final String holdNodeRef = getItemNodeRef(user, password, String.format("/%s/%s", HOLDS_CONTAINER, holdName));
+        final JSONArray holds = new JSONArray().put(getNodeRefSpacesStore() + holdNodeRef);
+        final JSONObject requestParams = new JSONObject();
+        requestParams.put("nodeRefs", nodeRefs);
+        requestParams.put("holds", holds);
+
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_HOLDS_API);
     }
 
     /**

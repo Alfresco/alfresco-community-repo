@@ -63,7 +63,7 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
 public class UnfiledContainerAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public UnfiledContainerAPI(RMRestWrapper rmRestWrapper)
     {

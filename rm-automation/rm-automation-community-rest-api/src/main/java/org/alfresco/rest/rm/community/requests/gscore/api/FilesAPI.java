@@ -41,10 +41,12 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class FilesAPI extends RMModelRequest
+public class FilesAPI extends RMModelRequest<FilesAPI>
 {
+    public static final String PARENT_ID_PARAM = "parentId";
+
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public FilesAPI(RMRestWrapper rmRestWrapper)
     {
@@ -55,26 +57,6 @@ public class FilesAPI extends RMModelRequest
      * Declare file as record
      *
      * @param fileId The Id of a file to declare as record
-     * @param parameters Request parameters, refer to API documentation for more details
-     * @return The {@link Record} for created record
-     * @throws Exception for malformed JSON responses
-     */
-    public Record declareAsRecord(String fileId, String parameters) throws Exception
-    {
-        mandatoryString("fileId", fileId);
-
-        return getRmRestWrapper().processModel(Record.class, simpleRequest(
-            POST,
-            "/files/{fileId}/declare?{parameters}",
-            fileId,
-            parameters
-        ));
-    }
-
-    /**
-     * A no-parameter version of {@link FilesAPI#declareAsRecord}
-     *
-     * @param fileId The Id of a file to declare as record
      * @return The {@link Record} for created record
      * @throws Exception for malformed JSON responses
      */
@@ -82,7 +64,12 @@ public class FilesAPI extends RMModelRequest
     {
         mandatoryString("fileId", fileId);
 
-        return declareAsRecord(fileId, EMPTY);
+        return getRmRestWrapper().processModel(Record.class, simpleRequest(
+            POST,
+            "/files/{fileId}/declare?{parameters}",
+            fileId,
+            getRmRestWrapper().getParameters()
+        ));
     }
 }
 

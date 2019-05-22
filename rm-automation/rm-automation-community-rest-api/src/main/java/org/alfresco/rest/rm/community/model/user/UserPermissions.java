@@ -32,9 +32,16 @@ package org.alfresco.rest.rm.community.model.user;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class UserPermissions
+public enum UserPermissions
 {
-    public static final String PERMISSION_FILING = "Filing";
-    public static final String PERMISSION_READ_RECORDS = "ReadRecords";
-    public static final String PERMISSION_FILE_RECORDS = "FileRecords";
+    PERMISSION_FILING("Filing"),
+    PERMISSION_READ_RECORDS("ReadRecords"),
+    PERMISSION_FILE_RECORDS("FileRecords");
+
+    public final String permissionId;
+
+    UserPermissions(String permissionId)
+    {
+        this.permissionId = permissionId;
+    }
 }

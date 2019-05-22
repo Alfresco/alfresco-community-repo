@@ -52,8 +52,10 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
@@ -64,11 +66,13 @@ import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderEntry;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
 import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -76,10 +80,11 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.SearchAPI;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -87,8 +92,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-
-import lombok.Getter;
 
 /**
  * Base class for all GS REST API Tests
@@ -110,10 +113,6 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter(value = PROTECTED)
     private ContentService contentService;
-
-    @Autowired
-    @Getter(value = PROTECTED)
-    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @Autowired
     @Getter(value = PROTECTED)
@@ -481,32 +480,32 @@ public class BaseRMRestTest extends RestTest
         return createCategoryFolderInFilePlan(getAdminUser());
     }
 
-    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getUnfiledContainersAPI(user).getUnfiledContainer(componentId);
     }
 
-    public UnfiledContainer getUnfiledContainer(String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainer(String componentId)
     {
         return getUnfiledContainerAsUser(getAdminUser(), componentId);
     }
 
-    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId) throws Exception
+    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getTransferContainerAPI(user).getTransferContainer(componentId);
     }
 
-    public TransferContainer getTransferContainer(String componentId) throws Exception
+    public TransferContainer getTransferContainer(String componentId)
     {
         return getTransferContainerAsUser(getAdminUser(), componentId);
     }
 
-    public FilePlan getFilePlanAsUser(UserModel user, String componentId) throws Exception
+    public FilePlan getFilePlanAsUser(UserModel user, String componentId)
     {
         return getRestAPIFactory().getFilePlansAPI(user).getFilePlan(componentId);
     }
 
-    public FilePlan getFilePlan(String componentId) throws Exception
+    public FilePlan getFilePlan(String componentId)
     {
         return getFilePlanAsUser(getAdminUser(), componentId);
     }
@@ -615,21 +614,6 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Assign filling permission on a record category and give the user RM_USER role
-     *
-     * @param user the user to assign the permission to
-     * @param categoryId the id of the category to assign permissions for
-     * @throws Exception
-     */
-    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId,
-                                                   String userPermission, String userRole) throws Exception
-    {
-        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
-        rmRolesAndActionsAPI.assignRoleToUser(getAdminUser().getUsername(),
-                    getAdminUser().getPassword(), user.getUsername(), userRole);
-    }
-
-    /**
      * Returns search results for the given search term
      *
      * @param user
@@ -658,6 +642,8 @@ public class BaseRMRestTest extends RestTest
                 }
                 catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -706,6 +692,8 @@ public class BaseRMRestTest extends RestTest
                 }
                 catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -755,6 +743,8 @@ public class BaseRMRestTest extends RestTest
                 }
                 catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
             result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,
@@ -794,4 +784,86 @@ public class BaseRMRestTest extends RestTest
         return documentLibrary;
     }
 
+    /**
+     * Checks if the given file has record aspect
+     *
+     * @param testFile the file to be checked
+     * @return true if the file has the aspect, false otherwise
+     */
+    protected boolean hasRecordAspect(FileModel testFile) throws Exception
+    {
+        return hasAspect(testFile,RECORD_TYPE);
+    }
+
+    /**
+     * Checks if the given file has the given aspect
+     *
+     * @param testFile the file to be checked
+     * @param aspectName the matching aspect
+     * @return true if the file has the aspect, false otherwise
+     */
+    private boolean hasAspect(FileModel testFile, String aspectName) throws Exception
+    {
+        return getRestAPIFactory().getNodeAPI(testFile).getNode()
+                                  .getAspectNames().contains(aspectName);
+    }
+
+    /**
+     * Helper method to verify if the declared record is in Unfiled Records location
+     *
+     * @param testFile the file declared as record
+     * @return true if the matching record is found in Unfiled Records, false otherwise
+     */
+    protected boolean isMatchingRecordInUnfiledRecords(FileModel testFile)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                    () -> {
+                        Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
+                                                                                                 .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                                                                                 .getEntries()
+                                                                                                 .stream()
+                                                                                                 .filter(e -> e.getEntry().getId()
+                                                                                                               .equals(testFile.getNodeRefWithoutVersion()))
+                                                                                                 .findAny();
+                        assertTrue(matchingRecord.isPresent());
+                    });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Helper method to verify if the declared record is filed to the record folder location
+     *
+     * @param testFile  the file declared as record
+     * @param recFolder the record folder where the declared record has been filed
+     * @return true if matching record is found in record folder, null otherwise
+     */
+    protected boolean isMatchingRecordInRecordFolder(FileModel testFile, RecordCategoryChild recFolder)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                    () -> {
+                        Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
+                                                                                        .getRecordFolderChildren(recFolder.getId())
+                                                                                        .getEntries()
+                                                                                        .stream()
+                                                                                        .filter(e -> e.getEntry().getId()
+                                                                                                      .equals(testFile.getNodeRefWithoutVersion()))
+                                                                                        .findAny();
+                        assertTrue(matchingRecord.isPresent());
+                    });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
 }

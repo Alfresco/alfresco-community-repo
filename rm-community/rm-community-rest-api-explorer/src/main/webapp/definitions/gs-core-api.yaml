@@ -1842,7 +1842,7 @@ paths:
       tags:
         - files
       summary: Declare as record
-      description: Declares the file **fileId** in the unfiled records container. The original file is moved to the Records Management site and a secondary parent association is created in the file's original site. 
+      description: Declares the file **fileId** in the unfiled records container. The original file is moved to the Records Management site and a secondary parent association is created in the file's original site. Optionally, a destination record folder may be specified, enabling the record to be filed directly into that folder.
       operationId: declareRecord
       parameters:
         - name: fileId
@@ -1855,6 +1855,11 @@ paths:
           description: Flag to indicate whether the record should be hidden from the current parent folder.
           type: boolean
           default: false
+        - name: parentId
+          in: query
+          description: The identifier of the destination record folder.
+          required: false
+          type: string
         - $ref: '#/parameters/recordEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
       consumes:
@@ -1868,14 +1873,14 @@ paths:
             $ref: '#/definitions/RecordEntry'
         '400':
           description: |
-            Invalid parameter: **fileId** is not a valid format
+            Invalid parameter: **fileId** is not a valid format or **parentId** is not a valid format
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to declare a record
         '404':
           description: |
-            **fileId** does not exist
+            **fileId** does not exist or **parentId** does not exist
         '422':
           description: |
             Model integrity exception: the action breaks system's integrity restrictions

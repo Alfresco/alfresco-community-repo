@@ -28,6 +28,7 @@
 package org.alfresco.rm.rest.api.files;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -38,6 +39,8 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
+import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
+import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -57,11 +60,17 @@ import org.springframework.beans.factory.InitializingBean;
 public class FilesEntityResource implements InitializingBean
 {
     private ApiNodesModelFactory nodesModelFactory;
+    private FilePlanComponentsApiUtils apiUtils;
     private AuthenticationUtil authenticationUtil;
     private FilePlanService filePlanService;
     private FileFolderService fileFolderService;
     private RecordService recordService;
     private TransactionService transactionService;
+
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
+    {
+        this.apiUtils = apiUtils;
+    }
 
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -110,13 +119,20 @@ public class FilesEntityResource implements InitializingBean
         // default false (if not provided)
         boolean hideRecord = Boolean.valueOf(parameters.getParameter(Record.PARAM_HIDE_RECORD));
 
+        // Get record folder, if provided
+        final NodeRef targetRecordFolder = extractAndValidateTargetRecordFolder(parameters);
+
         // Create the record
         NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
         RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
             public Void execute()
             {
-                recordService.createRecord(filePlan, file, !hideRecord);
+                recordService.createRecord(filePlan, file, targetRecordFolder, !hideRecord);
+                if (targetRecordFolder != null)
+                {
+                    recordService.file(file);
+                }
                 return null;
             }
         };
@@ -125,6 +141,19 @@ public class FilesEntityResource implements InitializingBean
         // Return record state
         FileInfo info = fileFolderService.getFileInfo(file);
         return nodesModelFactory.createRecord(info, parameters, null, false);
+    }
+
+    /* Helper method to determine the target record folder, if given */
+    private NodeRef extractAndValidateTargetRecordFolder(Parameters parameters)
+    {
+        // Get record folder, if provided
+        NodeRef targetParent = null;
+        final String targetParentId = parameters.getParameter(RMNode.PARAM_PARENT_ID);
+        if (targetParentId != null)
+        {
+            targetParent = apiUtils.lookupAndValidateNodeType(targetParentId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+        }
+        return targetParent;
     }
 
     @Override

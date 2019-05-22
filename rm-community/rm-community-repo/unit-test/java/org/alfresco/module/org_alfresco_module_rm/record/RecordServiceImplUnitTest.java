@@ -76,7 +76,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef nonStandardFilePlan;
     private NodeRef dmNodeRef;
     private NodeRef unfiledRecordContainer;
-    private NodeRef unfiledRecordFolder;
     private ChildAssociationRef parentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
@@ -95,7 +94,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
         unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
-        unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER);
         parentAssoc = mock(ChildAssociationRef.class);
 
         // set-up node service
@@ -495,6 +493,22 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
                 unfiledRecordContainer,
                 ContentModel.ASSOC_CONTAINS,
                 parentAssoc.getQName());
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * And the unfiled record container can't be found
+     * When I create the record without specifying a location
+     * Then an exception is thrown
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void createRecordWhenUnfiledRecordContainerIsNull()
+    {
+        mocksForRecordCreation();
+        when(mockedFilePlanService.getUnfiledContainer(filePlan)).thenReturn(null);
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef);
     }
 
     /**

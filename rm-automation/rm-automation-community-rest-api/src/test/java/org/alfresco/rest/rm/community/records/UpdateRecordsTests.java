@@ -66,10 +66,12 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -86,6 +88,9 @@ public class UpdateRecordsTests extends BaseRMRestTest
 {
     /* to be used to append to modifications */
     private final String MODIFIED_PREFIX = "modified_";
+
+    @Autowired
+    private RoleService roleService;
 
     /** Incomplete electronic and non electronic records created in one record folder, unfiled records container and one unfiled record folder */
     @DataProvider(name = "incompleteRecords")
@@ -234,14 +239,11 @@ public class UpdateRecordsTests extends BaseRMRestTest
     public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
     {
         RMUserAPI rmUserAPI = getRestAPIFactory().getRMUserAPI();
-        // Create test user and add it with collab. privileges
-        UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
+        // Create test user and add it with collab. privileges.
+        // RM Security Officer is the lowest role with Edit Record Metadata capabilities
+        UserModel updateUser = roleService.createUserWithRMRole(ROLE_RM_SECURITY_OFFICER.roleId);
         updateUser.setUserRole(UserRole.SiteCollaborator);
         getDataUser().addUserToSite(updateUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
-
-        // RM Security Officer is the lowest role with Edit Record Metadata capabilities
-        rmUserAPI.assignRoleToUser(updateUser.getUsername(), ROLE_RM_SECURITY_OFFICER.roleId);
-        assertStatusCode(OK);
 
         // Create random folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();

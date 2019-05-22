@@ -41,14 +41,14 @@ import lombok.Setter;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public abstract class RMModelRequest extends ModelRequest<RMModelRequest>
+public abstract class RMModelRequest<Request> extends ModelRequest<Request>
 {
     @Getter (value = PROTECTED)
     @Setter (value = PRIVATE)
     private RMRestWrapper rmRestWrapper;
 
     /**
-     * @param restWrapper
+     * @param rmRestWrapper
      */
     public RMModelRequest(RMRestWrapper rmRestWrapper)
     {

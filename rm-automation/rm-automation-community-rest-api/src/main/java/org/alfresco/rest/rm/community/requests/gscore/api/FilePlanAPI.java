@@ -54,7 +54,7 @@ public class FilePlanAPI extends RMModelRequest
     /**
      * Constructor.
      *
-     * @param restWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public FilePlanAPI(RMRestWrapper rmRestWrapper)
     {

@@ -26,12 +26,22 @@
  */
 package org.alfresco.rest.v0.service;
 
+import static lombok.AccessLevel.PROTECTED;
+import static org.springframework.http.HttpStatus.OK;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import org.alfresco.rest.core.RestAPIFactory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,10 +55,28 @@ import org.springframework.stereotype.Service;
 public class RoleService
 {
     @Autowired
+    @Getter (value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @Autowired
+    @Getter (value = PROTECTED)
     private DataUser dataUser;
+
+    @Autowired
+    @Getter (value = PROTECTED)
+    private RestAPIFactory restAPIFactory;
+
+    /**
+     * Get the capabilities for a role
+     *
+     * @param roleName the role name
+     * @return the list of capabilities
+     */
+    public Set<String> getRoleCapabilities(String roleName)
+    {
+        return getRmRolesAndActionsAPI().getCapabilitiesForRole(getDataUser().getAdminUser().getUsername(),
+                getDataUser().getAdminUser().getPassword(), roleName);
+    }
 
     /**
      * Add capabilities to a role
@@ -58,12 +86,10 @@ public class RoleService
      */
     public void addCapabilitiesToRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = new HashSet<>();
-        roleCapabilities.addAll(rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), role.roleId));
-        capabilities.stream().forEach(cap -> roleCapabilities.add(cap));
+        Set<String> roleCapabilities = new HashSet<>(getRoleCapabilities(role.roleId));
+        roleCapabilities.addAll(capabilities);
 
-        rmRolesAndActionsAPI.updateRole(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+        getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);
     }
 
@@ -75,10 +101,75 @@ public class RoleService
      */
     public void removeCapabilitiesFromRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = rmRolesAndActionsAPI.getCapabilitiesForRole(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(), role.roleId);
+        Set<String> roleCapabilities = getRoleCapabilities(role.roleId);
         roleCapabilities.removeAll(capabilities);
-        rmRolesAndActionsAPI.updateRole(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword(),
+        getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);
+    }
+
+    /**
+     * Assign permission on a record category and give the user RM role
+     *
+     * @param user           the user to assign rm role and permissions
+     * @param categoryId     the id of the category to assign permissions for
+     * @param userPermission the permissions to be assigned to the user
+     * @param userRole       the rm role to be assigned to the user
+     */
+    public void assignUserPermissionsOnCategoryAndRMRole(UserModel user, String categoryId, UserPermissions userPermission,
+                                                         String userRole)
+    {
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
+        getRmRolesAndActionsAPI().assignRoleToUser(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
+                user.getUsername(), userRole);
+    }
+
+    /**
+     * Helper method to create a test user with rm role
+     *
+     * @param userRole the rm role
+     * @return the created user model
+     */
+    public UserModel createUserWithRMRole(String userRole)
+    {
+        final UserModel rmUser = getDataUser().createRandomTestUser();
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), userRole);
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
+        return rmUser;
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the record category
+     *
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the record category
+     * @param recordCategory the category on which user has permissions
+     * @return the created user model
+     */
+    public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
+                                                                  UserPermissions userPermission)
+    {
+        final UserModel rmUser = createUserWithRMRole(userRole);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
+        return rmUser;
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
+     * in collaboration site
+     *
+     * @param siteModel collaboration site
+     * @param recordCategory  the category  on which permission should be given
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the recordCategory
+     * @return the created user model
+     */
+    public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
+                                                                UserRoles userRole, UserPermissions userPermission)
+    {
+        final UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory,
+                userPermission);
+        getDataUser().addUserToSite(rmUser, siteModel, UserRole.SiteCollaborator);
+        return rmUser;
     }
 }

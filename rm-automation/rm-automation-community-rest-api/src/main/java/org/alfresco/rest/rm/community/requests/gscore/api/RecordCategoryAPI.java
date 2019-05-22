@@ -54,7 +54,7 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * Constructor.
      *
-     * @param restWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public RecordCategoryAPI(RMRestWrapper rmRestWrapper)
     {

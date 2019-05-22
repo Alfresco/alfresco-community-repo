@@ -33,6 +33,7 @@ import com.jayway.restassured.RestAssured;
 
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
@@ -113,7 +114,7 @@ public class GSCoreAPI extends RMModelRequest
     /**
      * Provides DSL on all REST calls under <code>records/...</code> API path
      *
-     * @return {@link FilePlanComponentAPI}
+     * @return {@link RecordsAPI}
      */
     public RecordsAPI usingRecords()
     {
@@ -178,5 +179,15 @@ public class GSCoreAPI extends RMModelRequest
     public RMUserAPI usingRMUser()
     {
         return new RMUserAPI(getRmRestWrapper());
+    }
+
+    /**
+     * Provides DSL for ActionExecution API
+     *
+     * @return {@link ActionsExecutionAPI}
+     */
+    public ActionsExecutionAPI usingActionsExecutionsAPI()
+    {
+        return new ActionsExecutionAPI(getRmRestWrapper());
     }
 }

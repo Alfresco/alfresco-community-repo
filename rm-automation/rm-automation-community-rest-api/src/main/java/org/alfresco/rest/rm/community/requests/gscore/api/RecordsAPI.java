@@ -53,7 +53,7 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
 public class RecordsAPI extends RMModelRequest
 {
     /**
-     * @param rmRestWrapper
+     * @param rmRestWrapper RM REST Wrapper
      */
     public RecordsAPI(RMRestWrapper rmRestWrapper)
     {

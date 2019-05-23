@@ -886,7 +886,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("isLinked", isLinked);
 
         recordCreationSanityCheckOnNode(nodeRef);
-        final NodeRef checkedFilePlan = recordCreationSanityCheckOnFilePlan(filePlan);
+        final NodeRef newRecordContainer = recordCreationSanityCheckOnDestinationNode(destinationNodeRef, filePlan);
 
         invokeBeforeRecordDeclaration(nodeRef);
         // do the work of creating the record as the system user
@@ -901,35 +901,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     ruleService.disableRuleType("outbound");
                     try
                     {
-                        NodeRef newRecordContainer = destinationNodeRef;
-                        // if optional location not specified, use the unfiledContainer
-                        if (newRecordContainer == null)
-                        {
-                            // get the unfiled record container node for the file plan
-                            newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
-                            if (newRecordContainer == null)
-                            {
-                                throw new AlfrescoRuntimeException("Unable to create record, because record container could not be found.");
-                            }
-                        }
-                        // if optional location supplied, check that it is a valid record folder, unfiled record container or folder
-                        else
-                        {
-                            final QName nodeType = nodeService.getType(newRecordContainer);
-                            if(!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
-                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
-                                        nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER)))
-                            {
-                                throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
-                            }
-
-                            Boolean isClosed = (Boolean) nodeService.getProperty(newRecordContainer, PROP_IS_CLOSED);
-                            if (isClosed != null && isClosed)
-                            {
-                                throw new AlfrescoRuntimeException("Unable to create record, because container is closed.");
-                            }
-                        }
-
                         // get the documents readers and writers
                         Pair<Set<String>, Set<String>> readersAndWriters = extendedPermissionService.getReadersAndWriters(nodeRef);
 
@@ -1050,6 +1021,53 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
 
         return result;
+    }
+
+    /**
+     * Helper method to check the given destination before trying to declare a record in it.
+     *
+     * @param destinationNodeRef The reference of the container in which the record will be created
+     * @param filePlan           The reference of the file plan node
+     */
+    private NodeRef recordCreationSanityCheckOnDestinationNode(NodeRef destinationNodeRef, final NodeRef filePlan)
+    {
+        final NodeRef checkedFilePlan = recordCreationSanityCheckOnFilePlan(filePlan);
+        NodeRef newRecordContainer = destinationNodeRef;
+        // if optional location not specified, use the unfiledContainer
+        if (newRecordContainer == null)
+        {
+            // get the unfiled record container node for the file plan
+            newRecordContainer = AuthenticationUtil.runAsSystem(() -> filePlanService.getUnfiledContainer(checkedFilePlan));
+
+            if (newRecordContainer == null)
+            {
+                throw new AlfrescoRuntimeException("Unable to create record, because record container could not be found.");
+            }
+        }
+        // if optional location supplied, check that it is a valid record folder, unfiled record container or folder
+        else
+        {
+            final QName nodeType = nodeService.getType(newRecordContainer);
+            if (!(nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
+                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER)))
+            {
+                throw new AlfrescoRuntimeException("Unable to create record, because container is not a valid type for new record.");
+            }
+
+            Boolean isClosed = (Boolean) nodeService.getProperty(newRecordContainer, PROP_IS_CLOSED);
+            if (isClosed != null && isClosed)
+            {
+                throw new AlfrescoRuntimeException("Unable to create record, because container is closed.");
+            }
+
+            if (extendedPermissionService.hasPermission(newRecordContainer, RMPermissionModel.FILING) == AccessStatus.DENIED)
+            {
+                throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+            }
+        }
+
+        return newRecordContainer;
     }
 
     /**

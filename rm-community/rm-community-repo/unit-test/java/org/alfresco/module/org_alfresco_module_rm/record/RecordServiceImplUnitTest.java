@@ -78,6 +78,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef dmNodeRef;
     private NodeRef unfiledRecordContainer;
     private NodeRef frozenRecordFolder;
+    private NodeRef closedRecordFolder;
     private ChildAssociationRef parentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
@@ -97,6 +98,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
         unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
         frozenRecordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
+        closedRecordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
         parentAssoc = mock(ChildAssociationRef.class);
 
         // set-up node service
@@ -600,6 +602,20 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         recordService.createRecord(filePlan, dmNodeRef, frozenRecordFolder);
     }
 
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a closed destination record folder
+     * Then an exception is thrown
+     */
+    @Test(expected= IntegrityException.class)
+    public void createRecordIntoClosedRecordFolder()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef, closedRecordFolder);
+    }
+
     /* Helper method to set up the mocks for record creation */
     private void mocksForRecordCreation()
     {
@@ -613,6 +629,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         when(mockedFilePlanService.isFilePlan(nonStandardFilePlan)).thenReturn(true);
         when(mockedFreezeService.isFrozen(recordFolder)).thenReturn(false);
         when(mockedFreezeService.isFrozen(frozenRecordFolder)).thenReturn(true);
+        when(mockedNodeService.getProperty(closedRecordFolder, PROP_IS_CLOSED)).thenReturn(true);
 
         // mocks for policies
         doNothing().when(recordService).invokeBeforeRecordDeclaration(dmNodeRef);

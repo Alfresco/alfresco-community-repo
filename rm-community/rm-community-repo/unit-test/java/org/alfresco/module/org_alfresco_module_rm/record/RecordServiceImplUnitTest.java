@@ -47,9 +47,11 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -74,7 +76,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef nonStandardFilePlan;
     private NodeRef dmNodeRef;
     private NodeRef unfiledRecordContainer;
-    private NodeRef unfiledRecordFolder;
     private ChildAssociationRef parentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
@@ -93,7 +94,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
         unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
-        unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER);
         parentAssoc = mock(ChildAssociationRef.class);
 
         // set-up node service
@@ -497,6 +497,22 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
     /**
      * Given a file that is not yet a record
+     * And the unfiled record container can't be found
+     * When I create the record without specifying a location
+     * Then an exception is thrown
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void createRecordWhenUnfiledRecordContainerIsNull()
+    {
+        mocksForRecordCreation();
+        when(mockedFilePlanService.getUnfiledContainer(filePlan)).thenReturn(null);
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef);
+    }
+
+    /**
+     * Given a file that is not yet a record
      * When I create the record specifying the unfiled record container
      * Then the record is created in the unfiled record container
      */
@@ -550,6 +566,21 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
         // create the record
         recordService.createRecord(filePlan, dmNodeRef, recordCategory);
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a location where I don't have permissions
+     * Then an exception is thrown
+     */
+    @Test (expected = AccessDeniedException.class)
+    public void createRecordIntoSpecifiedRecordFolderWithoutFilePermission()
+    {
+        mocksForRecordCreation();
+        when(mockedExtendedPermissionService.hasPermission(recordFolder, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef, recordFolder);
     }
 
     /* Helper method to set up the mocks for record creation */

@@ -1068,7 +1068,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (freezeService.isFrozen(newRecordContainer))
             {
-                throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+                throw new IntegrityException(I18NUtil.getMessage("rm.service.add-children-to-frozen-record-folder"),null);
             }
         }
 

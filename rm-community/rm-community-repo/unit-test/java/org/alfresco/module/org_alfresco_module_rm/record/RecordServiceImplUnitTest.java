@@ -50,6 +50,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -590,7 +591,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
      * When I create the record specifying a folder which is in a hold
      * Then an exception is thrown
      */
-    @Test(expected=AccessDeniedException.class)
+    @Test(expected= IntegrityException.class)
     public void createRecordIntoRecordFolderInHold()
     {
         mocksForRecordCreation();

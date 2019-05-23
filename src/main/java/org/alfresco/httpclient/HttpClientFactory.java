@@ -47,6 +47,7 @@ import org.apache.commons.httpclient.HttpHost;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.HttpVersion;
+import org.apache.commons.httpclient.HttpsURL;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.URI;
@@ -287,7 +288,8 @@ public class HttpClientFactory
     {
         // Configure a custom SSL socket factory that will enforce mutual authentication
         HttpClient httpClient = constructHttpClient();
-        HttpHostFactory hostFactory = new HttpHostFactory(new Protocol("https", sslSocketFactory, httpsPort));
+        // Default port is 443 for the HostFactory, when including customised port (like 8983) the port name is skipped from "getHostURL" string
+        HttpHostFactory hostFactory = new HttpHostFactory(new Protocol("https", sslSocketFactory, HttpsURL.DEFAULT_PORT));
         httpClient.setHostConfiguration(new HostConfigurationWithHostFactory(hostFactory));
         httpClient.getHostConfiguration().setHost(httpsHost, httpsPort, "https");
         return httpClient;

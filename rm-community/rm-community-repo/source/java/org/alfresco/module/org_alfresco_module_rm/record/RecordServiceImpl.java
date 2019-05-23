@@ -1065,6 +1065,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
             }
+
+            if (freezeService.isFrozen(newRecordContainer))
+            {
+                throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+            }
         }
 
         return newRecordContainer;

@@ -164,6 +164,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private static final String FINAL_DESCRIPTION = "rm.service.final-version-description";
     private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
     private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
+    private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -1058,7 +1059,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             Boolean isClosed = (Boolean) nodeService.getProperty(newRecordContainer, PROP_IS_CLOSED);
             if (isClosed != null && isClosed)
             {
-                throw new AlfrescoRuntimeException("Unable to create record, because container is closed.");
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER), null);
             }
 
             if (extendedPermissionService.hasPermission(newRecordContainer, RMPermissionModel.FILING) == AccessStatus.DENIED)

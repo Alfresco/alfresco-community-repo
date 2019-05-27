@@ -50,6 +50,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -76,6 +77,8 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef nonStandardFilePlan;
     private NodeRef dmNodeRef;
     private NodeRef unfiledRecordContainer;
+    private NodeRef frozenRecordFolder;
+    private NodeRef closedRecordFolder;
     private ChildAssociationRef parentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
@@ -94,6 +97,8 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
         unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
+        frozenRecordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
+        closedRecordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
         parentAssoc = mock(ChildAssociationRef.class);
 
         // set-up node service
@@ -583,6 +588,34 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         recordService.createRecord(filePlan, dmNodeRef, recordFolder);
     }
 
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a folder which is in a hold
+     * Then an exception is thrown
+     */
+    @Test(expected= IntegrityException.class)
+    public void createRecordIntoRecordFolderInHold()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef, frozenRecordFolder);
+    }
+
+    /**
+     * Given a file that is not yet a record
+     * When I create the record specifying a closed destination record folder
+     * Then an exception is thrown
+     */
+    @Test(expected= IntegrityException.class)
+    public void createRecordIntoClosedRecordFolder()
+    {
+        mocksForRecordCreation();
+
+        // create the record
+        recordService.createRecord(filePlan, dmNodeRef, closedRecordFolder);
+    }
+
     /* Helper method to set up the mocks for record creation */
     private void mocksForRecordCreation()
     {
@@ -590,10 +623,13 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
                 .thenReturn(parentAssoc);
         when(parentAssoc.getQName()).thenReturn(generateQName());
 
-        // mocks for sanity checks on node and fileplan
+        // mocks for sanity checks on node, folder and fileplan
         when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
         when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockedFilePlanService.isFilePlan(nonStandardFilePlan)).thenReturn(true);
+        when(mockedFreezeService.isFrozen(recordFolder)).thenReturn(false);
+        when(mockedFreezeService.isFrozen(frozenRecordFolder)).thenReturn(true);
+        when(mockedNodeService.getProperty(closedRecordFolder, PROP_IS_CLOSED)).thenReturn(true);
 
         // mocks for policies
         doNothing().when(recordService).invokeBeforeRecordDeclaration(dmNodeRef);

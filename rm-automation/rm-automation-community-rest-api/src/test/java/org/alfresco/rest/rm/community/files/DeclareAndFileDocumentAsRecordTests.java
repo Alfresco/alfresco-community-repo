@@ -85,7 +85,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute create-record action, because the destination path could not be found.";
     private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
-    private final static String CLOSED_RECORD_FOLDER_EXC = "Unable to create record, because container is closed";
+    private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
     private final static String HOLD_NAME = "holdName";
 
     private UserModel userFillingPermission, userReadOnlyPermission;

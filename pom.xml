@@ -173,6 +173,12 @@
                 <artifactId>jsoup</artifactId>
                 <version>1.11.3</version>
             </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>1.8.16-alfresco-patched</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

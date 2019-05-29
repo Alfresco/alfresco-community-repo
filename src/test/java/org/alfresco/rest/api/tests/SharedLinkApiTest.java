@@ -1588,7 +1588,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         FavouriteDocument document = new FavouriteDocument(targetGuid);
         FileFavouriteTarget target = new FileFavouriteTarget(document);
         Date creationData = new Date();
-        Favourite favourite = new Favourite(creationData, null, target);
+        Favourite favourite = new Favourite(creationData, null, target, null);
         return favourite;
     }
 

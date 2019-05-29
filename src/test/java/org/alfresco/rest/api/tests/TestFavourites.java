@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -516,7 +516,7 @@ public class TestFavourites extends AbstractBaseApiTest
         FavouriteFolder folder = new FavouriteFolder(targetGuid);
         FolderFavouriteTarget target = new FolderFavouriteTarget(folder);
         Date creationData = new Date();
-        Favourite favourite = new Favourite(creationData, null, target);
+        Favourite favourite = new Favourite(creationData, null, target, null);
         return favourite;
     }
 
@@ -525,7 +525,7 @@ public class TestFavourites extends AbstractBaseApiTest
         FavouriteDocument document = new FavouriteDocument(targetGuid);
         FileFavouriteTarget target = new FileFavouriteTarget(document);
         Date creationData = new Date();
-        Favourite favourite = new Favourite(creationData, null, target);
+        Favourite favourite = new Favourite(creationData, null, target, null);
         return favourite;
     }
 
@@ -533,7 +533,7 @@ public class TestFavourites extends AbstractBaseApiTest
     {
         SiteFavouriteTarget target = new SiteFavouriteTarget(site);
         Date creationDate = new Date();
-        Favourite favourite = new Favourite(creationDate, null, target);
+        Favourite favourite = new Favourite(creationDate, null, target, null);
         return favourite;
     }
 
@@ -1837,6 +1837,51 @@ public class TestFavourites extends AbstractBaseApiTest
                 }
             }
         });
+    }
+
+    /**
+     * REPO-1147 Tests create and get favourite with 'include' parameter and properties.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=properties}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=properties}
+     */
+    @Test
+    public void testCreateAndGetFavouriteWithIncludeProperties() throws Exception
+    {
+        setRequestContext(network1.getId(), person11Id, "password");
+        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+
+        // Favourite the doc (Test Doc1) using POST
+        Favourite file1Favourite = makeFileFavourite(nodeRef1.getId());
+        Favourite file1FavouriteResponse = favouritesProxy.createFavourite(person11Id, file1Favourite, null);
+        assertNull("Properties should be null because they wasn't requested via include=properties", file1FavouriteResponse.getProperties());
+        // Same results for GET
+        file1FavouriteResponse = favouritesProxy.getFavourite(person11Id, file1FavouriteResponse.getTargetGuid(), null);
+        assertNull("Properties should be null because they wasn't requested via include=properties", file1FavouriteResponse.getProperties());
+
+        // create Favourite with include=properties in the result using POST
+        Map<String, String> include = Collections.singletonMap("include", "properties");
+        file1FavouriteResponse = favouritesProxy.createFavourite(person11Id, file1Favourite, include);
+        assertNull("Properties should be null because all of the properties are already in the favourite target and will not be listed twice!", file1FavouriteResponse.getProperties());
+        // Same results for GET
+        file1FavouriteResponse = favouritesProxy.getFavourite(person11Id, file1FavouriteResponse.getTargetGuid(), include);
+        assertNull("Properties should be null because all of the properties are already in the favourite target and will not be listed twice!", file1FavouriteResponse.getProperties());
+
+        // Lock node for creating lock properties
+        TenantUtil.runAsUserTenant((TenantRunAsWork<Void>) () -> {
+            repoService.lockNode(nodeRef1);
+            return null;
+        }, person11Id, network1.getId());
+
+        // create Favourite with include=properties in the result using POST
+        file1FavouriteResponse = favouritesProxy.createFavourite(person11Id, file1Favourite, include);
+        assertNotNull("Properties shouldn't be null because we created some properties while locking the file", file1FavouriteResponse.getProperties());
+        // Same results for GET
+        file1FavouriteResponse = favouritesProxy.getFavourite(person11Id, file1FavouriteResponse.getTargetGuid(), include);
+        assertNotNull("Properties shouldn't be null because we created some properties while locking the file", file1FavouriteResponse.getProperties());
     }
 
     /**

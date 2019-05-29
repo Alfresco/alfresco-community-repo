@@ -39,6 +39,8 @@ public interface Favourites
 {
     String PARAM_INCLUDE_PATH = Nodes.PARAM_INCLUDE_PATH;
 
+    String PARAM_INCLUDE_PROPERTIES = Nodes.PARAM_INCLUDE_PROPERTIES;
+
     /**
      * Add a favourite for user personId
      *

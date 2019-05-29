@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.alfresco.rest.framework.resource.UniqueId;
 
@@ -40,6 +41,7 @@ public class Favourite
 	private String targetGuid;
 	private Date createdAt;
 	private Target target;
+	private Map<String, Object> properties;
 
 	public Date getCreatedAt()
 	{
@@ -72,10 +74,20 @@ public class Favourite
 		this.target = target;
 	}
 
+	public Map<String, Object> getProperties()
+	{
+		return properties;
+	}
+
+	public void setProperties(Map<String, Object> properties)
+	{
+		this.properties = properties;
+	}
+
 	@Override
 	public String toString()
 	{
 		return "Favourite [targetGuid=" + targetGuid
-				+ ", createdAt=" + createdAt + ", target=" + target + "]";
+				+ ", createdAt=" + createdAt + ", target=" + target + ", properties=" + properties + "]";
 	}
 }

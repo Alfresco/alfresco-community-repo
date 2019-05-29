@@ -34,10 +34,12 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.api.tests.PublicApiDateFormat;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -52,13 +54,14 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 	private Date modifiedAt;
 	private FavouritesTarget target;
 	private Type type;
+	private Map<String, Object> properties;
 
 	public Favourite(FavouritesTarget target) throws ParseException
 	{
-		this((Date)null, (Date)null, target);
+		this((Date)null, (Date)null, target, null);
 	}
 
-	public Favourite(Date createdAt, Date modifiedAt, FavouritesTarget target) throws ParseException
+	public Favourite(Date createdAt, Date modifiedAt, FavouritesTarget target, Map<String, Object> properties) throws ParseException
 	{
 		if(target != null)
 		{
@@ -68,6 +71,7 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 		this.createdAt = createdAt;
 		this.modifiedAt = modifiedAt;
 		this.target = target;
+		this.properties = properties;
 		if(target instanceof FileFavouriteTarget)
 		{
 			this.type = Type.FILE;
@@ -86,9 +90,9 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 		}
 	}
 	
-	public Favourite(String createdAt, String modifiedAt, FavouritesTarget target) throws ParseException
+	public Favourite(String createdAt, String modifiedAt, FavouritesTarget target, Map<String, Object> properties) throws ParseException
 	{
-		this(getDate(createdAt), getDate(modifiedAt), target);
+		this(getDate(createdAt), getDate(modifiedAt), target, properties);
 	}
 	
 	private static Date getDate(String dateStr) throws ParseException
@@ -115,6 +119,16 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 	public FavouritesTarget getTarget()
 	{
 		return target;
+	}
+
+	public Map<String, Object> getProperties()
+	{
+		return properties;
+	}
+
+	public void setProperties(Map<String, Object> properties)
+	{
+		this.properties = properties;
 	}
 	
 	public Date getModifiedAt()
@@ -184,8 +198,17 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 		String createdAt = (String)jsonObject.get("createdAt");
 		String modifiedAt = (String)jsonObject.get("modifiedAt");
 		JSONObject jsonTarget = (JSONObject)jsonObject.get("target");
+		Map properties = null;
+		try
+		{
+			properties = RestApiUtil.parsePojo("properties", jsonObject, Map.class);
+		}
+		catch (Exception e)
+		{
+			// ignore
+		}
 		FavouritesTarget target = parseTarget(jsonTarget);
-		Favourite favourite = new Favourite(createdAt, modifiedAt, target);
+		Favourite favourite = new Favourite(createdAt, modifiedAt, target, properties);
 		return favourite;
 	}
 

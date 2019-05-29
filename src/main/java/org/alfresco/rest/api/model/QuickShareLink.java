@@ -264,6 +264,7 @@ public class QuickShareLink
         sb.append(", allowableOperations=").append(getAllowableOperations());
         sb.append(", allowableOperationsOnTarget=").append(getAllowableOperationsOnTarget());
         sb.append(", expiresAt=").append(getExpiresAt());
+        sb.append(", properties=").append(getProperties());
         sb.append("]");
         return sb.toString();
     }

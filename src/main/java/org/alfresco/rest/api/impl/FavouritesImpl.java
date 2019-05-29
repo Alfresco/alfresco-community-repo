@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,10 +27,15 @@ package org.alfresco.rest.api.impl;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -68,6 +73,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,6 +94,15 @@ public class FavouritesImpl implements Favourites
 	private Nodes nodes;
 	private FavouritesService favouritesService;
 	private SiteService siteService;
+    private NamespaceService namespaceService;
+
+    // additional exclude properties for favourites as these can be already top-level properties
+    private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
+            ContentModel.PROP_TITLE,
+            ContentModel.PROP_DESCRIPTION,
+            SiteModel.PROP_SITE_VISIBILITY,
+            SiteModel.PROP_SITE_PRESET
+            );
 
 	public void setPeople(People people)
 	{
@@ -112,6 +128,11 @@ public class FavouritesImpl implements Favourites
 	{
 		this.siteService = siteService;
 	}
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
 
 	private Target getTarget(PersonFavourite personFavourite, Parameters parameters)
 	{
@@ -152,8 +173,32 @@ public class FavouritesImpl implements Favourites
 		fav.setCreatedAt(personFavourite.getCreatedAt());
 		Target target = getTarget(personFavourite, parameters);
 		fav.setTarget(target);
+
+		// REPO-1147 allow retrieving additional properties
+        if (parameters.getInclude().contains(PARAM_INCLUDE_PROPERTIES))
+        {
+            List<String> includeProperties = new LinkedList<>();
+            includeProperties.add(PARAM_INCLUDE_PROPERTIES);
+            // get node representation with only properties included
+            Node node = nodes.getFolderOrDocument(personFavourite.getNodeRef(), null, null, includeProperties, null);
+            // Create a map from node properties excluding properties already in this Favorite
+            Map<String, Object> filteredNodeProperties = filterProps(node.getProperties(), EXCLUDED_PROPS);
+            if(filteredNodeProperties.size() > 0)
+            {
+                fav.setProperties(filteredNodeProperties);
+            }
+        }
+
 		return fav;
 	}
+
+    private Map<String, Object> filterProps(Map<String, Object> properties, List<QName> toRemove)
+    {
+        Map<String, Object> filteredProps = new HashMap<>(properties);
+        List<String> propsToRemove = toRemove.stream().map(e -> e.toPrefixString(namespaceService)).collect(Collectors.toList());
+        filteredProps.keySet().removeAll(propsToRemove);
+        return filteredProps;
+    }
 
     private CollectionWithPagingInfo<Favourite> wrap(Paging paging, PagingResults<PersonFavourite> personFavourites, Parameters parameters)
     {

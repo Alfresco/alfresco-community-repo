@@ -20,10 +20,6 @@ branches:
   only:
     - master
 
-# This should not be required on community build
-before_install:
-  - "cp .travis.settings.xml $HOME/.m2/settings.xml"
-
 matrix:
   include:
     - name: "WhiteSource scan"
@@ -37,3 +33,8 @@ matrix:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/raw/master/standAlone/wss-unified-agent.jar
         # Run WhiteSource Unified Agent
         - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./war
+    - name: "Build packaging"
+      jdk: openjdk11
+      install: skip
+      script:
+        - travis_retry travis_wait 40 mvn install -q -Dbuild-number=${TRAVIS_BUILD_NUMBER} -Dbuild-key=${TRAVIS_COMMIT} -Dbuild-name="${TRAVIS_BUILD_WEB_URL}" -Dscm-path=${TRAVIS_REPO_SLUG} "-Dversion.edition=${VERSION_EDITION}" "-Dimage.tag=${DOCKER_IMAGE_TAG}" -Dimage.registry=${DOCKER_IMAGE_REGISTRY} -Dimage.name=${ALFRESCO_IMAGE_NAME} -Dmaven.javadoc.skip=true -PcommunityDocker

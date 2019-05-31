@@ -328,33 +328,18 @@
       <constructor-arg>
          <ref bean="transformerSelector"/>
       </constructor-arg>
-       <property name="enabled" value="${local.transform.service.enabled}" />
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
        <property name="transformerDebug" ref="transformerDebug" />
    </bean>
 
    <!-- Transformation Debug -->
-   <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
-      <constructor-arg>
-         <ref bean="nodeService"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="mimetypeService"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="contentTransformerRegistry"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerConfig"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerLog" />
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerDebugLog" />
-      </constructor-arg>
-      <property name="contentService">
-         <ref bean="contentService" />
-      </property>
+    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
+       <property name="nodeService" ref="nodeService" />
+       <property name="mimetypeService" ref="mimetypeService" />
+       <property name="transformerRegistry" ref="contentTransformerRegistry" />
+       <property name="transformerConfig" ref="transformerConfig" />
+       <property name="transformerLog" ref="transformerLog" />
+       <property name="transformerDebugLog" ref="transformerDebugLog" />
    </bean>
 
    <!-- Import the transformer configuration from the transformers subsystem -->
@@ -489,6 +474,7 @@
          class="org.alfresco.repo.content.transform.TikaPoweredContentTransformer"
          abstract="true"
          parent="baseContentTransformer">
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
        <property name="remoteTransformerClient">
           <ref bean="tikaRemoteTransformerClient" />
       </property>

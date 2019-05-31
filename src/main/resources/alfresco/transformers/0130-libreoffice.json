@@ -1,0 +1,18 @@
+{
+  "transformers": [
+    {
+      "transformerName": "libreoffice",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",                                                                                        "targetMediaType": "application/msword" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",                                   "targetMediaType": "application/msword" },
+        {"sourceMediaType": "application/msword",                                                        "maxSourceSizeBytes": 10485760, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.ms-excel",                                                  "maxSourceSizeBytes": 10485760, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/vnd.ms-powerpoint",                                             "maxSourceSizeBytes":  6291456, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",   "maxSourceSizeBytes":   786432, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         "maxSourceSizeBytes":  1572864, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "maxSourceSizeBytes":  4194304, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                                                "targetMediaType": "application/pdf"}
+      ]
+    }
+  ]
+}

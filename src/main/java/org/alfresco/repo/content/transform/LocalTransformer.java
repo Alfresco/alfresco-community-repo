@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,32 +23,20 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.model.config;
+package org.alfresco.repo.content.transform;
+
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.Map;
 
 /**
- * Represents a single transformation option.
+ * Interface of a local transformer using flat transform options.
  */
-public class TransformOptionValue extends AbstractTransformOption
+public interface LocalTransformer
 {
-    private String name;
-
-    public TransformOptionValue()
-    {
-    }
-
-    public TransformOptionValue(boolean required, String name)
-    {
-        setRequired(required);
-        setName(name);
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+    void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
+                   String renditionName, NodeRef sourceNodeRef)
+            throws Exception;
 }

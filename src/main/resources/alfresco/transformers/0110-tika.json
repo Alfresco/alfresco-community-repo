@@ -1,0 +1,29 @@
+{
+  "transformOptions": {
+    "tikaOptions": [
+      {"value": {"name": "transform"}},
+      {"value": {"name": "includeContents"}},
+      {"value": {"name": "notExtractBookmarksText"}},
+      {"value": {"name": "targetMimetype"}},
+      {"value": {"name": "targetEncoding"}}
+    ]
+  },
+  "transformers": [
+    {
+      "transformerName": "tika",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf",                           "maxSourceSizeBytes": 26214400, "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/msword",                                                        "targetMediaType": "text/plain"},
+        {"sourceMediaType": "application/vnd.ms-excel",                                                  "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.ms-powerpoint",                                             "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",   "targetMediaType": "text/plain"},
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "text/plain" },
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                "targetMediaType": "text/plain"}
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    }
+  ]
+}

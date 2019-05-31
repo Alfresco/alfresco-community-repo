@@ -38,7 +38,7 @@ public class SwitchingTransformClient implements TransformClient
 {
     private final TransformClient primary;
     private final TransformClient secondary;
-    private ThreadLocal<Boolean> usePrimary = new ThreadLocal<>();
+    private ThreadLocal<Boolean> usePrimary = ThreadLocal.withInitial(()->Boolean.FALSE);
 
     public SwitchingTransformClient(TransformClient primary, TransformClient secondary)
     {

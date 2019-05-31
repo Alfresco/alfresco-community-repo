@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.repo.rendition2.TransformClient;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -49,10 +49,7 @@ import static org.mockito.Mockito.when;
  * Test class for TransformerDebug.
  *
  * @author Alan Davis
- *
- * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
-@Deprecated
 public class TransformerDebugTest
 {
     @Mock
@@ -68,7 +65,7 @@ public class TransformerDebugTest
     private TransformerConfig transformerConfig;
 
     @Mock
-    private TransformationOptions options;
+    private TransformClient transformClient;
 
     @Mock
     private AbstractContentTransformerLimits transformer1;
@@ -108,7 +105,14 @@ public class TransformerDebugTest
         when(transformer3.getName()).thenReturn("transformer3");
         when(transformer4.getName()).thenReturn("transformer4");
 
-        transformerDebug = new TransformerDebug(nodeService, mimetypeService, transformerRegistry, transformerConfig, log, debug);
+        transformerDebug = new TransformerDebug();
+        transformerDebug.setNodeService(nodeService);
+        transformerDebug.setMimetypeService(mimetypeService);
+        transformerDebug.setTransformerRegistry(transformerRegistry);
+        transformerDebug.setTransformerConfig(transformerConfig);
+        transformerDebug.setTransformerLog(log);
+        transformerDebug.setTransformerDebugLog(debug);
+        transformerDebug.setTransformClient(transformClient);
 
         log.setTransformerDebug(transformerDebug);
         log.setTransformerConfig(transformerConfig);
@@ -151,7 +155,7 @@ public class TransformerDebugTest
     {
         long sourceSize = 1024*1024*3/2;
 
-        transformerDebug.pushAvailable("sourceUrl", "application/pdf", "text/plain", options);
+        transformerDebug.pushAvailable("sourceUrl", "application/pdf", "text/plain", null, null);
 
         transformerDebug.unavailableTransformer(transformer1, "application/pdf", "text/plain", 50);
         transformerDebug.unavailableTransformer(transformer2, "application/pdf", "text/plain", 0);
@@ -160,7 +164,7 @@ public class TransformerDebugTest
 
         List<ContentTransformer> transformers = Arrays.asList(new ContentTransformer[] {});
 
-        transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.transform(...)");
+        transformerDebug.availableTransformers(transformers, sourceSize, null, null, "ContentService.transform(...)");
 
         transformerDebug.popAvailable();
 

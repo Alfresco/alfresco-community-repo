@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,17 +26,18 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.LocalTransformer;
+import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -44,27 +45,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Requests rendition transforms take place using legacy transforms available on the local machine (based on
- * {@link org.alfresco.repo.content.transform.AbstractContentTransformer2}. The transform and consumption of the
+ * Requests rendition transforms take place using transforms available on the local machine (based on
+ * {@link LocalTransformer}. The transform and consumption of the
  * resulting content is linked into a single operation that will take place at some point in the future on the local
  * machine.
  *
  * @author adavis
  */
-@Deprecated
-public class LegacyLocalTransformClient extends AbstractTransformClient implements TransformClient
+public class LocalTransformClient implements TransformClient, InitializingBean
 {
-    private static Log logger = LogFactory.getLog(LegacyLocalTransformClient.class);
+    private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
+    private LocalTransformServiceRegistry localTransformServiceRegistry;
     private TransactionService transactionService;
-
     private ContentService contentService;
-
     private RenditionService2Impl renditionService2;
 
-    private TransformationOptionsConverter converter;
-
     private ExecutorService executorService;
+
+    public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
+    {
+        this.localTransformServiceRegistry = localTransformServiceRegistry;
+    }
 
     public void setTransactionService(TransactionService transactionService)
     {
@@ -81,11 +83,6 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
         this.renditionService2 = renditionService2;
     }
 
-    public void setConverter(TransformationOptionsConverter converter)
-    {
-        this.converter = converter;
-    }
-
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -94,10 +91,10 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        super.afterPropertiesSet();
+        PropertyCheck.mandatory(this, "localTransformServiceRegistry", localTransformServiceRegistry);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
-        PropertyCheck.mandatory(this, "converter", converter);
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
@@ -109,21 +106,18 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
     {
         String targetMimetype = renditionDefinition.getTargetMimetype();
         String renditionName = renditionDefinition.getRenditionName();
+
         Map<String, String> options = renditionDefinition.getTransformOptions();
-
-        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-        transformationOptions.setSourceNodeRef(sourceNodeRef);
-
-        ContentTransformer transformer = contentService.getTransformer(contentUrl, sourceMimetype, size, targetMimetype, transformationOptions);
-        if (transformer == null)
+        if (!localTransformServiceRegistry.isSupported(sourceMimetype, size, targetMimetype, options, renditionName))
         {
             String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size;
             logger.debug(message);
             throw new UnsupportedOperationException(message);
         }
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use " + transformer.getName());
+            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use local transforms");
         }
     }
 
@@ -133,42 +127,51 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
         executorService.submit(() ->
         {
             AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    try
+                    transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                     {
-                        String targetMimetype = renditionDefinition.getTargetMimetype();
-                        String renditionName = renditionDefinition.getRenditionName();
-                        Map<String, String> options = renditionDefinition.getTransformOptions();
-
-                        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-                        transformationOptions.setSourceNodeRef(sourceNodeRef);
-
-                        ContentReader reader = LegacyLocalTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-                        if (null == reader || !reader.exists())
+                        try
                         {
-                            throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");
-                        }
-
-                        ContentWriter writer = contentService.getTempWriter();
-                        writer.setMimetype(targetMimetype);
-                        contentService.transform(reader, writer, transformationOptions);
-
-                        InputStream inputStream = writer.getReader().getContentInputStream();
-                        renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
-                    }
-                    catch (Exception e)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
+                            String targetMimetype = renditionDefinition.getTargetMimetype();
                             String renditionName = renditionDefinition.getRenditionName();
-                            logger.debug("Rendition of "+renditionName+" failed", e);
+                            Map<String, String> options = renditionDefinition.getTransformOptions();
+
+                            ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                            if (null == reader || !reader.exists())
+                            {
+                                throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");
+                            }
+
+                            ContentWriter writer = contentService.getTempWriter();
+                            writer.setMimetype(targetMimetype);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform requested for rendition of " + renditionDefinition.getRenditionName());
+                            }
+                            localTransformServiceRegistry.transform(reader, writer, options, renditionName, sourceNodeRef);
+
+                            InputStream inputStream = writer.getReader().getContentInputStream();
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform to be consumed for rendition of " + renditionDefinition.getRenditionName());
+                            }
+                            renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform consumed for rendition of " + renditionDefinition.getRenditionName());
+                            }
                         }
-                        renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
-                        throw e;
-                    }
-                    return null;
-                }), user);
+                        catch (Exception e)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                String renditionName = renditionDefinition.getRenditionName();
+                                logger.error("Rendition of "+renditionName+" failed", e);
+                            }
+                            renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                            throw e;
+                        }
+                        return null;
+                    }), user);
         });
     }
 }

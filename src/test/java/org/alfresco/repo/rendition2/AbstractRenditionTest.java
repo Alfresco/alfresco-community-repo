@@ -28,7 +28,6 @@ package org.alfresco.repo.rendition2;
 import junit.framework.AssertionFailedError;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,11 +44,12 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 /**
- * Test it is possible to create renditions from the quick files.
+ * Abstract test class to check it is possible to create renditions from the quick files using combinations of
+ * local transforms, legacy transforms and the Transform Service.
  *
  * @author adavis
  */
-public class RenditionTest extends AbstractRenditionIntegrationTest
+public abstract class AbstractRenditionTest extends AbstractRenditionIntegrationTest
 {
     // This is the same order as produced by MimetypeMap
     public static final List<String> TAS_REST_API_SOURCE_EXTENSIONS = Arrays.asList(
@@ -89,9 +89,7 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
             "wpd png avatar32",
             "wpd jpg imgpreview");
 
-    @Autowired
-    private TransformServiceRegistry transformServiceRegistry;
-
+    @Override
     @Before
     public void setUp() throws Exception
     {
@@ -148,17 +146,15 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
                     }
                     else
                     {
-                        String task = sourceExtension + " " + targetExtension + " " + renditionName;
-
                         try
                         {
                             checkRendition(testFileName, renditionName, !expectedToFail.contains(sourceTragetRendition));
-                            successes.add(task);
+                            successes.add(sourceTragetRendition);
                             successCount++;
                         }
                         catch (AssertionFailedError e)
                         {
-                            failures.add(task + " " + e.getMessage());
+                            failures.add(sourceTragetRendition + " " + e.getMessage());
                             failedCount++;
                         }
                     }
@@ -214,48 +210,6 @@ public class RenditionTest extends AbstractRenditionIntegrationTest
         List<String> sourceExtensions = getAllSourceMimetypes();
         assertRenditionsOkayFromSourceExtension(sourceExtensions,
                 ALL_SOURCE_EXTENSIONS_EXCLUDE_LIST,
-                Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
-    }
-
-    @Category(DebugTests.class)
-    @Test
-    public void testTransformServiceConfig() throws Exception
-    {
-        internalTestTransformServiceConfig(57, 0);
-    }
-
-    // Tests all renditions supported by the TransformServiceRegistry (in the case of Transform Service, see
-    // transform-service-config.json and the LegacyLocalTransformServiceRegistry see the original ACS config).
-    protected void internalTestTransformServiceConfig(int expectedRenditionCount, int expectedFailedCount) throws Exception
-    {
-        List<String> sourceExtensions = getAllSourceMimetypes();
-        List<String> excludeList = new ArrayList<>();
-
-        for (String sourceExtension : sourceExtensions)
-        {
-            String sourceMimetype = mimetypeMap.getMimetype(sourceExtension);
-            String testFileName = getTestFileName(sourceMimetype);
-            if (testFileName != null)
-            {
-                Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, -1);
-                for (String renditionName : renditionNames)
-                {
-                    RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
-                    String targetMimetype = renditionDefinition.getTargetMimetype();
-                    String targetExtension = mimetypeMap.getExtension(targetMimetype);
-
-                    String sourceTragetRendition = sourceExtension + ' ' + targetExtension + ' ' + renditionName;
-                    Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
-                    if (!transformServiceRegistry.isSupported(sourceMimetype, -1L, targetMimetype,
-                            actualOptions, null))
-                    {
-                        excludeList.add(sourceTragetRendition);
-                    }
-                }
-            }
-        }
-
-        assertRenditionsOkayFromSourceExtension(sourceExtensions, excludeList,
                 Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
     }
 

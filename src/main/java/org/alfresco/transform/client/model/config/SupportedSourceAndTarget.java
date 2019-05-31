@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,29 +31,36 @@ package org.alfresco.transform.client.model.config;
  */
 public class SupportedSourceAndTarget
 {
-    private String sourceExt;
+    private String sourceMediaType;
     private long maxSourceSizeBytes = -1;
-    private String targetExt;
+    private String targetMediaType;
+    private int priority = 50;
 
     public SupportedSourceAndTarget()
     {
     }
 
-    public SupportedSourceAndTarget(String sourceExt, String targetExt, long maxSourceSizeBytes)
+    public SupportedSourceAndTarget(String sourceMediaType, String targetMediaType, long maxSourceSizeBytes)
     {
-        setSourceExt(sourceExt);
+        this(sourceMediaType, targetMediaType, maxSourceSizeBytes, 50);
+    }
+
+    public SupportedSourceAndTarget(String sourceMediaType, String targetMediaType, long maxSourceSizeBytes, int priority)
+    {
+        setSourceMediaType(sourceMediaType);
         setMaxSourceSizeBytes(maxSourceSizeBytes);
-        setTargetExt(targetExt);
+        setTargetMediaType(targetMediaType);
+        setPriority(priority);
     }
 
-    public String getSourceExt()
+    public String getSourceMediaType()
     {
-        return sourceExt;
+        return sourceMediaType;
     }
 
-    public void setSourceExt(String sourceExt)
+    public void setSourceMediaType(String sourceMediaType)
     {
-        this.sourceExt = sourceExt;
+        this.sourceMediaType = sourceMediaType;
     }
 
     public long getMaxSourceSizeBytes()
@@ -66,13 +73,23 @@ public class SupportedSourceAndTarget
         this.maxSourceSizeBytes = maxSourceSizeBytes;
     }
 
-    public String getTargetExt()
+    public String getTargetMediaType()
     {
-        return targetExt;
+        return targetMediaType;
     }
 
-    public void setTargetExt(String targetExt)
+    public void setTargetMediaType(String targetMediaType)
     {
-        this.targetExt = targetExt;
+        this.targetMediaType = targetMediaType;
+    }
+
+    public int getPriority()
+    {
+        return priority;
+    }
+
+    public void setPriority(int priority)
+    {
+        this.priority = priority;
     }
 }

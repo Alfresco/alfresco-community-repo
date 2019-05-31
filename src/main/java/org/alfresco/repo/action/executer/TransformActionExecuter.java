@@ -59,6 +59,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall
  */
+@Deprecated
 public class TransformActionExecuter extends ActionExecuterAbstractBase 
 {    
     /* Error messages */

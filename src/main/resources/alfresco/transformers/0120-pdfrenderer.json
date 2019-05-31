@@ -1,0 +1,22 @@
+{
+  "transformOptions": {
+    "pdfrendererOptions": [
+      {"value": {"name": "page"}},
+      {"value": {"name": "width"}},
+      {"value": {"name": "height"}},
+      {"value": {"name": "allowPdfEnlargement"}},
+      {"value": {"name": "maintainPdfAspectRatio"}}
+    ]
+  },
+  "transformers": [
+    {
+      "transformerName": "pdfrenderer",
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+      ],
+      "transformOptions": [
+        "pdfrendererOptions"
+      ]
+    }
+  ]
+}

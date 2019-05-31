@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Provides a base set of tests for {@link TransactionAwareEventProducer}
@@ -51,6 +52,7 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
     @Autowired
     private TransactionAwareEventProducer eventProducer;
     @Autowired
+    @Qualifier("alfrescoEventObjectMapper")
     private ObjectMapper messagingObjectMapper;
 
     @Test

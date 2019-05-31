@@ -53,6 +53,7 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService" />
       </property>
+      <property name="enabled" value="${legacy.transform.service.enabled}" />
       <property name="jodConverter">
          <ref bean="jodconverter.shared.instance" />
       </property>

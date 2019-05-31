@@ -29,12 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Helper class that builds a {@link Transformer} given the source and target extensions and a pipeline of Transformers
- * for creating intermediary content, or a set of failover transformers.
+ * Helper class that builds a {@link Transformer} given the source and target types and a pipeline of Transformers
+ * for creating intermediary content.
  */
 public class TransformBuilder
 {
-    public Transformer buildPipeLine(String name, String version, List<SupportedSourceAndTarget> sourceAndTargetList,
+    public Transformer buildPipeLine(String name, List<SupportedSourceAndTarget> sourceAndTargetList,
                                      List<ChildTransformer> transformerList)
     {
         List<TransformOption> options = new ArrayList<>(transformerList.size());
@@ -47,13 +47,6 @@ public class TransformBuilder
                         options.add(new TransformOptionGroup(t.isRequired(), t.getTransformer().getTransformOptions()));
                     }
                 });
-        return new Transformer(name, version, options, sourceAndTargetList);
+        return new Transformer(name, options, sourceAndTargetList);
     }
-
-    // TODO Commented out for now as it is unclear what the Transform service will support in terms of failover transformations.
-    // Note: The use of a list of Transformers rather than ChildTransformers, as the supplied actual options would have
-    //       to match one or more of the transformer's options. Matching one or more options is not currently
-    //       implemented by the TransformServiceRegistry
-    // public Transformer buildFailover(String name, String version, List<SupportedSourceAndTarget> sourceAndTargetList,
-    //                                  List<Transformer> transformerList)
 }

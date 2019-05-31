@@ -77,6 +77,8 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     /** the system command executer */
     private RuntimeExec executer;
 
+    private boolean enabled = true;
+
     /** the check command executer */
     private RuntimeExec checkCommand;
 
@@ -110,6 +112,11 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
         this.executer = executer;
     }
 
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
     /**
      * Sets the optional remote transformer client which will be used in preference to a local command if available.
      *
@@ -141,41 +148,44 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
     @Override
     public void afterPropertiesSet()
     {
-        PropertyCheck.mandatory(this, "executer", executer);
-        PropertyCheck.mandatory(this, "isAvailable", checkCommand);
-        // check availability
-        try
+        if (enabled)
         {
-            Pair<Boolean, String> result = remoteTransformerClientConfigured()
-                ? remoteTransformerClient.check(logger)
-                : remoteTransformerClient.check(checkCommand);
-            Boolean isAvailable = result.getFirst();
-            if (isAvailable != null && isAvailable)
+            PropertyCheck.mandatory(this, "executer", executer);
+            PropertyCheck.mandatory(this, "isAvailable", checkCommand);
+            // check availability
+            try
             {
-                versionString = result.getSecond();
-                setAvailable(true);
-                logger.info("Using remote Alfresco PDF Renderer: "+versionString);
-            }
-            else
-            {
-                setAvailable(false);
-                String message = "Remote Alfresco PDF Renderer is not available for transformations. " + result.getSecond();
-                if (isAvailable == null)
+                Pair<Boolean, String> result = remoteTransformerClientConfigured()
+                        ? remoteTransformerClient.check(logger)
+                        : remoteTransformerClient.check(checkCommand);
+                Boolean isAvailable = result.getFirst();
+                if (isAvailable != null && isAvailable)
                 {
-                    logger.debug(message);
+                    versionString = result.getSecond();
+                    setAvailable(true);
+                    logger.info("Using legacy local Alfresco PDF Renderer: " + versionString);
                 }
                 else
                 {
-                    logger.error(message);
+                    setAvailable(false);
+                    String message = "Legacy local Alfresco PDF Renderer is not available for transformations. " + result.getSecond();
+                    if (isAvailable == null)
+                    {
+                        logger.debug(message);
+                    }
+                    else
+                    {
+                        logger.error(message);
+                    }
                 }
             }
-        }
-        catch (Throwable e)
-        {
-            setAvailable(false);
-            logger.error("Remote Alfresco PDF Renderer is not available: " + (e.getMessage() != null ? e.getMessage() : ""));
-            // debug so that we can trace the issue if required
-            logger.debug(e);
+            catch (Throwable e)
+            {
+                setAvailable(false);
+                logger.error("Remote Alfresco PDF Renderer is not available: " + (e.getMessage() != null ? e.getMessage() : ""));
+                // debug so that we can trace the issue if required
+                logger.debug(e);
+            }
         }
     }
 

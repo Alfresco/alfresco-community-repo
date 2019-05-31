@@ -47,11 +47,18 @@ import org.junit.runners.Suite;
     // Requires a running ActiveMQ
     org.alfresco.repo.rawevents.EventBehaviourTest.class,
     org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
+
     // Requires running transformers
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalTransformClientIntegrationTest.class,
-    org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistryTest.class,
-    org.alfresco.repo.rendition2.RenditionTest.class,
+    org.alfresco.repo.rendition2.LocalTransformServiceRegistryTest.class,
+    org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
+    org.alfresco.repo.rendition2.LegacyTransformServiceRegistryTest.class,
+    org.alfresco.repo.rendition2.LegacyTransformClientIntegrationTest.class,
+    org.alfresco.repo.rendition2.LocalRenditionTest.class,
+    org.alfresco.repo.rendition2.LegacyRenditionTest.class,
+    org.alfresco.repo.rendition2.LegacyLocalRenditionTest.class,
+    org.alfresco.repo.rendition2.NoneRenditionTest.class,
+
     org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
     org.alfresco.repo.tagging.TaggingServiceImplTest.class,
     org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
@@ -64,6 +71,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.tenant.MultiTServiceImplTest.class,
     org.alfresco.repo.search.SearcherComponentTest.class,
     org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
+
     org.alfresco.repo.rendition2.RenditionDefinitionTest.class
 })
 public class AppContext06TestSuite

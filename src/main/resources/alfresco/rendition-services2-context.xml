@@ -71,9 +71,20 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="transformClient" parent="localTransformClient"/>
 
-    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LegacyLocalTransformClient">
+    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.SwitchingTransformClient">
+        <constructor-arg name="primary" ref="localTransformClientImpl" />
+        <constructor-arg name="secondary" ref="legacyTransformClient" />
+    </bean>
+
+    <bean id="localTransformClientImpl" class="org.alfresco.repo.rendition2.LocalTransformClient">
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistryImpl" />
         <property name="transactionService" ref="transactionService" />
-        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="contentService" />
+        <property name="renditionService2" ref="renditionService2" />
+    </bean>
+
+    <bean id="legacyTransformClient" class="org.alfresco.repo.rendition2.LegacyTransformClient">
+        <property name="transactionService" ref="transactionService" />
         <property name="contentService" ref="ContentService" />
         <property name="renditionService2" ref="renditionService2" />
         <property name="converter" ref="transformOptionsConverter" />
@@ -91,10 +102,28 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
 
-    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistry" >
+    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.SwitchingTransformServiceRegistry">
+        <constructor-arg name="primary" ref="localTransformServiceRegistryImpl" />
+        <constructor-arg name="secondary" ref="legacyTransformServiceRegistry" />
+    </bean>
+
+    <bean id="localTransformServiceRegistryImpl" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >
+        <property name="jsonObjectMapper" ref="localTransformServiceRegistryJsonObjectMapper" />
+        <property name="pipelineConfigFolder" value="alfresco/transformers" />
+        <property name="enabled" value="${local.transform.service.enabled}" />
+        <property name="properties" ref="global-properties" />
+        <property name="transformerDebug" ref="transformerDebug" />
+        <property name="mimetypeService" ref="MimetypeService" />
+        <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
+        <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
+    </bean>
+
+    <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
+    <bean id="legacyTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyTransformServiceRegistry" >
         <property name="contentService" ref="contentService" />
         <property name="converter" ref="transformOptionsConverter" />
-        <property name="enabled" value="${local.transform.service.enabled}" />
+        <property name="enabled" value="${legacy.transform.service.enabled}" />
         <property name="transformerDebug" ref="transformerDebug" />
     </bean>
 

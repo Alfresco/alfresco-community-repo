@@ -50,20 +50,6 @@
         <property name="trustStoreParameters" ref="sslTrustStoreParameters"/>
     </bean>
 
-    <bean id="ssl.keyStore" class="org.alfresco.encryption.AlfrescoKeyStoreImpl" init-method="init">
-       <property name="keyStoreParameters" ref="sslKeyStoreParameters"/>
-       <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
-       <property name="validateKeyChanges" value="false"/>
-       <property name="encryptionKeysRegistry" ref="encryptionKeysRegistry"/>
-    </bean>
-
-    <bean id="ssl.trustStore" class="org.alfresco.encryption.AlfrescoKeyStoreImpl" init-method="init">
-       <property name="keyStoreParameters" ref="sslTrustStoreParameters"/>
-       <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
-       <property name="validateKeyChanges" value="false"/>
-       <property name="encryptionKeysRegistry" ref="encryptionKeysRegistry"/>
-    </bean>
-
     <bean id="md5EncryptionParameters" class="org.alfresco.httpclient.MD5EncryptionParameters">
         <property name="cipherAlgorithm" value="${encryption.cipherAlgorithm}"/>
         <property name="messageTimeout" value="${encryption.mac.messageTimeout}"/>

@@ -1,8 +1,5 @@
 *.class
 
-# VSCode
-.vscode/
-
 # Eclipse
 .classpath
 .settings

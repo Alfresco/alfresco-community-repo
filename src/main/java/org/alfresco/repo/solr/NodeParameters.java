@@ -57,7 +57,8 @@ public class NodeParameters
     private Set<QName> excludeAspects;
     
     private String shardProperty;
-    
+    private String coreName;
+
     public int getMaxResults()
     {
         return maxResults;
@@ -192,4 +193,14 @@ public class NodeParameters
     {
         this.shardProperty = shardProperty;
     }
+
+    public String getCoreName() {
+        return this.coreName;
+    }
+
+    public void setCoreName(String coreName){
+        this.coreName = coreName;
+    }
+
+
 }

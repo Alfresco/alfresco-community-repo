@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.CRC32;
@@ -46,6 +47,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
+import org.alfresco.repo.domain.node.NodeEntity;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
@@ -375,6 +377,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
 	        for (Node node : nodes)
 	        {
+                if (shardRegistry != null){
+                    shardRegistry.getShardInstanceByTransactionTimestamp(
+                            nodeParameters.getCoreName(),
+                            node.getTransaction().getCommitTimeMs()).ifPresent(
+                                    shardId -> ((NodeEntity) node).setExplicitShardId(shardId));
+
+                }
+
+
 	            callback.handleNode(node);
 	        }
 	    }

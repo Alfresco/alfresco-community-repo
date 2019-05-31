@@ -65,6 +65,20 @@ public class ShardMethodEnumTest
     public void testTypeEXPLICITID()
     {
         Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID, ShardMethodEnum.getShardMethod("EXPLICIT_ID"));
+        Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID, ShardMethodEnum.getShardMethod("EXPLICIT_ID_FALLBACK_DBID"));
+    }
+
+    @Test
+    public void testTypeLRIS()
+    {
+        Assert.assertEquals(ShardMethodEnum.LAST_REGISTERED_INDEXING_SHARD, ShardMethodEnum.getShardMethod("LRIS"));
+        Assert.assertEquals(ShardMethodEnum.LAST_REGISTERED_INDEXING_SHARD, ShardMethodEnum.getShardMethod("LAST_REGISTERED_INDEXING_SHARD"));
+    }
+
+    @Test
+    public void testTypeEXPLICIT_ID_FALLBACK_LRIS()
+    {
+        Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID_FALLBACK_LRIS, ShardMethodEnum.getShardMethod("EXPLICIT_ID_FALLBACK_LRIS"));
     }
 
     @Test

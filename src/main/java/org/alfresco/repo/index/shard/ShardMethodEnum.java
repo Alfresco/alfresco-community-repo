@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.index.shard;
 /**
- * Enum that details sharding type
+ * Enum that details sharding type.
+ *
  * @author Andy
  * @author Michael Suzuki
- *
+ * @author agazzarini
  */
 public enum ShardMethodEnum
 {
@@ -37,6 +38,8 @@ public enum ShardMethodEnum
     DB_ID,
     DB_ID_RANGE,
     EXPLICIT_ID,
+    EXPLICIT_ID_FALLBACK_LRIS,
+    LAST_REGISTERED_INDEXING_SHARD,
     DATE,
     UNKOWN,
     PROPERTY;
@@ -71,7 +74,15 @@ public enum ShardMethodEnum
                 shardMethodEnum = PROPERTY;
                 break;
             case "EXPLICIT_ID":
-                shardMethodEnum = EXPLICIT_ID;
+            case "EXPLICIT_ID_FALLBACK_DBID":
+                shardMethodEnum = EXPLICIT_ID; // Should be better EXPLICIT_ID_FALLBACK_DBID. However, the old value is EXPLICIT_ID
+                break;
+            case "LRIS":
+            case "LAST_REGISTERED_INDEXING_SHARD":
+                shardMethodEnum = LAST_REGISTERED_INDEXING_SHARD;
+                break;
+            case "EXPLICIT_ID_FALLBACK_LRIS":
+                shardMethodEnum = EXPLICIT_ID_FALLBACK_LRIS;
                 break;
             default:
                 shardMethodEnum = UNKOWN;

@@ -5280,7 +5280,72 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("UTF-8", contentInfo.getEncoding());
 
     }
+    
+    @Test
+    public void updatePropertiesMultivalueTest() throws Exception
+    {
+        setRequestContext(user1);
+        
+        String myNodeId = getMyNodeId();
+        // create a multiple-value field from multipart\formdata
+        String fileName = "myfile" + GUID.generate() + ".txt";
+        File file = getResourceFile("quick-2.pdf");
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
+        multiPartBuilder.setAutoRename(true);
+        multiPartBuilder.setNodeType("custom:destination");
+        multiPartBuilder.setOverwrite(false);
+        multiPartBuilder.setMajorVersion(true);
+        multiPartBuilder.setDescription("test");
+        multiPartBuilder.setRenditions(Collections.singletonList("doclib"));
+        Map<String, String> props = new MultiValueMap();
+        props.put("cm:title", "test title");
+        props.put("custom:locations", "loc1");
+        props.put("custom:locations", "loc2");
+        props.put("custom:locations", "loc3");
+        multiPartBuilder.setProperties(props);
 
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document documentResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        //build the multiple-value as json array       
+        String jsonUpdate = "{" +
+         	         "\"name\":\"My Other Folder\","+
+         	         "\"nodeType\":\"custom:destination\"," +
+           	          "\"properties\":"+
+           	          "{" +
+           	          		"\"cm:title\":\"Folder title\","+
+           	          		"\"cm:description\":\"This is an important folder\"," +
+           	          		"\"custom:locations\":["+
+       	                                 "\"location X\","+
+       	                                 "\"location Y\""+
+       	                                 "]" +
+           	          "}" +
+         	      "}";
+         
+        response = put(URL_NODES, documentResponse.getId(), jsonUpdate, null, 200);
+
+        Node nodeUpdateResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        Map<String, Object> propUpdateResponse = nodeUpdateResponse.getProperties();
+        assertNotNull(propUpdateResponse.get("custom:locations"));
+        assertTrue(((ArrayList) (propUpdateResponse.get("custom:locations"))).size() == 2);
+
+        // build the multiple-value as array
+        Map<String, Object> properties = new HashMap();
+        List locations = new ArrayList<String>();
+        locations.add("location X1");
+        properties.put("custom:locations", locations);
+        Node nodeUpdate = new Node();
+        nodeUpdate.setProperties(properties);
+
+        response = put(URL_NODES, documentResponse.getId(), toJsonAsStringNonNull(nodeUpdate), null, 200);
+
+        nodeUpdateResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        propUpdateResponse = nodeUpdateResponse.getProperties();
+        assertNotNull(propUpdateResponse.get("custom:locations"));
+        assertTrue(((ArrayList) (propUpdateResponse.get("custom:locations"))).size() == 1);
+    }
+    
     private String getDataDictionaryNodeId() throws Exception
     {
         Map params = new HashMap<>();

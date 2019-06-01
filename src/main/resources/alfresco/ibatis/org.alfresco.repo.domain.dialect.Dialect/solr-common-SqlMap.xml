@@ -26,7 +26,6 @@
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long" />
         <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="transaction.commitTimeMs" column="txn_commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -116,13 +115,12 @@
     <select id="select_Txn_Nodes" parameterType="SOLRNodeParameters" resultMap="result_Node">
         select
             COALESCE(np.long_value, node.id) as id,
-            node.type_qname_id      as type_qname_id,
-            node.transaction_id     as txn_id,
-            txn.commit_time_ms      as txn_commit_time_ms,
-            node.uuid               as uuid,
-            node.acl_id             as acl_id,
-            store.protocol          as protocol,
-            store.identifier        as identifier,
+            node.type_qname_id  as type_qname_id,
+            node.transaction_id as txn_id,
+            node.uuid           as uuid,
+            node.acl_id         as acl_id,
+            store.protocol      as protocol,
+            store.identifier    as identifier,
             <choose>
                <when test="shardPropertyQNameId == null">
                   null as shard_key

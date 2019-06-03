@@ -41,7 +41,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,10 +52,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -63,6 +68,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 
 /**
@@ -80,6 +86,24 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private NodeRef frozenRecordFolder;
     private NodeRef closedRecordFolder;
     private ChildAssociationRef parentAssoc;
+
+    private final String recordId = "recordId";
+    private final String documentOwner = "Bob";
+    private final String originalName = "originalName";
+    private final NodeRef originatingLocation = new NodeRef("workspace://SpacesStore/originalLocation");
+    private final NodeRef link = new NodeRef("workspace://SpacesStore/linkLocation");
+
+    @Mock
+    private RenditionService mockedRenditionService;
+
+    @Mock
+    private RecordsManagementNotificationHelper mockedNotificationHelper;
+    @Mock
+    private ChildAssociationRef mockedChildAssoc;
+    @Mock
+    private ChildAssociationRef mockedLinkAssoc;
+    @Mock
+    private ChildAssociationRef mockedParentAssoc;
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
@@ -638,5 +662,55 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         when(mockedFilePlanService.getUnfiledContainer(filePlan)).thenReturn(unfiledRecordContainer);
 
         when(mockedVersionService.getVersionHistory(dmNodeRef)).thenReturn(null);
+    }
+
+    /**
+     * Setup the mocks for the reject record scenarios
+     * @param mockProperties the mock for the node properties
+     */
+    private void setUpReject(Map mockProperties)
+    {
+        when(mockedNodeService.getProperties(dmNodeRef)).thenReturn(mockProperties);
+        when(mockedVersionService.getVersionHistory(dmNodeRef)).thenReturn(null);
+        when(mockProperties.get(PROP_IDENTIFIER)).thenReturn(recordId);
+        when(mockProperties.get(PROP_ORIGIONAL_NAME)).thenReturn(originalName);
+        when(mockProperties.get(PROP_RECORD_ORIGINATING_LOCATION)).thenReturn(originatingLocation);
+        List<ChildAssociationRef> assocs = new ArrayList<>();
+        assocs.add(mockedChildAssoc);
+        assocs.add(mockedLinkAssoc);
+        when(mockedNodeService.getParentAssocs(dmNodeRef)).thenReturn(assocs);
+        when(mockedChildAssoc.getParentRef()).thenReturn(originatingLocation);
+        when(mockedLinkAssoc.getParentRef()).thenReturn(dmNodeRef);
+        when(mockedLinkAssoc.getParentRef()).thenReturn(link);
+        when(mockedNodeService.getType(link)).thenReturn(TYPE_RECORD_FOLDER);
+        when(mockedNodeService.getPrimaryParent(dmNodeRef)).thenReturn(mockedParentAssoc);
+        when(mockedParentAssoc.getQName()).thenReturn(ContentModel.TYPE_CATEGORY);
+        doNothing().when(recordService).invokeBeforeRecordRejection(dmNodeRef);
+        doNothing().when(recordService).invokeOnRecordRejection(dmNodeRef);
+    }
+    /**
+     * Test for the reject record method
+     */
+    @Test
+    public void testRejectRecord()
+    {
+        Map mockProperties = mock(HashMap.class);
+        setUpReject(mockProperties);
+        when(mockProperties.get(PROP_RECORD_ORIGINATING_USER_ID)).thenReturn(documentOwner);
+        recordService.rejectRecord(dmNodeRef, "Just because..");
+        verify(mockedNodeService, times(1)).removeChildAssociation(mockedChildAssoc);
+        verify(mockedNodeService, times(1)).removeChildAssociation(mockedLinkAssoc);
+    }
+
+    /**
+     * Test for the reject record method throws an error without document owner
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void testRejectRecordThrowsErrorWithoutDocumentOwner()
+    {
+        Map mockProperties = mock(HashMap.class);
+        setUpReject(mockProperties);
+        when(mockProperties.get(PROP_RECORD_ORIGINATING_USER_ID)).thenReturn(null);
+        recordService.rejectRecord(dmNodeRef, "Just because..");
     }
 }

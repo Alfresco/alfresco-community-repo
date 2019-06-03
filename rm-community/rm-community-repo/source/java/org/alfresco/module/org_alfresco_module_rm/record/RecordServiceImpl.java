@@ -1497,10 +1497,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                         for (ChildAssociationRef childAssociationRef : parentAssocs)
                         {
-                            if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
+                            if (!childAssociationRef.isPrimary() &&
+                                    (childAssociationRef.getParentRef().equals(originatingLocation) ||
+                                            nodeService.getType(childAssociationRef.getParentRef()).equals(TYPE_RECORD_FOLDER)))
                             {
                                 nodeService.removeChildAssociation(childAssociationRef);
-                                break;
                             }
                         }
 

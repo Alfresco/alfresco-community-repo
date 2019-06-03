@@ -1,34 +1,13 @@
 
 package org.alfresco.rest.requests;
 
-import java.io.File;
-
-import javax.json.JsonArrayBuilder;
-
+import io.restassured.http.ContentType;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
-import org.alfresco.rest.model.RestCommentModel;
-import org.alfresco.rest.model.RestCommentModelsCollection;
-import org.alfresco.rest.model.RestNodeAssocTargetModel;
-import org.alfresco.rest.model.RestNodeAssociationModel;
-import org.alfresco.rest.model.RestNodeAssociationModelCollection;
-import org.alfresco.rest.model.RestNodeBodyModel;
-import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
-import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
-import org.alfresco.rest.model.RestNodeModel;
-import org.alfresco.rest.model.RestNodeModelsCollection;
-import org.alfresco.rest.model.RestRatingModel;
-import org.alfresco.rest.model.RestRatingModelsCollection;
-import org.alfresco.rest.model.RestRenditionInfoModel;
-import org.alfresco.rest.model.RestRenditionInfoModelCollection;
-import org.alfresco.rest.model.RestTagModel;
-import org.alfresco.rest.model.RestTagModelsCollection;
-import org.alfresco.rest.model.RestVersionModel;
-import org.alfresco.rest.model.RestVersionModelsCollection;
+import org.alfresco.rest.model.*;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
@@ -37,7 +16,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.reporters.Files;
 
-import io.restassured.http.ContentType;
+import javax.json.JsonArrayBuilder;
+import java.io.File;
 
 /**
  * Declares all Rest API under the /nodes path
@@ -389,6 +369,25 @@ public class Node extends ModelRequest<Node>
         String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/renditions", repoModel.getNodeRef());       
         restWrapper.processEmptyModel(request);
+    }
+
+    /**
+     * Check if specified rendition exists and if not
+     * create node rendition using POST call on '/nodes/{nodeId}/renditions'
+     *
+     * @param renditionId id of rendition to be created
+     * @return
+     * @throws Exception
+     */
+    public void createNodeRenditionIfNotExists(String renditionId) throws Exception
+    {
+        getNodeRendition(renditionId);
+        if (HttpStatus.OK.toString().equals(restWrapper.getStatusCode()))
+        {
+            String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
+            RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/renditions", repoModel.getNodeRef());
+            restWrapper.processEmptyModel(request);
+        }
     }
 
     /**

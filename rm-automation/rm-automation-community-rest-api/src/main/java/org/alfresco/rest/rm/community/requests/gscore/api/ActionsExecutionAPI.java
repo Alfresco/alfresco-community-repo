@@ -75,4 +75,30 @@ public class ActionsExecutionAPI extends RMModelRequest
         return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
     }
+
+    /**
+     * Links a record to a new record folder using v1 actions api
+     *
+     * @param targetNode the node on which the action is executed
+     * @param destination the path of the category/folder to create and place the link
+     */
+    public JSONObject linkRecord(RepoTestModel targetNode, String destination) throws Exception
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.LINK_TO.getActionValue(), targetNode,
+                                     ImmutableMap.of("path", destination, "createRecordPath", "true"));
+    }
+
+    /**
+     * Rejects a record using v1 actions api
+     *
+     * @param targetNode record to reject
+     * @param reason reason for rejection
+     */
+    public JSONObject rejectRecord(RepoTestModel targetNode, String reason) throws Exception
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.REJECT.getActionValue(), targetNode,
+                                     ImmutableMap.of("reason", reason));
+    }
 }

@@ -35,7 +35,7 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>7.62</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>7.63</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>7.11</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.32</dependency.alfresco-data-model.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>

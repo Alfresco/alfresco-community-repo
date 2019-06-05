@@ -62,14 +62,14 @@ public class RejectRecordTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
 
-    private ActionExecutorUtil actionExecuterUtil;
+    private ActionExecutorUtil actionExecutorUtil;
 
     private RecordCategoryChildCollection recordFolders;
 
     @BeforeClass (alwaysRun = true)
     public void setUp() throws Exception
     {
-        actionExecuterUtil = new ActionExecutorUtil();
+        actionExecutorUtil = new ActionExecutorUtil();
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
@@ -95,7 +95,7 @@ public class RejectRecordTests extends BaseRMRestTest
         STEP("Link record to new folder");
         getRestAPIFactory().getActionsAPI().linkRecord(testFile, recordCategory.getName() + "/" + recordFolder.getName() + "_2");
         recordFolders = null;
-        actionExecuterUtil.checkActionExecution(new LinkEvaluator());
+        actionExecutorUtil.checkActionExecution(new LinkEvaluator());
 
         Optional<RecordCategoryChildEntry> linkedFolder = recordFolders.getEntries().stream().filter(child -> child.getEntry().getName().equals(recordFolder.getName() + "_2"))
                                                                        .findFirst();
@@ -106,7 +106,7 @@ public class RejectRecordTests extends BaseRMRestTest
 
             STEP("Reject record");
             getRestAPIFactory().getActionsAPI().rejectRecord(testFile, "Just because");
-            actionExecuterUtil.checkActionExecution(new RejectEvaluator());
+            actionExecutorUtil.checkActionExecution(new RejectEvaluator());
 
             STEP("Check record has been rejected");
             assertFalse("Record rejection failure", isMatchingRecordInRecordFolder(testFile, recordFolder));

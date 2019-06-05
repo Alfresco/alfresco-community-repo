@@ -41,8 +41,6 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildEntry;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
-import org.alfresco.rest.rm.community.util.ActionEvaluator;
-import org.alfresco.rest.rm.community.util.ActionExecutorUtil;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
@@ -62,14 +60,11 @@ public class RejectRecordTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
 
-    private ActionExecutorUtil actionExecutorUtil;
-
-    private RecordCategoryChildCollection recordFolders;
+    RecordCategoryChildCollection recordFolders;
 
     @BeforeClass (alwaysRun = true)
     public void setUp() throws Exception
     {
-        actionExecutorUtil = new ActionExecutorUtil();
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
@@ -80,7 +75,7 @@ public class RejectRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6869")
-    public void testRejectingALinkedRecordRemovesLink() throws Exception
+    public void declareAndFileToValidLocationUsingActionsAPI() throws Exception
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)
@@ -95,7 +90,7 @@ public class RejectRecordTests extends BaseRMRestTest
         STEP("Link record to new folder");
         getRestAPIFactory().getActionsAPI().linkRecord(testFile, recordCategory.getName() + "/" + recordFolder.getName() + "_2");
         recordFolders = null;
-        actionExecutorUtil.checkActionExecution(new LinkEvaluator());
+        checkActionExecution(new LinkEvaluator());
 
         Optional<RecordCategoryChildEntry> linkedFolder = recordFolders.getEntries().stream().filter(child -> child.getEntry().getName().equals(recordFolder.getName() + "_2"))
                                                                        .findFirst();
@@ -106,7 +101,7 @@ public class RejectRecordTests extends BaseRMRestTest
 
             STEP("Reject record");
             getRestAPIFactory().getActionsAPI().rejectRecord(testFile, "Just because");
-            actionExecutorUtil.checkActionExecution(new RejectEvaluator());
+            checkActionExecution(new RejectEvaluator());
 
             STEP("Check record has been rejected");
             assertFalse("Record rejection failure", isMatchingRecordInRecordFolder(testFile, recordFolder));
@@ -128,13 +123,53 @@ public class RejectRecordTests extends BaseRMRestTest
     }
 
     /**
+     * Method to wait and retry when using the actions api
+     * @param evaluator the action specific check for completion
+     */
+    private void checkActionExecution(ActionEvaluator evaluator)
+    {
+        int counter = 0;
+        int waitInMilliSeconds = 7000;
+        while (counter < 4)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                } catch (InterruptedException e)
+                {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            if (evaluator.evaluate())
+            {
+                break;
+            } else
+            {
+                counter++;
+            }
+        }
+        if(counter == 4)
+        {
+            fail(evaluator.getErrorMessage());
+        }
+    }
+
+    private interface ActionEvaluator
+    {
+        boolean evaluate();
+
+        String getErrorMessage();
+    }
+
+    /**
      * Check for completion of link action
      */
     private class LinkEvaluator implements ActionEvaluator
     {
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean evaluate()
         {
@@ -142,9 +177,6 @@ public class RejectRecordTests extends BaseRMRestTest
             return recordFolders != null && recordFolders.getEntries().size() == 2;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getErrorMessage()
         {
@@ -157,19 +189,13 @@ public class RejectRecordTests extends BaseRMRestTest
      */
     private class RejectEvaluator implements ActionEvaluator
     {
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public boolean evaluate()
         {
             RecordFolderCollection records = getRestAPIFactory().getRecordFolderAPI().getRecordFolderChildren(recordFolder.getId());
-            return records != null && records.getEntries().size() == 0;
+            return records != null && records.getEntries().size() == 7;
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public String getErrorMessage()
         {

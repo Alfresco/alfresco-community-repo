@@ -156,6 +156,7 @@ public class NodesGet extends DeclarativeWebScript
             
             String storeProtocol = o.has("storeProtocol") ? o.getString("storeProtocol") : null;
             String storeIdentifier = o.has("storeIdentifier") ? o.getString("storeIdentifier") : null;
+            String coreName = o.has("coreName") ? o.getString("coreName") : null;
             
             List<Long> txnIds = null;
             if(aTxnIds != null)
@@ -180,6 +181,8 @@ public class NodesGet extends DeclarativeWebScript
             nodeParameters.setExcludeNodeTypes(excludeNodeTypes);
             nodeParameters.setIncludeNodeTypes(includeNodeTypes);
             nodeParameters.setShardProperty(shardProperty);
+            nodeParameters.setCoreName(coreName);
+
             
             StoreRef storeRef = null;
             
@@ -198,7 +201,7 @@ public class NodesGet extends DeclarativeWebScript
             nodeParameters.setMaxResults(maxResults);
             
             WebNodeQueryCallback nodeQueryCallback = new WebNodeQueryCallback(maxResults, storeRef, tenantService, qnameDAO);
-            
+
             solrTrackingComponent.getNodes(nodeParameters, nodeQueryCallback);
             
             Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
@@ -231,6 +234,7 @@ public class NodesGet extends DeclarativeWebScript
         private final String tenant;
         private final Long aclId; 
         private final String shardPropertyValue;
+        private final Integer explicitShardId;
 
         public NodeRecord(Node node, QNameDAO qnameDAO, TenantService tenantService)
         {
@@ -241,6 +245,7 @@ public class NodesGet extends DeclarativeWebScript
             this.tenant = tenantService.getDomain(node.getNodeRef().getStoreRef().getIdentifier());
             this.aclId = node.getAclId();
             this.shardPropertyValue = node.getShardKey();
+            this.explicitShardId = node.getExplicitShardId();
         }
 
         public Long getId()
@@ -276,6 +281,11 @@ public class NodesGet extends DeclarativeWebScript
         public String getShardPropertyValue()
         {
             return this.shardPropertyValue;
+        }
+
+        public Integer getExplicitShardId()
+        {
+            return this.explicitShardId;
         }
     }
 

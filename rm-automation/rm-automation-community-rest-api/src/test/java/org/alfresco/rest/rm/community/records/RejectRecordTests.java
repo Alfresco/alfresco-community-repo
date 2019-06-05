@@ -26,25 +26,24 @@
  */
 package org.alfresco.rest.rm.community.records;
 
+import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-
-import java.util.Optional;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.record.RecordBodyFile;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildCollection;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildEntry;
-import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
+import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -58,9 +57,10 @@ public class RejectRecordTests extends BaseRMRestTest
 {
     private SiteModel publicSite;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder;
+    private RecordCategoryChild recordFolder, linkRecordFolder;
 
-    RecordCategoryChildCollection recordFolders;
+    @Autowired
+    private RecordsAPI recordsAPI;
 
     @BeforeClass (alwaysRun = true)
     public void setUp() throws Exception
@@ -68,6 +68,7 @@ public class RejectRecordTests extends BaseRMRestTest
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+        linkRecordFolder = createFolder(recordCategory.getId(), getRandomName("linkRecordFolder"));
     }
 
     /**
@@ -75,7 +76,7 @@ public class RejectRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6869")
-    public void declareAndFileToValidLocationUsingActionsAPI() throws Exception
+    public void rejectLinkedRecord() throws Exception
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)
@@ -83,36 +84,26 @@ public class RejectRecordTests extends BaseRMRestTest
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare document as record with a location parameter value");
-        getRestAPIFactory().getActionsAPI(getAdminUser()).declareAndFile(testFile,
-            Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
-        assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record not declared");
+        Record record = getRestAPIFactory().getFilesAPI()
+                                           .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
+                                           .declareAsRecord(testFile.getNodeRefWithoutVersion());
+        assertStatusCode(CREATED);
 
         STEP("Link record to new folder");
-        getRestAPIFactory().getActionsAPI().linkRecord(testFile, recordCategory.getName() + "/" + recordFolder.getName() + "_2");
-        recordFolders = null;
-        checkActionExecution(new LinkEvaluator());
+        RecordBodyFile linkRecordBody = RecordBodyFile.builder().targetParentId(linkRecordFolder.getId()).build();
+        getRestAPIFactory().getRecordsAPI().fileRecord(linkRecordBody, record.getId());
 
-        Optional<RecordCategoryChildEntry> linkedFolder = recordFolders.getEntries().stream().filter(child -> child.getEntry().getName().equals(recordFolder.getName() + "_2"))
-                                                                       .findFirst();
-        if (linkedFolder.isPresent())
-        {
-            STEP("Verify the linked record has been added");
-            assertFalse("Linked record not created", getRestAPIFactory().getRecordFolderAPI().getRecordFolderChildren(linkedFolder.get().getEntry().getId()).isEmpty());
+        STEP("Verify the linked record has been added");
+        assertTrue(isMatchingRecordInRecordFolder(testFile, linkRecordFolder), "Linked record not created");
 
-            STEP("Reject record");
-            getRestAPIFactory().getActionsAPI().rejectRecord(testFile, "Just because");
-            checkActionExecution(new RejectEvaluator());
+        STEP("Reject record");
+        recordsAPI.rejectRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getName(), "Just because");
 
-            STEP("Check record has been rejected");
-            assertFalse("Record rejection failure", isMatchingRecordInRecordFolder(testFile, recordFolder));
+        STEP("Check record has been rejected");
+        assertFalse(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record rejection failure");
 
-            STEP("Verify the linked record has been removed");
-            assertTrue(getRestAPIFactory().getRecordFolderAPI().getRecordFolderChildren(linkedFolder.get().getEntry().getId()).isEmpty(), "Record link not removed");
-        }
-        else
-        {
-            fail("Problem creating linked record");
-        }
+        STEP("Verify the linked record has been removed");
+        assertFalse(isMatchingRecordInRecordFolder(testFile, linkRecordFolder), "Record link not removed");
     }
 
     @AfterClass (alwaysRun = true)
@@ -120,86 +111,5 @@ public class RejectRecordTests extends BaseRMRestTest
     {
         deleteRecordCategory(recordCategory.getId());
         dataSite.deleteSite(publicSite);
-    }
-
-    /**
-     * Method to wait and retry when using the actions api
-     * @param evaluator the action specific check for completion
-     */
-    private void checkActionExecution(ActionEvaluator evaluator)
-    {
-        int counter = 0;
-        int waitInMilliSeconds = 7000;
-        while (counter < 4)
-        {
-            synchronized (this)
-            {
-                try
-                {
-                    this.wait(waitInMilliSeconds);
-                } catch (InterruptedException e)
-                {
-                    // Restore interrupted state...
-                    Thread.currentThread().interrupt();
-                }
-            }
-
-            if (evaluator.evaluate())
-            {
-                break;
-            } else
-            {
-                counter++;
-            }
-        }
-        if(counter == 4)
-        {
-            fail(evaluator.getErrorMessage());
-        }
-    }
-
-    private interface ActionEvaluator
-    {
-        boolean evaluate();
-
-        String getErrorMessage();
-    }
-
-    /**
-     * Check for completion of link action
-     */
-    private class LinkEvaluator implements ActionEvaluator
-    {
-        @Override
-        public boolean evaluate()
-        {
-            recordFolders = getRestAPIFactory().getRecordCategoryAPI().getRecordCategoryChildren(recordCategory.getId());
-            return recordFolders != null && recordFolders.getEntries().size() == 2;
-        }
-
-        @Override
-        public String getErrorMessage()
-        {
-            return "Error creating linked record";
-        }
-    }
-
-    /**
-     * Check for completion of reject action
-     */
-    private class RejectEvaluator implements ActionEvaluator
-    {
-        @Override
-        public boolean evaluate()
-        {
-            RecordFolderCollection records = getRestAPIFactory().getRecordFolderAPI().getRecordFolderChildren(recordFolder.getId());
-            return records != null && records.getEntries().size() == 7;
-        }
-
-        @Override
-        public String getErrorMessage()
-        {
-            return "Error rejecting record";
-        }
     }
 }

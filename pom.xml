@@ -20,18 +20,15 @@
 
    <distributionManagement>
       <repository>
-          <id>alfresco-internal</id>
+          <id>alfresco-public</id>
           <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
       </repository>
-      <snapshotRepository>
-          <id>alfresco-internal-snapshots</id>
-          <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-      </snapshotRepository>
    </distributionManagement>
    
    <properties>
       <dependency.spring.version>5.0.4.RELEASE</dependency.spring.version>
       <dependency.surf.version>6.8</dependency.surf.version>
+      <maven.build.sourceVersion>11</maven.build.sourceVersion>
    </properties>
 
    <dependencies>

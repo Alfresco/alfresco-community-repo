@@ -80,7 +80,7 @@ public class RejectRecordTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6869")
-    public void declareAndFileToValidLocationUsingActionsAPI() throws Exception
+    public void testRejectingALinkedRecordRemovesLink() throws Exception
     {
         STEP("Create a document in the collaboration site");
         FileModel testFile = dataContent.usingSite(publicSite)

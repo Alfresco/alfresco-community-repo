@@ -680,7 +680,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         assocs.add(mockedLinkAssoc);
         when(mockedNodeService.getParentAssocs(dmNodeRef)).thenReturn(assocs);
         when(mockedChildAssoc.getParentRef()).thenReturn(originatingLocation);
-        when(mockedLinkAssoc.getParentRef()).thenReturn(dmNodeRef);
         when(mockedLinkAssoc.getParentRef()).thenReturn(link);
         when(mockedNodeService.getType(link)).thenReturn(TYPE_RECORD_FOLDER);
         when(mockedNodeService.getPrimaryParent(dmNodeRef)).thenReturn(mockedParentAssoc);

@@ -87,13 +87,15 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
     private final static String HOLD_NAME = "holdName";
+    private final static String RECORD_FOLDER_NAME_ENCODED = "Folder%20With%20Spaces%20In%20Name";
+    private final static String RECORD_FOLDER_NAME_DECODED = "Folder With Spaces In Name";
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
     private FolderModel testFolder;
     private FileModel testFile;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory, closedRecordFolder;
+    private RecordCategoryChild recordFolder, subcategoryRecordFolder, subCategory, closedRecordFolder, recordFolderWithSpacesInName;
     private UnfiledContainerChild unfiledContainerFolder;
 
     @Autowired
@@ -165,6 +167,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
         closedRecordFolder = createFolder(recordCategory.getId(), getRandomName("closedRecordFolder"));
         closeFolder(closedRecordFolder.getId());
+        recordFolderWithSpacesInName = createFolder(recordCategory.getId(), RECORD_FOLDER_NAME_DECODED);
 
         STEP("Create rm users with different permissions on the record category");
         userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);
@@ -217,6 +220,27 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
         STEP("Verify the declared record is placed in the record folder");
         assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record should be filed to record folder");
+
+        STEP("Verify the document in collaboration site is now a record");
+        assertTrue(hasRecordAspect(testFile), "File should have record aspect");
+    }
+
+    /**
+     * Given I am calling the "declare as record" action
+     * And I provide a valid encoded record folder name in the location parameter
+     * When I execute the action
+     * Then the document is declared as a record
+     * And is filed to the record folder specified
+     */
+    @Test
+    public void declareAndFileToValidEncodedLocationUsingActionsAPI() throws Exception
+    {
+        STEP("Declare document as record with an encoded location parameter value");
+        getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFile(testFile,
+            Utility.buildPath(recordCategory.getName(), RECORD_FOLDER_NAME_ENCODED));
+
+        STEP("Verify the declared record is placed in the record folder");
+        assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolderWithSpacesInName), "Record should be filed to record folder");
 
         STEP("Verify the document in collaboration site is now a record");
         assertTrue(hasRecordAspect(testFile), "File should have record aspect");

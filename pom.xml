@@ -21,13 +21,9 @@
 
     <distributionManagement>
         <repository>
-            <id>alfresco-internal</id>
+            <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
-        <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
     </distributionManagement>
 
     <properties>
@@ -39,7 +35,7 @@
             source/java/org/alfresco/repo/search/impl/parsers/FTSParser.java,
             source/java/org/alfresco/repo/search/impl/parsers/FTSLexer.java
         </sonar.exclusions>
-
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
     </properties>
 
     <build>

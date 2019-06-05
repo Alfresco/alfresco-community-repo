@@ -74,7 +74,7 @@ public abstract class AbstractLocalTransformer implements LocalTransformer
                                           ContentWriter writer, Map<String, String> transformOptions,
                                           String sourceMimetype, String targetMimetype,
                                           String sourceExtension, String targetExtension,
-                                          String targetEncoding, String renditionName, NodeRef sourceNodeRef)
+                                          String renditionName, NodeRef sourceNodeRef)
                                           throws Exception;
 
     @Override
@@ -86,7 +86,6 @@ public abstract class AbstractLocalTransformer implements LocalTransformer
         {
             String sourceMimetype = reader.getMimetype();
             String targetMimetype = writer.getMimetype();
-            String targetEncoding = writer.getEncoding();
 
             String sourceExtension = mimetypeService.getExtension(sourceMimetype);
             String targetExtension = mimetypeService.getExtension(targetMimetype);
@@ -96,12 +95,11 @@ public abstract class AbstractLocalTransformer implements LocalTransformer
                         "   source mimetype: " + sourceMimetype + "\n" +
                         "   source extension: " + sourceExtension + "\n" +
                         "   target mimetype: " + targetMimetype + "\n" +
-                        "   target extension: " + targetExtension + "\n" +
-                        "   target encoding: " + targetEncoding);
+                        "   target extension: " + targetExtension);
             }
 
             transformWithDebug(reader, writer, transformOptions, renditionName, sourceNodeRef, sourceMimetype,
-                    targetMimetype, targetEncoding, sourceExtension, targetExtension);
+                    targetMimetype, sourceExtension, targetExtension);
 
             if (log.isDebugEnabled())
             {
@@ -122,7 +120,7 @@ public abstract class AbstractLocalTransformer implements LocalTransformer
 
     private void transformWithDebug(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
                                     String renditionName, NodeRef sourceNodeRef, String sourceMimetype, String targetMimetype,
-                                    String targetEncoding, String sourceExtension, String targetExtension) throws Exception
+                                    String sourceExtension, String targetExtension) throws Exception
     {
 
         try
@@ -137,7 +135,7 @@ public abstract class AbstractLocalTransformer implements LocalTransformer
 
             strictMimetypeCheck(reader, sourceNodeRef, sourceMimetype);
             transformImpl(reader, writer, transformOptions, sourceMimetype,
-                    targetMimetype, sourceExtension, targetExtension, targetEncoding, renditionName, sourceNodeRef);
+                    targetMimetype, sourceExtension, targetExtension, renditionName, sourceNodeRef);
         }
         catch (Throwable e)
         {

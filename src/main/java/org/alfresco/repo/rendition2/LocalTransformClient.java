@@ -110,7 +110,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         Map<String, String> options = renditionDefinition.getTransformOptions();
         if (!localTransformServiceRegistry.isSupported(sourceMimetype, size, targetMimetype, options, renditionName))
         {
-            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size;
+            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size + " using local transforms";
             logger.debug(message);
             throw new UnsupportedOperationException(message);
         }

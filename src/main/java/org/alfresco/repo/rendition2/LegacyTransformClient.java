@@ -118,13 +118,13 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         ContentTransformer transformer = contentService.getTransformer(contentUrl, sourceMimetype, size, targetMimetype, transformationOptions);
         if (transformer == null)
         {
-            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size;
+            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size + " using legacy transform";
             logger.debug(message);
             throw new UnsupportedOperationException(message);
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use " + transformer.getName());
+            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use legacy transform " + transformer.getName());
         }
     }
 

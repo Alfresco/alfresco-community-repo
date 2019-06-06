@@ -41,7 +41,7 @@ import java.util.Map;
  * @author adavis
  */
 @Deprecated
-public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+public class LegacyLocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
 {
     private ContentService contentService;
     private TransformationOptionsConverter converter;
@@ -85,21 +85,14 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
         if (firstTime)
         {
             firstTime = false;
-            transformerDebug.debug("Legacy transforms are " + (enabled ? "enabled" : "disabled"));
+            transformerDebug.debug("Local legacy transformers are " + (enabled ? "enabled" : "disabled"));
         }
 
         long maxSize = 0;
         if (enabled)
         {
-            try
-            {
-                TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-                maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
-            }
-            catch (IllegalArgumentException ignore)
-            {
-                // Typically if the mimetype is invalid.
-            }
+            TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
+            maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
         }
         return maxSize;
     }

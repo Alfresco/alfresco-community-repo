@@ -48,14 +48,7 @@ public class JodContentTransformer extends OOoContentTransformerHelper implement
 {
     private static Log logger = LogFactory.getLog(JodContentTransformer.class);
 
-    private boolean enabled = true;
-
     private JodConverter jodconverter;
-
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
 
     public void setJodConverter(JodConverter jodc)
     {
@@ -90,29 +83,26 @@ public class JodContentTransformer extends OOoContentTransformerHelper implement
     @Override
     public void afterPropertiesSet()
     {
-        if (enabled)
+        super.afterPropertiesSet();
+        if (remoteTransformerClientConfigured())
         {
-            super.afterPropertiesSet();
-            if (remoteTransformerClientConfigured())
+            Pair<Boolean, String> result = remoteTransformerClient.check(logger);
+            Boolean isAvailable = result.getFirst();
+            if (isAvailable != null && isAvailable)
             {
-                Pair<Boolean, String> result = remoteTransformerClient.check(logger);
-                Boolean isAvailable = result.getFirst();
-                if (isAvailable != null && isAvailable)
+                String versionString = result.getSecond().trim();
+                logger.info("Using remote JodCoverter: "+versionString);
+            }
+            else
+            {
+                String message = "Remote JodConverter is not available for transformations. " + result.getSecond();
+                if (isAvailable == null)
                 {
-                    String versionString = result.getSecond().trim();
-                    logger.info("Using legacy local JodCoverter: " + versionString);
+                    logger.debug(message);
                 }
                 else
                 {
-                    String message = "Legacy local JodConverter is not available for transformations. " + result.getSecond();
-                    if (isAvailable == null)
-                    {
-                        logger.debug(message);
-                    }
-                    else
-                    {
-                        logger.error(message);
-                    }
+                    logger.error(message);
                 }
             }
         }

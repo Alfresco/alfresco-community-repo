@@ -25,12 +25,9 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-import org.junit.AfterClass;
+import com.sun.star.auth.InvalidArgumentException;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,48 +38,27 @@ import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_OPENXML_WORDPROCESS
 import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
 
 /**
- * Integration tests for {@link LocalTransformServiceRegistry}
+ * Integration tests for {@link LegacyLocalTransformServiceRegistry}
  */
-public class LocalTransformServiceRegistryTest extends AbstractRenditionIntegrationTest
+public class LegacyLocalTransformServiceRegistryTest extends AbstractRenditionIntegrationTest
 {
-    @Autowired
-    private LocalTransformServiceRegistry localTransformServiceRegistry;
+    private static final String RENDITION_NAME = "pdf";
 
-    protected TransformServiceRegistry transformServiceRegistry;
+    @Autowired
+    private LegacyLocalTransformServiceRegistry transformServiceRegistry;
+
+    @Autowired
+    private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
 
     private Map<String, String> options;
-
-    @BeforeClass
-    public static void before()
-    {
-        AbstractRenditionIntegrationTest.before();
-        local();
-    }
-
-    @AfterClass
-    public static void after()
-    {
-        AbstractRenditionIntegrationTest.after();
-    }
 
     @Before
     public void setUp() throws Exception
     {
         super.setUp();
-        transformServiceRegistry = localTransformServiceRegistry;
-
         RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(RENDITION_NAME);
         options = definition2.getTransformOptions();
     }
-
-    protected void setEnabled(boolean enabled)
-    {
-        localTransformServiceRegistry.setEnabled(enabled);
-    }
-    private static final String RENDITION_NAME = "pdf";
-
-    @Autowired
-    private LegacyTransformServiceRegistry legacyTransformServiceRegistry;
 
     @Test
     public void testIsSupported()
@@ -95,7 +71,7 @@ public class LocalTransformServiceRegistryTest extends AbstractRenditionIntegrat
         // Bad Source
         Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, RENDITION_NAME));
         // Bad Target
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, "pdfBad", options, "pdfBad"));
+        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, "pdfBad", options, RENDITION_NAME));
 
         // Good MaxSize docx max size is 768K
         Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 768L*1024, MIMETYPE_PDF, options, RENDITION_NAME));
@@ -113,7 +89,7 @@ public class LocalTransformServiceRegistryTest extends AbstractRenditionIntegrat
         Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, "custom"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testBadOptions()
     {
         // Source, Target and Props are in dictionary.properties
@@ -129,12 +105,12 @@ public class LocalTransformServiceRegistryTest extends AbstractRenditionIntegrat
         Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
         try
         {
-            setEnabled(false);
+            transformServiceRegistry.setEnabled(false);
             Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
         }
         finally
         {
-            setEnabled(true);
+            transformServiceRegistry.setEnabled(true);
         }
         Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
     }

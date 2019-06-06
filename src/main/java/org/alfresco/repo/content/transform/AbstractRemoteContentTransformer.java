@@ -42,16 +42,9 @@ import org.apache.commons.logging.Log;
 @Deprecated
 public abstract class AbstractRemoteContentTransformer extends AbstractContentTransformer2
 {
-    private boolean enabled = true;
-
     private RemoteTransformerClient remoteTransformerClient;
 
     private boolean available = false;
-
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
 
     /**
      * Sets the optional remote transformer client which will be used in preference to a local command if available.
@@ -82,49 +75,46 @@ public abstract class AbstractRemoteContentTransformer extends AbstractContentTr
 
     public void afterPropertiesSet()
     {
-        if (enabled)
+        // check availability
+        if (remoteTransformerClientConfigured())
         {
-            // check availability
-            if (remoteTransformerClientConfigured())
+            Log logger = getLogger();
+            try
             {
-                Log logger = getLogger();
-                try
+                Pair<Boolean, String> result = remoteTransformerClient.check(logger);
+                Boolean isAvailable = result.getFirst();
+                String msg = result.getSecond() == null ? "" : result.getSecond();
+                if (isAvailable != null && isAvailable)
                 {
-                    Pair<Boolean, String> result = remoteTransformerClient.check(logger);
-                    Boolean isAvailable = result.getFirst();
-                    String msg = result.getSecond() == null ? "" : result.getSecond();
-                    if (isAvailable != null && isAvailable)
+                    String versionString = msg;
+                    setAvailable(true);
+                    logger.info("Using remote " + getName() + ": " + versionString);
+                }
+                else
+                {
+                    setAvailable(false);
+                    String message = "Remote " + getName() + " is not available for transformations. " + msg;
+                    if (isAvailable == null)
                     {
-                        String versionString = msg;
-                        setAvailable(true);
-                        logger.info("Using legacy local " + getName() + ": " + versionString);
+                        logger.debug(message);
                     }
                     else
                     {
-                        setAvailable(false);
-                        String message = "Legacy local " + getName() + " is not available for transformations. " + msg;
-                        if (isAvailable == null)
-                        {
-                            logger.debug(message);
-                        }
-                        else
-                        {
-                            logger.error(message);
-                        }
+                        logger.error(message);
                     }
                 }
-                catch (Throwable e)
-                {
-                    setAvailable(false);
-                    logger.error("Remote " + getName() + " is not available: " + (e.getMessage() != null ? e.getMessage() : ""));
-                    // debug so that we can trace the issue if required
-                    logger.debug(e);
-                }
             }
-            else
+            catch (Throwable e)
             {
-                available = true;
+                setAvailable(false);
+                logger.error("Remote " + getName() + " is not available: " + (e.getMessage() != null ? e.getMessage() : ""));
+                // debug so that we can trace the issue if required
+                logger.debug(e);
             }
+        }
+        else
+        {
+            available = true;
         }
     }
 

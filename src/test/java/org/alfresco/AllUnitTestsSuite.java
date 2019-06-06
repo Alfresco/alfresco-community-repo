@@ -200,8 +200,7 @@ import org.junit.runners.Suite;
     org.alfresco.util.bean.HierarchicalBeanLoaderTest.class,
     org.alfresco.util.resource.HierarchicalResourceLoaderTest.class,
     org.alfresco.repo.events.ClientUtilTest.class,
-    org.alfresco.repo.rendition2.RenditionService2Test.class,
-    org.alfresco.transform.client.model.config.TransformServiceRegistryImplTest.class
+    org.alfresco.repo.rendition2.RenditionService2Test.class
 })
 public class AllUnitTestsSuite
 {

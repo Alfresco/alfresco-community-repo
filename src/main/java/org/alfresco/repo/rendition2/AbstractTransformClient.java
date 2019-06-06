@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,24 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.model.config;
+package org.alfresco.repo.rendition2;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.PropertyCheck;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Abstract implementation of TransformOption.
+ * Contains common code used in TransformClients.
+ *
+ * @author adavis
  */
-public abstract class AbstractTransformOption implements TransformOption
+public abstract class AbstractTransformClient implements InitializingBean
 {
-    private boolean required;
+    protected NodeService nodeService;
 
-    @Override
-    public boolean isRequired()
+    public void setNodeService(NodeService nodeService)
     {
-        return required;
+        this.nodeService = nodeService;
     }
 
     @Override
-    public void setRequired(boolean required)
+    public void afterPropertiesSet() throws Exception
     {
-        this.required = required;
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
     }
 }

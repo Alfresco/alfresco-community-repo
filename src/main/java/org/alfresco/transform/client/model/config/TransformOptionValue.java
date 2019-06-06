@@ -28,8 +28,9 @@ package org.alfresco.transform.client.model.config;
 /**
  * Represents a single transformation option.
  */
-public class TransformOptionValue extends AbstractTransformOption
+public class TransformOptionValue implements TransformOption
 {
+    private boolean required;
     private String name;
 
     public TransformOptionValue()
@@ -40,6 +41,18 @@ public class TransformOptionValue extends AbstractTransformOption
     {
         setRequired(required);
         setName(name);
+    }
+
+    @Override
+    public boolean isRequired()
+    {
+        return required;
+    }
+
+    @Override
+    public void setRequired(boolean required)
+    {
+        this.required = required;
     }
 
     public String getName()

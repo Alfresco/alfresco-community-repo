@@ -25,30 +25,59 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
- * Repeats quick file rendition tests with local transforms and legacy transformers enabled.
- * The Transform Service does not exist for the Community edition.
- * Should be the same result as with legacy or local transforms on their own.
+ * Disables local transform and repeats the RenditionTests
  *
  * @author adavis
  */
-@Deprecated
-public class LegacyLocalRenditionTest extends AbstractRenditionTest
+public class NoLocalTransformRenditionTest extends RenditionTest
 {
     @BeforeClass
     public static void before()
     {
         AbstractRenditionIntegrationTest.before();
-        legacyLocal();
+        System.setProperty("local.transform.service.enabled", "false");
     }
 
     @AfterClass
     public static void after()
     {
         AbstractRenditionIntegrationTest.after();
+        System.clearProperty("local.transform.service.enabled");
+    }
+
+
+    @Test
+    @Override
+    public void testTasRestApiRenditions() throws Exception
+    {
+        internalTestTasRestApiRenditions(0, 0);
+    }
+
+    @Category(DebugTests.class)
+    @Test
+    @Override
+    public void testAllSourceExtensions() throws Exception
+    {
+        internalTestAllSourceExtensions(0, 0);
+    }
+
+    @Test
+    @Override
+    public void testGifRenditions() throws Exception
+    {
+        internalTestGifRenditions(0, 0);
+    }
+
+    @Test
+    public void testAllTransformServiceConfigRenditions() throws Exception
+    {
+        internalTestTasRestApiRenditions(0, 0);
     }
 }

@@ -81,14 +81,12 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     /** the system command executer */
     private RuntimeExec executer;
 
-    private boolean enabled = true;
-
     /** the check command executer */
     private RuntimeExec checkCommand;
-
+    
     /** the output from the check command */
     private String versionString;
-
+    
     /**
      * Default constructor
      */
@@ -118,11 +116,6 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         this.executer = executer;
     }
 
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
-
     /**
      * Sets the command that must be executed in order to retrieve version information from the converting executable
      * and thus test that the executable itself is present.
@@ -134,7 +127,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     {
         this.checkCommand = checkCommand;
     }
-
+    
     /**
      * Gets the version string captured from the check command.
      * 
@@ -153,57 +146,54 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     @Override
     public void afterPropertiesSet()
     {
-        if (enabled)
+        if (!remoteTransformerClientConfigured() && executer == null)
         {
-            if (!remoteTransformerClientConfigured() && executer == null)
+            throw new AlfrescoRuntimeException("System runtime executer not set");
+        }
+        super.afterPropertiesSet();
+        if (!remoteTransformerClientConfigured())
+        {
+            if (isAvailable())
             {
-                throw new AlfrescoRuntimeException("System runtime executer not set");
-            }
-            super.afterPropertiesSet();
-            if (!remoteTransformerClientConfigured())
-            {
-                if (isAvailable())
+                try
                 {
-                    try
-                    {
-                        // On some platforms / versions, the -version command seems to return an error code whilst still
-                        // returning output, so let's not worry about the exit code!
-                        ExecutionResult result = this.checkCommand.execute();
-                        this.versionString = result.getStdOut().trim();
-                    }
-                    catch (Throwable e)
-                    {
-                        setAvailable(false);
-                        logger.error(getClass().getSimpleName() + " not available: "
-                                + (e.getMessage() != null ? e.getMessage() : ""));
-                        // debug so that we can trace the issue if required
-                        logger.debug(e);
-                    }
+                    // On some platforms / versions, the -version command seems to return an error code whilst still
+                    // returning output, so let's not worry about the exit code!
+                    ExecutionResult result = this.checkCommand.execute();
+                    this.versionString = result.getStdOut().trim();
                 }
+                catch (Throwable e)
+                {
+                    setAvailable(false);
+                    logger.error(getClass().getSimpleName() + " not available: "
+                            + (e.getMessage() != null ? e.getMessage() : ""));
+                    // debug so that we can trace the issue if required
+                    logger.debug(e);
+                }
+            }
+        }
+        else
+        {
+            Pair<Boolean, String> result = remoteTransformerClient.check(logger);
+            Boolean isAvailable = result.getFirst();
+            if (isAvailable != null && isAvailable)
+            {
+                setAvailable(true);
+                versionString = result.getSecond().trim();
+                logger.info("Using remote ImageMagick: "+versionString);
             }
             else
             {
-                Pair<Boolean, String> result = remoteTransformerClient.check(logger);
-                Boolean isAvailable = result.getFirst();
-                if (isAvailable != null && isAvailable)
+                setAvailable(false);
+                versionString = "unknown";
+                String message = "Remote ImageMagick is not available for transformations. " + result.getSecond();
+                if (isAvailable == null)
                 {
-                    setAvailable(true);
-                    versionString = result.getSecond().trim();
-                    logger.info("Using legacy local ImageMagick: " + versionString);
+                    logger.debug(message);
                 }
                 else
                 {
-                    setAvailable(false);
-                    versionString = "unknown";
-                    String message = "Leacy remote ImageMagick is not available for transformations. " + result.getSecond();
-                    if (isAvailable == null)
-                    {
-                        logger.debug(message);
-                    }
-                    else
-                    {
-                        logger.error(message);
-                    }
+                    logger.error(message);
                 }
             }
         }

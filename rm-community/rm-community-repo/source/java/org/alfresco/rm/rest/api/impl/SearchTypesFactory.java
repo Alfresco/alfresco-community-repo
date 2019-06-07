@@ -123,7 +123,7 @@ public class SearchTypesFactory
                 filterNodeTypeQName = pair.getFirst();
                 includeSubTypes = pair.getSecond();
 
-                if (nodeTypeQNameStr.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER))
+                if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER))
                 {
                     includeUnfiledRecordFolders = true;
                 }

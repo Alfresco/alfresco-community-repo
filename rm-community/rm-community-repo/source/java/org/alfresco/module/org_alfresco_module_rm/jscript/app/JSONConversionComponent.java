@@ -40,9 +40,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
@@ -62,12 +60,12 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -87,6 +85,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
+    private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -101,7 +100,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private FilePlanService filePlanService;
 
     /** File plan role service */
-    protected FilePlanRoleService filePlanRoleService;
+    private FilePlanRoleService filePlanRoleService;
 
     /** Capability service */
     private CapabilityService capabilityService;
@@ -318,14 +317,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
             Set<NodeRef> filePlans = filePlanService.getFilePlans();
-            if (!filePlans.isEmpty())
+            if (!CollectionUtils.isEmpty(filePlans))
             {
                 NodeRef filePlanNodeRef = filePlans.stream().findFirst().orElse(null);
                 if (filePlanNodeRef != null)
                 {
                     Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
-                    boolean hasFilingPermission = (roles != null && roles.size() > 0) ? true : false;
-                    rootJSONObject.put("isVisibleForCurrentUser", hasFilingPermission);
+                    boolean hasFilingPermission = CollectionUtils.isEmpty(roles);
+                    rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
                 }
             }
         }

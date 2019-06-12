@@ -323,7 +323,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 if (filePlanNodeRef != null)
                 {
                     Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
-                    boolean hasFilingPermission = CollectionUtils.isEmpty(roles);
+                    boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
                     rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
                 }
             }

@@ -175,6 +175,11 @@
                 <artifactId>pdfbox</artifactId>
                 <version>1.8.16-alfresco-patched</version>
             </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk15on</artifactId>
+                <version>1.61</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

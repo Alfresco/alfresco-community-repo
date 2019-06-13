@@ -41,7 +41,7 @@
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
 
-        <dependency.webscripts.version>7.1</dependency.webscripts.version>
+        <dependency.webscripts.version>7.2</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.1.6.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>42.2.5</dependency.postgresql.version>

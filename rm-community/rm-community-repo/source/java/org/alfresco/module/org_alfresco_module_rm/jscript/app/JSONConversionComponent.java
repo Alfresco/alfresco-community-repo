@@ -36,17 +36,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -63,6 +65,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -82,6 +85,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
+    private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -94,6 +98,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** File plan service */
     private FilePlanService filePlanService;
+
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
 
     /** Capability service */
     private CapabilityService capabilityService;
@@ -154,6 +161,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param filePlanRoleService file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    {
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -277,7 +292,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
 
-            // check the exisitance of the RM site
+            // check the existence of the RM site
             checkRmSiteExistence(rootJSONObject);
 
             // get the record contributor information
@@ -301,11 +316,22 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     addInfo(nodeInfo, rootJSONObject);
                 }
             }
+            Set<NodeRef> filePlans = filePlanService.getFilePlans();
+            if (!CollectionUtils.isEmpty(filePlans))
+            {
+                NodeRef filePlanNodeRef = filePlans.stream().findFirst().orElse(null);
+                if (filePlanNodeRef != null)
+                {
+                    Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
+                    boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
+                    rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
+                }
+            }
         }
     }
 
     /**
-     * Checks for the existance of the RM site
+     * Checks for the existence of the RM site
      *
      * @param rootJSONObject    the root JSON object
      */

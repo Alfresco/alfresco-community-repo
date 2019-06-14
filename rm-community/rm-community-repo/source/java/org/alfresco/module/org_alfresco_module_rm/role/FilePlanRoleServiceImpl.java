@@ -479,7 +479,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
-    };
+    }
 
     /**
      *

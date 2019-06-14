@@ -177,7 +177,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     }
                 }
                 return null;
-            };
+            }
         }, AuthenticationUtil.getSystemUserName());
 
         if (logger.isDebugEnabled())

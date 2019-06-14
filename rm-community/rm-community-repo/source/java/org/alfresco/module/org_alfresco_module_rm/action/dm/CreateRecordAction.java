@@ -71,6 +71,8 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_HIDE_RECORD = "hide-record";
     public static final String PARAM_PATH = "path";
+    public static final String PARAM_ENCODED = "encoded";
+
 
     /** Node service */
     private NodeService nodeService;
@@ -127,10 +129,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         // resolve destination record folder if path supplied
         NodeRef destinationRecordFolder = null;
         String pathParameter = (String) action.getParameterValue(PARAM_PATH);
-        if (pathParameter != null && !pathParameter.isEmpty())
-        {
-            destinationRecordFolder = resolvePath(filePlan, pathParameter);
-        }
 
         // indicate whether the record should be hidden or not (default not)
         boolean hideRecord = false;
@@ -138,6 +136,18 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         if (hideRecordValue != null)
         {
             hideRecord = hideRecordValue.booleanValue();
+        }
+
+        if (pathParameter != null && !pathParameter.isEmpty())
+        {
+            if ((Boolean) action.getParameterValue(PARAM_ENCODED))
+            {
+                destinationRecordFolder = resolvePath(filePlan, decode(pathParameter));
+            }
+            else
+            {
+                destinationRecordFolder = resolvePath(filePlan, pathParameter);
+            }
         }
 
         synchronized (this)
@@ -162,19 +172,18 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
+        params.add(new ParameterDefinitionImpl(PARAM_ENCODED, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_ENCODED)));
     }
 
     /**
      * Helper method to get the target record folder node reference from the action path parameter
      *
-     * @param filePlan The filePlan containing the path
+     * @param filePlan      The filePlan containing the path
      * @param pathParameter The path
      * @return The NodeRef of the resolved path
      */
     private NodeRef resolvePath(NodeRef filePlan, final String pathParameter)
     {
-        String decodedPathParameter = decode(pathParameter);
-
         NodeRef destinationFolder;
 
         if (filePlan == null)
@@ -182,7 +191,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             filePlan = getDefaultFilePlan();
         }
 
-        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(decodedPathParameter, "/", false, true);
+        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if ((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
             destinationFolder = resolvePath(filePlan, Arrays.asList(pathElementsArray));

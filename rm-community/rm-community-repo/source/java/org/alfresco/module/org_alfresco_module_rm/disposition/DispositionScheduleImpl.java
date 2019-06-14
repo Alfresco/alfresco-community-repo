@@ -116,7 +116,7 @@ public class DispositionScheduleImpl implements DispositionSchedule,
                 Boolean value = (Boolean)nodeService.getProperty(dispositionDefinitionNodeRef, PROP_RECORD_LEVEL_DISPOSITION);
                 if (value != null)
                 {
-                    return value.booleanValue();
+                    return value;
                 }
                 return false;
             }

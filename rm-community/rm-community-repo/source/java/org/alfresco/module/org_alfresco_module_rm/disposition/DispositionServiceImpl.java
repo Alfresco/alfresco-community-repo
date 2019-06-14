@@ -95,7 +95,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
          * disposition schedule impl node under a record or folder.
          */
         DATE_AND_NAME
-    };
+    }
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
@@ -210,7 +210,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
             }
         }
-    };
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#refreshDispositionAction(NodeRef)

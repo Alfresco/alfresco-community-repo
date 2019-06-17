@@ -140,7 +140,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
         if (pathParameter != null && !pathParameter.isEmpty())
         {
-            if ((Boolean) action.getParameterValue(PARAM_ENCODED))
+            if (action.getParameterValue(PARAM_ENCODED) != null && (Boolean) action.getParameterValue(PARAM_ENCODED))
             {
                 destinationRecordFolder = resolvePath(filePlan, decode(pathParameter));
             }

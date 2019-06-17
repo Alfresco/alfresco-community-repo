@@ -186,8 +186,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef folder;
     protected NodeRef filePlan;
     protected NodeRef rmContainer;
+    protected NodeRef rm_Container;
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
+    protected NodeRef rm_Folder;
     protected NodeRef unfiledContainer;
     protected String collabSiteId;
     protected NodeRef holdsContainer;
@@ -586,12 +588,18 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
             assertNotNull("Could not create rm container", rmContainer);
 
+            rm_Container = filePlanService.createRecordCategory(filePlan, "rm Container");
+            assertNotNull("Could not create rm container", rm_Container);
+
             // Create disposition schedule
             dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
 
             // Create RM folder
             rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
             assertNotNull("Could not create rm folder", rmFolder);
+
+            rm_Folder = recordFolderService.createRecordFolder(rm_Container, "rm Folder");
+            assertNotNull("Could not create rm folder", rm_Folder);
         }
     }
 

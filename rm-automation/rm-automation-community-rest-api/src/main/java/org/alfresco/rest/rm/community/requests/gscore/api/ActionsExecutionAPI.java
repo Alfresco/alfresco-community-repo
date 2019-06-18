@@ -65,21 +65,6 @@ public class ActionsExecutionAPI extends RMModelRequest
     }
 
     /**
-     * Declares and files a document as record to a record folder using v1 actions api
-     *
-     * @param targetNode      the node on which the action is executed
-     * @param destinationPath the path to the record folder
-     * @param encoded         value to indicate if the path has been encoded
-     * @throws Exception
-     */
-    public JSONObject declareAndFile(RepoTestModel targetNode, String destinationPath, boolean encoded) throws Exception
-    {
-        return getRmRestWrapper().withCoreAPI().usingActions()
-                                 .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode,
-                                     ImmutableMap.of("path", destinationPath, "encoded", String.valueOf(encoded)));
-    }
-
-    /**
      * Declares a document as record using v1 actions api
      *
      * @param targetNode the node on which the action is executed

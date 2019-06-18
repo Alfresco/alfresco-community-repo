@@ -69,7 +69,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_HIDE_RECORD = "hide-record";
     public static final String PARAM_PATH = "path";
-    public static final String PARAM_ENCODED = "encoded";
 
 
     /** Node service */

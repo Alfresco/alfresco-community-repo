@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 public class HoldCapabilityCondition extends AbstractCapabilityCondition
 {  
     /** indicates whether to evaluate holds that the node is within or not within */
-    private boolean includedInHold = false;;
+    private boolean includedInHold = false;
     
     /** hold service */
     private HoldService holdService;

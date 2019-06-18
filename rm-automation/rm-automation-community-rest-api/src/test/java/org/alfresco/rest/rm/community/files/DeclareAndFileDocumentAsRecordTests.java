@@ -87,8 +87,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
     private final static String HOLD_NAME = "holdName";
-    private final static String RECORD_FOLDER_NAME_ENCODED = "Folder%20With%20Spaces%20In%20Name";
-    private final static String RECORD_FOLDER_NAME_DECODED = "Folder With Spaces In Name";
+    private final static String RECORD_FOLDER_NAME_WITH_SPACE = "Folder With Spaces In Name";
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
@@ -167,7 +166,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
         closedRecordFolder = createFolder(recordCategory.getId(), getRandomName("closedRecordFolder"));
         closeFolder(closedRecordFolder.getId());
-        recordFolderWithSpacesInName = createFolder(recordCategory.getId(), RECORD_FOLDER_NAME_DECODED);
+        recordFolderWithSpacesInName = createFolder(recordCategory.getId(), RECORD_FOLDER_NAME_WITH_SPACE);
 
         STEP("Create rm users with different permissions on the record category");
         userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);
@@ -227,17 +226,17 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
     /**
      * Given I am calling the "declare as record" action
-     * And I provide a valid encoded record folder name in the location parameter
+     * And I provide a valid record folder name in the location parameter
      * When I execute the action
      * Then the document is declared as a record
      * And is filed to the record folder specified
      */
     @Test
-    public void declareAndFileToValidEncodedLocationUsingActionsAPI() throws Exception
+    public void declareAndFileToValidLocationWithSpacesUsingActionsAPI() throws Exception
     {
         STEP("Declare document as record with an encoded location parameter value");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFile(testFile,
-            Utility.buildPath(recordCategory.getName(), RECORD_FOLDER_NAME_ENCODED), true);
+            Utility.buildPath(recordCategory.getName(), RECORD_FOLDER_NAME_WITH_SPACE));
 
         STEP("Verify the declared record is placed in the record folder");
         assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolderWithSpacesInName), "Record should be filed to record folder");

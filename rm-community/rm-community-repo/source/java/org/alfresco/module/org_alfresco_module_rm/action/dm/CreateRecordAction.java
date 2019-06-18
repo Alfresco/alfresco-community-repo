@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -140,14 +138,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
         if (pathParameter != null && !pathParameter.isEmpty())
         {
-            if (action.getParameterValue(PARAM_ENCODED) != null && (Boolean) action.getParameterValue(PARAM_ENCODED))
-            {
-                destinationRecordFolder = resolvePath(filePlan, decode(pathParameter));
-            }
-            else
-            {
-                destinationRecordFolder = resolvePath(filePlan, pathParameter);
-            }
+            destinationRecordFolder = resolvePath(filePlan, pathParameter);
         }
 
         synchronized (this)
@@ -172,7 +163,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
-        params.add(new ParameterDefinitionImpl(PARAM_ENCODED, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_ENCODED)));
     }
 
     /**
@@ -271,25 +261,5 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             }
         }
         return filePlan;
-    }
-
-    /**
-     * Helper method to decode path string
-     *
-     * @param pathParameter The path string to be decoded
-     * @return The decoded path string
-     */
-    private String decode(String pathParameter)
-    {
-        String decodedPathParameter;
-        try
-        {
-            decodedPathParameter = URLDecoder.decode(pathParameter, "UTF-8");
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be decoded.");
-        }
-        return decodedPathParameter;
     }
 }

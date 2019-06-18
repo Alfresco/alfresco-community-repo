@@ -237,7 +237,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     {
         STEP("Declare document as record with an encoded location parameter value");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFile(testFile,
-            Utility.buildPath(recordCategory.getName(), RECORD_FOLDER_NAME_ENCODED));
+            Utility.buildPath(recordCategory.getName(), RECORD_FOLDER_NAME_ENCODED), true);
 
         STEP("Verify the declared record is placed in the record folder");
         assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolderWithSpacesInName), "Record should be filed to record folder");

@@ -70,7 +70,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     public static final String PARAM_HIDE_RECORD = "hide-record";
     public static final String PARAM_PATH = "path";
 
-
     /** Node service */
     private NodeService nodeService;
 

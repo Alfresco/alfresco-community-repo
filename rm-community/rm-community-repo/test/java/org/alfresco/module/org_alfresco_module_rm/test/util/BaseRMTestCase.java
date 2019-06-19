@@ -54,7 +54,6 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -62,7 +61,6 @@ import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;

@@ -44,7 +44,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -52,7 +51,6 @@ import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
@@ -280,13 +278,13 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileToValidLocationUsingFilesAPI() throws Exception
     {
         STEP("Declare document as record with a location parameter value");
-        Record record = getRestAPIFactory().getFilesAPI(userFillingPermission)
+        getRestAPIFactory().getFilesAPI(userFillingPermission)
                                            .usingParams(String.format("%s=%s", PARENT_ID_PARAM, recordFolder.getId()))
                                            .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Verify the declared record is placed in the record folder");
-        assertEquals(record.getParentId(), recordFolder.getId(), "Record should be filed to record folder");
+        assertTrue(isMatchingRecordInRecordFolder(testFile, recordFolder), "Record should be filed to record folder");
 
         STEP("Verify the document in collaboration site is now a record");
         assertTrue(hasRecordAspect(testFile), "File should have record aspect");

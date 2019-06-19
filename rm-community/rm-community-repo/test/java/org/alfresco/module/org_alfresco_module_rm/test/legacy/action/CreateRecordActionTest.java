@@ -130,7 +130,6 @@ public class CreateRecordActionTest extends BaseRMTestCase
                                     action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
                                     action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
                                     action.setParameterValue(CreateRecordAction.PARAM_PATH, "rm Container/rm Folder");
-                                    action.setParameterValue(CreateRecordAction.PARAM_ENCODED, true);
                                     actionService.executeAction(action, dmDocument1);
 
                                     return null;

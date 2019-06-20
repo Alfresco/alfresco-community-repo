@@ -40,5 +40,7 @@ jobs:
       script:
         # Use full history for release
         - git checkout -B "${TRAVIS_BRANCH}"
+        # Add email to link commits to user
+        - git config user.email "${GIT_EMAIL}"
         # Skip building of release commits
         - mvn --batch-mode -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform

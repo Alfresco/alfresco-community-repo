@@ -10,7 +10,7 @@
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>4.32.1-SNAPSHOT</version>
+    <version>8.40-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
@@ -337,10 +337,6 @@
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

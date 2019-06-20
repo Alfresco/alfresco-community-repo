@@ -117,4 +117,34 @@ public class CreateRecordActionTest extends BaseRMTestCase
                             },
                 ADMIN_USER);
     }
+
+    public void testCreateRecordActionWithLocationWithSpaces()
+    {
+        doTestInTransaction(new Test<Void>()
+                            {
+                                public Void run()
+                                {
+                                    assertFalse(recordService.isRecord(dmDocument1));
+
+                                    Action action = actionService.createAction(CreateRecordAction.NAME);
+                                    action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
+                                    action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                                    action.setParameterValue(CreateRecordAction.PARAM_PATH, "rm Container/rm Folder");
+                                    actionService.executeAction(action, dmDocument1);
+
+                                    return null;
+                                }
+
+                                public void test(Void result) throws Exception
+                                {
+                                    assertTrue(recordService.isRecord(dmDocument1));
+                                    assertTrue(recordService.isFiled(dmDocument1));
+
+                                    // is the record folder the primary parent of the filed record
+                                    NodeRef parent = nodeService.getPrimaryParent(dmDocument1).getParentRef();
+                                    assertEquals(rm_Folder, parent);
+                                }
+                            },
+                ADMIN_USER);
+    }
 }

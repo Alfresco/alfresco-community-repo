@@ -54,7 +54,6 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -62,7 +61,6 @@ import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -186,8 +184,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef folder;
     protected NodeRef filePlan;
     protected NodeRef rmContainer;
+    protected NodeRef rm_Container;
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
+    protected NodeRef rm_Folder;
     protected NodeRef unfiledContainer;
     protected String collabSiteId;
     protected NodeRef holdsContainer;
@@ -586,12 +586,18 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
             assertNotNull("Could not create rm container", rmContainer);
 
+            rm_Container = filePlanService.createRecordCategory(filePlan, "rm Container");
+            assertNotNull("Could not create rm container", rm_Container);
+
             // Create disposition schedule
             dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
 
             // Create RM folder
             rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
             assertNotNull("Could not create rm folder", rmFolder);
+
+            rm_Folder = recordFolderService.createRecordFolder(rm_Container, "rm Folder");
+            assertNotNull("Could not create rm folder", rm_Folder);
         }
     }
 

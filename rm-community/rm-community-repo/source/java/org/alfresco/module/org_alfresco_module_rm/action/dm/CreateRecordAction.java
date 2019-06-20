@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -127,10 +125,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         // resolve destination record folder if path supplied
         NodeRef destinationRecordFolder = null;
         String pathParameter = (String) action.getParameterValue(PARAM_PATH);
-        if (pathParameter != null && !pathParameter.isEmpty())
-        {
-            destinationRecordFolder = resolvePath(filePlan, pathParameter);
-        }
 
         // indicate whether the record should be hidden or not (default not)
         boolean hideRecord = false;
@@ -138,6 +132,11 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         if (hideRecordValue != null)
         {
             hideRecord = hideRecordValue.booleanValue();
+        }
+
+        if (pathParameter != null && !pathParameter.isEmpty())
+        {
+            destinationRecordFolder = resolvePath(filePlan, pathParameter);
         }
 
         synchronized (this)
@@ -167,14 +166,12 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     /**
      * Helper method to get the target record folder node reference from the action path parameter
      *
-     * @param filePlan The filePlan containing the path
+     * @param filePlan      The filePlan containing the path
      * @param pathParameter The path
      * @return The NodeRef of the resolved path
      */
     private NodeRef resolvePath(NodeRef filePlan, final String pathParameter)
     {
-        String decodedPathParameter = decode(pathParameter);
-
         NodeRef destinationFolder;
 
         if (filePlan == null)
@@ -182,7 +179,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             filePlan = getDefaultFilePlan();
         }
 
-        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(decodedPathParameter, "/", false, true);
+        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if ((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
             destinationFolder = resolvePath(filePlan, Arrays.asList(pathElementsArray));
@@ -262,25 +259,5 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             }
         }
         return filePlan;
-    }
-
-    /**
-     * Helper method to decode path string
-     *
-     * @param pathParameter The path string to be decoded
-     * @return The decoded path string
-     */
-    private String decode(String pathParameter)
-    {
-        String decodedPathParameter;
-        try
-        {
-            decodedPathParameter = URLDecoder.decode(pathParameter, "UTF-8");
-        }
-        catch (UnsupportedEncodingException ex)
-        {
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be decoded.");
-        }
-        return decodedPathParameter;
     }
 }

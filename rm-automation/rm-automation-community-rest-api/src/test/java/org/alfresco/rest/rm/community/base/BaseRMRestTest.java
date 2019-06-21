@@ -76,6 +76,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.ContentModel;
@@ -109,6 +110,10 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter(value = PROTECTED)
     private ContentService contentService;
+
+    @Autowired
+    @Getter(value = PROTECTED)
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @Autowired
     @Getter(value = PROTECTED)

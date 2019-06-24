@@ -798,9 +798,4 @@ public class BaseRMRestTest extends RestTest
         return documentLibrary;
     }
 
-    protected RestResponse searchSql(UserModel userModel, SearchSqlRequest searchSqlRequest) throws Exception
-    {
-        return restClient.authenticateUser(userModel).withSearchSqlAPI().searchSql(searchSqlRequest);
-    }
-
 }

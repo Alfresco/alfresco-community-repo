@@ -52,7 +52,7 @@ import org.alfresco.tools.Repository;
 import org.alfresco.tools.ToolException;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
-import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 

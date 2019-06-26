@@ -50,7 +50,7 @@ import org.alfresco.util.TestHelper;
 import org.alfresco.util.email.EmailUtil;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

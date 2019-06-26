@@ -58,7 +58,7 @@ import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

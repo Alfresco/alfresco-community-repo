@@ -46,7 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -154,14 +154,14 @@ public class AttributeServiceTest extends TestCase
         results.clear();
         attributeService.getAttributes(callback, KEY_A);
         assertEquals(3, results.size());
-        assertEquals(3, counter.getValue());
+        assertEquals(3, (int)counter.getValue());
         
         counter.setValue(0);
         max.setValue(2);
         results.clear();
         attributeService.getAttributes(callback, KEY_A);
         assertEquals(2, results.size());
-        assertEquals(2, counter.getValue());
+        assertEquals(2, (int)counter.getValue());
     }
     
     public void testRemoveOrphanedProps()

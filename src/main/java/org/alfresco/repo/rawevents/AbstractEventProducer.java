@@ -31,7 +31,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.activemq.transport.amqp.message.AmqpMessageSupport;
 import org.apache.camel.ProducerTemplate;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

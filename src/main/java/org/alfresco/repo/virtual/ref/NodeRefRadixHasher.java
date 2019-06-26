@@ -31,7 +31,7 @@ import java.math.BigInteger;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Creates string-pair hashes of {@link NodeRef}s where the first string is a

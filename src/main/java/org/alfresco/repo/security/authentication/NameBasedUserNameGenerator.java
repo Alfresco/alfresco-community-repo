@@ -27,7 +27,7 @@ package org.alfresco.repo.security.authentication;
 
 import java.text.Normalizer;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * Generates a user name based upon firstName and lastName. 

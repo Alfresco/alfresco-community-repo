@@ -39,7 +39,7 @@ import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 public class SchemaCompTestingUtils

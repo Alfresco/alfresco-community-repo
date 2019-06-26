@@ -38,7 +38,7 @@ import java.util.TreeSet;
 
 import org.alfresco.repo.bulkimport.impl.FileUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

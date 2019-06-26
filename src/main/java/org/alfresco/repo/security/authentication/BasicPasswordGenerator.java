@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * Generates a password of specified length consisting of printable ASCII characters  

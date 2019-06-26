@@ -26,7 +26,7 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.repo.tenant.TenantService;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * Generates a user name based upon a random numeric 

@@ -26,7 +26,7 @@
 
 package org.alfresco.repo.virtual.ref;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Creates string-pair hashes of single digit element numeric paths.<br>

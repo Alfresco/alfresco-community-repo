@@ -27,7 +27,7 @@ package org.alfresco.repo.security.authentication;
 
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * Tenant Aware user name generator generates user names for each specific tenant.

@@ -60,7 +60,7 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
     private ContentCleanser contentCleanser;
     
     /**
-     * @param transactionResourceHelper transactional resource helper
+     * @param transactionalResourceHelper transactional resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {

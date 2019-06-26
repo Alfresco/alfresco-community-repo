@@ -45,7 +45,7 @@ public class AuthenticationUtil
      * <p>
      * Useful when testing using mocks.
      *
-     * @see org.alfresco.repo.security.authentication.AuthenticationUtil#runAsSystem(RunAsWork, String)
+     * @see org.alfresco.repo.security.authentication.AuthenticationUtil#runAsSystem(RunAsWork)
      */
     public <R> R runAsSystem(RunAsWork<R> runAsWork)
     {

@@ -641,8 +641,7 @@ public class ApiNodesModelFactory
      * Creates an object of type FilePlan
      *
      * @param info info of the file plan
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return FilePlan object
@@ -659,8 +658,7 @@ public class ApiNodesModelFactory
      * Creates an object of type RecordCategory
      *
      * @param info info of the record category
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return RecordCategory object
@@ -685,8 +683,7 @@ public class ApiNodesModelFactory
      * Creates an object of type RecordCategory
      *
      * @param info
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return RecordCategory object
@@ -710,8 +707,7 @@ public class ApiNodesModelFactory
      * Creates an object of type UnfiledContainer
      *
      * @param info
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return UnfiledContainer object
@@ -729,8 +725,7 @@ public class ApiNodesModelFactory
      * Creates an object of type TransferContainer
      *
      * @param info
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return UnfiledContainer object
@@ -747,8 +742,7 @@ public class ApiNodesModelFactory
      * Creates an object of type Transfer
      *
      * @param info
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return UnfiledContainer object
@@ -765,8 +759,7 @@ public class ApiNodesModelFactory
      * Creates an object of type TransferChild
      *
      * @param info
-     * @param propertyFilter
-     * @param includeParam
+     * @param parameters
      * @param mapUserInfo
      * @param isMinimalInfo
      * @return UnfiledContainer object

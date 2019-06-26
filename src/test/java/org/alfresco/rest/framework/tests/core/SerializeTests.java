@@ -67,7 +67,7 @@ import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;

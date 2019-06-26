@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpMethod;

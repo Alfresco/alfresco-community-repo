@@ -40,7 +40,7 @@ import org.alfresco.rest.api.tests.client.UserDataService;
 import org.alfresco.rest.workflow.api.model.Deployment;
 import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 

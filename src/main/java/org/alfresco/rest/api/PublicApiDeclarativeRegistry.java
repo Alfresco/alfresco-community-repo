@@ -43,7 +43,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.rest.framework.tools.ApiAssistant;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.Description.FormatStyle;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;

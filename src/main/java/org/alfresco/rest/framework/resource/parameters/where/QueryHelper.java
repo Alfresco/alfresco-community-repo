@@ -33,7 +33,7 @@ import java.util.List;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Provides helper methods for handling a WHERE query.

@@ -72,7 +72,7 @@ import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.TasksClient;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Test;

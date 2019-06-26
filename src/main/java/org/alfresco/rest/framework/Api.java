@@ -26,7 +26,7 @@
 package org.alfresco.rest.framework;
 
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

@@ -52,7 +52,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptException;

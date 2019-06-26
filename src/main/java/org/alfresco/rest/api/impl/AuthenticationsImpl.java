@@ -45,7 +45,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.Base64;
 
 import javax.servlet.http.HttpServletRequest;

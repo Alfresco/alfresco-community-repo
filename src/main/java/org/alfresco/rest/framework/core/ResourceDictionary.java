@@ -32,7 +32,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.alfresco.rest.framework.Api;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A container for all information about resources and apis.

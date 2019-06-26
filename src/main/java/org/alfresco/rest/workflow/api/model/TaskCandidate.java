@@ -26,7 +26,7 @@
 package org.alfresco.rest.workflow.api.model;
 
 import org.activiti.engine.task.IdentityLink;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class TaskCandidate
 {

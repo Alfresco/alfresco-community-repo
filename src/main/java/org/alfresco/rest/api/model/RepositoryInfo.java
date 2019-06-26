@@ -27,7 +27,7 @@ package org.alfresco.rest.api.model;
 
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.HashMap;

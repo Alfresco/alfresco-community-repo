@@ -47,7 +47,7 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.tools.RequestReader;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptRequestImpl;
 import org.springframework.extensions.webscripts.servlet.FormData;

@@ -30,11 +30,12 @@ import java.util.List;
 /**
  * Represents a group of one or more options. If the group is optional, child options that are marked as required are
  * only required if any child in the group is supplied by the client. If the group is required, child options are
- * optional or required based on their own setting alone. The top
+ * optional or required based on their own setting alone.
+ *
+ * In a pipeline transformation, a group of options
  */
-public class TransformOptionGroup implements TransformOption
+public class TransformOptionGroup extends AbstractTransformOption
 {
-    private boolean required;
     List<TransformOption> transformOptions;
 
     public TransformOptionGroup()
@@ -45,18 +46,6 @@ public class TransformOptionGroup implements TransformOption
     {
         setRequired(required);
         setTransformOptions(transformOptions);
-    }
-
-    @Override
-    public boolean isRequired()
-    {
-        return required;
-    }
-
-    @Override
-    public void setRequired(boolean required)
-    {
-        this.required = required;
     }
 
     public List<TransformOption> getTransformOptions()

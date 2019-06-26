@@ -37,6 +37,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -52,9 +53,9 @@ import java.util.concurrent.Executors;
  * @author adavis
  */
 @Deprecated
-public class LegacyLocalTransformClient extends AbstractTransformClient implements TransformClient
+public class LegacyTransformClient implements TransformClient, InitializingBean
 {
-    private static Log logger = LogFactory.getLog(LegacyLocalTransformClient.class);
+    private static Log logger = LogFactory.getLog(LegacyTransformClient.class);
 
     private TransactionService transactionService;
 
@@ -94,7 +95,7 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        super.afterPropertiesSet();
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "converter", converter);
@@ -117,13 +118,13 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
         ContentTransformer transformer = contentService.getTransformer(contentUrl, sourceMimetype, size, targetMimetype, transformationOptions);
         if (transformer == null)
         {
-            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size;
+            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size + " using legacy transform";
             logger.debug(message);
             throw new UnsupportedOperationException(message);
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use " + transformer.getName());
+            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use legacy transform " + transformer.getName());
         }
     }
 
@@ -144,7 +145,7 @@ public class LegacyLocalTransformClient extends AbstractTransformClient implemen
                         TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
                         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
-                        ContentReader reader = LegacyLocalTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                        ContentReader reader = LegacyTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
                         if (null == reader || !reader.exists())
                         {
                             throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");

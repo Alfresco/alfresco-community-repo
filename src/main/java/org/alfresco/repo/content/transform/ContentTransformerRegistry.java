@@ -197,7 +197,7 @@ public class ContentTransformerRegistry
         if (firstTime)
         {
             firstTime = false;
-            transformerDebug.debug("Local legacy transformers are " + (enabled ? "enabled" : "disabled"));
+            transformerDebug.debug("Legacy transforms are " + (enabled ? "enabled" : "disabled"));
         }
 
         // Get the list of transformers

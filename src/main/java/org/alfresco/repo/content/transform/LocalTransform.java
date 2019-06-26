@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,32 +23,20 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rendition2;
+package org.alfresco.repo.content.transform;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
+
+import java.util.Map;
 
 /**
- * Contains common code used in TransformClients.
- *
- * @author adavis
+ * Interface of a local transformer using flat transform options.
  */
-public abstract class AbstractTransformClient implements InitializingBean
+public interface LocalTransform
 {
-    protected NodeService nodeService;
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "nodeService", nodeService);
-    }
+    void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
+                   String renditionName, NodeRef sourceNodeRef)
+            throws Exception;
 }

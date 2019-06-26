@@ -51,6 +51,7 @@ public class AppleIWorksContentTransformerTest extends AbstractContentTransforme
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
+        transformer.afterPropertiesSet();
     }
     
     @Override

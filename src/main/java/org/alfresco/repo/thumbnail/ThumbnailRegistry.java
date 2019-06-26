@@ -166,6 +166,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     public void setTransformServiceRegistry(TransformServiceRegistry transformServiceRegistry)
     {
         this.transformServiceRegistry = transformServiceRegistry;
+        mimetypeMap.clear();
     }
 
     public void setRenditionDefinitionRegistry2(RenditionDefinitionRegistry2 renditionDefinitionRegistry2)

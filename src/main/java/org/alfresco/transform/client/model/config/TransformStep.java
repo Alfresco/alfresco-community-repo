@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,29 +26,41 @@
 package org.alfresco.transform.client.model.config;
 
 /**
- * Represents a single transformation option.
+ * Represents a single transform step in a transform pipeline. The last step in the pipeline does not specify the
+ * target type as that is based on the supported types and what has been requested.
  */
-public class TransformOptionValue extends AbstractTransformOption
+public class TransformStep
 {
-    private String name;
+    private String transformerName;
+    private String targetMediaType;
 
-    public TransformOptionValue()
+    public TransformStep()
     {
     }
 
-    public TransformOptionValue(boolean required, String name)
+    public TransformStep(String transformerName, String targetMediaType)
     {
-        setRequired(required);
-        setName(name);
+        setTransformerName(transformerName);
+        setTargetMediaType(targetMediaType);
     }
 
-    public String getName()
+    public String getTransformerName()
     {
-        return name;
+        return transformerName;
     }
 
-    public void setName(String name)
+    public void setTransformerName(String transformerName)
     {
-        this.name = name;
+        this.transformerName = transformerName;
+    }
+
+    public String getTargetMediaType()
+    {
+        return targetMediaType;
+    }
+
+    public void setTargetMediaType(String targetMediaType)
+    {
+        this.targetMediaType = targetMediaType;
     }
 }

@@ -23,32 +23,42 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.model.config;
+package org.alfresco.repo.rendition2;
+
+import org.alfresco.util.testing.category.DebugTests;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
- * Represents a single transformation option.
+ * Repeats quick file rendition tests with local transforms enabled but legacy transformers disabled.
+ * The Transform Service does not exist for the Community edition.
+ * Should be the same result as with legacy transforms only.
+ *
+ * @author adavis
  */
-public class TransformOptionValue extends AbstractTransformOption
+public class LocalRenditionTest extends AbstractRenditionTest
 {
-    private String name;
-
-    public TransformOptionValue()
+    @BeforeClass
+    public static void before()
     {
+        AbstractRenditionIntegrationTest.before();
+        local();
     }
 
-    public TransformOptionValue(boolean required, String name)
+    @AfterClass
+    public static void after()
     {
-        setRequired(required);
-        setName(name);
+        AbstractRenditionIntegrationTest.after();
     }
 
-    public String getName()
+    // TODO this method will be removed when Local transformers support all 196 renditions supported by legacy
+    @Override
+    @Category(DebugTests.class)
+    @Test
+    public void testAllSourceExtensions() throws Exception
     {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
+        internalTestAllSourceExtensions(57, 0);
     }
 }

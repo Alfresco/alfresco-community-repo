@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,28 +26,34 @@
 package org.alfresco.transform.client.model.config;
 
 import java.util.List;
-import java.util.Objects;
+import org.alfresco.transform.client.model.config.TransformServiceRegistry;
 
 /**
- * Represents a set of transformations supported by the Transform Service that share the same transform options. Each
- * may be an actual transformer or the amalgamation of multiple transformers. It is possible that more than one
- * transformer may able to perform a transformation from one mimetype to another. The actual selection of transformer
- * is up to the Transform Service to decide. Clients may use {@link TransformServiceRegistry#isSupported} to decide
+ * Represents a set of transformations supported by the Transform Service or Local Transform Service Registry that
+ * share the same transform options. Each may be an actual transformer or a pipeline of multiple transformers. It is
+ * possible that more than one transformer may able to perform a transformation from one mimetype to another. The actual
+ * selection of transformer is up to the Transform Service or Local Transform Service Registry to decide. Clients may
+ * use {@link TransformServiceRegistry#isSupported(String, long, String, java.util.Map, String)} to decide
  * if they should send a request to the Transform Service. As a result clients have a simple generic view of
- * transformations which allows new transformations to be added without the need change client data structures other
+ * transformations which allows new transformations to be added without the need to change client data structures other
  * than to define new name value pairs. For this to work the Transform Service defines unique names for each option.
  * <ul>
- *     <lI>name - is unique. The client should infer nothing from the name as it is simply a label.</lI>
- *     <li>version - of the transformer. The client should infer nothing from the value and should only use it
- *     in messages. There should only be one version supplied to the client for each name.</li>
+ *     <li>transformerName - is optional but if supplied should be unique. The client should infer nothing from the name
+ *     as it is simply a label, but the Local Transform Service Registry will use the name in pipelines.</lI>
  *     <li>transformOptions - a grouping of individual transformer transformOptions. The group may be optional and may
  *     contain nested transformOptions.</li>
+ * </ul>
+ * For local transforms, this structure is extended when defining a pipeline transform.
+ * <ul>
+ *     <li>transformerPipeline - an array of pairs of transformer name and target extension for each transformer in the
+ *     pipeline. The last one should not have an extension as that is defined by the request and should be in the
+ *     supported list.</li>
  * </ul>
  */
 public class Transformer
 {
-    private String name;
-    private String version;
+    private String transformerName;
+    private List<TransformStep> transformerPipeline;
     private List<TransformOption> transformOptions;
     private List<SupportedSourceAndTarget> supportedSourceAndTargetList;
 
@@ -55,32 +61,37 @@ public class Transformer
     {
     }
 
-    public Transformer(String name, String version, List<TransformOption> transformOptions, List<SupportedSourceAndTarget> supportedSourceAndTargetList)
+    public Transformer(String transformerName, List<TransformOption> transformOptions, List<SupportedSourceAndTarget> supportedSourceAndTargetList)
     {
-        setName(name);
-        setVersion(version);
+        setTransformerName(transformerName);
         setTransformOptions(transformOptions);
         setSupportedSourceAndTargetList(supportedSourceAndTargetList);
     }
 
-    public String getName()
+    public Transformer(String transformerName, List<TransformStep> transformerPipeline, List<TransformOption> transformOptions, List<SupportedSourceAndTarget> supportedSourceAndTargetList)
     {
-        return name;
+        this(transformerName, transformOptions, supportedSourceAndTargetList);
+        setTransformerPipeline(transformerPipeline);
     }
 
-    public void setName(String name)
+    public String getTransformerName()
     {
-        this.name = name;
+        return transformerName;
     }
 
-    public String getVersion()
+    public void setTransformerName(String transformerName)
     {
-        return version;
+        this.transformerName = transformerName;
     }
 
-    public void setVersion(String version)
+    public List<TransformStep> getTransformerPipeline()
     {
-        this.version = version;
+        return transformerPipeline;
+    }
+
+    public void setTransformerPipeline(List<TransformStep> transformerPipeline)
+    {
+        this.transformerPipeline = transformerPipeline;
     }
 
     public List<TransformOption> getTransformOptions()

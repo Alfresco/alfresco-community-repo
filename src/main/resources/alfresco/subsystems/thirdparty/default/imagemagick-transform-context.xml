@@ -61,6 +61,7 @@
             </property>
          </bean>
       </property>
+      <property name="enabled" value="${legacy.transform.service.enabled}" />
    </bean>
 
    <bean id="transformer.worker.ImageMagick.processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">

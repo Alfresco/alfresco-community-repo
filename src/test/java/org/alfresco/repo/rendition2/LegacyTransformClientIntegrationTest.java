@@ -23,32 +23,39 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.model.config;
+package org.alfresco.repo.rendition2;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Represents a single transformation option.
+ * Integration tests for {@link LegacyTransformClient}
  */
-public class TransformOptionValue extends AbstractTransformOption
+@Deprecated
+public class LegacyTransformClientIntegrationTest extends LocalTransformClientIntegrationTest
 {
-    private String name;
+    @Autowired
+    protected TransformClient legacyTransformClient;
 
-    public TransformOptionValue()
+    @BeforeClass
+    public static void before()
     {
+        AbstractRenditionIntegrationTest.before();
+        legacy();
     }
 
-    public TransformOptionValue(boolean required, String name)
+    @AfterClass
+    public static void after()
     {
-        setRequired(required);
-        setName(name);
+        AbstractRenditionIntegrationTest.after();
     }
 
-    public String getName()
+    @Before
+    public void setUp() throws Exception
     {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
+        super.setUp();
+        transformClient = legacyTransformClient;
     }
 }

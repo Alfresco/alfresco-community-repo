@@ -59,7 +59,7 @@ import java.util.Map;
  * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 @Deprecated
-public class TextToPdfContentTransformer extends AbstractContentTransformer2
+public class TextToPdfContentTransformer extends AbstractRemoteContentTransformer
 {
     private static final Log logger = LogFactory.getLog(TextToPdfContentTransformer.class);
 
@@ -126,7 +126,13 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     }
 
     @Override
-    protected void transformInternal(
+    protected Log getLogger()
+    {
+        return logger;
+    }
+
+    @Override
+    protected void transformLocal(
             ContentReader reader,
             ContentWriter writer,
             TransformationOptions options) throws Exception
@@ -168,7 +174,28 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
             }
         }
     }
-    
+
+    @Override
+    protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
+                                   ContentWriter writer, TransformationOptions options, String sourceMimetype,
+                                   String targetMimetype, String sourceExtension, String targetExtension,
+                                   String targetEncoding) throws Exception
+    {
+        String sourceEncoding = reader.getEncoding();
+        long timeoutMs = options.getTimeoutMs();
+
+        TransformationOptionLimits limits = getLimits(reader, writer, options);
+        TransformationOptionPair pageLimits = limits.getPagesPair();
+        int pageLimit = (int)pageLimits.getValue();
+
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger,
+                "sourceMimetype", sourceMimetype,
+                "targetMimetype", targetMimetype,
+                "sourceEncoding", sourceEncoding,
+                "pageLimit", String.valueOf(pageLimit));
+    }
+
     protected InputStreamReader buildReader(InputStream is, String encoding, String node)
     {
         // If they gave an encoding, try to use it

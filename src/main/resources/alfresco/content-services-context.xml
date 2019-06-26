@@ -328,33 +328,18 @@
       <constructor-arg>
          <ref bean="transformerSelector"/>
       </constructor-arg>
-       <property name="enabled" value="${local.transform.service.enabled}" />
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
        <property name="transformerDebug" ref="transformerDebug" />
    </bean>
 
    <!-- Transformation Debug -->
-   <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
-      <constructor-arg>
-         <ref bean="nodeService"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="mimetypeService"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="contentTransformerRegistry"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerConfig"/>
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerLog" />
-      </constructor-arg>
-      <constructor-arg>
-         <ref bean="transformerDebugLog" />
-      </constructor-arg>
-      <property name="contentService">
-         <ref bean="contentService" />
-      </property>
+    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
+       <property name="nodeService" ref="nodeService" />
+       <property name="mimetypeService" ref="mimetypeService" />
+       <property name="transformerRegistry" ref="contentTransformerRegistry" />
+       <property name="transformerConfig" ref="transformerConfig" />
+       <property name="transformerLog" ref="transformerLog" />
+       <property name="transformerDebugLog" ref="transformerDebugLog" />
    </bean>
 
    <!-- Import the transformer configuration from the transformers subsystem -->
@@ -485,10 +470,24 @@
        </property>
    </bean>
 
-   <bean id="baseTikaContentTransformer"
+    <bean name="miscRemoteTransformerClient"
+          class="org.alfresco.repo.content.transform.RemoteTransformerClient">
+        <constructor-arg>
+            <value>MiscellaneousTransformers</value>
+        </constructor-arg>
+        <constructor-arg>
+            <value>${transform.misc.url}</value>
+        </constructor-arg>
+        <property name="startupRetryPeriodSeconds">
+            <value>${transform.misc.startupRetryPeriodSeconds}</value>
+        </property>
+    </bean>
+
+    <bean id="baseTikaContentTransformer"
          class="org.alfresco.repo.content.transform.TikaPoweredContentTransformer"
          abstract="true"
          parent="baseContentTransformer">
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
        <property name="remoteTransformerClient">
           <ref bean="tikaRemoteTransformerClient" />
       </property>
@@ -497,16 +496,25 @@
     <!-- Content Transformations -->
     <bean id="transformer.StringExtracter"
           class="org.alfresco.repo.content.transform.StringExtractingContentTransformer"
-          parent="baseContentTransformer" />
+          parent="baseContentTransformer" >
+        <property name="enabled" value="${legacy.transform.service.enabled}" />
+        <property name="remoteTransformerClient">
+            <ref bean="miscRemoteTransformerClient" />
+        </property>
+    </bean>
 
    <bean id="transformer.BinaryPassThrough"
          class="org.alfresco.repo.content.transform.BinaryPassThroughContentTransformer"
-         parent="baseContentTransformer" />     
+         parent="baseContentTransformer" />
 
-   <bean id="transformer.iWorksQuicklooks"
-         class="org.alfresco.repo.content.transform.AppleIWorksContentTransformer"
-         parent="baseContentTransformer" >
-   </bean>
+    <bean id="transformer.iWorksQuicklooks"
+          class="org.alfresco.repo.content.transform.AppleIWorksContentTransformer"
+          parent="baseContentTransformer" >
+        <property name="enabled" value="${legacy.transform.service.enabled}" />
+        <property name="remoteTransformerClient">
+            <ref bean="miscRemoteTransformerClient" />
+        </property>
+    </bean>
 
    <bean id="transformer.OOXMLThumbnail"
          class="org.alfresco.repo.content.transform.OOXMLThumbnailContentTransformer"
@@ -529,6 +537,10 @@
    <bean id="transformer.PdfBox.TextToPdf"
          class="org.alfresco.repo.content.transform.TextToPdfContentTransformer"
          parent="baseContentTransformer" >
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
+       <property name="remoteTransformerClient">
+           <ref bean="miscRemoteTransformerClient" />
+       </property>
    </bean>
 
    <bean id="transformer.TikaAuto"
@@ -557,10 +569,14 @@
          parent="baseTikaContentTransformer" >
    </bean>
 
-   <bean id="transformer.HtmlParser"
-         class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
-         parent="baseContentTransformer" >
-   </bean>
+    <bean id="transformer.HtmlParser"
+          class="org.alfresco.repo.content.transform.HtmlParserContentTransformer"
+          parent="baseContentTransformer" >
+        <property name="enabled" value="${legacy.transform.service.enabled}" />
+        <property name="remoteTransformerClient">
+            <ref bean="miscRemoteTransformerClient" />
+        </property>
+    </bean>
    
    <bean id="transformer.MediaWikiParser"
          class="org.alfresco.repo.content.transform.MediaWikiContentTransformer"

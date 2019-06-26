@@ -635,59 +635,6 @@ public class RoutingContentServiceTest extends TestCase
         assertEquals("Content check failed", threadContent, checkContent);
     }
     
-    public void testTransformation() throws Exception
-    {
-        // commit node so that threads can see node
-        txn.commit();
-        txn = null;
-        
-        UserTransaction txn = getUserTransaction();
-        txn.begin();
-        txn.setRollbackOnly();
-        
-        // get a regular writer
-        ContentWriter writer = contentService.getTempWriter();
-        writer.setMimetype("text/xml");
-        // write some stuff
-        String content = "<blah></blah>";
-        writer.putContent(content);
-        // get a reader onto the content
-        ContentReader reader = writer.getReader();
-        
-        // get a new writer for the transformation
-        writer = contentService.getTempWriter();
-        writer.setMimetype("audio/x-wav");     // no such conversion possible
-        try
-        {
-            contentService.transform(reader, writer);
-            fail("Transformation attempted with invalid mimetype");
-        }
-        catch (NoTransformerException e)
-        {
-            // expected
-        }
-        
-        // at this point, the transaction is unusable
-        txn.rollback();
-        
-        txn = getUserTransaction();
-        txn.begin();
-        txn.setRollbackOnly();
-        
-        writer.setMimetype("text/plain");
-        ContentTransformer transformer = contentService.getTransformer(reader.getMimetype(), writer.getMimetype());
-        assertNotNull("Expected a valid transformer", transformer);
-        contentService.transform(reader, writer);
-        // get the content from the writer
-        reader = writer.getReader();
-        assertEquals("Mimetype of target reader incorrect",
-                writer.getMimetype(), reader.getMimetype());
-        String contentCheck = reader.getContentString();
-        assertEquals("Content check failed", content, contentCheck);
-        
-        txn.rollback();
-    }
-    
     /**
      * Writes some content to the writer's output stream and then aquires
      * a lock on the writer, waits until notified and then closes the

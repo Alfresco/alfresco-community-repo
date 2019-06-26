@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,29 +26,21 @@
 package org.alfresco.transform.client.model.config;
 
 /**
- * Represents a single transformation option.
+ * Abstract implementation of TransformOption.
  */
-public class TransformOptionValue extends AbstractTransformOption
+public abstract class AbstractTransformOption implements TransformOption
 {
-    private String name;
+    private boolean required;
 
-    public TransformOptionValue()
+    @Override
+    public boolean isRequired()
     {
+        return required;
     }
 
-    public TransformOptionValue(boolean required, String name)
+    @Override
+    public void setRequired(boolean required)
     {
-        setRequired(required);
-        setName(name);
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
+        this.required = required;
     }
 }

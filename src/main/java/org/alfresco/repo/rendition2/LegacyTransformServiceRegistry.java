@@ -35,13 +35,13 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.Map;
 
 /**
- * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a legacy local transformation
+ * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a legacy transformation
  * (based on {@link org.alfresco.repo.content.transform.AbstractContentTransformer2} request is supported.
  *
  * @author adavis
  */
 @Deprecated
-public class LegacyLocalTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
 {
     private ContentService contentService;
     private TransformationOptionsConverter converter;
@@ -85,14 +85,21 @@ public class LegacyLocalTransformServiceRegistry extends AbstractTransformServic
         if (firstTime)
         {
             firstTime = false;
-            transformerDebug.debug("Local legacy transformers are " + (enabled ? "enabled" : "disabled"));
+            transformerDebug.debug("Legacy transforms are " + (enabled ? "enabled" : "disabled"));
         }
 
         long maxSize = 0;
         if (enabled)
         {
-            TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-            maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+            try
+            {
+                TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
+                maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+            }
+            catch (IllegalArgumentException ignore)
+            {
+                // Typically if the mimetype is invalid.
+            }
         }
         return maxSize;
     }

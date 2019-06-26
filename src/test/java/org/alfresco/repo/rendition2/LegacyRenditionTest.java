@@ -23,13 +23,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.model.config;
+package org.alfresco.repo.rendition2;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 /**
- * Helper class to be supplied by the client to map file extensions to mimetypes, so the json description of what
- * is supported by the Transform Service includes file extensions rather than mmetypes, so is more readable.
+ * Repeats quick file rendition tests with local transforms disabled but legacy transformers enabled.
+ * The Transform Service does not exist for the Community edition.
+ * Should be the same result as with local transforms.
+ *
+ * @author adavis
  */
-public interface ExtensionMap
+public class LegacyRenditionTest extends AbstractRenditionTest
 {
-    String toMimetype(String extension);
+    @BeforeClass
+    public static void before()
+    {
+        AbstractRenditionIntegrationTest.before();
+        legacy();
+    }
+
+    @AfterClass
+    public static void after()
+    {
+        AbstractRenditionIntegrationTest.after();
+    }
 }

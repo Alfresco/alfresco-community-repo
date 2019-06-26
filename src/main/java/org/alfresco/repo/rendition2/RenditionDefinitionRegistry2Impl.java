@@ -49,16 +49,18 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     public void setTransformServiceRegistry(TransformServiceRegistry transformServiceRegistry)
     {
         this.transformServiceRegistry = transformServiceRegistry;
+        renditionsFor.clear();
     }
 
     /**
      * Obtains a {@link RenditionDefinition2} by name.
      * @param renditionName to be returned
      * @return the {@link RenditionDefinition2} or null if not registered.
+     * @deprecated use {@link #getRenditionDefinition(String)}
      */
     public RenditionDefinition2 getDefinition(String renditionName)
     {
-        return renditionDefinitions.get(renditionName);
+        return getRenditionDefinition(renditionName);
     }
 
     public void register(RenditionDefinition2 renditionDefinition)

@@ -25,6 +25,8 @@
  */
 package org.alfresco.transform.client.model.config;
 
+import org.quartz.CronExpression;
+
 import java.util.Map;
 
 /**

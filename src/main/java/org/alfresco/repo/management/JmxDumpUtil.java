@@ -30,13 +30,17 @@ import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.management.JMException;
 import javax.management.MBeanAttributeInfo;
@@ -71,6 +75,10 @@ public class JmxDumpUtil
 
     private static final String OS_NAME = "os.name";
 
+    private static final String INPUT_ARGUMENTS = "InputArguments";
+
+    private static final String[] REDACTED_INPUTS = {"password","token","pwd"};
+    
     /**
      * Dumps a local or remote MBeanServer's entire object tree for support purposes. Nested arrays and CompositeData
      * objects in MBean attribute values are handled.
@@ -164,7 +172,127 @@ public class JmxDumpUtil
                 attributes.put(OS_NAME, updateOSNameAttributeForLinux(osName));
             }
         }
+        if (objectName.getCanonicalName().equals("java.lang:type=Runtime"))
+        {
+            String[] commandInputs = (String[]) attributes.get(INPUT_ARGUMENTS);
+            if(commandInputs != null)
+            {
+                try 
+                {
+                    attributes.put(INPUT_ARGUMENTS, cleanPasswordsFromInputArguments(commandInputs,REDACTED_INPUTS));
+                } catch (IllegalArgumentException e) 
+                {
+                    attributes.put(INPUT_ARGUMENTS, commandInputs);
+                }
+            }
+        }
         tabulate(JmxDumpUtil.NAME_HEADER, JmxDumpUtil.VALUE_HEADER, attributes, out, 0);
+    }
+
+    /**
+     * Replaces strings with JmxDumpUtil.PROTECTED_VALUE, 
+     * if any of the string that contains a string from redactedInputs.
+     * 
+     * @see #cleanPasswordFromInputArgument
+     * @param commandInputs one or more strings of input arguments
+     * @param redactedInputs one or more strings, that end input arguments that are to be redacted
+     * @return commandInputs with any arguments ending in redactedInputs with redacted values
+     */
+    static String[] cleanPasswordsFromInputArguments(String[] commandInputs, String[] redactedInputs)
+    {
+        Pattern passwordRedactPattern = Pattern.compile(createPasswordFindRegexString(redactedInputs));
+        List<String> cleanInputs = new ArrayList<String>();
+        for (String input : commandInputs) 
+        {
+            input = cleanPasswordFromInputArgument(input, passwordRedactPattern);
+            cleanInputs.add(input);
+        }
+        
+        return cleanInputs.toArray(new String[commandInputs.length]);
+    }
+
+    /**
+     * Removes any characters the word/s provided in redactedInputs
+     * and replaces them with JmxDumpUtil.PROTECTED_VALUE
+     * <p>
+     * Example: 
+     * <p>
+     * Input:   -Ddb.password=alfresco
+     * <p>
+     * Output:  -Ddb.password=********
+     * </p>
+     * 
+     * @param input String
+     * @param redactedInputs String[]
+     * @return password redacted string if input matches a string in redactedInputs, an un-altered string will be returned if it does not match.
+     */
+    static String cleanPasswordFromInputArgument(String input, Pattern redactedInputPattern)
+    {
+        //Replace the whole string with just capture group 1 to remove the desired value and concat the protected value.
+        String output = redactedInputPattern.matcher(input).replaceAll("$1"+PROTECTED_VALUE);
+        return output;
+    }
+
+    /**
+     * Creates a regular expression that will select a string that contains one of the values provided in argEndings, proceeding an "=" and defines two capture groups:
+     * <ul>
+     * <li>Group 1: An argEnding that is followed by an "=", including the "=" and all character prior to the argEnding.
+     * <li>Group 2: The characters that follow group 1, to the end of the string or new line.
+     * </ul>
+     * <p>
+     * The argEnding can be the whole Input argument or the common characters proceeding the = sign.
+     * Example argEndings:
+     * <ul>
+     * <li>    -Ddb.password   This will select the values passed as -Ddb.password
+     * <li>    password        This will select any potential values that end in the word password
+     * </ul>
+     * <p>
+     * Example usage: 
+     * <p>
+     * argEndings={"password", "pwd"}
+     * <p>
+     * This will create a regex that will match a string that contains either argEndings. 
+     * The following will be matched by the resulting regex:
+     * <p>
+     * "-Ddb.password=my_password"
+     * <p>
+     * For this example: group 1="-Ddb.password=" group 2="my_password"
+     * 
+     * 
+     * @param argEndings Strings that will end the input argument you wish to select
+     * @return Regex pattern for selecting the characters following the strings passed as argEndings
+     */
+    static String createPasswordFindRegexString(String[] argEndings) throws IllegalArgumentException
+    {
+        if(argEndings.length<1)
+        {
+            IllegalArgumentException e = new IllegalArgumentException("Arguments are required");
+            throw e;
+        }
+
+        StringJoiner argJoiner = new StringJoiner("|");
+
+        for (String argEnding : argEndings) 
+        {
+            argJoiner.add(escapeRegexMetaChars(argEnding)+"=");
+        }
+
+        String regex = String.format("%s%s%s%s%s", 
+                        "(?i)(.*(", argJoiner.toString(),"))((?<=",argJoiner.toString(), ").*+)");
+        return regex;
+    }
+
+    /**
+     * Places an escape character in front of any regex meta charater: | ? * + .
+     * 
+     * @param input
+     * @return
+     */
+    static String escapeRegexMetaChars (String input)
+    {
+        String pattern = "(\\||\\?|\\*|\\+|\\.)";
+        String output = input.replaceAll(pattern, "\\\\$1");
+        return output;
     }
 
     /**

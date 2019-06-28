@@ -60,7 +60,7 @@
         <dependency.jboss.logging.version>3.3.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.1</dependency.camel.version>
         <dependency.activemq.version>5.15.9</dependency.activemq.version>
-        <dependency.pdfbox.version>2.0.15</dependency.pdfbox.version>
+        <dependency.pdfbox.version>2.0.16</dependency.pdfbox.version>
     </properties>
 
     <dependencyManagement>

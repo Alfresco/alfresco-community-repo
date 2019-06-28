@@ -1,0 +1,42 @@
+dist: xenial
+sudo: required
+language: java
+jdk:
+  - openjdk8
+services:
+  - docker
+
+cache:
+  directories:
+    - $HOME/.m2
+
+branches:
+  only:
+    - master
+    - /support\/.*/
+
+before_install:
+  - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.1 postgres -c 'max_connections=300'
+
+matrix:
+  include:
+    - name: "WhiteSource scan"
+      # only on support branches or master and if it is not a PR
+      if: fork = false AND (branch = master OR branch =~ /support\/SP\/.*/) AND type != pull_request
+      script:
+        # Download the latest version of WhiteSource Unified Agent
+        - curl -LJO https://github.com/whitesource/unified-agent-distribution/raw/master/standAlone/wss-unified-agent.jar
+        # Run WhiteSource Unified Agent
+        - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config
+    - name: "AppContext01TestSuite"
+      script: travis_wait 20 mvn test -B -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+    - name: "AppContext02TestSuite"
+      script: travis_wait 20 mvn test -B -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+    - name: "AppContext03TestSuite"
+      script: travis_wait 20 mvn test -B -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+    - name: "AppContext04TestSuite"
+      script: travis_wait 20 mvn test -B -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+    - name: "AppContextExtraTestSuite"
+      script: travis_wait 20 mvn test -B -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+
+install: travis_retry mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V

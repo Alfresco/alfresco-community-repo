@@ -2,9 +2,7 @@ dist: xenial
 sudo: required
 language: java
 jdk:
-  - openjdk11
-# Backwards compatibility with Java 8
-#  - oraclejdk8
+  - oraclejdk8
 services:
   - docker
 

@@ -25,7 +25,7 @@ matrix:
   include:
     - name: "WhiteSource scan"
       # only on support branches or master and if it is not a PR
-      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request
+      if: fork = false AND (branch = master OR branch =~ /support\/SP\/.*/) AND type != pull_request
       script:
         # Download the latest version of WhiteSource Unified Agent
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/raw/master/standAlone/wss-unified-agent.jar

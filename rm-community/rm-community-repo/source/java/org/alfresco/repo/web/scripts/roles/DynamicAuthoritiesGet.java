@@ -268,7 +268,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
     {
         boolean attach = false;
         String export = req.getParameter(PARAM_EXPORT);
-        if (export != null && Boolean.parseBoolean(export))
+        if (Boolean.parseBoolean(export))
         {
             attach = true;
         }

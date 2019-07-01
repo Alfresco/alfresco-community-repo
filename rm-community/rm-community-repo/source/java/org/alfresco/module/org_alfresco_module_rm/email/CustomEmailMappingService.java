@@ -38,7 +38,7 @@ public interface CustomEmailMappingService
     /**
      * Get the list of custom mappings
      *
-     * @return  {@link Set}<{@link CustomMapping}>
+     * @return  {@link Set}&lt;{@link CustomMapping}&gt;
      */
     Set<CustomMapping> getCustomMappings();
 

@@ -39,7 +39,6 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +64,6 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.PathInfo;
-import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InsufficientStorageException;
@@ -90,7 +87,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -98,10 +94,7 @@ import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.QName;
@@ -781,7 +774,7 @@ public class FilePlanComponentsApiUtils
      * Returns a List of filter properties specified by request parameters.
      * @param parameters The {@link Parameters} object to get the parameters passed into the request
      *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
+     *        - filter, sort &amp; paging params (where, orderBy, skipCount, maxItems)
      * @return The list of {@link FilterProp}. Can be null.
      */
     public List<FilterProp> getListChildrenFilterProps(Parameters parameters, Set<String> listFolderChildrenEqualsQueryProperties)
@@ -912,8 +905,9 @@ public class FilePlanComponentsApiUtils
     /**
      * Helper method that generates allowable operation for the provided node
      * @param nodeRef the node to get the allowable operations for
-     * @param type the type of the provided nodeRef
-     * @return a sublist of [{@link Nodes.OP_DELETE}, {@link Nodes.OP_CREATE}, {@link Nodes.OP_UPDATE}] representing the allowable operations for the provided node
+     * @param typeQName the type of the provided nodeRef
+     * @return a sublist of [{@link Nodes#OP_DELETE}, {@link Nodes#OP_CREATE}, {@link Nodes#OP_UPDATE}] representing
+     * the allowable operations for the provided node
      */
     protected List<String> getAllowableOperations(NodeRef nodeRef, QName typeQName)
     {

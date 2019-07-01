@@ -42,7 +42,7 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
     public static final String DEFAULT_RM_ADMIN_USER = "rmadmin";
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService#getRMAdminUserName()
+     * @see FilePlanAuthenticationService#getRmAdminUserName() ()
      */
     @Override
     @Deprecated
@@ -52,7 +52,7 @@ public class FilePlanAuthenticationServiceImpl implements FilePlanAuthentication
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService#runAsRMAdmin(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork)
+     * @see FilePlanAuthenticationService#runAsRmAdmin(RunAsWork)
      */
     @Override
     @Deprecated

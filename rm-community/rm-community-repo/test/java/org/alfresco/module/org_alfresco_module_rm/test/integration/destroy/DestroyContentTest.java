@@ -111,7 +111,7 @@ public class DestroyContentTest extends BaseRMTestCase
 
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
-                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");
+                InputStream is = DestroyContentTest.class.getResourceAsStream("/alfresco/test/content/Image.jpg");
 
                 subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);
 

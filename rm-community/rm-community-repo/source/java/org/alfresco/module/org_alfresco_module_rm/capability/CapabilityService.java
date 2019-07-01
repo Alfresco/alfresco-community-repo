@@ -62,7 +62,7 @@ public interface CapabilityService
    /**
     * Get a list of all the assignable capabilities.
     *
-    * @return  {@link Set}<{@link Capability}>     set of all the assignable capabilities
+    * @return  {@link Set}&lt;{@link Capability}&gt;    set of all the assignable capabilities
     */
    Set<Capability> getCapabilities();
 
@@ -70,7 +70,7 @@ public interface CapabilityService
     * Get a list of all the capabilities, optionally including those that are non-assignable.
     *
     * @param includePrivate    indicates that the private, or non-assignable capabilities are included in the result
-    * @return  {@link Set}<{@link Capability}>     set of capabilities
+    * @return  {@link Set}&lt;{@link Capability}&gt;     set of capabilities
     */
    Set<Capability> getCapabilities(boolean includePrivate);
 
@@ -110,7 +110,7 @@ public interface CapabilityService
    /**
     * Gets the list of all the capability groups (in index order)
     *
-    * @return {@link List}<{@link Group}> List of all the capability groups (in index order)
+    * @return {@link List}&lt;{@link Group}&gt; List of all the capability groups (in index order)
     */
    List<Group> getGroups();
 
@@ -118,7 +118,7 @@ public interface CapabilityService
     * Gets a list of capabilities for the given group id
     *
     * @param groupId The id of a group for which the list of capabilities should be retrieved
-    * @return {@link List}<{@link Capability}> List of capabilities for the given group
+    * @return {@link List}&lt;{@link Capability}&gt; List of capabilities for the given group
     */
    List<Capability> getCapabilitiesByGroupId(String groupId);
 
@@ -126,7 +126,7 @@ public interface CapabilityService
     * Get a list of capabilities for the given group
     *
     * @param group The group for which the list of capabilities should be retrieved
-    * @return {@link List}<{@link Capability}> List of capabilities for the given group
+    * @return {@link List}&lt;{@link Capability}&gt; List of capabilities for the given group
     */
    List<Capability> getCapabilitiesByGroup(Group group);
 

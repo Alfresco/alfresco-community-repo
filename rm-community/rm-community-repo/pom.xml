@@ -33,6 +33,8 @@
       <alfresco.alfresco-share-services.version>6.0.b</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
+      <maven.javadoc.skip>false</maven.javadoc.skip>
+
    </properties>
 
    <build>
@@ -265,6 +267,7 @@
                      <attachClasses>true</attachClasses>
                      <attachConfig>true</attachConfig>
                      <includeDependencies>true</includeDependencies>
+
                   </configuration>
                </execution>
                <execution>

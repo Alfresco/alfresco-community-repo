@@ -187,7 +187,7 @@ public class DispositionActionImpl implements DispositionAction,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.DispositionAction#getStartedAt()
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getStartedAt()
      */
     public Date getStartedAt()
     {
@@ -195,7 +195,7 @@ public class DispositionActionImpl implements DispositionAction,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.DispositionAction#getStartedBy()
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#getStartedBy()
      */
     public String getStartedBy()
     {

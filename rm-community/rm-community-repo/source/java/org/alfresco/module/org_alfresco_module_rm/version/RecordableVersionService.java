@@ -69,7 +69,7 @@ public interface RecordableVersionService
     /**
      * Gets the version that relates to the version record
      *
-     * @param versionRecord version record node reference
+     * @param record version record node reference
      * @return Version  version or null if not found
      */
     Version getRecordedVersion(NodeRef record);
@@ -89,7 +89,7 @@ public interface RecordableVersionService
      * <p>
      * Does not create a record if the node is not versionable or the latest version is already recorded.
      *
-     * @param nodeRef parent node reference
+     * @param filePlan parent node reference
      * @param nodeRef   node reference
      * @param autoVersion true, create new record version from latest version, false creates a record from the latest frozen version
      * @return NodeRef  node reference to the created record.

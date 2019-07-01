@@ -52,7 +52,7 @@ public interface ReportService
     /**
      * Get a list of the available report types.
      *
-     * @return {@link Set}<{@link QName}> list of the available report types
+     * @return {@link Set}&lt;{@link QName}&gt; list of the available report types
      */
     Set<QName> getReportTypes();
 

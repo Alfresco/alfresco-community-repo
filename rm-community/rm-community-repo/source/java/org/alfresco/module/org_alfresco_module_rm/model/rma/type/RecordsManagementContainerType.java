@@ -27,11 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
-import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -121,7 +117,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.model.BaseTypeBehaviour#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation
+     *      (ChildAssociationRef, boolean)
      */
     @Behaviour
     (
@@ -159,7 +156,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.model.BaseTypeBehaviour#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef, boolean)
+     *
      */
     @Behaviour
     (

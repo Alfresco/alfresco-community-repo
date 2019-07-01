@@ -319,12 +319,12 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>1.21-20190624-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.17-20180201-alfresco-patched</version>
+            <version>1.21-20190624-alfresco-patched</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.tdunning</groupId>
@@ -337,10 +337,6 @@
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

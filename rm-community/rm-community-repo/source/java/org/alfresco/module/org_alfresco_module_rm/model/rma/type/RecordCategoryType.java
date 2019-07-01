@@ -226,7 +226,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
             @Override
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
-                return nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) ? false : true;
+                return !nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER);
             }
         };
     }

@@ -161,7 +161,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
             if (constraintRef == null)
             {
                 result = rmAdminService.removeCustomPropertyDefinitionConstraints(propQName);
-                updated = constraints.isEmpty() ? false : true;
+                updated = !constraints.isEmpty();
             }
             else
             {

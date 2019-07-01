@@ -35,5 +35,5 @@ package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
  */
 public enum DispositionActionRelativePositions
 {
-    ANY, NEXT, PREVIOUS;
+    ANY, NEXT, PREVIOUS
 }

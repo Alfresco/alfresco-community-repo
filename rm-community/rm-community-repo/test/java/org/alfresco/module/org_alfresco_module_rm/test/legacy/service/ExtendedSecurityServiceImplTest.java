@@ -135,7 +135,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
         doTestInTransaction(new Test<Void>()
         {
-            Set<String> extendedReaders = new HashSet<>(2);;
+            Set<String> extendedReaders = new HashSet<>(2);
 
             public Void run() throws Exception
             {

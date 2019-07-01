@@ -64,7 +64,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         // closed marking - all values must match
         AND,
         // open marking   - at least one value must match
-        OR;
+        OR
     }
 
     // note: alternative to static init could be to use 'registered' constraint

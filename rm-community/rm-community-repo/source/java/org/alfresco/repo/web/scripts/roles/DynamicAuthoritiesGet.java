@@ -183,7 +183,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
 
     protected Map<String, Object> buildModel(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         final Long batchSize = getBatchSizeParameter(req);
         // get the max node id and the extended security aspect
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
@@ -203,7 +203,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
         File file = TempFileProvider.createTempFile("processedNodes_", ".csv");
         FileWriter writer = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(writer);
-        List<NodeRef> processedNodes = new ArrayList<NodeRef>();
+        List<NodeRef> processedNodes = new ArrayList<>();
         try
         {
             NodeRef parentNodeRef = getParentNodeRefParameter(req);
@@ -476,7 +476,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
                 Long totalNumberOfRecordsToProcess, final BufferedWriter out, final boolean attach)
     {
         final Long maxRecordsToProcess = totalNumberOfRecordsToProcess;
-        final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
+        final List<NodeRef> processedNodes = new ArrayList<>();
         logger.info(MESSAGE_PROCESSING_BEGIN);
         // by batch size
         for (Long i = 0L; i < maxNodeId; i+=batchSize)
@@ -530,7 +530,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
                 final Pair<Long, QName> recordAspectPair, final int maxRecordsToProcess, final BufferedWriter out,
                 final boolean attach)
     {
-        final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
+        final List<NodeRef> processedNodes = new ArrayList<>();
         final List<FileInfo> children = fileFolderService.search(parentNodeRef, "*", /*filesSearch*/true, /*folderSearch*/true, /*includeSubfolders*/true);
         logger.info(MESSAGE_PROCESSING_BEGIN);
         // by batch size

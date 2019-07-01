@@ -39,10 +39,10 @@ import java.util.List;
 public class PermissionProcessorRegistry 
 {
 	/** permission pre-processors */
-	private List<PermissionPreProcessor> permissionPreProcessors = new ArrayList<PermissionPreProcessor>();
+	private List<PermissionPreProcessor> permissionPreProcessors = new ArrayList<>();
 	
 	/** permission post-processors */
-	private List<PermissionPostProcessor> permissionPostProcessors = new ArrayList<PermissionPostProcessor>();
+	private List<PermissionPostProcessor> permissionPostProcessors = new ArrayList<>();
 	
 	/**
 	 * Add a permission pre-processor.

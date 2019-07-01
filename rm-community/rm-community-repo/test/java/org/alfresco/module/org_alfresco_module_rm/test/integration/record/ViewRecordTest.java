@@ -66,7 +66,7 @@ public class ViewRecordTest extends BaseRMTestCase
             public void given()
             {
              // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
 

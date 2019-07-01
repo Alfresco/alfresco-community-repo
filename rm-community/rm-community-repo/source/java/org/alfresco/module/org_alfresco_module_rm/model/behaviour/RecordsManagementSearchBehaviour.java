@@ -667,7 +667,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 List<EventCompletionDetails> eventsList = da.getEventCompletionDetails();
                 if (eventsList.size() > 0)
                 {
-                    eventNames = new ArrayList<String>(eventsList.size());
+                    eventNames = new ArrayList<>(eventsList.size());
                     for (EventCompletionDetails event : eventsList)
                     {
                         eventNames.add(event.getEventName());
@@ -750,7 +750,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 // Only care about record folders
                 if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef))
                 {
-                    Set<QName> props = new HashSet<QName>(1);
+                    Set<QName> props = new HashSet<>(1);
                     props.add(PROP_REVIEW_PERIOD);
                     Set<QName> changed = determineChangedProps(before, after);
                     changed.retainAll(props);
@@ -893,7 +893,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private Set<QName> determineChangedProps(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
-        Set<QName> result = new HashSet<QName>();
+        Set<QName> result = new HashSet<>();
         for (Map.Entry<QName, Serializable> entry : oldProps.entrySet())
         {
             QName qn = entry.getKey();
@@ -921,7 +921,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private List<NodeRef> getRecordFolders(NodeRef recordCategoryNode)
     {
-        List<NodeRef> results = new ArrayList<NodeRef>(8);
+        List<NodeRef> results = new ArrayList<>(8);
 
         List<ChildAssociationRef> folderAssocs = nodeService.getChildAssocs(recordCategoryNode,
                     ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

@@ -123,7 +123,7 @@ public abstract class ProtectedModelArtifact
     {
         if (capabilityNames == null && capabilities != null)
         {
-            capabilityNames = new HashSet<String>(capabilities.size());
+            capabilityNames = new HashSet<>(capabilities.size());
             for (Capability capability : capabilities)
             {
                 capabilityNames.add(capability.getName());

@@ -60,7 +60,7 @@ public class DeleteRecordFolderTest extends BaseRMTestCase
                 NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
 
                 // complete event
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
 

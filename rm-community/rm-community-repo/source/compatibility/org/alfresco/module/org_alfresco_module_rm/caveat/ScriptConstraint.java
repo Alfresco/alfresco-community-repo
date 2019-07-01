@@ -100,7 +100,7 @@ public class ScriptConstraint implements Serializable
          // Here with some data to return
          Set<String> authorities = values.keySet();
 
-         ArrayList<ScriptConstraintAuthority> constraints = new ArrayList<ScriptConstraintAuthority>(values.size());
+         ArrayList<ScriptConstraintAuthority> constraints = new ArrayList<>(values.size());
          for(String authority : authorities)
          {
               ScriptConstraintAuthority constraint = new ScriptConstraintAuthority();
@@ -144,7 +144,7 @@ public class ScriptConstraint implements Serializable
             JSONObject obj = bodge.getJSONObject(i);
             String value = obj.getString("value");
             JSONArray authorities = obj.getJSONArray("authorities");
-            List<String> aList = new ArrayList<String>();
+            List<String> aList = new ArrayList<>();
             for(int j = 0; j < authorities.length();j++)
             {
                 aList.add(authorities.getString(j));
@@ -209,7 +209,7 @@ public class ScriptConstraint implements Serializable
 
         if (details == null)
         {
-            details = new HashMap<String, List<String>>();
+            details = new HashMap<>();
         }
 
         // values, authorities
@@ -218,7 +218,7 @@ public class ScriptConstraint implements Serializable
         // Here with some data to return
         Set<String> values = pivot.keySet();
 
-        ArrayList<ScriptConstraintValue> constraints = new ArrayList<ScriptConstraintValue>(pivot.size());
+        ArrayList<ScriptConstraintValue> constraints = new ArrayList<>(pivot.size());
         for(String value : values)
         {
              ScriptConstraintValue constraint = new ScriptConstraintValue();
@@ -226,7 +226,7 @@ public class ScriptConstraint implements Serializable
              constraint.setValueTitle(value);
 
              List<String>authorities = pivot.get(value);
-             List<ScriptAuthority> sauth = new ArrayList<ScriptAuthority>();
+             List<ScriptAuthority> sauth = new ArrayList<>();
              for(String authority : authorities)
              {
                  ScriptAuthority a = new ScriptAuthority();
@@ -257,7 +257,7 @@ public class ScriptConstraint implements Serializable
                 ScriptConstraintValue constraint = new ScriptConstraintValue();
                 constraint.setValueName(value);
                 constraint.setValueTitle(value);
-                List<ScriptAuthority> sauth = new ArrayList<ScriptAuthority>();
+                List<ScriptAuthority> sauth = new ArrayList<>();
                 constraint.setAuthorities(sauth);
                 constraints.add(constraint);
             }

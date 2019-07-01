@@ -102,14 +102,14 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 assertTrue(extendedSecurityService.getReaders(record).isEmpty());
                 assertTrue(extendedSecurityService.getWriters(record).isEmpty());
 
-                Set<String> extendedReaders = new HashSet<String>(2);
+                Set<String> extendedReaders = new HashSet<>(2);
                 extendedReaders.add(monkey);
                 extendedReaders.add(elephant);
 
                 extendedSecurityService.set(record, extendedReaders, null);
                 checkExtendedReaders(record, extendedReaders);
 
-                Set<String> extendedReadersToo = new HashSet<String>(2);
+                Set<String> extendedReadersToo = new HashSet<>(2);
                 extendedReadersToo.add(monkey);
                 extendedReadersToo.add(snake);
 
@@ -135,7 +135,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
         doTestInTransaction(new Test<Void>()
         {
-            Set<String> extendedReaders = new HashSet<String>(2);;
+            Set<String> extendedReaders = new HashSet<>(2);;
 
             public Void run() throws Exception
             {

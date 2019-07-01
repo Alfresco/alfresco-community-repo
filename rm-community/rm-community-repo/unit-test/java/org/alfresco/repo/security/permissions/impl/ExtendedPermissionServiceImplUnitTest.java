@@ -270,7 +270,7 @@ public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest
         
         // then
         assertEquals(READERS, result.getFirst());
-        Set<String> writersWithOwner = new HashSet<String>(WRITERS);
+        Set<String> writersWithOwner = new HashSet<>(WRITERS);
         writersWithOwner.add(OWNER);
         assertEquals(writersWithOwner, result.getSecond());      
     }

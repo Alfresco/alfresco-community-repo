@@ -106,11 +106,11 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     // Default
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
-    private List<String> caveatAspectURINames = new ArrayList<String>(0);
-    private List<QName> caveatAspectQNames = new ArrayList<QName>(0);
+    private List<String> caveatAspectURINames = new ArrayList<>(0);
+    private List<QName> caveatAspectQNames = new ArrayList<>(0);
 
-    private List<String> caveatModelURINames = new ArrayList<String>(0);
-    private List<QName> caveatModelQNames = new ArrayList<QName>(0);
+    private List<String> caveatModelURINames = new ArrayList<>(0);
+    private List<QName> caveatModelQNames = new ArrayList<>(0);
 
     private static final String CAVEAT_CONFIG_NAME = "caveatConfig.json";
 
@@ -307,9 +307,9 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                         logger.trace(caveatConfigData);
                     }
 
-                    Set<QName> models = new HashSet<QName>(1);
-                    Set<QName> props = new HashSet<QName>(10);
-                    Set<String> expectedPrefixes = new HashSet<String>(10);
+                    Set<QName> models = new HashSet<>(1);
+                    Set<QName> props = new HashSet<>(10);
+                    Set<String> expectedPrefixes = new HashSet<>(10);
 
                     if (caveatModelQNames.size() > 0)
                     {
@@ -553,7 +553,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     // Get allowed values for given caveat (for current user)
     public List<String> getRMAllowedValues(String constraintName)
     {
-        List<String> allowedValues = new ArrayList<String>(0);
+        List<String> allowedValues = new ArrayList<>(0);
 
         String userName = AuthenticationUtil.getRunAsUser();
         if (userName != null && !(AuthenticationUtil.isMtEnabled() && AuthenticationUtil.isRunAsUserTheSystemUser()))
@@ -570,7 +570,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
 
     private List<String> getRMAllowedValues(String userName, Set<String> userGroupFullNames, String constraintName)
     {
-        Set<String>allowedValues = new HashSet<String>();
+        Set<String>allowedValues = new HashSet<>();
 
         // note: userName and userGroupNames must not be null
         Map<String, List<String>> caveatConstraintDef = null;
@@ -602,7 +602,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             }
         }
 
-        List<String>ret = new ArrayList<String>();
+        List<String>ret = new ArrayList<>();
         ret.addAll(allowedValues);
         return Collections.unmodifiableList(ret);
     }
@@ -676,7 +676,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                                         Object val = entry.getValue();
                                         if (val instanceof String)
                                         {
-                                            propValues = new ArrayList<String>(1);
+                                            propValues = new ArrayList<>(1);
                                             propValues.add((String)val);
                                         }
                                         else if (val instanceof List)
@@ -857,13 +857,13 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             if(members == null)
             {
                 // Create the new list, with the authority name
-                Map<String, List<String>> constraint =  new HashMap<String, List<String>>(0);
-                constraint.put(authorityName, new ArrayList<String>(values));
+                Map<String, List<String>> constraint = new HashMap<>(0);
+                constraint.put(authorityName, new ArrayList<>(values));
                 members = constraint;
             }
             else
             {
-                members.put(authorityName, new ArrayList<String>(values));
+                members.put(authorityName, new ArrayList<>(values));
             }
 
             caveatConfig.put(listName, members);
@@ -893,7 +893,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
             if(members == null)
             {
                 // Members List does not exist
-                Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
+                Map<String, List<String>> emptyConstraint = new HashMap<>(0);
                 caveatConfig.put(listName, emptyConstraint);
                 members = emptyConstraint;
 
@@ -918,7 +918,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 List<String> vals = members.get(authority);
                 if(vals == null)
                 {
-                    vals= new ArrayList<String>();
+                    vals= new ArrayList<>();
                     members.put(authority, vals);
                 }
                 vals.add(valueName);
@@ -1134,7 +1134,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         try
         {
             writeLock.lock();
-            Map<String, List<String>> emptyConstraint =  new HashMap<String, List<String>>(0);
+            Map<String, List<String>> emptyConstraint = new HashMap<>(0);
             caveatConfig.put(listName, emptyConstraint);
             updateOrCreateCaveatConfig(convertToJSONString(caveatConfig));
         }

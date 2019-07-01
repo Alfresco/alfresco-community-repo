@@ -151,7 +151,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
      */
     protected Set<RoleItem> createRoleItems(NodeRef filePlan, Set<Role> roles, boolean showAuths)
     {
-        Set<RoleItem> items = new HashSet<RoleItem>(roles.size());
+        Set<RoleItem> items = new HashSet<>(roles.size());
         for (Role role : roles)
         {
             RoleItem item = null;
@@ -178,7 +178,7 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
      */
     private Set<AuthorityItem> createAuthorityItems(Set<String> authorities)
     {
-        Set<AuthorityItem> result = new HashSet<AuthorityItem>(authorities.size());
+        Set<AuthorityItem> result = new HashSet<>(authorities.size());
 
         for (String authority : authorities)
         {

@@ -119,14 +119,14 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
         
         // Get the details of all the aspects
         Set<QName> aspectQNames = recordService.getRecordMetadataAspects(nodeRef);        
-        List<Map<String, Object>> aspects = new ArrayList<Map<String,Object>>(aspectQNames.size()+1);
+        List<Map<String, Object>> aspects = new ArrayList<>(aspectQNames.size() + 1);
         for (QName aspectQName : aspectQNames)
         {
             // Get the prefix aspect and default the label to the localname 
             String prefixString = aspectQName.toPrefixString(namespaceService);
             String label = aspectQName.getLocalName();
              
-            Map<String, Object> aspect = new HashMap<String, Object>(2);
+            Map<String, Object> aspect = new HashMap<>(2);
             aspect.put("id", prefixString);
             
             // Try and get the aspect definition 
@@ -143,7 +143,7 @@ public class RecordMetaDataAspectsGet extends DeclarativeWebScript
         }
         
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("aspects", aspects);
         return model;
     }

@@ -79,7 +79,7 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                Map<QName, Serializable> props = new HashMap<>(2);
                 props.put(RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
                 props.put(RecordableVersionModel.PROP_FILE_PLAN, filePlan);
                 nodeService.addAspect(myDocument, RecordableVersionModel.ASPECT_VERSIONABLE, props);
@@ -162,7 +162,7 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
                 writer.putContent(GUID.generate());
 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                Map<QName, Serializable> props = new HashMap<>(2);
                 props.put(RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
                 props.put(RecordableVersionModel.PROP_FILE_PLAN, filePlan);
                 nodeService.addAspect(myDocument, RecordableVersionModel.ASPECT_VERSIONABLE, props);
@@ -449,7 +449,7 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
                 Version version11 = versionHistory.getVersion("1.1");
                 recordVersion11 = recordableVersionService.getVersionRecord(version11);
 
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(recordVersion11, CompleteEventAction.NAME, params);
 

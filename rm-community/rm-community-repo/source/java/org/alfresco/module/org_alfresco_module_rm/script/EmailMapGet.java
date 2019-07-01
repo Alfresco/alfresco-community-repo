@@ -64,7 +64,7 @@ public class EmailMapGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // Create model object with the lists of custom mappings
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("emailmap", customEmailMappingService.getCustomMappings());
         return model;
     }

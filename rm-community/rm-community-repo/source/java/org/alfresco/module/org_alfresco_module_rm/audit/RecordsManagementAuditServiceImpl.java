@@ -210,12 +210,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     private List<String> ignoredAuditProperties;
 
-    private List<QName> propertiesToBeRemoved = new ArrayList<QName>();
+    private List<QName> propertiesToBeRemoved = new ArrayList<>();
 
     private RMAuditTxnListener txnListener = new RMAuditTxnListener();
 
     /** Registered and initialised records management auditEvents */
-    private Map<String, AuditEvent> auditEvents = new HashMap<String, AuditEvent>();
+    private Map<String, AuditEvent> auditEvents = new HashMap<>();
 
     /**
      * Set the component used to bind to behaviour callbacks
@@ -622,7 +622,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      */
     private Map<String, Serializable> buildAuditMap(NodeRef nodeRef, String eventName, Map<QName, Serializable> propertiesBefore, Map<QName, Serializable> propertiesAfter, boolean removeOnNoPropertyChange)
     {
-        Map<String, Serializable> auditMap = new HashMap<String, Serializable>(13);
+        Map<String, Serializable> auditMap = new HashMap<>(13);
         auditMap.put(
                 AuditApplication.buildPath(
                         RM_AUDIT_SNIPPET_EVENT,
@@ -817,7 +817,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         ParameterCheck.mandatory("params", params);
 
-        List<RecordsManagementAuditEntry> entries = new ArrayList<RecordsManagementAuditEntry>(50);
+        List<RecordsManagementAuditEntry> entries = new ArrayList<>(50);
         try
         {
             getAuditTrailImpl(params, entries, null, null);
@@ -1255,7 +1255,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         try
         {
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+            Map<QName, Serializable> properties = new HashMap<>(1);
             properties.put(ContentModel.PROP_NAME, auditTrail.getName());
 
             // file the audit log as an undeclared record
@@ -1292,7 +1292,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public List<AuditEvent> getAuditEvents()
     {
-        List<AuditEvent> listAuditEvents = new ArrayList<AuditEvent>(this.auditEvents.size());
+        List<AuditEvent> listAuditEvents = new ArrayList<>(this.auditEvents.size());
         listAuditEvents.addAll(this.auditEvents.values());
         Collections.sort(listAuditEvents);
         return listAuditEvents;

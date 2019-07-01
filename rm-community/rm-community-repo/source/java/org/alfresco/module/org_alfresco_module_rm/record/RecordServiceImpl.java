@@ -710,7 +710,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (recordMetaDataAspects == null)
         {
             // create map
-            recordMetaDataAspects = new HashMap<QName, Set<QName>>();
+            recordMetaDataAspects = new HashMap<>();
 
             // init with legacy aspects
             initRecordMetaDataMap();
@@ -764,7 +764,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // create a new set for the file plan type
-            filePlanTypes = new HashSet<QName>(1);
+            filePlanTypes = new HashSet<>(1);
             getRecordMetadataAspectsMap().put(recordMetadataAspect, filePlanTypes);
         }
 
@@ -834,7 +834,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public Set<QName> getRecordMetadataAspects(QName filePlanType)
     {
-        Set<QName> result = new HashSet<QName>(getRecordMetadataAspectsMap().size());
+        Set<QName> result = new HashSet<>(getRecordMetadataAspectsMap().size());
 
         for (Entry<QName, Set<QName>> entry : getRecordMetadataAspectsMap().entrySet())
         {
@@ -913,7 +913,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         }
 
                         // save the information about the originating details
-                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                        Map<QName, Serializable> aspectProperties = new HashMap<>(3);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, parentAssoc.getParentRef());
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
@@ -1731,7 +1731,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         ParameterCheck.mandatory("recordFolder", recordFolder);
 
-        List<NodeRef> result = new ArrayList<NodeRef>(1);
+        List<NodeRef> result = new ArrayList<>(1);
         if (recordFolderService.isRecordFolder(recordFolder))
         {
             List<ChildAssociationRef> assocs = nodeService.getChildAssocs(recordFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

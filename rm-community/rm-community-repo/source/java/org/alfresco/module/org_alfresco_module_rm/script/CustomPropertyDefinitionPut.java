@@ -84,7 +84,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
             catch (CustomMetadataException e)
             {
                 status.setCode(Status.STATUS_BAD_REQUEST);
-                ftlModel = new HashMap<String, Object>();
+                ftlModel = new HashMap<>();
                 ftlModel.put(MESSAGE, e.getMessage());
             }
         }
@@ -109,7 +109,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
     protected Map<String, Object> handlePropertyDefinitionUpdate(WebScriptRequest req, JSONObject json)
             throws JSONException, CustomMetadataException
     {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
 
         Map<String, Serializable> params = getParamsFromUrlAndJson(req, json);
 
@@ -209,7 +209,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
             throws JSONException
     {
         Map<String, Serializable> params;
-        params = new HashMap<String, Serializable>();
+        params = new HashMap<>();
 
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String propId = templateVars.get(PROP_ID);

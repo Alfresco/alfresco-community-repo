@@ -135,7 +135,7 @@ public class RM3993Test extends BaseRMTestCase
             }
         });
 
-        List<NodeRef> records = new ArrayList<NodeRef>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
+        List<NodeRef> records = new ArrayList<>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
 
         for (int i = 0; i < NUMBER_OF_BATCHES; i++)
         {
@@ -145,7 +145,7 @@ public class RM3993Test extends BaseRMTestCase
                 @Override
                 public List<NodeRef> run() throws Exception
                 {
-                    List<NodeRef> records = new ArrayList<NodeRef>(NUMBER_IN_BATCH);
+                    List<NodeRef> records = new ArrayList<>(NUMBER_IN_BATCH);
                     for (int j = 0; j < NUMBER_IN_BATCH; j++)
                     {
                         int count = (finali)* NUMBER_IN_BATCH + (j + 1);
@@ -216,7 +216,7 @@ public class RM3993Test extends BaseRMTestCase
 
     private NodeRef createFile(NodeRef parentNodeRef, String name, String descrption, QName typeQName)
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+        Map<QName, Serializable> properties = new HashMap<>(11);
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
         properties.put(ContentModel.PROP_DESCRIPTION, (Serializable) descrption);
         QName assocQName = QName.createQName(

@@ -246,7 +246,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
                     rmEvent.getType().equals(getName()))
                 {
                     // Complete the event
-                    Map<String, Serializable> params = new HashMap<String, Serializable>(3);
+                    Map<String, Serializable> params = new HashMap<>(3);
                     params.put(CompleteEventAction.PARAM_EVENT_NAME, event.getEventName());
                     params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
                     params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());

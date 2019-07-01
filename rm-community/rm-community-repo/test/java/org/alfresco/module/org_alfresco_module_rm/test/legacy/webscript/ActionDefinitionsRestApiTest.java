@@ -75,7 +75,7 @@ public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
         List<String> dmActionDefinitions = getDmActionDefinitions();
 
         // Get the list of rm action definitions from the response and check it
-        List<String> rmActionDefinitions = new ArrayList<String>();
+        List<String> rmActionDefinitions = new ArrayList<>();
         for (int i = 0; i < data.length(); i++)
         {
             String name = data.getJSONObject(i).getString("name");

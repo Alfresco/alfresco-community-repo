@@ -151,7 +151,7 @@ public class DeclarativeCapability extends AbstractCapability
      */
     public void setPermission(String permission)
     {
-        List<String> permissions = new ArrayList<String>(1);
+        List<String> permissions = new ArrayList<>(1);
         permissions.add(permission);
         this.permissions = permissions;
     }
@@ -273,7 +273,7 @@ public class DeclarativeCapability extends AbstractCapability
     {
         if (kinds != null && availableKinds == null)
         {
-            availableKinds = new HashSet<FilePlanComponentKind>(kinds.size());
+            availableKinds = new HashSet<>(kinds.size());
             for (String kindString : kinds)
             {
                 FilePlanComponentKind kind = FilePlanComponentKind.valueOf(kindString);

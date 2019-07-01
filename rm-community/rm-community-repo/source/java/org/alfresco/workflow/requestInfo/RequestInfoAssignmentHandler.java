@@ -74,8 +74,8 @@ public class RequestInfoAssignmentHandler implements TaskListener
         }
 
         // Define lists for candidate user(s)/group(s)
-        List<String> candidateUsers = new ArrayList<String>();
-        List<String> candidateGroups = new ArrayList<String>();
+        List<String> candidateUsers = new ArrayList<>();
+        List<String> candidateGroups = new ArrayList<>();
 
         // Iterate through the list add user(s)/group(s) to the lists
         for (ActivitiScriptNode activitiScriptNode : usersAndGroups)

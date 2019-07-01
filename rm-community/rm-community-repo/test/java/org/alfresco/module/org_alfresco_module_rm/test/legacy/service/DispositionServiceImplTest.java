@@ -743,7 +743,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     private void updateDispositionScheduleOnContainer(NodeRef nodeRef)
     {
-        Map<QName, Serializable> updateProps = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> updateProps = new HashMap<>(3);
         updateProps.put(PROP_DISPOSITION_PERIOD, "week|1");
         updateProps.put(PROP_DISPOSITION_EVENT, (Serializable)Arrays.asList(CommonRMTestUtils.DEFAULT_EVENT_NAME, "abolished"));
 
@@ -769,14 +769,14 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         assertNotNull(events);
         assertEquals(arrEventNames.length, events.size());
 
-        List<String> origEvents = new ArrayList<String>(events.size());
+        List<String> origEvents = new ArrayList<>(events.size());
         for (EventCompletionDetails event : events)
         {
             origEvents.add(event.getEventName());
         }
 
         List<String> expectedEvents = Arrays.asList(arrEventNames);
-        Collection<String> copy = new ArrayList<String>(origEvents);
+        Collection<String> copy = new ArrayList<>(origEvents);
 
         for (Iterator<String> i = origEvents.iterator(); i.hasNext(); )
         {
@@ -857,7 +857,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                         true,
                         false);
 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
                 adParams.put(PROP_DISPOSITION_PERIOD, "week|1");
@@ -971,9 +971,9 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
                 assertNotNull(actionDefinition);
 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
 
-                List<String> events = new ArrayList<String>(1);
+                List<String> events = new ArrayList<>(1);
                 events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 events.add("obsolete");
                 adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);

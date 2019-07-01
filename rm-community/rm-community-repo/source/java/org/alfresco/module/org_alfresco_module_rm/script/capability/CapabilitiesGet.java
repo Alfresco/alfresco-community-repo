@@ -109,11 +109,11 @@ public class CapabilitiesGet extends DeclarativeWebScript
             grouped = Boolean.parseBoolean(groupedString);
         }
 
-        Map<String, Object> model = new TreeMap<String, Object>();
+        Map<String, Object> model = new TreeMap<>();
         if (grouped)
         {
             // Construct the map which is needed to build the model
-            Map<String, GroupedCapabilities> groupedCapabilitiesMap = new TreeMap<String, GroupedCapabilities>();
+            Map<String, GroupedCapabilities> groupedCapabilitiesMap = new TreeMap<>();
 
             List<Group> groups = capabilityService.getGroups();
             for (Group group : groups)
@@ -154,7 +154,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
             }
 
             Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, includePrivate);
-            List<String> list = new ArrayList<String>(map.size());
+            List<String> list = new ArrayList<>(map.size());
             for (Map.Entry<Capability, AccessStatus> entry : map.entrySet())
             {
                 AccessStatus accessStatus = entry.getValue();
@@ -188,7 +188,7 @@ public class CapabilitiesGet extends DeclarativeWebScript
             this.capabilityGroupTitle = capabilityGroupTitle;
             this.capabilityName = capabilityName;
             this.capabilityTitle = capabilityTitle;
-            this.capabilities = new TreeMap<String, String>();
+            this.capabilities = new TreeMap<>();
         }
 
         public String getGroupId()

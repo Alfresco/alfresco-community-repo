@@ -57,7 +57,7 @@ public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
     @InjectMocks private EagerContentStoreCleaner eagerContentStoreCleaner = new EagerContentStoreCleaner()
     {
         /** dummy implementation */
-        public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {return true;};
+        public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {return true;}
     };
     
     @Mock private ContentCleanser mockedContentCleanser;

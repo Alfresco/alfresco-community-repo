@@ -80,7 +80,7 @@ public class MoveRecordTest extends BaseRMTestCase
                 sourceCategory = filePlanService.createRecordCategory(filePlan, GUID.generate()); 
                 utils.createBasicDispositionSchedule(sourceCategory, GUID.generate(), GUID.generate(), true, true);
                 sourceRecordFolder = recordFolderService.createRecordFolder(sourceCategory, GUID.generate());
-                destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());;
+                destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 destinationRecordFolder = recordFolderService.createRecordFolder(destinationCategory, GUID.generate());
      
                 // create record

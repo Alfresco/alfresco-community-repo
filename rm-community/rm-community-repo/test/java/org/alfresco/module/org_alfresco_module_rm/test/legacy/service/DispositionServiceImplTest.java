@@ -622,7 +622,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 checkDisposableItemUnchanged(mhRecordFolder42);
                 checkDisposableItemUnchanged(record43);
                 checkDisposableItemUnchanged(mhRecordFolder44);
-                checkDisposableItemUnchanged(record45);;
+                checkDisposableItemUnchanged(record45);
             }
         });
 
@@ -644,7 +644,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 checkDisposableItemChanged(mhRecordFolder42);
                 checkDisposableItemUnchanged(record43);
                 checkDisposableItemUnchanged(mhRecordFolder44);
-                checkDisposableItemUnchanged(record45);;
+                checkDisposableItemUnchanged(record45);
             }
         });
 

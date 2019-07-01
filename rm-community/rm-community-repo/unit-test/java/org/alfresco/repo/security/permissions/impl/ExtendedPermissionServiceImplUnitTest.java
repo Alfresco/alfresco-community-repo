@@ -73,15 +73,17 @@ public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest
     /** permission service impl, default */
 	private @InjectMocks @Spy ExtendedPermissionServiceImpl extendedPermissionServiceImpl = new ExtendedPermissionServiceImpl()
 	{
-		protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; };
-	};
+		protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; }
+    };
 	
 	/** permission service impl instance extended for reader/writer tests */
     private @InjectMocks ExtendedPermissionServiceImpl extendedPermissionServiceImplWithReaderWritersSet = new ExtendedPermissionServiceImpl()
     {
-        protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; };        
-        public java.util.Set<String> getReaders(Long aclId) { return READERS; };
-        public java.util.Set<String> getWriters(Long aclId) { return WRITERS; };        
+        protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; }
+
+        public java.util.Set<String> getReaders(Long aclId) { return READERS; }
+
+        public java.util.Set<String> getWriters(Long aclId) { return WRITERS; }
     };
 	
     /** mocks */

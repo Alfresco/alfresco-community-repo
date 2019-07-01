@@ -796,7 +796,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(auditTrailFile);
-            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));)
+            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8")))
         {
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);

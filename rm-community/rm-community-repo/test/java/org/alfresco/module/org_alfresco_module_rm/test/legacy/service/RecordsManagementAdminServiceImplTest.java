@@ -599,7 +599,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         RelationshipDefinition relationshipDefinition = relationshipService.createRelationshipDefinition(displayName);
 
                         // Get the qualified name
-                        QName qNameResult = QName.createQName(RM_CUSTOM_PREFIX, relationshipDefinition.getUniqueName(), namespaceService);;
+                        QName qNameResult = QName.createQName(RM_CUSTOM_PREFIX, relationshipDefinition.getUniqueName(), namespaceService);
 
                         System.out.println("Creating new " + refType + " reference definition: " + qNameResult);
                         System.out.println("  params- label: '" + label + "' source: '" + source + "' target: '" + target + "'");

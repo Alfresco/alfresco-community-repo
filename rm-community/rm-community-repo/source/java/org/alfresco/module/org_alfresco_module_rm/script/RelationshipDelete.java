@@ -94,7 +94,7 @@ public class RelationshipDelete extends AbstractRmWebScript
         getRelationshipService().removeRelationship(uniqueName, source, target);
         getRelationshipService().removeRelationship(uniqueName, target, source);
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put(SUCCESS, true);
         return model;
     }

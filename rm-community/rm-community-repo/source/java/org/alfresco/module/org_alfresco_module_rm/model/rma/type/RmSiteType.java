@@ -96,7 +96,7 @@ public class RmSiteType extends    BaseBehaviourBean
     private FilePlanType filePlanType;
 
     /** Map of file plan type's key'ed by corresponding site types */
-    protected Map<QName, QName> mapFilePlanType = new HashMap<QName, QName>(3);
+    protected Map<QName, QName> mapFilePlanType = new HashMap<>(3);
 
     /**
      * Set the site service
@@ -329,7 +329,7 @@ public class RmSiteType extends    BaseBehaviourBean
             {
                 final NodeRef child = childAssocRef.getChildRef();
                 final NodeRef parent = childAssocRef.getParentRef();
-                List<QName> acceptedUniqueChildTypes = new ArrayList<QName>();
+                List<QName> acceptedUniqueChildTypes = new ArrayList<>();
                 SiteInfo siteInfo = siteService.getSite(parent);
                 acceptedUniqueChildTypes.add(getFilePlanType(siteInfo));
                 // check the created child is of an accepted type

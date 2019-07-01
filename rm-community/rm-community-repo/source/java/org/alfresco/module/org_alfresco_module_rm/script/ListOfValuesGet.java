@@ -136,7 +136,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // add all the lists data to a Map
-        Map<String, Object> listsModel = new HashMap<String, Object>(4);
+        Map<String, Object> listsModel = new HashMap<>(4);
         String requestUrl = req.getURL();
         listsModel.put("dispositionActions", createDispositionActionsModel(requestUrl));
         listsModel.put("events", createEventsModel(requestUrl));
@@ -145,7 +145,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
         listsModel.put("auditEvents", createAuditEventsModel(requestUrl));
 
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("lists", listsModel);
         return model;
     }
@@ -160,17 +160,17 @@ public class ListOfValuesGet extends DeclarativeWebScript
     {
         // iterate over the disposition actions
         List<RecordsManagementAction> dispositionActions = this.rmActionService.getDispositionActions();
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(dispositionActions.size());
+        List<Map<String, String>> items = new ArrayList<>(dispositionActions.size());
         for (RecordsManagementAction dispositionAction : dispositionActions)
         {
-            Map<String, String> item = new HashMap<String, String>(2);
+            Map<String, String> item = new HashMap<>(2);
             item.put("label", dispositionAction.getLabel());
             item.put("value", dispositionAction.getName());
             items.add(item);
         }
 
         // create the model
-        Map<String, Object> model = new HashMap<String, Object>(2);
+        Map<String, Object> model = new HashMap<>(2);
         model.put("url", baseUrl + "/dispositionactions");
         model.put("items", items);
 
@@ -187,10 +187,10 @@ public class ListOfValuesGet extends DeclarativeWebScript
     {
         // get all the events including their display labels from the event service
         List<RecordsManagementEvent> events = this.rmEventService.getEvents();
-        List<Map<String, Object>> items = new ArrayList<Map<String, Object>>(events.size());
+        List<Map<String, Object>> items = new ArrayList<>(events.size());
         for (RecordsManagementEvent event : events)
         {
-            Map<String, Object> item = new HashMap<String, Object>(3);
+            Map<String, Object> item = new HashMap<>(3);
             item.put("label", event.getDisplayLabel());
             item.put("value", event.getName());
             item.put("automatic",
@@ -199,7 +199,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
         }
 
         // create the model
-        Map<String, Object> model = new HashMap<String, Object>(2);
+        Map<String, Object> model = new HashMap<>(2);
         model.put("url", baseUrl + "/events");
         model.put("items", items);
 
@@ -216,13 +216,13 @@ public class ListOfValuesGet extends DeclarativeWebScript
     {
         // iterate over all period provides, but ignore 'cron'
         Set<String> providers = Period.getProviderNames();
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(providers.size());
+        List<Map<String, String>> items = new ArrayList<>(providers.size());
         for (String provider : providers)
         {
             PeriodProvider pp = Period.getProvider(provider);
             if (!pp.getPeriodType().equals("cron"))
             {
-                Map<String, String> item = new HashMap<String, String>(2);
+                Map<String, String> item = new HashMap<>(2);
                 item.put("label", pp.getDisplayLabel());
                 item.put("value", pp.getPeriodType());
                 items.add(item);
@@ -230,7 +230,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
         }
 
         // create the model
-        Map<String, Object> model = new HashMap<String, Object>(2);
+        Map<String, Object> model = new HashMap<>(2);
         model.put("url", baseUrl + "/periodtypes");
         model.put("items", items);
 
@@ -247,7 +247,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
     {
         // iterate over all period properties and get the label from their type definition
         Collection<DispositionProperty> dispositionProperties = dispositionService.getDispositionProperties();
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(dispositionProperties.size());
+        List<Map<String, String>> items = new ArrayList<>(dispositionProperties.size());
         for (DispositionProperty dispositionProperty : dispositionProperties)
         {
             PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
@@ -255,7 +255,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
 
             if (propDef != null)
             {
-                Map<String, String> item = new HashMap<String, String>(2);
+                Map<String, String> item = new HashMap<>(2);
                 String propTitle = propDef.getTitle(ddService);
                 if (propTitle == null || propTitle.length() == 0)
                 {
@@ -268,7 +268,7 @@ public class ListOfValuesGet extends DeclarativeWebScript
         }
 
         // create the model
-        Map<String, Object> model = new HashMap<String, Object>(2);
+        Map<String, Object> model = new HashMap<>(2);
         model.put("url", baseUrl + "/periodproperties");
         model.put("items", items);
 
@@ -285,17 +285,17 @@ public class ListOfValuesGet extends DeclarativeWebScript
     {
         // iterate over all audit events
         List<AuditEvent> auditEvents = this.rmAuditService.getAuditEvents();
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(auditEvents.size());
+        List<Map<String, String>> items = new ArrayList<>(auditEvents.size());
         for (AuditEvent event : auditEvents)
         {
-            Map<String, String> item = new HashMap<String, String>(2);
+            Map<String, String> item = new HashMap<>(2);
             item.put("label", event.getLabel());
             item.put("value", event.getName());
             items.add(item);
         }
 
         // create the model
-        Map<String, Object> model = new HashMap<String, Object>(2);
+        Map<String, Object> model = new HashMap<>(2);
         model.put("url", baseUrl + "/auditevents");
         model.put("items", items);
 

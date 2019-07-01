@@ -88,7 +88,7 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put(RELATIONSHIP_LABELS, getRelationshipsLabels());
         return model;
     }
@@ -100,7 +100,7 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
      */
     private List<RelationshipLabel> getRelationshipsLabels()
     {
-        List<RelationshipLabel> relationshipLabels = new ArrayList<RelationshipLabel>();
+        List<RelationshipLabel> relationshipLabels = new ArrayList<>();
 
         Set<RelationshipDefinition> relationshipDefinitions = getRelationshipService().getRelationshipDefinitions();
         for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)

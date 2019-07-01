@@ -61,7 +61,7 @@ public class RmEventGet extends DeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         // Event name
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();

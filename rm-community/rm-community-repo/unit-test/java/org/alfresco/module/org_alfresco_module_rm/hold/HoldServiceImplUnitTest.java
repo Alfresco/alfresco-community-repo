@@ -110,7 +110,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void heldByMultipleResults()
     {
         // setup record folder in multiple holds
-        List<ChildAssociationRef> holds = new ArrayList<ChildAssociationRef>(2);
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, recordFolder, true, 2));
         doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
@@ -165,7 +165,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void getHeldWithResults()
     {
         // setup record folder in hold
-        List<ChildAssociationRef> holds = new ArrayList<ChildAssociationRef>(1);
+        List<ChildAssociationRef> holds = new ArrayList<>(1);
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
         doReturn(holds).when(mockedNodeService).getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
 
@@ -352,7 +352,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         }).when(mockedNodeService).addAspect(any(NodeRef.class), eq(ASPECT_FROZEN), any(Map.class));
 
         // build a list of holds
-        List<NodeRef> holds = new ArrayList<NodeRef>(2);
+        List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
         holds.add(hold2);
 
@@ -408,7 +408,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
 
         // build a list of holds
-        List<NodeRef> holds = new ArrayList<NodeRef>(2);
+        List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
         holds.add(hold2);
 
@@ -425,7 +425,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void removeFromAllHolds()
     {
         // build a list of holds
-        List<NodeRef> holds = new ArrayList<NodeRef>(2);
+        List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
         holds.add(hold2);
 

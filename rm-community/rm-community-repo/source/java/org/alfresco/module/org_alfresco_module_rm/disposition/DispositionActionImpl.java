@@ -211,7 +211,7 @@ public class DispositionActionImpl implements DispositionAction,
                                                         this.dispositionNodeRef,
                                                         ASSOC_EVENT_EXECUTIONS,
                                                         RegexQNamePattern.MATCH_ALL);
-        List<EventCompletionDetails> result = new ArrayList<EventCompletionDetails>(assocs.size());
+        List<EventCompletionDetails> result = new ArrayList<>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
             result.add(getEventCompletionDetailsFromNodeRef(assoc.getChildRef()));
@@ -392,7 +392,7 @@ public class DispositionActionImpl implements DispositionAction,
                 List<String> stepEvents = (List<String>) services.getNodeService().getProperty(getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT);
 
                 List<EventCompletionDetails> eventsList = getEventCompletionDetails();
-                List<String> nextActionEvents = new ArrayList<String>(eventsList.size());
+                List<String> nextActionEvents = new ArrayList<>(eventsList.size());
 
                 for (EventCompletionDetails event : eventsList)
                 {
@@ -456,7 +456,7 @@ public class DispositionActionImpl implements DispositionAction,
     @Override
     public void addEventCompletionDetails(RecordsManagementEvent event)
     {
-        Map<QName, Serializable> eventProps = new HashMap<QName, Serializable>(7);
+        Map<QName, Serializable> eventProps = new HashMap<>(7);
         eventProps.put(PROP_EVENT_EXECUTION_NAME, event.getName());
         // TODO display label
         eventProps.put(PROP_EVENT_EXECUTION_AUTOMATIC, event.getRecordsManagementEventType().isAutomaticEvent());

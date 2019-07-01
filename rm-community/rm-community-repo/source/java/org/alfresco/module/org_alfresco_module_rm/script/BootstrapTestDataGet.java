@@ -219,7 +219,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                                              recordsManagementSearchBehaviour,
                                              dispositionService, recordFolderService);
 
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
+        Map<String, Object> model = new HashMap<>(1, 1.0f);
     	model.put("success", true);
 
         return model;
@@ -269,7 +269,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP,
                                                                            allRoleShortName,
                                                                            RMAuthority.ALL_ROLES_DISPLAY_NAME,
-                                                                           new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+                                new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it
                         Set<Role> roles = recordsManagementSecurityService.getRoles(rmRoot);

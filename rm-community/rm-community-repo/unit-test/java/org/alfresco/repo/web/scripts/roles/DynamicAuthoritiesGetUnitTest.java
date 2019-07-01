@@ -176,7 +176,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         when(mockedPatchDAO.getMaxAdmNodeID()).thenReturn(500000L);
 
         // aspect
-        when(mockedQnameDAO.getQName(ASPECT_EXTENDED_SECURITY)).thenReturn(new Pair<Long, QName>(ASPECT_ID, ASPECT));
+        when(mockedQnameDAO.getQName(ASPECT_EXTENDED_SECURITY)).thenReturn(new Pair<>(ASPECT_ID, ASPECT));
     }
 
     /**
@@ -233,7 +233,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -279,7 +279,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(false);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -380,7 +380,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(false);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -408,7 +408,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(false);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -437,7 +437,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS)).thenReturn(null);
             when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS)).thenReturn(null);
@@ -487,7 +487,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -545,7 +545,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -586,7 +586,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
             when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
                         .thenReturn((Serializable) Collections.emptyMap());
@@ -650,7 +650,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        List<FileInfo> children = new ArrayList<FileInfo>();
+        List<FileInfo> children = new ArrayList<>();
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
@@ -687,7 +687,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l, 4l, 5l, 6l, 7l, 8l).collect(Collectors.toList());
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        List<FileInfo> children = new ArrayList<FileInfo>();
+        List<FileInfo> children = new ArrayList<>();
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);

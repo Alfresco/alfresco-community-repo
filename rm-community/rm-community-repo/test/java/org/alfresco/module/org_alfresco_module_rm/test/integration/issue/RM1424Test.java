@@ -47,7 +47,7 @@ public class RM1424Test extends DeleteHoldTest
 {
     public void testGettingHolds()
     {
-        final List<NodeRef> listWithTwoHolds = new ArrayList<NodeRef>(2);
+        final List<NodeRef> listWithTwoHolds = new ArrayList<>(2);
 
         doTestInTransaction(new Test<Void>()
         {

@@ -65,7 +65,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     {
         public String name;
         public AccessStatus status;
-        public Map<String, Boolean> conditions = new HashMap<String, Boolean>();        
+        public Map<String, Boolean> conditions = new HashMap<>();
     }
 
     /**
@@ -99,7 +99,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         @Override
         protected Map<String, CapabilityReport> initialValue()
         {
-            return new HashMap<String, CapabilityReport>();
+            return new HashMap<>();
         }
     };
 
@@ -116,7 +116,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     private static final ThreadLocal<List<String>> MESSAGES = new ThreadLocal<List<String>>()
     {
-        protected List<String> initialValue() {return new ArrayList<String>();}
+        protected List<String> initialValue() {return new ArrayList<>();}
     };
     
     /**

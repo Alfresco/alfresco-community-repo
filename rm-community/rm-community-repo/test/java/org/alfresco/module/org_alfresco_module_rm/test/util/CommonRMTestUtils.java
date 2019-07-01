@@ -166,7 +166,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                     boolean extendedDispositionSchedule,
                                     String defaultEvent)
     {
-        Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> dsProps = new HashMap<>(3);
         dsProps.put(PROP_DISPOSITION_AUTHORITY, dispositionAuthority);
         dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, dispositionInstructions);
         dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, isRecordLevel);
@@ -174,11 +174,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         if (defaultDispositionActions)
         {
-            Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+            Map<QName, Serializable> adParams = new HashMap<>(3);
             adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
             adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
 
-            List<String> events = new ArrayList<String>(1);
+            List<String> events = new ArrayList<>(1);
             events.add(defaultEvent);
             adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
 
@@ -186,7 +186,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
             if (extendedDispositionSchedule)
             {
-                adParams = new HashMap<QName, Serializable>(4);
+                adParams = new HashMap<>(4);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
                 adParams.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
@@ -195,7 +195,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
             }
 
-            adParams = new HashMap<QName, Serializable>(3);
+            adParams = new HashMap<>(3);
             adParams.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
             adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
             adParams.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
@@ -228,7 +228,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, String title)
     {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> props = new HashMap<>(1);
         props.put(ContentModel.PROP_TITLE, title);
         return createRecord(recordFolder, name, props, "Some test content");
     }
@@ -287,7 +287,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         // Create the document
         if (properties == null)
         {
-            properties = new HashMap<QName, Serializable>(1);
+            properties = new HashMap<>(1);
         }
         if (!properties.containsKey(ContentModel.PROP_NAME))
         {
@@ -311,7 +311,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
      */
     public NodeRef createNonElectronicRecord(NodeRef recordFolder, String name, String title)
     {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> props = new HashMap<>(1);
         props.put(ContentModel.PROP_TITLE, title);
         props.put(ContentModel.PROP_NAME, name);
 
@@ -376,7 +376,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     public Role createRole(NodeRef filePlan, String roleName, String ... capabilityNames)
     {
-        Set<Capability> capabilities = new HashSet<Capability>(capabilityNames.length);
+        Set<Capability> capabilities = new HashSet<>(capabilityNames.length);
         for (String name : capabilityNames)
         {
             Capability capability = capabilityService.getCapability(name);
@@ -399,7 +399,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public void completeEvent(NodeRef disposableItem, String eventName)
     {
         // build action properties
-        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        Map<String, Serializable> params = new HashMap<>(1);
         params.put(CompleteEventAction.PARAM_EVENT_NAME, eventName);
 
         // complete event

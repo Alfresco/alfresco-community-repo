@@ -1072,7 +1072,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         NodeRef nodeRef = params.getNodeRef();
         int maxEntries = params.getMaxEntries();
         // Reverse order if the results are limited
-        boolean forward = maxEntries > 0 ? false : true;
+        boolean forward = maxEntries <= 0;
 
         // start the audit trail report
         writeAuditTrailHeader(writer, params, reportFormat);

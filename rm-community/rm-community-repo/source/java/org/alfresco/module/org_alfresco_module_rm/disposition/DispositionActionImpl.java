@@ -236,16 +236,14 @@ public class DispositionActionImpl implements DispositionAction,
         String eventName = (String)props.get(PROP_EVENT_EXECUTION_NAME);
 
         // create event completion details
-        EventCompletionDetails ecd = new EventCompletionDetails(
+        return new EventCompletionDetails(
                 nodeRef,
                 eventName,
                 services.getRecordsManagementEventService().getEvent(eventName).getDisplayLabel(),
                 getBooleanValue(props.get(PROP_EVENT_EXECUTION_AUTOMATIC), false),
                 getBooleanValue(props.get(PROP_EVENT_EXECUTION_COMPLETE), false),
-                (Date)props.get(PROP_EVENT_EXECUTION_COMPLETED_AT),
-                (String)props.get(PROP_EVENT_EXECUTION_COMPLETED_BY));
-
-        return ecd;
+                (Date) props.get(PROP_EVENT_EXECUTION_COMPLETED_AT),
+                (String) props.get(PROP_EVENT_EXECUTION_COMPLETED_BY));
     }
 
     /**

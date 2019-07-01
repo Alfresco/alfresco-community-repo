@@ -693,8 +693,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     private QName constructAuditEventName(String authority, String permission)
     {
-        QName auditProperty = QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
-        return auditProperty;
+        return QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
     }
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)

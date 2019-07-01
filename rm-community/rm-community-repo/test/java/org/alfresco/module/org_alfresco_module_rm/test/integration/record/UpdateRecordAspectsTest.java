@@ -67,9 +67,8 @@ public class UpdateRecordAspectsTest extends BaseRMTestCase
                 // create file plan structure and a record
                 NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 NodeRef recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
-                NodeRef record = recordService.createRecordFromContent(recordFolder, GUID.generate(), TYPE_CONTENT, null, null);
 
-                return record;
+                return recordService.createRecordFromContent(recordFolder, GUID.generate(), TYPE_CONTENT, null, null);
             }
         });
 

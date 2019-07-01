@@ -293,12 +293,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
         {
             properties.put(ContentModel.PROP_NAME, name);
         }
-        NodeRef record = nodeService.createNode(recordFolder,
-                                                        ContentModel.ASSOC_CONTAINS,
-                                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
-                                                        ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();
-        return record;
+        return nodeService.createNode(recordFolder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                ContentModel.TYPE_CONTENT,
+                properties).getChildRef();
     }
 
     /**

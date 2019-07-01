@@ -88,8 +88,7 @@ public abstract class ProtectedModelArtifact
      */
     public void setName(String name)
     {
-        QName qname = QName.createQName(name, namespaceService);
-        this.name = qname;
+        this.name = QName.createQName(name, namespaceService);
     }
 
     /**

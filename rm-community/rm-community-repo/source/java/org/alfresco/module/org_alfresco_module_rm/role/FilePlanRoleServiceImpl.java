@@ -27,11 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.role;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -161,7 +158,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#initialiseFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#setupFilePlanRoles(NodeRef)
      */
     @Override
     public void setupFilePlanRoles(final NodeRef filePlan)
@@ -394,7 +391,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRoles()
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getRoles(NodeRef)
      */
     public Set<Role> getRoles(final NodeRef rmRootNode)
     {
@@ -519,7 +516,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#getRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public Role getRole(final NodeRef rmRootNode, final String role)
     {
@@ -571,7 +568,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#existsRole(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#existsRole(NodeRef, java.lang.String)
      */
     public boolean existsRole(final NodeRef rmRootNode, final String role)
     {
@@ -589,7 +586,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#hasRMAdminRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      *
      * TODO .. change this to check a property of the role its self
      */
@@ -708,7 +705,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deleteRole(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deleteRole(NodeRef,String)
      */
     public void deleteRole(final NodeRef rmRootNode, final String role)
     {

@@ -44,7 +44,7 @@ public class CustomisableEmailMappingKeyBootstrap
     private CustomEmailMappingService customEmailMappingService;
 
     /**
-     * @param customizable  list of mappings to register as customisable
+     * @param customisable  list of mappings to register as customisable
      */
     public void setCustomisable(List<String> customisable)
     {

@@ -108,7 +108,7 @@ public interface DispositionService
      * the disposition schedule.
      *
      * @param dispositionSchedule   disposition schedule
-     * @return {@link List}<{@link NodeRef}>    list of disposable items
+     * @return {@link List} &lt;{@link NodeRef}&gt;    list of disposable items
      */
     List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule);
 

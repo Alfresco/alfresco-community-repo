@@ -40,7 +40,7 @@ public interface CompositeCapability extends Capability
     /**
      * Get set of child capabilities.
      * 
-     * @return  {@link Set}<{@link Capability}> set of child capabilities.
+     * @return  {@link Set}&lt;{@link Capability} &gt; set of child capabilities.
      */
     Set<Capability> getCapabilities();
 }

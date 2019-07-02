@@ -466,7 +466,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#saveSearch(java.lang.String, java.lang.String, java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#saveSearch(String, String, String, String, RecordsManagementSearchParameters, boolean)
      */
 	@Override
 	public SavedSearchDetails saveSearch(String siteId, String name, String description, String query, RecordsManagementSearchParameters searchParameters, boolean isPublic)

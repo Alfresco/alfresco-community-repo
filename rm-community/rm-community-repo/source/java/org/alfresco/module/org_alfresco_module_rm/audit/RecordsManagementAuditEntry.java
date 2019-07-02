@@ -255,22 +255,23 @@ public final class RecordsManagementAuditEntry
                     this.beforeProperties.size() + this.afterProperties.size());
 
             // add all the properties present before the audited action
-            for (QName valuePropName : this.beforeProperties.keySet())
+            for (Map.Entry<QName, Serializable> entry : this.beforeProperties.entrySet())
             {
+                final QName valuePropName = entry.getKey();
                 Pair<Serializable, Serializable> values = new Pair<>(
-                        this.beforeProperties.get(valuePropName),
+                        entry.getValue(),
                         this.afterProperties.get(valuePropName));
                 this.changedProperties.put(valuePropName, values);
             }
 
             // add all the properties present after the audited action that
             // have not already been added
-            for (QName valuePropName : this.afterProperties.keySet())
+            for (Map.Entry<QName, Serializable> entry : this.afterProperties.entrySet())
             {
+                final QName valuePropName = entry.getKey();
                 if (!this.beforeProperties.containsKey(valuePropName))
                 {
-                    Pair<Serializable, Serializable> values = new Pair<>(null,
-                            this.afterProperties.get(valuePropName));
+                    Pair<Serializable, Serializable> values = new Pair<>(null, entry.getValue());
                     this.changedProperties.put(valuePropName, values);
                 }
             }

@@ -97,15 +97,12 @@ public class ScriptConstraint implements Serializable
              return new ScriptConstraintAuthority[0];
          }
 
-         // Here with some data to return
-         Set<String> authorities = values.keySet();
-
          ArrayList<ScriptConstraintAuthority> constraints = new ArrayList<>(values.size());
-         for(String authority : authorities)
+        for (Map.Entry<String, List<String>> entry : values.entrySet())
          {
               ScriptConstraintAuthority constraint = new ScriptConstraintAuthority();
-              constraint.setAuthorityName(authority);
-              constraint.setValues(values.get(authority));
+              constraint.setAuthorityName(entry.getKey());
+              constraint.setValues(entry.getValue());
               constraints.add(constraint);
          }
 

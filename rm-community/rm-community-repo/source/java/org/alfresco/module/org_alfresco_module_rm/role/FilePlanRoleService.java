@@ -183,7 +183,7 @@ public interface FilePlanRoleService
      *
      * @param filePlan  file plan
      * @param role      role
-     * @return {@link Set}<{@link String}>  set of users
+     * @return {@link Set}&lt;{@link String}&gt;  set of users
      */
     Set<String> getUsersAssignedToRole(NodeRef filePlan, String role);
 
@@ -192,7 +192,7 @@ public interface FilePlanRoleService
      *
      * @param filePlan  file plan
      * @param role      role
-     * @return {@link Set}<{@link String}>  set of groups
+     * @return {@link Set}&lt;{@link String}&gt;  set of groups
      */
     Set<String> getGroupsAssignedToRole(NodeRef filePlan, String role);
 
@@ -201,7 +201,7 @@ public interface FilePlanRoleService
      *
      * @param filePlan  file plan
      * @param role      role
-     * @return {@link Set}<{@link String}>  set of groups and users
+     * @return {@link Set}&lt;{@link String}&gt;  set of groups and users
      */
     Set<String> getAllAssignedToRole(NodeRef filePlan, String role);
 

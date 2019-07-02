@@ -44,7 +44,7 @@ public interface DataSetService
    /**
     * Gets the details of all available data sets.
     * 
-    * @return Map<String, DataSet> details of all available data sets
+    * @return the Map&lt;String, DataSet&gt; with details of all available data sets
     */
    Map<String, DataSet> getDataSets();
 
@@ -55,7 +55,7 @@ public interface DataSetService
     * @param filePlan the file plan for which the details should be retrieved
     * @param excludeLoaded if true only data sets will be retrieved which has
     *           not been loaded
-    * @return Map<String, DataSet> details of the available data sets for a
+    * @return Map&lt;String, DataSet&gt; with details of the available data sets for a
     *         specified file plan depending on the parameter "excludeLoaded".
     *         The result could also be an empty map
     */
@@ -66,7 +66,7 @@ public interface DataSetService
     * 
     * @param filePlan the file plan for which the loaded data sets should be
     *           retrieved
-    * @return Map<String, DataSet> details of all loaded data sets or an empty
+    * @return  Map&lt;String, DataSet&gt;  details of all loaded data sets or an empty
     *         map if there has not been any data sets loaded for the specified
     *         file plan
     */

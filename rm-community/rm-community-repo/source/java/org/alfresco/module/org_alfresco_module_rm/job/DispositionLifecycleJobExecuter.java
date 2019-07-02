@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where
- * asOf > now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
+ * asOf  &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
  *
  * @author mrogers
  * @author Roy Wetherall

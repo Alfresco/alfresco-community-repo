@@ -27,6 +27,7 @@
 package org.alfresco.rest.v0;
 
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
+import static org.alfresco.rest.core.v0.APIUtils.ISO_INSTANT_FORMATTER;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
@@ -37,7 +38,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -346,7 +346,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         requestParams.put("nodeRef", recNodeRef);
         if (date != null)
         {
-            String thisMoment = date.format(DateTimeFormatter.ISO_INSTANT);
+            String thisMoment = date.format(ISO_INSTANT_FORMATTER);
             requestParams.put("params", new JSONObject()
                             .put("asOfDate", new JSONObject()
                                     .put("iso8601", thisMoment)
@@ -373,7 +373,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         requestParams.put("name", RM_ACTIONS.COMPLETE_EVENT.getAction());
         requestParams.put("nodeRef", recNodeRef);
         date = (date != null) ? date : Instant.now();
-        String formattedDate = DateTimeFormatter.ISO_INSTANT.format(date);
+        String formattedDate = ISO_INSTANT_FORMATTER.format(date);
         requestParams.put("params", new JSONObject()
                         .put("eventName", event.getEventName())
                         .put("eventCompletedBy", user)

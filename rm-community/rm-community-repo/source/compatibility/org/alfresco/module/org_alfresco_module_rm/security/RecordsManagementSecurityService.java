@@ -70,7 +70,7 @@ public interface RecordsManagementSecurityService
      * Get all the available roles for the given records management root node
      * 
      * @param rmRootNode    root node
-     * @return {@link Set}<{@link Role}>    all roles for a given root node
+     * @return {@link Set}&lt;{@link Role}&gt;    all roles for a given root node
      * 
      * @deprecated As of release 2.1, replaced by {@link FilePlanRoleService#getRoles(NodeRef)}
      */
@@ -201,14 +201,14 @@ public interface RecordsManagementSecurityService
     void deletePermission(NodeRef nodeRef, String authority, String permission);
     
     /**
-     * @return  {@link Set}<{@link QName}>  protected aspect names
+     * @return  {@link Set}&lt;{@link QName}&gt;  protected aspect names
      * @deprecated As of release 2.1, replaced by {@link ModelSecurityService#getProtectedAspects}
      */
     @Deprecated
     Set<QName> getProtectedAspects();
    
     /**
-     * @return {@link Set}<{@link QName}>   protected properties
+     * @return {@link Set}&lt;{@link QName}&gt;   protected properties
      * @deprecated  As of release 2.1, replaced by {@link ModelSecurityService#getProtectedProperties}
      */
     Set<QName> getProtectedProperties();

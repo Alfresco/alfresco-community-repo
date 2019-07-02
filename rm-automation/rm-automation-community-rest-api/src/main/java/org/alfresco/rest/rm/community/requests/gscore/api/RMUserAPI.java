@@ -84,6 +84,7 @@ public class RMUserAPI extends RMModelRequest
 
     /**
      * Assign RM role to user
+     *
      * @param userName User's username
      * @param userRole User's RM role, one of {@link UserRoles} roles
      * @throws Exception for failed requests
@@ -97,29 +98,30 @@ public class RMUserAPI extends RMModelRequest
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
-            .setBaseUri(client.getApiUrl())
-            .setBasePath("/")
-            .build();
+                .setBaseUri(client.getApiUrl())
+                .setBasePath("/")
+                .build();
 
         Response response = given()
-            .spec(spec)
-            .log().all()
-            .pathParam("role", userRole)
-            .pathParam("authority", userName)
-            .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(),
-                adminUser.getPassword()))
-        .when()
-            .post("/rm/roles/{role}/authorities/{authority}")
-            .prettyPeek()
-            .andReturn();
+                .spec(spec)
+                .log().all()
+                .pathParam("role", userRole)
+                .pathParam("authority", userName)
+                .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(),
+                        adminUser.getPassword()))
+                .when()
+                .post("/rm/roles/{role}/authorities/{authority}")
+                .prettyPeek()
+                .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
     /**
      * Helper method to add permission on a component to user
-     * @param component The id of the file plan component on which permission should be given
-     * @param user {@link UserModel} for a user to be granted permission
-     * @param permission {@link UserPermissions} to be granted
+     *
+     * @param filePlanComponentId The id of the file plan component on which permission should be given
+     * @param user                {@link UserModel} for a user to be granted permission
+     * @param permission          {@link UserPermissions} to be granted
      */
     public void addUserPermission(String filePlanComponentId, UserModel user, String permission)
     {
@@ -129,33 +131,74 @@ public class RMUserAPI extends RMModelRequest
         AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         JsonObject bodyJson = buildObject()
-            .addArray("permissions")
+                .addArray("permissions")
                 .addObject()
-                    .add("authority", user.getUsername())
-                    .add("role", permission)
-                    .end()
-                    .getJson();
+                .add("authority", (user != null ? user.getUsername() : null))
+                .add("role", permission)
+                .end()
+                .getJson();
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
-            .setBaseUri(client.getApiUrl())
-            .setBasePath("/")
-            .build();
+                .setBaseUri(client.getApiUrl())
+                .setBasePath("/")
+                .build();
 
         // execute an "old-style" API call
         Response response = given()
-            .spec(spec)
-            .auth().basic(adminUser.getUsername(), adminUser.getPassword())
-            .contentType(ContentType.JSON)
-            .body(bodyJson.toString())
-            .pathParam("nodeId", filePlanComponentId)
-            .log().all()
-        .when()
-            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-            .prettyPeek()
-            .andReturn();
+                .spec(spec)
+                .auth().basic(adminUser.getUsername(), adminUser.getPassword())
+                .contentType(ContentType.JSON)
+                .body(bodyJson.toString())
+                .pathParam("nodeId", filePlanComponentId)
+                .log().all()
+                .when()
+                .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+                .prettyPeek()
+                .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
+
+    /**
+     * Helper method to add permission on a component to user
+     *
+     * @param filePlanComponentId The id of the file plan component on which permission should be given
+     * @param permission          {@link UserPermissions} to be granted
+     */
+    public void setUserPermissionInheritance(String filePlanComponentId, Boolean isInherited)
+    {
+        UserModel adminUser = getRmRestWrapper().getTestUser();
+
+        // get an "old-style" REST API client
+        AlfrescoHttpClient client = getAlfrescoHttpClient();
+
+        JsonObject bodyJson = buildObject()
+                .addArray("permissions")
+                .end()
+                .add("isInherited", isInherited)
+                .getJson();
+
+        // override v1 baseURI and basePath
+        RequestSpecification spec = new RequestSpecBuilder()
+                .setBaseUri(client.getApiUrl())
+                .setBasePath("/")
+                .build();
+
+        // execute an "old-style" API call
+        Response response = given()
+                .spec(spec)
+                .auth().basic(adminUser.getUsername(), adminUser.getPassword())
+                .contentType(ContentType.JSON)
+                .body(bodyJson.toString())
+                .pathParam("nodeId", filePlanComponentId)
+                .log().all()
+                .when()
+                .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+                .prettyPeek()
+                .andReturn();
+        getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+    }
+
 
     /**
      * Creates a user with the given name using the old APIs

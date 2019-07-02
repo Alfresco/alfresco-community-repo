@@ -1022,13 +1022,12 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
         for (String listName : listNames)
         {
             Map<String, List<String>> members = config.get(listName);
-
-            Set<String> authorityNames = members.keySet();
             JSONObject listMembers = new JSONObject();
 
-            for (String authorityName : authorityNames)
+            for (Map.Entry<String, List<String>> member : members.entrySet())
             {
-                List<String> authorities = members.get(authorityName);
+                final String authorityName = member.getKey();
+                final List<String> authorities = member.getValue();
                 try
                 {
                     listMembers.put(authorityName, authorities);

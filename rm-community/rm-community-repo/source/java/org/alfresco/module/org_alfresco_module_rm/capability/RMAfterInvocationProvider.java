@@ -422,7 +422,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             return null;
         }
 
-        // FIXME
+        // FIXME see: RM-6895
         if (returnedObject.getResultSetMetaData().getSearchParameters().getLanguage().equalsIgnoreCase("solr-sql"))
         {
             return returnedObject;

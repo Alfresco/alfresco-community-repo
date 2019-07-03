@@ -12,19 +12,19 @@
     </parent>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-repository.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-repository.git</developerConnection>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-repository.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-repository.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-repository</url>
-        <tag>alfresco-repository-6.56.15</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
         <repository>
-            <id>alfresco-internal</id>
+            <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
+            <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
@@ -34,6 +34,8 @@
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
+
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>

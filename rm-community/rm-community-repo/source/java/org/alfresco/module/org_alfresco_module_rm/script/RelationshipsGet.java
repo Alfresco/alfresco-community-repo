@@ -62,7 +62,7 @@ public class RelationshipsGet extends AbstractRmWebScript
     private enum RelationshipEndPoint
     {
         SOURCE, TARGET
-    };
+    }
 
     /** Relationship service */
     private RelationshipService relationshipService;

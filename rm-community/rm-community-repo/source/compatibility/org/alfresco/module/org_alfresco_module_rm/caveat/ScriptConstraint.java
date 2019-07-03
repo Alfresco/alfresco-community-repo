@@ -170,7 +170,7 @@ public class ScriptConstraint implements Serializable
      */
     public void deleteAuthority(String authority)
     {
-
+        //Do nothing
     }
 
     /**
@@ -179,7 +179,7 @@ public class ScriptConstraint implements Serializable
      */
     public void deleteValue(String value)
     {
-
+        //Do nothing
     }
 
 

@@ -105,10 +105,7 @@ public class ScriptConstraint implements Serializable
               constraint.setValues(entry.getValue());
               constraints.add(constraint);
          }
-
-         ScriptConstraintAuthority[] retVal = constraints.toArray(new ScriptConstraintAuthority[constraints.size()]);
-
-         return retVal;
+         return constraints.toArray(new ScriptConstraintAuthority[constraints.size()]);
     }
 
     /**
@@ -212,17 +209,14 @@ public class ScriptConstraint implements Serializable
         // values, authorities
         Map<String, List<String>> pivot = PivotUtil.getPivot(details);
 
-        // Here with some data to return
-        Set<String> values = pivot.keySet();
-
         ArrayList<ScriptConstraintValue> constraints = new ArrayList<>(pivot.size());
-        for(String value : values)
+        for (Map.Entry<String, List<String>> entry : pivot.entrySet())
         {
              ScriptConstraintValue constraint = new ScriptConstraintValue();
-             constraint.setValueName(value);
-             constraint.setValueTitle(value);
+             constraint.setValueName(entry.getKey());
+             constraint.setValueTitle(entry.getKey());
 
-             List<String>authorities = pivot.get(value);
+            List<String> authorities = entry.getValue();
              List<ScriptAuthority> sauth = new ArrayList<>();
              for(String authority : authorities)
              {
@@ -247,6 +241,7 @@ public class ScriptConstraint implements Serializable
         /**
          * Now go through and add any "empty" values
          */
+        Set<String> values = pivot.keySet();
         for(String value : info.getAllowedValues())
         {
             if(!values.contains(value))

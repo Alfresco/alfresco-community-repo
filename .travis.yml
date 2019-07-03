@@ -3,8 +3,6 @@ sudo: required
 language: java
 jdk:
   - openjdk11
-# Backwards compatibility with Java 8
-#  - oraclejdk8
 services:
   - docker
 
@@ -17,12 +15,19 @@ branches:
     - master
     - /support\/.*/
 
+stages:
+  - test
+  - release
+
 before_install:
   - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.1 postgres -c 'max_connections=300'
 
-matrix:
+install: travis_retry mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
+jobs:
   include:
-    - name: "WhiteSource scan"
+    - stage: test
+      name: "WhiteSource scan"
       # only on support branches or master and if it is not a PR
       if: fork = false AND (branch = master OR branch =~ /support\/SP\/.*/) AND type != pull_request
       script:
@@ -40,5 +45,15 @@ matrix:
       script: travis_wait 20 mvn test -B -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
     - name: "AppContextExtraTestSuite"
       script: travis_wait 20 mvn test -B -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-
-install: travis_retry mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+    - stage: release
+      name: "Push to Nexus"
+      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request AND commit_message !~ /\[no-release\]/
+      before_install:
+        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+      script:
+        # Use full history for release
+        - git checkout -B "${TRAVIS_BRANCH}"
+        # Add email to link commits to user
+        - git config user.email "${GIT_EMAIL}"
+        # Skip building of release commits
+        - mvn --batch-mode -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform

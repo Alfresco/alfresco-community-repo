@@ -12,19 +12,19 @@
     </parent>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</developerConnection>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-remote-api</url>
         <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
         <repository>
-            <id>alfresco-internal</id>
+            <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
+            <id>alfresco-public</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
@@ -38,6 +38,9 @@
         <dependency.alfresco-repository.version>6.56.15.0</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.18</dependency.alfresco-data-model.version>
+
+        <maven.build.sourceVersion>1.11</maven.build.sourceVersion>
+
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.9.5</dependency.jackson.version>
 

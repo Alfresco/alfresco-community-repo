@@ -12,8 +12,8 @@
     </parent>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</developerConnection>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-remote-api</url>
         <tag>HEAD</tag>
     </scm>

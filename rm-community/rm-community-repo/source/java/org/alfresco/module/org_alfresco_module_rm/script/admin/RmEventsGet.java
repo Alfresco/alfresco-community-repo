@@ -61,7 +61,7 @@ public class RmEventsGet extends DeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         // Get the events
         List<RecordsManagementEvent> events = rmEventService.getEvents();

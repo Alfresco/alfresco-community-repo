@@ -51,7 +51,7 @@ public class ContentCleanser522022MUnitTest extends BaseUnitTest
     @InjectMocks @Spy private ContentCleanser522022M contentCleanser522022M = new ContentCleanser522022M()
     {
         /** dummy implementations */
-        protected void overwrite(File file, OverwriteOperation overwriteOperation) {};
+        protected void overwrite(File file, OverwriteOperation overwriteOperation) {}
     };
     
     @Mock private File mockedFile;

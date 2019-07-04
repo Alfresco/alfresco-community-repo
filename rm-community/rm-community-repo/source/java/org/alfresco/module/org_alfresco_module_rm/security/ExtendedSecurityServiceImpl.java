@@ -229,7 +229,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private Set<String> getAuthorities(String group)
     {
-        Set<String> result = new HashSet<String>();
+        Set<String> result = new HashSet<>();
         result.addAll(authorityService.getContainedAuthorities(null, group, true));
         return result;
     }
@@ -312,7 +312,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         // assuming the are both present then return
         if (iprReaderGroup != null && iprWriterGroup != null)
         {
-            result = new Pair<String, String>(iprReaderGroup, iprWriterGroup);
+            result = new Pair<>(iprReaderGroup, iprWriterGroup);
         }
 
         return result;
@@ -335,9 +335,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private Pair<String, String> createOrFindIPRGroups(Set<String> readers, Set<String> writers)
     {
-        return new Pair<String, String>(
-                    createOrFindIPRGroup(READER_GROUP_PREFIX, readers),
-                    createOrFindIPRGroup(WRITER_GROUP_PREFIX, writers));
+        return new Pair<>(
+                createOrFindIPRGroup(READER_GROUP_PREFIX, readers),
+                createOrFindIPRGroup(WRITER_GROUP_PREFIX, writers));
     }
 
     /**
@@ -417,7 +417,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             pageCount ++;
         }
 
-        return new Pair<String, Integer>(iprGroup, nextGroupIndex);
+        return new Pair<>(iprGroup, nextGroupIndex);
     }
 
     /**

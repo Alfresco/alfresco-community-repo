@@ -242,7 +242,7 @@ public class RejectRecordTest extends BaseRMTestCase
 
                 // Upload New Version
                 document = checkOutCheckInService.checkout(document);
-                Map<String, Serializable> props = new HashMap<String, Serializable>(2);
+                Map<String, Serializable> props = new HashMap<>(2);
                 props.put(Version.PROP_DESCRIPTION, generate());
                 props.put(VersionModel.PROP_VERSION_TYPE, MINOR);
                 document = checkOutCheckInService.checkin(document, props);

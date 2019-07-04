@@ -64,7 +64,7 @@ public class ConfigAttributeDefinition
     private SimplePermissionReference required;
 
     /** parameter position map */
-    private Map<Integer, Integer> parameters = new HashMap<Integer, Integer>(2, 1.0f);
+    private Map<Integer, Integer> parameters = new HashMap<>(2, 1.0f);
 
     /** is parent */
     private boolean parent = false;

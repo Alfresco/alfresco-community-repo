@@ -226,7 +226,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // create version properties if null
         if (origVersionProperties == null)
         {
-            origVersionProperties = new HashMap<String, Serializable>(2);
+            origVersionProperties = new HashMap<>(2);
         }
 
         // only need to check the recordable version policy when the recordable version indicator is missing from the version properties
@@ -888,7 +888,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         NodeRef versionNodeRef = getVersionNodeRef(version);
         Map<QName, Serializable> versionProps = dbNodeService.getProperties(versionNodeRef);
-        Map<QName, Serializable> result = new HashMap<QName, Serializable>(9);
+        Map<QName, Serializable> result = new HashMap<>(9);
         for (String propertyName : VERSION_PROPERTY_NAMES)
         {
             QName propertyQName = QName.createQName(Version2Model.NAMESPACE_URI, propertyName);
@@ -957,7 +957,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // if the flag autoversion on record creation set, create new version on dirty nodes
         if (autoVersion && isCurrentVersionDirty(nodeRef))
         {
-            Map<String, Serializable> autoVersionProperties = new HashMap<String, Serializable>(2);
+            Map<String, Serializable> autoVersionProperties = new HashMap<>(2);
             autoVersionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
             autoVersionProperties.put(VersionModel.PROP_DESCRIPTION, I18NUtil.getMessage(AUTO_VERSION_ON_RECORD_CREATION));
             createVersion(nodeRef, autoVersionProperties);

@@ -70,7 +70,7 @@ public final class PoliciesUtil
 
                     QName typeQName = nodeService.getType(nodeRef);
 
-                    qnames = new HashSet<QName>(aspectQNames.size() + 1);
+                    qnames = new HashSet<>(aspectQNames.size() + 1);
                     qnames.addAll(aspectQNames);
                     qnames.add(typeQName);
                 }

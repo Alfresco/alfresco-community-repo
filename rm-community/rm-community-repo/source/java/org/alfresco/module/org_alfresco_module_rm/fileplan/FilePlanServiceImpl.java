@@ -182,8 +182,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("storeRef", storeRef);
 
-        final Set<NodeRef> results = new HashSet<NodeRef>();
-        Set<QName> aspects = new HashSet<QName>(1);
+        final Set<NodeRef> results = new HashSet<>();
+        Set<QName> aspects = new HashSet<>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
         getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
         {
@@ -275,7 +275,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         NodeRef result = null;
-        Pair<NodeRef, String> key = new Pair<NodeRef, String>(filePlan, containerName);
+        Pair<NodeRef, String> key = new Pair<>(filePlan, containerName);
 
         if (!rootContainerCache.contains(key))
         {
@@ -344,7 +344,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
 
         // create the properties map
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> properties = new HashMap<>(1);
         properties.put(ContentModel.PROP_NAME, containerName);
 
         // create the unfiled container
@@ -389,7 +389,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         // Build map of properties
-        Map<QName, Serializable> rmRootProps = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> rmRootProps = new HashMap<>(1);
         if (properties != null && properties.size() != 0)
         {
             rmRootProps.putAll(properties);
@@ -439,7 +439,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public List<NodeRef> getNodeRefPath(NodeRef nodeRef)
     {
-        LinkedList<NodeRef> nodeRefPath = new LinkedList<NodeRef>();
+        LinkedList<NodeRef> nodeRefPath = new LinkedList<>();
         try
         {
             getNodeRefPathRecursive(nodeRef, nodeRefPath);
@@ -501,7 +501,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         // Set the properties for the record category
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> props = new HashMap<>(1);
         if (properties != null && properties.size() != 0)
         {
             props.putAll(properties);
@@ -576,7 +576,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONTAINER_EXPECTED));
         }
 
-        List<NodeRef> result = new ArrayList<NodeRef>(1);
+        List<NodeRef> result = new ArrayList<>(1);
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(container, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {

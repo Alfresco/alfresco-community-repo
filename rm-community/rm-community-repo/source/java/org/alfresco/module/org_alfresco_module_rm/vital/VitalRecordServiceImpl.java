@@ -85,7 +85,7 @@ public class VitalRecordServiceImpl extends ServiceBaseImpl
           Date reviewAsOf = viDef.getNextReviewDate();
           if (reviewAsOf != null)
           {
-              Map<QName, Serializable> reviewProps = new HashMap<QName, Serializable>(1);
+              Map<QName, Serializable> reviewProps = new HashMap<>(1);
               reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
 
               if (!nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))

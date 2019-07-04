@@ -78,7 +78,7 @@ public class CreateHoldTest extends BaseRMTestCase
         siteService.setMembership(siteId, testUser, SITE_CONSUMER);
 
         // Create role
-        Set<Capability> capabilities = new HashSet<Capability>(2);
+        Set<Capability> capabilities = new HashSet<>(2);
         capabilities.add(capabilityService.getCapability(VIEW_RECORDS));
         capabilities.add(capabilityService.getCapability(CREATE_HOLD));
         Role role = filePlanRoleService.createRole(filePlan, generate(), generate(), capabilities);

@@ -168,7 +168,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             }
 
             List<EventCompletionDetails> events = da.getEventCompletionDetails();
-            List<String> list = new ArrayList<String>(events.size());
+            List<String> list = new ArrayList<>(events.size());
             for (EventCompletionDetails event : events)
             {
                 list.add(event.getEventName());

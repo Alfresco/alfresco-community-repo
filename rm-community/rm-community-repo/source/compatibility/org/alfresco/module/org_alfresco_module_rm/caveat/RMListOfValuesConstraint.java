@@ -64,7 +64,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         // closed marking - all values must match
         AND,
         // open marking   - at least one value must match
-        OR;
+        OR
     }
 
     // note: alternative to static init could be to use 'registered' constraint
@@ -112,7 +112,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
             // get allowed values for current user
             List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getShortName());
 
-            List<String> filteredList = new ArrayList<String>(allowedForUser.size());
+            List<String> filteredList = new ArrayList<>(allowedForUser.size());
             for (String allowed : allowedForUser)
             {
                 if (this.allowedValues.contains(allowed))
@@ -153,7 +153,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
             // get allowed values for current user
             List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getType());
 
-            List<String> filteredList = new ArrayList<String>(allowedForUser.size());
+            List<String> filteredList = new ArrayList<>(allowedForUser.size());
             for (String allowed : allowedForUser)
             {
                 if (this.allowedValuesUpper.contains(allowed.toUpperCase()))
@@ -186,7 +186,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         this.allowedValues = Collections.unmodifiableList(allowedValues);
 
         // make the upper case versions
-        this.allowedValuesUpper = new ArrayList<String>(valueCount);
+        this.allowedValuesUpper = new ArrayList<>(valueCount);
         for (String allowedValue : this.allowedValues)
         {
             allowedValuesUpper.add(allowedValue.toUpperCase());
@@ -202,7 +202,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     @Override
     public Map<String, Object> getParameters()
     {
-        Map<String, Object> params = new HashMap<String, Object>(2);
+        Map<String, Object> params = new HashMap<>(2);
 
         params.put("caseSensitive", isCaseSensitive());
         params.put("allowedValues", getAllowedValues());

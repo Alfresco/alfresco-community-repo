@@ -95,8 +95,8 @@ public class RmActionPost extends DeclarativeWebScript
       }
 
       String actionName = null;
-      List<NodeRef> targetNodeRefs = new ArrayList<NodeRef>(1);
-      Map<String, Serializable> actionParams = new HashMap<String, Serializable>(3);
+      List<NodeRef> targetNodeRefs = new ArrayList<>(1);
+      Map<String, Serializable> actionParams = new HashMap<>(3);
 
       try
       {
@@ -119,7 +119,7 @@ public class RmActionPost extends DeclarativeWebScript
             JSONArray jsonArray = jsonObj.getJSONArray(PARAM_NODE_REFS);
             if (jsonArray.length() != 0)
             {
-               targetNodeRefs = new ArrayList<NodeRef>(jsonArray.length());
+               targetNodeRefs = new ArrayList<>(jsonArray.length());
                for (int i = 0; i < jsonArray.length(); i++)
                {
                   NodeRef nodeRef = new NodeRef(jsonArray.getString(i));
@@ -197,7 +197,7 @@ public class RmActionPost extends DeclarativeWebScript
          logger.debug(msg.toString());
       }
 
-      Map<String, Object> model = new HashMap<String, Object>();
+      Map<String, Object> model = new HashMap<>();
       if (targetNodeRefs.isEmpty())
       {
          RecordsManagementActionResult result = this.rmActionService.executeRecordsManagementAction(actionName, actionParams);
@@ -209,7 +209,7 @@ public class RmActionPost extends DeclarativeWebScript
       else
       {
          Map<NodeRef, RecordsManagementActionResult> resultMap = this.rmActionService.executeRecordsManagementAction(targetNodeRefs, actionName, actionParams);
-         Map<String, String> results = new HashMap<String, String>(resultMap.size());
+         Map<String, String> results = new HashMap<>(resultMap.size());
          for (Map.Entry<NodeRef, RecordsManagementActionResult> entry : resultMap.entrySet())
          {
              Object value = entry.getValue().getValue();

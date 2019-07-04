@@ -101,7 +101,7 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
             NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
 
             // build the node properties
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
+            Map<QName, Serializable> props = new HashMap<>(4);
             props.put(ContentModel.PROP_DESCRIPTION, "Record superseded email template.");
             props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
             props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");

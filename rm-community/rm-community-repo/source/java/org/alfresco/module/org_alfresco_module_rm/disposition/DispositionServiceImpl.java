@@ -116,7 +116,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     private FreezeService freezeService;
 
     /** Disposition properties */
-    private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
+    private Map<QName, DispositionProperty> dispositionProperties = new HashMap<>(4);
 
     /**
      * Set node service
@@ -254,7 +254,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
     {
         Collection<DispositionProperty> values = dispositionProperties.values();
-        List<DispositionProperty> result = new ArrayList<DispositionProperty>(values.size());
+        List<DispositionProperty> result = new ArrayList<>(values.size());
         for (DispositionProperty dispositionProperty : values)
         {
             boolean test = dispositionProperty.applies(isRecordLevel, dispositionAction);
@@ -524,7 +524,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     private List<NodeRef> getDisposableItemsImpl(boolean isRecordLevelDisposition, NodeRef rmContainer)
     {
         List<NodeRef> items = filePlanService.getAllContained(rmContainer);
-        List<NodeRef> result = new ArrayList<NodeRef>(items.size());
+        List<NodeRef> result = new ArrayList<>(items.size());
         for (NodeRef item : items)
         {
             if (recordFolderService.isRecordFolder(item))
@@ -706,7 +706,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
 
         // Create the properties
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
+        Map<QName, Serializable> props = new HashMap<>(10);
 
         Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition);
 
@@ -925,7 +925,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, RegexQNamePattern.MATCH_ALL);
-        List<DispositionAction> result = new ArrayList<DispositionAction>(assocs.size());
+        List<DispositionAction> result = new ArrayList<>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef dispositionActionNodeRef = assoc.getChildRef();
@@ -1192,7 +1192,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 // Apply the cut off aspect and set cut off date
-                Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> cutOffProps = new HashMap<>(1);
                 cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
                 nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
 

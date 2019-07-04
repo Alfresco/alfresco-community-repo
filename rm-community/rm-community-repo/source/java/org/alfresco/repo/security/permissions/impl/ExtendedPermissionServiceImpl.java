@@ -308,8 +308,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> aclReaders = readersCache.get((Serializable) acl.getProperties());
         if (aclReaders != null) { return aclReaders; }
 
-        HashSet<String> assigned = new HashSet<String>();
-        HashSet<String> readers = new HashSet<String>();
+        HashSet<String> assigned = new HashSet<>();
+        HashSet<String> readers = new HashSet<>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -346,8 +346,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         if (acl == null) { return Collections.emptySet(); }
         Set<String> denied = readersDeniedCache.get(aclId);
         if (denied != null) { return denied; }
-        denied = new HashSet<String>();
-        Set<String> assigned = new HashSet<String>();
+        denied = new HashSet<>();
+        Set<String> assigned = new HashSet<>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -383,8 +383,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> aclWriters = writersCache.get((Serializable) acl.getProperties());
         if (aclWriters != null) { return aclWriters; }
 
-        HashSet<String> assigned = new HashSet<String>();
-        HashSet<String> readers = new HashSet<String>();
+        HashSet<String> assigned = new HashSet<>();
+        HashSet<String> readers = new HashSet<>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -456,7 +456,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> writers = getWriters(aclId);
 
         // add the current owner to the list of extended writers
-        Set<String> modifiedWrtiers = new HashSet<String>(writers);
+        Set<String> modifiedWrtiers = new HashSet<>(writers);
         String owner = ownableService.getOwner(nodeRef);
         if (StringUtils.isNotBlank(owner) &&
             !owner.equals(OwnableService.NO_OWNER) &&
@@ -465,6 +465,6 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
             modifiedWrtiers.add(owner);
         }
 
-        return new Pair<Set<String>, Set<String>> (readers, modifiedWrtiers);
+        return new Pair<>(readers, modifiedWrtiers);
     }
 }

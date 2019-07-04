@@ -76,7 +76,7 @@ public class RmEventPut extends RMEventBase
     {
         ParameterCheck.mandatory("req", req);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         JSONObject json = null;
         try
         {

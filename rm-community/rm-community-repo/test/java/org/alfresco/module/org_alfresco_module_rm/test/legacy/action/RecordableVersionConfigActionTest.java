@@ -104,7 +104,7 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
             public void test(Void result) throws Exception
             {
                 assertNull(nodeService.getProperty(dmFolder, PROP_RECORDABLE_VERSION_POLICY));
-            };
+            }
         },
         dmCollaborator);
 
@@ -122,7 +122,7 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
             public void test(Void result) throws Exception
             {
                 assertNull(nodeService.getProperty(document2, PROP_RECORDABLE_VERSION_POLICY));
-            };
+            }
         },
         dmCollaborator);
 
@@ -145,7 +145,7 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
             public void test(Void result) throws Exception
             {
                 assertNull(nodeService.getProperty(document3, PROP_RECORDABLE_VERSION_POLICY));
-            };
+            }
         },
         dmCollaborator);
     }

@@ -329,7 +329,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     {
         mandatory("customisableTypes", customisableTypes);
 
-        pendingCustomisableTypes = new ArrayList<QName>();
+        pendingCustomisableTypes = new ArrayList<>();
         for (String customisableType : customisableTypes)
         {
             pendingCustomisableTypes.add(QName.createQName(customisableType, getNamespaceService()));
@@ -352,7 +352,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     {
         mandatory("nodeRef", nodeRef);
 
-        Set<QName> result = new HashSet<QName>(5);
+        Set<QName> result = new HashSet<>(5);
 
         // Check the nodes hierarchy for customisable types
         QName type = getNodeService().getType(nodeRef);
@@ -410,7 +410,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      */
     private void initCustomMap()
     {
-        customisableTypes = new HashMap<QName, QName>(7);
+        customisableTypes = new HashMap<>(7);
         Collection<QName> aspects = getDictionaryService().getAspects(RM_CUSTOM_MODEL);
         for (QName aspect : aspects)
         {
@@ -636,7 +636,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      */
     public Map<QName, PropertyDefinition> getCustomPropertyDefinitions()
     {
-        Map<QName, PropertyDefinition> result = new HashMap<QName, PropertyDefinition>();
+        Map<QName, PropertyDefinition> result = new HashMap<>();
         for (QName customisableType : getCustomisable())
         {
             Map<QName, PropertyDefinition> props = getCustomPropertyDefinitions(customisableType);
@@ -1268,7 +1268,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
             }
         }
 
-        return new ArrayList<ConstraintDefinition>(conDefs);
+        return new ArrayList<>(conDefs);
     }
 
     /**

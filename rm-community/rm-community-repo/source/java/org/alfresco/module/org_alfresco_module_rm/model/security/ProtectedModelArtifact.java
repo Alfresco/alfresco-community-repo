@@ -88,8 +88,7 @@ public abstract class ProtectedModelArtifact
      */
     public void setName(String name)
     {
-        QName qname = QName.createQName(name, namespaceService);
-        this.name = qname;
+        this.name = QName.createQName(name, namespaceService);
     }
 
     /**
@@ -123,7 +122,7 @@ public abstract class ProtectedModelArtifact
     {
         if (capabilityNames == null && capabilities != null)
         {
-            capabilityNames = new HashSet<String>(capabilities.size());
+            capabilityNames = new HashSet<>(capabilities.size());
             for (Capability capability : capabilities)
             {
                 capabilityNames.add(capability.getName());

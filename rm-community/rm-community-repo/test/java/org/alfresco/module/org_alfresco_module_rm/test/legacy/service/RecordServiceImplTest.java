@@ -222,7 +222,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             @Override
             public Void run()
             {
-                Set<String> writers = new HashSet<String>(1);
+                Set<String> writers = new HashSet<>(1);
                 writers.add(dmCollaborator);
                 extendedSecurityService.set(recordOne, null, writers);
 

@@ -94,7 +94,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
             !getRecordService().isDeclared(actionedUponNodeRef))
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
-            Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
+            Map<QName, Serializable> parameters = new HashMap<>();
 
             parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
             parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
@@ -144,7 +144,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      */
     private Serializable getAssignees(Action action)
     {
-        List<NodeRef> assigneesList = new ArrayList<NodeRef>();
+        List<NodeRef> assigneesList = new ArrayList<>();
         String assigneesAsString = (String) action.getParameterValue(PARAM_ASSIGNEES);
         String[] assignees = StringUtils.split(assigneesAsString, ',');
         for (String assignee : assignees)

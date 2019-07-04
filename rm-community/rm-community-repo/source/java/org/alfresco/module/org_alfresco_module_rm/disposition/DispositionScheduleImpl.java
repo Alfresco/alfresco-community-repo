@@ -179,10 +179,10 @@ public class DispositionScheduleImpl implements DispositionSchedule,
                                                       this.dispositionDefinitionNodeRef, 
                                                       ASSOC_DISPOSITION_ACTION_DEFINITIONS, 
                                                       RegexQNamePattern.MATCH_ALL);
-        this.actions = new ArrayList<DispositionActionDefinition>(assocs.size());
-        this.actionsById = new HashMap<String, DispositionActionDefinition>(assocs.size()); 
-        this.actionsByName = new HashMap<String, DispositionActionDefinition>(assocs.size()); 
-        this.actionsByDispositionActionName = new HashMap<String, DispositionActionDefinition>(assocs.size());
+        this.actions = new ArrayList<>(assocs.size());
+        this.actionsById = new HashMap<>(assocs.size());
+        this.actionsByName = new HashMap<>(assocs.size());
+        this.actionsByDispositionActionName = new HashMap<>(assocs.size());
         int index = 0;
         for (ChildAssociationRef assoc : assocs)
         {            

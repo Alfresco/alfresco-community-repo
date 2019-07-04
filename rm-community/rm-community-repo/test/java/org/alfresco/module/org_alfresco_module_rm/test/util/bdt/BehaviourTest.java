@@ -190,7 +190,7 @@ public class BehaviourTest
      */
     public ExpectedValue<Boolean> expect(boolean value)
     {
-        return new ExpectedValue<Boolean>(this, value);
+        return new ExpectedValue<>(this, value);
     }
     
     /**
@@ -201,7 +201,7 @@ public class BehaviourTest
      */
     public ExpectedValue<String> expect(String value)
     {
-        return new ExpectedValue<String>(this, value);
+        return new ExpectedValue<>(this, value);
     }
     
     /**
@@ -212,7 +212,7 @@ public class BehaviourTest
      */
     public ExpectedValue<Object> expect(Object value)
     {
-        return new ExpectedValue<Object>(this, value);
+        return new ExpectedValue<>(this, value);
     }
 
     

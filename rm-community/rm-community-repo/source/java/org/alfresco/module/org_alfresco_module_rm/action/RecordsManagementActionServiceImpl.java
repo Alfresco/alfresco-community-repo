@@ -63,10 +63,10 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private static Log logger = LogFactory.getLog(RecordsManagementActionServiceImpl.class);
 
     /** Registered records management actions */
-    private Map<String, RecordsManagementAction> rmActions = new HashMap<String, RecordsManagementAction>(13);
-    private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<String, RecordsManagementActionCondition>(13);
+    private Map<String, RecordsManagementAction> rmActions = new HashMap<>(13);
+    private Map<String, RecordsManagementActionCondition> rmConditions = new HashMap<>(13);
 
-    private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(5);
+    private Map<String, RecordsManagementAction> dispositionActions = new HashMap<>(5);
 
     /** Policy component */
     private PolicyComponent policyComponent;
@@ -185,7 +185,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public List<RecordsManagementAction> getRecordsManagementActions()
     {
-        List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
+        List<RecordsManagementAction> result = new ArrayList<>(this.rmActions.size());
         result.addAll(this.rmActions.values());
         return Collections.unmodifiableList(result);
     }
@@ -196,7 +196,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     @Override
     public List<RecordsManagementActionCondition> getRecordsManagementActionConditions()
     {
-        List<RecordsManagementActionCondition> result = new ArrayList<RecordsManagementActionCondition>(rmConditions.size());
+        List<RecordsManagementActionCondition> result = new ArrayList<>(rmConditions.size());
         result.addAll(rmConditions.values());
         return Collections.unmodifiableList(result);
     }
@@ -210,7 +210,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     @SuppressWarnings("unused")
     public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
     {
-        List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
+        List<RecordsManagementAction> result = new ArrayList<>(this.rmActions.size());
 
         for (RecordsManagementAction action : this.rmActions.values())
         {
@@ -225,7 +225,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
      */
     public List<RecordsManagementAction> getDispositionActions()
     {
-        List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(dispositionActions.size());
+        List<RecordsManagementAction> result = new ArrayList<>(dispositionActions.size());
         result.addAll(dispositionActions.values());
         return Collections.unmodifiableList(result);
     }
@@ -325,7 +325,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters)
     {
         // Execute the action on each node in the list
-        Map<NodeRef, RecordsManagementActionResult> results = new HashMap<NodeRef, RecordsManagementActionResult>(nodeRefs.size());
+        Map<NodeRef, RecordsManagementActionResult> results = new HashMap<>(nodeRefs.size());
         for (NodeRef nodeRef : nodeRefs)
         {
             RecordsManagementActionResult result = executeRecordsManagementAction(nodeRef, name, parameters);

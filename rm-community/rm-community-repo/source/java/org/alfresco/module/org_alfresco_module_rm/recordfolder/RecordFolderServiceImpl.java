@@ -220,7 +220,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
         }
 
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> props = new HashMap<>(1);
         if (properties != null && properties.size() != 0)
         {
             props.putAll(properties);
@@ -270,7 +270,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("record", record);
 
-        List<NodeRef> result = new ArrayList<NodeRef>(1);
+        List<NodeRef> result = new ArrayList<>(1);
         if (recordService.isRecord(record))
         {
             List<ChildAssociationRef> assocs = nodeService.getParentAssocs(record, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);

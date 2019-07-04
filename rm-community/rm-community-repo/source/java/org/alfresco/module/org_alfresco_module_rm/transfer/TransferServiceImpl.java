@@ -164,7 +164,7 @@ public class TransferServiceImpl extends ServiceBaseImpl
             String transferName = StringUtils.leftPad(dbId.toString(), 10, "0");
 
             // Create the transfer object
-            Map<QName, Serializable> transferProps = new HashMap<QName, Serializable>(2);
+            Map<QName, Serializable> transferProps = new HashMap<>(2);
             transferProps.put(ContentModel.PROP_NAME, transferName);
             transferProps.put(PROP_TRANSFER_ACCESSION_INDICATOR, isAccession);
 

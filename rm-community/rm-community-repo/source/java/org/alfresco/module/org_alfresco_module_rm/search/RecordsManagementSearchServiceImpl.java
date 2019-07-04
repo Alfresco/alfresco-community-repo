@@ -91,7 +91,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     private NodeService nodeService;
 
     /** List of report details */
-	private List<ReportDetails> reports = new ArrayList<ReportDetails>(13);
+	private List<ReportDetails> reports = new ArrayList<>(13);
 
 	/**
 	 * @param fileFolderService    file folder service
@@ -232,10 +232,10 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         ResultSet resultSet = searchService.query(searchParameters);
         
         // process results
-        List<Pair<NodeRef, NodeRef>> result = new ArrayList<Pair<NodeRef, NodeRef>>(resultSet.length());
+        List<Pair<NodeRef, NodeRef>> result = new ArrayList<>(resultSet.length());
         for (ChildAssociationRef childAssoc : resultSet.getChildAssocRefs())
         {
-        	result.add(new Pair<NodeRef, NodeRef>(childAssoc.getParentRef(), childAssoc.getChildRef()));        	
+        	result.add(new Pair<>(childAssoc.getParentRef(), childAssoc.getChildRef()));
         }
 
         // return results
@@ -396,7 +396,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
     @Override
     public List<SavedSearchDetails> getSavedSearches(String siteId)
     {
-        List<SavedSearchDetails> result = new ArrayList<SavedSearchDetails>(17);
+        List<SavedSearchDetails> result = new ArrayList<>(17);
 
         NodeRef container = siteService.getContainer(siteId, SEARCH_CONTAINER);
         if (container != null)

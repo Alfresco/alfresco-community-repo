@@ -120,7 +120,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
             String newBehaviorScriptsNodeUUID = "rm_behavior_scripts";
             String newBehaviorScriptsAssocQName = "records_management_behavior_scripts";
 
-            Map<QName, Serializable> newBehaviorScriptsFolderProps = new HashMap<QName, Serializable>();
+            Map<QName, Serializable> newBehaviorScriptsFolderProps = new HashMap<>();
             newBehaviorScriptsFolderProps.put(ContentModel.PROP_NODE_UUID, newBehaviorScriptsNodeUUID);
             newBehaviorScriptsFolderProps.put(ContentModel.PROP_NAME, newBehaviorScriptsFolderName);
             newBehaviorScriptsFolderProps.put(ContentModel.PROP_TITLE, newBehaviorScriptsFolderName);

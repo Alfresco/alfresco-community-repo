@@ -88,7 +88,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
                 // Create test user WITH required capability
                 createUser(USER_WITH_CAPABILITY);
                 // Create test role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS));
                 capabilities.add(capabilityService.getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS));
                 filePlanRoleService.createRole(filePlan, ROLE_INCLUDING_CAPABILITY, ROLE_INCLUDING_CAPABILITY, capabilities);
@@ -98,7 +98,7 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
                 // Create test user WITHOUT required capability
                 createUser(USER_WITHOUT_CAPABILITY);
                 // Create test role
-                filePlanRoleService.createRole(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, ROLE_NOT_INCLUDING_CAPABILITY, new HashSet<Capability>(1));
+                filePlanRoleService.createRole(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, ROLE_NOT_INCLUDING_CAPABILITY, new HashSet<>(1));
                 // Add user to the role
                 filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NOT_INCLUDING_CAPABILITY, USER_WITHOUT_CAPABILITY);
 

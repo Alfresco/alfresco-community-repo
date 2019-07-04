@@ -426,7 +426,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                 NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
 
                 // complete event
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
 
@@ -477,7 +477,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                 NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
 
                 // complete event
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
 
@@ -555,7 +555,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
         NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
         DispositionSchedule dis = utils.createBasicDispositionSchedule(rc, GUID.generate(), GUID.generate(),
                     recordLevel, false);
-        Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> adParams = new HashMap<>(3);
         adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
         adParams.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);

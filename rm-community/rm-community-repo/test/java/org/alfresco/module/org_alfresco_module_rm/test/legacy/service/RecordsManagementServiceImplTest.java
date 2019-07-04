@@ -177,7 +177,7 @@ public class RecordsManagementServiceImplTest extends BaseRMTestCase
             @Override
             public NodeRef run()
             {
-                List<NodeRef> roots = new ArrayList<NodeRef>(filePlanService.getFilePlans());
+                List<NodeRef> roots = new ArrayList<>(filePlanService.getFilePlans());
                 assertNotNull(roots);
                 assertTrue(roots.size() != 0);
                 assertTrue(roots.contains(filePlan));

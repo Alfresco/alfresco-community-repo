@@ -124,7 +124,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
     protected Map<String, Object> createActionDefModel(DispositionActionDefinition actionDef,
                 String url)
     {
-        Map<String, Object> model = new HashMap<String, Object>(8);
+        Map<String, Object> model = new HashMap<>(8);
 
         model.put("id", actionDef.getId());
         model.put("index", actionDef.getIndex());
@@ -161,7 +161,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         List<RecordsManagementEvent> events = actionDef.getEvents();
         if (events != null && events.size() > 0)
         {
-            List<String> eventNames = new ArrayList<String>(events.size());
+            List<String> eventNames = new ArrayList<>(events.size());
             for (RecordsManagementEvent event : events)
             {
                 eventNames.add(event.getName());
@@ -189,7 +189,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         DispositionSchedule schedule = parseRequestForSchedule(req);
 
         // add all the schedule data to Map
-        Map<String, Object> scheduleModel = new HashMap<String, Object>(8);
+        Map<String, Object> scheduleModel = new HashMap<>(8);
 
         // build url
         String serviceUrl = req.getServiceContextPath() + req.getPathInfo();
@@ -214,7 +214,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         boolean unpublishedUpdates = false;
         boolean publishInProgress = false;
 
-        List<Map<String, Object>> actions = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> actions = new ArrayList<>();
         for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
         {
             NodeRef actionDefNodeRef = actionDef.getNodeRef();
@@ -231,7 +231,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         scheduleModel.put("publishInProgress", publishInProgress);
 
         // create model object with just the schedule data
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("schedule", scheduleModel);
         return model;
     }

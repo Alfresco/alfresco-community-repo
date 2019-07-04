@@ -226,7 +226,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
     @Override
     public List<String> getSubstitutionSuggestions(String substitutionFragment)
     {
-        List<String> suggestions = new ArrayList<String>();
+        List<String> suggestions = new ArrayList<>();
         String namePrefix = this.getName() + ".";
         if(StringUtils.isBlank(substitutionFragment)  || this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
         {

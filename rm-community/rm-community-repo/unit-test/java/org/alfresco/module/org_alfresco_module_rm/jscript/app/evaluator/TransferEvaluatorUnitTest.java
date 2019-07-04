@@ -71,7 +71,7 @@ public class TransferEvaluatorUnitTest extends BaseUnitTest
     
     private List<ChildAssociationRef> getParentAssocs(NodeRef provided)
     {
-        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(1);
+        List<ChildAssociationRef> result = new ArrayList<>(1);
         result.add(new ChildAssociationRef(ASSOC_TRANSFERRED, transfer, generateQName(), provided, false, 1));
         return result;
     }

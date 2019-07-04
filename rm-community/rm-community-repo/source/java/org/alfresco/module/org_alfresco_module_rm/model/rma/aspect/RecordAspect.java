@@ -335,7 +335,7 @@ public class RecordAspect extends    AbstractDisposableItem
         NodeRef scriptNodeRef = nodeService.getChildByName(scriptsFolderNodeRef, ContentModel.ASSOC_CONTAINS, expectedScriptName);
         if (scriptNodeRef != null)
         {
-            Map<String, Object> objectModel = new HashMap<String, Object>(1);
+            Map<String, Object> objectModel = new HashMap<>(1);
             objectModel.put("node", from);
             objectModel.put("toNode", to);
             objectModel.put("policy", policy);

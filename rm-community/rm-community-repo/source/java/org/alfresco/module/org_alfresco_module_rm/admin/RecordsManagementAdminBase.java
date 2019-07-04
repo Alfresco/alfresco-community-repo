@@ -203,7 +203,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
      */
     protected Map<QName, AssociationDefinition> getCustomAssociations()
     {
-        Map<QName, AssociationDefinition> customAssociations = new HashMap<QName,AssociationDefinition>();
+        Map<QName, AssociationDefinition> customAssociations = new HashMap<>();
 
         AspectDefinition aspectDefn = getDictionaryService().getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
         if (aspectDefn != null)

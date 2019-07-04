@@ -114,7 +114,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     {
         Map<String, Serializable> paramValues = action.getParameterValues();
 
-        Map<QName, Serializable> result = new HashMap<QName, Serializable>(paramValues.size());
+        Map<QName, Serializable> result = new HashMap<>(paramValues.size());
         for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
         {
             QName propQName = QName.createQName(entry.getKey(), this.getNamespaceService());
@@ -138,7 +138,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
 
             Map<QName, PropertyDefinition> props = aspectDefinition.getProperties();
 
-            this.parameterDefinitions = new ArrayList<ParameterDefinition>(props.size());
+            this.parameterDefinitions = new ArrayList<>(props.size());
 
             for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
             {

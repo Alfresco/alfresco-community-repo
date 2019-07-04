@@ -55,6 +55,7 @@ public final class RecordsManagementAuditQueryParameters
      */
     public RecordsManagementAuditQueryParameters()
     {
+        //Default constructor
     }
 
     /**

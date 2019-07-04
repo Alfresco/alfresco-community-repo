@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condit
 
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -39,17 +38,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCondition
 {
-    /** Disposition service */
-    private DispositionService dispositionService;
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */

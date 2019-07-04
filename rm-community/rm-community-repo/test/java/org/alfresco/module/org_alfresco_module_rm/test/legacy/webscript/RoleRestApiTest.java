@@ -352,7 +352,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
 
     private Set<Capability> getListOfCapabilities(int size, int offset)
     {
-        Set<Capability> result = new HashSet<Capability>(size);
+        Set<Capability> result = new HashSet<>(size);
         Set<Capability> caps = capabilityService.getCapabilities(false);
         int count = 0;
         for (Capability cap : caps)

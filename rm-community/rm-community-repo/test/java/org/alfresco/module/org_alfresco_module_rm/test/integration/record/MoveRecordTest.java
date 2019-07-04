@@ -80,7 +80,7 @@ public class MoveRecordTest extends BaseRMTestCase
                 sourceCategory = filePlanService.createRecordCategory(filePlan, GUID.generate()); 
                 utils.createBasicDispositionSchedule(sourceCategory, GUID.generate(), GUID.generate(), true, true);
                 sourceRecordFolder = recordFolderService.createRecordFolder(sourceCategory, GUID.generate());
-                destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());;
+                destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 destinationRecordFolder = recordFolderService.createRecordFolder(destinationCategory, GUID.generate());
      
                 // create record
@@ -230,7 +230,7 @@ public class MoveRecordTest extends BaseRMTestCase
                 
                 destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 DispositionSchedule dis = utils.createBasicDispositionSchedule(destinationCategory, GUID.generate(), GUID.generate(), true, false);
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 adParams.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
@@ -306,7 +306,7 @@ public class MoveRecordTest extends BaseRMTestCase
                 // destination category
                 destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 DispositionSchedule dis = utils.createBasicDispositionSchedule(destinationCategory, GUID.generate(), GUID.generate(), true, false);
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 adParams.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);

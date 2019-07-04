@@ -247,7 +247,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
 
         ContentType contentType = new ContentType(part.getContentType());
 
-        Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> docProps = new HashMap<>(1);
         docProps.put(ContentModel.PROP_NAME, messageTitle + " - " + fileName);
         docProps.put(ContentModel.PROP_TITLE, fileName);
 

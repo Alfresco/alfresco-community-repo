@@ -231,7 +231,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
     protected void checkProperties(NodeRef frozen, Map<QName, Serializable> beforeProperies)
     {
         Map<QName, Serializable> frozenProperties = nodeService.getProperties(frozen);
-        Map<QName, Serializable> cloneFrozenProperties = new HashMap<QName, Serializable>(frozenProperties);
+        Map<QName, Serializable> cloneFrozenProperties = new HashMap<>(frozenProperties);
         for (Map.Entry<QName, Serializable> entry : beforeProperies.entrySet())
         {
             QName beforePropertyName = entry.getKey();
@@ -284,7 +284,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
      */
     protected void checkAspects(NodeRef frozen, Set<QName> beforeAspects)
     {
-        Set<QName> cloneBeforeAspects = new HashSet<QName>(beforeAspects);
+        Set<QName> cloneBeforeAspects = new HashSet<>(beforeAspects);
         
         // compare origional and frozen aspects
         Set<QName> frozenAspects = nodeService.getAspects(frozen);
@@ -325,7 +325,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                 writer.putContent(GUID.generate());
                 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                Map<QName, Serializable> props = new HashMap<>(2);
                 props.put(RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
                 props.put(RecordableVersionModel.PROP_FILE_PLAN, filePlan);
                 nodeService.addAspect(testDoc, RecordableVersionModel.ASPECT_VERSIONABLE, props);

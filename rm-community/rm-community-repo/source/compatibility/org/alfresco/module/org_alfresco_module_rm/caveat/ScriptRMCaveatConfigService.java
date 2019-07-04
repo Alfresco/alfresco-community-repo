@@ -93,7 +93,7 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
     {
         Set<RMConstraintInfo> values = caveatConfigService.getAllRMConstraints();
 
-        List<ScriptConstraint> vals = new ArrayList<ScriptConstraint>(values.size());
+        List<ScriptConstraint> vals = new ArrayList<>(values.size());
         for(RMConstraintInfo value : values)
         {
             ScriptConstraint c = new ScriptConstraint(value, caveatConfigService, getAuthorityService());
@@ -132,7 +132,7 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
      */
     public void updateConstraintValues(String listName, String authorityName, String[]values)
     {
-        List<String> vals = new ArrayList<String>();
+        List<String> vals = new ArrayList<>();
         caveatConfigService.updateRMConstraintListAuthority(listName, authorityName, vals);
     }
 

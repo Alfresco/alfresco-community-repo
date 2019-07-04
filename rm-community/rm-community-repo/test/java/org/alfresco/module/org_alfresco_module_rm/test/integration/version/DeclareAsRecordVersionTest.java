@@ -78,7 +78,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
 
@@ -126,7 +126,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
@@ -181,7 +181,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 prepareContent(customDocument);
 
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(2);
+                versionProperties = new HashMap<>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
 
@@ -246,7 +246,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 assertTrue("Modified date must be after or on creation date", createdDate.getTime() == modificationDate.getTime());
 
                 // Set initial set of properties
-                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> properties = new HashMap<>(3);
                 // Ensure default behaviour autoversion on change properties is set to false
                 properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
                 // Set initial name
@@ -260,7 +260,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
 
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(2);
+                versionProperties = new HashMap<>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
 
@@ -336,7 +336,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 assertTrue("Modified date must be after or on creation date", createdDate.getTime() == modificationDate.getTime());
 
                 // Set initial set of properties
-                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> properties = new HashMap<>(3);
                 // Ensure default behaviour autoversion on change properties is set to false
                 properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
                 // Set initial name
@@ -350,7 +350,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
 
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(2);
+                versionProperties = new HashMap<>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
 

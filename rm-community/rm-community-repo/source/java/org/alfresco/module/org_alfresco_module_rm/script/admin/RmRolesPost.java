@@ -63,7 +63,7 @@ public class RmRolesPost extends RoleDeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         JSONObject json = null;
         try
         {
@@ -74,7 +74,7 @@ public class RmRolesPost extends RoleDeclarativeWebScript
             // TODO check
 
             JSONArray capabilitiesArray = json.getJSONArray("capabilities");
-            Set<Capability> capabilites = new HashSet<Capability>(capabilitiesArray.length());
+            Set<Capability> capabilites = new HashSet<>(capabilitiesArray.length());
             for (int i = 0; i < capabilitiesArray.length(); i++)
             {
                 Capability capability = capabilityService.getCapability(capabilitiesArray.getString(i));

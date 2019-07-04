@@ -44,7 +44,6 @@ import java.util.Set;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.dataprep.ContentService;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.core.v0.RMEvents;
@@ -96,9 +95,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /** user service */
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private ContentService contentService;
 
     /**
      * Get all the configured RM roles.

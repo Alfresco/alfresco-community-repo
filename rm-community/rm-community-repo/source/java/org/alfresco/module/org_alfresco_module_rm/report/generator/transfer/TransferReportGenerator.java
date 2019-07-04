@@ -78,7 +78,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
         String dispositionAuthority = getDispositionAuthority(transferNodes);
 
         // Save to the properties map
-        Map<String, Serializable> properties = new HashMap<String, Serializable>(2);
+        Map<String, Serializable> properties = new HashMap<>(2);
         properties.put("transferNodes", (ArrayList<TransferNode>) transferNodes);
         properties.put("dispositionAuthority", dispositionAuthority);
 
@@ -94,7 +94,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     private List<TransferNode> getTransferNodes(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
-        List<TransferNode> transferNodes = new ArrayList<TransferNode>(assocs.size());
+        List<TransferNode> transferNodes = new ArrayList<>(assocs.size());
         for (ChildAssociationRef assoc : assocs)
         {
             NodeRef childRef = assoc.getChildRef();
@@ -112,7 +112,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
      */
     private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(6);
+        Map<String, Serializable> transferNodeProperties = new HashMap<>(6);
 
         boolean isFolder = dictionaryService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER);
         transferNodeProperties.put("isFolder", isFolder);
@@ -139,7 +139,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
      */
     private List<TransferNode> getRecords(NodeRef childRef)
     {
-        List<TransferNode> records = new ArrayList<TransferNode>(4);
+        List<TransferNode> records = new ArrayList<>(4);
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(childRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef child : assocs)
         {
@@ -162,7 +162,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
      */
     private Map<String, Serializable> getCommonProperties(NodeRef nodeRef)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+        Map<String, Serializable> transferNodeProperties = new HashMap<>(3);
 
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         String name = (String) properties.get(ContentModel.PROP_NAME);
@@ -182,7 +182,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
      */
     private Map<String, Serializable> getFolderProperties(NodeRef folder)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(3);
+        Map<String, Serializable> transferNodeProperties = new HashMap<>(3);
 
         Map<String, Serializable> commonProperties = getCommonProperties(folder);
         ArrayList<TransferNode> records = (ArrayList<TransferNode>) getRecords(folder);
@@ -200,7 +200,7 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
      */
     private Map<String, Serializable> getRecordProperties(NodeRef record)
     {
-        Map<String, Serializable> transferNodeProperties = new HashMap<String, Serializable>(5);
+        Map<String, Serializable> transferNodeProperties = new HashMap<>(5);
 
         Map<QName, Serializable> properties = nodeService.getProperties(record);
         String declaredBy = (String) properties.get(RecordsManagementModel.PROP_DECLARED_BY);

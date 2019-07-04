@@ -106,7 +106,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
 
         writeCustomContentModel(customModel);
 
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
+        Map<String, Object> model = new HashMap<>(1, 1.0f);
     	model.put("success", true);
 
         return model;

@@ -257,7 +257,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
                     notificationContext.setIgnoreNotificationFailure(true);
 
                     notificationContext.setBodyTemplate(getDueForReviewTemplate().toString());
-                    Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+                    Map<String, Serializable> args = new HashMap<>(1, 1.0f);
                     args.put("records", (Serializable) records);
                     args.put("site", getSiteName(root));
                     notificationContext.setTemplateArgs(args);
@@ -300,7 +300,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             notificationContext.setIgnoreNotificationFailure(true);
 
             notificationContext.setBodyTemplate(supersededTemplate.toString());
-            Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+            Map<String, Serializable> args = new HashMap<>(1, 1.0f);
             args.put("record", record);
             args.put("site", getSiteName(root));
             notificationContext.setTemplateArgs(args);
@@ -335,7 +335,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
             Date rejectDate = (Date) nodeService.getProperty(record, PROP_RECORD_REJECTION_DATE);
             String recordName = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
 
-            Map<String, Serializable> args = new HashMap<String, Serializable>(8);
+            Map<String, Serializable> args = new HashMap<>(8);
             args.put("record", record);
             args.put("site", site);
             args.put("recordCreator", recordCreator);

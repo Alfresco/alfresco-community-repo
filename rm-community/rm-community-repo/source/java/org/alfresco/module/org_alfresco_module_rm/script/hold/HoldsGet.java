@@ -118,7 +118,7 @@ public class HoldsGet extends DeclarativeWebScript
     {
         boolean fileOnly = getFileOnly(req);
         NodeRef itemNodeRef = getItemNodeRef(req);
-        List<NodeRef> holds = new ArrayList<NodeRef>();
+        List<NodeRef> holds = new ArrayList<>();
 
         if (itemNodeRef == null)
         {
@@ -131,7 +131,7 @@ public class HoldsGet extends DeclarativeWebScript
             holds.addAll(holdService.heldBy(itemNodeRef, includedInHold));
         }
 
-        List<Hold> holdObjects = new ArrayList<Hold>(holds.size());
+        List<Hold> holdObjects = new ArrayList<>(holds.size());
         for (NodeRef nodeRef : holds)
         {
             // only add if user has filling permisson on the hold
@@ -142,7 +142,7 @@ public class HoldsGet extends DeclarativeWebScript
             }
         }
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         sortHoldByName(holdObjects);
         model.put("holds", holdObjects);
 

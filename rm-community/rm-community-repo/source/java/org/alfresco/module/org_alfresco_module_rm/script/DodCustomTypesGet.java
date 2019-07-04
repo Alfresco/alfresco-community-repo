@@ -63,9 +63,9 @@ public class DodCustomTypesGet extends DeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
-        List<AspectDefinition> customTypeAspectDefinitions = new ArrayList<AspectDefinition>(4);
+        List<AspectDefinition> customTypeAspectDefinitions = new ArrayList<>(4);
         for (QName aspectQName : CUSTOM_TYPE_ASPECTS)
         {
             AspectDefinition nextAspectDef = dictionaryService.getAspect(aspectQName);

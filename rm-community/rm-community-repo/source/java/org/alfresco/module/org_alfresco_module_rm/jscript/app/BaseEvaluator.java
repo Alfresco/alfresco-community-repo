@@ -214,7 +214,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
      */
     public void setCapability(String capability)
     {
-        List<String> list = new ArrayList<String>(1);
+        List<String> list = new ArrayList<>(1);
         list.add(capability);
         this.capabilities = list;
     }

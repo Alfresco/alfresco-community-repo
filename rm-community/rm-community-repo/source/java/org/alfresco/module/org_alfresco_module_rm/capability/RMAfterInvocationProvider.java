@@ -49,7 +49,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
-import org.alfresco.repo.search.impl.solr.SolrSQLJSONResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
@@ -99,6 +98,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     public void afterPropertiesSet()
     {
+        //Do nothing
     }
 
     /**
@@ -422,7 +422,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             return null;
         }
 
-        // FIXME
+        // FIXME see: RM-6895
         if (returnedObject.getResultSetMetaData().getSearchParameters().getLanguage().equalsIgnoreCase("solr-sql"))
         {
             return returnedObject;
@@ -572,7 +572,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config, QueryEngineResults returnedObject)
     {
         Map<Set<String>, ResultSet> map = returnedObject.getResults();
-        Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
+        Map<Set<String>, ResultSet> answer = new HashMap<>(map.size(), 1.0f);
 
         for (Map.Entry<Set<String>, ResultSet> entry : map.entrySet())
         {
@@ -636,7 +636,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         int count = 0;
 
         // Keep values explicitly
-        List<Object> keepValues = new ArrayList<Object>(returnedObject.size());
+        List<Object> keepValues = new ArrayList<>(returnedObject.size());
 
         for (Object nextObject : returnedObject)
         {

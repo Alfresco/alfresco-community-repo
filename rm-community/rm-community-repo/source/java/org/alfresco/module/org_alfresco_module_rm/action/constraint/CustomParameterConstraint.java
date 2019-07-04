@@ -58,7 +58,7 @@ public class CustomParameterConstraint extends BaseParameterConstraint
      */
     protected Map<String, String> getAllowableValuesImpl()
     {
-        Map<String, String> allowableValues = new HashMap<String, String>(parameterValues.size());
+        Map<String, String> allowableValues = new HashMap<>(parameterValues.size());
 
         for (Object parameterValue : parameterValues)
         {

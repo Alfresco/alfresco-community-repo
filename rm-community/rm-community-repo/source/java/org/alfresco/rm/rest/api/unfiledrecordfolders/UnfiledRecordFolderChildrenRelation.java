@@ -233,7 +233,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
             {
                 final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, uploadInfo.getRelativePath());
                 NodeRef newNode = apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
-                return new Pair<NodeRef, NodeRef>(newNode, parentNodeRef);
+                return new Pair<>(newNode, parentNodeRef);
             }
         };
         Pair<NodeRef,NodeRef> nodeAndParentInfo = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);

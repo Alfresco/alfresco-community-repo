@@ -72,7 +72,7 @@ public class RmActionConditionDefinitionsGet extends DeclarativeWebScript
         List<ActionConditionDefinition> dmDefs = actionService.getActionConditionDefinitions();
         List<RecordsManagementActionCondition> conditions = recordsManagementActionService.getRecordsManagementActionConditions();
 
-        List<ActionConditionDefinition> defs = new ArrayList<ActionConditionDefinition>(dmDefs.size()+conditions.size());
+        List<ActionConditionDefinition> defs = new ArrayList<>(dmDefs.size() + conditions.size());
         defs.addAll(dmDefs);
         for (RecordsManagementActionCondition condition: conditions)
         {
@@ -82,7 +82,7 @@ public class RmActionConditionDefinitionsGet extends DeclarativeWebScript
             }
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("actionconditiondefinitions", defs);
 
         return model;

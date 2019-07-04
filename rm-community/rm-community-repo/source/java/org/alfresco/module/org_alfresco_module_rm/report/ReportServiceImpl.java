@@ -52,7 +52,7 @@ public class ReportServiceImpl extends ServiceBaseImpl
     protected RecordService recordService;
 
     /** report generator registry */
-    private Map<QName, ReportGenerator> registry = new HashMap<QName, ReportGenerator>();
+    private Map<QName, ReportGenerator> registry = new HashMap<>();
 
     /**
      * @param recordService record service

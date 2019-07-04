@@ -48,7 +48,7 @@ public class VersionParameterConstraint extends BaseParameterConstraint
     protected Map<String, String> getAllowableValuesImpl()
     {
         RecordableVersionPolicy[] recordableVersionPolicies = RecordableVersionPolicy.values();
-        Map<String, String> allowableValues = new HashMap<String, String>(recordableVersionPolicies.length);
+        Map<String, String> allowableValues = new HashMap<>(recordableVersionPolicies.length);
         for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies)
         {
             String policy = recordableVersionPolicy.toString();

@@ -161,7 +161,7 @@ public class RM978Test extends BaseRMTestCase
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary);
                 assertNotNull(childAssocs);
 
-                List<String> childNames = new ArrayList<String>();
+                List<String> childNames = new ArrayList<>();
                 for (ChildAssociationRef childAssociationRef : childAssocs)
                 {
                     NodeRef childRef = childAssociationRef.getChildRef();
@@ -266,7 +266,7 @@ public class RM978Test extends BaseRMTestCase
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary2);
                 assertNotNull(childAssocs);
 
-                List<String> childNames = new ArrayList<String>();
+                List<String> childNames = new ArrayList<>();
                 for (ChildAssociationRef childAssociationRef : childAssocs)
                 {
                     NodeRef childRef = childAssociationRef.getChildRef();
@@ -558,7 +558,7 @@ public class RM978Test extends BaseRMTestCase
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary);
                 assertNotNull(childAssocs);
 
-                List<String> childNames = new ArrayList<String>();
+                List<String> childNames = new ArrayList<>();
                 for (ChildAssociationRef childAssociationRef : childAssocs)
                 {
                     NodeRef childRef = childAssociationRef.getChildRef();
@@ -663,7 +663,7 @@ public class RM978Test extends BaseRMTestCase
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary2);
                 assertNotNull(childAssocs);
 
-                List<String> childNames = new ArrayList<String>();
+                List<String> childNames = new ArrayList<>();
                 for (ChildAssociationRef childAssociationRef : childAssocs)
                 {
                     NodeRef childRef = childAssociationRef.getChildRef();

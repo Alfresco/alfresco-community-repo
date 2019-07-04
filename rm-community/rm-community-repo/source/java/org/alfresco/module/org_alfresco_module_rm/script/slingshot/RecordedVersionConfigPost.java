@@ -86,7 +86,7 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
         NodeRef nodeRef = parseRequestForNodeRef(req);
         String policy = getRecordableVersionPolicy(req);
         getRecordableVersionConfigService().setVersion(nodeRef, policy);
-        return new HashMap<String, Object>(1);
+        return new HashMap<>(1);
     }
 
     /**

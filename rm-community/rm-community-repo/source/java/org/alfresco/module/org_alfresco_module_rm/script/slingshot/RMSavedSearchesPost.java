@@ -163,7 +163,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
         }
 
         // Indicate success in the model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("success", true);
         return model;
     }

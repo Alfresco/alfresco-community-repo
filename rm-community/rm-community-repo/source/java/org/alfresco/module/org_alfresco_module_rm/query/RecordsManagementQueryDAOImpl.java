@@ -101,7 +101,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         if (pair != null)
         {        
             // create query params
-            Map<String, Object> params = new HashMap<String, Object>(2);
+            Map<String, Object> params = new HashMap<>(2);
             params.put("qnameId", pair.getFirst());
             params.put("idValue", identifierValue);
             

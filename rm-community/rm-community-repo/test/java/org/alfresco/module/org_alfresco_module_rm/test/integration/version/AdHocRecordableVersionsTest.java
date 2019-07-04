@@ -61,7 +61,7 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
@@ -94,7 +94,7 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, false);
@@ -127,7 +127,7 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
@@ -161,7 +161,7 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
             public void given() throws Exception
             {
                 // setup version properties
-                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);

@@ -113,7 +113,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         {
             if (names != null)
             {
-                propMap = new HashMap<QName, PropertyDefinition>(names.length);
+                propMap = new HashMap<>(names.length);
                 for (String name : names)
                 {
                     QName propQName = QName.createQName(name, namespaceService);
@@ -127,7 +127,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
             else
             {
                 Collection<QName> propQNames = getProperties(isRM);
-                propMap = new HashMap<QName, PropertyDefinition>(propQNames.size());
+                propMap = new HashMap<>(propQNames.size());
                 for (QName propQName : propQNames)
                 {
                     propMap.put(propQName, dictionaryservice.getProperty(propQName));
@@ -142,7 +142,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         }
 
         // Filter the properties by URI
-        List<PropertyDefinition> props = new ArrayList<PropertyDefinition>(propMap.size());
+        List<PropertyDefinition> props = new ArrayList<>(propMap.size());
         for (Map.Entry<QName, PropertyDefinition> entry : propMap.entrySet())
         {
             if ((namespaceURI != null &&
@@ -157,7 +157,7 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         Collections.sort(props, new DictionaryComparators.PropertyDefinitionComparator(dictionaryservice));
 
         // Pass list of property definitions to template
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, props);
         model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, dictionaryservice);
 

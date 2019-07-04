@@ -52,7 +52,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private boolean runAsAdmin = true;
 
     /** ignore types */
-    private Set<QName> ignoredTypes = new HashSet<QName>();
+    private Set<QName> ignoredTypes = new HashSet<>();
 
     /** file plan service */
     private FilePlanService filePlanService;

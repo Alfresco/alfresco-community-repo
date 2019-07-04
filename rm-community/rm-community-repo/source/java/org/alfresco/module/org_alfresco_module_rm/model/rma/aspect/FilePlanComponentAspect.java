@@ -158,7 +158,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     {
         List<NodeRef> scriptRefs = lookupScripts(oldProps, newProps);
 
-        Map<String, Object> objectModel = new HashMap<String, Object>(1);
+        Map<String, Object> objectModel = new HashMap<>(1);
         objectModel.put("node", nodeWithChangedProperties);
         objectModel.put("oldProperties", oldProps);
         objectModel.put("newProperties", newProps);
@@ -180,7 +180,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      */
     private List<NodeRef> lookupScripts(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
-        List<NodeRef> result = new ArrayList<NodeRef>();
+        List<NodeRef> result = new ArrayList<>();
 
         Map<QName, Serializable> changedProps = PropertyMap.getChangedProperties(oldProps, newProps);
         for (QName propQName : changedProps.keySet())

@@ -203,7 +203,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
         Collection<String> eventNames = (Collection<String>)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT);
         if (eventNames != null)
         {
-            events = new ArrayList<RecordsManagementEvent>(eventNames.size());
+            events = new ArrayList<>(eventNames.size());
             for (String eventName : eventNames)
             {
                 RecordsManagementEvent event = recordsManagementEventService.getEvent(eventName);

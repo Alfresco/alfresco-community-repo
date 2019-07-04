@@ -57,6 +57,6 @@ public class RmAuthoritiesDelete extends AbstractRmAuthorities
 
         filePlanRoleService.unassignRoleFromAuthority(filePlan, roleId, authorityName);
 
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 }

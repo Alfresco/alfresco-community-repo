@@ -112,7 +112,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
                 
                 // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("ChangeOrDeleteReferences"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -168,7 +168,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
                 
                 // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("ChangeOrDeleteReferences"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -224,7 +224,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
                 
                 // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("ChangeOrDeleteReferences"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);

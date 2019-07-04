@@ -122,7 +122,7 @@ public abstract class BaseHold extends DeclarativeWebScript
         List<NodeRef> holds = getHolds(json);
         List<NodeRef> nodeRefs = getItemNodeRefs(json);
         doAction(holds, nodeRefs);
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
     /**
@@ -170,7 +170,7 @@ public abstract class BaseHold extends DeclarativeWebScript
      */
     protected List<NodeRef> getItemNodeRefs(JSONObject json)
     {
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
+        List<NodeRef> nodeRefs = new ArrayList<>();
         try
         {
             JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
@@ -218,7 +218,7 @@ public abstract class BaseHold extends DeclarativeWebScript
      */
     protected List<NodeRef> getHolds(JSONObject json)
     {
-        List<NodeRef> holds = new ArrayList<NodeRef>();
+        List<NodeRef> holds = new ArrayList<>();
         try
         {
             JSONArray holdsArray = json.getJSONArray("holds");

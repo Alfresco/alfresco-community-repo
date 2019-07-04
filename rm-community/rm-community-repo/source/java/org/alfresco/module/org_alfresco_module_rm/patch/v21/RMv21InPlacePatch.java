@@ -186,7 +186,7 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
 
     private Set<Capability> getCapabilities(String[] capabilityNames)
     {
-        Set<Capability> capabilities = new HashSet<Capability>(3);
+        Set<Capability> capabilities = new HashSet<>(3);
         for (String capabilityName : capabilityNames)
         {
             capabilities.add(capabilityService.getCapability(capabilityName));

@@ -109,9 +109,9 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(13);
+        Map<String, Object> model = new HashMap<>(13);
 
-        List<Group> groups = new ArrayList<Group>(5);
+        List<Group> groups = new ArrayList<>(5);
 
         // get the file plan
         // TODO the file plan should be passed to this web script

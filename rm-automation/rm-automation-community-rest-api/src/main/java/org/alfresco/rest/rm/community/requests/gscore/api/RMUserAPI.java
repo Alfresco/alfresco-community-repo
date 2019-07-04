@@ -160,10 +160,11 @@ public class RMUserAPI extends RMModelRequest
     }
 
     /**
-     * Helper method to  set the inherited permission on a file plan component
+     * Helper method to set permission inheritance on a file plan component
      *
      * @param filePlanComponentId The id of the file plan component on which inherited permission should be set
-     * @param isInherited          {@link UserPermissions} to be granted
+     * @param isInherited          true if the permission is inherited
+     *                             false if the permission inheritance is disabled
      */
     public void setUserPermissionInheritance(String filePlanComponentId, Boolean isInherited)
     {

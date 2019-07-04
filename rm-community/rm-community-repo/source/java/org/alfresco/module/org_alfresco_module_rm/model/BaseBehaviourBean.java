@@ -65,7 +65,7 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
     protected BehaviourFilter behaviourFilter;
 
     /** behaviour map */
-    protected Map<String, org.alfresco.repo.policy.Behaviour> behaviours = new HashMap<String, org.alfresco.repo.policy.Behaviour>(7);
+    protected Map<String, org.alfresco.repo.policy.Behaviour> behaviours = new HashMap<>(7);
 
     /**
      * @param behaviourFilter   behaviour filter

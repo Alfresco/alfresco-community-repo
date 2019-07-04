@@ -85,14 +85,12 @@
     <bean id="capabilityCondition.destroyMayBeScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MayBeScheduledCapabilityCondition">
-    	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction"  value="destroy"/>
     </bean>
 
     <bean id="capabilityCondition.destroyIsScheduled"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsScheduledCapabilityCondition">
-    	<property name="dispositionService" ref="DispositionService"/>
     	<property name="dispositionAction"  value="destroy"/>
     </bean>
 
@@ -110,7 +108,6 @@
     <bean id="capabilityCondition.hasEvents"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasEventsCapabilityCondition">
-    	<property name="dispositionService" ref="DispositionService"/>
     </bean>
 
     <bean id="capabilityCondition.fileable"
@@ -162,13 +159,11 @@
     <bean id="capabilityCondition.hasDispositionAsOfDate"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HasDispositionDateCapabilityCondition">
-       <property name="dispositionService" ref="DispositionService"/>
     </bean>
 
     <bean id="capabilityCondition.lastDispositionActionCutoff"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.LastDispositionActionCondition">
-       <property name="dispositionService" ref="DispositionService"/>
        <property name="dispositionActionName" value="cutoff"/>
     </bean>
 
@@ -197,7 +192,6 @@
    <bean id="capabilityCondition.isClassified"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.IsClassifiedCapabilityCondition">
-    	<property name="dispositionService" ref="DispositionService"/>
    </bean>
 
    <bean id="capabilityCondition.fail"

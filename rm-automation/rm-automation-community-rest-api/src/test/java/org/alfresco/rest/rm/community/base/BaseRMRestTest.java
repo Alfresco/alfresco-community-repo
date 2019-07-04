@@ -675,6 +675,8 @@ public class BaseRMRestTest extends RestTest
                     this.wait(waitInMilliSeconds);
                 } catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -726,6 +728,8 @@ public class BaseRMRestTest extends RestTest
                 }
                 catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -775,6 +779,8 @@ public class BaseRMRestTest extends RestTest
                 }
                 catch (InterruptedException e)
                 {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
                 }
             }
             result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,

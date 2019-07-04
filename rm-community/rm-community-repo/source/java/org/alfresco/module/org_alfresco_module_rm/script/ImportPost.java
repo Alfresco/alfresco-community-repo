@@ -234,7 +234,7 @@ public class ImportPost extends DeclarativeWebScript
                 }, AuthenticationUtil.getSystemUserName());
 
                 // create and return model
-                Map<String, Object> model = new HashMap<String, Object>(1);
+                Map<String, Object> model = new HashMap<>(1);
                 model.put("success", true);
                 return model;
             }

@@ -80,7 +80,7 @@ public class DeleteHoldTest extends BaseRMTestCase
      */
     protected List<NodeRef> createAndCheckHolds()
     {
-        List<NodeRef> holds = new ArrayList<NodeRef>(2);
+        List<NodeRef> holds = new ArrayList<>(2);
         holds.add(createAndCheckHold());
         NodeRef hold2 = holdService.createHold(filePlan, HOLD2_NAME, HOLD2_REASON, HOLD2_DESC);
         assertNotNull(hold2);
@@ -215,7 +215,7 @@ public class DeleteHoldTest extends BaseRMTestCase
                createAndCheckHolds();
 
                // Check that the record folder isn't held by anything
-               List<NodeRef> holds = new ArrayList<NodeRef>();
+               List<NodeRef> holds = new ArrayList<>();
                holds.addAll(holdService.heldBy(rmFolder, true));
                assertTrue(holds.isEmpty());
                holds.clear();

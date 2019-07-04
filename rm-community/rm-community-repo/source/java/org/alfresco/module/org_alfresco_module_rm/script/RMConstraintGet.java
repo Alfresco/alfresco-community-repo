@@ -57,7 +57,7 @@ public class RMConstraintGet extends DeclarativeWebScript
         List<String> values = caveatConfigService.getRMAllowedValues(constraintName);
         
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("allowedValuesForCurrentUser", values);
         model.put("constraintName", extensionPath);
 

@@ -63,7 +63,7 @@ public class RmActionDefinitionsGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         List<RecordsManagementAction> actions = recordsManagementActionService.getRecordsManagementActions();
-        Set<ActionDefinition> defs = new HashSet<ActionDefinition>(actions.size());
+        Set<ActionDefinition> defs = new HashSet<>(actions.size());
         for (RecordsManagementAction action : actions)
         {
             if (action.isPublicAction())
@@ -72,7 +72,7 @@ public class RmActionDefinitionsGet extends DeclarativeWebScript
             }
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("actiondefinitions", defs);
 
         return model;

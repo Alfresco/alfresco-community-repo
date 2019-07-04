@@ -55,7 +55,7 @@ public class RM981SystemTest extends TestCase
     {
         ExecutorService pool = Executors.newFixedThreadPool(2);
         SecureRandom rnd = new SecureRandom();
-        List<String> data = new ArrayList<String>();
+        List<String> data = new ArrayList<>();
         for (int i = 0; i < 100; i++) 
         {
             String definitionname = "test_" + i + "_" + rnd.nextInt(Integer.MAX_VALUE);

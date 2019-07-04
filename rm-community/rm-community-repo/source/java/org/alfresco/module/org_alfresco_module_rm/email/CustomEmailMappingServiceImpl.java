@@ -166,7 +166,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
             }
             else
             {
-                customMappings = new HashSet<CustomMapping>();
+                customMappings = new HashSet<>();
 
                 // load the contents of the extractors property file
                 Map<String, Set<QName>> currentMapping = extracter.getCurrentMapping();
@@ -293,14 +293,14 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     private void updateExtractor()
     {
         // convert the mapping information into the form understood by the extractor
-        Map<String, Set<QName>> newMapping = new HashMap<String, Set<QName>>(17);
+        Map<String, Set<QName>> newMapping = new HashMap<>(17);
         for(CustomMapping mapping : getCustomMappings())
         {
             QName newQName = QName.createQName(mapping.getTo(), nspr);
             Set<QName> values = newMapping.get(mapping.getFrom());
             if(values == null)
             {
-                values = new HashSet<QName>();
+                values = new HashSet<>();
                 newMapping.put(mapping.getFrom(), values);
             }
             values.add(newQName);
@@ -317,7 +317,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     private Set<CustomMapping> loadConfig()
     {
-        Set<CustomMapping> result = new HashSet<CustomMapping>();
+        Set<CustomMapping> result = new HashSet<>();
         ContentReader cr = contentService.getReader(CONFIG_NODE_REF, ContentModel.PROP_CONTENT);
         if (cr != null)
         {
@@ -353,7 +353,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
         if (!nodeService.exists(CONFIG_NODE_REF))
         {
             // create the config node
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>(2);
+            Map<QName, Serializable> properties = new HashMap<>(2);
             properties.put(ContentModel.PROP_NAME, CONFIG_NAME);
             properties.put(ContentModel.PROP_NODE_UUID, CONFIG_NODE_REF.getId());
             nodeService.createNode(
@@ -463,7 +463,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
      */
     private Set<CustomMapping> readOldConfig(NodeRef nodeRef)
     {
-        Set<CustomMapping> newMappings = new HashSet<CustomMapping>();
+        Set<CustomMapping> newMappings = new HashSet<>();
 
         ContentReader cr = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
         if (cr != null)

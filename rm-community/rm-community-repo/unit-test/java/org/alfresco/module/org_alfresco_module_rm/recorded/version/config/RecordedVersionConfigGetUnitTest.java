@@ -111,7 +111,7 @@ public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigT
         assertNotNull(recordableVersions);
         assertEquals(recordableVersions.length(), 3);
 
-        List<RecordableVersionPolicy> policies = new ArrayList<RecordableVersionPolicy>();
+        List<RecordableVersionPolicy> policies = new ArrayList<>();
         boolean isSelected = false;
         int selectedOnce = 0;
         for (int i = 0; i < recordableVersions.length(); i++)

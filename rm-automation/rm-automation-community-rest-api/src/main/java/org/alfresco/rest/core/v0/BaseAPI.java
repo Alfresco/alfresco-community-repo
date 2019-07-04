@@ -89,7 +89,7 @@ public abstract class BaseAPI
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     @Autowired
-    private ContentService contentService;
+    protected ContentService contentService;
 
     public static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "/Sites/rm/documentLibrary";

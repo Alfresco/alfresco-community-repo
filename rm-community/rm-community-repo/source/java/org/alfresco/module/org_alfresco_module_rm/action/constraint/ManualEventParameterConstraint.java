@@ -59,7 +59,7 @@ public class ManualEventParameterConstraint extends BaseParameterConstraint
     protected Map<String, String> getAllowableValuesImpl()
     {   
         List<RecordsManagementEvent> events = recordsManagementEventService.getEvents();
-        Map<String, String> result = new HashMap<String, String>(events.size());
+        Map<String, String> result = new HashMap<>(events.size());
         for (RecordsManagementEvent event : events)
         {
             RecordsManagementEventType eventType = recordsManagementEventService.getEventType(event.getType());

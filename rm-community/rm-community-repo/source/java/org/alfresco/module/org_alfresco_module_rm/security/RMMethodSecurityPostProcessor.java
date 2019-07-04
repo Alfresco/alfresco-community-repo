@@ -121,7 +121,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     {
         if (securityBeanNameCache == null)
         {
-            securityBeanNameCache = new HashSet<String>(21);
+            securityBeanNameCache = new HashSet<>(21);
             if (securityBeanNames != null)
             {
                 securityBeanNameCache.addAll(securityBeanNames);
@@ -183,7 +183,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     private Map<String, String> convertToMap(String stringValue)
     {
         String[] values = stringValue.trim().split("\n");
-        Map<String, String> map = new HashMap<String, String>(values.length);
+        Map<String, String> map = new HashMap<>(values.length);
         for (String value : values)
         {
             String[] pair = value.trim().split("=");

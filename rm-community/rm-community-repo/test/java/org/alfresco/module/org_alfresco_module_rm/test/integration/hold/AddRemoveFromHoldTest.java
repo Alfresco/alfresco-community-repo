@@ -112,7 +112,7 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<NodeRef>(RECORD_COUNT);
+            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             
             public void given()
             {   
@@ -183,7 +183,7 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<NodeRef>(RECORD_COUNT);
+            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             
             public void given()
             {   
@@ -250,7 +250,7 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<NodeRef>(RECORD_COUNT);
+            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             
             public void given()
             {   
@@ -315,7 +315,7 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<NodeRef>(RECORD_COUNT);
+            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             
             public void given()
             {   
@@ -372,7 +372,7 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<NodeRef>(RECORD_COUNT);
+            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             
             public void given()
             {   

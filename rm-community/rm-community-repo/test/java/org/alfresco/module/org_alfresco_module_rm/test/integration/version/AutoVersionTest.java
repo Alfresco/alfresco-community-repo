@@ -105,7 +105,7 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> props = new HashMap<>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
                 nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }
@@ -148,7 +148,7 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> props = new HashMap<>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
                 nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }
@@ -202,7 +202,7 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
                 // make versionable
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> props = new HashMap<>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, true);
                 nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }

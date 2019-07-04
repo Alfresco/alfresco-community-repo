@@ -123,9 +123,9 @@ public class UserRightsReportGet extends DeclarativeWebScript
         }
 
         // construct all the maps etc. needed to build the model
-        Map<String, UserModel> usersMap = new HashMap<String, UserModel>(8);
-        Map<String, RoleModel> rolesMap = new HashMap<String, RoleModel>(8);
-        Map<String, GroupModel> groupsMap = new HashMap<String, GroupModel>(8);
+        Map<String, UserModel> usersMap = new HashMap<>(8);
+        Map<String, RoleModel> rolesMap = new HashMap<>(8);
+        Map<String, GroupModel> groupsMap = new HashMap<>(8);
 
         // iterate over all the roles for the file plan and construct models
         Set<Role> roles = filePlanRoleService.getRoles(filePlanNode);
@@ -198,13 +198,13 @@ public class UserRightsReportGet extends DeclarativeWebScript
         }
 
         // add all the lists data to a Map
-        Map<String, Object> reportModel = new HashMap<String, Object>(4);
+        Map<String, Object> reportModel = new HashMap<>(4);
         reportModel.put("users", usersMap);
         reportModel.put("roles", rolesMap);
         reportModel.put("groups", groupsMap);
 
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("report", reportModel);
         return model;
     }
@@ -216,8 +216,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
      */
     public class RoleModel extends Role
     {
-        private Set<String> users = new HashSet<String>(8);
-        private Set<String> groups = new HashSet<String>(8);
+        private Set<String> users = new HashSet<>(8);
+        private Set<String> groups = new HashSet<>(8);
 
         public RoleModel(Role role)
         {
@@ -273,8 +273,8 @@ public class UserRightsReportGet extends DeclarativeWebScript
             this.userName = userName;
             this.firstName = firstName;
             this.lastName = lastName;
-            this.roles = new HashSet<String>(2);
-            this.groups = new HashSet<String>(2);
+            this.roles = new HashSet<>(2);
+            this.groups = new HashSet<>(2);
         }
 
         public String getUserName()
@@ -328,7 +328,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
         {
             this.name = name;
             this.label = label;
-            this.users = new HashSet<String>(4);
+            this.users = new HashSet<>(4);
         }
 
         public String getName()

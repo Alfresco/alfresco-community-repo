@@ -81,7 +81,7 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmContributor)
         {
-            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(4);
+            Map<String, Serializable> versionProperties = new HashMap<>(4);
             Version recordedVersion;
 
             @Override

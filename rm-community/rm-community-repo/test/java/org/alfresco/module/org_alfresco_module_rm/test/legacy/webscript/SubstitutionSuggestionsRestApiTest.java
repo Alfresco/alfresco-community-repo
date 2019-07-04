@@ -73,7 +73,7 @@ public class SubstitutionSuggestionsRestApiTest extends BaseRMWebScriptTestCase
 
         // Get the list of rm action definitions from the response and check it
         List<String> substitutionDefinitions = getSubstitutionDefinitions();
-        List<String> rmSubstitutionDefinitions = new ArrayList<String>();
+        List<String> rmSubstitutionDefinitions = new ArrayList<>();
         for (int i = 0; i < data.length(); i++)
         {
             String value = data.getString(i);

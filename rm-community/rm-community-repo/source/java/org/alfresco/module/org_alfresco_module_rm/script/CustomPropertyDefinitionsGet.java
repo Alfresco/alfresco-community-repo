@@ -73,7 +73,7 @@ public class CustomPropertyDefinitionsGet extends BaseCustomPropertyWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String propId = templateVars.get(PROP_ID);
@@ -90,7 +90,7 @@ public class CustomPropertyDefinitionsGet extends BaseCustomPropertyWebScript
         
         // If propId has been provided then this is a request for a single custom-property-defn.
         // else it is a request for all defined on the specified element.
-        List<PropertyDefinition> propData = new ArrayList<PropertyDefinition>();
+        List<PropertyDefinition> propData = new ArrayList<>();
         if (propId != null)
         {
             QName propQName = rmAdminService.getQNameForClientId(propId);

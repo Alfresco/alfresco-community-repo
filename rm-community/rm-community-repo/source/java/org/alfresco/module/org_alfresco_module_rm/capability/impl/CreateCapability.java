@@ -124,7 +124,7 @@ public class CreateCapability extends DeclarativeCapability
             }
 
             // Build the conditions map
-            Map<String, Boolean> conditions = new HashMap<String, Boolean>(5);
+            Map<String, Boolean> conditions = new HashMap<>(5);
             conditions.put("capabilityCondition.filling", Boolean.TRUE);
             conditions.put("capabilityCondition.frozen", Boolean.FALSE);
             conditions.put("capabilityCondition.closed", Boolean.FALSE);

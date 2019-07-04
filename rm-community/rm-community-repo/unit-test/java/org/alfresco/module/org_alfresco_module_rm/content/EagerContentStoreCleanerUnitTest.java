@@ -57,7 +57,7 @@ public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
     @InjectMocks private EagerContentStoreCleaner eagerContentStoreCleaner = new EagerContentStoreCleaner()
     {
         /** dummy implementation */
-        public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {return true;};
+        public boolean registerOrphanedContentUrl(String contentUrl, boolean force) {return true;}
     };
     
     @Mock private ContentCleanser mockedContentCleanser;
@@ -89,7 +89,7 @@ public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
     public void contentRequiresCleaning()
     {
         String contentURL = AlfMock.generateText();
-        Set<Object> mockedSet = new HashSet<Object>(Arrays.asList(contentURL));
+        Set<Object> mockedSet = new HashSet<>(Arrays.asList(contentURL));
         when(mockedTransactionalResourceHelper.getSet(EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
             .thenReturn(mockedSet);
         
@@ -119,7 +119,7 @@ public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
     public void contentDoesntRequireCleaning()
     {
         String contentURL = AlfMock.generateText();
-        Set<Object> mockedSet = new HashSet<Object>(Arrays.asList(contentURL));
+        Set<Object> mockedSet = new HashSet<>(Arrays.asList(contentURL));
         when(mockedTransactionalResourceHelper.getSet(EagerContentStoreCleaner.KEY_POST_COMMIT_CLEANSING_URLS))
             .thenReturn(mockedSet);
         

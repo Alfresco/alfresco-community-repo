@@ -704,7 +704,6 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                              AccessStatus.DENIED,   // view record capability 
                              AccessStatus.DENIED,   // edit non record metadata capability
                              AccessStatus.DENIED));  // edit record metadata capability                      
-        ;
     }
     
     /**
@@ -772,7 +771,6 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                              AccessStatus.DENIED,   // view record capability 
                              AccessStatus.DENIED,   // edit non record metadata capability
                              AccessStatus.DENIED));  // edit record metadata capability                      
-        ;
     }
     
     /**
@@ -902,7 +900,6 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                             AccessStatus.DENIED,   // view record capability 
                             AccessStatus.DENIED,   // edit non record metadata capability
                             AccessStatus.DENIED));  // edit record metadata capability 
-        ;        
     }
     
     /**
@@ -932,7 +929,6 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                     .expect(3)
                         .from(() -> authorityService.getContainedAuthorities(null, "GROUP_INPLACE_RECORD_MANAGEMENT", true).size())
                         .because("The read and write groups are reused.");
-        ;                
     }
     
     /**

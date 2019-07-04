@@ -75,7 +75,7 @@ public class EmailMapDelete extends DeclarativeWebScript
             customEmailMappingService.deleteCustomMapping(json.getString("from"), json.getString("to"));
 
             // Create model object with the lists of custom mappings
-            Map<String, Object> model = new HashMap<String, Object>(1);
+            Map<String, Object> model = new HashMap<>(1);
             model.put("emailmap", customEmailMappingService.getCustomMappings());
 
             return model;

@@ -109,7 +109,7 @@ public class DestroyContentTest extends BaseRMTestCase
                             true);
                 destroyableFolder = recordFolderService.createRecordFolder(recordCategoryFolderLevel, GUID.generate());
 
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> props = new HashMap<>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
                 InputStream is = DestroyContentTest.class.getResourceAsStream("/alfresco/test/content/Image.jpg");
 

@@ -73,10 +73,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     private FilePlanService filePlanService;
 
     /** Map of protected properties keyed by name */
-    private Map<QName, ProtectedProperty> protectedProperties = new HashMap<QName, ProtectedProperty>(21);
+    private Map<QName, ProtectedProperty> protectedProperties = new HashMap<>(21);
 
     /** Map of protected aspects keyed by name */
-    private Map<QName, ProtectedAspect> protectedAspects= new HashMap<QName, ProtectedAspect>(21);
+    private Map<QName, ProtectedAspect> protectedAspects= new HashMap<>(21);
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#setEnabled(boolean)

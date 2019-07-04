@@ -57,6 +57,6 @@ public class RmAuthoritiesPost extends AbstractRmAuthorities
 
         filePlanRoleService.assignRoleToAuthority(filePlan, roleId, authorityName);
 
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 }

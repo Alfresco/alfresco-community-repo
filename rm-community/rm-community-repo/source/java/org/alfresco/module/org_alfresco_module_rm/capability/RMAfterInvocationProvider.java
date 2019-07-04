@@ -566,7 +566,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config, QueryEngineResults returnedObject)
     {
         Map<Set<String>, ResultSet> map = returnedObject.getResults();
-        Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
+        Map<Set<String>, ResultSet> answer = new HashMap<>(map.size(), 1.0f);
 
         for (Map.Entry<Set<String>, ResultSet> entry : map.entrySet())
         {
@@ -630,7 +630,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         int count = 0;
 
         // Keep values explicitly
-        List<Object> keepValues = new ArrayList<Object>(returnedObject.size());
+        List<Object> keepValues = new ArrayList<>(returnedObject.size());
 
         for (Object nextObject : returnedObject)
         {

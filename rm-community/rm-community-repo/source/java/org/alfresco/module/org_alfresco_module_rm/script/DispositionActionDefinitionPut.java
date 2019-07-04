@@ -86,7 +86,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         }
 
         // create model object with just the action data
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("action", createActionDefModel(actionDef, req.getURL()));
         return model;
     }
@@ -102,7 +102,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
               JSONObject json) throws JSONException
     {
         // create the properties for the action definition
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(8);
+        Map<QName, Serializable> props = new HashMap<>(8);
 
         if (json.has("name"))
         {
@@ -146,7 +146,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         if (json.has("events"))
         {
             JSONArray events = json.getJSONArray("events");
-            List<String> eventsList = new ArrayList<String>(events.length());
+            List<String> eventsList = new ArrayList<>(events.length());
             for (int x = 0; x < events.length(); x++)
             {
                 eventsList.add(events.getString(x));

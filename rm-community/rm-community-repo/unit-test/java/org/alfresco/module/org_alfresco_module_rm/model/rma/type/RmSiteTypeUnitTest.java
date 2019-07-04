@@ -104,7 +104,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddOneFolderTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
@@ -126,7 +126,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddTwoFolderTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
@@ -155,12 +155,12 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddMoreThanTwhoFolderTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(new ArrayList<ChildAssociationRef>());
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(new ArrayList<>());
 
         //create first folder
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
@@ -192,7 +192,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddOneFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
@@ -231,7 +231,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddMoreThanOneFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
@@ -260,7 +260,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddOneDODFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteInfo.getNodeRef()).thenReturn(rmSiteNodeRef);
@@ -287,7 +287,7 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     public void testAddMoreThanOneDODFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
-        ArrayList<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>();
+        ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteInfo.getNodeRef()).thenReturn(rmSiteNodeRef);

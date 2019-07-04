@@ -89,10 +89,10 @@ public class CustomisableGet extends DeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         Set<QName> qnames = rmAdminService.getCustomisable();
-        ArrayList<Item> items = new ArrayList<Item>(qnames.size());
+        ArrayList<Item> items = new ArrayList<>(qnames.size());
         for (QName qname : qnames)
         {
             ClassDefinition definition = dictionaryService.getClass(qname);

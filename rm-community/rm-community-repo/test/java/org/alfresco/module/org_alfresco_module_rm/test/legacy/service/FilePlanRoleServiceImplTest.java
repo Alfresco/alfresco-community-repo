@@ -150,7 +150,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
             {
                 assertFalse(filePlanRoleService.existsRole(filePlan, "Michelle Holt"));
 
-                Set<Capability> caps = new HashSet<Capability>(2);
+                Set<Capability> caps = new HashSet<>(2);
                 caps.add(capabilityService.getCapability(RMPermissionModel.ACCESS_AUDIT));
                 caps.add(capabilityService.getCapability(RMPermissionModel.ADD_MODIFY_EVENT_DATES));
 

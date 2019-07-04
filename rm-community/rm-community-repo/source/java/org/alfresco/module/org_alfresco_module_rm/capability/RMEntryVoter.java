@@ -80,7 +80,7 @@ public class RMEntryVoter extends RMSecurityCommon
     private AuthenticationUtil authenticationUtil;
 
     /** Policy map */
-    private Map<String, Policy> policies = new HashMap<String, Policy>();
+    private Map<String, Policy> policies = new HashMap<>();
 
     /**
      * @param capabilityService     capability service
@@ -404,7 +404,7 @@ public class RMEntryVoter extends RMSecurityCommon
     @SuppressWarnings("rawtypes")
 	private List<ConfigAttributeDefinition> extractSupportedDefinitions(net.sf.acegisecurity.ConfigAttributeDefinition config)
     {
-        List<ConfigAttributeDefinition> definitions = new ArrayList<ConfigAttributeDefinition>(2);
+        List<ConfigAttributeDefinition> definitions = new ArrayList<>(2);
         Iterator iter = config.getConfigAttributes();
 
         while (iter.hasNext())

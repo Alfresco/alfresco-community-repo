@@ -150,7 +150,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             listName = sb.toString();
         }
 
-        List<String>allowedValues = new ArrayList<String>();
+        List<String>allowedValues = new ArrayList<>();
         for(String value : values)
         {
             allowedValues.add(value);
@@ -262,9 +262,9 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
      */
     public Set<RMConstraintInfo> getAllRMConstraints()
     {
-        Set<RMConstraintInfo> info = new HashSet<RMConstraintInfo>();
+        Set<RMConstraintInfo> info = new HashSet<>();
 
-        List<ConstraintDefinition> defs = new ArrayList<ConstraintDefinition>(10);
+        List<ConstraintDefinition> defs = new ArrayList<>(10);
         for (QName caveatModelQName : rmCaveatConfigComponent.getRMCaveatModels())
         {
             defs.addAll(recordsManagementAdminService.getCustomConstraintDefinitions(caveatModelQName));
@@ -358,7 +358,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
         if(allowedValues != null)
         {
-            List<String>allowedValueList = new ArrayList<String>();
+            List<String>allowedValueList = new ArrayList<>();
             for(String value : allowedValues)
             {
                 allowedValueList.add(value);

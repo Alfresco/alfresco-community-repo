@@ -251,7 +251,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
      */
     protected Map<String, Serializable> createTemplateModel(NodeRef templateNodeRef, NodeRef reportedUponNodeRef, Map<String, Serializable> properties)
     {
-        Map<String, Serializable> model = new HashMap<String, Serializable>();
+        Map<String, Serializable> model = new HashMap<>();
 
         // build the default model
         NodeRef person = repository.getPerson();

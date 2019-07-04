@@ -172,7 +172,7 @@ public class RM2190Test extends BaseRMTestCase
 
     private List<NodeRef> addFilesToFolder(final NodeRef folder)
     {
-        List<NodeRef> records = new ArrayList<NodeRef>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
+        List<NodeRef> records = new ArrayList<>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
 
         for (int i = 0; i < NUMBER_OF_BATCHES; i++)
         {
@@ -182,7 +182,7 @@ public class RM2190Test extends BaseRMTestCase
                 @Override
                 public List<NodeRef> run() throws Exception
                 {
-                    List<NodeRef> files = new ArrayList<NodeRef>(NUMBER_IN_BATCH);
+                    List<NodeRef> files = new ArrayList<>(NUMBER_IN_BATCH);
                     for (int j = 0; j < NUMBER_IN_BATCH; j++)
                     {
                         int count = (finali+1)*(j+1);

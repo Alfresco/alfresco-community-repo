@@ -83,7 +83,7 @@ public abstract class BaseTransferWebScript extends StreamACP
             // construct model for template
             Status status = new Status();
             Cache cache = new Cache(getDescription().getRequiredCache());
-            Map<String, Object> model = new HashMap<String, Object>();
+            Map<String, Object> model = new HashMap<>();
             model.put("status", status);
             model.put("cache", cache);
 

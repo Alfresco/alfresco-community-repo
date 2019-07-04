@@ -77,7 +77,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(13);
+        Map<String, Object> model = new HashMap<>(13);
 
         // Get the site id and confirm it is valid
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
@@ -93,7 +93,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
 
         // Get the saved search details
         List<SavedSearchDetails> details = recordsManagementSearchService.getSavedSearches(siteId);
-        List<Item> items  = new ArrayList<Item>();
+        List<Item> items  = new ArrayList<>();
         for (SavedSearchDetails savedSearchDetails : details)
         {
             String name = savedSearchDetails.getName();

@@ -226,7 +226,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
                     if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                     {
-                        Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                        Map<String, Serializable> props = new HashMap<>(1);
                         props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK,
                                     Boolean.FALSE);
 

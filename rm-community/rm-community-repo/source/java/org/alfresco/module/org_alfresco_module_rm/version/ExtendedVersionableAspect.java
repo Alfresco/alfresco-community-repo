@@ -174,7 +174,7 @@ public class ExtendedVersionableAspect implements NodeServicePolicies.OnSetNodeT
                 if (autoVersion)
                 {
                     // Create the auto-version
-                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
+                    Map<String, Serializable> versionProperties = new HashMap<>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
                     
                     createVersionImpl(nodeRef, versionProperties);
@@ -215,7 +215,7 @@ public class ExtendedVersionableAspect implements NodeServicePolicies.OnSetNodeT
         Map<NodeRef, NodeRef> versionedNodeRefs = (Map<NodeRef, NodeRef>)alfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
         if (versionedNodeRefs == null)
         {
-            versionedNodeRefs = new HashMap<NodeRef, NodeRef>();
+            versionedNodeRefs = new HashMap<>();
             alfrescoTransactionSupport.bindResource(KEY_VERSIONED_NODEREFS, versionedNodeRefs);
         }
         versionedNodeRefs.put(versionableNode, versionableNode);

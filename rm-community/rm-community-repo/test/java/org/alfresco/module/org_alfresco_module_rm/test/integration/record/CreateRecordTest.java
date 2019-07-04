@@ -64,7 +64,7 @@ public class CreateRecordTest extends BaseRMTestCase
             public void given()
             {
                 // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -118,7 +118,7 @@ public class CreateRecordTest extends BaseRMTestCase
             public void given()
             {
                 // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -177,7 +177,7 @@ public class CreateRecordTest extends BaseRMTestCase
             public void given()
             {
                 // create a role with view and create capabilities
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -234,7 +234,7 @@ public class CreateRecordTest extends BaseRMTestCase
             public void given()
             {
                 // create a role with view and create capabilities
-                Set<Capability> capabilities = new HashSet<Capability>(2);
+                Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);

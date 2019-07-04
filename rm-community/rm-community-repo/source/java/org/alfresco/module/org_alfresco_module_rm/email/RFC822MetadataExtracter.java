@@ -79,7 +79,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
         if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
         {
             // Remove all rm namespace properties from the system map
-            Map<QName, Serializable> clone = new HashMap<QName, Serializable>(systemProperties);
+            Map<QName, Serializable> clone = new HashMap<>(systemProperties);
             for (QName propName : clone.keySet())
             {
                 if (RecordsManagementModel.RM_URI.equals(propName.getNamespaceURI()))

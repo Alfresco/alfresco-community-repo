@@ -253,7 +253,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
-        List<NodeRef> holds = new ArrayList<NodeRef>();
+        List<NodeRef> holds = new ArrayList<>();
 
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
@@ -305,11 +305,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
             // invert list to get list of holds that do not contain this node
             NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
             List<NodeRef> allHolds = getHolds(filePlan);
-            result = ListUtils.subtract(allHolds, new ArrayList<NodeRef>(holdsNotIncludingNodeRef));
+            result = ListUtils.subtract(allHolds, new ArrayList<>(holdsNotIncludingNodeRef));
         }
         else
         {
-            result = new ArrayList<NodeRef>(holdsNotIncludingNodeRef);
+            result = new ArrayList<>(holdsNotIncludingNodeRef);
         }
 
         return result;
@@ -324,7 +324,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     private Set<NodeRef> getParentHolds(NodeRef nodeRef)
     {
         List<ChildAssociationRef> holdsAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-        Set<NodeRef> holds = new HashSet<NodeRef>(holdsAssocs.size());
+        Set<NodeRef> holds = new HashSet<>(holdsAssocs.size());
         for (ChildAssociationRef holdAssoc : holdsAssocs)
         {
             holds.add(holdAssoc.getParentRef());
@@ -362,7 +362,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public List<NodeRef> getHeld(NodeRef hold)
     {
         ParameterCheck.mandatory("hold", hold);
-        List<NodeRef> children = new ArrayList<NodeRef>();
+        List<NodeRef> children = new ArrayList<>();
 
         if (!isHold(hold))
         {
@@ -395,7 +395,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
         // create map of properties
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> properties = new HashMap<>(3);
         properties.put(ContentModel.PROP_NAME, name);
         properties.put(PROP_HOLD_REASON, reason);
         if (description != null && !description.isEmpty())
@@ -468,7 +468,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
         });
 
-        List<String> heldNames = new ArrayList<String>();
+        List<String> heldNames = new ArrayList<>();
         for (NodeRef nodeRef : held)
         {
             try
@@ -510,7 +510,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        List<NodeRef> holds = new ArrayList<NodeRef>(1);
+        List<NodeRef> holds = new ArrayList<>(1);
         holds.add(hold);
         addToHolds(Collections.unmodifiableList(holds), nodeRef);
     }
@@ -576,7 +576,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     public Void doWork()
                     {
                         // gather freeze properties
-                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                        Map<QName, Serializable> props = new HashMap<>(2);
                         props.put(PROP_FROZEN_AT, new Date());
                         props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
 
@@ -651,7 +651,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        List<NodeRef> holds = new ArrayList<NodeRef>(1);
+        List<NodeRef> holds = new ArrayList<>(1);
         holds.add(hold);
         removeFromHolds(Collections.unmodifiableList(holds), nodeRef);
     }

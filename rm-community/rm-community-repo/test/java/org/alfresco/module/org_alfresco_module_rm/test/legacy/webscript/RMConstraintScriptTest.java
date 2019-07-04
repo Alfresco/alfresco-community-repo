@@ -73,7 +73,7 @@ public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
         createUser("jdoe");
 
 
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("NOFORN");
         values.add("FGI");
         caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "fbloggs", values);

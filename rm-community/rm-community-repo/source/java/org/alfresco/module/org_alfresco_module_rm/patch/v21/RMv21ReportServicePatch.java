@@ -127,7 +127,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
 
     private NodeRef createNode(NodeRef parent, QName type, String id, String name, String assocName,  String title, String description)
     {
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
+        Map<QName, Serializable> props = new HashMap<>(4);
         props.put(ContentModel.PROP_DESCRIPTION, description);
         props.put(ContentModel.PROP_TITLE, title);
         props.put(ContentModel.PROP_NAME, name);

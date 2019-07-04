@@ -66,7 +66,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
     private ContentService contentService;
 
     /** Registered event types */
-    private Map<String, RecordsManagementEventType> eventTypes = new HashMap<String, RecordsManagementEventType>(7);
+    private Map<String, RecordsManagementEventType> eventTypes = new HashMap<>(7);
 
     /** Available events */
     private Map<String, RecordsManagementEvent> events;
@@ -104,7 +104,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      */
     public List<RecordsManagementEventType> getEventTypes()
     {
-        return new ArrayList<RecordsManagementEventType>(this.eventTypes.values());
+        return new ArrayList<>(this.eventTypes.values());
     }
 
     /**
@@ -112,7 +112,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
      */
     public List<RecordsManagementEvent> getEvents()
     {
-        return new ArrayList<RecordsManagementEvent>(this.getEventMap().values());
+        return new ArrayList<>(this.getEventMap().values());
     }
 
     /**
@@ -300,7 +300,7 @@ public class RecordsManagementEventServiceImpl implements RecordsManagementEvent
                 JSONObject configJSON = new JSONObject(jsonString);
                 JSONArray eventsJSON = configJSON.getJSONArray("events");
 
-                events = new HashMap<String, RecordsManagementEvent>(eventsJSON.length());
+                events = new HashMap<>(eventsJSON.length());
 
                 for (int i = 0; i < eventsJSON.length(); i++)
                 {

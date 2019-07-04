@@ -193,7 +193,7 @@ public class RecordsManagementSearchParameters
             if (jsonObject.has(JSON_CONTAINERTYPES))
             {
                 JSONArray jsonArray = jsonObject.getJSONArray(JSON_CONTAINERTYPES);
-                List<QName> containerTypes = new ArrayList<QName>(jsonArray.length());
+                List<QName> containerTypes = new ArrayList<>(jsonArray.length());
                 for (int i = 0; i < jsonArray.length(); i++)
                 {
                     String type = jsonArray.getString(i);
@@ -206,7 +206,7 @@ public class RecordsManagementSearchParameters
             if (jsonObject.has(JSON_SORT))
             {
                 JSONArray jsonArray = jsonObject.getJSONArray(JSON_SORT);
-                List<SortItem> sortOrder = new ArrayList<SortItem>(jsonArray.length());
+                List<SortItem> sortOrder = new ArrayList<>(jsonArray.length());
                 for (int i = 0; i < jsonArray.length(); i++)
                 {
                     JSONObject sortJSONObject = jsonArray.getJSONObject(i);

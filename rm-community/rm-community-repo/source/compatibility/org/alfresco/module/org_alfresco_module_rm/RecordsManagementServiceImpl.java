@@ -248,7 +248,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     @Override
     public List<NodeRef> getFilePlans()
     {
-        return new ArrayList<NodeRef>(getFilePlanService().getFilePlans());
+        return new ArrayList<>(getFilePlanService().getFilePlans());
     }
 
     /**

@@ -204,7 +204,7 @@ public class DataLoadSystemTest
                    Assert.fail("The default RM site is not present.");
                }
 
-               groups = new ArrayList<String>();
+               groups = new ArrayList<>();
 
                repeatInTransactionBatches(new RunAsWork<Void>()
                {
@@ -251,7 +251,7 @@ public class DataLoadSystemTest
               }
 
               // create root categories
-              recordCategories = new ArrayList<NodeRef>(ROOT_CATEGORY_COUNT);
+              recordCategories = new ArrayList<>(ROOT_CATEGORY_COUNT);
               repeatInTransactionBatches(new RunAsWork<Void>()
               {
                  public Void doWork() throws Exception
@@ -262,7 +262,7 @@ public class DataLoadSystemTest
               }, ROOT_CATEGORY_COUNT);
 
               // create record folders
-              recordFolders = new ArrayList<NodeRef>(RECORD_FOLDER_COUNT);
+              recordFolders = new ArrayList<>(RECORD_FOLDER_COUNT);
               for (final NodeRef recordCategory : recordCategories)
               {
                   repeatInTransactionBatches(new RunAsWork<Void>()
@@ -300,7 +300,7 @@ public class DataLoadSystemTest
         {
             authenticationService.createAuthentication(userName, "password".toCharArray());
         }
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         return personService.createPerson(properties);
     }

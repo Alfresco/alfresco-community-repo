@@ -61,7 +61,7 @@ public class EmailMapKeysGet extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // Create model object with the lists of email mapping keys
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("emailmapkeys", customEmailMappingService.getEmailMappingKeys());
         return model;
     }

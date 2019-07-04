@@ -65,7 +65,7 @@ public class ExtendedWriterDynamicAuthority extends ExtendedSecurityBaseDynamicA
     {
     	if (requiredFor == null)
     	{
-    		requiredFor = new HashSet<PermissionReference>(3);
+    		requiredFor = new HashSet<>(3);
     		Collections.addAll(requiredFor, 
     						   getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS),
     				           getModelDAO().getPermissionReference(null, RMPermissionModel.FILING), 

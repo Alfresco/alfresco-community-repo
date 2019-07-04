@@ -95,7 +95,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         	}
         	else
         	{
-	            SortedSet<NodeRef> sortedFolders = new TreeSet<NodeRef>(new DispositionableNodeRefComparator());
+	            SortedSet<NodeRef> sortedFolders = new TreeSet<>(new DispositionableNodeRefComparator());
 	            sortedFolders.addAll(recordFolders);
 	            recordFolder = sortedFolders.first();
         	}

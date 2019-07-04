@@ -132,7 +132,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         //MOB-1621. Custom fields should be created as untokenized by default.
         LOGGER.info("MOB-1621. Custom fields should be created as untokenized by default.");
 
-        List<String> allCustomPropertiesAspects = new ArrayList<String>(4);
+        List<String> allCustomPropertiesAspects = new ArrayList<>(4);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_SERIES_PROPERTIES);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_FOLDER_PROPERTIES);
@@ -155,7 +155,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
 
         LOGGER.info("Completed application of webscript-based patches to RM custom model in the repo.");
 
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
+        Map<String, Object> model = new HashMap<>(1, 1.0f);
     	model.put("success", true);
 
         return model;

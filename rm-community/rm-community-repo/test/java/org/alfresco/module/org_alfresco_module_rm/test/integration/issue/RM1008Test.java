@@ -234,20 +234,20 @@ public class RM1008Test extends BaseRMTestCase
             {
                 NodeRef transferCat = filePlanService.createRecordCategory(filePlan, "transferCat");
 
-                Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dsProps = new HashMap<>(3);
                 dsProps.put(PROP_DISPOSITION_AUTHORITY, "test");
                 dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, "test");
                 dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, false);
                 DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(transferCat, dsProps);
 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
                 adParams.put(PROP_DISPOSITION_PERIOD, "immediately|0");
 
                 dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
 
-                adParams = new HashMap<QName, Serializable>(3);
+                adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, "transfer");
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
                 adParams.put(PROP_DISPOSITION_PERIOD, "immediately|0");

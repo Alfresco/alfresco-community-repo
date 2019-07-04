@@ -84,7 +84,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
         List<String> rmAspects = getRmAspects();
 
         // Get the list of rm aspects from the response and check it
-        List<String> rmAspectList = new ArrayList<String>();
+        List<String> rmAspectList = new ArrayList<>();
         for (int i = 0; i < contentAsJson.length(); i++)
         {
             String name = contentAsJson.getJSONObject(i).getString("name");
@@ -109,7 +109,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
         assertNotNull(contentAsJson);
 
         // Get the list of dm aspects from the response and check it
-        List<String> dmAspectList = new ArrayList<String>();
+        List<String> dmAspectList = new ArrayList<>();
         for (int i = 0; i < contentAsJson.length(); i++)
         {
             String name = contentAsJson.getJSONObject(i).getString("name");

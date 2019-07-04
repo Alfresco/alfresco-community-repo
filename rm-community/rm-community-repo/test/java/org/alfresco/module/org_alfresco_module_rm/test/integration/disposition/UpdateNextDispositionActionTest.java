@@ -119,21 +119,21 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
         DispositionSchedule ds = utils.createDispositionSchedule(category, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_DESCRIPTION, true, false, false);
 
         // create the properties for CUTOFF action and add it to the disposition action definition
-        Map<QName, Serializable> cutOff = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> cutOff = new HashMap<>(3);
         cutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         cutOff.put(PROP_DISPOSITION_DESCRIPTION, generate());
         cutOff.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
         dispositionService.addDispositionActionDefinition(ds, cutOff);
 
         // create the properties for TRANSFER action and add it to the disposition action definition
-        Map<QName, Serializable> transfer = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> transfer = new HashMap<>(3);
         transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
         transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
         transfer.put(PROP_DISPOSITION_EVENT, (Serializable)Collections.singletonList(DEFAULT_EVENT_NAME));
         dispositionService.addDispositionActionDefinition(ds, transfer);
 
         // create the properties for DESTROY action and add it to the disposition action definition
-        Map<QName, Serializable> destroy = new HashMap<QName, Serializable>(3);
+        Map<QName, Serializable> destroy = new HashMap<>(3);
         destroy.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
         destroy.put(PROP_DISPOSITION_DESCRIPTION, generate());
         destroy.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);

@@ -138,7 +138,7 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             boolean attach = false;
             String attachFileName = null;
             String export = req.getParameter(PARAM_EXPORT);
-            if (export != null && Boolean.parseBoolean(export))
+            if (Boolean.parseBoolean(export))
             {
                 attach = true;
                 attachFileName = auditTrail.getName();

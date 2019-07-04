@@ -201,7 +201,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         record = generateRecord();
 
         // set record as child of record folder
-        List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(1);
+        List<ChildAssociationRef> result = new ArrayList<>(1);
         result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(RM_URI), record, true, 1));
         doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
@@ -376,7 +376,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
      */
     protected void makeChildrenOf(NodeRef parent, NodeRef ... children)
     {
-        List<ChildAssociationRef> assocs = new ArrayList<ChildAssociationRef>(children.length);
+        List<ChildAssociationRef> assocs = new ArrayList<>(children.length);
         for (NodeRef child : children)
         {
             assocs.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child));
@@ -388,7 +388,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @SuppressWarnings("unchecked")
     protected <T> List<T> buildList(T ... values)
     {
-        List<T> result = new ArrayList<T>(values.length);
+        List<T> result = new ArrayList<>(values.length);
         for (T value : values)
         {
             result.add(value);

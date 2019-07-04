@@ -54,7 +54,7 @@ public class Role extends org.alfresco.module.org_alfresco_module_rm.role.Role
      */
     public static Set<Role> toRoleSet(Set<org.alfresco.module.org_alfresco_module_rm.role.Role> roles)
     {
-        Set<Role> result = new HashSet<Role>(roles.size());
+        Set<Role> result = new HashSet<>(roles.size());
         for (org.alfresco.module.org_alfresco_module_rm.role.Role role : roles)
         {
             result.add(Role.toRole(role));

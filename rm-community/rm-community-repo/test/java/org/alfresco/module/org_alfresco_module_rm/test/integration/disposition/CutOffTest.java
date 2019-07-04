@@ -67,7 +67,7 @@ public class CutOffTest extends BaseRMTestCase
                 // TODO add some records
 
                 // make eligible for cutoff
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
             }
@@ -110,7 +110,7 @@ public class CutOffTest extends BaseRMTestCase
                 // TODO add some records
 
                 // make eligible for cutoff
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
 
@@ -154,7 +154,7 @@ public class CutOffTest extends BaseRMTestCase
                 // TODO add some records
 
                 // make eligible for cutoff
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
             }
@@ -196,7 +196,7 @@ public class CutOffTest extends BaseRMTestCase
                 // TODO add some records
 
                 // make eligible for cutoff
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
             }
@@ -205,7 +205,7 @@ public class CutOffTest extends BaseRMTestCase
             public void when()
             {
                 // complete event
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
                 try
                 {

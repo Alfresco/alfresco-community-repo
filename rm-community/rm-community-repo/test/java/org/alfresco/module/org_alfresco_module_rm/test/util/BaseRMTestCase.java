@@ -555,7 +555,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         // Create folder
         String containerName = "RM2_" + System.currentTimeMillis();
-        Map<QName, Serializable> containerProps = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> containerProps = new HashMap<>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
               rootNodeRef,
@@ -689,7 +689,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             authenticationService.createAuthentication(userName, "password".toCharArray());
         }
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         properties.put(ContentModel.PROP_FIRSTNAME, userName);
         return personService.createPerson(properties);

@@ -88,8 +88,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     @Override
     protected void setUp() throws Exception
     {
-        createdCustomProperties = new ArrayList<QName>();
-        madeCustomisable = new ArrayList<QName>();
+        createdCustomProperties = new ArrayList<>();
+        madeCustomisable = new ArrayList<>();
         super.setUp();
     }
 
@@ -576,7 +576,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         utils.completeRecord(testRecord1);
                         utils.completeRecord(testRecord2);
 
-                        Map <String, Serializable> params = new HashMap<String, Serializable>();
+                        Map <String, Serializable> params = new HashMap<>();
                         params.put("referenceType", refType.toString());
                         if (label != null) params.put("label", label);
                         if (source != null) params.put("source", source);
@@ -599,7 +599,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         RelationshipDefinition relationshipDefinition = relationshipService.createRelationshipDefinition(displayName);
 
                         // Get the qualified name
-                        QName qNameResult = QName.createQName(RM_CUSTOM_PREFIX, relationshipDefinition.getUniqueName(), namespaceService);;
+                        QName qNameResult = QName.createQName(RM_CUSTOM_PREFIX, relationshipDefinition.getUniqueName(), namespaceService);
 
                         System.out.println("Creating new " + refType + " reference definition: " + qNameResult);
                         System.out.println("  params- label: '" + label + "' source: '" + source + "' target: '" + target + "'");
@@ -760,7 +760,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         {
                             NodeRef rec1 = utils.createRecord(rmFolder, "testRecordA" + System.currentTimeMillis());
                             NodeRef rec2 = utils.createRecord(rmFolder, "testRecordB" + System.currentTimeMillis());
-                            Pair<NodeRef, NodeRef> result = new Pair<NodeRef, NodeRef>(rec1, rec2);
+                            Pair<NodeRef, NodeRef> result = new Pair<>(rec1, rec2);
                             return result;
                         }
                     });
@@ -824,7 +824,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 });
 
         final String conTitle = "test title - "+testRunID;
-        final List<String> allowedValues = new ArrayList<String>(3);
+        final List<String> allowedValues = new ArrayList<>(3);
         allowedValues.add("RED");
         allowedValues.add("AMBER");
         allowedValues.add("GREEN");

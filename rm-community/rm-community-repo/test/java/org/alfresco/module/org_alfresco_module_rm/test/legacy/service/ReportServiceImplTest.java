@@ -164,14 +164,14 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             @Override
             public Void run() throws Exception
             {
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, CompleteEventAction.NAME, params);
                 
                 rmActionService.executeRecordsManagementAction(rmFolder, CutOffAction.NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);
                 
-                Map<String, Serializable> fileReportParams = new HashMap<String, Serializable>(2);
+                Map<String, Serializable> fileReportParams = new HashMap<>(2);
                 fileReportParams.put(FileReportAction.REPORT_TYPE, "rmr:destructionReport");
                 fileReportParams.put(FileReportAction.DESTINATION, filePlan.toString());
                 rmActionService.executeRecordsManagementAction(rmFolder, FileReportAction.NAME, fileReportParams);
@@ -188,7 +188,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
             public Void run() throws Exception
             {
                 // Create transfer report for the transfer object
-                Map<String, Serializable> params = new HashMap<String, Serializable>(2);
+                Map<String, Serializable> params = new HashMap<>(2);
                 params.put(FileReportAction.REPORT_TYPE, "rmr:transferReport");
                 params.put(FileReportAction.DESTINATION, filePlan.toString());
                 RecordsManagementActionResult transferReportAction = rmActionService.executeRecordsManagementAction(getTransferObject(), FileReportAction.NAME, params);
@@ -223,7 +223,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
         nodeService.setProperty(recordFolder, PROP_IDENTIFIER, identifier);
 
         // Complete event
-        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        Map<String, Serializable> params = new HashMap<>(1);
         params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
         rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);
 

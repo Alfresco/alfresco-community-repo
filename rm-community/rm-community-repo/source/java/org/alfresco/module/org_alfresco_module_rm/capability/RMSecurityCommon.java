@@ -227,7 +227,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     	int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
     	Map<Pair<String, NodeRef>, Integer> transactionCache = TransactionalResourceHelper.getMap("rm.security.checkRMRead");
-    	Pair<String, NodeRef> key = new Pair<String, NodeRef>(AuthenticationUtil.getRunAsUser(), nodeRef);
+    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), nodeRef);
 
     	if (transactionCache.containsKey(key))
     	{
@@ -282,7 +282,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     private AccessStatus hasViewCapability(NodeRef filePlan)
     {
     	Map<Pair<String, NodeRef>, AccessStatus> transactionCache = TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
-    	Pair<String, NodeRef> key = new Pair<String, NodeRef>(AuthenticationUtil.getRunAsUser(), filePlan);
+    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), filePlan);
 
     	if (transactionCache.containsKey(key))
     	{

@@ -81,7 +81,7 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
         mandatory("nodeRef", nodeRef);
 
         RecordableVersionPolicy[] recordableVersionPolicies = RecordableVersionPolicy.values();
-        List<Version> versions = new ArrayList<Version>(recordableVersionPolicies.length);
+        List<Version> versions = new ArrayList<>(recordableVersionPolicies.length);
 
         for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies)
         {

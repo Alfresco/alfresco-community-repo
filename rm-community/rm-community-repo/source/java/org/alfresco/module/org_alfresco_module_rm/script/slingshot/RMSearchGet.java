@@ -184,7 +184,7 @@ public class RMSearchGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         try
         {
             // Get the site id and confirm it is valid
@@ -230,10 +230,10 @@ public class RMSearchGet extends DeclarativeWebScript
             List<Pair<NodeRef, NodeRef>> results = recordsManagementSearchService.search(siteId, query, searchParameters);
 
             // Reset person data cache
-            personDataCache = new HashMap<String, String>(57);
+            personDataCache = new HashMap<>(57);
 
             // Process the result items
-            List<Item> items = new ArrayList<Item>(results.size());
+            List<Item> items = new ArrayList<>(results.size());
             for (Pair<NodeRef, NodeRef> pair : results)
             {
                 // FIXME: See RM-478
@@ -359,7 +359,7 @@ public class RMSearchGet extends DeclarativeWebScript
             this.createdBy = getDisplayName(getCreatedByUser());
 
             // Process the custom properties
-            properties = new HashMap<String, Serializable>(nodeProperties.size());
+            properties = new HashMap<>(nodeProperties.size());
             for (Map.Entry<QName, Serializable> entry : nodeProperties.entrySet())
             {
                 QName qName = entry.getKey().getPrefixedQName(namespaceService);

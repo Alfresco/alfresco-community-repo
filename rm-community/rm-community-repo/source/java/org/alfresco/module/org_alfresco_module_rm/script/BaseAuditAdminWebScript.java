@@ -75,7 +75,7 @@ public class BaseAuditAdminWebScript extends DeclarativeWebScript
      */
     protected Map<String, Object> createAuditStatusModel()
     {
-        Map<String, Object> auditStatus = new HashMap<String, Object>(3);
+        Map<String, Object> auditStatus = new HashMap<>(3);
         
         auditStatus.put("started", ISO8601DateFormat.format(rmAuditService.getDateAuditLogLastStarted(getDefaultFilePlan())));
         auditStatus.put("stopped", ISO8601DateFormat.format(rmAuditService.getDateAuditLogLastStopped(getDefaultFilePlan())));

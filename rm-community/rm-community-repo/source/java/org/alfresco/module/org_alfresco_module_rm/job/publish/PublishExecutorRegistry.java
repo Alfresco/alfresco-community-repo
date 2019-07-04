@@ -38,7 +38,7 @@ import java.util.Map;
 public class PublishExecutorRegistry
 {
     /** Map of publish executors */
-    private Map<String, PublishExecutor> publishExectors = new HashMap<String, PublishExecutor>(3);
+    private Map<String, PublishExecutor> publishExectors = new HashMap<>(3);
     
     /**
      * Register a publish executor

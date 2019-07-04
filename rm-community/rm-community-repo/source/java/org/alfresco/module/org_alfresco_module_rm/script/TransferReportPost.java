@@ -140,7 +140,7 @@ public class TransferReportPost extends BaseTransferWebScript
 
         // retrieve requested format
         String format = req.getFormat();
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put("status", status);
         model.put("cache", cache);
 
@@ -237,7 +237,7 @@ public class TransferReportPost extends BaseTransferWebScript
 
         // create the writer
         try (FileOutputStream fileOutputStream = new FileOutputStream(report) ;
-            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"));)
+            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8")))
         {
             // get all 'transferred' nodes
             NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
@@ -433,7 +433,7 @@ public class TransferReportPost extends BaseTransferWebScript
 
         NodeRef record = null;
 
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> properties = new HashMap<>(1);
         properties.put(ContentModel.PROP_NAME, report.getName());
 
         // file the transfer report as an undeclared record

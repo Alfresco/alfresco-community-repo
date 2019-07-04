@@ -130,13 +130,13 @@ public class RM4163Test extends BaseRMTestCase
         });
 
         //create 4 documents in documentLibrary
-        List<NodeRef> documents = new ArrayList<NodeRef>(4);
+        List<NodeRef> documents = new ArrayList<>(4);
         documents.addAll(doTestInTransaction(new Test<List<NodeRef>>()
         {
             @Override
             public List<NodeRef> run() throws Exception
             {
-                List<NodeRef> documents = new ArrayList<NodeRef>(4);
+                List<NodeRef> documents = new ArrayList<>(4);
                 NodeRef document = createFile(documentLibrary, "document1.txt", "desc1", ContentModel.TYPE_CONTENT);
                 documents.add(document);
                 document = createFile(documentLibrary, "document2.txt", "desc2", ContentModel.TYPE_CONTENT);
@@ -189,7 +189,7 @@ public class RM4163Test extends BaseRMTestCase
 
     private NodeRef createFile(NodeRef parentNodeRef, String name, String descrption, QName typeQName)
     {
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+        Map<QName, Serializable> properties = new HashMap<>(11);
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
         properties.put(ContentModel.PROP_DESCRIPTION, (Serializable) descrption);
         QName assocQName = QName.createQName(

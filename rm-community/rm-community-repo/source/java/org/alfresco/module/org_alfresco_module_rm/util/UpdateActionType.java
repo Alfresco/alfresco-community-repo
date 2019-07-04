@@ -38,5 +38,5 @@ import org.alfresco.api.AlfrescoPublicApi;
 public enum UpdateActionType
 {
     ADD,
-    REMOVE;
+    REMOVE
 }

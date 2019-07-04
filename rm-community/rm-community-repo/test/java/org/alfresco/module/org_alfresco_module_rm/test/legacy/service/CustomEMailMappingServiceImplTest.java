@@ -145,11 +145,11 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
 
     private boolean checkCustomMappingsSize(int expected)
     {
-        return expected == eMailMappingService.getCustomMappings().size() ? true : false;
+        return expected == eMailMappingService.getCustomMappings().size();
     }
 
     private boolean checkEmailMappingKeysSize(int expected)
     {
-        return expected == eMailMappingService.getEmailMappingKeys().size() ? true : false;
+        return expected == eMailMappingService.getEmailMappingKeys().size();
     }
 }

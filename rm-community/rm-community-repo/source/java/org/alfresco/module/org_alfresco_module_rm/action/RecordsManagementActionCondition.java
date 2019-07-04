@@ -43,7 +43,7 @@ public interface RecordsManagementActionCondition
      *
      * @return  String  action condition name
      */
-    String getName();
+    String getBeanName();
 
     /**
      * Get the label of the action condition

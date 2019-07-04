@@ -129,7 +129,7 @@ public class TransferReportGet extends BaseTransferWebScript
 
         // create the writer
         try (FileOutputStream fileOutputStream = new FileOutputStream(report);
-            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"));)
+            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8")))
         {
             // get all 'transferred' nodes
             NodeRef[] itemsToTransfer = getTransferNodes(transferNode);

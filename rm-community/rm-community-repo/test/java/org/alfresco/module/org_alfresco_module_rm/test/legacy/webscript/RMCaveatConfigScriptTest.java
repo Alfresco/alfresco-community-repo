@@ -118,7 +118,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         createUser("jdoe");
 
 
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("NOFORN");
         values.add("FGI");
         caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "fbloggs", values);
@@ -542,7 +542,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             }
             caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
-            List<String> values = new ArrayList<String>();
+            List<String> values = new ArrayList<>();
             values.add("NOFORN");
             values.add("FGI");
             caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "fbloggs", values);
@@ -845,7 +845,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
     private boolean compare(JSONArray from, JSONArray to) throws Exception
     {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
 
         if(from.length() != to.length())
         {

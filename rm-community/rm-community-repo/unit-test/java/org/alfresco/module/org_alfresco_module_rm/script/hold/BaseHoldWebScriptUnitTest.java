@@ -63,7 +63,7 @@ public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
         hold2NodeRef = generateHoldNodeRef("hold2");
 
         // list of holds
-        holds = new ArrayList<NodeRef>(2);
+        holds = new ArrayList<>(2);
         Collections.addAll(holds, hold1NodeRef, hold2NodeRef);
 
         // list of records

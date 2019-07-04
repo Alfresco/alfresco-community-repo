@@ -99,7 +99,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
      */
     protected Map<String, String> buildParameters(String ... values)
     {
-        Map<String, String> result = new HashMap<String, String>(values.length/2);
+        Map<String, String> result = new HashMap<>(values.length / 2);
         for (int i = 0; i < values.length; i=i+2)
         {
             String key = values[i];

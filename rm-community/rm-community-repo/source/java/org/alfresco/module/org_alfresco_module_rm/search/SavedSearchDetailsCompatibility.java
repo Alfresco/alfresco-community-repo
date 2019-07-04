@@ -99,7 +99,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
     public static RecordsManagementSearchParameters createSearchParameters(String params, String[] paramsDelim, String sort, NamespaceService namespaceService)
     {
         RecordsManagementSearchParameters result = new RecordsManagementSearchParameters();
-        List<QName> includedContainerTypes = new ArrayList<QName>(2);
+        List<QName> includedContainerTypes = new ArrayList<>(2);
 
         // Map the param values into the search parameter object
         String[] values = params.split(paramsDelim[0]);
@@ -143,7 +143,7 @@ public class SavedSearchDetailsCompatibility implements RecordsManagementModel
         {
             // Map the sort string into the search details
             String[] sortPairs = sort.split(",");
-            List<SortItem> sortOrder = new ArrayList<SortItem>(sortPairs.length);
+            List<SortItem> sortOrder = new ArrayList<>(sortPairs.length);
             for (String sortPairString : sortPairs)
             {
                 String[] sortPair = sortPairString.split("/");

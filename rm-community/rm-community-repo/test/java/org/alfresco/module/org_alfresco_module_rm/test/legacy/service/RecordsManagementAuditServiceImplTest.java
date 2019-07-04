@@ -428,7 +428,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             // Not serious
         }
         authenticationService.createAuthentication("cdickons", getName().toCharArray());
-        Map<QName, Serializable> personProperties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> personProperties = new HashMap<>();
         personProperties.put(ContentModel.PROP_USERNAME, "cdickons");
         personProperties.put(ContentModel.PROP_FIRSTNAME, "Charles");
         personProperties.put(ContentModel.PROP_LASTNAME, "Dickons");

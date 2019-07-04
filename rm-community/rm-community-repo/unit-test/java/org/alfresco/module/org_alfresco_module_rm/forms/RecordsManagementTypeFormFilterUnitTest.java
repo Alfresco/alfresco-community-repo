@@ -118,7 +118,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
     @Test
     public void testDefaultFormValues()
     {
-        List<FieldDefinition> defs = new ArrayList<FieldDefinition>(3); 
+        List<FieldDefinition> defs = new ArrayList<>(3);
         FieldDefinition idDef = mockFieldDefinition("rma:identifier");
         defs.add(idDef);
         FieldDefinition vrDef = mockFieldDefinition("rma:vitalRecordIndicator");
@@ -170,7 +170,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
      */
     private Map<QName, PropertyDefinition> mockPropertyDefintionMap(int size)
     {
-        Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>(size);
+        Map<QName, PropertyDefinition> properties = new HashMap<>(size);
         for (int i = 0; i < size; i++)
         {
             QName name = generateQName(RM_URI);

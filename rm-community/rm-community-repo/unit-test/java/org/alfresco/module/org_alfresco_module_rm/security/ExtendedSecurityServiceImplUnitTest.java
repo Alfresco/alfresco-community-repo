@@ -619,7 +619,7 @@ public class ExtendedSecurityServiceImplUnitTest
         String writeGroup = writeGroupPrefix + "0";
         
         // create fity results
-        List<String> fiftyResults = new ArrayList<String>(50);
+        List<String> fiftyResults = new ArrayList<>(50);
         for (int i = 0; i < 50; i++)
         {
             fiftyResults.add(AlfMock.generateText());

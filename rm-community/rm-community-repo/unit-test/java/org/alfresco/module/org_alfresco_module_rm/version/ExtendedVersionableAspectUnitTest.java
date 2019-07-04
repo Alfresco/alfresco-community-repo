@@ -385,7 +385,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // node is not being processed for versioning
         when(mockedAlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS))
-            .thenReturn(new HashMap<NodeRef, NodeRef>(Collections.singletonMap(anotherNodeRef, anotherNodeRef)));
+            .thenReturn(new HashMap<>(Collections.singletonMap(anotherNodeRef, anotherNodeRef)));
 
         // auto version false
         when(mockedNodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION))

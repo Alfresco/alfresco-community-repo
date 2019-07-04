@@ -77,7 +77,7 @@ public class RM4804Test extends BaseRMTestCase
                 NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
 
                 // create a disposition schedule for category, applied on folder
-                Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dsProps = new HashMap<>(3);
                 dsProps.put(PROP_DISPOSITION_AUTHORITY, CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY);
                 dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, GUID.generate());
                 dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, false);
@@ -86,7 +86,7 @@ public class RM4804Test extends BaseRMTestCase
                     dsProps);
 
                 // cutoff immediately
-                Map<QName, Serializable> dispositionActionCutOff = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dispositionActionCutOff = new HashMap<>(3);
                 dispositionActionCutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 dispositionActionCutOff.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 dispositionActionCutOff.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
@@ -94,7 +94,7 @@ public class RM4804Test extends BaseRMTestCase
                 dispositionService.addDispositionActionDefinition(dispositionSchedule, dispositionActionCutOff);
 
                 // transfer immediately
-                Map<QName, Serializable> dispositionActionTransfer = new HashMap<QName, Serializable>(4);
+                Map<QName, Serializable> dispositionActionTransfer = new HashMap<>(4);
                 dispositionActionTransfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
                 dispositionActionTransfer.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 dispositionActionTransfer.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
@@ -105,7 +105,7 @@ public class RM4804Test extends BaseRMTestCase
                 // add folder under category
                 NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 // add record of type PDF under folder
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                Map<QName, Serializable> props = new HashMap<>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
                 InputStream inputStream = IOUtils.toInputStream(GUID.generate());
                 record = utils.createRecord(recordFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_PDF, inputStream);

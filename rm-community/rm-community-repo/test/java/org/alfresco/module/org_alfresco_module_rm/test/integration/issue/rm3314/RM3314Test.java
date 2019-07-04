@@ -48,7 +48,7 @@ public class RM3314Test extends BaseRMTestCase
     }
     
 	/** registry to record callback from test beans "test.rm3114.1" and "test.rm3114.2" */
-    public static Map<String, Boolean> callback = new HashMap<String, Boolean>(2);
+    public static Map<String, Boolean> callback = new HashMap<>(2);
     
     /**
      * Given that the custom model hasn't been initialised 

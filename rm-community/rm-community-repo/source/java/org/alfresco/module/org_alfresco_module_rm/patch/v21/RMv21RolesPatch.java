@@ -113,6 +113,6 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
 
     private void addAuthorityToZone(String roleGroupName)
     {
-        authorityService.addAuthorityToZones(roleGroupName, new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+        authorityService.addAuthorityToZones(roleGroupName, new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
     }
 }

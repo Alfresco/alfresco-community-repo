@@ -97,7 +97,7 @@ public class RMv22ReportTemplatePatch extends AbstractModulePatch
             QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("report_rmr_transferReport.html.ftl"));
 
             // build the node properties
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
+            Map<QName, Serializable> props = new HashMap<>(4);
             props.put(ContentModel.PROP_DESCRIPTION, "Transfer report template.");
             props.put(ContentModel.PROP_TITLE, "Transfer Report Template");
             props.put(ContentModel.PROP_NAME, "report_rmr_transferReport.html.ftl");

@@ -77,7 +77,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     public enum CopyMoveLinkFileToActionMode
     {
         COPY, MOVE, LINK
-    };
+    }
 
     /** Action Mode */
     private CopyMoveLinkFileToActionMode mode;

@@ -51,7 +51,7 @@ public class IdentifierServiceImpl implements IdentifierService
     private static Log logger = LogFactory.getLog(IdentifierServiceImpl.class);
 
     /** Registry map */
-    private Map<QName, IdentifierGenerator> register = new HashMap<QName, IdentifierGenerator>(5);
+    private Map<QName, IdentifierGenerator> register = new HashMap<>(5);
 
     /** Node service */
     private NodeService nodeService;
@@ -88,7 +88,7 @@ public class IdentifierServiceImpl implements IdentifierService
         ParameterCheck.mandatory("type", type);
 
         // Build the context
-        Map<String, Serializable> context = new HashMap<String, Serializable>(2);
+        Map<String, Serializable> context = new HashMap<>(2);
         if (parent != null)
         {
             context.put(CONTEXT_PARENT_NODEREF, parent);
@@ -107,7 +107,7 @@ public class IdentifierServiceImpl implements IdentifierService
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        Map<String, Serializable> context = new HashMap<String, Serializable>(3);
+        Map<String, Serializable> context = new HashMap<>(3);
 
         // Set the original type
         QName type = nodeService.getType(nodeRef);

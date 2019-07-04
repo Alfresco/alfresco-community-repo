@@ -422,7 +422,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
                     getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                    Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                    Set<AccessPermission> keepPerms = new HashSet<>(5);
                     Set<AccessPermission> origionalPerms= getPermissionService().getAllSetPermissions(nodeRef);
 
                     for (AccessPermission perm : origionalPerms)
@@ -556,7 +556,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 {
                     boolean inheritParentPermissions = permissionService.getInheritParentPermissions(record);
 
-                    Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                    Set<AccessPermission> keepPerms = new HashSet<>(5);
                     Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
 
                     for (AccessPermission recordPermission : origionalRecordPerms)
@@ -693,8 +693,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     private QName constructAuditEventName(String authority, String permission)
     {
-        QName auditProperty = QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
-        return auditProperty;
+        return QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
     }
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)

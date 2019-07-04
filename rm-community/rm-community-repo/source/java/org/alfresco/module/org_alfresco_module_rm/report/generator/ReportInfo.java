@@ -49,7 +49,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     
     private String reportName;
     
-    private Map<QName, Serializable> reportProperties = new HashMap<QName, Serializable>(21);
+    private Map<QName, Serializable> reportProperties = new HashMap<>(21);
     
     /** content reader */
     private ContentReader reportContent;

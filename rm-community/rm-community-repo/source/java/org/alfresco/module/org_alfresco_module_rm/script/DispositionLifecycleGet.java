@@ -75,17 +75,17 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
         DispositionAction nextAction = getDispositionService().getNextDispositionAction(nodeRef);
         if (nextAction == null)
         {
-           Map<String, Object> nextActionModel = new HashMap<String, Object>(2);
+           Map<String, Object> nextActionModel = new HashMap<>(2);
            nextActionModel.put("notFound", true);
            nextActionModel.put("message", "Node " + nodeRef.toString() + " does not have a disposition lifecycle");
-           Map<String, Object> model = new HashMap<String, Object>(1);
+           Map<String, Object> model = new HashMap<>(1);
            model.put("nextaction", nextActionModel);
            return model;
         }
         else
         {
             // add all the next action data to Map
-            Map<String, Object> nextActionModel = new HashMap<String, Object>(8);
+            Map<String, Object> nextActionModel = new HashMap<>(8);
             String serviceUrl = req.getServiceContextPath() + req.getPathInfo();
             nextActionModel.put("url", serviceUrl);
             nextActionModel.put("name", nextAction.getName());
@@ -121,7 +121,7 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
                 addUsersRealName(nextActionModel, completedBy, "completedBy");
             }
 
-            List<Map<String, Object>> events = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> events = new ArrayList<>();
             for (EventCompletionDetails event : nextAction.getEventCompletionDetails())
             {
                 events.add(createEventModel(event));
@@ -129,7 +129,7 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
             nextActionModel.put("events", events);
 
             // create model object with just the schedule data
-            Map<String, Object> model = new HashMap<String, Object>(1);
+            Map<String, Object> model = new HashMap<>(1);
             model.put("nextaction", nextActionModel);
             return model;
         }
@@ -143,7 +143,7 @@ public class DispositionLifecycleGet extends DispositionAbstractBase
      */
     protected Map<String, Object> createEventModel(EventCompletionDetails event)
     {
-        Map<String, Object> model = new HashMap<String, Object>(8);
+        Map<String, Object> model = new HashMap<>(8);
 
         model.put("name", event.getEventName());
         model.put("label", event.getEventLabel());

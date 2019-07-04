@@ -121,7 +121,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
                         recordsFolder = recordFolderService.createRecordFolder(category, generate());
 
                         // Make eligible for cut off
-                        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                        Map<String, Serializable> params = new HashMap<>(1);
                         params.put(PARAM_EVENT_NAME, DEFAULT_EVENT_NAME);
                         rmActionService.executeRecordsManagementAction(recordsFolder, CompleteEventAction.NAME, params);
 

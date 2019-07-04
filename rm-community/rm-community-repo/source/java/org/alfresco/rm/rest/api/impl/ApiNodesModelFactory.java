@@ -533,7 +533,7 @@ public class ApiNodesModelFactory
             if (includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
             {
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
-                recordCategoryChild.setHasRetentionSchedule(ds !=null ? true : false);
+                recordCategoryChild.setHasRetentionSchedule(ds != null);
             }
             if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_IS_CLOSED)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED)))
             {
@@ -673,7 +673,7 @@ public class ApiNodesModelFactory
         if (parameters.getInclude().contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
         {
             DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
-            recordCategory.setHasRetentionSchedule(ds !=null ? true : false);
+            recordCategory.setHasRetentionSchedule(ds != null);
         }
 
         return recordCategory;

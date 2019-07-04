@@ -94,7 +94,7 @@ public class FileToActionTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
 
                 // execute file-to action
@@ -164,7 +164,7 @@ public class FileToActionTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_PATH, PATH);
 
                 // execute file-to action
@@ -199,7 +199,7 @@ public class FileToActionTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_PATH, PATH2);
 
                 // execute file-to action
@@ -248,7 +248,7 @@ public class FileToActionTest extends BaseRMTestCase
         final String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
 
         // set parameters
-        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        Map<String, Serializable> params = new HashMap<>(1);
         params.put(FileToAction.PARAM_PATH, path);
         params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
@@ -257,11 +257,11 @@ public class FileToActionTest extends BaseRMTestCase
             public Void run() throws Exception
             {
                 // show the folder doesn't exist to begin with
-                FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
+                FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
                 assertNull(createdRecordFolder);
 
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_PATH, path);
                 params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
@@ -284,7 +284,7 @@ public class FileToActionTest extends BaseRMTestCase
             public Void run() throws Exception
             {
                 // show the folder has now been created
-            	FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
+            	FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
                 assertNotNull(createdRecordFolder);
                 assertEquals(name, createdRecordFolder.getName());
                 NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
@@ -332,7 +332,7 @@ public class FileToActionTest extends BaseRMTestCase
             public void run() throws Exception
             {
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_PATH, PATH_BAD);
 
                 // execute file-to action
@@ -350,7 +350,7 @@ public class FileToActionTest extends BaseRMTestCase
             public void run() throws Exception
             {
                 // set parameters
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(FileToAction.PARAM_PATH, PATH_CREATE);
 
                 // execute file-to action

@@ -83,7 +83,7 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         // setup test data
         hold1 = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
-        holds = new ArrayList<NodeRef>(2);
+        holds = new ArrayList<>(2);
         holds.add(hold1);
         holds.add(hold2);
         

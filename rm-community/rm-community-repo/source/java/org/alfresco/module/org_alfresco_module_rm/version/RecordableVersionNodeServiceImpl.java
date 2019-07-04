@@ -105,7 +105,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
      */
     protected Map<QName, Serializable> processProperties(NodeRef version, Map<QName, Serializable> properties)
     {
-        Map<QName, Serializable> cloneProperties = new HashMap<QName, Serializable>(properties);
+        Map<QName, Serializable> cloneProperties = new HashMap<>(properties);
 
         // revert modified record name
         properties.put(ContentModel.PROP_NAME, properties.get(RecordsManagementModel.PROP_ORIGIONAL_NAME));
@@ -233,7 +233,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
      */
     protected Set<QName> processAspects(Set<QName> aspects)
     {
-        Set<QName> result = new HashSet<QName>(aspects);
+        Set<QName> result = new HashSet<>(aspects);
 
         // remove version aspects
         result.remove(ASPECT_VERSION);

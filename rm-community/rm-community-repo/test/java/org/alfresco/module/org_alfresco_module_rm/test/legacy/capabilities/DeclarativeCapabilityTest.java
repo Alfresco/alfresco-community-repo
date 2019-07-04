@@ -213,7 +213,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                         boolean conditionResult = getConditionResult(filePlanComponent, conditions);
 
                         assertEquals("User is expected to only have one role.", 1, roles.size());
-                        Role role = new ArrayList<Role>(roles).get(0);
+                        Role role = new ArrayList<>(roles).get(0);
                         assertNotNull(role);
 
                         Set<Capability> roleCapabilities = role.getCapabilities();

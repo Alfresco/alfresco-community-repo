@@ -99,7 +99,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
         String dispositionAction = req.getParameter("dispositionaction");
 
         Collection<DispositionProperty> dispositionProperties = dispositionService.getDispositionProperties(recordLevel, dispositionAction);
-        List<Map<String, String>> items = new ArrayList<Map<String, String>>(dispositionProperties.size());
+        List<Map<String, String>> items = new ArrayList<>(dispositionProperties.size());
         for (DispositionProperty dispositionProperty : dispositionProperties)
         {
             PropertyDefinition propDef = dispositionProperty.getPropertyDefinition();
@@ -107,7 +107,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
 
             if (propDef != null)
             {
-                Map<String, String> item = new HashMap<String, String>(2);
+                Map<String, String> item = new HashMap<>(2);
                 String propTitle = propDef.getTitle(dictionaryService);
                 if (propTitle == null || propTitle.length() == 0)
                 {
@@ -120,7 +120,7 @@ public class DispositionPropertiesGet extends DeclarativeWebScript
         }
 
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("properties", items);
         return model;
     }

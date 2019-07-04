@@ -176,7 +176,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
                     nodeService.addAspect(template, ContentModel.ASPECT_VERSIONABLE, null);
 
                     // Create version (before template is updated)
-                    Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(2);
+                    Map<String, Serializable> versionProperties = new HashMap<>(2);
                     versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");
                     versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                     versionService.createVersion(template, versionProperties);

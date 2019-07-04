@@ -84,7 +84,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
         List<String> rmTypes = getRmTypes();
 
         // Get the list of rm types from the response and check it
-        List<String> rmTypeList = new ArrayList<String>();
+        List<String> rmTypeList = new ArrayList<>();
         for (int i = 0; i < contentAsJson.length(); i++)
         {
             String name = contentAsJson.getJSONObject(i).getString("name");
@@ -109,7 +109,7 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
         assertNotNull(contentAsJson);
 
         // Get the list of dm types from the response and check it
-        List<String> dmTypeList = new ArrayList<String>();
+        List<String> dmTypeList = new ArrayList<>();
         for (int i = 0; i < contentAsJson.length(); i++)
         {
             String name = contentAsJson.getJSONObject(i).getString("name");

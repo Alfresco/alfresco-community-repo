@@ -1229,7 +1229,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
 
     private void assertExistenceOfSpecialRolesAndPermissions(NodeRef node)
     {
-        Map<String, String> accessPermissions = new HashMap<String, String>();
+        Map<String, String> accessPermissions = new HashMap<>();
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(node);
         // FIXME!!!
         //assertEquals(3, permissions.size());

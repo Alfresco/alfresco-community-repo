@@ -103,7 +103,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         nodeRef = generateCmContent(CONTENT_NAME);
         doReturn(123l).when(mockedNodeService).getProperty(nodeRef, ContentModel.PROP_NODE_DBID);
 
-        versionProperties = new HashMap<String, Serializable>(5);
+        versionProperties = new HashMap<>(5);
 
         recordableVersionService.initialise();
 

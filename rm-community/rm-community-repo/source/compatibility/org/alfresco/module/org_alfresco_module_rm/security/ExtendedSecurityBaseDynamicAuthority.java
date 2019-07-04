@@ -154,7 +154,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         boolean result = false;
 
         Map<Pair<NodeRef, String>, Boolean> transactionCache = TransactionalResourceHelper.getMap(getTransactionCacheName());
-        Pair<NodeRef, String> key = new Pair<NodeRef, String>(nodeRef, userName);
+        Pair<NodeRef, String> key = new Pair<>(nodeRef, userName);
 
         if (transactionCache.containsKey(key))
         {

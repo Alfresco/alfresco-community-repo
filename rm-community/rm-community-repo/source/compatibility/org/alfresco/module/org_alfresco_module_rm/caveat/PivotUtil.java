@@ -42,7 +42,7 @@ import java.util.Map;
     static Map<String, List<String>> getPivot(Map<String, List<String>> source)
     {
 
-        Map<String, List<String>> pivot = new HashMap<String, List<String>>();
+        Map<String, List<String>> pivot = new HashMap<>();
 
         for (Map.Entry<String, List<String>> entry : source.entrySet())
         {
@@ -59,7 +59,7 @@ import java.util.Map;
                 else
                 {
                     // New value
-                    List<String> list = new ArrayList<String>();
+                    List<String> list = new ArrayList<>();
                     list.add(authority);
                     pivot.put(value, list);
                 }

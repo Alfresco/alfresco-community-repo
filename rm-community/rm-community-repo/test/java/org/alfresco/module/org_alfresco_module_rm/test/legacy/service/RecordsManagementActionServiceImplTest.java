@@ -92,7 +92,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
                         ContentModel.TYPE_CONTENT).getChildRef();
 
                 // Create nodeRef list
-                nodeRefs = new ArrayList<NodeRef>(5);
+                nodeRefs = new ArrayList<>(5);
                 for (int i = 0; i < 5; i++)
                 {
                     nodeRefs.add(
@@ -135,7 +135,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
     {
         List<RecordsManagementAction> result = this.rmActionService.getRecordsManagementActions();
         assertNotNull(result);
-        Map<String, RecordsManagementAction> resultMap = new HashMap<String, RecordsManagementAction>(8);
+        Map<String, RecordsManagementAction> resultMap = new HashMap<>(8);
         for (RecordsManagementAction action : result)
         {
             resultMap.put(action.getName(), action);
@@ -145,7 +145,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
         assertTrue(resultMap.containsKey(TestAction2.NAME));
 
         result = this.rmActionService.getDispositionActions();
-        resultMap = new HashMap<String, RecordsManagementAction>(8);
+        resultMap = new HashMap<>(8);
         for (RecordsManagementAction action : result)
         {
             resultMap.put(action.getName(), action);
@@ -225,7 +225,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
             assertFalse(onMarker);
             assertFalse(this.nodeService.hasAspect(this.nodeRef, ASPECT_RECORD));
 
-            Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+            Map<String, Serializable> params = new HashMap<>(1);
             params.put(TestAction.PARAM, TestAction.PARAM_VALUE);
             this.rmActionService.executeRecordsManagementAction(this.nodeRef, TestAction.NAME, params);
 
@@ -259,7 +259,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
             assertFalse(this.nodeService.hasAspect(nodeRef, ASPECT_RECORD));
         }
 
-        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        Map<String, Serializable> params = new HashMap<>(1);
         params.put(TestAction.PARAM, TestAction.PARAM_VALUE);
         this.rmActionService.executeRecordsManagementAction(this.nodeRefs, TestAction.NAME, params);
 

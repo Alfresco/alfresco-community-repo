@@ -277,7 +277,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
         // Create folder
         String containerName = "RM2_" + System.currentTimeMillis();
-        Map<QName, Serializable> containerProps = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> containerProps = new HashMap<>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
               rootNodeRef,

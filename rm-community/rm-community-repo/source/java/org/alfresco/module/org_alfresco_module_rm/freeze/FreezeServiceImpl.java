@@ -127,7 +127,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public Set<NodeRef> getFrozen(NodeRef hold)
     {
-        return new HashSet<NodeRef>(getHoldService().getHeld(hold));
+        return new HashSet<>(getHoldService().getHeld(hold));
     }
 
     /**
@@ -168,7 +168,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         NodeRef hold = null;
         if (!nodeRefs.isEmpty())
         {
-            List<NodeRef> list = new ArrayList<NodeRef>(nodeRefs);
+            List<NodeRef> list = new ArrayList<>(nodeRefs);
             hold = createHold(list.get(0), reason);
             getHoldService().addToHold(hold, list);
         }
@@ -260,7 +260,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
-        return new HashSet<NodeRef>(getHoldService().getHolds(filePlan));
+        return new HashSet<>(getHoldService().getHolds(filePlan));
     }
 
     /**
@@ -312,7 +312,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                 }
 
                                 // add aspect and set count
-                                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                                Map<QName, Serializable> props = new HashMap<>(1);
                                 props.put(PROP_HELD_CHILDREN_COUNT, heldCount);
                                 getInternalNodeService().addAspect(nodeRef, ASPECT_HELD_CHILDREN, props);
 

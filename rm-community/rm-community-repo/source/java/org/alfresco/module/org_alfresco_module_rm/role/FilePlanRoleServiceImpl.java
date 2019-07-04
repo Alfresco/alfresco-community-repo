@@ -176,7 +176,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             {
                 public List<NodeRef> doWork()
                 {
-                    List<NodeRef> systemContainers = new ArrayList<NodeRef>(3);
+                    List<NodeRef> systemContainers = new ArrayList<>(3);
 
                     //In a multi tenant store we need to initialize the rm config if it has been done yet
                     NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
@@ -190,7 +190,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     						AuthorityType.GROUP,
                     						getAllRolesGroupShortName(filePlan),
                     						I18NUtil.getMessage(MSG_ALL_ROLES),
-                    						new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+                            new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                     // Set the permissions
                     permissionService.setInheritParentPermissions(filePlan, false);
@@ -314,7 +314,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                         }
 
                         // Get the roles capabilities
-                        Set<Capability> capabilities = new HashSet<Capability>(30);
+                        Set<Capability> capabilities = new HashSet<>(30);
                         if (object.has(JSON_CAPABILITIES))
                         {
                             JSONArray arrCaps = object.getJSONArray(JSON_CAPABILITIES);
@@ -408,7 +408,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Set<Role> doWork()
             {
-                Set<Role> result = new HashSet<Role>(13);
+                Set<Role> result = new HashSet<>(13);
 
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
@@ -453,7 +453,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Set<Role> doWork()
             {
-                Set<Role> result = new HashSet<Role>(13);
+                Set<Role> result = new HashSet<>(13);
 
                 Set<String> roleAuthorities = authorityService.getAllAuthoritiesInZone(getZoneName(rmRootNode), AuthorityType.GROUP);
                 for (String roleAuthority : roleAuthorities)
@@ -479,7 +479,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
-    };
+    }
 
     /**
      *
@@ -550,7 +550,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     private Set<Capability> getCapabilitiesImpl(NodeRef rmRootNode, String roleAuthority)
     {
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(rmRootNode);
-        Set<Capability> capabilities = new HashSet<Capability>(52);
+        Set<Capability> capabilities = new HashSet<>(52);
         for (AccessPermission permission : permissions)
         {
             if (permission.getAuthority().equals(roleAuthority))
@@ -628,7 +628,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 }
 
                 // Create a group that relates to the records management role
-                Set<String> zones = new HashSet<String>(2);
+                Set<String> zones = new HashSet<>(2);
                 zones.add(getZoneName(filePlan));
                 zones.add(RMAuthority.ZONE_APP_RM);
 
@@ -791,7 +791,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         ParameterCheck.mandatory("filePlan", filePlan);
         ParameterCheck.mandatory("roleName", role);
 
-        Set<String> result = new HashSet<String>(21);
+        Set<String> result = new HashSet<>(21);
         result.addAll(getUsersAssignedToRole(filePlan, role));
         result.addAll(getGroupsAssignedToRole(filePlan, role));
         return result;

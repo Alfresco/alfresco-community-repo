@@ -60,7 +60,7 @@ public class DispositionActionParameterConstraint extends BaseParameterConstrain
     {   
         List<RecordsManagementAction> rmActions = rmActionService.getDispositionActions();
 
-        Map<String, String> result = new HashMap<String, String>(rmActions.size());
+        Map<String, String> result = new HashMap<>(rmActions.size());
         for (RecordsManagementAction rmAction : rmActions)
         {
             result.put(rmAction.getName(), rmAction.getLabel());

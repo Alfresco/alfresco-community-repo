@@ -64,7 +64,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     protected AttributeService attributeService;
 
     /** module patches */
-    protected Map<String, ModulePatch> modulePatches = new HashMap<String, ModulePatch>(21);
+    protected Map<String, ModulePatch> modulePatches = new HashMap<>(21);
 
     /**
      * @param attributeService  attribute service
@@ -119,7 +119,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
         if (moduleSchema > currentSchema)
         {
             // determine what patches should be applied
-            List<ModulePatch> patchesToApply = new ArrayList<ModulePatch>(13);
+            List<ModulePatch> patchesToApply = new ArrayList<>(13);
             for (ModulePatch modulePatch : modulePatches.values())
             {
                 if (modulePatch.getFixesFromSchema() <= currentSchema &&

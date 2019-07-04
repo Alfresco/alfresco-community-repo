@@ -60,7 +60,7 @@ public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
         RelationshipDisplayName displayName = createDisplayName(requestContent);
         RelationshipDefinition relationshipDefinition =  getRelationshipService().createRelationshipDefinition(displayName);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         String servicePath = req.getServicePath();
         Map<String, Object> customRelationshipData = createRelationshipDefinitionData(relationshipDefinition, servicePath);
         model.putAll(customRelationshipData);
@@ -77,7 +77,7 @@ public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
      */
     private Map<String, Object> createRelationshipDefinitionData(RelationshipDefinition relationshipDefinition, String servicePath)
     {
-        Map<String, Object> relationshipDefinitionData = new HashMap<String, Object>(4);
+        Map<String, Object> relationshipDefinitionData = new HashMap<>(4);
         String uniqueName = relationshipDefinition.getUniqueName();
         relationshipDefinitionData.put(REFERENCE_TYPE, relationshipDefinition.getType().toString());
         relationshipDefinitionData.put(REF_ID, uniqueName);

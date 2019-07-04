@@ -113,7 +113,7 @@ public class NotificationServiceHelperSystemTest extends BaseRMTestCase
         NodeRef record2 = utils.createRecord(rmFolder, "recordTwo");
         NodeRef record3 = utils.createRecord(rmFolder, "recordThree");
 
-        records = new ArrayList<NodeRef>(3);
+        records = new ArrayList<>(3);
         records.add(record);
         records.add(record2);
         records.add(record3);

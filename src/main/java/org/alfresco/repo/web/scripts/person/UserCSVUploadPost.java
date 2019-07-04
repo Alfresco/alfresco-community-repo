@@ -59,6 +59,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.util.PaneInformation;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -443,7 +444,7 @@ public class UserCSVUploadPost extends DeclarativeWebScript
                 for (int cn=0; cn<COLUMNS.length; cn++)
                 {
                     Cell cell = r.getCell(cn);
-                    if (cell != null && cell.getCellType() != Cell.CELL_TYPE_BLANK)
+                    if (cell != null && cell.getCellType() != CellType.BLANK)
                     {
                         d[cn] = df.formatCellValue(cell);
                     }

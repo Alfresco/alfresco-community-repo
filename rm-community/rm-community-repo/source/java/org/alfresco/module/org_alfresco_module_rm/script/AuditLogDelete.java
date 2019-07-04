@@ -51,7 +51,7 @@ public class AuditLogDelete extends BaseAuditAdminWebScript
         this.rmAuditService.clearAuditLog(getDefaultFilePlan());
             
         // create model object with the audit status model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put("auditstatus", createAuditStatusModel());
         return model;
     }

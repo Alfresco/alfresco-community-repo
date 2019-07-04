@@ -33,7 +33,6 @@ import java.text.MessageFormat;
 import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
-import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,7 +41,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -58,9 +56,6 @@ public class RecordsAPI extends BaseAPI
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordsAPI.class);
 
     private static final String CREATE_NON_ELECTRONIC_RECORD_API = "{0}type/rma:nonElectronicDocument/formprocessor";
-
-    @Autowired
-    private ContentService contentService;
 
     /**
      * Declare documents as records

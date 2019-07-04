@@ -111,7 +111,7 @@ public class CustomPropertyDefinitionDelete extends AbstractRmWebScript
      */
     protected Map<String, Object> removePropertyDefinition(QName propQName) throws JSONException
     {
-    	Map<String, Object> result = new HashMap<String, Object>();
+    	Map<String, Object> result = new HashMap<>();
 
     	rmAdminService.removeCustomPropertyDefinition(propQName);
 

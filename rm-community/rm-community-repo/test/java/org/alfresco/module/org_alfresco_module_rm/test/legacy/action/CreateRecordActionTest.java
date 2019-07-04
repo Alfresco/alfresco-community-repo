@@ -75,7 +75,7 @@ public class CreateRecordActionTest extends BaseRMTestCase
 
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
-            };
+            }
         },
         dmCollaborator);
     }

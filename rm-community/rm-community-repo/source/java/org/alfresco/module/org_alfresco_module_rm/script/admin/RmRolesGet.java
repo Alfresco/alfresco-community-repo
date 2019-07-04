@@ -51,7 +51,7 @@ public class RmRolesGet extends RoleDeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         Set<Role> roles = null;
 
         // get the file plan

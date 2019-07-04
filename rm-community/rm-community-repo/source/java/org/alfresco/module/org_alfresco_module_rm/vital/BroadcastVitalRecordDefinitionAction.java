@@ -113,7 +113,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
                     if (parentVri)
                     {
                         VitalRecordDefinition vrDefn = getVitalRecordService().getVitalRecordDefinition(nextChild);
-                        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
+                        Map<QName, Serializable> aspectProps = new HashMap<>();
                         aspectProps.put(PROP_REVIEW_AS_OF, vrDefn.getNextReviewDate());
 
                         getNodeService().addAspect(nextChild, RecordsManagementModel.ASPECT_VITAL_RECORD, aspectProps);

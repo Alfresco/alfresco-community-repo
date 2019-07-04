@@ -47,10 +47,10 @@ import org.alfresco.util.ParameterCheck;
 public class CapabilityServiceImpl implements CapabilityService
 {
     /** Capabilities */
-    private Map<String, Capability> capabilities = new HashMap<String, Capability>(57);
+    private Map<String, Capability> capabilities = new HashMap<>(57);
 
     /** Groups */
-    private Map<String, Group> groups = new HashMap<String, Group>(13);
+    private Map<String, Group> groups = new HashMap<>(13);
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService#getCapability(java.lang.String)
@@ -92,11 +92,11 @@ public class CapabilityServiceImpl implements CapabilityService
         Set<Capability> result = null;
         if (includePrivate)
         {
-            result = new HashSet<Capability>(capabilities.values());
+            result = new HashSet<>(capabilities.values());
         }
         else
         {
-            result = new HashSet<Capability>(capabilities.size());
+            result = new HashSet<>(capabilities.size());
             for (Capability capability : capabilities.values())
             {
                 if (!capability.isPrivate())
@@ -127,7 +127,7 @@ public class CapabilityServiceImpl implements CapabilityService
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         Set<Capability> listOfCapabilites = getCapabilities(includePrivate);
-        HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
+        HashMap<Capability, AccessStatus> answer = new HashMap<>();
         for (Capability capability : listOfCapabilites)
         {
             AccessStatus status = capability.hasPermission(nodeRef);
@@ -147,7 +147,7 @@ public class CapabilityServiceImpl implements CapabilityService
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("capabilityNames", capabilityNames);
 
-        HashMap<Capability, AccessStatus> answer = new HashMap<Capability, AccessStatus>();
+        HashMap<Capability, AccessStatus> answer = new HashMap<>();
         for (String capabilityName : capabilityNames)
         {
             Capability capability = capabilities.get(capabilityName);
@@ -189,7 +189,7 @@ public class CapabilityServiceImpl implements CapabilityService
     @Override
     public List<Group> getGroups()
     {
-        List<Group> groups = new ArrayList<Group>();
+        List<Group> groups = new ArrayList<>();
         for (Map.Entry<String, Group> entry : this.groups.entrySet())
         {
             groups.add(entry.getValue());
@@ -217,7 +217,7 @@ public class CapabilityServiceImpl implements CapabilityService
 
         String id = this.groups.get(groupId).getId();
 
-        List<Capability> capabilities =  new ArrayList<Capability>();
+        List<Capability> capabilities = new ArrayList<>();
         for (Capability capability : getCapabilities())
         {
             Group group = capability.getGroup();

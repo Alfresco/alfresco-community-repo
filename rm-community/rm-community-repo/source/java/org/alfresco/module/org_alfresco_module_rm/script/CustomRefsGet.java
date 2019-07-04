@@ -126,7 +126,7 @@ public class CustomRefsGet extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(4);
+        Map<String, Object> model = new HashMap<>(4);
         NodeRef nodeRef = parseRequestForNodeRef(req);
         model.put(NODE_NAME, getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
         model.put(NODE_TITLE, getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE));
@@ -143,7 +143,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      */
     private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
     {
-        List<Map<String, String>> outwardReferenceData = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> outwardReferenceData = new ArrayList<>();
         Set<Relationship> relationships = getRelationshipService().getRelationshipsFrom(nodeRef);
         outwardReferenceData.addAll(getRelationshipData(relationships));
         return outwardReferenceData;
@@ -157,7 +157,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      */
     private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
     {
-        List<Map<String, String>> inwardReferenceData = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> inwardReferenceData = new ArrayList<>();
         Set<Relationship> relationships = getRelationshipService().getRelationshipsTo(nodeRef);
         inwardReferenceData.addAll(getRelationshipData(relationships));
         return inwardReferenceData;
@@ -171,7 +171,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      */
     private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships)
     {
-        List<Map<String, String>> relationshipData = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> relationshipData = new ArrayList<>();
 
         for (Relationship relationship : relationships)
         {
@@ -183,7 +183,7 @@ public class CustomRefsGet extends AbstractRmWebScript
 
             if (relationshipDefinition != null && hasView(source) && hasView(target))
             {
-                Map<String, String> data = new HashMap<String, String>();
+                Map<String, String> data = new HashMap<>();
 
                 RelationshipType type = relationshipDefinition.getType();
                 RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();

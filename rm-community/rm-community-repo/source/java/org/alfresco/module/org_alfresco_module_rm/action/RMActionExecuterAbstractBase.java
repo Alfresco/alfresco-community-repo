@@ -133,7 +133,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     private IdentifierService identifierService;
 
     /** List of kinds for which this action is applicable */
-    protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
+    protected Set<FilePlanComponentKind> applicableKinds = new HashSet<>();
 
     /**
      * Get the transaction service

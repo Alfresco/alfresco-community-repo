@@ -110,10 +110,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private DispositionService dispositionService;
 
     /** Indicators */
-    private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
+    private List<BaseEvaluator> indicators = new ArrayList<>();
 
     /** Actions */
-    private List<BaseEvaluator> actions = new ArrayList<BaseEvaluator>();
+    private List<BaseEvaluator> actions = new ArrayList<>();
 
     /** The policy component */
     private PolicyComponent policyComponent;
@@ -443,7 +443,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         {
             public Map<String, Object> doWork() throws Exception
             {
-                Map<String, Object> result = new HashMap<String, Object>();
+                Map<String, Object> result = new HashMap<>();
 
                 // File plan node reference
                 NodeRef filePlan = filePlanService.getFilePlan(nodeRef);

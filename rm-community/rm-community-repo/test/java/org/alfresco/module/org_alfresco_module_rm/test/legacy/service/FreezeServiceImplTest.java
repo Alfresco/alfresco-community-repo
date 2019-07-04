@@ -112,7 +112,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertEquals("NewFreezeReason", holdService.getHoldReason(holdNodeRef));
 
             // Freeze a number of records
-             List<NodeRef> records = new ArrayList<NodeRef>();
+             List<NodeRef> records = new ArrayList<>();
             records.add(recordOne);
             records.add(recordTwo);
             records.add(recordThree);
@@ -237,7 +237,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             NodeRef hold = holdService.createHold(filePlan, "hold 1", "AnotherFreezeReason", "description");
             holdService.addToHold(hold, recordFour);
             holdService.addToHold(hold, recordOne);
-            List<NodeRef> nodes = new ArrayList<NodeRef>();
+            List<NodeRef> nodes = new ArrayList<>();
             nodes.add(recordTwo);
             nodes.add(recordThree);
             holdService.addToHold(hold, nodes);

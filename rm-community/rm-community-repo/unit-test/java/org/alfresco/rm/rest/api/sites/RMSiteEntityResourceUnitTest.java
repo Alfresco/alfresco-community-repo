@@ -95,7 +95,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
         rmSite.setDescription(RM_SITE_DESCRIPTION);
         rmSite.setCompliance(RMSiteCompliance.STANDARD);
 
-        List<RMSite> entity = new ArrayList<RMSite>();
+        List<RMSite> entity = new ArrayList<>();
         Params parameters = mock(Params.class);
         entity.add(rmSite);
         when(mockedRMSites.createRMSite(rmSite, parameters)).thenReturn(rmSite);

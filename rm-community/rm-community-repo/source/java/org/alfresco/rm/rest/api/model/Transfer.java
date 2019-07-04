@@ -67,6 +67,7 @@ public class Transfer
 
     public Transfer()
     {
+        //Default constructor
     }
 
     @JsonProperty ("id")

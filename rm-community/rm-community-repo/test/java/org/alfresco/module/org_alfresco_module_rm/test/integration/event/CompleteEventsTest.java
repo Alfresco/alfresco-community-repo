@@ -87,7 +87,7 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             {
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event
@@ -144,7 +144,7 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             {
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event
@@ -188,11 +188,11 @@ public class CompleteEventsTest extends BaseRMTestCase
                 // create disposition schedule
                 DispositionSchedule mySchedule = utils.createBasicDispositionSchedule(recordCategory, "instructions", "authority", false, false);
                 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, CommonRMTestUtils.DEFAULT_DISPOSITION_DESCRIPTION);
 
-                List<String> events = new ArrayList<String>(1);
+                List<String> events = new ArrayList<>(1);
                 events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 events.add(ANOTHER_EVENT);
                 adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
@@ -209,7 +209,7 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             {
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event
@@ -260,12 +260,12 @@ public class CompleteEventsTest extends BaseRMTestCase
                 // create disposition schedule
                 DispositionSchedule mySchedule = utils.createBasicDispositionSchedule(recordCategory, "instructions", "authority", false, false);
                 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, CommonRMTestUtils.DEFAULT_DISPOSITION_DESCRIPTION);
                 adParams.put(PROP_DISPOSITION_EVENT_COMBINATION, "and");
 
-                List<String> events = new ArrayList<String>(1);
+                List<String> events = new ArrayList<>(1);
                 events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 events.add(ANOTHER_EVENT);
                 adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
@@ -282,7 +282,7 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             {
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event
@@ -331,12 +331,12 @@ public class CompleteEventsTest extends BaseRMTestCase
                 // create disposition schedule
                 DispositionSchedule mySchedule = utils.createBasicDispositionSchedule(recordCategory, "instructions", "authority", false, false);
                 
-                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> adParams = new HashMap<>(3);
                 adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 adParams.put(PROP_DISPOSITION_DESCRIPTION, CommonRMTestUtils.DEFAULT_DISPOSITION_DESCRIPTION);
                 adParams.put(PROP_DISPOSITION_EVENT_COMBINATION, "and");
 
-                List<String> events = new ArrayList<String>(1);
+                List<String> events = new ArrayList<>(1);
                 events.add(CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 events.add(ANOTHER_EVENT);
                 adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
@@ -353,14 +353,14 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             { 
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event
                 rmActionService.executeRecordsManagementAction(recordFolder, CompleteEventAction.NAME, params);  
                 
                 // build action properties
-                params = new HashMap<String, Serializable>(1);
+                params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, ANOTHER_EVENT);
                 
                 // complete event
@@ -427,7 +427,7 @@ public class CompleteEventsTest extends BaseRMTestCase
             public void when()
             {
                 // build action properties
-                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 
                 // complete event

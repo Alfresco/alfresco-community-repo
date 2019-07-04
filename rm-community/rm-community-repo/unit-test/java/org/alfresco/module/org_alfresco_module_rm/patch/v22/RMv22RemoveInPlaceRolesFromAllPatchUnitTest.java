@@ -109,7 +109,7 @@ public class RMv22RemoveInPlaceRolesFromAllPatchUnitTest extends BaseUnitTest
         doReturn(getMockedRole(FilePlanRoleService.ROLE_EXTENDED_READERS)).when(mockedFilePlanRoleService).getRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS);
         doReturn(getMockedRole(FilePlanRoleService.ROLE_EXTENDED_WRITERS)).when(mockedFilePlanRoleService).getRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS);        
         doReturn(ALL_ROLES).when(mockedFilePlanRoleService).getAllRolesContainerGroup(filePlan);        
-        Set<String> contains = new HashSet<String>(2);
+        Set<String> contains = new HashSet<>(2);
         contains.add(FilePlanRoleService.ROLE_EXTENDED_READERS);
         contains.add(FilePlanRoleService.ROLE_EXTENDED_WRITERS);
         doReturn(contains).when(mockedAuthorityService).getContainedAuthorities(null, ALL_ROLES, true);

@@ -93,7 +93,7 @@ public class RMv22HoldReportPatch extends AbstractModulePatch
             QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("report_rmr_holdReport.html.ftl"));
 
             // build the node properties
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
+            Map<QName, Serializable> props = new HashMap<>(4);
             props.put(ContentModel.PROP_DESCRIPTION, "Hold report template.");
             props.put(ContentModel.PROP_TITLE, "Hold Report Template");
             props.put(ContentModel.PROP_NAME, "report_rmr_holdReport.html.ftl");

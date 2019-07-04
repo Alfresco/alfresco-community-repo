@@ -775,7 +775,6 @@ public class RecordCategoryTests extends BaseRMRestTest
         {
             //is unfiled container
             containerId = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(containerAlias).getId();
-            ;
         }
 
         // Create a record folder

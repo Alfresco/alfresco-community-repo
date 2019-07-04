@@ -151,7 +151,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
         String unfiledString = req.getParameter(UNFILED_PARAMETER);
         boolean unfiled = (unfiledString != null) && UNFILED.equals(unfiledString);
 
-        List<String> substitutionSuggestions = new ArrayList<String>();
+        List<String> substitutionSuggestions = new ArrayList<>();
 
         if((fragment != null) && (fragment.length() >= this.substitutionMinimumFragmentSize))
         {
@@ -159,7 +159,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
         }
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put(SUBSTITUTIONS_MODEL_KEY, substitutionSuggestions);
 
         return model;
@@ -174,7 +174,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      */
     private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled) 
     {
-        List<String> pathSuggestions = new ArrayList<String>();
+        List<String> pathSuggestions = new ArrayList<>();
         if((path != null) && path.startsWith("/") && (fragment != null))
         {
             String[] pathFragments = path.split("/");
@@ -295,7 +295,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             Capability viewCapability = capabilityService.getCapability(VIEW_CAPABILITY);
             if ((createCapability != null) && (viewCapability != null))
             {
-                List<String> requiredCapabilities = new ArrayList<String>();
+                List<String> requiredCapabilities = new ArrayList<>();
                 requiredCapabilities.add(CREATE_CAPABILITY);
                 requiredCapabilities.add(VIEW_CAPABILITY);
                 Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, requiredCapabilities);

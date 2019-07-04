@@ -105,7 +105,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // create model object with the lists model
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
 
         boolean extended = false;
         String result = "NONE";
@@ -172,7 +172,7 @@ public class RMMetaDataGet extends DeclarativeWebScript
     public List<Aspect> getAspects(NodeRef nodeRef)
     {
         Set<QName> qnames = nodeService.getAspects(nodeRef);
-        List<Aspect> aspects = new ArrayList<Aspect>(qnames.size());
+        List<Aspect> aspects = new ArrayList<>(qnames.size());
         for (QName qname : qnames)
         {
             aspects.add(new Aspect(qname));

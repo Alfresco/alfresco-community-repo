@@ -53,8 +53,8 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     private static final String REG_EX = "\\{([^\\{]+)\\}";
 
     /** registry of parameter processors */
-    private Map<String, ParameterProcessor> processors = new HashMap<String, ParameterProcessor>(5);
-    private List<ParameterSubstitutionSuggester> subtitutionSuggesterProcessors = new ArrayList<ParameterSubstitutionSuggester>(5);
+    private Map<String, ParameterProcessor> processors = new HashMap<>(5);
+    private List<ParameterSubstitutionSuggester> subtitutionSuggesterProcessors = new ArrayList<>(5);
 
     /**
      * Register parameter processor
@@ -142,7 +142,7 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
      */
     public List<String> getSubstitutionSuggestions(final String substitutionFragment)
     {
-        List<String> suggestions = new ArrayList<String>();
+        List<String> suggestions = new ArrayList<>();
         for (ParameterSubstitutionSuggester suggestor : this.subtitutionSuggesterProcessors)
         {
             suggestions.addAll(suggestor.getSubstitutionSuggestions(substitutionFragment.toLowerCase()));

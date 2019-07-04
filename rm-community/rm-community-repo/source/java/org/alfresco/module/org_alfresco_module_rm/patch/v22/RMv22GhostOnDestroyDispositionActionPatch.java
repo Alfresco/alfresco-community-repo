@@ -121,7 +121,7 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
      */
     private void processFilePlan(NodeRef filePlan)
     {
-        Set<DispositionSchedule> dispositionSchedules = new HashSet<DispositionSchedule>();
+        Set<DispositionSchedule> dispositionSchedules = new HashSet<>();
         getDispositionSchedules(filePlan, dispositionSchedules);
         for (DispositionSchedule dispositionSchedule : dispositionSchedules)
         {
@@ -178,7 +178,7 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
                         RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
                 if (ghostOnDestroyValue == null)
                 {
-                    Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                    Map<QName, Serializable> props = new HashMap<>(1);
                     props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
                             this.ghostingEnabled ? "ghost" : "destroy");
                     this.dispositionService.updateDispositionActionDefinition(actionDefinition, props);

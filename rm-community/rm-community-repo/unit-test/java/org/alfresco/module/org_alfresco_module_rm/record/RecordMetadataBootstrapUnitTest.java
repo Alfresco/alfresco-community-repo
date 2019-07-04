@@ -54,7 +54,7 @@ public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
     public void testInit()
     {
         // create and set map
-        Map<String, String> map = new HashMap<String, String>(2);
+        Map<String, String> map = new HashMap<>(2);
         map.put("rma:test1", "rma:filePlan");
         map.put("rma:test2", "rma:filePlan");
         bootstrap.setRecordMetadataAspects(map);

@@ -180,7 +180,7 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     {
         if(this.suggestionDefinitions == null)
         {
-            this.suggestionDefinitions = Collections.synchronizedList(new ArrayList<QName>());
+            this.suggestionDefinitions = Collections.synchronizedList(new ArrayList<>());
         }
         this.suggestionDefinitions.add(definition);
     }
@@ -196,7 +196,7 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     @Override
     public List<String> getSubstitutionSuggestions(String substitutionFragment)
     {
-        Set<String> suggestionSet = Collections.synchronizedSet(new HashSet<String>());
+        Set<String> suggestionSet = Collections.synchronizedSet(new HashSet<>());
         if(this.suggestionDefinitions != null)
         {
             for(QName definition : this.suggestionDefinitions)
@@ -207,7 +207,7 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
                 }
             }
         }
-        List<String> suggestions = new ArrayList<String>();
+        List<String> suggestions = new ArrayList<>();
         suggestions.addAll(suggestionSet);
         Collections.sort(suggestions);
         return suggestions;

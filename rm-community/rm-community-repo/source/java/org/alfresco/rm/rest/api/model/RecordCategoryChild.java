@@ -48,6 +48,7 @@ public class RecordCategoryChild extends RMNode
 
     public RecordCategoryChild()
     {
+        //Default constructor
     }
 
     public Boolean getIsRecordCategory()

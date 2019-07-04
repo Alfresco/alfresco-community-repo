@@ -76,7 +76,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     private static Log logger = LogFactory.getLog(DataSetServiceImpl.class);
 
     /** Registered data set implementations */
-    private Map<String, DataSet> dataSets = new HashMap<String, DataSet>();
+    private Map<String, DataSet> dataSets = new HashMap<>();
 
     /** Spaces store */
     private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
@@ -244,7 +244,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         ParameterCheck.mandatory("excludeLoaded", excludeLoaded);
 
         // Get the list of all available data sets
-        Map<String, DataSet> dataSets = new HashMap<String, DataSet>(getDataSets());
+        Map<String, DataSet> dataSets = new HashMap<>(getDataSets());
 
         // Should the list of unloaded data sets be retrieved
         if (excludeLoaded)
@@ -330,7 +330,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         ParameterCheck.mandatory("filePlan", filePlan);
 
         // Get the list of available data sets
-        Map<String, DataSet> availableDataSets = new HashMap<String, DataSet>(getDataSets());
+        Map<String, DataSet> availableDataSets = new HashMap<>(getDataSets());
 
         // Get the property value of the aspect
         Serializable dataSetIds = nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
@@ -353,7 +353,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
             return availableDataSets;
         }
 
-        return new HashMap<String, DataSet>();
+        return new HashMap<>();
     }
 
     /**
@@ -397,7 +397,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
                         // Create "all" role group for root node
                         String allRoles = authorityService.createAuthority(AuthorityType.GROUP, allRoleShortName,
-                                RMAuthority.ALL_ROLES_DISPLAY_NAME, new HashSet<String>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
+                                RMAuthority.ALL_ROLES_DISPLAY_NAME, new HashSet<>(Arrays.asList(RMAuthority.ZONE_APP_RM)));
 
                         // Put all the role groups in it
                         Set<Role> roles = filePlanRoleService.getRoles(rmRoot);
@@ -504,7 +504,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         // Check if any data set has been imported
         if (dataSetIds == null)
         {
-            Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+            Map<QName, Serializable> aspectProperties = new HashMap<>(1);
             aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) new ArrayList<String>());
             nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_ID, aspectProperties);
             loadedDataSetIds = (ArrayList<String>) nodeService.getProperty(filePlan, PROP_LOADED_DATA_SET_IDS);
@@ -516,7 +516,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
 
         // Add the new loaded data set id
         loadedDataSetIds.add(dataSetId);
-        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> aspectProperties = new HashMap<>(1);
         aspectProperties.put(PROP_LOADED_DATA_SET_IDS, (Serializable) loadedDataSetIds);
         nodeService.addAspect(filePlan, ASPECT_LOADED_DATA_SET_ID, aspectProperties);
     }

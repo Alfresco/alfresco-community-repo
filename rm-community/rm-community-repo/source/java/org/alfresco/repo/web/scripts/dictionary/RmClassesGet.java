@@ -101,12 +101,12 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
         String name = getValidInput(req.getParameter(REQ_URL_TEMPL_VAR_NAME));
         String className = null;
 
-        Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
-        Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
-        Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<QName, ClassDefinition> classdef = new HashMap<>();
+        Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<>();
+        Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<>();
+        Map<String, Object> model = new HashMap<>();
 
-        List<QName> qnames = new ArrayList<QName>();
+        List<QName> qnames = new ArrayList<>();
         QName classQname = null;
         QName myModel = null;
 
@@ -202,7 +202,7 @@ public class RmClassesGet extends DictionaryWebServiceBase implements RecordsMan
             }
         }
 
-        List<ClassDefinition> classDefinitions = new ArrayList<ClassDefinition>(classdef.values());
+        List<ClassDefinition> classDefinitions = new ArrayList<>(classdef.values());
         Collections.sort(classDefinitions, new DictionaryComparators.ClassDefinitionComparator(dictionaryservice));
         model.put(MODEL_PROP_KEY_CLASS_DEFS, classDefinitions);
         model.put(MODEL_PROP_KEY_PROPERTY_DETAILS, propdef.values());

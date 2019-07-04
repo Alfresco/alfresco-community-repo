@@ -255,7 +255,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
      */
     private void setupPermissions(NodeRef nodeRef)
     {
-        Set<AccessPermission> perms = new HashSet<AccessPermission>(4);
+        Set<AccessPermission> perms = new HashSet<>(4);
         
         // setup basic file and read for authorities
         perms.add(new AccessPermissionImpl(RMPermissionModel.READ_RECORDS, AccessStatus.ALLOWED, AUTHORITY, 0));

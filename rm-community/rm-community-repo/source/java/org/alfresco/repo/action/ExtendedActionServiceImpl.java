@@ -108,7 +108,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
         {
             // get the file component kind of the node reference
             FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-            result = new ArrayList<ActionDefinition>(actionDefinitions.size());
+            result = new ArrayList<>(actionDefinitions.size());
 
             // check each action definition
             for (ActionDefinition actionDefinition : actionDefinitions)

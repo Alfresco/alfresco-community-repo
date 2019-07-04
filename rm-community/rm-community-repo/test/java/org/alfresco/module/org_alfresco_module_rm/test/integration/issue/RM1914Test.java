@@ -66,7 +66,7 @@ public class RM1914Test extends BaseRMTestCase
                 NodeRef category1 = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 NodeRef category2 = filePlanService.createRecordCategory(filePlan, GUID.generate());
 
-                Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dsProps = new HashMap<>(3);
                 dsProps.put(PROP_DISPOSITION_AUTHORITY, CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY);
                 dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, GUID.generate());
                 dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, true);
@@ -74,11 +74,11 @@ public class RM1914Test extends BaseRMTestCase
                 NodeRef folder1 = recordFolderService.createRecordFolder(category1, GUID.generate());
 
                 // - add cutoff after "Related Record Transferred To Inactive Storage" completion event
-                Map<QName, Serializable> dispositionAction1 = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dispositionAction1 = new HashMap<>(3);
                 dispositionAction1.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 dispositionAction1.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
 
-                List<String> events = new ArrayList<String>(1);
+                List<String> events = new ArrayList<>(1);
                 events.add("related_record_trasfered_inactive_storage");
                 dispositionAction1.put(PROP_DISPOSITION_EVENT, (Serializable) events);
 
@@ -92,7 +92,7 @@ public class RM1914Test extends BaseRMTestCase
                 DispositionSchedule dispositionSchedule2 = dispositionService.createDispositionSchedule(category2, dsProps);
 
                 // - cutoff immediatelly
-                Map<QName, Serializable> dispositionAction2_1 = new HashMap<QName, Serializable>(3);
+                Map<QName, Serializable> dispositionAction2_1 = new HashMap<>(3);
                 dispositionAction2_1.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
                 dispositionAction2_1.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 dispositionAction2_1.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
@@ -100,7 +100,7 @@ public class RM1914Test extends BaseRMTestCase
                 dispositionService.addDispositionActionDefinition(dispositionSchedule2, dispositionAction2_1);
 
                 // - Transfer Immediatelly
-                Map<QName, Serializable> dispositionAction2_2 = new HashMap<QName, Serializable>(4);
+                Map<QName, Serializable> dispositionAction2_2 = new HashMap<>(4);
                 dispositionAction2_2.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
                 dispositionAction2_2.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
                 dispositionAction2_2.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);

@@ -108,7 +108,7 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
                 {
                     Set<QName> recordTypes = recordService.getRecordMetadataAspects(filePlan);
 
-                    result = new HashMap<String, String>(recordTypes.size());
+                    result = new HashMap<>(recordTypes.size());
                     for (QName recordType : recordTypes)
                     {
                         AspectDefinition aspectDefinition = dictionaryService.getAspect(recordType);

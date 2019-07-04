@@ -89,7 +89,7 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
         List<QName> updatedProps = (List<QName>)nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_UPDATED_PROPERTIES);
         if (updatedProps != null)
         {
-            Map<String, Serializable> params = new HashMap<String, Serializable>();
+            Map<String, Serializable> params = new HashMap<>();
             params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable)updatedProps);
             rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }

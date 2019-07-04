@@ -251,26 +251,27 @@ public final class RecordsManagementAuditEntry
     {
         if (this.beforeProperties != null && this.afterProperties != null)
         {
-            this.changedProperties = new HashMap<QName, Pair<Serializable, Serializable>>(
-                        this.beforeProperties.size() + this.afterProperties.size());
+            this.changedProperties = new HashMap<>(
+                    this.beforeProperties.size() + this.afterProperties.size());
 
             // add all the properties present before the audited action
-            for (QName valuePropName : this.beforeProperties.keySet())
+            for (Map.Entry<QName, Serializable> entry : this.beforeProperties.entrySet())
             {
-                Pair<Serializable, Serializable> values = new Pair<Serializable, Serializable>(
-                            this.beforeProperties.get(valuePropName),
-                            this.afterProperties.get(valuePropName));
+                final QName valuePropName = entry.getKey();
+                Pair<Serializable, Serializable> values = new Pair<>(
+                        entry.getValue(),
+                        this.afterProperties.get(valuePropName));
                 this.changedProperties.put(valuePropName, values);
             }
 
             // add all the properties present after the audited action that
             // have not already been added
-            for (QName valuePropName : this.afterProperties.keySet())
+            for (Map.Entry<QName, Serializable> entry : this.afterProperties.entrySet())
             {
+                final QName valuePropName = entry.getKey();
                 if (!this.beforeProperties.containsKey(valuePropName))
                 {
-                    Pair<Serializable, Serializable> values = new Pair<Serializable, Serializable>(null,
-                                this.afterProperties.get(valuePropName));
+                    Pair<Serializable, Serializable> values = new Pair<>(null, entry.getValue());
                     this.changedProperties.put(valuePropName, values);
                 }
             }

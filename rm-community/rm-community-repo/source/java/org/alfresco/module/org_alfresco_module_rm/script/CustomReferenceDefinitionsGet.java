@@ -65,7 +65,7 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
         Set<RelationshipDefinition> relationshipDefinitions = getRelationshipDefinitons(uniqueName);
         List<Map<String, String>> relationshipDefinitionData = createRelationshipDefinitionData(relationshipDefinitions);
 
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         model.put(CUSTOM_REFS, relationshipDefinitionData);
         return model;
     }
@@ -80,7 +80,7 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
      */
     private Set<RelationshipDefinition> getRelationshipDefinitons(String uniqueName)
     {
-        Set<RelationshipDefinition> relationshipDefinitions = new HashSet<RelationshipDefinition>();
+        Set<RelationshipDefinition> relationshipDefinitions = new HashSet<>();
 
         if (isBlank(uniqueName))
         {
@@ -106,11 +106,11 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
      */
     private List<Map<String, String>> createRelationshipDefinitionData(Set<RelationshipDefinition> relationshipDefinitions)
     {
-        List<Map<String, String>> relationshipDefinitionData = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> relationshipDefinitionData = new ArrayList<>();
 
         for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
         {
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, String> data = new HashMap<>();
 
             RelationshipType type = relationshipDefinition.getType();
             RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();

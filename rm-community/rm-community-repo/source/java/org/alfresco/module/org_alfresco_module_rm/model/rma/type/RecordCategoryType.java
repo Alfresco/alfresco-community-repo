@@ -64,7 +64,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                            NodeServicePolicies.OnCreateNodePolicy
 {
-    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<QName>();
+    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<>();
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
 
     /** vital record service */
@@ -226,7 +226,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
             @Override
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
-                return nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) ? false : true;
+                return !nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER);
             }
         };
     }

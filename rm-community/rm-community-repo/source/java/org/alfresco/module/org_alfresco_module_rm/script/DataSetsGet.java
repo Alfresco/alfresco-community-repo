@@ -104,11 +104,11 @@ public class DataSetsGet extends DeclarativeWebScript
 
       // Get the loaded/unloaded data sets depending on the "unloadedOnly" parameter
       Map<String, DataSet> dataSets = dataSetService.getDataSets(filePlan, unloadedOnly);
-      List<Map<String, String>> dataSetList = new ArrayList<Map<String, String>>(dataSets.size());
+      List<Map<String, String>> dataSetList = new ArrayList<>(dataSets.size());
 
       for (Map.Entry<String, DataSet> entry : dataSets.entrySet())
       {
-         Map<String, String> dataSet = new HashMap<String, String>(3);
+         Map<String, String> dataSet = new HashMap<>(3);
          DataSet value = entry.getValue();
 
          // Data set details
@@ -123,7 +123,7 @@ public class DataSetsGet extends DeclarativeWebScript
          dataSetList.add(dataSet);
       }
 
-      Map<String, Object> model = new HashMap<String, Object>(1);
+      Map<String, Object> model = new HashMap<>(1);
       model.put("datasets", dataSetList);
 
       return model;

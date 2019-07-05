@@ -65,7 +65,7 @@
         <dependency.alfresco-core.version>7.17</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.41</dependency.alfresco-data-model.version>
         <dependency.alfresco-repository.version>7.74</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>7.60</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-remote-api.version>7.65</dependency.alfresco-remote-api.version>
         <dependency.alfresco-hb-data-sender.version>1.0.11</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-spring-webscripts.version>7.2</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>

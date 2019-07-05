@@ -106,7 +106,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
     {
         // Using "is=true" includes the in-place readers and writers.
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
+        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject
+                ("data");
         return jsonObject.toMap().keySet();
     }
 
@@ -120,7 +121,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
     {
-        JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject("data");
+        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject
+                ("data");
         assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
         return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
     }
@@ -136,10 +138,10 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void createRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
-        JSONObject requestBody = new JSONObject();
+        final JSONObject requestBody = new JSONObject();
         requestBody.put("name", roleName);
         requestBody.put("displayLabel", roleDisplayLabel);
-        JSONArray capabilitiesArray = new JSONArray();
+        final JSONArray capabilitiesArray = new JSONArray();
         capabilities.forEach(capabilitiesArray::put);
         requestBody.put("capabilities", capabilitiesArray);
         doPostJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES);
@@ -156,10 +158,10 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void updateRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
     {
-        JSONObject requestBody = new JSONObject();
+        final JSONObject requestBody = new JSONObject();
         requestBody.put("name", roleName);
         requestBody.put("displayLabel", roleDisplayLabel);
-        JSONArray capabilitiesArray = new JSONArray();
+        final JSONArray capabilitiesArray = new JSONArray();
         capabilities.forEach(capabilitiesArray::put);
         requestBody.put("capabilities", capabilitiesArray);
         doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, requestBody, RM_ROLES_ROLE, roleName);
@@ -175,7 +177,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public void deleteRole(String adminUser, String adminPassword, String roleName)
     {
         doDeleteRequest(adminUser, adminPassword, MessageFormat.format(RM_ROLES_ROLE, "{0}", roleName));
-        boolean success = !getConfiguredRoles(adminUser, adminPassword).contains(roleName);
+        final boolean success = !getConfiguredRoles(adminUser, adminPassword).contains(roleName);
         assertTrue("Failed to delete role " + roleName + " with " + adminUser, success);
     }
 
@@ -206,8 +208,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void assignRoleToUser(String adminUser, String adminPassword, String userName, String role)
     {
-        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String reqURL = MessageFormat.format(
+        final AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        final String reqURL = MessageFormat.format(
                 RM_ROLES_AUTHORITIES,
                 client.getApiUrl(),
                 role,
@@ -456,7 +458,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
             return null;
         }
         // retrieve the Holds container nodeRef
-        String parentNodeRef = getItemNodeRef(user, password, "/Holds");
+        final String parentNodeRef = getItemNodeRef(user, password, "/Holds");
 
         final JSONObject requestParams = new JSONObject();
         requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);

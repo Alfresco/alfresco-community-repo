@@ -166,12 +166,12 @@ public class RMUserAPI extends RMModelRequest
      */
     public void setUserPermissionInheritance(String filePlanComponentId, Boolean isInherited)
     {
-        UserModel adminUser = getRmRestWrapper().getTestUser();
+        final UserModel adminUser = getRmRestWrapper().getTestUser();
 
         // get an "old-style" REST API client
-        AlfrescoHttpClient client = getAlfrescoHttpClient();
+        final AlfrescoHttpClient client = getAlfrescoHttpClient();
 
-        JsonObject bodyJson = buildObject()
+        final JsonObject bodyJson = buildObject()
                 .addArray("permissions")
                 .end()
                 .add("isInherited", isInherited)
@@ -184,7 +184,7 @@ public class RMUserAPI extends RMModelRequest
                 .build();
 
         // execute an "old-style" API call
-        Response response = given()
+        final Response response = given()
                 .spec(spec)
                 .auth().basic(adminUser.getUsername(), adminUser.getPassword())
                 .contentType(ContentType.JSON)
@@ -210,7 +210,7 @@ public class RMUserAPI extends RMModelRequest
     public boolean createUser(String userName, String userPassword, String userEmail)
     {
         UserModel adminUser = getRmRestWrapper().getTestUser();
-        AlfrescoHttpClient client = getAlfrescoHttpClient();
+        final AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         JsonObject body = buildObject()
             .add("userName", userName)
@@ -220,7 +220,7 @@ public class RMUserAPI extends RMModelRequest
             .add("email", userEmail)
             .getJson();
 
-        RequestSpecification spec = new RequestSpecBuilder()
+        final RequestSpecification spec = new RequestSpecBuilder()
             .setBaseUri(client.getApiUrl())
             .setBasePath("/")
             .setAuth(basic(adminUser.getUsername(), adminUser.getPassword()))

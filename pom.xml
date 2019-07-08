@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm</artifactId>
    <packaging>pom</packaging>
-   <version>2.5.3.2-SNAPSHOT</version>
+   <version>2.5.3.2</version>
    <name>Alfresco Records Management</name>
 
    <parent>
@@ -24,7 +24,7 @@
       <connection>scm:git:https://git.alfresco.com/records-management/records-management.git</connection>
       <developerConnection>scm:git:https://git.alfresco.com/records-management/records-management.git</developerConnection>
       <url>https://git.alfresco.com/records-management/records-management</url>
-     <tag>V2.5.3</tag>
+     <tag>V2.5.3.2</tag>
   </scm>
 
    <issueManagement>

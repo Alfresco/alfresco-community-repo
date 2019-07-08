@@ -236,14 +236,11 @@ public class DeleteRecordTests extends BaseRMRestTest
     public void userWithoutDeleteRecordsCapabilityCantDeleteRecord() throws Exception
     {
         // Create test user and add it with collaboration privileges
-        UserModel deleteUser = getDataUser().createRandomTestUser("delnoperm");
+        // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
+        UserModel deleteUser = createUserWithRMRole(ROLE_RM_POWER_USER.roleId);
         getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), SiteCollaborator);
         String username = deleteUser.getUsername();
         logger.info("Test user: " + username);
-
-        // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER.roleId);
-        assertStatusCode(OK);
 
         // Create random folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();

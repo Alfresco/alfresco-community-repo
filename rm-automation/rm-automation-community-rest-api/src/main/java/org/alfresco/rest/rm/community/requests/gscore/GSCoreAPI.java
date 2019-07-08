@@ -113,7 +113,7 @@ public class GSCoreAPI extends RMModelRequest
     /**
      * Provides DSL on all REST calls under <code>records/...</code> API path
      *
-     * @return {@link FilePlanComponentAPI}
+     * @return {@link RecordsAPI}
      */
     public RecordsAPI usingRecords()
     {

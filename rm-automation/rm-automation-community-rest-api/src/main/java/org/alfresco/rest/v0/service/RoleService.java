@@ -86,7 +86,7 @@ public class RoleService
      */
     public void addCapabilitiesToRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = new HashSet<>(getRoleCapabilities(role.roleId));
+        final Set<String> roleCapabilities = new HashSet<>(getRoleCapabilities(role.roleId));
         roleCapabilities.addAll(capabilities);
 
         getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
@@ -101,7 +101,7 @@ public class RoleService
      */
     public void removeCapabilitiesFromRole(UserRoles role, Set<String> capabilities)
     {
-        Set<String> roleCapabilities = getRoleCapabilities(role.roleId);
+        final Set<String> roleCapabilities = getRoleCapabilities(role.roleId);
         roleCapabilities.removeAll(capabilities);
         getRmRolesAndActionsAPI().updateRole(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 role.roleId, role.displayName, roleCapabilities);

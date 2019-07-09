@@ -86,7 +86,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     private static final Logger LOGGER = LoggerFactory.getLogger(RMRolesAndActionsAPI.class);
     private static final String MOVE_ACTIONS_API = "action/rm-move-to/site/rm/documentLibrary/{0}";
     private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
-    /** The URI to view the configured roles and capabilities. */
+    /** The URI to  add items to hold.*/
     private static final String RM_HOLDS_API = "{0}rma/holds";
 
     /** http client factory */
@@ -218,8 +218,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public void assignRoleToUser(String adminUser, String adminPassword, String userName, String role)
     {
-        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String reqURL = MessageFormat.format(
+        final AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        final String reqURL = MessageFormat.format(
                 RM_ROLES_AUTHORITIES,
                 client.getApiUrl(),
                 role,

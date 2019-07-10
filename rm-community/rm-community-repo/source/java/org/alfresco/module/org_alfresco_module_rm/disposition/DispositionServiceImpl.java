@@ -348,6 +348,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         return ds;
     }
 
+
+
+
     /**
      * This method returns a NodeRef
      * Gets the disposition instructions
@@ -380,7 +383,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 NodeRef result = getAssociatedDispositionScheduleImpl(parent);
                 if (result == null)
                 {
-                    return getOriginDispositionSchedule(parent);
+                    return null;
                 }
                 return new DispositionScheduleImpl(serviceRegistry, nodeService, result);
             }

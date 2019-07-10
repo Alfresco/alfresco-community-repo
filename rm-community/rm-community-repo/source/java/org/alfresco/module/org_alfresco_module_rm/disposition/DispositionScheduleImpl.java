@@ -35,6 +35,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -51,7 +52,10 @@ public class DispositionScheduleImpl implements DispositionSchedule,
     private NodeService nodeService;
     private RecordsManagementServiceRegistry services;
     private NodeRef dispositionDefinitionNodeRef;
-    
+    /** authentication helper */
+    private AuthenticationUtil authenticationUtil;
+
+
     private List<DispositionActionDefinition> actions;
     private Map<String, DispositionActionDefinition> actionsById;
     
@@ -61,6 +65,11 @@ public class DispositionScheduleImpl implements DispositionSchedule,
     
     /** Map of disposition definitions by disposition action name */
     private Map<String, DispositionActionDefinition> actionsByDispositionActionName;
+
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
     
     public DispositionScheduleImpl(RecordsManagementServiceRegistry services, NodeService nodeService,  NodeRef nodeRef)
     {
@@ -100,13 +109,18 @@ public class DispositionScheduleImpl implements DispositionSchedule,
      */
     public boolean isRecordLevelDisposition()
     {
-        boolean result = false;
-        Boolean value = (Boolean)this.nodeService.getProperty(this.dispositionDefinitionNodeRef, PROP_RECORD_LEVEL_DISPOSITION);
-        if (value != null)
+        return authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Boolean>()
         {
-            result = value.booleanValue();
-        }            
-        return result;
+            public Boolean doWork() throws Exception
+            {
+                Boolean value = (Boolean)nodeService.getProperty(dispositionDefinitionNodeRef, PROP_RECORD_LEVEL_DISPOSITION);
+                if (value != null)
+                {
+                    return value.booleanValue();
+                }
+                return null;
+            }
+        });
     }
 
     /**

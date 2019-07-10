@@ -28,7 +28,7 @@
 
     <properties>
         <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
-        <dependency.cxf.version>3.2.7</dependency.cxf.version>
+        <dependency.cxf.version>3.3.2</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,

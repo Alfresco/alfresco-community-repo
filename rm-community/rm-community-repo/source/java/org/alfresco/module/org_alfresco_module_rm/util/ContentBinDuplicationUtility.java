@@ -26,12 +26,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Utility class to duplicate the content of a node without triggering the audit or versioning behaviours
@@ -50,6 +54,8 @@ public class ContentBinDuplicationUtility
      * Provides methods for accessing and transforming content.
      */
     private ContentService contentService;
+
+    private NodeService nodeService;
 
     /**
      * Setter for behaviour filter
@@ -103,5 +109,24 @@ public class ContentBinDuplicationUtility
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
             writer.putContent(reader);
         }
+    }
+
+    /**
+     * Purposely orphans a binary file.
+     *
+     * This will prevent the removal of a binary file to address MNT-20740 where a binary
+     * file may be shared across nodes that try to delete the binary on deletion.
+     *
+     * Nodes created before 2.7.2 won't have been picked up by the binary duplication code
+     * and will cause problems if the file is removed. Orphaning the binary will mean if
+     * there is a node sharing this it will still be available and if there isn't the orphaned
+     * file will be picked up by the content cleaner on it's next pass.
+     *
+     * @param nodeRef The node who's binary file we want to orphan
+     */
+    public void orphanContent(NodeRef nodeRef)
+    {
+        Set<String> urlsToDelete = TransactionalResourceHelper.getSet("ContentStoreCleaner.PostCommitDeletionUrls");
+        urlsToDelete.remove(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl());
     }
 }

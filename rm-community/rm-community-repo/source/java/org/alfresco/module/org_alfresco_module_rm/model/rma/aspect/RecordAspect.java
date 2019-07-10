@@ -77,7 +77,8 @@ public class RecordAspect extends    AbstractDisposableItem
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
                                      CopyServicePolicies.OnCopyCompletePolicy,
-                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
+                                     ContentServicePolicies.OnContentPropertyUpdatePolicy,
+                                     NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -420,5 +421,24 @@ public class RecordAspect extends    AbstractDisposableItem
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+     * Behaviour to protect access to copied records binary files created prior to 2.7.2
+     * @param nodeRef Node with the binary in need of protection
+     */
+    @Override
+    @Behaviour
+    (
+        kind = BehaviourKind.CLASS,
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        if (!nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty() ||
+                !nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL).isEmpty())
+        {
+            contentBinDuplicationUtility.orphanContent(nodeRef);
+        }
     }
 }

@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -38,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Ross Gale
  * @since 2.7.2
  */
-public class ContentBinDuplicationUtility
+public class ContentBinDuplicationUtility extends ServiceBaseImpl
 {
 
     /**
@@ -47,26 +46,12 @@ public class ContentBinDuplicationUtility
     private BehaviourFilter behaviourFilter;
 
     /**
-     * Provides methods for accessing and transforming content.
-     */
-    private ContentService contentService;
-
-    /**
      * Setter for behaviour filter
      * @param behaviourFilter BehaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
-    }
-
-    /**
-     * Setter for content service
-     * @param contentService ContentService
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
     }
 
     /**

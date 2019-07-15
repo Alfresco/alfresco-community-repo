@@ -37,13 +37,13 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-repository.version>7.33.25</dependency.alfresco-repository.version>
-        <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>8.25.7</dependency.alfresco-data-model.version>
+        <dependency.alfresco-repository.version>7.33.29</dependency.alfresco-repository.version>
+        <dependency.alfresco-core.version>7.5.5</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.25.9</dependency.alfresco-data-model.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
 
-        <dependency.webscripts.version>6.20</dependency.webscripts.version>
+        <dependency.webscripts.version>7.8</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>42.2.5</dependency.postgresql.version>

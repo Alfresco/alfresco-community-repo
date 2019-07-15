@@ -194,7 +194,7 @@ function getDocResults(params)
    }
    
    // main query construction
-   ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"fm:post" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
+   ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"fm:post" AND -ASPECT:"sys:hidden" AND -cm:creator:System';
    
    if (logger.isLoggingEnabled())
       logger.log("LiveQuery:\r\n" + ftsQuery);

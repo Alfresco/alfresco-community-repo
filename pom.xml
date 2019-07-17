@@ -77,7 +77,7 @@
         <dependency.alfresco-api-explorer.version>6.1.0</dependency.alfresco-api-explorer.version>
 
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
-        <dependency.fabric8.version>3.5.37</dependency.fabric8.version>
+        <dependency.fabric8.version>4.1.0</dependency.fabric8.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
 

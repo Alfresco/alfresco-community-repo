@@ -63,6 +63,7 @@
         <dependency.camel.version>2.24.1</dependency.camel.version>
         <dependency.activemq.version>5.15.9</dependency.activemq.version>
         <dependency.pdfbox.version>2.0.16</dependency.pdfbox.version>
+        <dependency.cxf.version>3.3.2</dependency.cxf.version>
     </properties>
 
     <dependencyManagement>
@@ -83,6 +84,12 @@
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>1.12.1</version>
+            </dependency>
+            <!-- upgrade cxf libraries -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${dependency.cxf.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

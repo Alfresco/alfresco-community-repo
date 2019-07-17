@@ -1,6 +1,9 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: java
+jdk:
+  - openjdk11
+
 services:
   - docker
 
@@ -25,7 +28,6 @@ matrix:
     - name: "WhiteSource scan"
       # only on master and if it is not a PR
       if: fork = false AND branch = master AND type != pull_request
-      jdk: openjdk11
       install:
         - travis_retry travis_wait 30 mvn -q install -Dbuild-number=${TRAVIS_BUILD_NUMBER} "-Dbuild-key=${TRAVIS_COMMIT}" "-Dbuild-name=${TRAVIS_BUILD_WEB_URL}" "-Dscm-path=${TRAVIS_REPO_SLUG}" "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
       script:
@@ -34,7 +36,6 @@ matrix:
         # Run WhiteSource Unified Agent
         - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./war
     - name: "Build packaging"
-      jdk: openjdk11
       install: skip
       script:
         - travis_retry travis_wait 40 mvn install -q -Dbuild-number=${TRAVIS_BUILD_NUMBER} -Dbuild-key=${TRAVIS_COMMIT} -Dbuild-name="${TRAVIS_BUILD_WEB_URL}" -Dscm-path=${TRAVIS_REPO_SLUG} "-Dversion.edition=${VERSION_EDITION}" "-Dimage.tag=${DOCKER_IMAGE_TAG}" -Dimage.registry=${DOCKER_IMAGE_REGISTRY} -Dimage.name=${ALFRESCO_IMAGE_NAME} -Dmaven.javadoc.skip=true -PcommunityDocker

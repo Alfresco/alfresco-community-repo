@@ -27,9 +27,9 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-core.version>7.5.5</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>7.5.6</dependency.alfresco-core.version>
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
-        <!-- Files to exclude from SonarQube analysis -->
+        <!-- Files to exclude from SonarQube aalysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
             source/java/org/alfresco/repo/search/impl/parsers/FTSParser.java,

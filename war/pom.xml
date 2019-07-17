@@ -209,7 +209,7 @@
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.2.3</version>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
                 <executions>
                     <execution>

@@ -248,10 +248,8 @@
       </property>
    </bean>
 
-   <bean name="contentBinDuplicationUtility" class="org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility">
+   <bean name="contentBinDuplicationUtility" class="org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility" parent="baseService">
       <property name="behaviourFilter" ref="policyBehaviourFilter"/>
-      <property name="contentService" ref="contentService"/>
-      <property name="nodeService" ref="nodeService"/>
    </bean>
 
    <!--  Prevent ghosted records being renditioned -->

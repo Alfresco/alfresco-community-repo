@@ -26,37 +26,23 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Utility class to duplicate the content of a node without triggering the audit or versioning behaviours
  * @author Ross Gale
  * @since 2.7.2
  */
-public class ContentBinDuplicationUtility
+public class ContentBinDuplicationUtility extends ServiceBaseImpl
 {
     /**
      * Behaviour filter
      */
     private BehaviourFilter behaviourFilter;
-
-    /**
-     * Provides methods for accessing and transforming content.
-     */
-    private ContentService contentService;
-
-    /**
-     * Node service
-     */
-    private NodeService nodeService;
 
     /**
      * Setter for behaviour filter
@@ -67,34 +53,6 @@ public class ContentBinDuplicationUtility
         this.behaviourFilter = behaviourFilter;
     }
 
-    /**
-     * Setter for content service
-     * @param contentService ContentService
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
-    /**
-     * Setter for node service
-     *
-     * @param nodeService NodeService
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * Getter for node service
-     *
-     * @return  nodeService
-     */
-    public NodeService getNodeService()
-    {
-        return nodeService;
-    }
     /**
      * Duplicate the content of a node without triggering the audit or versioning behaviours
      *

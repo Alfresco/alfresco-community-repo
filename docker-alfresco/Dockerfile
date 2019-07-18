@@ -23,7 +23,7 @@ ARG TOMCAT_DIR=/usr/local/tomcat
 ENV ALFRESCO_PDF_RENDERER_LIB_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
 ENV PDFIUM_LICENSE_FILE=https://github.com/Alfresco/acs-community-packaging/blob/master/distribution/src/main/resources/licenses/3rd-party/pdfium.txt
 
-ENV LIBREOFFICE_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/libreoffice/libreoffice-dist/5.4.6/libreoffice-dist-5.4.6-linux.gz
+ENV LIBREOFFICE_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/libreoffice/libreoffice-dist/6.1.6/libreoffice-dist-6.1.6-linux.gz
 ENV LIBREOFFICE_LICENSE_FILE=https://github.com/Alfresco/acs-community-packaging/blob/master/distribution/src/main/resources/licenses/3rd-party/libreoffice.txt
 
 ENV IMAGEMAGICK_RPM_URL=https://nexus.alfresco.com/nexus/service/local/repositories/thirdparty/content/org/imagemagick/imagemagick-distribution/7.0.7-27/imagemagick-distribution-7.0.7-27-linux.rpm
@@ -83,7 +83,7 @@ alfresco-pdf-renderer.exe=${alfresco-pdf-renderer.root}/alfresco-pdf-renderer\n\
 \n\
 jodconverter.enabled=true\n\
 jodconverter.portNumbers=8100\n\
-jodconverter.officeHome=/opt/libreoffice5.4/\n\
+jodconverter.officeHome=/opt/libreoffice6.1/\n\
 \n\
 img.root=/usr/lib64/ImageMagick-7.0.7\n\
 img.coders=/usr/lib64/ImageMagick-7.0.7/modules-Q16HDRI/coders\n\

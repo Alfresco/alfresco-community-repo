@@ -34,16 +34,16 @@ public class SearchScoreModel extends TestModel implements IRestModel<SearchScor
 {
     
     @JsonProperty(required = true)
-    private int score;
+    private float score;
     
     private List<ResponseHighLightModel> highlight;
 
-    public int getScore()
+    public float getScore()
     {
         return score;
     }
 
-    public void setScore(int score)
+    public void setScore(float score)
     {
         this.score = score;
     }

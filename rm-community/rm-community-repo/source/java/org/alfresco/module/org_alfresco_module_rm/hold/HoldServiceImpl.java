@@ -539,13 +539,15 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef))
+        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
             String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            // TODO error message needs to be changed
             throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder. Only records or record folders can be added to a hold.");
         }
 
-        if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+        if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
+                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
         {
             String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");

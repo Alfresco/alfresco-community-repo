@@ -50,44 +50,31 @@ public enum ShardMethodEnum
         {
             return UNKOWN;
         }
-        ShardMethodEnum shardMethodEnum;
-        switch (shardMethod)
+
+        switch (shardMethod.toUpperCase())
         {
-            //MOD_ACL_ID legacy acl used in Alfresco 5.1
             case "MOD_ACL_ID":
-                shardMethodEnum = MOD_ACL_ID;
-                break;
-            //ACL id based on murmur hash.
+                return MOD_ACL_ID;
             case "ACL_ID":
-                shardMethodEnum = ACL_ID;
-                break;
+                return ACL_ID;
             case "DB_ID":
-                shardMethodEnum = DB_ID;
-                break;
+                return DB_ID;
             case "DB_ID_RANGE":
-                shardMethodEnum = DB_ID_RANGE;
-                break;
+                return DB_ID_RANGE;
             case "DATE":
-                shardMethodEnum = DATE;
-                break;
+                return DATE;
             case "PROPERTY":
-                shardMethodEnum = PROPERTY;
-                break;
+                return PROPERTY;
             case "EXPLICIT_ID":
             case "EXPLICIT_ID_FALLBACK_DBID":
-                shardMethodEnum = EXPLICIT_ID; // Should be better EXPLICIT_ID_FALLBACK_DBID. However, the old value is EXPLICIT_ID
-                break;
+                return EXPLICIT_ID;
             case "LRIS":
             case "LAST_REGISTERED_INDEXING_SHARD":
-                shardMethodEnum = LAST_REGISTERED_INDEXING_SHARD;
-                break;
+                return LAST_REGISTERED_INDEXING_SHARD;
             case "EXPLICIT_ID_FALLBACK_LRIS":
-                shardMethodEnum = EXPLICIT_ID_FALLBACK_LRIS;
-                break;
+                return EXPLICIT_ID_FALLBACK_LRIS;
             default:
-                shardMethodEnum = UNKOWN;
-                break;
+                return UNKOWN;
         }
-        return shardMethodEnum;
     }
 }

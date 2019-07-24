@@ -32,9 +32,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit test to verify enum works as expected
- * @author Michael Suzuki
+ * Unit test to verify enum works as expected.
  *
+ * @author Michael Suzuki
+ * @author agazzarini
  */
 public class ShardMethodEnumTest
 {
@@ -55,6 +56,7 @@ public class ShardMethodEnumTest
     {
         Assert.assertEquals(ShardMethodEnum.ACL_ID, ShardMethodEnum.getShardMethod("ACL_ID"));
     }
+
     @Test
     public void testTypeDBID()
     {
@@ -86,24 +88,45 @@ public class ShardMethodEnumTest
     {
         Assert.assertEquals(ShardMethodEnum.DATE, ShardMethodEnum.getShardMethod("DATE"));
     }
+
     @Test
     public void testTypeProperty()
     {
         Assert.assertEquals(ShardMethodEnum.PROPERTY, ShardMethodEnum.getShardMethod("PROPERTY"));
     }
+
     @Test
     public void testUnknown()
     {
         Assert.assertEquals(ShardMethodEnum.UNKOWN, ShardMethodEnum.getShardMethod("UNKOWN"));
+        Assert.assertEquals(ShardMethodEnum.UNKOWN, ShardMethodEnum.getShardMethod("Some else unknown value"));
     }
+
     @Test
     public void testNull()
     {
         Assert.assertEquals(ShardMethodEnum.UNKOWN, ShardMethodEnum.getShardMethod(null));
     }
+
     @Test
     public void testEmpty()
     {
         Assert.assertEquals(ShardMethodEnum.UNKOWN, ShardMethodEnum.getShardMethod(""));
+    }
+
+    @Test
+    public void matchIsCaseInsensitive()
+    {
+        Assert.assertEquals(ShardMethodEnum.MOD_ACL_ID, ShardMethodEnum.getShardMethod("MoD_aCl_id"));
+        Assert.assertEquals(ShardMethodEnum.DB_ID_RANGE, ShardMethodEnum.getShardMethod("db_id_range"));
+        Assert.assertEquals(ShardMethodEnum.ACL_ID, ShardMethodEnum.getShardMethod("Acl_Id"));
+        Assert.assertEquals(ShardMethodEnum.DB_ID, ShardMethodEnum.getShardMethod("Db_Id"));
+        Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID, ShardMethodEnum.getShardMethod("Explicit_Id"));
+        Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID, ShardMethodEnum.getShardMethod("explicit_ID_fallback_DBID"));
+        Assert.assertEquals(ShardMethodEnum.LAST_REGISTERED_INDEXING_SHARD, ShardMethodEnum.getShardMethod("LRIS"));
+        Assert.assertEquals(ShardMethodEnum.LAST_REGISTERED_INDEXING_SHARD, ShardMethodEnum.getShardMethod("LAST_REGISTERED_INDEXING_SHARD"));
+        Assert.assertEquals(ShardMethodEnum.DATE, ShardMethodEnum.getShardMethod("datE"));
+        Assert.assertEquals(ShardMethodEnum.PROPERTY, ShardMethodEnum.getShardMethod("PropertY"));
+        Assert.assertEquals(ShardMethodEnum.UNKOWN, ShardMethodEnum.getShardMethod("Unknown"));
     }
 }

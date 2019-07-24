@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -148,25 +150,24 @@ public class FrozenAspect extends    BaseBehaviourBean
             kind = BehaviourKind.CLASS,
             notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onAddAspect(final NodeRef record, final QName aspectTypeQName)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
             {
-                if (nodeService.exists(record) &&
-                    isRecord(record))
+                if (nodeService.exists(nodeRef) && (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
                 {
-                    // get the owning record folder
-                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+                    // get the owning nodeRef folder
+                    NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
                     // check that the aspect has been added
-                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                    if (nodeService.hasAspect(parentRef, ASPECT_HELD_CHILDREN))
                     {
                         // increment current count
-                        int currentCount = (Integer)nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                        int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
                         currentCount = currentCount + 1;
-                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                        nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
                     }
                 }
                 return null;

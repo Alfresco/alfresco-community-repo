@@ -539,18 +539,22 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
+        String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
-            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            // TODO error message needs to be changed
-            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder. Only records or record folders can be added to a hold.");
+            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder nor a document. " +
+                    "Only records, record folders or active content can be added to a hold.");
         }
 
         if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
                 permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
         {
-            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
+        }
+        else if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
+                permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
+        {
+            throw new AlfrescoRuntimeException("Write permission on '" + nodeName + "' is needed.");
         }
 
         for (final NodeRef hold : holds)
@@ -563,7 +567,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
             if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
             {
-                String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
                 throw new AlfrescoRuntimeException("'" + nodeName + "' can't be added to the hold container as filing permission for '" + holdName + "' is needed.");
             }

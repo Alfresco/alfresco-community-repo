@@ -27,7 +27,7 @@
    
    <properties>
       <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
-      <dependency.surf.version>7.4</dependency.surf.version>
+      <dependency.surf.version>7.8</dependency.surf.version>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
    </properties>
 

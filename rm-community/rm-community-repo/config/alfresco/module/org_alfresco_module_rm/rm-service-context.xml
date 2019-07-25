@@ -1563,7 +1563,7 @@
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.isHold=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHolds=RM.Read.0,AFTER_RM.FilterNode
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
-            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=ACL_NODE.0.sys:base.Read,RM.Read.0,AFTER_RM.FilterNode
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
             org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0

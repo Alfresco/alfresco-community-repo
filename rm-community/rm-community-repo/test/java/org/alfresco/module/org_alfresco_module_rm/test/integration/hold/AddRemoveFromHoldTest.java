@@ -45,64 +45,6 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
 {
     private static final int RECORD_COUNT = 10;
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
-
-    public void testAddActiveContentToHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-
-            public void given()
-            {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
-                assertFalse(freezeService.hasFrozenChildren(dmFolder));
-
-                // additional check for child held caching
-                assertFalse(nodeService.hasAspect(dmFolder, ASPECT_HELD_CHILDREN));
-            }
-
-            public void when() throws Exception
-            {
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
-
-            public void then()
-            {
-                // active content is held
-                assertTrue(freezeService.isFrozen(dmDocument));
-
-                // collaboration folder has frozen children
-                assertFalse(freezeService.isFrozen(dmFolder));
-                assertTrue(freezeService.hasFrozenChildren(dmFolder));
-
-                // collaboration folder is not held
-                assertFalse(holdService.getHeld(hold).contains(dmFolder));
-                assertFalse(holdService.heldBy(dmFolder, true).contains(hold));
-
-                // hold contains active content
-                assertTrue(holdService.getHeld(hold).contains(dmDocument));
-                assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
-
-                // additional check for child held caching
-                assertTrue(nodeService.hasAspect(dmFolder, ASPECT_HELD_CHILDREN));
-                assertEquals(1, nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
-
     public void testAddRecordToHold()
     { 
         doBehaviourDrivenTest(new BehaviourDrivenTest()

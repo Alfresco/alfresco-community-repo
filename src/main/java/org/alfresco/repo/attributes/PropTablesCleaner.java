@@ -28,6 +28,7 @@ package org.alfresco.repo.attributes;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
@@ -74,11 +75,14 @@ public class PropTablesCleaner
     {
         checkProperties();
         
-        String lockToken = null;
+        String propCleanUplockToken = null;
+        String ldapSyncLockTocken = null;
         try
         {
-            // Get a lock
-            lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            // Get a lock for cleanup
+            propCleanUplockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
+            // Get a lock for LDAP sync as well, see REPO-4556
+            ldapSyncLockTocken = jobLockService.getLock(ChainingUserRegistrySynchronizer.LOCK_QNAME, LOCK_TTL);
             propertyValueDAO.cleanupUnusedValues();
         }
         catch (LockAcquisitionException e)
@@ -90,11 +94,22 @@ public class PropTablesCleaner
         }
         finally
         {
-            if (lockToken != null)
+            if (propCleanUplockToken != null)
             {
                 try
                 {
-                    jobLockService.releaseLock(lockToken, LOCK_QNAME);
+                    jobLockService.releaseLock(propCleanUplockToken, LOCK_QNAME);
+                }
+                catch (LockAcquisitionException e)
+                {
+                    // Ignore
+                }
+            }
+            if (ldapSyncLockTocken != null)
+            {
+                try
+                {
+                    jobLockService.releaseLock(ldapSyncLockTocken, ChainingUserRegistrySynchronizer.LOCK_QNAME);
                 }
                 catch (LockAcquisitionException e)
                 {

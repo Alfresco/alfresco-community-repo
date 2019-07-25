@@ -113,7 +113,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizer.class);
 
     /** The name of the lock used to ensure that a synchronize does not run on more than one node at the same time. */
-    private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI,
+    public static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI,
             "ChainingUserRegistrySynchronizer");
 
     /** The time this lock will persist for in the database (now only 2 minutes but refreshed at regular intervals). */

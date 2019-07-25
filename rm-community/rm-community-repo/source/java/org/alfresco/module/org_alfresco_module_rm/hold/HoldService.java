@@ -69,7 +69,7 @@ public interface HoldService
     /**
      * Gets the list of all the holds within the holds container for the given node reference
      *
-     * @param nodeRef The {@link NodeRef} of the record / record folder
+     * @param nodeRef The {@link NodeRef} of the record / record folder /active content
      * @param includedInHold <code>true</code> to retrieve the list of hold node references which will include the node reference
      * <code>false</code> to get a list of node references which will not have the given node reference
      * @return List of hold node references
@@ -119,10 +119,10 @@ public interface HoldService
     void deleteHold(NodeRef hold);
 
     /**
-     * Adds the record to the given hold
+     * Adds the item to the given hold
      *
-     * @param hold The {@link NodeRef} of the hold
-     * @param nodeRef The {@link NodeRef} of the record / record folder which will be added to the given hold
+     * @param hold    The {@link NodeRef} of the hold
+     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will be added to the given hold
      */
     void addToHold(NodeRef hold, NodeRef nodeRef);
 
@@ -135,10 +135,10 @@ public interface HoldService
     void addToHold(NodeRef hold, List<NodeRef> nodeRefs);
 
     /**
-     * Adds the record to the given list of holds
+     * Adds the item to the given list of holds
      *
      * @param holds The list of {@link NodeRef}s of the holds
-     * @param nodeRef The {@link NodeRef} of the record / record folder which will be added to the given holds
+     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will be added to the given holds
      */
     void addToHolds(List<NodeRef> holds, NodeRef nodeRef);
 

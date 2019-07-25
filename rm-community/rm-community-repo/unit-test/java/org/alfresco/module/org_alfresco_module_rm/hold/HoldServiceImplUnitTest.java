@@ -54,10 +54,12 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -107,6 +109,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
+        doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
     }
 
     @Test
@@ -125,6 +128,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, recordFolder, true, 2));
         doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
+        //setup active content in multiple holds
+        doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+
         // check that both holds are found for record folder
         List<NodeRef> heldByHolds = holdService.heldBy(recordFolder, true);
         assertNotNull(heldByHolds);
@@ -136,6 +142,12 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         assertNotNull(heldByHolds);
         assertEquals(2, heldByHolds.size());
         assertTrue(holdService.heldBy(record, false).isEmpty());
+
+        // check that both holds are found for active content
+        heldByHolds = holdService.heldBy(activeContent, true);
+        assertNotNull(heldByHolds);
+        assertEquals(2, heldByHolds.size());
+        assertTrue(holdService.heldBy(activeContent, false).isEmpty());
     }
 
     @Test (expected=AlfrescoRuntimeException.class)
@@ -368,6 +380,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void addActiveContentToHoldNoPermissionsOnHold()
     {
         when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void addActiveContentToHoldNoPermissionsOnContent()
+    {
+        when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }
 

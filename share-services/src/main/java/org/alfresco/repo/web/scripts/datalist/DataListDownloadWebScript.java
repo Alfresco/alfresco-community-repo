@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Share Services AMP
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,12 +55,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -362,7 +357,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
                 else
                 {
                    // This property isn't set
-                   c.setCellType(Cell.CELL_TYPE_BLANK);
+                   c.setCellType(CellType.BLANK);
                 }
              }
              else

@@ -415,7 +415,7 @@ public class Node extends ModelRequest<Node>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}",repoModel.getNodeRef(), renditionId);
         RestRenditionInfoModel renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
         int retry = 0;
-        if (restWrapper.getStatusCode().equals(HttpStatus.OK.toString()))
+        if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
         {
             while (renditions.getStatus().equals("NOT_CREATED") && retry < Utility.retryCountSeconds - 8)
             {

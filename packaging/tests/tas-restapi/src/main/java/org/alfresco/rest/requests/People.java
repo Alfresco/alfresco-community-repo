@@ -81,7 +81,7 @@ public class People extends ModelRequest<People>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/activities?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         RestActivityModelsCollection activityCollection = restWrapper.processModels(RestActivityModelsCollection.class, request);
         int retry = 0;
-        if (restWrapper.getStatusCode().equals(HttpStatus.OK.toString()))
+        if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
         {
             while ((activityCollection.isEmpty() || activityCollection.getPagination().getCount() != expectedNoOfEntries) && retry < Utility.retryCountSeconds + 20)
             {

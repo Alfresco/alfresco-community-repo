@@ -43,7 +43,7 @@ public class Tenant extends ModelRequest<Tenant>
                 .contentType(ContentType.JSON);
         Response returnedResponse = request.contentType(ContentType.JSON).body(json)
                 .post(String.format("%s/%s", restProperties.envProperty().getFullServerUrl(), "alfresco/service/api/tenants")).andReturn();
-        if (!String.valueOf(returnedResponse.getStatusCode()).equals(HttpStatus.OK.toString()))
+        if (!Integer.valueOf(returnedResponse.getStatusCode()).equals(HttpStatus.OK.value()))
         {
             throw new Exception(String.format("Tenant is not created: %s", returnedResponse.asString()));
         }

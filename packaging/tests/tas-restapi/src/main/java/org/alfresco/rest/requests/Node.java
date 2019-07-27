@@ -382,7 +382,7 @@ public class Node extends ModelRequest<Node>
     public void createNodeRenditionIfNotExists(String renditionId) throws Exception
     {
         getNodeRendition(renditionId);
-        if (HttpStatus.OK.toString().equals(restWrapper.getStatusCode()))
+        if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
         {
             String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
             RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/renditions", repoModel.getNodeRef());

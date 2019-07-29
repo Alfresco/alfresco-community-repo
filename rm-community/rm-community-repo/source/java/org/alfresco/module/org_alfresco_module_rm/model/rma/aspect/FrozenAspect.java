@@ -28,8 +28,13 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
+import static org.alfresco.repo.site.SiteModel.ASPECT_SITE_CONTAINER;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
@@ -168,6 +173,16 @@ public class FrozenAspect extends    BaseBehaviourBean
                         int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
                         currentCount = currentCount + 1;
                         nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
+                    }
+                    else
+                    {
+                        if(instanceOf(parentRef, TYPE_FOLDER) && !nodeService.hasAspect(parentRef, ASPECT_SITE_CONTAINER))
+                        {
+                            // add aspect and set count to 1
+                            Map<QName, Serializable> props = new HashMap<>(1);
+                            props.put(PROP_HELD_CHILDREN_COUNT, 1);
+                            getInternalNodeService().addAspect(parentRef, ASPECT_HELD_CHILDREN, props);
+                        }
                     }
                 }
                 return null;

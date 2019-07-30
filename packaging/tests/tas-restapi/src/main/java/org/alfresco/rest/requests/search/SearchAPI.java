@@ -18,8 +18,11 @@
  */
 package org.alfresco.rest.requests.search;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.exception.ModelToJsonConversionException;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
@@ -40,9 +43,17 @@ public class SearchAPI extends ModelRequest<SearchAPI>
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
-    public SearchResponse search(SearchRequest queryBody) throws Exception
+    public SearchResponse search(SearchRequest queryBody)
     {
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody.toJson(), "search");
+        RestRequest request;
+        try
+        {
+            request = RestRequest.requestWithBody(HttpMethod.POST, queryBody.toJson(), "search");
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new ModelToJsonConversionException(queryBody.getClass(), e);
+        }
         return restWrapper.processModels(SearchResponse.class, request);
     }
 }

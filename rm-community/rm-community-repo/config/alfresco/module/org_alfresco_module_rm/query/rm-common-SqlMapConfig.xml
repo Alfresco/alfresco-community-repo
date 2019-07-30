@@ -2,12 +2,28 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 
+    <typeAliases>
+        <!-- General -->
+        <typeAlias alias="Ids" type="org.alfresco.ibatis.IdsEntity"/>
+
+        <!-- Content -->
+        <typeAlias alias="Mimetype" type="org.alfresco.repo.domain.mimetype.MimetypeEntity"/>
+        <typeAlias alias="Encoding" type="org.alfresco.repo.domain.encoding.EncodingEntity"/>
+        <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
+        <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
+        <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
+        <typeAlias alias="ContentUrlKey" type="org.alfresco.repo.domain.contentdata.ContentUrlKeyEntity"/>
+        <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
+        <typeAlias alias="SymmetricKeyCount" type="org.alfresco.repo.domain.contentdata.SymmetricKeyCount"/>
+    </typeAliases>
+
     <typeHandlers>
         <typeHandler javaType="java.io.Serializable" handler="org.alfresco.ibatis.SerializableTypeHandler"/>
     </typeHandlers>
 
     <mappers>
         <mapper resource="alfresco/module/org_alfresco_module_rm/query/rm-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>
     </mappers>
 
 </configuration>

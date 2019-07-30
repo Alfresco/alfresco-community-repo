@@ -28,6 +28,8 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
+import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -39,6 +41,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -62,6 +66,9 @@ public class ContentBinDuplicationUtilityUnitTest
 
     @Mock
     private ContentWriter contentWriter;
+
+    @Mock
+    private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
     @InjectMocks
     private ContentBinDuplicationUtility contentBinDuplicationUtility;
@@ -97,6 +104,41 @@ public class ContentBinDuplicationUtilityUnitTest
         contentBinDuplicationUtility.duplicate(nodeRef);
         verify(contentWriter, times(0)).putContent(contentReader);
         checkBehaviours(1);
+    }
+
+    /**
+     * Test hasAtLeastOneOtherReference returns true when node has another reference to it
+     */
+    @Test
+    public void testHasAtLeastOneOtherReference()
+    {
+        NodeRef nodeRef = new NodeRef("some://test/noderef");
+        String contentUrl = "someContentUrl";
+
+        when(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentReader);
+        when(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(contentUrl);
+        when(recordsManagementQueryDAO.getContentUrlEntityUnreferenced(contentUrl)).thenReturn(null);
+
+        boolean hasReference = contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef);
+        assertTrue(hasReference);
+    }
+
+    /**
+     * Test hasAtLeastOneOtherReference returns false when node has no other reference to it
+     */
+    @Test
+    public void testHasNoOtherReference()
+    {
+        NodeRef nodeRef = new NodeRef("some://test/noderef");
+        String contentUrl = "someContentUrl";
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+
+        when(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentReader);
+        when(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(contentUrl);
+        when(recordsManagementQueryDAO.getContentUrlEntityUnreferenced(contentUrl)).thenReturn(contentUrlEntity);
+
+        boolean hasReference = contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef);
+        assertFalse(hasReference);
     }
 
     /**

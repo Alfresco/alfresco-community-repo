@@ -26,16 +26,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
+import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Utility class to duplicate the content of a node without triggering the audit or versioning behaviours
@@ -55,7 +53,8 @@ public class ContentBinDuplicationUtility
      */
     private ContentService contentService;
 
-    private NodeService nodeService;
+    /** Records Management Query DAO */
+    private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
     /**
      * Setter for behaviour filter
@@ -73,6 +72,34 @@ public class ContentBinDuplicationUtility
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * Setter for the Records Management QueryDAO
+     *
+     * @param recordsManagementQueryDAO The RM query DAO to set
+     */
+    public void setRecordsManagementQueryDAO(RecordsManagementQueryDAO recordsManagementQueryDAO)
+    {
+        this.recordsManagementQueryDAO = recordsManagementQueryDAO;
+    }
+
+    /**
+     * Determines whether the bin file for a given node has at least one other reference to it
+     * Will return true if the binary exists and is referenced by at least one other node
+     * @param nodeRef Node with the binary in question
+     * @return boolean for if the bin has at least one other reference to it
+     */
+    public boolean hasAtLeastOneOtherReference(NodeRef nodeRef)
+    {
+        boolean hasAtLeastOneOtherReference = false;
+        String contentUrl = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl();
+        ContentUrlEntity contentUrlEntity = recordsManagementQueryDAO.getContentUrlEntityUnreferenced(contentUrl);
+        if (contentUrlEntity == null)
+        {
+            hasAtLeastOneOtherReference = true;
+        }
+        return hasAtLeastOneOtherReference;
     }
 
     /**
@@ -109,24 +136,5 @@ public class ContentBinDuplicationUtility
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
             writer.putContent(reader);
         }
-    }
-
-    /**
-     * Purposely orphans a binary file.
-     *
-     * This will prevent the removal of a binary file to address MNT-20740 where a binary
-     * file may be shared across nodes that try to delete the binary on deletion.
-     *
-     * Nodes created before 2.7.2 won't have been picked up by the binary duplication code
-     * and will cause problems if the file is removed. Orphaning the binary will mean if
-     * there is a node sharing this it will still be available and if there isn't the orphaned
-     * file will be picked up by the content cleaner on it's next pass.
-     *
-     * @param nodeRef The node who's binary file we want to orphan
-     */
-    public void orphanContent(NodeRef nodeRef)
-    {
-        Set<String> urlsToDelete = TransactionalResourceHelper.getSet("ContentStoreCleaner.PostCommitDeletionUrls");
-        urlsToDelete.remove(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl());
     }
 }

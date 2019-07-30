@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.tenant.TenantService;
@@ -53,6 +54,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
     private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetStringPropertyValuesOfChildren";
+    private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
 
     /** SQL session template */
     protected SqlSessionTemplate template;
@@ -142,5 +144,19 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         // Perform the query
         return new HashSet<>(template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams));
 
+    }
+
+    @Override
+    public ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setContentUrl(contentUrl);
+        if (contentUrlEntity.getContentUrlShort() != null)
+        {
+            contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
+        }
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
+
+        return contentUrlEntity;
     }
 }

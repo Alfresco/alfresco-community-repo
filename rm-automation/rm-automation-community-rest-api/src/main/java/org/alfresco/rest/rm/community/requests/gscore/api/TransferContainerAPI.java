@@ -73,7 +73,7 @@ public class TransferContainerAPI extends RMModelRequest
      * @param transferContainerId The identifier of a transfer container
      * @param parameters The URL parameters to add
      * @return The {@link TransferContainer} for the given {@code transferContainerId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code transferContainerId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -96,7 +96,7 @@ public class TransferContainerAPI extends RMModelRequest
     /**
      * see {@link #updateTransferContainer(TransferContainer, String, String)
      */
-    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId) throws Exception
+    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId)
     {
         mandatoryObject("transferContainerModel", transferContainerModel);
         mandatoryString("transferContainerId", transferContainerId);
@@ -111,7 +111,7 @@ public class TransferContainerAPI extends RMModelRequest
      * @param transferContainerId The identifier of a transfer container
      * @param parameters The URL parameters to add
      * @param returns The updated {@link TransferContainer}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code transferContainerId} is not a valid format or {@code transferContainerModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -121,7 +121,7 @@ public class TransferContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including transfer container name with invalid characters</li>
      * </ul>
      */
-    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId, String parameters) throws Exception
+    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId, String parameters)
     {
         mandatoryObject("transferContainerModel", transferContainerModel);
         mandatoryString("transferContainerId", transferContainerId);
@@ -151,7 +151,7 @@ public class TransferContainerAPI extends RMModelRequest
      * @param transferContainerId The identifier of a transfer container
      * @param parameters The URL parameters to add
      * @return The {@link TransferCollection} for the given {@code transferContainerId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code transferContainerId}</li>

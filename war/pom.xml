@@ -59,6 +59,10 @@
             <artifactId>standard</artifactId>
             <version>1.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-log-sanitizer</artifactId>
+        </dependency>
         <!-- REPO-3918 needed libraries for Java 11 -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>

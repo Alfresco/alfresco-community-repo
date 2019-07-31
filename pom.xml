@@ -75,6 +75,7 @@
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.13</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-api-explorer.version>6.1.0</dependency.alfresco-api-explorer.version>
+        <dependency.alfresco-log-sanitizer.version>0.1</dependency.alfresco-log-sanitizer.version>
 
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>4.1.0</dependency.fabric8.version>
@@ -412,7 +413,11 @@
                 <version>4.12</version>
                 <scope>test</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-log-sanitizer</artifactId>
+                <version>${dependency.alfresco-log-sanitizer.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.alfresco.aos-module</groupId>
                 <artifactId>alfresco-aos-module</artifactId>

@@ -27,11 +27,11 @@ package org.alfresco.repo.index.shard;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.namespace.QName;
 
 /**
  * A registry which collects all the active shard subscriptions.
@@ -65,4 +65,21 @@ public interface ShardRegistry
      * @return the shard instance (i.e. shard number) which owns (or should own) the transaction associated with the given timestamp.
      */
     OptionalInt getShardInstanceByTransactionTimestamp(String coreId, long txnTimestamp);
+    
+    /**
+     * Returns the property used for EXPLICIT_ID Sharding methods if exists. Null otherwise.
+     * 
+     * @param coreName is the name of the SOLR core: alfresco, archive
+     * @return QName of the property used for EXPLICIT_ID Sharding methods or null.
+     */
+    QName getExplicitIdProperty(String coreName);
+    
+    /**
+     * Returns the list with the numbers of the registered Shard Instances.
+     * 
+     * @param coreName is the name of the SOLR core: alfresco, archive
+     * @return Ordered list of numbers of the registered Shard Instances
+     */
+    Set<Integer> getShardInstanceList(String coreName);
+    
 }

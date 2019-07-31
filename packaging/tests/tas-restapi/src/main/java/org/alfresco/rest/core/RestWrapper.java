@@ -348,10 +348,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
     /**
      * Process responses for site relations models, such as {@link RestSiteModel, RestSiteContainerModelsCollection, RestSiteMemberModelsCollection}
-     * 
-     * @throws Exception
      */
-    public List<Object> processRelationsJson(RestRequest restRequest) throws Exception
+    public List<Object> processRelationsJson(RestRequest restRequest)
     {
         List<Object> jsonObjects = new ArrayList<Object>();
         Response returnedResponse = sendRequest(restRequest);
@@ -401,10 +399,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
     /**
      * Process responses for site relations models, such as {@link RestSiteModel, RestSiteContainerModelsCollection, RestSiteMemberModelsCollection}
-     * 
-     * @throws Exception
      */
-    public List<List<Object>> processSitesRelationsJson(RestRequest restRequest) throws Exception
+    public List<List<Object>> processSitesRelationsJson(RestRequest restRequest)
     {
         List<List<Object>> allObjects = new ArrayList<List<Object>>();
         List<Object> sitesList = new ArrayList<Object>();

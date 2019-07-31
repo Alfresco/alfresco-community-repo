@@ -18,17 +18,13 @@
  */
 package org.alfresco.rest.requests.search;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
+import io.restassured.RestAssured;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.exception.ModelToJsonConversionException;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
 import org.springframework.http.HttpMethod;
-
-import io.restassured.RestAssured;
 /**
  * Wrapper for Search API.
  * @author Michael Suzuki
@@ -45,15 +41,7 @@ public class SearchAPI extends ModelRequest<SearchAPI>
 
     public SearchResponse search(SearchRequest queryBody)
     {
-        RestRequest request;
-        try
-        {
-            request = RestRequest.requestWithBody(HttpMethod.POST, queryBody.toJson(), "search");
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new ModelToJsonConversionException(queryBody.getClass(), e);
-        }
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody.toJson(), "search");
         return restWrapper.processModels(SearchResponse.class, request);
     }
 }

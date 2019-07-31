@@ -149,7 +149,7 @@ public class JsonBodyGenerator
     }
     
     
-    public static String siteMember(UserModel userModel) throws Exception
+    public static String siteMember(UserModel userModel)
     {
         Utility.checkObjectIsInitialized(userModel.getUserRole(), "userModel.getUserRole()");
         JsonObject value = defineJSON()

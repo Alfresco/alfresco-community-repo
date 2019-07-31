@@ -21,9 +21,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * GET on deleted-nodes
      * 
      * @return RestNodeModelsCollection
-     * @throws Exception
      */
-    public RestNodeModelsCollection findDeletedNodes() throws Exception
+    public RestNodeModelsCollection findDeletedNodes()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestNodeModelsCollection.class, request);
@@ -34,9 +33,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * 
      * @param repoModel
      * @return RestNodeModel
-     * @throws Exception
      */
-    public RestNodeModel findDeletedNode(RepoTestModel repoModel) throws Exception
+    public RestNodeModel findDeletedNode(RepoTestModel repoModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes/{nodeId}?{parameters}", repoModel.getNodeRefWithoutVersion(), restWrapper.getParameters());
         return restWrapper.processModel(RestNodeModel.class, request);
@@ -47,9 +45,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      *
      * @param repoModel
      * @return
-     * @throws Exception
      */
-    public void deleteNodeFromTrashcan(RepoTestModel repoModel) throws Exception
+    public void deleteNodeFromTrashcan(RepoTestModel repoModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "deleted-nodes/{nodeId}", repoModel.getNodeRefWithoutVersion());
         restWrapper.processEmptyModel(request);
@@ -60,9 +57,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      *
      * @param repoModel
      * @return RestNodeModel
-     * @throws Exception
      */
-    public RestNodeModel restoreNodeFromTrashcan(RepoTestModel repoModel) throws Exception
+    public RestNodeModel restoreNodeFromTrashcan(RepoTestModel repoModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "deleted-nodes/{nodeId}/restore?{parameters}", repoModel.getNodeRefWithoutVersion(), restWrapper.getParameters());
         return restWrapper.processModel(RestNodeModel.class, request);
@@ -73,9 +69,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * 
      * @param repoModel
      * @return RestResponse
-     * @throws Exception
      */
-    public RestResponse getDeletedNodeContent(RepoTestModel repoModel) throws Exception
+    public RestResponse getDeletedNodeContent(RepoTestModel repoModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes/{nodeId}/content?{parameters}", repoModel.getNodeRefWithoutVersion(), restWrapper.getParameters());
         return restWrapper.process(request);
@@ -86,9 +81,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * 
      * @param repoModel
      * @return RestRenditionInfoModelCollection
-     * @throws Exception
      */
-    public RestRenditionInfoModelCollection getDeletedNodeRenditions(RepoTestModel repoModel) throws Exception
+    public RestRenditionInfoModelCollection getDeletedNodeRenditions(RepoTestModel repoModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes/{nodeId}/renditions?{parameters}", repoModel.getNodeRefWithoutVersion(), restWrapper.getParameters());
         return restWrapper.processModels(RestRenditionInfoModelCollection.class, request);
@@ -100,9 +94,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * @param repoModel
      * @param renditionId
      * @return RestRenditionInfoModel
-     * @throws Exception
      */
-    public RestRenditionInfoModel getDeletedNodeRendition(RepoTestModel repoModel, String renditionId) throws Exception
+    public RestRenditionInfoModel getDeletedNodeRendition(RepoTestModel repoModel, String renditionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes/{nodeId}/renditions/{renditionId}?{parameters}", repoModel.getNodeRefWithoutVersion(), renditionId, restWrapper.getParameters());
         return restWrapper.processModel(RestRenditionInfoModel.class, request);
@@ -114,9 +107,8 @@ public class Trashcan extends ModelRequest<Trashcan>
      * @param repoModel
      * @param renditionId
      * @return RestResponse
-     * @throws Exception
      */
-    public RestResponse getDeletedNodeRenditionContent(RepoTestModel repoModel, String renditionId) throws Exception
+    public RestResponse getDeletedNodeRenditionContent(RepoTestModel repoModel, String renditionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deleted-nodes/{nodeId}/renditions/{renditionId}/content?{parameters}", repoModel.getNodeRefWithoutVersion(), renditionId, restWrapper.getParameters());
         return restWrapper.process(request);

@@ -131,7 +131,7 @@ public class SearchSQLAPI extends ModelRequest<SearchSQLAPI>
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
-    public RestResponse searchSql(SearchSqlRequest query) throws Exception
+    public RestResponse searchSql(SearchSqlRequest query)
     {
         String stmt = (null == query.getSql() || query.getSql().isEmpty()) ? "" : query.getSql();
 

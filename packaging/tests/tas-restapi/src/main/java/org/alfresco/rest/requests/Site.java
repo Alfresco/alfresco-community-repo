@@ -35,11 +35,10 @@ public class Site extends ModelRequest<Site>
   /**
    * Retrieve one site using GET call on "sites/{siteId}"
    * 
-   * @param siteId
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteModel getSite() throws Exception
+  public RestSiteModel getSite()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}?{parameters}", this.site.getId(), restWrapper.getParameters());
       return restWrapper.processModel(RestSiteModel.class, request);
@@ -48,11 +47,10 @@ public class Site extends ModelRequest<Site>
   /**
    * Retrieve one site using GET call on "sites/{siteId}" along with relations parameter
    * 
-   * @param siteId
    * @return
    * @throws JsonToModelConversionException
    */
-  public List<Object> getSiteWithRelations() throws Exception
+  public List<Object> getSiteWithRelations()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}?{parameters}", this.site.getId(), restWrapper.getParameters());
       return restWrapper.processRelationsJson(request);
@@ -64,7 +62,7 @@ public class Site extends ModelRequest<Site>
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteModelsCollection getSites() throws Exception
+  public RestSiteModelsCollection getSites()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites?{parameters}", restWrapper.getParameters());
       return restWrapper.processModels(RestSiteModelsCollection.class, request);
@@ -76,7 +74,7 @@ public class Site extends ModelRequest<Site>
    * @return
    * @throws JsonToModelConversionException
    */
-  public List<List<Object>> getSitesWithRelations() throws Exception
+  public List<List<Object>> getSitesWithRelations()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites?{parameters}", restWrapper.getParameters());
       return restWrapper.processSitesRelationsJson(request);
@@ -87,10 +85,9 @@ public class Site extends ModelRequest<Site>
    * 
    * @param person {@link UserModel}
    * @return
-   * @throws Exception
    * @throws JsonToModelConversionException
    */
-  public RestSiteMemberModel addPerson(UserModel person) throws Exception
+  public RestSiteMemberModel addPerson(UserModel person)
   {
       String siteMemberBody = JsonBodyGenerator.siteMember(person);
       RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, siteMemberBody, "sites/{siteId}/members?{parameters}", site.getId(), restWrapper.getParameters());
@@ -103,7 +100,7 @@ public class Site extends ModelRequest<Site>
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteMemberModelsCollection getSiteMembers() throws Exception
+  public RestSiteMemberModelsCollection getSiteMembers()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/members?{parameters}", site.getId(), restWrapper.getParameters());
       return restWrapper.processModels(RestSiteMemberModelsCollection.class, request);
@@ -112,12 +109,11 @@ public class Site extends ModelRequest<Site>
   /**
    * Retrieve specific member of a site using GET call on "sites/{siteId}/members/{personId}"
    * 
-   * @param siteId
-   * @param personid
+   * @param user A model containing the username to look for.
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteMemberModel getSiteMember(UserModel user) throws Exception
+  public RestSiteMemberModel getSiteMember(UserModel user)
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/members/{personId}?{parameters}", site.getId(), user.getUsername(), restWrapper.getParameters());
       return restWrapper.processModel(RestSiteMemberModel.class, request);
@@ -129,7 +125,7 @@ public class Site extends ModelRequest<Site>
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteMemberModel updateSiteMember(UserModel siteMember) throws Exception
+  public RestSiteMemberModel updateSiteMember(UserModel siteMember)
   {
       String json = JsonBodyGenerator.keyValueJson("role", siteMember.getUserRole().toString());
       RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, json, "sites/{siteId}/members/{personId}", site.getId(), siteMember.getUsername());
@@ -139,9 +135,8 @@ public class Site extends ModelRequest<Site>
   /**
    * Delete site member with DELETE call on "sites/{siteId}/members/{personId}"
    * @param person
-   * @throws Exception
    */
-  public void deleteSiteMember(UserModel person) throws Exception
+  public void deleteSiteMember(UserModel person)
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "sites/{siteId}/members/{personId}", site.getId(), person.getUsername());
       restWrapper.processEmptyModel(request);
@@ -153,7 +148,7 @@ public class Site extends ModelRequest<Site>
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteContainerModelsCollection getSiteContainers() throws Exception
+  public RestSiteContainerModelsCollection getSiteContainers()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/containers?{parameters}", site.getId(), restWrapper.getParameters());
       return restWrapper.processModels(RestSiteContainerModelsCollection.class, request);
@@ -162,12 +157,11 @@ public class Site extends ModelRequest<Site>
   /**
    * Retrieve specific container of a site using GET call on "sites/{siteId}/containers/{containerId}"
    * 
-   * @param siteId
-   * @param folderId
+   * @param container A model containing the folderId to look for.
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteContainerModel getSiteContainer(RestSiteContainerModel container) throws Exception
+  public RestSiteContainerModel getSiteContainer(RestSiteContainerModel container)
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/containers/{containerId}?{parameters}", site.getId(), container.getFolderId(), restWrapper.getParameters());
       return restWrapper.processModel(RestSiteContainerModel.class, request);
@@ -176,12 +170,11 @@ public class Site extends ModelRequest<Site>
   /**
    * Retrieve specific container of a site using GET call on "sites/{siteId}/containers/{containerId}"
    * 
-   * @param siteId
-   * @param folderId
+   * @param containerFolder The id of the container to look for.
    * @return
    * @throws JsonToModelConversionException
    */
-  public RestSiteContainerModel getSiteContainer(String containerFolder) throws Exception
+  public RestSiteContainerModel getSiteContainer(String containerFolder)
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "sites/{siteId}/containers/{containerId}?{parameters}", site.getId(), containerFolder, restWrapper.getParameters());
       return restWrapper.processModel(RestSiteContainerModel.class, request);
@@ -190,7 +183,6 @@ public class Site extends ModelRequest<Site>
   /**
    * Create a collaboration site
    * 
-   * @param site information on the site to create
    * @return the properties of the created site
    * @throws Exception
    */
@@ -204,9 +196,8 @@ public class Site extends ModelRequest<Site>
    * Get site membership requests by using GET /site-membership-requests
    * 
    * @return site memberships
-   * @throws Exception
    */
-  public RestSitePersonMembershipRequestModelsCollection getSiteMemberships() throws Exception
+  public RestSitePersonMembershipRequestModelsCollection getSiteMemberships()
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "site-membership-requests?{parameters}", restWrapper.getParameters());
       return restWrapper.processModels(RestSitePersonMembershipRequestModelsCollection.class, request);
@@ -216,9 +207,8 @@ public class Site extends ModelRequest<Site>
    * Approve a site membership request by using POST call on /sites/{siteId}/site-membership-requests/{inviteeId}/approve
    * 
    * @param siteMember
-   * @throws Exception
    */
-  public RestResponse approveSiteMembership(UserModel siteMember) throws Exception
+  public RestResponse approveSiteMembership(UserModel siteMember)
   {
       String json = JsonBodyGenerator.keyValueJson("role", siteMember.getUserRole().toString());
       RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/site-membership-requests/{inviteeId}/approve", site.getId(), siteMember.getUsername());
@@ -229,9 +219,8 @@ public class Site extends ModelRequest<Site>
    * Reject a site membership request by using POST call /sites/{siteId}/site-membership-requests/{inviteeId}/reject
    * 
    * @param siteMember
-   * @throws Exception
    */
-  public RestResponse rejectSiteMembership(UserModel siteMember) throws Exception
+  public RestResponse rejectSiteMembership(UserModel siteMember)
   {
       RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "sites/{siteId}/site-membership-requests/{inviteeId}/reject", site.getId(), siteMember.getUsername());
       return restWrapper.process(request);

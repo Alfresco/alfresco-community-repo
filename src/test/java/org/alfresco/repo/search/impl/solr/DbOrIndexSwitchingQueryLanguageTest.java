@@ -91,7 +91,7 @@ public class DbOrIndexSwitchingQueryLanguageTest
         when(indexQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(null)))).thenReturn(indexResults);
         when(indexResults.getLastIndexedTxId()).thenReturn(80L);
         when(dbQueryLang.executeQuery(argThat(isSearchParamsSinceTxId(80L)))).thenReturn(dbResults);
-        when(solrDAO.getNodes(argThat(isNodeParamsFromTxnId(81L)), eq(null))).thenReturn(changedNodes);
+        when(solrDAO.getNodes(argThat(isNodeParamsFromTxnId(81L)), eq(null), eq(null))).thenReturn(changedNodes);
         
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
         

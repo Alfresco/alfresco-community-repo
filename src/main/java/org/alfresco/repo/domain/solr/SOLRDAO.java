@@ -79,8 +79,9 @@ public interface SOLRDAO
      * Get the nodes satisfying the constraints in nodeParameters
      * 
      * @param nodeParameters set of constraints for which nodes to return
-     * @param shardPropertQName 
+     * @param shardPropertQName qname of property to use as shard_key
+     * @param shardPropertyTypeName type name (text, int, long) of property to use as shard_key
      * @return list of matching nodes
      */
-	public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertQName);
+	public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertQName, QName shardPropertyTypeName);
 }

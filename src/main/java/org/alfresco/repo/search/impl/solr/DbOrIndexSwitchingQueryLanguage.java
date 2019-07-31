@@ -333,7 +333,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         // TODO: setToTxnId(null) when SolrDAO behaviour is fixed.
         nodeParameters.setToTxnId(Long.MAX_VALUE);
         stopWatch.start("get changed nodes");
-        List<Node> changedNodeList = solrDao.getNodes(nodeParameters, null);
+        List<Node> changedNodeList = solrDao.getNodes(nodeParameters, null, null);
         stopWatch.stop();
         if (logger.isDebugEnabled())
         {

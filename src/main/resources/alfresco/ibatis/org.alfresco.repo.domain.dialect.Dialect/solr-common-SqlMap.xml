@@ -139,8 +139,11 @@
                <when test="shardPropertyQNameId == -4">
                   node.audit_modifier as shard_key
                </when>
+                <when test="shardPropertyType == 'long' or shardPropertyType == 'int'">
+                    shardkey.long_value as shard_key
+                </when>
                <otherwise>
-                  shardkey.string_value as shard_key
+                   shardkey.string_value as shard_key
                </otherwise>
             </choose>
         from

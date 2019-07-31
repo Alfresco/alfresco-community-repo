@@ -50,6 +50,8 @@ public class NodeParametersEntity extends NodeParameters
     
     private Long originalIdPropQNameId;
     private Long shardPropertyQNameId;
+
+    private String shardPropertyType;
     
     /**
      * Public constructor, but not generally useful
@@ -57,7 +59,7 @@ public class NodeParametersEntity extends NodeParameters
     public NodeParametersEntity(QNameDAO qnameDAO)
     {
         Pair<Long, QName> qnamePair = qnameDAO.getQName(ContentModel.PROP_ORIGINAL_ID);
-        this.setOriginalIdPropQNameId(qnamePair == null ? -1 : qnamePair.getFirst());        
+        this.setOriginalIdPropQNameId(qnamePair == null ? Long.valueOf(-1) : qnamePair.getFirst());
     }
     
     /**
@@ -172,6 +174,13 @@ public class NodeParametersEntity extends NodeParameters
     {
         this.shardPropertyQNameId = shardPropertyQNameId;
     }
-    
-    
+
+
+    public String getShardPropertyType() {
+        return shardPropertyType;
+    }
+
+    public void setShardPropertyType(String shardPropertyType) {
+        this.shardPropertyType = shardPropertyType;
+    }
 }

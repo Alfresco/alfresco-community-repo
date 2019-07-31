@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.registry.RegistryServiceImpl;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.AclEntity;
@@ -63,6 +64,7 @@ public class SOLRDAOImpl implements SOLRDAO
     
     private SqlSessionTemplate template;
     private QNameDAO qnameDAO;
+    private RegistryServiceImpl dictionaryService;
 
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
@@ -199,11 +201,11 @@ public class SOLRDAOImpl implements SOLRDAO
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertyQName)
+    public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertyQName, QName shardPropertyTypeName)
     {
         NodeParametersEntity params = new NodeParametersEntity(nodeParameters, qnameDAO);
 
-        if(shardPropertyQName !=null)
+        if(shardPropertyQName != null && shardPropertyTypeName != null)
         {
             if(shardPropertyQName.equals(ContentModel.PROP_CREATED))
             {
@@ -227,6 +229,7 @@ public class SOLRDAOImpl implements SOLRDAO
                 if(propertyQNamePair != null)
                 {
                     params.setShardPropertyQNameId(propertyQNamePair.getFirst());
+                    params.setShardPropertyType(shardPropertyTypeName.getLocalName());
                 }
             }
         }

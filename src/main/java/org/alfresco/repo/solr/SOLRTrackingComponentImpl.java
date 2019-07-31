@@ -359,6 +359,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 	    if(enabled)
 	    {
 	        QName shardPropertQName = null;
+	        QName shardPropertyType = null;
+
 	        if(nodeParameters.getShardProperty() != null)
 	        {
 	            PropertyDefinition pdef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceService, dictionaryService, nodeParameters.getShardProperty());
@@ -366,14 +368,30 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 	            {
 	                throw new AlfrescoRuntimeException("Invalid shard property: "+nodeParameters.getShardProperty());
 	            }
-	            if((!pdef.getDataType().getName().equals(DataTypeDefinition.TEXT)) && (!pdef.getDataType().getName().equals(DataTypeDefinition.DATE))  && (!pdef.getDataType().getName().equals(DataTypeDefinition.DATETIME)))
+
+	            shardPropertyType = pdef.getDataType().getName();
+
+                final Set<QName> allowedShardKeyTypes = Set.of(
+                        DataTypeDefinition.TEXT,
+                        DataTypeDefinition.DATE,
+                        DataTypeDefinition.INT,
+                        DataTypeDefinition.LONG);
+
+
+                if (!shardPropertyType.equals(DataTypeDefinition.TEXT)
+                        && !shardPropertyType.equals(DataTypeDefinition.DATE)
+                        && !shardPropertyType.equals(DataTypeDefinition.DATETIME)
+                        && !shardPropertyType.equals(DataTypeDefinition.INT)
+                        && !shardPropertyType.equals(DataTypeDefinition.LONG))
 	            {
 	                throw new AlfrescoRuntimeException("Unsupported shard property type: "+(pdef.getDataType().getName() + " for " +nodeParameters.getShardProperty()));
 	            }
+
 	            shardPropertQName = pdef.getName();
 	        }
-	        
-	        List<Node> nodes = solrDAO.getNodes(nodeParameters, shardPropertQName);
+
+
+	        List<Node> nodes = solrDAO.getNodes(nodeParameters, shardPropertQName, shardPropertyType);
 
 	        for (Node node : nodes)
 	        {
@@ -384,7 +402,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                                     shardId -> ((NodeEntity) node).setExplicitShardId(shardId));
 
                 }
-
 
 	            callback.handleNode(node);
 	        }

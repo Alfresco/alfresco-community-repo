@@ -57,9 +57,9 @@ public class FilesAPI extends RMModelRequest
      * @param fileId The Id of a file to declare as record
      * @param parameters Request parameters, refer to API documentation for more details
      * @return The {@link Record} for created record
-     * @throws Exception for malformed JSON responses
+     * @throws RuntimeException for malformed JSON responses
      */
-    public Record declareAsRecord(String fileId, String parameters) throws Exception
+    public Record declareAsRecord(String fileId, String parameters)
     {
         mandatoryString("fileId", fileId);
 
@@ -76,9 +76,9 @@ public class FilesAPI extends RMModelRequest
      *
      * @param fileId The Id of a file to declare as record
      * @return The {@link Record} for created record
-     * @throws Exception for malformed JSON responses
+     * @throws RuntimeException for malformed JSON responses
      */
-    public Record declareAsRecord(String fileId) throws Exception
+    public Record declareAsRecord(String fileId)
     {
         mandatoryString("fileId", fileId);
 

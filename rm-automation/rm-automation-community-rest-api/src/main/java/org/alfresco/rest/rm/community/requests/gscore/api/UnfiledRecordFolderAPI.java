@@ -48,7 +48,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
@@ -217,7 +216,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
         }
         catch (IOException e)
         {
-            throw new AlfrescoRuntimeException("Failed to convert model to JSON.", e);
+            throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();

@@ -1,0 +1,37 @@
+dist: trusty
+sudo: required
+language: java
+jdk:
+  - openjdk11
+
+cache:
+  directories:
+    - $HOME/.m2/repository
+
+branches:
+  only:
+    - master
+
+install: travis_retry mvn install -DskipTests=true -B -V
+
+stages:
+  - test
+  - release
+
+jobs:
+  include:
+    - stage: test
+      name: "Build and test"
+      script: travis_retry mvn test
+    - stage: release
+      name: "Push to Nexus"
+      if: fork = false AND branch = master AND type != pull_request AND commit_message !~ /\[no-release\]/
+      before_install:
+        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+      script:
+        # Use full history for release
+        - git checkout -B "${TRAVIS_BRANCH}"
+        # Add email to link commits to user
+        - git config user.email "${GIT_EMAIL}"
+        # Skip building of release commits
+        - mvn --batch-mode  -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform

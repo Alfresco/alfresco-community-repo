@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="tas:cmistasmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Alfresco TAS custom model</description>
+    <author>Bogdan</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="tas.cmis.model" prefix="tas"/>
+    </namespaces>
+
+    <types>
+        <type name="tas:document">
+            <title>CMIS TAS Content</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="tas:TextPropertyC">
+                    <title>Text</title>
+                    <type>d:text</type>
+                </property>
+                <property name="tas:DatePropertyC">
+                    <title>Datetime</title>
+                    <type>d:datetime</type>
+                </property>
+                <property name="tas:IntPropertyC">
+                    <title>Integer</title>
+                    <type>d:int</type>
+                </property>
+				<property name="tas:LongPropertyC">
+                    <title>Long</title>
+                    <type>d:long</type>
+                </property>
+                <property name="tas:MultiplyStringC">
+                    <title>Multiply String</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+
+            <associations>
+                <association name="tas:tasContent">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:content</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+        </type>
+
+        <type name="tas:folder">
+            <title>CMIS TAS Folder</title>
+            <parent>cm:folder</parent>
+            <properties>
+                <property name="tas:TextPropertyF">
+                    <title>Text</title>
+                    <type>d:text</type>
+                </property>
+                <property name="tas:DatePropertyF">
+                    <title>Datetime</title>
+                    <type>d:datetime</type>
+                </property>
+                <property name="tas:IntPropertyF">
+                    <title>Integer</title>
+                    <type>d:int</type>
+                </property>
+                <property name="tas:MultiplyStringF">
+                    <title>Multiply String</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+
+            <associations>
+                <association name="tas:tasFolder">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:folder</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+        </type>
+    </types>
+
+    <aspects>
+        <aspect name="tas:tasContentAspect">
+            <title>TAS Content Aspect</title>
+            <properties>
+                <property name="tas:TextPropertyAC">
+                    <title>Aspect Text</title>
+                    <type>d:text</type>
+                </property>
+                <property name="tas:DatePropertyAC">
+                    <title>Aspect Datetime</title>
+                    <type>d:datetime</type>
+                </property>
+                <property name="tas:IntPropertyAC">
+                    <title>Aspect Integer</title>
+                    <type>d:int</type>
+                </property>
+                <property name="tas:MultiplyStringAC">
+                    <title>Aspect Multiply String</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="tas:tasFolderAspect">
+            <title>TAS Folder Aspect</title>
+            <properties>
+                <property name="tas:TextPropertyAF">
+                    <title>Aspect Text</title>
+                    <type>d:text</type>
+                </property>
+                <property name="tas:DatePropertyAF">
+                    <title>Aspect Datetime</title>
+                    <type>d:datetime</type>
+                </property>
+                <property name="tas:IntPropertyAF">
+                    <title>Aspect Integer</title>
+                    <type>d:int</type>
+                </property>
+                <property name="tas:MultiplyStringAF">
+                    <title>Aspect Multiply String</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+</model>

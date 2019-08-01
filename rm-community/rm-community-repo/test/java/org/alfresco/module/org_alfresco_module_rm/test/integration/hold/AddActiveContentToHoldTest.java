@@ -26,7 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
+import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
+
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -139,7 +143,7 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
     public void testAddDocumentToHoldNoWritePermissionOnDoc()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             private NodeRef hold;
 
@@ -153,6 +157,9 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
                 // assert current states
                 assertFalse(freezeService.isFrozen(dmDocument));
+
+                //add rm Admin as consumer in collaboration site to have read permissions on dmDocument
+                siteService.setMembership(collabSiteId, rmAdminName, SiteModel.SITE_CONSUMER);
             }
 
             public void when()
@@ -161,7 +168,16 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
                 // hold, but no Write permissions on doc
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            holdService.addToHold(hold, dmDocument);
+                            try
+                            {
+                                holdService.addToHold(hold, dmDocument);
+                                fail("Expected AlfrescoRuntimeException to be thrown.");
+                            }
+                            catch (AlfrescoRuntimeException e)
+                            {
+                                System.out.println(e);
+                                assertTrue(e.getMessage().endsWith("Write permission on '" + NAME_DM_DOCUMENT + "' is needed."));
+                            }
                             return null;
                         }, rmAdminName);
             }
@@ -170,61 +186,79 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
     public void testAddDocumentToHoldNoFilingPermissionOnHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(recordsManagerName, false)
         {
             private NodeRef hold;
 
             public void given()
             {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
+                AuthenticationUtil.runAs(
+                        (RunAsWork<Void>) () -> {
+                            // Check that the document is not a record
+                            assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
 
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                            // create a hold
+                            hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
+                            //add Read permission on hold
+                            filePlanPermissionService.setPermission(hold, recordsManagerName, RMPermissionModel.READ_RECORDS);
 
-                //add recordsManagerPerson as manager in collaboration site to have write permissions on dmDocument
-                siteService.setMembership(collabSiteId, recordsManagerName, SiteModel.SITE_MANAGER);
+                            // assert current states
+                            assertFalse(freezeService.isFrozen(dmDocument));
+
+                            //add recordsManagerPerson as manager in collaboration site to have write permissions on dmDocument
+                            siteService.setMembership(collabSiteId, recordsManagerName, SITE_MANAGER);
+                            return null;
+                        }, getAdminUserName());
             }
 
             public void when()
             {
-                // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
-                // doc, but no filing permission on hold
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            holdService.addToHold(hold, dmDocument);
+                            // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
+                            // doc, but no filing permission on hold
+                            try
+                            {
+                                holdService.addToHold(hold, dmDocument);
+                                fail("Expected AccessDeniedException to be thrown.");
+                            }
+                            catch (AccessDeniedException e)
+                            {
+                                //expected
+                            }
                             return null;
                         }, recordsManagerName);
             }
         });
     }
 
-
     public void testAddDocumentToHoldNoCapability()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(powerUserName, false)
         {
             private NodeRef hold;
 
             public void given()
             {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
+                AuthenticationUtil.runAs(
+                        (RunAsWork<Void>) () -> {
+                            // Check that the document is not a record
+                            assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
 
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                            // create a hold
+                            hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
+                            // assert current states
+                            assertFalse(freezeService.isFrozen(dmDocument));
 
-                //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
-                siteService.setMembership(collabSiteId, powerUserName, SiteModel.SITE_MANAGER);
+                            //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
+                            siteService.setMembership(collabSiteId, powerUserName, SiteModel.SITE_MANAGER);
 
-                //assign powerUserPerson filing permission on hold
-                filePlanPermissionService.setPermission(hold, powerUserName, FILING);
+                            //assign powerUserPerson filing permission on hold
+                            filePlanPermissionService.setPermission(hold, powerUserName, FILING);
+                            return null;
+                        }, getAdminUserName());
             }
 
             public void when()
@@ -233,7 +267,15 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
                 // permission on hold, but no Add To Hold capability
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            holdService.addToHold(hold, dmDocument);
+                            try
+                            {
+                                holdService.addToHold(hold, dmDocument);
+                                fail("Expected AccessDeniedException to be thrown.");
+                            }
+                            catch (AccessDeniedException e)
+                            {
+                                //expected
+                            }
                             return null;
                         }, powerUserName);
             }

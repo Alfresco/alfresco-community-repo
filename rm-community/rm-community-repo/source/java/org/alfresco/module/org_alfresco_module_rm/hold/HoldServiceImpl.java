@@ -303,7 +303,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (!includedInHold)
         {
             // invert list to get list of holds that do not contain this node
-            NodeRef filePlan = isFilePlanComponent(nodeRef) ? filePlanService.getFilePlan(nodeRef) : filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+            NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             List<NodeRef> allHolds = getHolds(filePlan);
             result = ListUtils.subtract(allHolds, new ArrayList<>(holdsNotIncludingNodeRef));
         }

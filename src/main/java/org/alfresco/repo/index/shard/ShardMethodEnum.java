@@ -77,4 +77,25 @@ public enum ShardMethodEnum
                 return UNKOWN;
         }
     }
+    
+    /**
+     * Returns true if the method if any of the alias for EXPLICIT_ID methods, false otherwise
+     * @param shardMethod String representing the ShardMethod name
+     * @return true if the method is EXPLICIT_ID based
+     */
+    public static boolean isExplicitIdMethod(String shardMethod)
+    {
+        
+        switch (shardMethod.toUpperCase())
+        {
+            case "EXPLICIT_ID":
+            case "EXPLICIT_ID_FALLBACK_DBID":
+            case "EXPLICIT_ID_FALLBACK_LRIS":
+                return true;
+            default:
+                return false;
+        }
+        
+    }
+    
 }

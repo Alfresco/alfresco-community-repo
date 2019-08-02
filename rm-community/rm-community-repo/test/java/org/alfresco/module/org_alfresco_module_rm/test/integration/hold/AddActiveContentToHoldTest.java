@@ -59,6 +59,14 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
         return true;
     }
 
+    /**
+     * Given active content
+     * And file permission on the hold
+     * And the appropriate capability to add to hold
+     * When I try to add the active content to the hold
+     * Then the active content is frozen
+     * And the active content is contained within the hold
+     */
     public void testAddDocumentToHold()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -111,6 +119,12 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given active content
+     * And a non rm user with write permission on active content
+     * When user tries to add the active content to hold
+     * Then AccessDeniedException is thrown
+     */
     public void testAddDocumentToHoldAsNonRMUser()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
@@ -141,6 +155,12 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given active content
+     * And a rm user with Filing permission on hold and Add to Hold Capability, but only read permission on active content
+     * When user tries to add the active content to hold
+     * Then an exception is thrown
+     */
     public void testAddDocumentToHoldNoWritePermissionOnDoc()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -183,9 +203,15 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given active content
+     * And a rm user with Add to Hold Capability, write permission on active content and only Read permission on hold
+     * When user tries to add the active content to hold
+     * Then AccessDeniedException is thrown
+     */
     public void testAddDocumentToHoldNoFilingPermissionOnHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(recordsManagerName, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, recordsManagerName, false)
         {
             private NodeRef hold;
 
@@ -213,28 +239,22 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
             public void when()
             {
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
-                            // doc, but no filing permission on hold
-                            try
-                            {
-                                holdService.addToHold(hold, dmDocument);
-                                fail("Expected AccessDeniedException to be thrown.");
-                            }
-                            catch (AccessDeniedException e)
-                            {
-                                //expected
-                            }
-                            return null;
-                        }, recordsManagerName);
+                // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
+                // doc, but no filing permission on hold
+                holdService.addToHold(hold, dmDocument);
             }
         });
     }
 
+    /**
+     * Given active content
+     * And a rm user with write permission on active content and Filing permission on hold, but no Add to Hold Capability
+     * When user tries to add the active content to hold
+     * Then AccessDeniedException is thrown
+     */
     public void testAddDocumentToHoldNoCapability()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(powerUserName, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, powerUserName, false)
         {
             private NodeRef hold;
 
@@ -264,19 +284,7 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
             {
                 // add the active content to hold as a RM power user who has write permission on doc and filing
                 // permission on hold, but no Add To Hold capability
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            try
-                            {
-                                holdService.addToHold(hold, dmDocument);
-                                fail("Expected AccessDeniedException to be thrown.");
-                            }
-                            catch (AccessDeniedException e)
-                            {
-                                //expected
-                            }
-                            return null;
-                        }, powerUserName);
+                holdService.addToHold(hold, dmDocument);
             }
         });
     }

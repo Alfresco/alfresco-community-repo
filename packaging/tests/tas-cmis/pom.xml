@@ -24,8 +24,7 @@
         </developer>
     </developers>	
 	<properties>
-		<!-- please run mvn clean install -DSkipTests in order to have shared-resources 
-			available -->
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
 		<suiteXmlFile>src/main/resources/shared-resources/cmis-suites.xml</suiteXmlFile>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<tas.utility.version>3.0.8</tas.utility.version>
@@ -129,6 +128,21 @@
                         <goals>
                             <goal>process</goal>
                             <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <doclint>none</doclint>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -175,7 +175,6 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
                             }
                             catch (AlfrescoRuntimeException e)
                             {
-                                System.out.println(e);
                                 assertTrue(e.getMessage().endsWith("Write permission on '" + NAME_DM_DOCUMENT + "' is needed."));
                             }
                             return null;

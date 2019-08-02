@@ -38,7 +38,6 @@
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
         <org.glassfish.version>1.0.4</org.glassfish.version>
-        <maven-remote-resources.version>1.6.0</maven-remote-resources.version>
         <commons-lang3.version>3.8</commons-lang3.version>
         <scribejava-apis.version>6.5.1</scribejava-apis.version>
         <test.exclude />
@@ -103,27 +102,6 @@
                         <phase>package</phase>
                         <goals>
                             <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>${maven-remote-resources.version}</version>
-                <configuration>
-                    <includes>
-                        <include>shared-resources/**/*</include>
-                    </includes>
-                    <resourceBundles>
-                        <resourceBundle>org.alfresco.tas:utility:${tas.utility.version}</resourceBundle>
-                    </resourceBundles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                            <goal>bundle</goal>
                         </goals>
                     </execution>
                 </executions>

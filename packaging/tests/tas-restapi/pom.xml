@@ -35,7 +35,6 @@
         <xml-path.version>3.3.0</xml-path.version>
         <json-schema-validator.version>3.3.0</json-schema-validator.version>
         <jackson-databind.version>2.9.8</jackson-databind.version>
-        <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
         <org.glassfish.version>1.0.4</org.glassfish.version>
         <commons-lang3.version>3.8</commons-lang3.version>
@@ -96,18 +95,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <doclint>none</doclint>
@@ -142,18 +129,6 @@
                     <mainClass>org.alfresco.rest.core.swagger.Generator</mainClass>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-enforcer-plugin</artifactId>
@@ -174,14 +149,6 @@
 			  </executions>
 			</plugin>			
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>shared-resources/**/*</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 
     <dependencies>

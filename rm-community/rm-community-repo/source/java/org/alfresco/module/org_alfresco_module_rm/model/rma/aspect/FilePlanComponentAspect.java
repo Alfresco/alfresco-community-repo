@@ -46,7 +46,6 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -105,14 +104,6 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param service   rendition service
-     */
-    public void setRenditionService(RenditionService service)
-    {
-        this.renditionService = service;
     }
 
     /**

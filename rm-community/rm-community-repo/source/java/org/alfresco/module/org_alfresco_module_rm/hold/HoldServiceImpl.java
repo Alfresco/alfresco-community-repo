@@ -303,6 +303,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (!includedInHold)
         {
             // invert list to get list of holds that do not contain this node
+            //TODO Find a way to get rid of the isFilePlanComponent(nodeRef) check. Currently it is used because
+            // integration tests create multiple rm sites with generated ids
             NodeRef filePlan = isFilePlanComponent(nodeRef) ? filePlanService.getFilePlan(nodeRef) : filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             List<NodeRef> allHolds = getHolds(filePlan);
             result = ListUtils.subtract(allHolds, new ArrayList<>(holdsNotIncludingNodeRef));

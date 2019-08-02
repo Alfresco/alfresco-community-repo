@@ -922,6 +922,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
         }
 
+        public BehaviourDrivenTest(Class<?> expectedException, String runAsUser, boolean runInTransactionTests)
+        {
+            this.expectedException = expectedException;
+            this.runAsUser = runAsUser;
+            this.runInTransactionTests = runInTransactionTests;
+        }
+
         public void given() throws Exception { /** empty implementation */ }
 
         public void when() throws Exception  { /** empty implementation */ }

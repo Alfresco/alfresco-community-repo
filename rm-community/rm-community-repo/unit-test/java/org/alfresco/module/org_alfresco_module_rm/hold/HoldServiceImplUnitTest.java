@@ -64,7 +64,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
@@ -83,6 +85,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     private static final String HOLD_NAME = "holdname";
     private static final String HOLD_REASON = "holdreason";
     private static final String HOLD_DESCRIPTION = "holddescription";
+    private static final String ACTIVE_CONTENT_NAME = "activeContentName";
 
     protected NodeRef holdContainer;
     protected NodeRef hold;
@@ -90,6 +93,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef activeContent;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     @Override
@@ -376,16 +382,25 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test
     public void addActiveContentToHoldNoPermissionsOnHold()
     {
+        expectedEx.expect(AlfrescoRuntimeException.class);
+        expectedEx.expectMessage("'" + ACTIVE_CONTENT_NAME + "' can't be added to the hold container as filing permission for '" + HOLD_NAME + "' is needed.");
+
+        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
+        when(mockedNodeService.getProperty(hold, ContentModel.PROP_NAME)).thenReturn(HOLD_NAME);
         when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test
     public void addActiveContentToHoldNoPermissionsOnContent()
     {
+        expectedEx.expect(AlfrescoRuntimeException.class);
+        expectedEx.expectMessage("Write permission on '" + ACTIVE_CONTENT_NAME + "' is needed.");
+
+        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
         when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }

@@ -25,12 +25,12 @@
  */
 package org.alfresco.transform.client.model.config;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.util.ConfigFileFinder;
 import org.apache.commons.logging.Log;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -40,26 +40,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * This class recreates the json format used in ACS 6.1 where we just had an array of transformers and each
@@ -84,6 +73,7 @@ public class CombinedConfig
     private Map<String, ArrayNode> allTransformOptions = new HashMap<>();
     private List<TransformNodeAndItsOrigin> allTransforms = new ArrayList<>();
     private ObjectMapper jsonObjectMapper = new ObjectMapper();
+    private ConfigFileFinder configFileFinder;
 
     static class TransformNodeAndItsOrigin
     {
@@ -116,26 +106,62 @@ public class CombinedConfig
     public CombinedConfig(Log log)
     {
         this.log = log;
+
+        configFileFinder = new ConfigFileFinder(jsonObjectMapper)
+        {
+            @Override
+            protected void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException
+            {
+                JsonNode transformOptions = jsonNode.get(TRANSFORM_OPTIONS);
+                if (transformOptions != null && transformOptions.isObject())
+                {
+                    Iterator<Map.Entry<String, JsonNode>> iterator = transformOptions.fields();
+                    while (iterator.hasNext())
+                    {
+                        Map.Entry<String, JsonNode> entry = iterator.next();
+
+                        JsonNode options = entry.getValue();
+                        if (options.isArray())
+                        {
+                            String optionsName = entry.getKey();
+                            allTransformOptions.put(optionsName, (ArrayNode)options);
+                        }
+                    }
+                }
+
+                JsonNode transformers = jsonNode.get(TRANSFORMERS);
+                if (transformers != null && transformers.isArray())
+                {
+                    for (JsonNode transformer : transformers)
+                    {
+                        if (transformer.isObject())
+                        {
+                            allTransforms.add(new TransformNodeAndItsOrigin((ObjectNode)transformer, baseUrl, readFromMessage));
+                        }
+                    }
+                }
+            }
+        };
     }
 
     public boolean addRemoteConfig(List<String> urls, String remoteType)
     {
-        boolean successReadingRemoteConfig = true;
+        boolean successReadingConfig = true;
         for (String url : urls)
         {
             if (!addRemoteConfig(url, remoteType))
             {
-                successReadingRemoteConfig = false;
+                successReadingConfig = false;
             }
         }
-        return successReadingRemoteConfig;
+        return successReadingConfig;
     }
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
         String url = baseUrl + TRANSFORM_CONFIG;
         HttpGet httpGet = new HttpGet(url);
-        boolean successReadingRemoteConfig = true;
+        boolean successReadingConfig = true;
         try
         {
             try (CloseableHttpClient httpclient = HttpClients.createDefault())
@@ -160,10 +186,10 @@ public class CombinedConfig
                                 try (StringReader reader = new StringReader(content))
                                 {
                                     int transformCount = allTransforms.size();
-                                    addJsonSource(reader, baseUrl, remoteType+" on "+baseUrl);
+                                    configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
                                     if (transformCount == allTransforms.size())
                                     {
-                                        successReadingRemoteConfig = false;
+                                        successReadingConfig = false;
                                     }
                                 }
 
@@ -201,9 +227,9 @@ public class CombinedConfig
         catch (AlfrescoRuntimeException e)
         {
             log.error(e.getMessage());
-            successReadingRemoteConfig = false;
+            successReadingConfig = false;
         }
-        return successReadingRemoteConfig;
+        return successReadingConfig;
     }
 
     // Tests mock the return values
@@ -235,117 +261,15 @@ public class CombinedConfig
         return message;
     }
 
-    public void addLocalConfig(String path) throws IOException
+    public boolean addLocalConfig(String path) throws IOException
     {
-        boolean somethingRead = false;
-        final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-        if (jarFile.isFile())
-        {
-            JarFile jar = new JarFile(jarFile);
-            Enumeration<JarEntry> entries = jar.entries(); // gives ALL entries in jar
-            String prefix = path + "/";
-            List<String> names = new ArrayList<>();
-            while (entries.hasMoreElements())
-            {
-                final String name = entries.nextElement().getName();
-                if (name.startsWith(prefix) && name.length() > prefix.length())
-                {
-                    names.add(name);
-                }
-            }
-            Collections.sort(names);
-            for (String name : names)
-            {
-                somethingRead = true;
-                addJsonSource(new InputStreamReader(getResourceAsStream(name)), null,
-                        name+" from jar "+jarFile.getName());
-            }
-
-            jar.close();
-        }
-        else
-        {
-            URL url = getClass().getClassLoader().getResource(path);
-            if (url != null)
-            {
-                File root = new File(url.getPath());
-                String rootPath = root.getPath();
-                if (root.isDirectory())
-                {
-                    File[] files = root.listFiles();
-                    Arrays.sort(files, (file1, file2) -> file1.getName().compareTo(file2.getName()));
-                    for (File file: files)
-                    {
-                        somethingRead = true;
-                        addJsonSource(new FileReader(file), null,"File " + file.getPath());
-                    }
-                }
-                else
-                {
-                    somethingRead = true;
-                    addJsonSource(new FileReader(root), null, "File " + rootPath);
-                }
-            }
-        }
-
-        if (!somethingRead)
-        {
-            log.warn("No config read from "+path);
-        }
+        return configFileFinder.readFiles(path, log);
     }
 
-    private InputStream getResourceAsStream(String resource)
-    {
-        final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
-        return in == null ? getClass().getResourceAsStream(resource) : in;
-    }
-
-    private void addJsonSource(Reader reader, String baseUrl, String readFrom) throws IOException
-    {
-        JsonNode jsonNode = jsonObjectMapper.readValue(reader, new TypeReference<JsonNode>() {});
-        if (log.isTraceEnabled())
-        {
-            log.trace(readFrom+" config is: "+jsonNode);
-        }
-        else
-        {
-            log.debug(readFrom+" config read");
-        }
-
-        JsonNode transformOptions = jsonNode.get(TRANSFORM_OPTIONS);
-        if (transformOptions != null && transformOptions.isObject())
-        {
-            Iterator<Map.Entry<String, JsonNode>> iterator = transformOptions.fields();
-            while (iterator.hasNext())
-            {
-                Map.Entry<String, JsonNode> entry = iterator.next();
-
-                JsonNode options = entry.getValue();
-                if (options.isArray())
-                {
-                    String optionsName = entry.getKey();
-                    allTransformOptions.put(optionsName, (ArrayNode)options);
-                }
-            }
-        }
-
-        JsonNode transformers = jsonNode.get(TRANSFORMERS);
-        if (transformers != null && transformers.isArray())
-        {
-            for (JsonNode transformer : transformers)
-            {
-                if (transformer.isObject())
-                {
-                    allTransforms.add(new TransformNodeAndItsOrigin((ObjectNode)transformer, baseUrl, readFrom));
-                }
-            }
-        }
-    }
-
-    public void register(TransformServiceRegistryImpl.Data data, TransformServiceRegistryImpl registry) throws IOException
+    public void register(TransformServiceRegistryImpl registry) throws IOException
     {
         List<TransformAndItsOrigin> transformers = getTransforms();
-        transformers.forEach(t->registry.register(data, t.transform, t.baseUrl, t.readFrom));
+        transformers.forEach(t->registry.register(t.transform, t.baseUrl, t.readFrom));
     }
 
     public List<TransformAndItsOrigin> getTransforms() throws IOException

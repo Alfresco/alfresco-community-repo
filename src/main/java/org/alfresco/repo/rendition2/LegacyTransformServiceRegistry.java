@@ -65,6 +65,11 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
         firstTime = true;
     }
 
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;

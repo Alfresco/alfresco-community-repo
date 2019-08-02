@@ -27,21 +27,11 @@ package org.alfresco.transform.client.model.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.quartz.CronExpression;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.TriggerBuilder;
-import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
@@ -68,7 +58,12 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         private int transformerCount = 0;
         private int transformCount = 0;
         boolean firstTime = true;
-        boolean successReadingRemoteConfig = true;
+
+        @Override
+        public String toString()
+        {
+            return "("+transformerCount+":"+transformCount+")";
+        }
     }
 
     static class SupportedTransform
@@ -90,38 +85,29 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         }
     }
 
-    public static class TransformServiceRegistryJob implements Job
-    {
-        @Override
-        public void execute(JobExecutionContext context) throws JobExecutionException
-        {
-            JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-            TransformServiceRegistryImpl registry = (TransformServiceRegistryImpl)dataMap.get("registry");
-            registry.readConfigAndReplace();
-        }
-    }
-
     protected boolean enabled = true;
-    protected Data data;
     private ObjectMapper jsonObjectMapper;
-    private Scheduler scheduler;
     private CronExpression cronExpression;
     private CronExpression initialAndOnErrorCronExpression;
-    private boolean normalCronSchedule;
+
+    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
+    {
+        @Override
+        public boolean readConfig() throws IOException
+        {
+            return TransformServiceRegistryImpl.this.readConfig();
+        }
+
+        @Override
+        public Object createData()
+        {
+            return TransformServiceRegistryImpl.this.createData();
+        }
+    };
 
     public void setJsonObjectMapper(ObjectMapper jsonObjectMapper)
     {
         this.jsonObjectMapper = jsonObjectMapper;
-    }
-
-    public synchronized Scheduler getScheduler()
-    {
-        return scheduler;
-    }
-
-    public synchronized void setScheduler(Scheduler scheduler)
-    {
-        this.scheduler = scheduler;
     }
 
     public CronExpression getCronExpression()
@@ -147,126 +133,31 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        if (jsonObjectMapper == null)
+        PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
+        if (cronExpression != null)
         {
-            throw new IllegalStateException("jsonObjectMapper has not been set");
+            PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
         }
-        PropertyCheck.mandatory(this, "cronExpression", cronExpression);
-        PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
 
-        setData(null);
-        if (enabled)
-        {
-            schedule();
-        }
-    }
-
-    private synchronized void schedule()
-    {
-        // Don't do an initial readConfigAndReplace() as the first scheduled read can be done almost instantly and
-        // there is little point doing two in the space of a few seconds. If however the scheduler is already running
-        // we do need to run it (this is only from test cases).
-        if (scheduler == null)
-        {
-            StdSchedulerFactory sf = new StdSchedulerFactory();
-            String jobName = getClass().getName()+"Job";
-            try
-            {
-                scheduler = sf.getScheduler();
-
-                JobDetail job = JobBuilder.newJob()
-                        .withIdentity(jobName)
-                        .ofType(TransformServiceRegistryJob.class)
-                        .build();
-                job.getJobDataMap().put("registry", this);
-                CronExpression cronExpression = normalCronSchedule ? this.cronExpression : initialAndOnErrorCronExpression;
-                CronTrigger trigger = TriggerBuilder.newTrigger()
-                        .withIdentity(jobName+"Trigger", Scheduler.DEFAULT_GROUP)
-                        .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression))
-                        .build();
-                scheduler.startDelayed(0);
-                scheduler.scheduleJob(job, trigger);
-            }
-            catch (SchedulerException e)
-            {
-                getLog().error("Failed to start "+jobName+" "+e.getMessage());
-            }
-        }
-        else
-        {
-            readConfigAndReplace();
-        }
-    }
-
-    protected void readConfigAndReplace()
-    {
-        boolean successReadingRemoteConfig = true;
         Log log = getLog();
-        log.debug("Config read started");
-        try
-        {
-            Data data = readConfig();
-            successReadingRemoteConfig = data.successReadingRemoteConfig;
-            setData(data);
-            log.debug("Config read finished "+getCounts());
-        }
-        catch (Exception e)
-        {
-            successReadingRemoteConfig = false;
-            log.error("Config read failed. "+e.getMessage(), e);
-        }
-
-        // Switch schedule sequence if we were on the normal schedule and we now have problems or if
-        // we are on the initial/error schedule and there were no errors.
-        if (normalCronSchedule && !successReadingRemoteConfig ||
-            !normalCronSchedule && successReadingRemoteConfig)
-        {
-            normalCronSchedule = !normalCronSchedule;
-            if (scheduler != null)
-            {
-                try
-                {
-                    CronExpression cronExpression = normalCronSchedule ? this.cronExpression : initialAndOnErrorCronExpression;
-                    scheduler.clear();
-                    scheduler = null;
-                    schedule();
-                }
-                catch (SchedulerException e)
-                {
-                    getLog().error("Problem stopping scheduler for transformer configuration "+e.getMessage());
-                }
-            }
-            else
-            {
-                System.out.println("Switch schedule "+normalCronSchedule+" WITHOUT new schedule");
-            }
-        }
+        configScheduler.run(enabled, log, cronExpression, initialAndOnErrorCronExpression);
     }
 
-    protected abstract Data readConfig() throws IOException;
-
-    private synchronized void setData(Data data)
-    {
-        this.data = data;
-    }
-
-    protected synchronized Data getData()
-    {
-        if (data == null)
-        {
-            data = createData();
-        }
-        return data;
-    }
-
-    protected Data createData()
+    public Data createData()
     {
         return new Data();
     }
 
-    protected void setSuccessReadingRemoteConfig(Data data, boolean successReadingRemoteConfig)
+    public synchronized Data getData()
     {
-        data.successReadingRemoteConfig = successReadingRemoteConfig;
+        return configScheduler.getData();
+    }
+
+    public abstract boolean readConfig() throws IOException;
+
+    public boolean isEnabled()
+    {
+        return enabled;
     }
 
     public void setEnabled(boolean enabled)
@@ -287,14 +178,15 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
 
     protected abstract Log getLog();
 
-    public void register(Data data, Reader reader, String readFrom) throws IOException
+    public void register(Reader reader, String readFrom) throws IOException
     {
         List<Transformer> transformers = jsonObjectMapper.readValue(reader, new TypeReference<List<Transformer>>(){});
-        transformers.forEach(t -> register(data, t, null, readFrom));
+        transformers.forEach(t -> register(t, null, readFrom));
     }
 
-    protected void register(Data data, Transformer transformer, String baseUrl, String readFrom)
+    protected void register(Transformer transformer, String baseUrl, String readFrom)
     {
+        Data data = getData();
         data.transformerCount++;
         transformer.getSupportedSourceAndTargetList().forEach(
             e -> data.transformers.computeIfAbsent(e.getSourceMediaType(),
@@ -302,11 +194,6 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
                 k -> new ArrayList<>()).add(
                     new SupportedTransform(data, transformer.getTransformerName(),
                             transformer.getTransformOptions(), e.getMaxSourceSizeBytes(), e.getPriority())));
-    }
-
-    protected String getCounts()
-    {
-        return "("+getData().transformerCount+":"+getData().transformCount+")";
     }
 
     @Override
@@ -365,7 +252,6 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         {
             renditionName = null;
         }
-
 
         Data data = getData();
         List<SupportedTransform> transformListBySize = renditionName == null ? null

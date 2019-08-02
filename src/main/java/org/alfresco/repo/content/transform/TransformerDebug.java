@@ -1717,7 +1717,13 @@ public class TransformerDebug implements ApplicationContextAware
             finally
             {
                 setStringBuilder(null);
-                renditionDefinitionRegistry2.unregister(testRenditionName);
+                try
+                {
+                    renditionDefinitionRegistry2.unregister(testRenditionName);
+                }
+                catch (IllegalArgumentException ignore)
+                {
+                }
                 deleteSourceNode(sourceNodeRef);
             }
             return sb.toString();

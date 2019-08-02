@@ -130,7 +130,7 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
                 List<ThumbnailDefinition> thumbnailDefinitions = thumbnailRegistry.getThumbnailDefinitions(sourceMimetype, -1);
                 Set<String> thumbnailNames = getThumbnailNames(thumbnailDefinitions);
                 assertEquals("There should be the same renditions ("+renditionNames+") as deprecated thumbnails ("+thumbnailNames+")",
-                        renditionNames, thumbnailNames);
+                        thumbnailNames, renditionNames);
 
                 renditionCount += renditionNames.size();
                 for (String renditionName : renditionNames)

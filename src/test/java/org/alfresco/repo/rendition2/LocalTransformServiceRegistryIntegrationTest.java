@@ -27,11 +27,14 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.transform.client.model.config.TransformServiceRegistry;
+import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -45,6 +48,8 @@ import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
  */
 public class LocalTransformServiceRegistryIntegrationTest extends AbstractRenditionIntegrationTest
 {
+    private static final String RENDITION_NAME = "pdf";
+
     @Autowired
     private LocalTransformServiceRegistry localTransformServiceRegistry;
 
@@ -65,6 +70,7 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
         AbstractRenditionIntegrationTest.after();
     }
 
+    @Override
     @Before
     public void setUp() throws Exception
     {
@@ -75,11 +81,16 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
         options = definition2.getTransformOptions();
     }
 
-    protected void setEnabled(boolean enabled)
+    protected void setEnabled(boolean enabled) throws Exception
     {
         localTransformServiceRegistry.setEnabled(enabled);
+        localTransformServiceRegistry.afterPropertiesSet();
     }
-    private static final String RENDITION_NAME = "pdf";
+
+    protected boolean isEnabled()
+    {
+        return localTransformServiceRegistry.isEnabled();
+    }
 
     @Test
     public void testIsSupported()
@@ -121,18 +132,22 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
     }
 
     @Test
-    public void testEnabledDisabled()
+    public void testEnabledDisabled() throws Exception
     {
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+        boolean origEnabled = isEnabled(); // should be true
         try
         {
+            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+
             setEnabled(false);
             Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+
+            setEnabled(true);
+            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
         }
         finally
         {
-            setEnabled(true);
+            setEnabled(origEnabled);
         }
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
     }
 }

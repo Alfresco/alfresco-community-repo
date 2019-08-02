@@ -62,7 +62,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     private static final String URL = ".url";
     static final String STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES = "transformer.strict.mimetype.check.whitelist.mimetypes";
 
-    class LocalData extends TransformServiceRegistryImpl.Data
+    public class LocalData extends TransformServiceRegistryImpl.Data
     {
         private Map<String, LocalTransform> localTransforms = new HashMap<>();
     }
@@ -130,35 +130,40 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    protected Data readConfig() throws IOException
+    public boolean readConfig() throws IOException
     {
-        Data data = createData();
         CombinedConfig combinedConfig = new CombinedConfig(getLog());
         List<String> urls = getTEngineUrls();
-        boolean successReadingRemoteConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
-        setSuccessReadingRemoteConfig(data, successReadingRemoteConfig);
-        combinedConfig.addLocalConfig("alfresco/transformers");
-        if (!pipelineConfigDir.isEmpty())
+        boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
+        successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
+        if (pipelineConfigDir != null && !pipelineConfigDir.isBlank())
         {
-            combinedConfig.addLocalConfig(pipelineConfigDir);
+            successReadingConfig &= combinedConfig.addLocalConfig(pipelineConfigDir);
         }
-        combinedConfig.register(data, this);
-        return data;
+        combinedConfig.register(this);
+        return successReadingConfig;
     }
 
     @Override
-    protected Data createData()
+    public synchronized LocalData getData()
+    {
+        return (LocalData)super.getData();
+    }
+
+    @Override
+    public Data createData()
     {
         return new LocalData();
     }
 
     @Override
-    protected void register(Data data, Transformer transformer, String baseUrl, String readFrom)
+    protected void register(Transformer transformer, String baseUrl, String readFrom)
     {
         try
         {
             String name = transformer.getTransformerName();
-            Map<String, LocalTransform> localTransforms = ((LocalData)data).localTransforms;
+            LocalData data = getData();
+            Map<String, LocalTransform> localTransforms = data.localTransforms;
             if (name == null || localTransforms.get(name) != null)
             {
                 throw new IllegalArgumentException("Local transformer names must exist and be unique (" + name + ")."+
@@ -238,7 +243,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                 }
             }
             localTransforms.put(name, localTransform);
-            super.register(data, transformer, baseUrl, readFrom);
+            super.register(transformer, baseUrl, readFrom);
         }
         catch (IllegalArgumentException e)
         {
@@ -396,7 +401,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         if (getFirstTime())
         {
             setFirstTime(false);
-            transformerDebug.debug("Local transforms "+getCounts()+" are " + (enabled ? "enabled" : "disabled"));
+            transformerDebug.debug("Local transforms "+getData()+" are " + (enabled ? "enabled" : "disabled"));
         }
 
         return enabled
@@ -419,7 +424,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                                             String sourceMimetype, String targetMimetype, long sourceSizeInBytes)
     {
         String name = getTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        Map<String, LocalTransform> localTransforms = ((LocalData)data).localTransforms;
+        LocalData data = getData();
+        Map<String, LocalTransform> localTransforms = data.localTransforms;
         return localTransforms.get(name);
     }
 }

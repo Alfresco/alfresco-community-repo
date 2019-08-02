@@ -61,18 +61,18 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
 {
     private class TestLocalTransformServiceRegistry extends LocalTransformServiceRegistry
     {
-        private boolean lastReadSucceed = false;
-        private boolean mockSuccessReadingRemoteConfig = true;
+        private boolean mockSuccessReadingConfig = true;
+        LocalData dummyData = new LocalData();
 
-        public synchronized boolean getMockSuccessReadingRemoteConfig()
+        public synchronized boolean getMockSuccessReadingConfig()
         {
-            return mockSuccessReadingRemoteConfig;
+            return mockSuccessReadingConfig;
         }
 
-        public synchronized void setMockSuccessReadingRemoteConfig(boolean mockSuccessReadingRemoteConfig)
+        public synchronized void setMockSuccessReadingConfig(boolean mockSuccessReadingConfig)
         {
-            System.out.println("\n"+getMs()+": set next mock read to "+(mockSuccessReadingRemoteConfig ? "success" : "failure"));
-            this.mockSuccessReadingRemoteConfig = mockSuccessReadingRemoteConfig;
+            System.out.println("\n"+getMs()+": set next mock read to "+(mockSuccessReadingConfig ? "success" : "failure"));
+            this.mockSuccessReadingConfig = mockSuccessReadingConfig;
         }
 
         @Override
@@ -84,31 +84,36 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         }
 
         @Override
-        protected TransformServiceRegistryImpl.Data readConfig() throws IOException
+        public boolean readConfig() throws IOException
         {
             readConfigCount++;
-            data = createData();
-            boolean mockSuccessReadingRemoteConfig = getMockSuccessReadingRemoteConfig();
-            lastReadSucceed = mockSuccessReadingRemoteConfig;
-            setSuccessReadingRemoteConfig(data, mockSuccessReadingRemoteConfig);
+            dummyData = new LocalData();
+            boolean mockSuccessReadingRemoteConfig = getMockSuccessReadingConfig();
             System.out.println(getMs() + "readConfig() success="+mockSuccessReadingRemoteConfig+" reads="+readConfigCount);
-            return data;
+            return mockSuccessReadingRemoteConfig;
         }
 
-        public Data assertDataChanged(Data data, String msg)
+        @Override
+        public synchronized LocalData getData()
+         {
+             return dummyData;
+         }
+
+        public Data assertDataChanged(Data prevData, String msg)
         {
             // If the data changes, there has been a read
             System.out.println(getMs()+msg);
-            assertNotEquals("The configuration data should have changed: "+msg, this.data, data);
-            return this.data;
+            Data data = getData();
+            assertNotEquals("The configuration data should have changed: "+msg, data, prevData);
+            return data;
         }
 
         public Data assertDataUnchanged(Data data, String msg)
         {
             // If the data changes, there has been a read
             System.out.println(getMs()+msg);
-            assertEquals("The configuration data should be the same: "+msg, this.data, data);
-            return this.data;
+            assertEquals("The configuration data should be the same: "+msg, getData(), data);
+            return getData();
         }
     }
 
@@ -134,7 +139,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     private Map<String, List<String>> libreofficeSupportedTransformation;
     private Map<String, List<String>> officeToImageViaPdfSupportedTransformation;
 
-    private TransformServiceRegistryImpl.Data data;
     private int readConfigCount;
     private long startMs;
 
@@ -155,8 +159,8 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         registry.setTransformerDebug(transformerDebug);
         registry.setMimetypeService(mimetypeMap);
         registry.setPipelineConfigDir("");
-        registry.setCronExpression(new CronExpression("* * * * * ? 2099")); // not for a long time.
-        registry.setInitialAndOnErrorCronExpression(new CronExpression("* * * * * ? 2099")); // not for a long time.
+        registry.setCronExpression(null); // just read it once
+        registry.afterPropertiesSet();
         return registry;
     }
 
@@ -416,22 +420,12 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     {
         CronExpression origCronExpression = registry.getCronExpression();
         CronExpression origInitialAndOnErrorCronExpression = registry.getInitialAndOnErrorCronExpression();
-
         String origPipelineConfigDir = registry.getPipelineConfigDir();
-        Scheduler origScheduler = registry.getScheduler();
-
-        if (origScheduler != null)
-        {
-            origScheduler.clear();
-        }
 
         try
         {
-            TransformServiceRegistryImpl.Data prevData;
-            data = null;
             readConfigCount = 0;
 
-            registry.setScheduler(null);
             registry.setInitialAndOnErrorCronExpression(new CronExpression(("0/2 * * ? * * *"))); // every 2 seconds rather than 10 seconds
             registry.setCronExpression(new CronExpression(("0/4 * * ? * * *"))); // every 4 seconds rather than 10 mins
 
@@ -439,8 +433,9 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             // It avoids having to work out schedule offsets and extra quick runs that can otherwise take place.
             Thread.sleep(4000-System.currentTimeMillis()%4000);
             startMs = System.currentTimeMillis();
-            registry.setMockSuccessReadingRemoteConfig(false);
+            registry.setMockSuccessReadingConfig(false);
             registry.afterPropertiesSet();
+            TransformServiceRegistryImpl.Data data = registry.getData();
 
             Thread.sleep(1000); // 1 seconds
             data = registry.assertDataChanged(data, "There should have been a read after a few milliseconds that fails");
@@ -456,7 +451,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
 
             // Should switch to normal 4s schedule after the next read, so the read at 12 seconds will be on that schedule.
             // It is always possible that another quick one gets scheduled almost straight away after the next read.
-            registry.setMockSuccessReadingRemoteConfig(true);
+            registry.setMockSuccessReadingConfig(true);
             Thread.sleep(2000); // 9 seconds
             data = registry.assertDataChanged(data, "There should have been a read after 8 seconds that succeeds");
 
@@ -467,7 +462,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             data = registry.assertDataChanged(data, "There should have been a read after 12 seconds that succeeds");
 
             // Should switch back to initial/error schedule after failure
-            registry.setMockSuccessReadingRemoteConfig(false);
+            registry.setMockSuccessReadingConfig(false);
             Thread.sleep(4000); // 17 seconds
             data = registry.assertDataChanged(data, "There should have been a read after 16 seconds that fails");
 
@@ -476,15 +471,10 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         }
         finally
         {
-            registry.setMockSuccessReadingRemoteConfig(true);
-
-            // Reset scheduler properties just in case another tests needs them in future.
-            // We don't start the scheduler with registry.afterPropertiesSet() as this is
-            // really just mocked up version of the registry.
+            registry.setMockSuccessReadingConfig(true);
             registry.setCronExpression(origCronExpression);
             registry.setInitialAndOnErrorCronExpression(origInitialAndOnErrorCronExpression);
             registry.setPipelineConfigDir(origPipelineConfigDir);
-            registry.setScheduler(null);
         }
     }
 }

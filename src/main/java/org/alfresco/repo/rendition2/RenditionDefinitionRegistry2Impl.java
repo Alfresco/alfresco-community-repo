@@ -25,9 +25,19 @@
  */
 package org.alfresco.repo.rendition2;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.transform.client.model.config.TransformServiceRegistry;
+import org.alfresco.util.ConfigFileFinder;
+import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.InitializingBean;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,17 +49,204 @@ import java.util.Set;
  *
  * @author adavis
  */
-public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegistry2
+public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegistry2, InitializingBean
 {
-    private TransformServiceRegistry transformServiceRegistry;
+    private static final Log log = LogFactory.getLog(RenditionDefinitionRegistry2Impl.class);
 
-    private final Map<String, RenditionDefinition2> renditionDefinitions = new HashMap();
-    private final Map<String, Set<Pair<String, Long>>> renditionsFor = new HashMap<>();
+    static class Data
+    {
+        Map<String, RenditionDefinition2> renditionDefinitions = new HashMap();
+        Map<String, Set<Pair<String, Long>>> renditionsFor = new HashMap<>();
+        private int count = 0;
+
+        @Override
+        public String toString()
+        {
+            return "("+count+")";
+        }
+    }
+
+    static class RenditionDef
+    {
+        private String renditionName;
+        private String targetMediaType;
+        private Set<RenditionOpt> options;
+
+        public void setRenditionName(String renditionName)
+        {
+            this.renditionName = renditionName;
+        }
+
+        public void setTargetMediaType(String targetMediaType)
+        {
+            this.targetMediaType = targetMediaType;
+        }
+
+        public void setOptions(Set<RenditionOpt> options)
+        {
+            this.options = options;
+        }
+    }
+
+    static class RenditionOpt
+    {
+        private String name;
+        private String value;
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        public String getValue()
+        {
+            return value;
+        }
+
+        public void setValue(String value)
+        {
+            this.value = value;
+        }
+    }
+
+    private TransformServiceRegistry transformServiceRegistry;
+    private String renditionConfigDir;
+    private String timeoutDefault;
+    private ObjectMapper jsonObjectMapper;
+    private CronExpression cronExpression;
+    private CronExpression initialAndOnErrorCronExpression;
+
+    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
+    {
+        @Override
+        public boolean readConfig() throws IOException
+        {
+            return RenditionDefinitionRegistry2Impl.this.readConfig();
+        }
+
+        @Override
+        public Object createData()
+        {
+            return RenditionDefinitionRegistry2Impl.this.createData();
+        }
+    };
+    private ConfigFileFinder configFileFinder;
 
     public void setTransformServiceRegistry(TransformServiceRegistry transformServiceRegistry)
     {
         this.transformServiceRegistry = transformServiceRegistry;
-        renditionsFor.clear();
+    }
+
+    public void setRenditionConfigDir(String renditionConfigDir)
+    {
+        this.renditionConfigDir = renditionConfigDir;
+    }
+
+    public void setTimeoutDefault(String timeoutDefault)
+    {
+        this.timeoutDefault = timeoutDefault;
+    }
+
+    public void setJsonObjectMapper(ObjectMapper jsonObjectMapper)
+    {
+        this.jsonObjectMapper = jsonObjectMapper;
+    }
+
+    public CronExpression getCronExpression()
+    {
+        return cronExpression;
+    }
+
+    public void setCronExpression(CronExpression cronExpression)
+    {
+        this.cronExpression = cronExpression;
+    }
+
+    public CronExpression getInitialAndOnErrorCronExpression()
+    {
+        return initialAndOnErrorCronExpression;
+    }
+
+    public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
+    {
+        this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "transformServiceRegistry", transformServiceRegistry);
+        PropertyCheck.mandatory(this, "renditionConfigDir", renditionConfigDir);
+        PropertyCheck.mandatory(this, "timeoutDefault", timeoutDefault);
+        PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
+        if (cronExpression != null)
+        {
+            PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
+        }
+        configFileFinder = new ConfigFileFinder(jsonObjectMapper)
+        {
+            @Override
+            protected void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException
+            {
+                try
+                {
+                    JsonNode renditions = jsonNode.get("renditions");
+                    if (renditions != null && renditions.isArray())
+                    {
+                        for (JsonNode rendition : renditions)
+                        {
+                            RenditionDef def = jsonObjectMapper.convertValue(rendition, RenditionDef.class);
+                            Map<String, String> map = new HashMap<>();
+                            if (def.options != null)
+                            {
+                                def.options.forEach(o -> map.put(o.name, o.value));
+                            }
+                            if (!map.containsKey(RenditionDefinition2.TIMEOUT))
+                            {
+                                map.put(RenditionDefinition2.TIMEOUT, timeoutDefault);
+                            }
+                            new RenditionDefinition2Impl(def.renditionName, def.targetMediaType, map,
+                                    RenditionDefinitionRegistry2Impl.this);
+                        }
+                    }
+                }
+                catch (IllegalArgumentException e)
+                {
+                    log.error("Error reading "+readFromMessage+" "+e.getMessage());
+                }
+            }
+        };
+        configScheduler.run(true, log, cronExpression, initialAndOnErrorCronExpression);
+    }
+
+    public Data createData()
+    {
+        return new Data();
+    }
+
+    public synchronized Data getData()
+    {
+        return configScheduler.getData();
+    }
+
+    public boolean readConfig() throws IOException
+    {
+        boolean successReadingConfig = configFileFinder.readFiles("alfresco/renditions", log);
+        if (renditionConfigDir != null && !renditionConfigDir.isBlank())
+        {
+            successReadingConfig &= configFileFinder.readFiles(renditionConfigDir, log);
+        }
+        return successReadingConfig;
+    }
+
+    public boolean isEnabled()
+    {
+        return true;
     }
 
     /**
@@ -71,12 +268,14 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         {
             throw new IllegalArgumentException("RenditionDefinition "+renditionName+" was already registered.");
         }
-        renditionDefinitions.put(renditionName, renditionDefinition);
+        Data data = getData();
+        data.renditionDefinitions.put(renditionName, renditionDefinition);
     }
 
     public void unregister(String renditionName)
     {
-        if (renditionDefinitions.remove(renditionName) == null)
+        Data data = getData();
+        if (data.renditionDefinitions.remove(renditionName) == null)
         {
             throw new IllegalArgumentException("RenditionDefinition "+renditionName+" was not registered.");
         }
@@ -85,20 +284,21 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     @Override
     public Set<String> getRenditionNames()
     {
-        return renditionDefinitions.keySet();
+        return getData().renditionDefinitions.keySet();
     }
 
     @Override
     public Set<String> getRenditionNamesFrom(String sourceMimetype, long size)
     {
         Set<Pair<String, Long>> renditionNamesWithMaxSize;
-        synchronized (renditionsFor)
+        Data data = getData();
+        synchronized (data.renditionsFor)
         {
-            renditionNamesWithMaxSize = renditionsFor.get(sourceMimetype);
+            renditionNamesWithMaxSize = data.renditionsFor.get(sourceMimetype);
             if (renditionNamesWithMaxSize == null)
             {
                 renditionNamesWithMaxSize = getRenditionNamesWithMaxSize(sourceMimetype);
-                renditionsFor.put(sourceMimetype, renditionNamesWithMaxSize);
+                data.renditionsFor.put(sourceMimetype, renditionNamesWithMaxSize);
             }
         }
 
@@ -125,7 +325,8 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(String sourceMimetype)
     {
         Set<Pair<String,Long>> renditions = new HashSet();
-        for (Map.Entry<String, RenditionDefinition2> entry : renditionDefinitions.entrySet())
+        Data data = getData();
+        for (Map.Entry<String, RenditionDefinition2> entry : data.renditionDefinitions.entrySet())
         {
             RenditionDefinition2 renditionDefinition2 = entry.getValue();
             String targetMimetype = renditionDefinition2.getTargetMimetype();
@@ -145,6 +346,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     @Override
     public RenditionDefinition2 getRenditionDefinition(String renditionName)
     {
-        return renditionDefinitions.get(renditionName);
+        Data data = getData();
+        return data.renditionDefinitions.get(renditionName);
     }
 }

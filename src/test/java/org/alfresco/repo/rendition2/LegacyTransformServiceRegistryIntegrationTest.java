@@ -59,8 +59,16 @@ public class LegacyTransformServiceRegistryIntegrationTest extends LocalTransfor
         AbstractRenditionIntegrationTest.after();
     }
 
+    @Override
     protected void setEnabled(boolean enabled)
     {
         legacyTransformServiceRegistry.setEnabled(enabled);
+        legacyTransformServiceRegistry.afterPropertiesSet();
+    }
+
+    @Override
+    protected boolean isEnabled()
+    {
+        return legacyTransformServiceRegistry.isEnabled();
     }
 }

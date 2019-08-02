@@ -53,6 +53,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
@@ -118,6 +119,9 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
     protected static final String ADMIN = "admin";
     protected static final String DOC_LIB = "doclib";
+
+    private CronExpression origLocalTransCron;
+    private CronExpression origRenditionCron;
 
     @BeforeClass
     public static void before()
@@ -192,16 +196,25 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         legacyTransformServiceRegistry.setEnabled(Boolean.parseBoolean(System.getProperty("legacy.transform.service.enabled")));
         legacyTransformServiceRegistry.afterPropertiesSet();
 
+        origLocalTransCron = localTransformServiceRegistry.getCronExpression();
+        localTransformServiceRegistry.setCronExpression(null);
         localTransformServiceRegistry.setEnabled(Boolean.parseBoolean(System.getProperty("local.transform.service.enabled")));
         localTransformServiceRegistry.afterPropertiesSet();
 
+        origRenditionCron = renditionDefinitionRegistry2.getCronExpression();
+        renditionDefinitionRegistry2.setCronExpression(null);
         renditionDefinitionRegistry2.setTransformServiceRegistry(transformServiceRegistry);
+        renditionDefinitionRegistry2.afterPropertiesSet();
+
         thumbnailRegistry.setTransformServiceRegistry(transformServiceRegistry);
     }
 
     @After
     public void cleanUp()
     {
+        localTransformServiceRegistry.setCronExpression(origLocalTransCron);
+        renditionDefinitionRegistry2.setCronExpression(origRenditionCron);
+
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 

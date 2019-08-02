@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -38,16 +39,22 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.quartz.CronExpression;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -68,6 +75,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class RenditionService2Test
 {
+    private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();;
+
     private RenditionService2Impl renditionService2;
     private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
 
@@ -80,9 +89,10 @@ public class RenditionService2Test
     @Mock private PolicyComponent policyComponent;
     @Mock private BehaviourFilter behaviourFilter;
     @Mock private RuleService ruleService;
+    @Mock private TransformServiceRegistryImpl transformServiceRegistry;
 
     private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
-    private static final String IMGPREVIEW = "imgpreview";
+    private static final String TEST_RENDITION = "testRendition";
     private static final String JPEG = "image/jpeg";
     private String contentUrl = "test-content-url";
 
@@ -91,11 +101,11 @@ public class RenditionService2Test
     {
         renditionService2 = new RenditionService2Impl();
         renditionDefinitionRegistry2 = new RenditionDefinitionRegistry2Impl();
-
-        Map<String, String> options = new HashMap<>();
-        options.put("width", "960");
-        options.put("height", "1024");
-        new RenditionDefinition2Impl(IMGPREVIEW, JPEG, options, renditionDefinitionRegistry2);
+        renditionDefinitionRegistry2.setTransformServiceRegistry(transformServiceRegistry);
+        renditionDefinitionRegistry2.setRenditionConfigDir("");
+        renditionDefinitionRegistry2.setTimeoutDefault("120000");
+        renditionDefinitionRegistry2.setJsonObjectMapper(JSON_OBJECT_MAPPER);
+        renditionDefinitionRegistry2.setCronExpression(null); // just read it once
 
         when(nodeService.exists(nodeRef)).thenReturn(true);
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
@@ -115,7 +125,14 @@ public class RenditionService2Test
         renditionService2.setEnabled(true);
         renditionService2.setThumbnailsEnabled(true);
         renditionService2.setRenditionRequestSheduler(new RenditionRequestSchedulerMock());
+
+        renditionDefinitionRegistry2.afterPropertiesSet();
         renditionService2.afterPropertiesSet();
+
+        Map<String, String> options = new HashMap<>();
+        options.put("width", "960");
+        options.put("height", "1024");
+        new RenditionDefinition2Impl(TEST_RENDITION, JPEG, options, renditionDefinitionRegistry2);
     }
 
     private class RenditionRequestSchedulerMock extends PostTxnCallbackScheduler
@@ -138,20 +155,20 @@ public class RenditionService2Test
     public void disabled()
     {
         renditionService2.setEnabled(false);
-        renditionService2.render(nodeRef, IMGPREVIEW);
+        renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test(expected = RenditionService2Exception.class)
     public void thumbnailsDisabled()
     {
         renditionService2.setThumbnailsEnabled(false);
-        renditionService2.render(nodeRef, IMGPREVIEW);
+        renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test
     public void useLocalTransform()
     {
-        renditionService2.render(nodeRef, IMGPREVIEW);
+        renditionService2.render(nodeRef, TEST_RENDITION);
         verify(transformClient, times(1)).transform(any(), any(), anyString(), anyInt());
     }
 
@@ -159,19 +176,31 @@ public class RenditionService2Test
     public void noTransform()
     {
         doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
-        renditionService2.render(nodeRef, IMGPREVIEW);
+        renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test(expected = RenditionService2PreventedException.class)
     public void checkSourceNodeForPreventionClass()
     {
         when(renditionPreventionRegistry.isContentClassRegistered((QName)any())).thenReturn(true);
-        renditionService2.render(nodeRef, IMGPREVIEW);
+        renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void noDefinition()
     {
         renditionService2.render(nodeRef, "doesNotExist");
+    }
+
+    @Test
+    public void definitionExists() throws IOException
+    {
+        renditionDefinitionRegistry2.readConfig();
+
+        Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNames();
+        for (String name: new String[] {"medium", "doclib", "imgpreview", "avatar", "avatar32", "webpreview", "pdf"})
+        {
+            assertTrue("Expected rendition "+name, renditionNames.contains(name));
+        }
     }
 }

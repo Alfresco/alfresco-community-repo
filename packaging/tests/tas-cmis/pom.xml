@@ -110,28 +110,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-remote-resources-plugin</artifactId>
-                <version>${maven-remote-resources.version}</version>
-                <configuration>
-                    <includes>
-                        <include>shared-resources/**/*</include>
-                    </includes>
-                    <resourceBundles>
-                        <resourceBundle>org.alfresco.tas:utility:${tas.utility.version}</resourceBundle>
-                    </resourceBundles>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>

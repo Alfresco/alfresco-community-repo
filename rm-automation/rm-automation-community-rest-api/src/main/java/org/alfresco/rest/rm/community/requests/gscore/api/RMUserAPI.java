@@ -87,6 +87,7 @@ public class RMUserAPI extends RMModelRequest
      *
      * @param userName User's username
      * @param userRole User's RM role, one of {@link UserRoles} roles
+     * @throws RuntimeException for failed requests
      */
     public void assignRoleToUser(String userName, String userRole)
     {

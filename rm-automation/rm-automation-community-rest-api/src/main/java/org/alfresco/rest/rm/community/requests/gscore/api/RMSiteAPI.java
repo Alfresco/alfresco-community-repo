@@ -62,7 +62,7 @@ public class RMSiteAPI extends RMModelRequest
      * Get the RM site
      *
      * @return The {@link RMSite} for the given file plan component id
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
      *  <li>Api Response code 401 If authentication failed</li>
@@ -70,7 +70,7 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite getSite() throws Exception
+    public RMSite getSite()
     {
         return getRmRestWrapper().processModel(RMSite.class, simpleRequest(
                 GET,
@@ -83,7 +83,7 @@ public class RMSiteAPI extends RMModelRequest
      *
      * @param rmSite The properties of the rm site to be created
      * @return The {@link RMSite} with the given properties
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: title, or description exceed the maximum length; or siteBodyCreate invalid</li>
      *  <li>Api Response code 401 If authentication failed</
@@ -91,7 +91,7 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite createRMSite(RMSite rmSiteModel) throws Exception
+    public RMSite createRMSite(RMSite rmSiteModel)
     {
         mandatoryObject("rmSiteModel", rmSiteModel);
 
@@ -104,7 +104,7 @@ public class RMSiteAPI extends RMModelRequest
 
     /**
      * Delete RM site
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: DELETE request is supported only for the RM site</li>
      *  <li>Api Response code 401 If authentication failed</
@@ -113,7 +113,7 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public void deleteRMSite() throws Exception
+    public void deleteRMSite()
     {
         getRmRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
@@ -126,7 +126,7 @@ public class RMSiteAPI extends RMModelRequest
      *
      * @param rmSiteProperties The properties to be updated
      * @return The updated {@link RMSite}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Api Response code 400 the update request is invalid {@code rmSiteModel} is invalid</li>
      *  <li>Api Response code 401 If authentication fails</li>
@@ -135,7 +135,7 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error,model integrity exception</li>
      * </ul>
      */
-    public RMSite updateRMSite(RMSite rmSiteModel) throws Exception
+    public RMSite updateRMSite(RMSite rmSiteModel)
     {
         mandatoryObject("rmSiteProperties", rmSiteModel);
 
@@ -150,7 +150,7 @@ public class RMSiteAPI extends RMModelRequest
      * Checks if the RM site exists or not
      *
      * @return <code>true</code> if the RM site exists, <code>false</code> otherwise
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
      *  <li>Api Response code 401 If authentication failed</li>
@@ -158,7 +158,7 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public boolean existsRMSite() throws Exception
+    public boolean existsRMSite()
     {
         getSite();
         return getRmRestWrapper().getStatusCode().equals(OK.toString());

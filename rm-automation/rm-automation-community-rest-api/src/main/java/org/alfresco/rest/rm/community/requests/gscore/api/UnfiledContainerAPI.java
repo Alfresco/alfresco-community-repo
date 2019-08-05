@@ -39,6 +39,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -86,7 +87,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param unfiledContainerId The identifier of a unfiled record container
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainer} for the given {@code unfiledContainerId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code unfiledContainerId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -122,7 +123,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param unfiledContainerId The identifier of an unfiled records container
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainerChildCollection} for the given {@code unfiledContainerId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code unfiledContainerId}</li>
@@ -144,7 +145,7 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * see {@link #createUnfiledContainerChild(UnfiledContainerChild, String, String)}
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId)
     {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
@@ -159,7 +160,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param unfiledContainerId The identifier of an unfiled container
      * @param parameters The URL parameters to add
      * @return The created {@link UnfiledContainerChild}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code unfiledContainerId} is not a valid format or {@code unfiledContainerChildModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -169,7 +170,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, String parameters) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, String parameters)
     {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
@@ -190,9 +191,9 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param unfiledContainerChildContent {@link File} pointing to the content of the electronic record to be created
      * @param unfiledContainerId The identifier of a unfiled container
      * @return newly created {@link UnfiledContainerChild}
-     * @throws Exception for invalid recordModel JSON strings
+     * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, File unfiledContainerChildContent) throws Exception
+    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, File unfiledContainerChildContent)
     {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryObject("unfiledContainerChildContent", unfiledContainerChildContent);
@@ -208,7 +209,15 @@ public class UnfiledContainerAPI extends RMModelRequest
          * to the request.
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
-        JsonNode root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
+        JsonNode root;
+        try
+        {
+            root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to convert model to JSON.", e);
+        }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
@@ -225,7 +234,7 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * see {@link #updateUnfiledContainer(UnfiledContainer, String, String)
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId) throws Exception
+    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId)
     {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
@@ -240,7 +249,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param unfiledContainerId The identifier of an unfiled record container
      * @param parameters The URL parameters to add
      * @param returns The updated {@link UnfiledContainer}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code unfiledContainerId} is not a valid format or {@code unfiledContainerModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -250,7 +259,7 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters) throws Exception
+    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters)
     {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);

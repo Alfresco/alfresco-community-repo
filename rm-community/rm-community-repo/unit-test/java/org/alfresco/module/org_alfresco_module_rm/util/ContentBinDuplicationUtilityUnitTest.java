@@ -137,8 +137,7 @@ public class ContentBinDuplicationUtilityUnitTest
         when(contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(contentUrl);
         when(recordsManagementQueryDAO.getContentUrlEntityUnreferenced(contentUrl)).thenReturn(contentUrlEntity);
 
-        boolean hasReference = contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef);
-        assertFalse(hasReference);
+        assertFalse(contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef));
     }
 
     /**

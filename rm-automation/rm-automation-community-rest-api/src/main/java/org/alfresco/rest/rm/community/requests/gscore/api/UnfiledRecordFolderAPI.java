@@ -40,6 +40,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -86,7 +87,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @param unfiledRecordFolderId The identifier of a unfiled record folder
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledRecordFolder} for the given {@code unfiledRecordFolderId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code unfiledRecordFolderId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -122,7 +123,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @param unfiledRecordFolderId The identifier of an unfiled records folder
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledRecordFolderChildCollection} for the given {@code unfiledRecordFolderId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code unfiledRecordFolderId}</li>
@@ -144,7 +145,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * see {@link #createUnfiledRecordFolderChild(UnfiledContainerChild, String, String)}
      */
-    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId) throws Exception
+    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId)
     {
         mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
@@ -159,7 +160,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @param unfiledRecordFolderId The identifier of an unfiled folder
      * @param parameters The URL parameters to add
      * @return The created {@link UnfiledRecordFolderChild}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderChildModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -169,7 +170,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, String parameters) throws Exception
+    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, String parameters)
     {
         mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
@@ -190,9 +191,9 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @param unfiledRecordFolderChildContent {@link File} pointing to the content of the electronic record to be created
      * @param unfiledRecordFolderId The identifier of a unfiled record folder
      * @return newly created {@link UnfiledContainerChild}
-     * @throws Exception for invalid recordModel JSON strings
+     * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, File unfiledRecordFolderChildContent) throws Exception
+    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, File unfiledRecordFolderChildContent)
     {
         mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
         mandatoryObject("unfiledRecordFolderChildContent", unfiledRecordFolderChildContent);
@@ -208,7 +209,15 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
          * to the request.
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
-        JsonNode root = new ObjectMapper().readTree(toJson(unfiledRecordFolderChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
+        JsonNode root;
+        try
+        {
+            root = new ObjectMapper().readTree(toJson(unfiledRecordFolderChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to convert model to JSON.", e);
+        }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
@@ -225,7 +234,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
     /**
      * see {@link #updateUnfiledRecordFolder(UnfiledRecordFolder, String, String)
      */
-    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId) throws Exception
+    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId)
     {
         mandatoryObject("unfiledRecordFolderModel", unfiledRecordFolderModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
@@ -240,7 +249,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @param unfiledRecordFolderId The identifier of an unfiled record folder
      * @param parameters The URL parameters to add
      * @param returns The updated {@link UnfiledRecordFolder}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code unfiledRecordFolderId} is not a valid format or {@code unfiledRecordFolderModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -250,7 +259,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId, String parameters) throws Exception
+    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId, String parameters)
     {
         mandatoryObject("unfiledRecordFolderModel", unfiledRecordFolderModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
@@ -268,7 +277,7 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * Deletes an unfiled record folder.
      *
      * @param unfiledRecordFolderId The identifier of a unfiled record folder
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code unfiledRecordFolderId} is not a valid format</li>
      *  <li>authentication fails</li>

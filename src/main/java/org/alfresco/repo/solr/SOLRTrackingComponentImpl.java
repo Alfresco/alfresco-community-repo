@@ -371,13 +371,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
 	            shardPropertyType = pdef.getDataType().getName();
 
-                final Set<QName> allowedShardKeyTypes = Set.of(
-                        DataTypeDefinition.TEXT,
-                        DataTypeDefinition.DATE,
-                        DataTypeDefinition.INT,
-                        DataTypeDefinition.LONG);
-
-
                 if (!shardPropertyType.equals(DataTypeDefinition.TEXT)
                         && !shardPropertyType.equals(DataTypeDefinition.DATE)
                         && !shardPropertyType.equals(DataTypeDefinition.DATETIME)

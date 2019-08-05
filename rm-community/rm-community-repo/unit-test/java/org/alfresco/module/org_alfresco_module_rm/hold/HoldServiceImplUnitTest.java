@@ -54,7 +54,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -115,7 +115,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
-        doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
     }
 
     @Test
@@ -129,13 +128,18 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void heldByMultipleResults()
     {
         // setup record folder in multiple holds
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        List<ChildAssociationRef> holds = new ArrayList<>(4);
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, recordFolder, true, 2));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, activeContent, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, activeContent, true, 2));
         doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
         //setup active content in multiple holds
         doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+
+        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(hold);
+        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(hold2);
 
         // check that both holds are found for record folder
         List<NodeRef> heldByHolds = holdService.heldBy(recordFolder, true);
@@ -402,6 +406,17 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
         when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test
+    public void addArchivedContentToHold()
+    {
+        expectedEx.expect(AlfrescoRuntimeException.class);
+        expectedEx.expectMessage("Archived nodes can't be added to hold.");
+
+        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
+        when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }
 

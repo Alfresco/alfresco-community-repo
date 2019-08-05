@@ -77,7 +77,7 @@ public class RecordFolderAPI extends RMModelRequest
      * Deletes a record folder.
      *
      * @param recordFolderId The identifier of a record folder
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordFolderId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -113,7 +113,7 @@ public class RecordFolderAPI extends RMModelRequest
      * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @return The {@link RecordFolder} for the given {@code recordFolderId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordFolderId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -136,7 +136,7 @@ public class RecordFolderAPI extends RMModelRequest
     /**
      * see {@link #updateRecordFolder(RecordFolder, String, String)
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId) throws Exception
+    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId)
     {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
@@ -151,7 +151,7 @@ public class RecordFolderAPI extends RMModelRequest
      * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @param returns The updated {@link RecordFolder}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code recordFolderId} is not a valid format or {@code recordFolderModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -161,7 +161,7 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId, String parameters) throws Exception
+    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId, String parameters)
     {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
@@ -191,7 +191,7 @@ public class RecordFolderAPI extends RMModelRequest
      * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @return The {@link RecordFolderCollection} for the given {@code recordFolderId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code recordFolderId}</li>

@@ -65,7 +65,7 @@ public class RecordCategoryAPI extends RMModelRequest
      * Deletes a record category.
      *
      * @param recordCategoryId The identifier of a record category
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordCategoryId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -101,7 +101,7 @@ public class RecordCategoryAPI extends RMModelRequest
      * @param recordCategoryId The identifier of a record category
      * @param parameters The URL parameters to add
      * @return The {@link RecordCategory} for the given {@code recordCategoryId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordCategoryId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -124,7 +124,7 @@ public class RecordCategoryAPI extends RMModelRequest
     /**
      * see {@link #updateRecordCategory(RecordCategory, String, String)
      */
-    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId) throws Exception
+    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId)
     {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("recordCategoryId", recordCategoryId);
@@ -139,7 +139,7 @@ public class RecordCategoryAPI extends RMModelRequest
      * @param recordCategoryId The identifier of a record category
      * @param parameters The URL parameters to add
      * @param returns The updated {@link RecordCategory}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code recordCategoryId} is not a valid format or {@code recordCategoryModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -149,7 +149,7 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId, String parameters) throws Exception
+    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId, String parameters)
     {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("recordCategoryId", recordCategoryId);
@@ -179,7 +179,7 @@ public class RecordCategoryAPI extends RMModelRequest
      * @param recordCategoryId The identifier of a record category
      * @param parameters The URL parameters to add
      * @return The {@link RecordCategoryChildCollection} for the given {@code recordCategoryId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code recordCategoryId}</li>

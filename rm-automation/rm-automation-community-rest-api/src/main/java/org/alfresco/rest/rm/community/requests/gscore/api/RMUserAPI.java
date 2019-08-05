@@ -86,9 +86,9 @@ public class RMUserAPI extends RMModelRequest
      * Assign RM role to user
      * @param userName User's username
      * @param userRole User's RM role, one of {@link UserRoles} roles
-     * @throws Exception for failed requests
+     * @throws RuntimeException for failed requests
      */
-    public void assignRoleToUser(String userName, String userRole) throws Exception
+    public void assignRoleToUser(String userName, String userRole)
     {
         UserModel adminUser = getRmRestWrapper().getTestUser();
 

@@ -285,33 +285,34 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        List<NodeRef> result = null;
+        List<NodeRef> result = new ArrayList<>();
 
         // get all the immediate parent holds
-        Set<NodeRef> holdsNotIncludingNodeRef = getParentHolds(nodeRef);
+        Set<NodeRef> holdsIncludingNodeRef = getParentHolds(nodeRef);
 
-        // check whether the record is held by vitue of it's record folder
+        // check whether the record is held by virtue of it's record folder
         if (isRecord(nodeRef))
         {
             List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
             for (NodeRef recordFolder : recordFolders)
             {
-                holdsNotIncludingNodeRef.addAll(getParentHolds(recordFolder));
+                holdsIncludingNodeRef.addAll(getParentHolds(recordFolder));
             }
         }
 
         if (!includedInHold)
         {
-            // invert list to get list of holds that do not contain this node
-            //TODO Find a way to get rid of the isFilePlanComponent(nodeRef) check. Currently it is used because
-            // integration tests create multiple rm sites with generated ids
-            NodeRef filePlan = isFilePlanComponent(nodeRef) ? filePlanService.getFilePlan(nodeRef) : filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            List<NodeRef> allHolds = getHolds(filePlan);
-            result = ListUtils.subtract(allHolds, new ArrayList<>(holdsNotIncludingNodeRef));
+            if (!holdsIncludingNodeRef.isEmpty())
+            {
+                // invert list to get list of holds that do not contain this node
+                NodeRef filePlan = filePlanService.getFilePlan(holdsIncludingNodeRef.iterator().next());
+                List<NodeRef> allHolds = getHolds(filePlan);
+                result = ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef));
+            }
         }
         else
         {
-            result = new ArrayList<>(holdsNotIncludingNodeRef);
+            result = new ArrayList<>(holdsIncludingNodeRef);
         }
 
         return result;
@@ -541,23 +542,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
-        {
-            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder nor a document. " +
-                    "Only records, record folders or active content can be added to a hold.");
-        }
-
-        if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
-                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
-        {
-            throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
-        }
-        else if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
-                permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
-        {
-            throw new AlfrescoRuntimeException("Write permission on '" + nodeName + "' is needed.");
-        }
+        checkNodeCanBeAddedToHold(nodeRef);
 
         for (final NodeRef hold : holds)
         {
@@ -569,6 +554,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
             if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
             {
+                String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
                 throw new AlfrescoRuntimeException("'" + nodeName + "' can't be added to the hold container as filing permission for '" + holdName + "' is needed.");
             }
@@ -601,6 +587,37 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     return null;
                 });
             }
+        }
+    }
+
+    /**
+     * Check if the given node is eligible to be added into a hold
+     *
+     * @param nodeRef the node to be checked
+     */
+    private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
+    {
+        String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+        {
+            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder nor a document. " +
+                    "Only records, record folders or active content can be added to a hold.");
+        }
+
+        if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
+                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+        {
+            throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
+        }
+        else if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
+                permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
+        {
+            throw new AlfrescoRuntimeException("Write permission on '" + nodeName + "' is needed.");
+        }
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
+        {
+            throw new AlfrescoRuntimeException("Archived nodes can't be added to hold.");
         }
     }
 

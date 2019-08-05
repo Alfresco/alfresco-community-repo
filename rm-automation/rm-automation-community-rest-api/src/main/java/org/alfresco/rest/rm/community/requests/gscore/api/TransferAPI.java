@@ -69,7 +69,7 @@ public class TransferAPI extends RMModelRequest
      * @param transferId The identifier of a transfer
      * @param parameters The URL parameters to add
      * @return The {@link Transfer} for the given {@code transferId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code transferId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -104,7 +104,7 @@ public class TransferAPI extends RMModelRequest
      * @param transferId The identifier of a transfer
      * @param parameters The URL parameters to add
      * @return The {@link TransferChildCollection} for the given {@code transferId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code transferId}</li>

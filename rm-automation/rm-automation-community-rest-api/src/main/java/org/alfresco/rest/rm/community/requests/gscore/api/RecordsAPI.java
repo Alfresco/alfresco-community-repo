@@ -65,7 +65,7 @@ public class RecordsAPI extends RMModelRequest
      *
      * @param recordId The id of the electronic record
      * @return {@link ResponseBody} representing content for the given record id
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      * <li>{@code recordId} has no content</li>
      * <li> {@code recordId} is not a valid format, or is not a record</li>
@@ -73,7 +73,7 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
-    public ResponseBody<?> getRecordContent(String recordId) throws Exception
+    public ResponseBody<?> getRecordContent(String recordId)
     {
         mandatoryString("recordId", recordId);
 
@@ -89,7 +89,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordBodyFile The properties where to file the record
      * @param recordId       The id of the record to file
      * @return The {@link Record} with the given properties
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
      *  <li>authentication fails</li>
@@ -100,7 +100,7 @@ public class RecordsAPI extends RMModelRequest
      * </ul>
      *
      */
-    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId) throws Exception
+    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId)
     {
         mandatoryObject("recordBodyFile", recordBodyFile);
         mandatoryString("recordId", recordId);
@@ -114,7 +114,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordBodyFile The properties where to file the record
      * @param recordId       The id of the record to file
      * @return The {@link Record} with the given properties
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
      *  <li>authentication fails</li>
@@ -125,7 +125,7 @@ public class RecordsAPI extends RMModelRequest
      * </ul>
      *
      */
-    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters) throws Exception
+    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters)
     {
         mandatoryObject("requestBodyFile", recordBodyFile);
         mandatoryString("recordId", recordId);
@@ -142,7 +142,7 @@ public class RecordsAPI extends RMModelRequest
     /**
      * see {@link #completeRecord(String, String)
      */
-    public Record completeRecord(String recordId) throws Exception
+    public Record completeRecord(String recordId)
     {
         mandatoryString("recordId", recordId);
 
@@ -154,7 +154,7 @@ public class RecordsAPI extends RMModelRequest
      *
      * @param recordId The id of the record to complete
      * @return The completed {@link Record} with the given properties
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      *                   <ul>
      *                   <li>Invalid parameter: {@code recordId} is not a record</li>
      *                   <li>authentication fails</li>
@@ -164,7 +164,7 @@ public class RecordsAPI extends RMModelRequest
      *                   <li>model integrity exception: the record has missing meta-data</li>
      *                   </ul>
      */
-    public Record completeRecord(String recordId, String parameters) throws Exception
+    public Record completeRecord(String recordId, String parameters)
     {
         mandatoryString("recordId", recordId);
 
@@ -179,7 +179,7 @@ public class RecordsAPI extends RMModelRequest
      * Deletes a record.
      *
      * @param recordId The identifier of a record
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -215,7 +215,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordId The identifier of a record
      * @param parameters The URL parameters to add
      * @return The {@link Record} for the given {@code recordId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code recordId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -238,7 +238,7 @@ public class RecordsAPI extends RMModelRequest
     /**
      * see {@link #updateRecord(Record, String, String)
      */
-    public Record updateRecord(Record recordModel, String recordId) throws Exception
+    public Record updateRecord(Record recordModel, String recordId)
     {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordId", recordId);
@@ -253,7 +253,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordId The identifier of a record
      * @param parameters The URL parameters to add
      * @return The updated {@link Record}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code recordId} is not a valid format or {@code recordModel} is invalid</li>
      *  <li>authentication fails</li>
@@ -263,7 +263,7 @@ public class RecordsAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public Record updateRecord(Record recordModel, String recordId, String parameters) throws Exception
+    public Record updateRecord(Record recordModel, String recordId, String parameters)
     {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordId", recordId);

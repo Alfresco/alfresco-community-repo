@@ -65,6 +65,7 @@
         <dependency.pdfbox.version>2.0.16</dependency.pdfbox.version>
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
+        <dependency.transform.model.version>1.0.2.5</dependency.transform.model.version>
     </properties>
 
     <dependencyManagement>
@@ -985,6 +986,13 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Transform dependencies -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-transform-model</artifactId>
+            <version>${dependency.transform.model.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

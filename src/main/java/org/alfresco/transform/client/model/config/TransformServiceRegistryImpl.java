@@ -39,10 +39,14 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 
@@ -73,7 +77,7 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         private String name;
         private int priority;
 
-        public SupportedTransform(Data data, String name, List<TransformOption> transformOptions, long maxSourceSizeBytes, int priority)
+        public SupportedTransform(Data data, String name, Set<TransformOption> transformOptions, long maxSourceSizeBytes, int priority)
         {
             // Logically the top level TransformOptionGroup is required, so that child options are optional or required
             // based on their own setting.
@@ -180,11 +184,11 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
 
     public void register(Reader reader, String readFrom) throws IOException
     {
-        List<Transformer> transformers = jsonObjectMapper.readValue(reader, new TypeReference<List<Transformer>>(){});
+        List<InlineTransformer> transformers = jsonObjectMapper.readValue(reader, new TypeReference<List<InlineTransformer>>(){});
         transformers.forEach(t -> register(t, null, readFrom));
     }
 
-    protected void register(Transformer transformer, String baseUrl, String readFrom)
+    protected void register(InlineTransformer transformer, String baseUrl, String readFrom)
     {
         Data data = getData();
         data.transformerCount++;
@@ -364,7 +368,7 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         boolean added = false;
         boolean required = false;
 
-        List<TransformOption> optionList = transformOptionGroup.getTransformOptions();
+        Set<TransformOption> optionList = transformOptionGroup.getTransformOptions();
         if (optionList != null && !optionList.isEmpty())
         {
             // We need to avoid adding options from a group that is required but its parents are not.

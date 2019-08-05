@@ -26,18 +26,20 @@
 package org.alfresco.transform.client.model.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Helper class that builds a {@link Transformer} given the source and target types and a pipeline of Transformers
+ * Helper class that builds a {@link InlineTransformer} given the source and target types and a pipeline of Transformers
  * for creating intermediary content.
  */
 public class TransformBuilder
 {
-    public Transformer buildPipeLine(String name, List<SupportedSourceAndTarget> sourceAndTargetList,
+    public InlineTransformer buildPipeLine(String name, Set<SupportedSourceAndTarget> sourceAndTargetList,
                                      List<ChildTransformer> transformerList)
     {
-        List<TransformOption> options = new ArrayList<>(transformerList.size());
+        Set<TransformOption> options = new HashSet<>(transformerList.size());
         transformerList.forEach(t ->
                 {
                     // Avoid creating an enpty TransformOptionGroup if the transformer has no options.
@@ -47,6 +49,6 @@ public class TransformBuilder
                         options.add(new TransformOptionGroup(t.isRequired(), t.getTransformer().getTransformOptions()));
                     }
                 });
-        return new Transformer(name, options, sourceAndTargetList);
+        return new InlineTransformer(name, options, sourceAndTargetList);
     }
 }

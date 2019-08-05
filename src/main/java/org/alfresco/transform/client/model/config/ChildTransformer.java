@@ -32,13 +32,13 @@ package org.alfresco.transform.client.model.config;
 public class ChildTransformer
 {
     private boolean required;
-    private Transformer transformer;
+    private InlineTransformer transformer;
 
     public ChildTransformer()
     {
     }
 
-    public ChildTransformer(boolean required, Transformer transformer)
+    public ChildTransformer(boolean required, InlineTransformer transformer)
     {
         this.required = required;
         this.transformer = transformer;
@@ -54,12 +54,12 @@ public class ChildTransformer
         this.required = required;
     }
 
-    public Transformer getTransformer()
+    public InlineTransformer getTransformer()
     {
         return transformer;
     }
 
-    public void setTransformer(Transformer transformer)
+    public void setTransformer(InlineTransformer transformer)
     {
         this.transformer = transformer;
     }

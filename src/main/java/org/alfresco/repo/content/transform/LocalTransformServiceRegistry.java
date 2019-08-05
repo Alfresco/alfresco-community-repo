@@ -30,10 +30,10 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.client.model.config.CombinedConfig;
+import org.alfresco.transform.client.model.config.InlineTransformer;
 import org.alfresco.transform.client.model.config.TransformServiceRegistry;
 import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
 import org.alfresco.transform.client.model.config.TransformStep;
-import org.alfresco.transform.client.model.config.Transformer;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -157,7 +157,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    protected void register(Transformer transformer, String baseUrl, String readFrom)
+    protected void register(InlineTransformer transformer, String baseUrl, String readFrom)
     {
         try
         {

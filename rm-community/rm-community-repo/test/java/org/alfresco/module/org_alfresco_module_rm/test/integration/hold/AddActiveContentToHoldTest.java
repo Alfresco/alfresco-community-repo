@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -75,18 +74,8 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
             public void given()
             {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
-                assertFalse(freezeService.hasFrozenChildren(dmFolder));
-
-                // additional check for child held caching
-                assertFalse(nodeService.hasAspect(dmFolder, ASPECT_HELD_CHILDREN));
             }
 
             public void when()
@@ -133,14 +122,8 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
 
             public void given()
             {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
             }
 
             public void when()
@@ -163,20 +146,14 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
      */
     public void testAddDocumentToHoldNoWritePermissionOnDoc()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
         {
             private NodeRef hold;
 
             public void given()
             {
-                // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-
-                // assert current states
-                assertFalse(freezeService.isFrozen(dmDocument));
 
                 //add rm Admin as consumer in collaboration site to have read permissions on dmDocument
                 siteService.setMembership(collabSiteId, rmAdminName, SiteModel.SITE_CONSUMER);
@@ -188,15 +165,7 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
                 // hold, but no Write permissions on doc
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            try
-                            {
-                                holdService.addToHold(hold, dmDocument);
-                                fail("Expected AlfrescoRuntimeException to be thrown.");
-                            }
-                            catch (AlfrescoRuntimeException e)
-                            {
-                                assertTrue(e.getMessage().endsWith("Write permission on '" + NAME_DM_DOCUMENT + "' is needed."));
-                            }
+                            holdService.addToHold(hold, dmDocument);
                             return null;
                         }, rmAdminName);
             }
@@ -219,17 +188,11 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
             {
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            // Check that the document is not a record
-                            assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
                             // create a hold
                             hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
                             //add Read permission on hold
                             filePlanPermissionService.setPermission(hold, recordsManagerName, RMPermissionModel.READ_RECORDS);
-
-                            // assert current states
-                            assertFalse(freezeService.isFrozen(dmDocument));
 
                             //add recordsManagerPerson as manager in collaboration site to have write permissions on dmDocument
                             siteService.setMembership(collabSiteId, recordsManagerName, SITE_MANAGER);
@@ -262,14 +225,8 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
             {
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            // Check that the document is not a record
-                            assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
-
                             // create a hold
                             hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-
-                            // assert current states
-                            assertFalse(freezeService.isFrozen(dmDocument));
 
                             //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
                             siteService.setMembership(collabSiteId, powerUserName, SiteModel.SITE_MANAGER);

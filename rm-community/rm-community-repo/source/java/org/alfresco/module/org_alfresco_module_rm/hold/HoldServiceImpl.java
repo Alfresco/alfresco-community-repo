@@ -48,6 +48,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -64,9 +65,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold service implementation
@@ -302,12 +305,17 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!includedInHold)
         {
-            if (!holdsIncludingNodeRef.isEmpty())
+            Set<NodeRef> filePlans = filePlanService.getFilePlans();
+            if (!CollectionUtils.isEmpty(filePlans))
             {
-                // invert list to get list of holds that do not contain this node
-                NodeRef filePlan = filePlanService.getFilePlan(holdsIncludingNodeRef.iterator().next());
-                List<NodeRef> allHolds = getHolds(filePlan);
-                result = ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef));
+                List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
+                filePlans.forEach(filePlan ->
+                {
+                    // invert list to get list of holds that do not contain this node
+                    List<NodeRef> allHolds = getHolds(filePlan);
+                    holdsNotIncludingNodeRef.addAll(ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef)));
+                });
+                result = holdsNotIncludingNodeRef;
             }
         }
         else
@@ -549,14 +557,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (!isHold(hold))
             {
                 String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
-                throw new AlfrescoRuntimeException("'" + holdName + "' is not a hold so record folders/records cannot be added.");
+                throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
             if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
             {
-                String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
-                throw new AlfrescoRuntimeException("'" + nodeName + "' can't be added to the hold container as filing permission for '" + holdName + "' is needed.");
+                throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
             }
 
             // check that the node isn't already in the hold
@@ -597,27 +603,26 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
     {
-        String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
-            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder nor a document. " +
-                    "Only records, record folders or active content can be added to a hold.");
+            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
         }
 
         if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
                 permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
         {
-            throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
+            throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
         }
         else if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
                 permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
         {
-            throw new AlfrescoRuntimeException("Write permission on '" + nodeName + "' is needed.");
+            throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
         }
 
         if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
         {
-            throw new AlfrescoRuntimeException("Archived nodes can't be added to hold.");
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-archived-node"), null);
         }
     }
 

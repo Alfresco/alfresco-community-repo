@@ -77,7 +77,7 @@ public class FilePlanAPI extends RMModelRequest
      * @param filePlanId The identifier of a file plan
      * @param parameters The URL parameters to add
      * @return The {@link FilePlan} for the given {@code filePlanId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>{@code filePlanId} is not a valid format</li>
      *  <li>authentication fails</li>
@@ -113,7 +113,7 @@ public class FilePlanAPI extends RMModelRequest
      * @param filePlanId The identifier of a file plan
      * @param parameters The URL parameters to add
      * @return The {@link RecordCategoryCollection} for the given {@code filePlanId}
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      * <ul>
      *  <li>authentication fails</li>
      *  <li>current user does not have permission to read {@code filePlanId}</li>
@@ -177,7 +177,7 @@ public class FilePlanAPI extends RMModelRequest
     /**
      * see {@link #updateFilePlan(FilePlan, String, String)
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId) throws Exception
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId)
     {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);
@@ -191,7 +191,7 @@ public class FilePlanAPI extends RMModelRequest
      * @param filePlanModel The file plan  model which holds the information
      * @param filePlanId    The identifier of the file plan
      * @param parameters          The URL parameters to add
-     * @throws Exception for the following cases:
+     * @throws RuntimeException for the following cases:
      *                   <ul>
      *                   <li>the update request is invalid or {@code filePlanId} is not a valid format or {@code filePlanModel} is invalid</li>
      *                   <li>authentication fails</li>
@@ -200,7 +200,7 @@ public class FilePlanAPI extends RMModelRequest
      *                   <li>model integrity exception, including file name with invalid characters</li>
      *                   </ul>
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters) throws Exception
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters)
     {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);

@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,6 +54,11 @@ public abstract class X509ServletFilterBase implements Filter
     protected boolean enforce;
     private String httpsPort;
     private String certContains;
+   
+    /**
+     * The regular expression that will match the CR/LF.
+     */
+    private static final Pattern PATTERN_CRLF = Pattern.compile("(\\r|\\n)");
     private static Log logger = LogFactory.getLog(X509ServletFilterBase.class);
 
     public void init(FilterConfig config) throws ServletException
@@ -169,7 +175,10 @@ public abstract class X509ServletFilterBase implements Filter
                         {
                             logger.debug("Redirecting to:"+redirectUrl);
                         }
-                        httpResponse.sendRedirect(redirectUrl);
+                        
+                        // MNT-18461: Prevent redirects containing CRLF
+                        redirectUrl = sanitize(redirectUrl);
+                        httpResponse.sendRedirect(redirectUrl);                       
                         return;
                     }
                 }
@@ -265,6 +274,17 @@ public abstract class X509ServletFilterBase implements Filter
             logger.error("Cert: " + name + "  does not contain:  " + this.certContains);
             return false;
         }
+    }
+    
+    
+    private String sanitize(String redirectUrl)
+    {
+        if (redirectUrl != null)
+        {
+            return PATTERN_CRLF.matcher(redirectUrl).replaceAll("");
+        }
+
+        return null;
     }
 
     public void destroy()

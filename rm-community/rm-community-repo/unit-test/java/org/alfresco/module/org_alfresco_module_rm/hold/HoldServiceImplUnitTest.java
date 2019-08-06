@@ -56,6 +56,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -64,9 +66,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
@@ -85,7 +85,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     private static final String HOLD_NAME = "holdname";
     private static final String HOLD_REASON = "holdreason";
     private static final String HOLD_DESCRIPTION = "holddescription";
-    private static final String ACTIVE_CONTENT_NAME = "activeContentName";
 
     protected NodeRef holdContainer;
     protected NodeRef hold;
@@ -93,9 +92,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef activeContent;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     @Override
@@ -138,8 +134,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         //setup active content in multiple holds
         doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
-        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(hold);
-        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(hold2);
+        doReturn(Collections.singleton(filePlan)).when(mockedFilePlanService).getFilePlans();
 
         // check that both holds are found for record folder
         List<NodeRef> heldByHolds = holdService.heldBy(recordFolder, true);
@@ -309,13 +304,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // TODO check interactions with policy component!!!
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test (expected = IntegrityException.class)
     public void addToHoldNotAHold()
     {
         holdService.addToHold(recordFolder, recordFolder);
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test (expected = IntegrityException.class)
     public void addToHoldNotARecordFolderOrRecordOrActiveContent()
     {
         NodeRef anotherThing = generateNodeRef(TYPE_RECORD_CATEGORY);
@@ -386,36 +381,23 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
 
-    @Test
+    @Test (expected = AccessDeniedException.class)
     public void addActiveContentToHoldNoPermissionsOnHold()
     {
-        expectedEx.expect(AlfrescoRuntimeException.class);
-        expectedEx.expectMessage("'" + ACTIVE_CONTENT_NAME + "' can't be added to the hold container as filing permission for '" + HOLD_NAME + "' is needed.");
-
-        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
-        when(mockedNodeService.getProperty(hold, ContentModel.PROP_NAME)).thenReturn(HOLD_NAME);
         when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }
 
-    @Test
+    @Test (expected = AccessDeniedException.class)
     public void addActiveContentToHoldNoPermissionsOnContent()
     {
-        expectedEx.expect(AlfrescoRuntimeException.class);
-        expectedEx.expectMessage("Write permission on '" + ACTIVE_CONTENT_NAME + "' is needed.");
-
-        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
         when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
         holdService.addToHold(hold, activeContent);
     }
 
-    @Test
+    @Test (expected = IntegrityException.class)
     public void addArchivedContentToHold()
     {
-        expectedEx.expect(AlfrescoRuntimeException.class);
-        expectedEx.expectMessage("Archived nodes can't be added to hold.");
-
-        when(mockedNodeService.getProperty(activeContent, ContentModel.PROP_NAME)).thenReturn(ACTIVE_CONTENT_NAME);
         when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }

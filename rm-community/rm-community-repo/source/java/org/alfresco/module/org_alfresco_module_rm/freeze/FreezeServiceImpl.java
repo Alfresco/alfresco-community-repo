@@ -171,7 +171,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         NodeRef hold = null;
         if (!nodeRefs.isEmpty())
         {
-            List<NodeRef> list = new ArrayList<>(nodeRefs);
+            final List<NodeRef> list = new ArrayList<>(nodeRefs);
             hold = createHold(list.get(0), reason);
             getHoldService().addToHold(hold, list);
         }
@@ -307,7 +307,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                 {
                                     for (ChildAssociationRef childAssociationRef : childAssocs)
                                     {
-                                        NodeRef childRef = childAssociationRef.getChildRef();
+                                        final NodeRef childRef = childAssociationRef.getChildRef();
                                         if (childAssociationRef.isPrimary() && isFrozen(childRef))
                                         {
                                             heldCount ++;

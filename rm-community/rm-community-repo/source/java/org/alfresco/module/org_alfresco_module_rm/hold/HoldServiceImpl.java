@@ -90,6 +90,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     private static final String AUDIT_ADD_TO_HOLD = "addToHold";
     private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
 
+    /** I18N */
+    private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
+
     /** File Plan Service */
     private FilePlanService filePlanService;
 
@@ -296,7 +299,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         // check whether the record is held by virtue of it's record folder
         if (isRecord(nodeRef))
         {
-            List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
+            final List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
             for (NodeRef recordFolder : recordFolders)
             {
                 holdsIncludingNodeRef.addAll(getParentHolds(recordFolder));
@@ -305,7 +308,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!includedInHold)
         {
-            Set<NodeRef> filePlans = filePlanService.getFilePlans();
+            final Set<NodeRef> filePlans = filePlanService.getFilePlans();
             if (!CollectionUtils.isEmpty(filePlans))
             {
                 List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
@@ -562,7 +565,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
             if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
             {
-                throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+                throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
             }
 
             // check that the node isn't already in the hold
@@ -609,15 +612,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
         }
 
-        if ((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
-                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+        if (((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
+                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED) ||
+                (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
+                        permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED))
         {
-            throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
-        }
-        else if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
-                permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
-        {
-            throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+            throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
         }
 
         if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))

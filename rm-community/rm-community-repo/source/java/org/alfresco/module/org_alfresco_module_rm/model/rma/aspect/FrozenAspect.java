@@ -157,37 +157,31 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
             {
-                if (nodeService.exists(nodeRef) && (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
+                // get the owning folder
+                final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                // check that the aspect has been added
+                if (nodeService.hasAspect(parentRef, ASPECT_HELD_CHILDREN))
                 {
-                    // get the owning folder
-                    final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                    // check that the aspect has been added
-                    if (nodeService.hasAspect(parentRef, ASPECT_HELD_CHILDREN))
+                    // increment current count
+                    int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
+                    currentCount = currentCount + 1;
+                    nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
+                } else
+                {
+                    if (instanceOf(parentRef, TYPE_FOLDER) && !nodeService.hasAspect(parentRef, ASPECT_SITE_CONTAINER))
                     {
-                        // increment current count
-                        int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
-                        currentCount = currentCount + 1;
-                        nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
-                    }
-                    else
-                    {
-                        if(instanceOf(parentRef, TYPE_FOLDER) && !nodeService.hasAspect(parentRef, ASPECT_SITE_CONTAINER))
-                        {
-                            // add aspect and set count to 1
-                            Map<QName, Serializable> props = new HashMap<>(1);
-                            props.put(PROP_HELD_CHILDREN_COUNT, 1);
-                            getInternalNodeService().addAspect(parentRef, ASPECT_HELD_CHILDREN, props);
-                        }
+                        // add aspect and set count to 1
+                        final Map<QName, Serializable> props = new HashMap<>(1);
+                        props.put(PROP_HELD_CHILDREN_COUNT, 1);
+                        getInternalNodeService().addAspect(parentRef, ASPECT_HELD_CHILDREN, props);
                     }
                 }
-                return null;
             }
-        });        
+            return null;
+        });
     }
 
     @Override

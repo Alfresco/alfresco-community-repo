@@ -294,13 +294,13 @@ public class HoldServiceImpl extends ServiceBaseImpl
         List<NodeRef> result = new ArrayList<>();
 
         // get all the immediate parent holds
-        Set<NodeRef> holdsIncludingNodeRef = getParentHolds(nodeRef);
+        final Set<NodeRef> holdsIncludingNodeRef = getParentHolds(nodeRef);
 
         // check whether the record is held by virtue of it's record folder
         if (isRecord(nodeRef))
         {
             final List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
-            for (NodeRef recordFolder : recordFolders)
+            for (final NodeRef recordFolder : recordFolders)
             {
                 holdsIncludingNodeRef.addAll(getParentHolds(recordFolder));
             }
@@ -311,11 +311,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
             final Set<NodeRef> filePlans = filePlanService.getFilePlans();
             if (!CollectionUtils.isEmpty(filePlans))
             {
-                List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
+                final List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
                 filePlans.forEach(filePlan ->
                 {
                     // invert list to get list of holds that do not contain this node
-                    List<NodeRef> allHolds = getHolds(filePlan);
+                    final List<NodeRef> allHolds = getHolds(filePlan);
                     holdsNotIncludingNodeRef.addAll(ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef)));
                 });
                 result = holdsNotIncludingNodeRef;
@@ -559,7 +559,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             if (!isHold(hold))
             {
-                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
                 throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
@@ -574,7 +574,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
                 authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                     // gather freeze properties
-                    Map<QName, Serializable> props = new HashMap<>(2);
+                    final Map<QName, Serializable> props = new HashMap<>(2);
                     props.put(PROP_FROZEN_AT, new Date());
                     props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
 
@@ -589,7 +589,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     // Mark all the folders contents as frozen
                     if (isRecordFolder(nodeRef))
                     {
-                        List<NodeRef> records = recordService.getRecords(nodeRef);
+                        final List<NodeRef> records = recordService.getRecords(nodeRef);
                         records.forEach(record -> addFrozenAspect(record, props));
                     }
 
@@ -608,7 +608,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
-            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
         }
 

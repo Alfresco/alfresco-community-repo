@@ -580,17 +580,14 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         {
             resp.setContentType(MIME_HTML_TEXT);
 
-            final PrintWriter out = resp.getWriter();
-            out.println("<html><head>");
-            // Remove the auto refresh to avoid refresh loop, MNT-16931
-//            out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" +
-//                    req.getContextPath() + getLoginPageLink() +
-//                    "\">");
-            out.println("</head><body><p>Please <a href=\"" +
-                    req.getContextPath() + "/faces" + getLoginPage() +
-                    "\">log in</a>.</p>");
-            out.println("</body></html>");
-            out.close();
+            try (PrintWriter out = resp.getWriter())
+            {
+                out.println("<html><head>");
+                // Removed the auto refresh to avoid refresh loop, MNT-16931
+                // Removed the link to the login page, MNT-20200
+                out.println("</head><body><p>Login failed. Please try again.</p>");
+                out.println("</body></html>");
+            }
         }
     }
 

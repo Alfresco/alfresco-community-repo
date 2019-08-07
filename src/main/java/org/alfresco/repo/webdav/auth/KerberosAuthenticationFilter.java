@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -90,16 +90,18 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
      * @param resp HttpServletResponse
      * @throws IOException
      */
+    @Override
     protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         resp.setContentType(MIME_HTML_TEXT);
 
-        final PrintWriter out = resp.getWriter();
-        out.println("<html><head>");
-        // Remove the auto refresh to avoid refresh loop, MNT-16931
-//        out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + req.getContextPath() + "/webdav\">");
-        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + getLoginPageLink() +"\">log in</a>.</p>");
-        out.println("</body></html>");
-        out.close();
+        try (PrintWriter out = resp.getWriter())
+        {
+            out.println("<html><head>");
+            // Removed the auto refresh to avoid refresh loop, MNT-16931
+            // Removed the link to the login page, MNT-20200
+            out.println("</head><body><p>Login failed. Please try again.</p>");
+            out.println("</body></html>");
+        }
     }
 }

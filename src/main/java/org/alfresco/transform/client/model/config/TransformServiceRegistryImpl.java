@@ -31,7 +31,6 @@ import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.quartz.CronExpression;
-import org.quartz.SchedulerException;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
@@ -39,14 +38,11 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 
@@ -61,12 +57,26 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         ConcurrentMap<String, ConcurrentMap<String, List<SupportedTransform>>> cachedSupportedTransformList = new ConcurrentHashMap<>();
         private int transformerCount = 0;
         private int transformCount = 0;
+        private int tEngineCount = 0;
+        private int fileCount;
         boolean firstTime = true;
 
         @Override
         public String toString()
         {
-            return "("+transformerCount+":"+transformCount+")";
+            return transformerCount == 0 && transformCount == 0 && tEngineCount == 0 && fileCount == 0
+                    ? ""
+                    : "(transformers: "+transformerCount+" transforms: "+transformCount+" t-engines: "+tEngineCount+" files: "+fileCount+")";
+        }
+
+        public void setTEngineCount(int tEngineCount)
+        {
+            this.tEngineCount = tEngineCount;
+        }
+
+        public void setFileCount(int fileCount)
+        {
+            this.fileCount = fileCount;
         }
     }
 

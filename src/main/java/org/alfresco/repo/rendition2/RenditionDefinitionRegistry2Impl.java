@@ -57,12 +57,18 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     {
         Map<String, RenditionDefinition2> renditionDefinitions = new HashMap();
         Map<String, Set<Pair<String, Long>>> renditionsFor = new HashMap<>();
-        private int count = 0;
+        private int fileCount;
 
         @Override
         public String toString()
         {
-            return "("+count+")";
+            int renditionCount = renditionDefinitions.size();
+            return "(renditions: "+renditionCount+" files: "+fileCount+")";
+        }
+
+        public void setFileCount(int fileCount)
+        {
+            this.fileCount = fileCount;
         }
     }
 
@@ -126,6 +132,10 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         @Override
         public boolean readConfig() throws IOException
         {
+            if (configFileFinder != null)
+            {
+                configFileFinder.setFileCount(0);
+            }
             return RenditionDefinitionRegistry2Impl.this.readConfig();
         }
 
@@ -270,6 +280,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         }
         Data data = getData();
         data.renditionDefinitions.put(renditionName, renditionDefinition);
+        data.setFileCount(configFileFinder == null ? 0 : configFileFinder.getFileCount());
     }
 
     public void unregister(String renditionName)

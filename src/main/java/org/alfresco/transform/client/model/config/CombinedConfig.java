@@ -74,6 +74,7 @@ public class CombinedConfig
     private List<TransformNodeAndItsOrigin> allTransforms = new ArrayList<>();
     private ObjectMapper jsonObjectMapper = new ObjectMapper();
     private ConfigFileFinder configFileFinder;
+    private int tEngineCount;
 
     static class TransformNodeAndItsOrigin
     {
@@ -149,7 +150,11 @@ public class CombinedConfig
         boolean successReadingConfig = true;
         for (String url : urls)
         {
-            if (!addRemoteConfig(url, remoteType))
+            if (addRemoteConfig(url, remoteType))
+            {
+                tEngineCount++ ;
+            }
+            else
             {
                 successReadingConfig = false;
             }
@@ -268,6 +273,9 @@ public class CombinedConfig
 
     public void register(TransformServiceRegistryImpl registry) throws IOException
     {
+        TransformServiceRegistryImpl.Data data = registry.getData();
+        data.setTEngineCount(tEngineCount);
+        data.setFileCount(configFileFinder.getFileCount());
         List<TransformAndItsOrigin> transformers = getTransforms();
         transformers.forEach(t->registry.register(t.transform, t.baseUrl, t.readFrom));
     }

@@ -36,6 +36,7 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
@@ -60,7 +61,7 @@ public abstract class ConfigScheduler<Data>
         {
             JobDataMap dataMap = context.getJobDetail().getJobDataMap();
             ConfigScheduler configScheduler = (ConfigScheduler)dataMap.get(CONFIG_SCHEDULER);
-            boolean successReadingConfig = configScheduler.readConfigAndReplace();
+            boolean successReadingConfig = configScheduler.readConfigAndReplace(true);
             configScheduler.changeScheduleOnStateChange(successReadingConfig);
         }
     }
@@ -76,6 +77,7 @@ public abstract class ConfigScheduler<Data>
     private CronExpression initialAndOnErrorCronExpression;
 
     private Scheduler scheduler;
+    private JobKey jobKey;
     private boolean normalCronSchedule;
 
     protected Data data;
@@ -140,7 +142,7 @@ public abstract class ConfigScheduler<Data>
             }
             else
             {
-                readConfigAndReplace();
+                readConfigAndReplace(false);
             }
         }
     }
@@ -155,6 +157,7 @@ public abstract class ConfigScheduler<Data>
                     .withIdentity(jobName)
                     .ofType(ConfigSchedulerJob.class)
                     .build();
+            jobKey = job.getKey();
             job.getJobDataMap().put(CONFIG_SCHEDULER, this);
             CronExpression cronExpression = normalCronSchedule ? this.cronExpression : initialAndOnErrorCronExpression;
             CronTrigger trigger = TriggerBuilder.newTrigger()
@@ -163,6 +166,7 @@ public abstract class ConfigScheduler<Data>
                     .build();
             scheduler.startDelayed(0);
             scheduler.scheduleJob(job, trigger);
+            log.debug("Schedule set "+cronExpression);
         }
         catch (Exception e)
         {
@@ -176,7 +180,9 @@ public abstract class ConfigScheduler<Data>
         {
             try
             {
-                scheduler.clear();
+                scheduler.deleteJob(jobKey);
+                scheduler = null;
+                jobKey = null;
             }
             catch (Exception e)
             {
@@ -185,10 +191,10 @@ public abstract class ConfigScheduler<Data>
         }
     }
 
-    private boolean readConfigAndReplace()
+    private boolean readConfigAndReplace(boolean scheduledRead)
     {
         boolean successReadingConfig;
-        log.debug("Config read started");
+        log.debug((scheduledRead ? "Scheduled" : "Unscheduled")+" config read started");
         Data data = getData();
         try
         {
@@ -197,7 +203,7 @@ public abstract class ConfigScheduler<Data>
             successReadingConfig = readConfig();
             data = newData;
             log.debug("Config read finished "+data+
-                    (successReadingConfig ? "" : ". Config replaced but there were problems"));
+                    (successReadingConfig ? "" : ". Config replaced but there were problems")+"\n");
         }
         catch (Exception e)
         {

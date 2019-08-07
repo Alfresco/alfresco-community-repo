@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -54,67 +56,54 @@ import java.util.jar.JarFile;
 public abstract class ConfigFileFinder
 {
     private final ObjectMapper jsonObjectMapper;
+    private int fileCount;
 
     public ConfigFileFinder(ObjectMapper jsonObjectMapper)
     {
         this.jsonObjectMapper = jsonObjectMapper;
     }
 
+    public int getFileCount()
+    {
+        return fileCount;
+    }
+
+    public void setFileCount(int fileCount)
+    {
+        this.fileCount = fileCount;
+    }
+
     public boolean readFiles(String path, Log log)
     {
-        boolean successReadingConfig = true;
+        AtomicBoolean successReadingConfig = new AtomicBoolean(true);
         try
         {
-            boolean somethingRead = false;
+            AtomicBoolean somethingRead = new AtomicBoolean(false);
+
+            // Try reading resources in a jar
             final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
             if (jarFile.isFile())
             {
-                Enumeration<JarEntry> entries = new JarFile(jarFile).entries(); // gives ALL entries in jar
-                String prefix = path + "/";
-                List<String> names = new ArrayList<>();
-                while (entries.hasMoreElements())
-                {
-                    final String name = entries.nextElement().getName();
-                    if (name.startsWith(prefix) && name.length() > prefix.length())
-                    {
-                        names.add(name);
-                    }
-                }
-                Collections.sort(names);
-                for (String name : names)
-                {
-                    somethingRead = true;
-                    successReadingConfig &= readFile(new InputStreamReader(getResourceAsStream(name)),"resource", name, null, log);
-                }
-
-                new JarFile(jarFile).close();
+                readFromJar(jarFile, path, log, successReadingConfig, somethingRead);
             }
             else
             {
+                // Try reading resources from disk
                 URL url = getClass().getClassLoader().getResource(path);
                 if (url != null)
                 {
-                    File root = new File(url.getPath());
-                    String rootPath = root.getPath();
-                    if (root.isDirectory())
-                    {
-                        File[] files = root.listFiles();
-                        Arrays.sort(files, (file1, file2) -> file1.getName().compareTo(file2.getName()));
-                        for (File file: files)
-                        {
-                            somethingRead = true;
-                            successReadingConfig &= readFile(new FileReader(file), "file", file.getPath(), null, log);
-                        }
-                    }
-                    else
-                    {
-                        somethingRead = true;
-                        successReadingConfig = readFile(new FileReader(root), "file", rootPath, null, log);
-                    }
+                    String urlPath = url.getPath();
+                    readFromDisk(urlPath, log, successReadingConfig, somethingRead);
                 }
             }
 
-            if (!somethingRead)
+            if (!somethingRead.get() && new File(path).exists())
+            {
+                // Try reading files from disk
+                readFromDisk(path, log, successReadingConfig, somethingRead);
+            }
+
+            if (!somethingRead.get())
             {
                 log.warn("No config read from "+path);
             }
@@ -122,15 +111,81 @@ public abstract class ConfigFileFinder
         catch (IOException e)
         {
             log.error("Error reading from "+path);
-            successReadingConfig = false;
+            successReadingConfig.set(false);
         }
-        return successReadingConfig;
+        return successReadingConfig.get();
+    }
+
+    private void readFromJar(File jarFile, String path, Log log, AtomicBoolean successReadingConfig, AtomicBoolean somethingRead) throws IOException
+    {
+        JarFile jar = new JarFile(jarFile);
+        try
+        {
+            Enumeration<JarEntry> entries = jar.entries(); // gives ALL entries in jar
+            String prefix = path + "/";
+            List<String> names = new ArrayList<>();
+            while (entries.hasMoreElements())
+            {
+                final String name = entries.nextElement().getName();
+                if ((name.startsWith(prefix) && name.length() > prefix.length()) ||
+                    (name.equals(path)))
+                {
+                    names.add(name);
+                }
+            }
+            Collections.sort(names);
+            for (String name : names)
+            {
+                InputStreamReader reader = new InputStreamReader(getResourceAsStream(name));
+                readFromReader(successReadingConfig, somethingRead, reader, "resource", name, null, log);
+            }
+        }
+        finally
+        {
+            jar.close();
+        }
+    }
+
+    private void readFromDisk(String path, Log log, AtomicBoolean successReadingConfig, AtomicBoolean somethingRead) throws FileNotFoundException
+    {
+        File root = new File(path);
+        if (root.isDirectory())
+        {
+            File[] files = root.listFiles();
+            Arrays.sort(files, (file1, file2) -> file1.getName().compareTo(file2.getName()));
+            for (File file : files)
+            {
+                FileReader reader = new FileReader(file);
+                String filePath = file.getPath();
+                readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
+            }
+        }
+        else
+        {
+            FileReader reader = new FileReader(root);
+            String filePath = root.getPath();
+            readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
+        }
     }
 
     private InputStream getResourceAsStream(String resource)
     {
         final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
         return in == null ? getClass().getResourceAsStream(resource) : in;
+    }
+
+    private void readFromReader(AtomicBoolean successReadingConfig, AtomicBoolean somethingRead,
+                               Reader reader, String readFrom, String path, String baseUrl, Log log)
+    {
+        somethingRead.set(true);
+        boolean success = readFile(reader, readFrom, path, null, log);
+        if (success)
+        {
+            fileCount++;
+        }
+        boolean newSuccessReadingConfig = successReadingConfig.get();
+        newSuccessReadingConfig &= success;
+        successReadingConfig.set(newSuccessReadingConfig);
     }
 
     public boolean readFile(Reader reader, String readFrom, String path, String baseUrl, Log log)

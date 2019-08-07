@@ -58,7 +58,7 @@
         <dependency.mysql.version>5.1.47</dependency.mysql.version>
         <dependency.mariadb.version>2.2.5</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.keycloak.version>4.5.0.Final</dependency.keycloak.version>
+        <dependency.keycloak.version>6.0.1</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.3.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.1</dependency.camel.version>
         <dependency.activemq.version>5.15.9</dependency.activemq.version>

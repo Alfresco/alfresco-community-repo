@@ -1,8 +1,8 @@
 /*
  * #%L
- * Alfresco Repository WAR Community
+ * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -79,34 +79,23 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     }
     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#onLoginComplete(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    @Override
-    protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
-        throws IOException
-    {
-        String requestURI = req.getRequestURI();
-        return true;
-    }
-    
-    /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#writeLoginPageLink(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
     @Override
     protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp)
             throws IOException
     {
-        String redirectURL = req.getRequestURI();
         resp.setContentType("text/html; charset=UTF-8");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        final PrintWriter out = resp.getWriter();
-        out.println("<html><head>");
-        // Remove the auto refresh to avoid refresh loop, MNT-16931
-//         out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + redirectURL + "\">");
-        out.println("</head><body><p>Please <a href=\"" + redirectURL + "\">log in</a>.</p>");
-        out.println("</body></html>");
-        out.close();
+        
+        try (PrintWriter out = resp.getWriter())
+        {
+            out.println("<html><head>");
+            // Removed the auto refresh to avoid refresh loop, MNT-16931
+            // Removed the link to the login page, MNT-20200
+            out.println("</head><body><p>Login failed. Please try again.</p>");
+            out.println("</body></html>");
+        }
     }
 
     /* (non-Javadoc)

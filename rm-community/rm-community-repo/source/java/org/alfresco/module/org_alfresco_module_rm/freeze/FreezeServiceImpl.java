@@ -28,6 +28,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.freeze;
 
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
+import static org.alfresco.repo.site.SiteModel.ASPECT_SITE_CONTAINER;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -168,7 +171,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         NodeRef hold = null;
         if (!nodeRefs.isEmpty())
         {
-            List<NodeRef> list = new ArrayList<>(nodeRefs);
+            final List<NodeRef> list = new ArrayList<>(nodeRefs);
             hold = createHold(list.get(0), reason);
             getHoldService().addToHold(hold, list);
         }
@@ -273,8 +276,9 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         boolean result = false;
 
-        // check that we are dealing with a record folder
-        if (isRecordFolder(nodeRef))
+        // check that we are dealing with a record folder or a collaboration folder
+        if (isRecordFolder(nodeRef) ||
+                (instanceOf(nodeRef, TYPE_FOLDER) && !nodeService.hasAspect(nodeRef, ASPECT_SITE_CONTAINER)))
         {
             int heldCount = 0;
 
@@ -303,8 +307,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                 {
                                     for (ChildAssociationRef childAssociationRef : childAssocs)
                                     {
-                                        NodeRef record = childAssociationRef.getChildRef();
-                                        if (childAssociationRef.isPrimary() && isRecord(record) && isFrozen(record))
+                                        final NodeRef childRef = childAssociationRef.getChildRef();
+                                        if (childAssociationRef.isPrimary() && isFrozen(childRef))
                                         {
                                             heldCount ++;
                                         }

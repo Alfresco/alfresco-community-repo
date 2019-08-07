@@ -70,6 +70,7 @@
             <value>alfresco.module.org_alfresco_module_rm.messages.dataset-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.rm-system</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.template</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.hold-service</value>
          </list>
       </property>
    </bean>

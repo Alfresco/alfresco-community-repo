@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
+import static java.util.Arrays.asList;
+
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -51,9 +53,15 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -81,6 +89,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef holdContainer;
     protected NodeRef hold;
     protected NodeRef hold2;
+    protected NodeRef activeContent;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 
@@ -94,6 +103,11 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
         hold = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
+
+        activeContent = generateNodeRef();
+        QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
+        when(mockedNodeService.getType(activeContent)).thenReturn(contentSubtype);
+        when(mockedDictionaryService.isSubClass(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
@@ -110,10 +124,17 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void heldByMultipleResults()
     {
         // setup record folder in multiple holds
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        List<ChildAssociationRef> holds = new ArrayList<>(4);
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, recordFolder, true, 2));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, activeContent, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, activeContent, true, 2));
         doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+
+        //setup active content in multiple holds
+        doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+
+        doReturn(Collections.singleton(filePlan)).when(mockedFilePlanService).getFilePlans();
 
         // check that both holds are found for record folder
         List<NodeRef> heldByHolds = holdService.heldBy(recordFolder, true);
@@ -126,6 +147,12 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         assertNotNull(heldByHolds);
         assertEquals(2, heldByHolds.size());
         assertTrue(holdService.heldBy(record, false).isEmpty());
+
+        // check that both holds are found for active content
+        heldByHolds = holdService.heldBy(activeContent, true);
+        assertNotNull(heldByHolds);
+        assertEquals(2, heldByHolds.size());
+        assertTrue(holdService.heldBy(activeContent, false).isEmpty());
     }
 
     @Test (expected=AlfrescoRuntimeException.class)
@@ -165,13 +192,15 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void getHeldWithResults()
     {
         // setup record folder in hold
-        List<ChildAssociationRef> holds = new ArrayList<>(1);
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, activeContent, true, 1));
         doReturn(holds).when(mockedNodeService).getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
 
         List<NodeRef> list = holdService.getHeld(hold);
-        assertEquals(1, list.size());
+        assertEquals(2, list.size());
         assertEquals(recordFolder, list.get(0));
+        assertEquals(activeContent, list.get(1));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -275,14 +304,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // TODO check interactions with policy component!!!
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test (expected = IntegrityException.class)
     public void addToHoldNotAHold()
     {
         holdService.addToHold(recordFolder, recordFolder);
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
-    public void addToHoldNotARecordFolderOrRecord()
+    @Test (expected = IntegrityException.class)
+    public void addToHoldNotARecordFolderOrRecordOrActiveContent()
     {
         NodeRef anotherThing = generateNodeRef(TYPE_RECORD_CATEGORY);
         holdService.addToHold(hold, anotherThing);
@@ -297,20 +326,25 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
+        verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, record);
         verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(2)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(record), anyString());
+        verify(mockedRecordsManagementAuditService).auditEvent(eq(record), anyString());
+
+        holdService.addToHold(hold, activeContent);
+        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void addToHoldAlreadyInHold()
     {
-        doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
+        doReturn(asList(recordFolder, activeContent)).when(holdService).getHeld(hold);
 
         holdService.addToHold(hold, recordFolder);
 
@@ -318,21 +352,54 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
+
+        holdService.addToHold(hold, activeContent);
+
+        verify(mockedNodeService, never()).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(activeContent), anyString());
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void addToHoldAldeadyFrozen()
+    public void addToHoldAlreadyFrozen()
     {
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
+        doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService, times(1)).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
+        verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
+
+        holdService.addToHold(hold, activeContent);
+        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
+    }
+
+    @Test (expected = AccessDeniedException.class)
+    public void addActiveContentToHoldNoPermissionsOnHold()
+    {
+        when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test (expected = AccessDeniedException.class)
+    public void addActiveContentToHoldNoPermissionsOnContent()
+    {
+        when(mockedPermissionService.hasPermission(activeContent, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test (expected = IntegrityException.class)
+    public void addArchivedContentToHold()
+    {
+        when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
+        holdService.addToHold(hold, activeContent);
     }
 
     @SuppressWarnings("unchecked")

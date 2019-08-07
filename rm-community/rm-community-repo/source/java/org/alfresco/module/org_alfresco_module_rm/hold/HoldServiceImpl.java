@@ -48,6 +48,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -64,9 +65,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold service implementation
@@ -86,6 +89,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** Audit event keys */
     private static final String AUDIT_ADD_TO_HOLD = "addToHold";
     private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
+
+    /** I18N */
+    private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
 
     /** File Plan Service */
     private FilePlanService filePlanService;
@@ -285,31 +291,39 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        List<NodeRef> result = null;
+        List<NodeRef> result = new ArrayList<>();
 
         // get all the immediate parent holds
-        Set<NodeRef> holdsNotIncludingNodeRef = getParentHolds(nodeRef);
+        final Set<NodeRef> holdsIncludingNodeRef = getParentHolds(nodeRef);
 
-        // check whether the record is held by vitue of it's record folder
+        // check whether the record is held by virtue of it's record folder
         if (isRecord(nodeRef))
         {
-            List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
-            for (NodeRef recordFolder : recordFolders)
+            final List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
+            for (final NodeRef recordFolder : recordFolders)
             {
-                holdsNotIncludingNodeRef.addAll(getParentHolds(recordFolder));
+                holdsIncludingNodeRef.addAll(getParentHolds(recordFolder));
             }
         }
 
         if (!includedInHold)
         {
-            // invert list to get list of holds that do not contain this node
-            NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-            List<NodeRef> allHolds = getHolds(filePlan);
-            result = ListUtils.subtract(allHolds, new ArrayList<>(holdsNotIncludingNodeRef));
+            final Set<NodeRef> filePlans = filePlanService.getFilePlans();
+            if (!CollectionUtils.isEmpty(filePlans))
+            {
+                final List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
+                filePlans.forEach(filePlan ->
+                {
+                    // invert list to get list of holds that do not contain this node
+                    final List<NodeRef> allHolds = getHolds(filePlan);
+                    holdsNotIncludingNodeRef.addAll(ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef)));
+                });
+                result = holdsNotIncludingNodeRef;
+            }
         }
         else
         {
-            result = new ArrayList<>(holdsNotIncludingNodeRef);
+            result = new ArrayList<>(holdsIncludingNodeRef);
         }
 
         return result;
@@ -539,90 +553,97 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatoryCollection("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef))
-        {
-            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder. Only records or record folders can be added to a hold.");
-        }
-
-        if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
-        {
-            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
-        }
+        checkNodeCanBeAddedToHold(nodeRef);
 
         for (final NodeRef hold : holds)
         {
             if (!isHold(hold))
             {
-                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
-                throw new AlfrescoRuntimeException("'" + holdName + "' is not a hold so record folders/records cannot be added.");
+                final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
             if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
             {
-                String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
-                throw new AlfrescoRuntimeException("'" + nodeName + "' can't be added to the hold container as filing permission for '" + holdName + "' is needed.");
+                throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
             }
 
             // check that the node isn't already in the hold
             if (!getHeld(hold).contains(nodeRef))
             {
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
-                authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork()
+                authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                    // gather freeze properties
+                    final Map<QName, Serializable> props = new HashMap<>(2);
+                    props.put(PROP_FROZEN_AT, new Date());
+                    props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+
+                    addFrozenAspect(nodeRef, props);
+
+                    // Link the record to the hold
+                    nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+
+                    // audit item being added to the hold
+                    recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);
+
+                    // Mark all the folders contents as frozen
+                    if (isRecordFolder(nodeRef))
                     {
-                        // gather freeze properties
-                        Map<QName, Serializable> props = new HashMap<>(2);
-                        props.put(PROP_FROZEN_AT, new Date());
-                        props.put(PROP_FROZEN_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-
-                        if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
-                        {
-                            // add freeze aspect
-                            nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
-
-                            if (logger.isDebugEnabled())
-                            {
-                                StringBuilder msg = new StringBuilder();
-                                msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
-                                logger.debug(msg.toString());
-                            }
-                        }
-
-                        // Link the record to the hold
-                        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-
-                        // audit item being added to the hold
-                        recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);
-
-                        // Mark all the folders contents as frozen
-                        if (isRecordFolder(nodeRef))
-                        {
-                            List<NodeRef> records = recordService.getRecords(nodeRef);
-                            for (NodeRef record : records)
-                            {
-                                // no need to freeze if already frozen!
-                                if (!nodeService.hasAspect(record, ASPECT_FROZEN))
-                                {
-                                    nodeService.addAspect(record, ASPECT_FROZEN, props);
-
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        StringBuilder msg = new StringBuilder();
-                                        msg.append("Frozen aspect applied to '").append(record).append("'.");
-                                        logger.debug(msg.toString());
-                                    }
-                                }
-                            }
-                        }
-
-                        return null;
+                        final List<NodeRef> records = recordService.getRecords(nodeRef);
+                        records.forEach(record -> addFrozenAspect(record, props));
                     }
+
+                    return null;
                 });
+            }
+        }
+    }
+
+    /**
+     * Check if the given node is eligible to be added into a hold
+     *
+     * @param nodeRef the node to be checked
+     */
+    private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
+    {
+        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+        {
+            final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
+        }
+
+        if (((isRecord(nodeRef) || isRecordFolder(nodeRef)) &&
+                permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED) ||
+                (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) &&
+                        permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED))
+        {
+            throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
+        }
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
+        {
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-archived-node"), null);
+        }
+    }
+
+    /**
+     * Add Frozen aspect only if node isn't already frozen
+     *
+     * @param nodeRef node on which aspect will be added
+     * @param props aspect properties map
+     */
+    private void addFrozenAspect(NodeRef nodeRef, Map<QName, Serializable> props)
+    {
+        if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
+        {
+            // add freeze aspect
+            nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
+
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Frozen aspect applied to '").append(nodeRef).append("'.");
+                logger.debug(msg.toString());
             }
         }
     }

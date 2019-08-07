@@ -27,7 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
+import static org.alfresco.repo.site.SiteModel.ASPECT_SITE_CONTAINER;
+
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
@@ -148,30 +155,33 @@ public class FrozenAspect extends    BaseBehaviourBean
             kind = BehaviourKind.CLASS,
             notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onAddAspect(final NodeRef record, final QName aspectTypeQName)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
             {
-                if (nodeService.exists(record) &&
-                    isRecord(record))
+                // get the owning folder
+                final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                // check that the aspect has been added
+                if (nodeService.hasAspect(parentRef, ASPECT_HELD_CHILDREN))
                 {
-                    // get the owning record folder
-                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
-                    // check that the aspect has been added
-                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                    // increment current count
+                    int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
+                    currentCount = currentCount + 1;
+                    nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
+                } else
+                {
+                    if (instanceOf(parentRef, TYPE_FOLDER) && !nodeService.hasAspect(parentRef, ASPECT_SITE_CONTAINER))
                     {
-                        // increment current count
-                        int currentCount = (Integer)nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
-                        currentCount = currentCount + 1;
-                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                        // add aspect and set count to 1
+                        final Map<QName, Serializable> props = new HashMap<>(1);
+                        props.put(PROP_HELD_CHILDREN_COUNT, 1);
+                        getInternalNodeService().addAspect(parentRef, ASPECT_HELD_CHILDREN, props);
                     }
                 }
-                return null;
             }
-        });        
+            return null;
+        });
     }
 
     @Override

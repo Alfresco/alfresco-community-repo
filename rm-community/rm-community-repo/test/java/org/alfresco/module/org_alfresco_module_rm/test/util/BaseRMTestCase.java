@@ -253,6 +253,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected String powerUserName;
     protected String securityOfficerName;
     protected String recordsManagerName;
+    protected String rmAdminName;
 
     /** test people */
     protected NodeRef userPerson;
@@ -260,6 +261,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef powerUserPerson;
     protected NodeRef securityOfficerPerson;
     protected NodeRef recordsManagerPerson;
+    protected NodeRef rmAdminPerson;
 
     /** test records */
     protected NodeRef recordOne;
@@ -656,13 +658,18 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         recordsManagerPerson = createPerson(recordsManagerName);
         filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, recordsManagerName);
 
+        rmAdminName = GUID.generate();
+        rmAdminPerson = createPerson(rmAdminName);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, rmAdminName);
+
         testUsers = new String[]
         {
                 userName,
                 rmUserName,
                 powerUserName,
                 securityOfficerName,
-                recordsManagerName
+                recordsManagerName,
+                rmAdminName
         };
 
         if (isFillingForAllUsers())
@@ -913,6 +920,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 this.runAsUser = runAsUser;
             }
+        }
+
+        public BehaviourDrivenTest(Class<?> expectedException, String runAsUser, boolean runInTransactionTests)
+        {
+            this.expectedException = expectedException;
+            this.runAsUser = runAsUser;
+            this.runInTransactionTests = runInTransactionTests;
         }
 
         public void given() throws Exception { /** empty implementation */ }

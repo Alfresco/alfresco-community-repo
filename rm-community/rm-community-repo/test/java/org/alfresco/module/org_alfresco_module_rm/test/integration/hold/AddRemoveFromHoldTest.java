@@ -44,7 +44,7 @@ import org.springframework.extensions.webscripts.GUID;
 public class AddRemoveFromHoldTest extends BaseRMTestCase
 {
     private static final int RECORD_COUNT = 10;
-    
+
     public void testAddRecordToHold()
     { 
         doBehaviourDrivenTest(new BehaviourDrivenTest()

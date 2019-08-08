@@ -33,12 +33,17 @@ import static org.alfresco.repo.site.SiteModel.ASPECT_SITE_CONTAINER;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -47,9 +52,12 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
+import org.springframework.dao.PermissionDeniedDataAccessException;
 
 /**
  * rma:frozen behaviour bean
@@ -64,7 +72,10 @@ import org.alfresco.service.namespace.QName;
 public class FrozenAspect extends    BaseBehaviourBean
                           implements NodeServicePolicies.BeforeDeleteNodePolicy,
                                      NodeServicePolicies.OnAddAspectPolicy,
-                                     NodeServicePolicies.OnRemoveAspectPolicy
+                                     NodeServicePolicies.OnRemoveAspectPolicy,
+                                     NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                     ContentServicePolicies.OnContentUpdatePolicy
 {
     /** file plan service */
     protected FilePlanService filePlanService;
@@ -106,8 +117,7 @@ public class FrozenAspect extends    BaseBehaviourBean
             @Override
             public Void doWork()
             {
-                if (nodeService.exists(nodeRef) &&
-                    filePlanService.isFilePlanComponent(nodeRef))
+                if (nodeService.exists(nodeRef))
                 {
                     if (freezeService.isFrozen(nodeRef))
                     {
@@ -221,4 +231,99 @@ public class FrozenAspect extends    BaseBehaviourBean
         
     }
 
+    /**
+     * Behaviour associated with moving/copying a frozen node
+     * <p>
+     * Prevent frozen items being moved or copied
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.ASSOCIATION,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                NodeRef childNodeRef = childAssocRef.getChildRef();
+                if (freezeService.isFrozen(childNodeRef))
+                {
+                    // never allow to move or copy a frozen node
+                    throw new AccessDeniedException("Frozen nodes can not be moved or copied.");
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Behaviour associated with updating properties
+     * <p>
+     * Prevents frozen items being updated
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+            )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (nodeService.exists(nodeRef))
+                {
+                    if (freezeService.isFrozen(nodeRef))
+                    {
+                        // Determine the properties that have changed
+                        Map<QName, Serializable> changedProperties = PropertyMap.getChangedProperties(before, after);
+                        // never allow to update a frozen node
+                        if (changedProperties != null && !changedProperties.isEmpty())
+                        {
+                            throw new AccessDeniedException("Frozen nodes can not be updated.");
+                        }
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Behaviour associated with updating the content
+     * <p>
+     * Ensures that the content of a frozen node can not be updated
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+            )
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (nodeService.exists(nodeRef))
+                {
+                    if (freezeService.isFrozen(nodeRef))
+                    {
+                        // never allow to update the content of a frozen node
+                        throw new AccessDeniedException("Frozen nodes content can not be updated.");
+                    }
+                }
+                return null;
+            }
+        });
+    }
 }

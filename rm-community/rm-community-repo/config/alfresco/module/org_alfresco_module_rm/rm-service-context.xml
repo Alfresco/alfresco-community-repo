@@ -1042,7 +1042,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=ACL_NODE.0.sys:base.Read,RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Create.0
@@ -1535,6 +1535,7 @@
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="permissionService" ref="PermissionService"/>
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="capabilityService" ref="CapabilityService"/>
    </bean>
 
    <bean id="HoldService"

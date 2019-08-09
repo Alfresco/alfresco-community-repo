@@ -53,6 +53,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -69,6 +70,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -91,6 +93,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef hold2;
     protected NodeRef activeContent;
 
+    @Mock (name="capabilityService")
+    protected CapabilityService mockedCapabilityService;
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
@@ -103,6 +107,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER);
         hold = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
+
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
 
         activeContent = generateNodeRef();
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");

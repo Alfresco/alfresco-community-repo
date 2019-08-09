@@ -1,10 +1,10 @@
 <webscript>
    <shortname>Adds item(s) to the hold(s)</shortname>
    <description><![CDATA[
-   WebScript to add item(s) (record(s) / record folder(s)) to the hold(s) in the holds container.<br/>
+   WebScript to add item(s) (record(s) / record folder(s) / active content(s)) to the hold(s) in the holds container.<br/>
    The body of the post should be in the form<br/>
    {<br/>
-   &nbsp;&nbsp;&nbsp;"nodeRefs" : array of nodeRefs for item(s) (record(s) / record folder(s)),<br/>
+   &nbsp;&nbsp;&nbsp;"nodeRefs" : array of nodeRefs for item(s) (record(s) / record folder(s) / active content(s)),<br/>
    &nbsp;&nbsp;&nbsp;"holds" : array of nodeRefs for the hold(s)<br/>
    }<br/>
    ]]>

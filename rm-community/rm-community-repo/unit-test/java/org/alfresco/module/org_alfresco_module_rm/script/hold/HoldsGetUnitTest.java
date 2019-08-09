@@ -215,6 +215,60 @@ public class HoldsGetUnitTest extends BaseHoldWebScriptUnitTest
         // check the JSON result
         testForBothHolds(json);        
     }
+
+    /**
+     * Test the retrieval of holds that hold active content.
+     */
+    @Test
+    public void getHoldsThatActiveContentIsHeldBy() throws Exception
+    {
+        // setup interactions
+        doReturn(holds).when(mockedHoldService).heldBy(dmNodeRef, true);
+
+        // setup web script parameters
+        Map<String, String> parameters = buildParameters
+        (
+                "store_type",       filePlan.getStoreRef().getProtocol(),
+                "store_id",         filePlan.getStoreRef().getIdentifier(),
+                "id",               filePlan.getId(),
+                "itemNodeRef",      dmNodeRef.toString()
+        );
+
+        // execute web script
+        JSONObject json = executeJSONWebScript(parameters);
+        assertNotNull(json);
+
+        // check the JSON result
+        testForBothHolds(json);
+
+    }
+
+    /**
+     * Test the retrieval of holds that do not hold active content.
+     */
+    @Test
+    public void getHoldsThatActiveContentIsNotHeldBy() throws Exception
+    {
+        // setup interactions
+        doReturn(holds).when(mockedHoldService).heldBy(dmNodeRef, false);
+
+        // setup web script parameters
+        Map<String, String> parameters = buildParameters
+        (
+                "store_type",       filePlan.getStoreRef().getProtocol(),
+                "store_id",         filePlan.getStoreRef().getIdentifier(),
+                "id",               filePlan.getId(),
+                "itemNodeRef",      dmNodeRef.toString(),
+                "includedInHold",   "false"
+        );
+
+        // execute web script
+        JSONObject json = executeJSONWebScript(parameters);
+        assertNotNull(json);
+
+        // check the JSON result
+        testForBothHolds(json);
+    }
     
     public void getFileOnlyHolds() throws Exception
     {

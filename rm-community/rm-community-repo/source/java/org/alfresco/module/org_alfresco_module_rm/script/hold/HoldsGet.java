@@ -134,7 +134,7 @@ public class HoldsGet extends DeclarativeWebScript
         List<Hold> holdObjects = new ArrayList<>(holds.size());
         for (NodeRef nodeRef : holds)
         {
-            // only add if user has filling permisson on the hold
+            // only add if user has filling permission on the hold
             if (!fileOnly || permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED)
             {
                 String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
@@ -215,7 +215,7 @@ public class HoldsGet extends DeclarativeWebScript
         String includedInHold = req.getParameter("includedInHold");
         if (StringUtils.isNotBlank(includedInHold))
         {
-            result = Boolean.valueOf(includedInHold).booleanValue();
+            result = Boolean.parseBoolean(includedInHold);
         }
         return result;
     }
@@ -226,7 +226,7 @@ public class HoldsGet extends DeclarativeWebScript
         String fillingOnly = req.getParameter("fileOnly");
         if (StringUtils.isNotBlank(fillingOnly))
         {
-            result = Boolean.valueOf(fillingOnly).booleanValue();
+            result = Boolean.parseBoolean(fillingOnly);
         }
         return result;
     }

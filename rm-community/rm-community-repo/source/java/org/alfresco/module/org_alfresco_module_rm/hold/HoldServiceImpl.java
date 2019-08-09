@@ -41,6 +41,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -108,6 +109,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** records management audit service */
     private RecordsManagementAuditService recordsManagementAuditService;
 
+    /** Capability service */
+    private CapabilityService capabilityService;
+
     /**
      * Set the file plan service
      *
@@ -164,6 +168,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
+     /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     /**
@@ -563,7 +575,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
-            if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
+            if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED ||
+                    !AccessStatus.ALLOWED.equals(
+                            capabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)))
             {
                 throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
             }

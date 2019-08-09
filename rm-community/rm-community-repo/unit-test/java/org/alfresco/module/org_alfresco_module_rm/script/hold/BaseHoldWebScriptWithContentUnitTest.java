@@ -148,7 +148,7 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected excpetion when the item being added to the hold
+     * Test for expected exception when the item being added to the hold
      * does not exist.
      */
     @SuppressWarnings("unchecked")
@@ -229,15 +229,14 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
 
     /**
      * Test for expected exception when adding an item to a hold
-     * that isn't a record or record folder.
+     * that isn't a record, record folder or active content.
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeRefIsNotARecordOrRecordFolder() throws Exception
+    public void nodeRefIsNotARecordOrRecordFolderOrActiveContent() throws Exception
     {
         // build json content to send to server
-        List<NodeRef> notAHold = Collections.singletonList(recordFolder);
-        String content = buildContent(filePlanComponents, notAHold);
+        String content = buildContent(filePlanComponents, holds);
 
         // expected exception
         exception.expect(WebScriptException.class);

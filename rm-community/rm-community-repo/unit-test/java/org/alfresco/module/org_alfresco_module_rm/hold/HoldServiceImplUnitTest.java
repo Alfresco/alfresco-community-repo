@@ -93,8 +93,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef hold2;
     protected NodeRef activeContent;
 
-    @Mock (name="capabilityService")
-    protected CapabilityService mockedCapabilityService;
+    @Mock
+    private CapabilityService mockedCapabilityService;
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
@@ -389,10 +389,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test (expected = AccessDeniedException.class)
-    public void addActiveContentToHoldNoPermissionsOnHold()
+    public void addActiveContentToHoldsNoPermissionsOnHold()
     {
-        when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
-        holdService.addToHold(hold, activeContent);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.DENIED);
+        // build a list of holds
+        List<NodeRef> holds = new ArrayList<>(2);
+        holds.add(hold);
+        holds.add(hold2);
+        holdService.addToHolds(holds, activeContent);
     }
 
     @Test (expected = AccessDeniedException.class)
@@ -406,6 +410,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void addArchivedContentToHold()
     {
         when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test (expected = IntegrityException.class)
+    public void addLockedContentToHold()
+    {
+        when(mockedNodeService.hasAspect(activeContent, ContentModel.ASPECT_LOCKABLE)).thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }
 

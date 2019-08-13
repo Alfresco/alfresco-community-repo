@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
+import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +61,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -120,16 +121,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * Set the node service
-     *
-     * @param nodeService the node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     /**
@@ -575,8 +566,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
-            if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED ||
-                    !AccessStatus.ALLOWED.equals(
+            if (!AccessStatus.ALLOWED.equals(
                             capabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)))
             {
                 throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
@@ -637,6 +627,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
         {
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-archived-node"), null);
+        }
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_LOCKABLE))
+        {
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-locked-node"), null);
         }
     }
 

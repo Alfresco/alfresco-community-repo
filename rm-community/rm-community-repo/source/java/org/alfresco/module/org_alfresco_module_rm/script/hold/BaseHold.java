@@ -131,9 +131,9 @@ public abstract class BaseHold extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject json = getJSONFromContent(req);
-        List<NodeRef> holds = getHolds(json);
-        List<NodeRef> nodeRefs = getItemNodeRefs(json);
+        final JSONObject json = getJSONFromContent(req);
+        final List<NodeRef> holds = getHolds(json);
+        final List<NodeRef> nodeRefs = getItemNodeRefs(json);
         doAction(holds, nodeRefs);
         return new HashMap<>();
     }
@@ -159,7 +159,7 @@ public abstract class BaseHold extends DeclarativeWebScript
         JSONObject json = null;
         try
         {
-            String content = req.getContent().getContent();
+            final String content = req.getContent().getContent();
             json = new JSONObject(new JSONTokener(content));
         }
         catch (IOException iox)
@@ -185,10 +185,10 @@ public abstract class BaseHold extends DeclarativeWebScript
      */
     protected List<NodeRef> getItemNodeRefs(JSONObject json)
     {
-        List<NodeRef> nodeRefs = new ArrayList<>();
+        final List<NodeRef> nodeRefs = new ArrayList<>();
         try
         {
-            JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
+            final JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
             for (int i = 0; i < nodeRefsArray.length(); i++)
             {
                 NodeRef nodeReference = new NodeRef(nodeRefsArray.getString(i));
@@ -234,13 +234,13 @@ public abstract class BaseHold extends DeclarativeWebScript
      */
     protected List<NodeRef> getHolds(JSONObject json)
     {
-        List<NodeRef> holds = new ArrayList<>();
+        final List<NodeRef> holds = new ArrayList<>();
         try
         {
-            JSONArray holdsArray = json.getJSONArray("holds");
+            final JSONArray holdsArray = json.getJSONArray("holds");
             for (int i = 0; i < holdsArray.length(); i++)
             {
-                NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
+                final NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
                 checkHoldNodeRef(nodeRef);
                 holds.add(nodeRef);
             }

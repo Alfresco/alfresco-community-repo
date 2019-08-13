@@ -113,6 +113,12 @@
                 <artifactId>cxf-rt-ws-policy</artifactId>
                 <version>${dependency.cxf.version}</version>
             </dependency>
+            <!-- newer dependency from camel-jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

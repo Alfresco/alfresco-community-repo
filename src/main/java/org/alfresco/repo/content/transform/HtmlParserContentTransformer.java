@@ -35,6 +35,8 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+
 
 /**
  * Content transformer which wraps the HTML Parser library for
@@ -138,6 +140,6 @@ public class HtmlParserContentTransformer extends AbstractRemoteContentTransform
                 timeoutMs, logger,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "sourceEncoding", sourceEncoding);
+                SOURCE_ENCODING, sourceEncoding);
     }
 }

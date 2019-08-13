@@ -32,8 +32,12 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
 
 /**
  * A local transformer using flat transform options.
@@ -139,62 +143,55 @@ public class LocalTransformImpl extends AbstractLocalTransform
                                  String sourceExtension, String targetExtension,
                                  String renditionName, NodeRef sourceNodeRef) throws Exception
     {
-        boolean removeSourceEncoding = false;
-        try
+        // At some point in the future, we may decide to only pass the sourceEncoding and other dynamic values like
+        // it if they were supplied in the rendition definition without a value. The sourceEncoding value is also
+        // supplied in the TransformRequest (message to the T-Router).
+        transformOptions = new HashMap<>(transformOptions);
+        if (transformOptions.get(SOURCE_ENCODING) == null)
         {
-            // At some point in the future, we may decide to only pass the sourceEncoding and other dynamic values like
-            // it if they were supplied in the rendition definition without a value. The sourceEncoding value is also
-            // supplied in the TransformRequest (message to the T-Router).
-            if (transformOptions.get("sourceEncoding") == null)
-            {
-                String sourceEncoding = reader.getEncoding();
-                transformOptions.put("sourceEncoding", sourceEncoding);
-                removeSourceEncoding = true;
-            }
+            String sourceEncoding = reader.getEncoding();
+            transformOptions.put(SOURCE_ENCODING, sourceEncoding);
+        }
+        if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
+        {
+            transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
+        }
 
-            // Build an array of option names and values and extract the timeout.
-            long timeoutMs = 0;
-            int nonOptions = transformOptions.containsKey(RenditionDefinition2.TIMEOUT) ? 1 : 0;
-            int size = (transformOptions.size() - nonOptions + 3) * 2;
-            String[] args = new String[size];
-            int i = 0;
-            for (Map.Entry<String, String> option : transformOptions.entrySet())
+        // Build an array of option names and values and extract the timeout.
+        long timeoutMs = 0;
+        int nonOptions = transformOptions.containsKey(RenditionDefinition2.TIMEOUT) ? 1 : 0;
+        int size = (transformOptions.size() - nonOptions + 3) * 2;
+        String[] args = new String[size];
+        int i = 0;
+        for (Map.Entry<String, String> option : transformOptions.entrySet())
+        {
+            String name = option.getKey();
+            String value = option.getValue();
+            if (RenditionDefinition2.TIMEOUT.equals(name))
             {
-                String name = option.getKey();
-                String value = option.getValue();
-                if (RenditionDefinition2.TIMEOUT.equals(name))
+                if (value != null)
                 {
-                    if (value != null)
-                    {
-                        timeoutMs = Long.parseLong(value);
-                    }
-                }
-                else
-                {
-                    args[i++] = name;
-                    args[i++] = value;
+                    timeoutMs = Long.parseLong(value);
                 }
             }
-
-            // These 3 values are commonly needed and are always supplied in the TransformRequest (message to the T-Router).
-            // The targetExtension is also supplied in the TransformRequest, but in the case of local and legacy transformers
-            // is added by the remoteTransformerClient.request call for historic reasons, so does not need to be added here.
-            args[i++] = "sourceMimetype";
-            args[i++] = sourceMimetype;
-            args[i++] = "sourceExtension";
-            args[i++] = sourceExtension;
-            args[i++] = "targetMimetype";
-            args[i++] = targetMimetype;
-
-            remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
-                    timeoutMs, log, args);
-        }
-        finally
-        {
-            if (removeSourceEncoding)
+            else
             {
-                transformOptions.remove("sourceEncoding");
+                args[i++] = name;
+                args[i++] = value;
             }
         }
+
+        // These 3 values are commonly needed and are always supplied in the TransformRequest (message to the T-Router).
+        // The targetExtension is also supplied in the TransformRequest, but in the case of local and legacy transformers
+        // is added by the remoteTransformerClient.request call for historic reasons, so does not need to be added here.
+        args[i++] = "sourceMimetype";
+        args[i++] = sourceMimetype;
+        args[i++] = "sourceExtension";
+        args[i++] = sourceExtension;
+        args[i++] = "targetMimetype";
+        args[i++] = targetMimetype;
+
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, log, args);
     }
 }

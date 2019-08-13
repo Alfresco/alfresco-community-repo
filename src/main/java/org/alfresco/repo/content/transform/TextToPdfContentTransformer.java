@@ -50,6 +50,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+
 /**
  * Makes use of the <a href="http://www.pdfbox.org/">PDFBox</a> library's <code>TextToPDF</code> utility.
  * 
@@ -192,7 +195,7 @@ public class TextToPdfContentTransformer extends AbstractRemoteContentTransforme
                 timeoutMs, logger,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "sourceEncoding", sourceEncoding,
+                SOURCE_ENCODING, sourceEncoding,
                 "pageLimit", String.valueOf(pageLimit));
     }
 

@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+
 /**
  * Converts any textual format to plain text.
  * <p>
@@ -184,7 +186,7 @@ public class StringExtractingContentTransformer extends AbstractRemoteContentTra
                 timeoutMs, logger,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "sourceEncoding", sourceEncoding,
+                SOURCE_ENCODING, sourceEncoding,
                 "targetEncoding", targetEncoding);
 
     }

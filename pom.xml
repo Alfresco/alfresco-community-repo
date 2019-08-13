@@ -64,6 +64,7 @@
         <dependency.activemq.version>5.15.7</dependency.activemq.version>
         <dependency.pdfbox.version>2.0.15</dependency.pdfbox.version>
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
+        <dependency.jackson.version>2.9.9</dependency.jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -110,6 +111,28 @@
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-ws-policy</artifactId>
                 <version>${dependency.cxf.version}</version>
+            </dependency>
+            <!-- newer dependency from camel-jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <!-- newer jackson libs -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${dependency.jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

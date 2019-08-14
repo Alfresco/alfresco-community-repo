@@ -109,7 +109,6 @@ public class RemoveActiveContentToHoldTest extends BaseRMTestCase
         {
             private NodeRef hold;
             private NodeRef hold2;
-            Integer before;
 
             public void given()
             {
@@ -121,7 +120,6 @@ public class RemoveActiveContentToHoldTest extends BaseRMTestCase
 
             public void when()
             {
-                before = (Integer) nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT);
                 holdService.removeFromHold(hold, dmDocument);
             }
 
@@ -139,7 +137,7 @@ public class RemoveActiveContentToHoldTest extends BaseRMTestCase
      * When I try to remove the active content to the hold without permission
      * Then an access denied exception is thrown
      */
-    public void testRemoveDocumentFromHoldFailsWithoutPermission()
+    public void testRemoveDocumentFromHoldFailsWithoutFilingPermission()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
         {
@@ -157,7 +155,7 @@ public class RemoveActiveContentToHoldTest extends BaseRMTestCase
                         (RunAsWork<Void>) () -> {
                             holdService.removeFromHold(hold, dmDocument);
                             return null;
-                        }, recordsManagerName );
+                        }, recordsManagerName);
             }
         });
     }

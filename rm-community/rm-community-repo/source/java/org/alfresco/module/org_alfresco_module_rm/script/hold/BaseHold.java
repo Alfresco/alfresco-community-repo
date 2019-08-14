@@ -37,7 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.json.JSONArray;
@@ -70,8 +70,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     /** node service */
     private NodeService nodeService;
 
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
+    /** Node type utility */
+    private NodeTypeUtility nodeTypeUtility;
 
     /**
      * Set the hold service
@@ -108,11 +108,11 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param nodeTypeUtility node type utility
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setNodeTypeUtility(NodeTypeUtility nodeTypeUtility)
     {
-        this.dictionaryService = dictionaryService;
+        this.nodeTypeUtility = nodeTypeUtility;
     }
 
     /**
@@ -220,7 +220,7 @@ public abstract class BaseHold extends DeclarativeWebScript
 
         // ensure that the node we are adding to the hold is a record or record folder or active content
         if (!recordService.isRecord(nodeRef) && !recordFolderService.isRecordFolder(nodeRef) &&
-                !dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+                !nodeTypeUtility.instanceOf(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record, a record folder or active content.");
         }

@@ -633,7 +633,7 @@
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="nodeService" ref="NodeService" />
-      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="nodeTypeUtility" ref="nodeTypeUtility" />
    </bean>
 
    <!-- REST impl for POST Hold -->

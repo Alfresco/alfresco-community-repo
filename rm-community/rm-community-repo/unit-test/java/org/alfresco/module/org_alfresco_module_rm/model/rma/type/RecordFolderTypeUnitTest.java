@@ -79,7 +79,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_TRANSFER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_TRANSFER)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -94,7 +94,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_RECORD_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_RECORD_FOLDER)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -109,7 +109,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_RECORDS_MANAGEMENT_CONTAINER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_RECORDS_MANAGEMENT_CONTAINER)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -124,7 +124,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -139,7 +139,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -153,7 +153,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -168,8 +168,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_CONTENT)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociation(childAssocRef, true);
@@ -184,7 +184,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     {
         NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
@@ -201,7 +201,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
         QName type = AlfMock.generateQName();
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
 
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
         when(mockedNodeService.hasAspect(nodeRef, ASPECT_HIDDEN)).thenReturn(true);
 
         ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
@@ -222,7 +222,7 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
         QName type = AlfMock.generateQName();
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
 
-        when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
 
         ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
         when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedPrimaryParentAssoc);

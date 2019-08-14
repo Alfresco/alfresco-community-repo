@@ -114,7 +114,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         activeContent = generateNodeRef();
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
         when(mockedNodeService.getType(activeContent)).thenReturn(contentSubtype);
-        when(mockedDictionaryService.isSubClass(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);

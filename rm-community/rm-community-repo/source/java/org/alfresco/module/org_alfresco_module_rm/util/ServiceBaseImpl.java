@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
@@ -80,6 +79,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /** Content service */
     protected ContentService contentService;
 
+    /** Node type utility */
+    protected NodeTypeUtility nodeTypeUtility;
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -120,7 +122,15 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
+    /**
+     * @param nodeTypeUtility node type utility
+     */
+    public void setNodeTypeUtility(NodeTypeUtility nodeTypeUtility)
+    {
+        this.nodeTypeUtility = nodeTypeUtility;
+    }
+
     /**
      * @param transactionalResourceHelper   transactional resource helper
      */
@@ -470,8 +480,6 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         return instanceOf(className, ofClassName);
     }
 
-    private static Map<String, Boolean> instanceOfCache = new WeakHashMap<>();
-
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.
      *
@@ -481,28 +489,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      */
     protected boolean instanceOf(QName className, QName ofClassName)
     {
-        ParameterCheck.mandatory("className", className);
-        ParameterCheck.mandatory("ofClassName", ofClassName);
-
-        boolean result = false;
-
-        String key = className.toString() + "|" + ofClassName.toString();
-        if (instanceOfCache.containsKey(key))
-        {
-            result = instanceOfCache.get(key);
-        }
-        else
-        {
-            if (ofClassName.equals(className) ||
-                dictionaryService.isSubClass(className, ofClassName))
-            {
-                result = true;
-            }
-
-            instanceOfCache.put(key, result);
-        }
-
-        return result;
+        return nodeTypeUtility.instanceOf(className, ofClassName);
     }
 
     /**

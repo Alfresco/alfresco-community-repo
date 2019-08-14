@@ -97,6 +97,12 @@
                 <artifactId>commons-httpclient</artifactId>
                 <version>3.1-HTTPCLIENT-1265</version>
             </dependency>
+            <!-- newer dependency from camel-jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

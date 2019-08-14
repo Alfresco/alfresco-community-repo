@@ -53,16 +53,16 @@ import org.springframework.context.ApplicationContext;
 public class FrozenAspectUnitTest
 {
     @Mock
-    private NodeService nodeService;
+    private NodeService mockNodeService;
 
     @Mock
-    private ApplicationContext applicationContext;
+    private ApplicationContext mockApplicationContext;
 
     @Mock
-    private ChildAssociationRef childAssociationRef;
+    private ChildAssociationRef mockChildAssociationRef;
 
     @Mock
-    private DictionaryService dictionaryService;
+    private DictionaryService mockDictionaryService;
 
     @InjectMocks
     private FrozenAspect frozenAspect;
@@ -75,13 +75,11 @@ public class FrozenAspectUnitTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-        when(nodeService.exists(record)).thenReturn(true);
-        when(nodeService.exists(content)).thenReturn(true);
-        when(nodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
-        when(nodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
-        when(applicationContext.getBean("dbNodeService")).thenReturn(nodeService);
-        when(nodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
-        when(nodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
+        when(mockNodeService.exists(record)).thenReturn(true);
+        when(mockNodeService.exists(content)).thenReturn(true);
+        when(mockNodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
+        when(mockNodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
+        when(mockApplicationContext.getBean("dbNodeService")).thenReturn(mockNodeService);
     }
 
     /**
@@ -90,11 +88,11 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForRecords()
     {
-        when(nodeService.hasAspect(record, ASPECT_RECORD)).thenReturn(true);
-        when(nodeService.getPrimaryParent(record)).thenReturn(childAssociationRef);
-        when(childAssociationRef.getParentRef()).thenReturn(folder);
+        when(mockNodeService.hasAspect(record, ASPECT_RECORD)).thenReturn(true);
+        when(mockNodeService.getPrimaryParent(record)).thenReturn(mockChildAssociationRef);
+        when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(record, null);
-        verify(nodeService, times(1)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
+        verify(mockNodeService, times(1)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
 
     /**
@@ -103,12 +101,12 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForContent()
     {
-        when(nodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
-        when(nodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
-        when(nodeService.getPrimaryParent(content)).thenReturn(childAssociationRef);
-        when(childAssociationRef.getParentRef()).thenReturn(folder);
+        when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
+        when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockNodeService.getPrimaryParent(content)).thenReturn(mockChildAssociationRef);
+        when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(content, null);
-        verify(nodeService, times(1)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
+        verify(mockNodeService, times(1)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
 
     /**
@@ -117,10 +115,10 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForContentDoesntUpdateForOtherTypes()
     {
-        when(nodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
-        when(nodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
+        when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(mockDictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT)).thenReturn(false);
         frozenAspect.onRemoveAspect(content, null);
-        verify(nodeService, times(0)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
+        verify(mockNodeService, times(0)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
 }

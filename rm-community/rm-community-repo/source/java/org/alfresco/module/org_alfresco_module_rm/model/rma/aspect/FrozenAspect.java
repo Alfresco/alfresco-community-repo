@@ -197,13 +197,13 @@ public class FrozenAspect extends    BaseBehaviourBean
                     (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
             {
                 // get the owning folder
-                NodeRef owningFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                final NodeRef owningFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();
 
                 // check that the aspect has been added
                 if (nodeService.hasAspect(owningFolder, ASPECT_HELD_CHILDREN))
                 {
                     // decrement current count
-                    int currentCount = (Integer) nodeService.getProperty(owningFolder, PROP_HELD_CHILDREN_COUNT);
+                    final int currentCount = (Integer) nodeService.getProperty(owningFolder, PROP_HELD_CHILDREN_COUNT);
                     if (currentCount > 0)
                     {
                         nodeService.setProperty(owningFolder, PROP_HELD_CHILDREN_COUNT, currentCount - 1);

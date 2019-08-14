@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,7 +62,7 @@ public class FrozenAspectUnitTest
     private ChildAssociationRef mockChildAssociationRef;
 
     @Mock
-    private DictionaryService mockDictionaryService;
+    private NodeTypeUtility mockedNodeTypeUtility;
 
     @InjectMocks
     private FrozenAspect frozenAspect;
@@ -103,6 +103,7 @@ public class FrozenAspectUnitTest
     {
         when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.getPrimaryParent(content)).thenReturn(mockChildAssociationRef);
         when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(content, null);
@@ -117,7 +118,7 @@ public class FrozenAspectUnitTest
     {
         when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(mockDictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT)).thenReturn(false);
         frozenAspect.onRemoveAspect(content, null);
         verify(mockNodeService, times(0)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }

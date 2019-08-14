@@ -35,7 +35,6 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
@@ -55,10 +54,14 @@ public class ServiceBaseImplUnitTest
 {
     @InjectMocks private ServiceBaseImpl serviceBase;
 
-    @Mock(name="nodeService") private NodeService mockedNodeService;
-    @Mock(name="dictionaryService") private DictionaryService mockedDictionaryService;
-    @Mock(name="transactionalResourceHelper") private TransactionalResourceHelper mockedTransactionalResourceHelper;
-    @Mock(name="applicationContext") protected ApplicationContext mockedApplicationContext;
+    @Mock (name = "nodeService")
+    private NodeService mockedNodeService;
+    @Mock (name = "transactionalResourceHelper")
+    private TransactionalResourceHelper mockedTransactionalResourceHelper;
+    @Mock (name = "applicationContext")
+    protected ApplicationContext mockedApplicationContext;
+    @Mock (name = "nodeTypeUtility")
+    protected NodeTypeUtility mockedNodeTypeUtility;
     @Mock private Map<Object, Object> mockedCache;
 
     /**
@@ -85,7 +88,7 @@ public class ServiceBaseImplUnitTest
 
         when(mockedNodeService.getType(nodeRef))
             .thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedDictionaryService.isSubClass(ContentModel.TYPE_CONTENT, RecordsManagementModel.TYPE_FILE_PLAN))
+        when(mockedNodeTypeUtility.instanceOf(ContentModel.TYPE_CONTENT, RecordsManagementModel.TYPE_FILE_PLAN))
             .thenReturn(false);
         when(mockedTransactionalResourceHelper.getMap("rm.servicebase.getFilePlan"))
             .thenReturn(mockedCache);

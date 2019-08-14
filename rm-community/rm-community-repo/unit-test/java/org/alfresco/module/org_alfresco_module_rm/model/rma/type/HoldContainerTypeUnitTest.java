@@ -57,7 +57,7 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
     public void testAddNonHoldTypeToHoldContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_HOLD)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(false);
         NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
@@ -75,7 +75,7 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
     public void testAddHoldTypeToHoldContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_HOLD)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(true);
         NodeRef holdFolder= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);

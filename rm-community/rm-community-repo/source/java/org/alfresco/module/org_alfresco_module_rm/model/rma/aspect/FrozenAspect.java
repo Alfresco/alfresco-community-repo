@@ -33,19 +33,12 @@ import static org.alfresco.repo.site.SiteModel.ASPECT_SITE_CONTAINER;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.alfresco.model.ApplicationModel;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.ContentServicePolicies;
-import org.alfresco.repo.copy.CopyBehaviourCallback;
-import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -55,12 +48,9 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyMap;
-import org.springframework.dao.PermissionDeniedDataAccessException;
 
 /**
  * rma:frozen behaviour bean
@@ -81,19 +71,8 @@ public class FrozenAspect extends    BaseBehaviourBean
                                      ContentServicePolicies.OnContentUpdatePolicy,
                                      CopyServicePolicies.BeforeCopyPolicy
 {
-    /** file plan service */
-    protected FilePlanService filePlanService;
-
     /** freeze service */
     protected FreezeService freezeService;
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
 
     /**
      * @param freezeService freeze service
@@ -116,21 +95,16 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
             {
-                if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
-                {
-                    // never allow to delete a frozen node
-                    throw new AccessDeniedException("Frozen nodes can not be deleted.");
-                }
-
-                // check children
-                checkChildren(nodeService.getChildAssocs(nodeRef));
-                return null;
+                // never allow to delete a frozen node
+                throw new AccessDeniedException("Frozen nodes can not be deleted.");
             }
+
+            // check children
+            checkChildren(nodeService.getChildAssocs(nodeRef));
+            return null;
         });
     }
 
@@ -150,7 +124,7 @@ public class FrozenAspect extends    BaseBehaviourBean
                 NodeRef nodeRef = assoc.getChildRef();
                 if (freezeService.isFrozen(nodeRef))
                 {
-                    // never allowed to delete a node with a frozen child
+                    // never allow to delete a node with a frozen child
                     throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
                 }
 
@@ -203,32 +177,27 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void onRemoveAspect(final NodeRef record, QName aspectTypeQName)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(record) &&
+                    isRecord(record))
             {
-                if (nodeService.exists(record) &&
-                        isRecord(record))
-                {
-                    // get the owning record folder
-                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+                // get the owning record folder
+                NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
 
-                    // check that the aspect has been added
-                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                // check that the aspect has been added
+                if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                {
+                    // decrement current count
+                    int currentCount = (Integer) nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                    if (currentCount > 0)
                     {
-                        // decrement current count
-                        int currentCount = (Integer) nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
-                        if (currentCount > 0)
-                        {
-                            currentCount = currentCount - 1;
-                            nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
-                        }
+                        currentCount = currentCount - 1;
+                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
                     }
                 }
-                return null;
             }
-        }); 
+            return null;
+        });
         
     }
 
@@ -245,18 +214,13 @@ public class FrozenAspect extends    BaseBehaviourBean
             )
     public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
+            if (nodeService.exists(newChildAssocRef.getParentRef()) &&
+                    nodeService.exists(newChildAssocRef.getChildRef()))
             {
-                if (nodeService.exists(newChildAssocRef.getParentRef()) &&
-                        nodeService.exists(newChildAssocRef.getChildRef()))
-                {
-                    throw new AccessDeniedException("Frozen nodes can not be moved.");
-                }
-                return null;
+                throw new AccessDeniedException("Frozen nodes can not be moved.");
             }
+            return null;
         }, AuthenticationUtil.getSystemUserName());
     }
 
@@ -274,26 +238,14 @@ public class FrozenAspect extends    BaseBehaviourBean
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
 
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                if (nodeService.exists(nodeRef))
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            // check to not throw exception when the aspect is being added
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
+                    !transactionalResourceHelper.getSet(nodeRef).contains("frozen") )
                 {
-                    if (freezeService.isFrozen(nodeRef))
-                    {
-                        // Determine the properties that have changed
-                        Map<QName, Serializable> changedProperties = PropertyMap.getChangedProperties(before, after);
-                        // never allow to update a frozen node
-                        if (changedProperties != null && !changedProperties.isEmpty())
-                        {
-                            throw new AccessDeniedException("Frozen nodes can not be updated.");
-                        }
-                    }
+                    throw new AccessDeniedException("Frozen nodes can not be updated.");
                 }
-                return null;
-            }
+            return null;
         });
     }
 
@@ -310,18 +262,13 @@ public class FrozenAspect extends    BaseBehaviourBean
             )
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
-                    {
-                        // never allow to update the content of a frozen node
-                        throw new AccessDeniedException("Frozen nodes content can not be updated.");
-                    }
-                return null;
-            }
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
+                {
+                    // never allow to update the content of a frozen node
+                    throw new AccessDeniedException("Frozen nodes content can not be updated.");
+                }
+            return null;
         });
     }
 
@@ -332,19 +279,13 @@ public class FrozenAspect extends    BaseBehaviourBean
             )
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
+            if (nodeService.exists(sourceNodeRef) && freezeService.isFrozen(sourceNodeRef))
             {
-                //nodeService.getPrimaryParent(sourceNodeRef).getParentRef()
-                if (nodeService.exists(sourceNodeRef) && freezeService.isFrozen(sourceNodeRef))
-                {
-                    throw new AccessDeniedException("Frozen nodes can not be copied.");
-                }
-
-                return null;
+                throw new AccessDeniedException("Frozen nodes can not be copied.");
             }
+
+            return null;
         }, AuthenticationUtil.getSystemUserName());
     }
 }

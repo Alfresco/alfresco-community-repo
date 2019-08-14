@@ -214,14 +214,14 @@ public class FrozenAspect extends    BaseBehaviourBean
             )
     public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
     {
-        AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             if (nodeService.exists(newChildAssocRef.getParentRef()) &&
                     nodeService.exists(newChildAssocRef.getChildRef()))
             {
                 throw new AccessDeniedException("Frozen nodes can not be moved.");
             }
             return null;
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 
     /**
@@ -279,13 +279,13 @@ public class FrozenAspect extends    BaseBehaviourBean
             )
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
-        AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             if (nodeService.exists(sourceNodeRef) && freezeService.isFrozen(sourceNodeRef))
             {
                 throw new AccessDeniedException("Frozen nodes can not be copied.");
             }
 
             return null;
-        }, AuthenticationUtil.getSystemUserName());
+        });
     }
 }

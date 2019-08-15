@@ -25,8 +25,11 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Repeats quick file rendition tests with local transforms disabled but legacy transformers enabled.

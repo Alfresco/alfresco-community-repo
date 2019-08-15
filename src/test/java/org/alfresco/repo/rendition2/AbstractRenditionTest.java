@@ -32,16 +32,15 @@ import org.alfresco.util.testing.category.DebugTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Abstract test class to check it is possible to create renditions from the quick files using combinations of
@@ -234,5 +233,84 @@ public abstract class AbstractRenditionTest extends AbstractRenditionIntegration
     {
         assertRenditionsOkayFromSourceExtension(Arrays.asList("gif"),
                 Collections.emptyList(), Collections.emptyList(), expectedRenditionCount, expectedFailedCount);
+    }
+
+    /**
+     * Gets transforms combinations that are possible regardless of renditions.
+     */
+    @Test
+    @Category(DebugTests.class)
+    public void testCountTotalTransforms()
+    {
+        AtomicInteger count = new AtomicInteger(0);
+        mimetypeService.getMimetypesByExtension();
+        List<String> mimetypes = new ArrayList(mimetypeMap.getMimetypes());
+        sortMimetypesByExtension(mimetypes);
+        for (String sourceMimetype : mimetypes)
+        {
+            for (String targetMimetype : mimetypes)
+            {
+                if (transformServiceRegistry.isSupported(sourceMimetype, 1, targetMimetype, Collections.emptyMap(), null))
+                {
+                    logSourceTarget(count, sourceMimetype, targetMimetype);
+                }
+            }
+        }
+        System.err.println("Number of source to target mimetype transforms: "+count);
+    }
+
+    /**
+     * Gets transforms combinations for the current set of renditions.
+     */
+    @Test
+    @Category(DebugTests.class)
+    public void testCountTotalRenditionTransforms()
+    {
+        AtomicInteger count = new AtomicInteger(0);
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry = renditionService2.getRenditionDefinitionRegistry2();
+        List<String> sourceMimetypes = new ArrayList(mimetypeMap.getMimetypes());
+        sortMimetypesByExtension(sourceMimetypes);
+        for (String sourceMimetype: sourceMimetypes)
+        {
+            Set<String> targetMimetypes = new HashSet<>();
+            for (String renditionName : renditionDefinitionRegistry.getRenditionNamesFrom(sourceMimetype, 1))
+            {
+                RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry.getRenditionDefinition(renditionName);
+                String targetMimetype = renditionDefinition.getTargetMimetype();
+                targetMimetypes.add(targetMimetype);
+            }
+
+            List<String> targetMimetypesSorted = new ArrayList(targetMimetypes);
+            sortMimetypesByExtension(targetMimetypesSorted);
+            for (String targetMimetype : targetMimetypesSorted)
+            {
+                logSourceTarget(count, sourceMimetype, targetMimetype);
+            }
+        }
+        System.out.println("Number of source to target mimetype transforms via renditions: "+count.get());
+    }
+
+    private void logSourceTarget(AtomicInteger count, String sourceMimetype, String targetMimetype)
+    {
+        count.incrementAndGet();
+        String sourceExtension = mimetypeService.getExtension(sourceMimetype);
+        String targetExtension = mimetypeService.getExtension(targetMimetype);
+        System.err.printf("%4d %4s %4s\n", count.get(), sourceExtension, targetExtension);
+    }
+
+    private void sortMimetypesByExtension(List<String> mimetypes)
+    {
+        List<String> extensions = new ArrayList(mimetypes.size());
+        for (String mimetype : mimetypes)
+        {
+            extensions.add(mimetypeMap.getExtension(mimetype));
+        }
+        Collections.sort(extensions);
+
+        mimetypes.clear();
+        for (String extension : extensions)
+        {
+            mimetypes.add(mimetypeService.getMimetype(extension));
+        }
     }
 }

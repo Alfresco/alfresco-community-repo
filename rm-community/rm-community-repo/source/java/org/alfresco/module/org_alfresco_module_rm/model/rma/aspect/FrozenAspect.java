@@ -36,9 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.repo.content.ContentServicePolicies;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -64,21 +65,14 @@ import org.alfresco.service.namespace.QName;
 public class FrozenAspect extends    BaseBehaviourBean
                           implements NodeServicePolicies.BeforeDeleteNodePolicy,
                                      NodeServicePolicies.OnAddAspectPolicy,
-                                     NodeServicePolicies.OnRemoveAspectPolicy
+                                     NodeServicePolicies.OnRemoveAspectPolicy,
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                     NodeServicePolicies.OnMoveNodePolicy,
+                                     ContentServicePolicies.OnContentUpdatePolicy,
+                                     CopyServicePolicies.BeforeCopyPolicy
 {
-    /** file plan service */
-    protected FilePlanService filePlanService;
-
     /** freeze service */
     protected FreezeService freezeService;
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
 
     /**
      * @param freezeService freeze service
@@ -101,25 +95,16 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
             {
-                if (nodeService.exists(nodeRef) &&
-                    filePlanService.isFilePlanComponent(nodeRef))
-                {
-                    if (freezeService.isFrozen(nodeRef))
-                    {
-                        // never allowed to delete a frozen node
-                        throw new AccessDeniedException("Frozen nodes can not be deleted.");
-                    }
-
-                    // check children
-                    checkChildren(nodeService.getChildAssocs(nodeRef));
-                }
-                return null;
+                // never allow to delete a frozen node
+                throw new AccessDeniedException("Frozen nodes can not be deleted.");
             }
+
+            // check children
+            checkChildren(nodeService.getChildAssocs(nodeRef));
+            return null;
         });
     }
 
@@ -139,7 +124,7 @@ public class FrozenAspect extends    BaseBehaviourBean
                 NodeRef nodeRef = assoc.getChildRef();
                 if (freezeService.isFrozen(nodeRef))
                 {
-                    // never allowed to delete a node with a frozen child
+                    // never allow to delete a node with a frozen child
                     throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
                 }
 
@@ -193,6 +178,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     public void onRemoveAspect(final NodeRef nodeRef, QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+
             if (nodeService.exists(nodeRef) &&
                     (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
             {
@@ -214,4 +200,91 @@ public class FrozenAspect extends    BaseBehaviourBean
         });
     }
 
+    /**
+     * Behaviour associated with moving a frozen node
+     * <p>
+     * Prevent frozen items being moved
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.ASSOCIATION,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(newChildAssocRef.getParentRef()) &&
+                    nodeService.exists(newChildAssocRef.getChildRef()))
+            {
+                throw new AccessDeniedException("Frozen nodes can not be moved.");
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Behaviour associated with updating properties
+     * <p>
+     * Prevents frozen items being updated
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+            )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            // check to not throw exception when the aspect is being added
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
+                    !transactionalResourceHelper.getSet(nodeRef).contains("frozen") )
+                {
+                    throw new AccessDeniedException("Frozen nodes can not be updated.");
+                }
+            return null;
+        });
+    }
+
+    /**
+     * Behaviour associated with updating the content
+     * <p>
+     * Ensures that the content of a frozen node can not be updated
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+            )
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
+                {
+                    // never allow to update the content of a frozen node
+                    throw new AccessDeniedException("Frozen nodes content can not be updated.");
+                }
+            return null;
+        });
+    }
+
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS
+            )
+    public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(sourceNodeRef) && freezeService.isFrozen(sourceNodeRef))
+            {
+                throw new AccessDeniedException("Frozen nodes can not be copied.");
+            }
+
+            return null;
+        });
+    }
 }

@@ -168,7 +168,6 @@
    </bean>
 
    <bean id="rma.freeze" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect" parent="rm.baseBehaviour">
-      <property name="filePlanService" ref="FilePlanService" />
       <property name="freezeService" ref="FreezeService" />
    </bean>
 

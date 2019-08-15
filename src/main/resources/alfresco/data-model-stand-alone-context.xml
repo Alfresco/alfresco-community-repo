@@ -140,8 +140,11 @@
       <property name="contentCharsetFinder">
          <ref bean="charset.finder"/>
       </property>
-    </bean>  
-    
+      <property name="jsonObjectMapper" ref="mimetypeServiceJsonObjectMapper" />
+    </bean>
+
+    <bean id="mimetypeServiceJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
     <bean id="mimetypeConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
         <constructor-arg>
             <bean class="org.springframework.extensions.config.source.UrlConfigSource">

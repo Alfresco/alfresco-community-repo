@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,10 +25,14 @@
  */
 package org.alfresco.repo.content;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.FileContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.ConfigFileFinder;
+import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,10 +42,12 @@ import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.quartz.CronExpression;
 import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigLookupContext;
 import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.config.element.GenericConfigElement;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -66,7 +72,6 @@ import java.util.TreeMap;
  */
 public class MimetypeMap implements MimetypeService
 {
-    
     public static final String PREFIX_APPLICATION = "application/";
     
     public static final String PREFIX_AUDIO = "audio/";
@@ -332,6 +337,8 @@ public class MimetypeMap implements MimetypeService
 
     private static final String ATTR_DISPLAY = "display";
 
+    private static final String ATTR_EXTENSION = "extension";
+
     private static final String ATTR_DEFAULT = "default";
 
     private static final String ATTR_TEXT = "text";
@@ -346,17 +353,129 @@ public class MimetypeMap implements MimetypeService
 
     private Detector detector;
 
-    private List<String> mimetypes;
+    private ObjectMapper jsonObjectMapper;
 
-    private Map<String, String> extensionsByMimetype;
+    private String mimetypeJsonConfigDir;
 
-    private Map<String, String> mimetypesByExtension;
+    private CronExpression cronExpression;
 
-    private Map<String, String> displaysByMimetype;
+    private CronExpression initialAndOnErrorCronExpression;
 
-    private Map<String, String> displaysByExtension;
+    static class Data
+    {
+        private List<String> mimetypes = new ArrayList<String>(40);
 
-    private Set<String> textMimetypes;
+        private Map<String, String> extensionsByMimetype = new HashMap<String, String>(59);
+
+        private Map<String, String> mimetypesByExtension = new HashMap<String, String>(59);
+
+        private Map<String, String> displaysByMimetype = new TreeMap<String, String>();
+
+        private Map<String, String> displaysByExtension = new HashMap<String, String>(59);
+
+        private Set<String> textMimetypes = new HashSet<String>(23);
+
+        private int xmlCount;
+
+        private int fileCount;
+
+        private void makeCollectionsReadOnly()
+        {
+            mimetypes = Collections.unmodifiableList(mimetypes);
+            extensionsByMimetype = Collections.unmodifiableMap(extensionsByMimetype);
+            mimetypesByExtension = Collections.unmodifiableMap(mimetypesByExtension);
+            displaysByMimetype = Collections.unmodifiableMap(displaysByMimetype);
+            displaysByExtension = Collections.unmodifiableMap(displaysByExtension);
+        }
+
+        @Override
+        public String toString()
+        {
+            int mimetypeCount = mimetypes.size();
+            return "(mimetypes: "+mimetypeCount+" from XML: "+xmlCount+" from JSON: "+(mimetypeCount-xmlCount)+" files: "+fileCount+")";
+        }
+    }
+
+    private static class MediaTypeDef
+    {
+        private String name;
+        private String mediaType;
+        private boolean text;
+        private ExtensionDef[] extensions;
+
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        public void setMediaType(String mediaType)
+        {
+            this.mediaType = mediaType;
+        }
+
+        public void setText(boolean text)
+        {
+            this.text = text;
+        }
+
+        public void setExtensions(ExtensionDef[] extensions)
+        {
+            this.extensions = extensions;
+        }
+    }
+
+    private static class ExtensionDef
+    {
+        private String extension;
+        private String name;
+        private boolean isDefault;
+
+        public void setExtension(String extension)
+        {
+            this.extension = extension;
+        }
+
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        public void setDefault(boolean theDefault)
+        {
+            this.isDefault = theDefault;
+        }
+    }
+
+    private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
+    {
+        @Override
+        public boolean readConfig() throws IOException
+        {
+            if (jsonConfigFileFinder != null)
+            {
+                jsonConfigFileFinder.setFileCount(0);
+            }
+            return MimetypeMap.this.readConfig();
+        }
+
+        @Override
+        public Object createData()
+        {
+            return MimetypeMap.this.createData();
+        }
+    };
+
+    public Data createData()
+    {
+        return new Data();
+    }
+
+    public Data getData()
+    {
+        return configScheduler.getData();
+    }
+
+    private ConfigFileFinder jsonConfigFileFinder;
 
     /**
      * Default constructor
@@ -414,6 +533,26 @@ public class MimetypeMap implements MimetypeService
         this.tikaConfig = tikaConfig;
     }
 
+    public void setJsonObjectMapper(ObjectMapper jsonObjectMapper)
+    {
+        this.jsonObjectMapper = jsonObjectMapper;
+    }
+
+    public void setMimetypeJsonConfigDir(String mimetypeJsonConfigDir)
+    {
+        this.mimetypeJsonConfigDir = mimetypeJsonConfigDir;
+    }
+
+    public void setCronExpression(CronExpression cronExpression)
+    {
+        this.cronExpression = cronExpression;
+    }
+
+    public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
+    {
+        this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+    }
+
     /**
      * Initialises the map using the configuration service provided
      */
@@ -421,6 +560,73 @@ public class MimetypeMap implements MimetypeService
     {
         PropertyCheck.mandatory(this, "configService", configService);
         PropertyCheck.mandatory(this, "contentCharsetFinder", contentCharsetFinder);
+
+        // Do we have any properties that indicate we will read JSON?
+        if (mimetypeJsonConfigDir != null || jsonObjectMapper != null || cronExpression != null || initialAndOnErrorCronExpression != null)
+        {
+            PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
+            // If we have a cronExpression it indicates that we will schedule reading.
+            if (cronExpression != null)
+            {
+                PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
+            }
+            jsonConfigFileFinder = new ConfigFileFinder(jsonObjectMapper)
+            {
+                @Override
+                protected void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException
+                {
+                    try
+                    {
+                        JsonNode mediaTypes = jsonNode.get("mediaTypes");
+                        if (mediaTypes != null && mediaTypes.isArray())
+                        {
+                            List<ConfigElement> mimetypes = new ArrayList<>();
+                            for (JsonNode mediaType : mediaTypes)
+                            {
+                                MediaTypeDef def = jsonObjectMapper.convertValue(mediaType, MediaTypeDef.class);
+                                GenericConfigElement mimetype = new GenericConfigElement(ATTR_MIMETYPE);
+                                mimetype.addAttribute(ATTR_DISPLAY, def.name);
+                                mimetype.addAttribute(ATTR_MIMETYPE, def.mediaType);
+                                if (def.text)
+                                {
+                                    mimetype.addAttribute(ATTR_TEXT, Boolean.TRUE.toString());
+                                }
+
+                                GenericConfigElement ext = null;
+                                int count = 0;
+                                for (ExtensionDef extension : def.extensions)
+                                {
+                                    ext = new GenericConfigElement(ATTR_EXTENSION);
+                                    ext.setValue(extension.extension);
+                                    if (extension.name != null && !extension.name.isBlank())
+                                    {
+                                        ext.addAttribute(ATTR_DISPLAY, extension.name);
+                                    }
+                                    if (extension.isDefault)
+                                    {
+                                        ext.addAttribute(ATTR_DEFAULT, Boolean.TRUE.toString());
+                                    }
+                                    mimetype.addChild(ext);
+                                    count++;
+                                }
+                                if (count == 1 && ext.getAttribute(ATTR_DEFAULT) == null)
+                                {
+                                    ext.addAttribute(ATTR_DEFAULT, Boolean.TRUE.toString());
+                                }
+                                mimetypes.add(mimetype);
+                            }
+                            registerMimetypes(mimetypes);
+                            Data data = getData();
+                            data.fileCount++;
+                        }
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        logger.error("Error reading "+readFromMessage+" "+e.getMessage());
+                    }
+                }
+            };
+        }
 
         // TikaConfig should be given, but work around it if not
         if (tikaConfig == null)
@@ -432,18 +638,41 @@ public class MimetypeMap implements MimetypeService
         // We can then be sure we only have the one, so it's quick (ALF-10813)
         detector = new DefaultDetector(tikaConfig.getMimeRepository());
 
-        // Work out the mappings
-        this.mimetypes = new ArrayList<String>(40);
-        this.extensionsByMimetype = new HashMap<String, String>(59);
-        this.mimetypesByExtension = new HashMap<String, String>(59);
-        this.displaysByMimetype = new TreeMap<String, String>();
-        this.displaysByExtension = new HashMap<String, String>(59);
-        this.textMimetypes = new HashSet<String>(23);
+        // Work out the mappings - only runs once and straight away if cronExpression is null
+        configScheduler.run(true, logger, cronExpression, initialAndOnErrorCronExpression);
+    }
 
+    public boolean readConfig()
+    {
+        // Config in XML
         Config config = configService.getConfig(CONFIG_CONDITION, new ConfigLookupContext(CONFIG_AREA));
         ConfigElement mimetypesElement = config.getConfigElement(ELEMENT_MIMETYPES);
         List<ConfigElement> mimetypes = mimetypesElement.getChildren();
+        registerMimetypes(mimetypes);
+        Data data = getData();
+        data.xmlCount = mimetypes.size();
+
+        // Config in JSON
+        boolean successReadingConfig = true;
+        if (jsonConfigFileFinder != null)
+        {
+            // This should not be "alfresco/mimetype" which is used for the in JVM jodconverter
+            successReadingConfig &= jsonConfigFileFinder.readFiles("alfresco/mimetypes", logger);
+            if (mimetypeJsonConfigDir != null && !mimetypeJsonConfigDir.isBlank())
+            {
+                successReadingConfig &= jsonConfigFileFinder.readFiles(mimetypeJsonConfigDir, logger);
+            }
+        }
+
+        data.makeCollectionsReadOnly();
+
+        return successReadingConfig;
+    }
+
+    private void registerMimetypes(List<ConfigElement> mimetypes)
+    {
         int count = 0;
+        Data data = getData();
         for (ConfigElement mimetypeElement : mimetypes)
         {
             count++;
@@ -456,16 +685,16 @@ public class MimetypeMap implements MimetypeService
             }
             // we store it as lowercase
             mimetype = mimetype.toLowerCase();
-            boolean replacement = this.mimetypes.contains(mimetype);
+            boolean replacement = data.mimetypes.contains(mimetype);
             if (!replacement)
             {
-                this.mimetypes.add(mimetype);
+                data.mimetypes.add(mimetype);
             }
             // add to map of mimetype displays
             String mimetypeDisplay = mimetypeElement.getAttribute(ATTR_DISPLAY);
             if (mimetypeDisplay != null && mimetypeDisplay.length() > 0)
             {
-                String prev = this.displaysByMimetype.put(mimetype, mimetypeDisplay);
+                String prev = data.displaysByMimetype.put(mimetype, mimetypeDisplay);
                 if (replacement && prev != null && !mimetypeDisplay.equals(prev))
                 {
                     logger.warn("Replacing " + mimetype + " " + ATTR_DISPLAY + " value '" + prev + "' with '"
@@ -476,16 +705,16 @@ public class MimetypeMap implements MimetypeService
             // Check if it is a text format
             String isTextStr = mimetypeElement.getAttribute(ATTR_TEXT);
             boolean isText = Boolean.parseBoolean(isTextStr) || mimetype.startsWith(PREFIX_TEXT);
-            boolean prevIsText = replacement ? this.textMimetypes.contains(mimetype) : !isText;
+            boolean prevIsText = replacement ? data.textMimetypes.contains(mimetype) : !isText;
             if (isText != prevIsText)
             {
                 if (isText)
                 {
-                    this.textMimetypes.add(mimetype);
+                    data.textMimetypes.add(mimetype);
                 }
                 else if (replacement)
                 {
-                    this.textMimetypes.remove(mimetype);
+                    data.textMimetypes.remove(mimetype);
                 }
                 if (replacement)
                 {
@@ -507,10 +736,10 @@ public class MimetypeMap implements MimetypeService
                 }
                 // put to lowercase
                 extension = extension.toLowerCase();
-                this.mimetypesByExtension.put(extension, mimetype);
+                data.mimetypesByExtension.put(extension, mimetype);
                 // add to map of extension displays
                 String extensionDisplay = extensionElement.getAttribute(ATTR_DISPLAY);
-                String prev = this.displaysByExtension.get(extension);
+                String prev = data.displaysByExtension.get(extension);
                 // if no display defined for the extension - use the mimetype's
                 // display
                 if ((prev == null) && (extensionDisplay == null || extensionDisplay.length() == 0)
@@ -520,7 +749,7 @@ public class MimetypeMap implements MimetypeService
                 }
                 if (extensionDisplay != null)
                 {
-                    this.displaysByExtension.put(extension, extensionDisplay);
+                    data.displaysByExtension.put(extension, extensionDisplay);
                     if (prev != null && !extensionDisplay.equals(prev))
                     {
                         logger.warn("Replacing " + mimetype + " extension " + ATTR_DISPLAY + " value '" + prev
@@ -530,12 +759,12 @@ public class MimetypeMap implements MimetypeService
 
                 // add to map of extensions by mimetype if it is the default or
                 // first extension (prevExtension == null)
-                String prevExtension = this.extensionsByMimetype.get(mimetype);
+                String prevExtension = data.extensionsByMimetype.get(mimetype);
                 String isDefaultStr = extensionElement.getAttribute(ATTR_DEFAULT);
                 boolean isDefault = Boolean.parseBoolean(isDefaultStr) || prevExtension == null;
                 if (isDefault)
                 {
-                    this.extensionsByMimetype.put(mimetype, extension);
+                    data.extensionsByMimetype.put(mimetype, extension);
                     if (prevExtension != null && !extension.equals(prevExtension))
                     {
                         logger.warn("Replacing " + mimetype + " default extension '" + prevExtension + "' with '"
@@ -549,13 +778,6 @@ public class MimetypeMap implements MimetypeService
                 logger.warn("No extensions defined for mimetype: " + mimetype);
             }
         }
-
-        // make the collections read-only
-        this.mimetypes = Collections.unmodifiableList(this.mimetypes);
-        this.extensionsByMimetype = Collections.unmodifiableMap(this.extensionsByMimetype);
-        this.mimetypesByExtension = Collections.unmodifiableMap(this.mimetypesByExtension);
-        this.displaysByMimetype = Collections.unmodifiableMap(this.displaysByMimetype);
-        this.displaysByExtension = Collections.unmodifiableMap(this.displaysByExtension);
     }
 
     /**
@@ -570,7 +792,8 @@ public class MimetypeMap implements MimetypeService
      */
     public String getExtension(String mimetype)
     {
-        String extension = extensionsByMimetype.get(mimetype);
+        Data data = getData();
+        String extension = data.extensionsByMimetype.get(mimetype);
         return (extension == null ? EXTENSION_BINARY : extension);
     }
 
@@ -596,9 +819,10 @@ public class MimetypeMap implements MimetypeService
         if (extension != null)
         {
             extension = extension.toLowerCase();
-            if (mimetypesByExtension.containsKey(extension))
+            Data data = getData();
+            if (data.mimetypesByExtension.containsKey(extension))
             {
-                mimetype = mimetypesByExtension.get(extension);
+                mimetype = data.mimetypesByExtension.get(extension);
             }
         }
         return mimetype == null ? defaultMimetype : mimetype;
@@ -606,32 +830,38 @@ public class MimetypeMap implements MimetypeService
 
     public Map<String, String> getDisplaysByExtension()
     {
-        return displaysByExtension;
+        Data data = getData();
+        return data.displaysByExtension;
     }
 
     public Map<String, String> getDisplaysByMimetype()
     {
-        return displaysByMimetype;
+        Data data = getData();
+        return data.displaysByMimetype;
     }
 
     public Map<String, String> getExtensionsByMimetype()
     {
-        return extensionsByMimetype;
+        Data data = getData();
+        return data.extensionsByMimetype;
     }
 
     public List<String> getMimetypes()
     {
-        return mimetypes;
+        Data data = getData();
+        return data.mimetypes;
     }
 
     public Map<String, String> getMimetypesByExtension()
     {
-        return mimetypesByExtension;
+        Data data = getData();
+        return data.mimetypesByExtension;
     }
 
     public boolean isText(String mimetype)
     {
-        return textMimetypes.contains(mimetype);
+        Data data = getData();
+        return data.textMimetypes.contains(mimetype);
     }
     
     /**
@@ -836,9 +1066,10 @@ public class MimetypeMap implements MimetypeService
             if (index > -1 && (index < filename.length() - 1))
             {
                 String extension = filename.substring(index + 1).toLowerCase();
-                if (mimetypesByExtension.containsKey(extension))
+                Data data = getData();
+                if (data.mimetypesByExtension.containsKey(extension))
                 {
-                    mimetype = mimetypesByExtension.get(extension);
+                    mimetype = data.mimetypesByExtension.get(extension);
                 }
             }
         }
@@ -896,7 +1127,8 @@ public class MimetypeMap implements MimetypeService
         // Not all the mimetypes we use are the Tika Canonical one.
         // So, detect when this happens and use ours in preference
         String tikaType = type.toString();
-        if (mimetypes.contains(tikaType))
+        Data data = getData();
+        if (data.mimetypes.contains(tikaType))
         {
             // Alfresco and Tika agree!
             return tikaType;
@@ -907,7 +1139,7 @@ public class MimetypeMap implements MimetypeService
         for (MediaType alias : aliases)
         {
             String aliasType = alias.toString();
-            if (mimetypes.contains(aliasType)) { return aliasType; }
+            if (data.mimetypes.contains(aliasType)) { return aliasType; }
         }
 
         // If we get here, then Tika has identified something that

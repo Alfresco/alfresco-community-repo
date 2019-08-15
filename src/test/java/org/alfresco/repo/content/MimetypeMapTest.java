@@ -77,6 +77,7 @@ public class MimetypeMapTest extends TestCase
     protected void tearDown() throws Exception
     {
         ((MimetypeMap)mimetypeService).setConfigService(configService);
+        ((MimetypeMap)mimetypeService).setMimetypeJsonConfigDir(null);
         ((MimetypeMap)mimetypeService).init();
     }
 
@@ -595,5 +596,56 @@ public class MimetypeMapTest extends TestCase
         {
 
         }
+    }
+
+    public void testJsonRead() throws Exception
+    {
+        int beforeCount = mimetypeService.getMimetypes().size();
+
+        // {
+        //  "mediaTypes": [
+        //    {
+        //      "name": "Test MPEG4 Audio",
+        //      "mediaType": "test audio/mp4",
+        //      "extensions": [
+        //        {"extension": "test m4a"}
+        //      ]
+        //    },
+        //    {
+        //      "name": "Test Plain Text",
+        //      "mediaType": "test text/plain",
+        //      "text": true,
+        //      "extensions": [
+        //        {"extension": "test txt", "default": true},
+        //        {"extension": "test sql", "name": "SQL"},
+        //        {"extension": "test properties", "name": "Java Properties"},
+        //        {"extension": "test log", "name": "Log File"}
+        //      ]
+        //    }
+        //  ]
+        //}
+        ((MimetypeMap)mimetypeService).setMimetypeJsonConfigDir("alfresco/test/mimetypes/testMimetype.json");
+        ((MimetypeMap) mimetypeService).init();
+        Map<String, String> displaysByExtension = mimetypeService.getDisplaysByExtension();
+
+        int afterCount = mimetypeService.getMimetypes().size();
+        assertEquals("There should be 2 more mimetypes from the JSON file", beforeCount+2, afterCount);
+
+        String mimetype = "test audio/mp4";
+        String defaultExtension = "test m4a";
+        assertEquals("Test MPEG4 Audio", displaysByExtension.get(defaultExtension));
+        assertEquals(defaultExtension, mimetypeService.getExtension(mimetype));
+        assertEquals(mimetype, mimetypeService.getMimetype(defaultExtension));
+        assertFalse(mimetypeService.isText(mimetype));
+
+        mimetype = "test text/plain";
+        defaultExtension = "test txt";
+        assertEquals("Test Plain Text", displaysByExtension.get(defaultExtension));
+        assertEquals(defaultExtension, mimetypeService.getExtension(mimetype));
+        assertEquals(mimetype, mimetypeService.getMimetype(defaultExtension));
+        assertEquals(mimetype, mimetypeService.getMimetype("test sql"));
+        assertEquals(mimetype, mimetypeService.getMimetype("test properties"));
+        assertEquals(mimetype, mimetypeService.getMimetype("test log"));
+        assertTrue(mimetypeService.isText(mimetype));
     }
 }

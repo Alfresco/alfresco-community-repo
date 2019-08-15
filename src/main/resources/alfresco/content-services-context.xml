@@ -226,9 +226,15 @@
       <property name="tikaConfig">
          <ref bean="tikaConfig"/>
       </property>
+      <property name="jsonObjectMapper" ref="mimetypeServiceJsonObjectMapper" />
+      <property name="mimetypeJsonConfigDir" value="${mimetype.config.dir}" />
+      <property name="cronExpression" value="${mimetype.config.cronExpression}"></property>
+      <property name="initialAndOnErrorCronExpression" value="${mimetype.config.initialAndOnError.cronExpression}"></property>
    </bean>
-   
-   <bean id="contentFilterLanguagesConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
+
+    <bean id="mimetypeServiceJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
+    <bean id="contentFilterLanguagesConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
       <constructor-arg>
          <bean class="org.springframework.extensions.config.source.UrlConfigSource">
             <constructor-arg>

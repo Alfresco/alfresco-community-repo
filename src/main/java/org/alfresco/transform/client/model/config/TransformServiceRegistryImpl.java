@@ -148,6 +148,7 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
+        // If we have a cronExpression it indicates that we will schedule reading.
         if (cronExpression != null)
         {
             PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
@@ -162,7 +163,7 @@ public abstract class TransformServiceRegistryImpl implements TransformServiceRe
         return new Data();
     }
 
-    public synchronized Data getData()
+    public Data getData()
     {
         return configScheduler.getData();
     }

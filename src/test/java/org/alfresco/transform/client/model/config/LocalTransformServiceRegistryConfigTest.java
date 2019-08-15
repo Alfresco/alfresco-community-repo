@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.quartz.CronExpression;
-import org.quartz.Scheduler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -94,7 +92,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         }
 
         @Override
-        public synchronized LocalData getData()
+        public LocalData getData()
          {
              return dummyData;
          }
@@ -140,7 +138,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     private Map<String, List<String>> officeToImageViaPdfSupportedTransformation;
 
     private int readConfigCount;
-    private long startMs;
+    private long startMs = System.currentTimeMillis();
 
     @Before
     public void setUp() throws Exception
@@ -427,7 +425,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             readConfigCount = 0;
 
             registry.setInitialAndOnErrorCronExpression(new CronExpression(("0/2 * * ? * * *"))); // every 2 seconds rather than 10 seconds
-            registry.setCronExpression(new CronExpression(("0/4 * * ? * * *"))); // every 4 seconds rather than 10 mins
+            registry.setCronExpression(new CronExpression(("0/4 * * ? * * *"))); // every 4 seconds rather than every hour
 
             // Sleep until a 6 second boundary, in order to make testing clearer.
             // It avoids having to work out schedule offsets and extra quick runs that can otherwise take place.

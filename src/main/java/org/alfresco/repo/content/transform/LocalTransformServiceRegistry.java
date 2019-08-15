@@ -122,7 +122,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
-        PropertyCheck.mandatory(this, "pipelineConfigDir", pipelineConfigDir);
         PropertyCheck.mandatory(this, "properties", properties);
         PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
         strictMimetypeExceptions = getStrictMimetypeExceptions();
@@ -145,7 +144,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    public synchronized LocalData getData()
+    public LocalData getData()
     {
         return (LocalData)super.getData();
     }

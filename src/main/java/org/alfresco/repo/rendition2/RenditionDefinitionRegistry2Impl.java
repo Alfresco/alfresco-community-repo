@@ -191,9 +191,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "transformServiceRegistry", transformServiceRegistry);
-        PropertyCheck.mandatory(this, "renditionConfigDir", renditionConfigDir);
         PropertyCheck.mandatory(this, "timeoutDefault", timeoutDefault);
         PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
+        // If we have a cronExpression it indicates that we will schedule reading.
         if (cronExpression != null)
         {
             PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
@@ -239,12 +239,12 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         return new Data();
     }
 
-    public synchronized Data getData()
+    public Data getData()
     {
         return configScheduler.getData();
     }
 
-    public boolean readConfig() throws IOException
+    public boolean readConfig()
     {
         boolean successReadingConfig = configFileFinder.readFiles("alfresco/renditions", log);
         if (renditionConfigDir != null && !renditionConfigDir.isBlank())

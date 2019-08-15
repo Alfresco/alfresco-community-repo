@@ -34,3 +34,4 @@ In this folder the distribution zip is build. It contains all the war files, lib
 * [Create a custom Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image.md)
 * [Creating customized Docker images using an existing Docker image](https://github.com/Alfresco/acs-packaging/blob/master/docs/create-custom-image-using-existing-docker-image.md)
 * [Verifying that AMPs have been applied](https://github.com/Alfresco/acs-packaging/blob/master/docs/verify-the-amp-has-been-applied.md)
+* [Create and configure custom Transforms](https://github.com/Alfresco/acs-packaging/blob/master/docs/custom-transforms-and-renditions.md)

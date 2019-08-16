@@ -241,7 +241,7 @@ public class FrozenAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             // check to not throw exception when the aspect is being added
             if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
-                    !transactionalResourceHelper.getSet(nodeRef).contains("frozen") )
+                    !transactionalResourceHelper.getSet("frozen").contains(nodeRef) )
                 {
                     throw new AccessDeniedException("Frozen nodes can not be updated.");
                 }

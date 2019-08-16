@@ -38,8 +38,6 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.repo.content.ContentServicePolicies;
-import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -67,9 +65,7 @@ public class FrozenAspect extends    BaseBehaviourBean
                                      NodeServicePolicies.OnAddAspectPolicy,
                                      NodeServicePolicies.OnRemoveAspectPolicy,
                                      NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                     NodeServicePolicies.OnMoveNodePolicy,
-                                     ContentServicePolicies.OnContentUpdatePolicy,
-                                     CopyServicePolicies.BeforeCopyPolicy
+                                     NodeServicePolicies.BeforeMoveNodePolicy
 {
     /** freeze service */
     protected FreezeService freezeService;
@@ -209,14 +205,14 @@ public class FrozenAspect extends    BaseBehaviourBean
     @Override
     @Behaviour
             (
-                    kind = BehaviourKind.ASSOCIATION,
+                    kind = BehaviourKind.CLASS,
                     notificationFrequency = NotificationFrequency.FIRST_EVENT
             )
-    public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
+    public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            if (nodeService.exists(newChildAssocRef.getParentRef()) &&
-                    nodeService.exists(newChildAssocRef.getChildRef()))
+            if (nodeService.exists(oldChildAssocRef.getChildRef()) &&
+                    freezeService.isFrozen(oldChildAssocRef.getChildRef()))
             {
                 throw new AccessDeniedException("Frozen nodes can not be moved.");
             }
@@ -233,7 +229,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     @Behaviour
             (
                     kind = BehaviourKind.CLASS,
-                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
             )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
 
@@ -245,46 +241,6 @@ public class FrozenAspect extends    BaseBehaviourBean
                 {
                     throw new AccessDeniedException("Frozen nodes can not be updated.");
                 }
-            return null;
-        });
-    }
-
-    /**
-     * Behaviour associated with updating the content
-     * <p>
-     * Ensures that the content of a frozen node can not be updated
-     */
-    @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-            )
-    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
-    {
-        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
-                {
-                    // never allow to update the content of a frozen node
-                    throw new AccessDeniedException("Frozen nodes content can not be updated.");
-                }
-            return null;
-        });
-    }
-
-    @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS
-            )
-    public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
-    {
-        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            if (nodeService.exists(sourceNodeRef) && freezeService.isFrozen(sourceNodeRef))
-            {
-                throw new AccessDeniedException("Frozen nodes can not be copied.");
-            }
-
             return null;
         });
     }

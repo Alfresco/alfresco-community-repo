@@ -228,6 +228,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
             {
                 // remove the freeze aspect from the node
+                //set in transaction cache in order not to trigger update policy when removing the aspect
+                transactionalResourceHelper.getSet(nodeRef).add("frozen");
                 nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
             }
 
@@ -242,6 +244,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         if (recordsOtherHolds.size() == index)
                         {
                             // remove the freeze aspect from the node
+                            //set in transaction cache in order not to trigger update policy when removing the aspect
+                            transactionalResourceHelper.getSet(record).add("frozen");
                             nodeService.removeAspect(record, ASPECT_FROZEN);
                         }
                     }
@@ -716,12 +720,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 {
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
-                    authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                    {
-                        @Override
-                        public Void doWork()
+                    authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                         {
+
                             // remove from hold
+                            //set in transaction cache in order not to trigger update policy when removing the child association
+                            transactionalResourceHelper.getSet(nodeRef).add("frozen");
                             nodeService.removeChild(hold, nodeRef);
 
                             // audit that the node has been remove from the hold
@@ -730,19 +734,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                             return null;
                         }
-                     });
+                    });
                 }
             }
 
             // run as system as we can't be sure if have remove aspect rights on node
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork()
-                {
-                    removeFreezeAspect(nodeRef, 0);
-                    return null;
-                }
+            authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                removeFreezeAspect(nodeRef, 0);
+                return null;
             });
         }
     }

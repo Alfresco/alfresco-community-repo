@@ -637,7 +637,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
         {
             //set in transaction cache in order not to trigger update policy when adding the aspect
-            transactionalResourceHelper.getSet(nodeRef).add("frozen");
+            transactionalResourceHelper.getSet("frozen").add(nodeRef);
             // add freeze aspect
             nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
 

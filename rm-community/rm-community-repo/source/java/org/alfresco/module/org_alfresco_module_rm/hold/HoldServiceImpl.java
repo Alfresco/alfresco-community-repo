@@ -202,6 +202,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     List<NodeRef> frozenNodes = getHeld(hold);
                     for (NodeRef frozenNode : frozenNodes)
                     {
+                        //set in transaction cache in order not to trigger update policy when removing the child association
+                        transactionalResourceHelper.getSet("frozen").add(frozenNode);
                         removeFreezeAspect(frozenNode, 1);
                     }
 

@@ -42,7 +42,7 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Ross Gale
  * @since 3.2
  */
-public class RemoveActiveContentToHoldTest extends BaseRMTestCase
+public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
 {
     @Override
     protected boolean isCollaborationSiteTest()

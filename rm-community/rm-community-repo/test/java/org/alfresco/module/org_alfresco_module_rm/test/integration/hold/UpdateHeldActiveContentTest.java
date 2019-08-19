@@ -57,7 +57,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testDeleteHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             public void given()
             {
@@ -70,7 +70,15 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                fileFolderService.delete(dmDocument);
+                try
+                {
+                    fileFolderService.delete(dmDocument);
+                    fail("Expected PermissionDeniedException to be thrown");
+                }
+                catch (PermissionDeniedException pde)
+                {
+                    assertTrue(pde.getMessage().contains("Frozen nodes can not be deleted."));
+                }
             }
         });
     }
@@ -107,7 +115,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testMoveHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             public void given()
             {
@@ -120,7 +128,15 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when() throws FileNotFoundException
             {
-                fileFolderService.move(dmDocument, dmFolder1, null);
+                try
+                {
+                    fileFolderService.move(dmDocument, dmFolder1, null);
+                    fail("Expected PermissionDeniedException to be thrown");
+                }
+                catch (PermissionDeniedException pde)
+                {
+                    assertTrue(pde.getMessage().contains("Frozen nodes can not be moved."));
+                }
             }
         });
     }
@@ -133,7 +149,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testUpdateHeldDocumentProperties()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             public void given()
             {
@@ -146,7 +162,15 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                nodeService.setProperty(dmDocument, ContentModel.PROP_DESCRIPTION, "description");
+                try
+                {
+                    nodeService.setProperty(dmDocument, ContentModel.PROP_DESCRIPTION, "description");
+                    fail("Expected PermissionDeniedException to be thrown");
+                }
+                catch (PermissionDeniedException pde)
+                {
+                    assertTrue(pde.getMessage().contains("Frozen nodes can not be updated."));
+                }
             }
         });
     }
@@ -158,7 +182,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testUpdateHeldDocumentContent()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             public void given()
             {
@@ -171,9 +195,17 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                ContentData content = (ContentData) nodeService.getProperty(dmDocument, PROP_CONTENT);
-                nodeService.setProperty(dmDocument, PROP_CONTENT, ContentData.setMimetype(content,
-                        MimetypeMap.MIMETYPE_TEXT_PLAIN));
+                try
+                {
+                    ContentData content = (ContentData) nodeService.getProperty(dmDocument, PROP_CONTENT);
+                    nodeService.setProperty(dmDocument, PROP_CONTENT, ContentData.setMimetype(content,
+                            MimetypeMap.MIMETYPE_TEXT_PLAIN));
+                    fail("Expected PermissionDeniedException to be thrown");
+                }
+                catch (PermissionDeniedException pde)
+                {
+                    assertTrue(pde.getMessage().contains("Frozen nodes can not be updated."));
+                }
             }
         });
     }

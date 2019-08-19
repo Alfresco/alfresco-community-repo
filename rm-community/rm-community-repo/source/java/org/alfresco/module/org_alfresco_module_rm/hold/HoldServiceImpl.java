@@ -712,13 +712,20 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        if (holds != null && !holds.isEmpty())
+        if (!holds.isEmpty())
         {
             for (final NodeRef hold : holds)
             {
-                if (!instanceOf(hold, TYPE_HOLD))
+                if (!isHold(hold))
                 {
-                    throw new AlfrescoRuntimeException("Can't remove from hold, because it isn't a hold. (hold=" + hold + ")");
+                    final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                    throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
+                }
+
+                if (!AccessStatus.ALLOWED.equals(
+                        capabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)))
+                {
+                    throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
                 }
 
                 if (getHeld(hold).contains(nodeRef))

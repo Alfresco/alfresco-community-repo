@@ -110,6 +110,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
         when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
 
         activeContent = generateNodeRef();
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
@@ -452,7 +454,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedRecordsManagementAuditService, times(2)).auditEvent(eq(recordFolder), anyString());
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test (expected = IntegrityException.class)
     public void removeFromHoldNotAHold()
     {
         holdService.removeFromHold(recordFolder, recordFolder);
@@ -549,5 +551,19 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold2, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
+    }
+
+     @Test (expected = AccessDeniedException.class)
+    public void removeActiveContentFromHoldsNoPermissionsOnHold()
+    {
+        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold);
+        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold2);
+        doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.DENIED);
+        // build a list of holds
+        List<NodeRef> holds = new ArrayList<>(2);
+        holds.add(hold);
+        holds.add(hold2);
+        holdService.removeFromHolds(holds, activeContent);
     }
 }

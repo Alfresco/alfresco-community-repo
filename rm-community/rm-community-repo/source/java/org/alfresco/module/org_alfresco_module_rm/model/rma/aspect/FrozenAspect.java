@@ -45,10 +45,11 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:frozen behaviour bean
@@ -95,7 +96,7 @@ public class FrozenAspect extends    BaseBehaviourBean
             if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
             {
                 // never allow to delete a frozen node
-                throw new AccessDeniedException("Frozen nodes can not be deleted.");
+                throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.delete-frozen-node"));
             }
 
             // check children
@@ -121,7 +122,7 @@ public class FrozenAspect extends    BaseBehaviourBean
                 if (freezeService.isFrozen(nodeRef))
                 {
                     // never allow to delete a node with a frozen child
-                    throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
+                    throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.delete-node-frozen-children"));
                 }
 
                 // check children
@@ -214,7 +215,7 @@ public class FrozenAspect extends    BaseBehaviourBean
             if (nodeService.exists(oldChildAssocRef.getChildRef()) &&
                     freezeService.isFrozen(oldChildAssocRef.getChildRef()))
             {
-                throw new AccessDeniedException("Frozen nodes can not be moved.");
+                throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.move-frozen-node"));
             }
             return null;
         });
@@ -232,14 +233,13 @@ public class FrozenAspect extends    BaseBehaviourBean
                     notificationFrequency = NotificationFrequency.FIRST_EVENT
             )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             // check to not throw exception when the aspect is being added
             if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
                     !transactionalResourceHelper.getSet("frozen").contains(nodeRef) )
                 {
-                    throw new AccessDeniedException("Frozen nodes can not be updated.");
+                    throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.update-frozen-node"));
                 }
             return null;
         });

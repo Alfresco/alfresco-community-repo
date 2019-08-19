@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,7 +57,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testDeleteHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
         {
             public void given()
             {
@@ -69,15 +70,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                try
-                {
-                    fileFolderService.delete(dmDocument);
-                    fail("Expected AccessDeniedException to be thrown");
-                }
-                catch (AccessDeniedException ade)
-                {
-                    assertTrue(ade.getMessage().contains("Frozen nodes can not be deleted."));
-                }
+                fileFolderService.delete(dmDocument);
             }
         });
     }
@@ -114,7 +107,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testMoveHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
         {
             public void given()
             {
@@ -127,15 +120,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when() throws FileNotFoundException
             {
-                try
-                {
-                    fileFolderService.move(dmDocument, dmFolder1, null);
-                    fail("Expected AccessDeniedException to be thrown");
-                }
-                catch (AccessDeniedException ade)
-                {
-                    assertTrue(ade.getMessage().contains("Frozen nodes can not be moved."));
-                }
+                fileFolderService.move(dmDocument, dmFolder1, null);
             }
         });
     }
@@ -148,7 +133,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testUpdateHeldDocumentProperties()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
         {
             public void given()
             {
@@ -161,15 +146,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                try
-                {
-                    nodeService.setProperty(dmDocument, ContentModel.PROP_DESCRIPTION, "description");
-                    fail("Expected AccessDeniedException to be thrown");
-                }
-                catch (AccessDeniedException ade)
-                {
-                    assertTrue(ade.getMessage().contains("Frozen nodes can not be updated."));
-                }
+                nodeService.setProperty(dmDocument, ContentModel.PROP_DESCRIPTION, "description");
             }
         });
     }
@@ -181,7 +158,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
      */
     public void testUpdateHeldDocumentContent()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(PermissionDeniedException.class)
         {
             public void given()
             {
@@ -194,17 +171,9 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
 
             public void when()
             {
-                try
-                {
-                    ContentData content = (ContentData) nodeService.getProperty(dmDocument, PROP_CONTENT);
-                    nodeService.setProperty(dmDocument, PROP_CONTENT, ContentData.setMimetype(content,
-                            MimetypeMap.MIMETYPE_TEXT_PLAIN));
-                    fail("Expected AccessDeniedException to be thrown");
-                }
-                catch (AccessDeniedException ade)
-                {
-                    assertTrue(ade.getMessage().contains("Frozen nodes can not be updated."));
-                }
+                ContentData content = (ContentData) nodeService.getProperty(dmDocument, PROP_CONTENT);
+                nodeService.setProperty(dmDocument, PROP_CONTENT, ContentData.setMimetype(content,
+                        MimetypeMap.MIMETYPE_TEXT_PLAIN));
             }
         });
     }

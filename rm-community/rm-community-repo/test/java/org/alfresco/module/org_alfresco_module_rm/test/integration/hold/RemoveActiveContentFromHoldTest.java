@@ -28,11 +28,13 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.GUID;
 
@@ -114,8 +116,10 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
             {
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
                 hold2 = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                holdService.addToHold(hold, dmDocument);
-                holdService.addToHold(hold2, dmDocument);
+                final List<NodeRef> holds = new ArrayList<>(2);
+                holds.add(hold);
+                holds.add(hold2);
+                holdService.addToHolds(holds, dmDocument);
             }
 
             public void when()
@@ -162,7 +166,7 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
 
     /**
      * Given a piece of active content on hold
-     * When I try to remove the active content to the hold without the remove hold capability
+     * When I try to remove the active content from the hold without the remove hold capability
      * Then an access denied exception is thrown
      */
     public void testRemoveDocumentFromHoldFailsWithoutRemoveHoldPermission()
@@ -173,10 +177,8 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
 
             public void given()
             {
-                //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
                 AuthenticationUtil.runAs(
                         (RunAsWork<Void>) () -> {
-                            siteService.setMembership(collabSiteId, powerUserName, SiteModel.SITE_MANAGER);
                             hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
                             holdService.addToHold(hold, dmDocument);
                         return null;

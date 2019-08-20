@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -46,10 +45,11 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:frozen behaviour bean
@@ -64,21 +64,12 @@ import org.alfresco.service.namespace.QName;
 public class FrozenAspect extends    BaseBehaviourBean
                           implements NodeServicePolicies.BeforeDeleteNodePolicy,
                                      NodeServicePolicies.OnAddAspectPolicy,
-                                     NodeServicePolicies.OnRemoveAspectPolicy
+                                     NodeServicePolicies.OnRemoveAspectPolicy,
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                     NodeServicePolicies.BeforeMoveNodePolicy
 {
-    /** file plan service */
-    protected FilePlanService filePlanService;
-
     /** freeze service */
     protected FreezeService freezeService;
-
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
 
     /**
      * @param freezeService freeze service
@@ -101,25 +92,16 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef))
             {
-                if (nodeService.exists(nodeRef) &&
-                    filePlanService.isFilePlanComponent(nodeRef))
-                {
-                    if (freezeService.isFrozen(nodeRef))
-                    {
-                        // never allowed to delete a frozen node
-                        throw new AccessDeniedException("Frozen nodes can not be deleted.");
-                    }
-
-                    // check children
-                    checkChildren(nodeService.getChildAssocs(nodeRef));
-                }
-                return null;
+                // never allow to delete a frozen node
+                throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.delete-frozen-node"));
             }
+
+            // check children
+            checkChildren(nodeService.getChildAssocs(nodeRef));
+            return null;
         });
     }
 
@@ -139,8 +121,8 @@ public class FrozenAspect extends    BaseBehaviourBean
                 NodeRef nodeRef = assoc.getChildRef();
                 if (freezeService.isFrozen(nodeRef))
                 {
-                    // never allowed to delete a node with a frozen child
-                    throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
+                    // never allow to delete a node with a frozen child
+                    throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.delete-node-frozen-children"));
                 }
 
                 // check children
@@ -192,33 +174,74 @@ public class FrozenAspect extends    BaseBehaviourBean
     )
     public void onRemoveAspect(final NodeRef record, QName aspectTypeQName)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                if (nodeService.exists(record) &&
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(record) &&
                     isRecord(record))
+            {
+                // get the owning record folder
+                NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+
+                // check that the aspect has been added
+                if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
                 {
-                    // get the owning record folder
-                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
-        
-                    // check that the aspect has been added
-                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                    // decrement current count
+                    int currentCount = (Integer) nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                    if (currentCount > 0)
                     {
-                        // decrement current count
-                        int currentCount = (Integer)nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
-                        if (currentCount > 0)
-                        {
-                            currentCount = currentCount - 1;
-                            nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
-                        }
-                    }                   
+                        currentCount = currentCount - 1;
+                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                    }
                 }
-                return null;
             }
-        }); 
+            return null;
+        });
         
     }
 
+    /**
+     * Behaviour associated with moving a frozen node
+     * <p>
+     * Prevent frozen items being moved
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void beforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            if (nodeService.exists(oldChildAssocRef.getChildRef()) &&
+                    freezeService.isFrozen(oldChildAssocRef.getChildRef()))
+            {
+                throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.move-frozen-node"));
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Behaviour associated with updating properties
+     * <p>
+     * Prevents frozen items being updated
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.FIRST_EVENT
+            )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            // check to not throw exception when the aspect is being added
+            if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
+                    !transactionalResourceHelper.getSet("frozen").contains(nodeRef) )
+                {
+                    throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.update-frozen-node"));
+                }
+            return null;
+        });
+    }
 }

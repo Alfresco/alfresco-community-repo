@@ -148,12 +148,25 @@ public class RoleService
     public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
                                                                   UserPermissions userPermission)
     {
+        return createUserWithRMRoleAndRMNodePermission(userRole, recordCategory.getId(),userPermission);
+    }
+
+    /**
+     * Helper method to create a test user with rm role and permissions on the node ref
+     *
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the record category
+     * @param componentId the component id to grant rm permission
+     * @return the created user model
+     */
+    public UserModel createUserWithRMRoleAndRMNodePermission(String userRole, String componentId,
+                                                               UserPermissions userPermission)
+    {
         final UserModel rmUser = createUserWithRMRole(userRole);
-        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(componentId, rmUser, userPermission);
         getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
         return rmUser;
     }
-
     /**
      * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
      * in collaboration site
@@ -167,9 +180,28 @@ public class RoleService
     public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
                                                                 UserRoles userRole, UserPermissions userPermission)
     {
-        final UserModel rmUser = createUserWithRMRoleAndCategoryPermission(userRole.roleId, recordCategory,
+        return createUserWithSiteRoleRMRoleAndPermission(siteModel, UserRole.SiteCollaborator, recordCategory.getId(), userRole,
                 userPermission);
-        getDataUser().addUserToSite(rmUser, siteModel, UserRole.SiteCollaborator);
+    }
+
+
+    /**
+     * Helper method to create a test user with a rm role and permissions over a rm component and a role
+     * in collaboration site
+     *
+     * @param siteModel      collaboration site
+     * @param recordCategory the category  on which permission should be given
+     * @param userRole       the rm role
+     * @param userPermission the permissions over the recordCategory
+     * @return the created user model
+     */
+    public UserModel createUserWithSiteRoleRMRoleAndPermission(SiteModel siteModel, UserRole userSiteRoles,
+                                                               String rmNodeId, UserRoles userRole,
+                                                               UserPermissions userPermission)
+    {
+        final UserModel rmUser = createUserWithRMRoleAndRMNodePermission(userRole.roleId, rmNodeId,
+                userPermission);
+        getDataUser().addUserToSite(rmUser, siteModel, userSiteRoles);
         return rmUser;
     }
 }

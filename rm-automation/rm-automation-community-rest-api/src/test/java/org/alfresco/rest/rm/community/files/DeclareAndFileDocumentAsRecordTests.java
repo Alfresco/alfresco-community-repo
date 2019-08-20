@@ -34,7 +34,7 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI.PARENT_ID_PARAM;
-import static org.alfresco.rest.v0.RMRolesAndActionsAPI.HOLDS_CONTAINER;
+import static org.alfresco.rest.v0.HoldsAPI.HOLDS_CONTAINER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -57,6 +57,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.util.DockerHelper;
+import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
@@ -105,6 +106,9 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
 
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
+
+    @Autowired
+    private HoldsAPI holdsAPI;
 
     /**
      * Invalid destination paths where in-place records can't be filed
@@ -407,10 +411,10 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileToHeldRecordFolderUsingFilesAPI() throws Exception
     {
         RecordCategoryChild heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
-        rmRolesAndActionsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME,
-                "hold reason", "hold description");
-        rmRolesAndActionsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(),
-                heldRecordFolder.getId(), HOLD_NAME);
+        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, "hold reason",
+                "hold description");
+        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
+                HOLD_NAME);
 
         STEP("Declare document as record with a frozen location parameter value");
         getRestAPIFactory().getFilesAPI()

@@ -138,7 +138,7 @@ public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
 
     /**
      * Given a piece of active content on hold
-     * When I try to remove the active content to the hold without permission
+     * When I try to remove the active content from the hold without permission
      * Then an access denied exception is thrown
      */
     public void testRemoveDocumentFromHoldFailsWithoutFilingPermission()

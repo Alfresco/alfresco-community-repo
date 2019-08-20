@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,42 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.unfiledcontainer;
-
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
+package org.alfresco.rest.rm.community.model.hold;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for file plan properties
+ * POJO for hold entry
  *
- * @author Tuna Aksoy
- * @since 2.6
+ * @author Rodica Sutu
+ * @since 3.2
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties (ignoreUnknown = true)
-public class UnfiledContainerProperties extends TestModel
+public class HoldEntry extends TestModel
 {
-    /*************************/
-    /** Mandatory parameters */
-    /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
-    private String identifier;
+    @JsonProperty (required = true)
+    private String name;
 
-    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
-    private String rootNodeRef;
+    @JsonProperty (required = true)
+    private String nodeRef;
 }

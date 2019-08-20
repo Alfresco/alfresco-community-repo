@@ -81,7 +81,7 @@ public abstract class BaseAPI
     protected static final String UPDATE_METADATA_API = "{0}node/{1}/formprocessor";
     protected static final String ACTIONS_API = "{0}actionQueue";
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
-    protected static final String RM_SITE_ID = "rm";
+    public static final String RM_SITE_ID = "rm";
     protected static final String SHARE_ACTION_API = "{0}internal/shared/share/workspace/SpacesStore/{1}";
     private static final String SLINGSHOT_PREFIX = "alfresco/s/slingshot/";
 

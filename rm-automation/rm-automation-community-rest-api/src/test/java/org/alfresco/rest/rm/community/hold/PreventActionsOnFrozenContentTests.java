@@ -67,7 +67,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     private HoldsAPI holdsAPI;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForRemoveContentFromHold() throws Exception
+    public void preconditionForPreventActionsOnFrozenContent() throws Exception
     {
         STEP("Create a hold.");
         holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
@@ -138,7 +138,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
+        restClient.assertLastError().containsSummary("Frozen nodes can not be deleted.");
 
     }
 
@@ -173,12 +173,12 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be copied.");
+        restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
     }
 
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAddContentToHold() throws Exception
+    public void cleanUpPreventActionsOnFrozenContent() throws Exception
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         dataSite.usingAdmin().deleteSite(testSite);

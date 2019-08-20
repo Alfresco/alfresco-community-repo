@@ -26,6 +26,7 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.alfresco.rest.core.v0.APIUtils.convertHTTPResponseToJSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertNotNull;
 
@@ -46,7 +47,6 @@ import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,10 +62,16 @@ import org.springframework.stereotype.Component;
 public class HoldsAPI extends BaseAPI
 {
     public static final String HOLDS_CONTAINER = "Holds";
+    /**
+     * The URI to create a hold
+     */
     private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
 
-    /** The URI to  add items to hold.*/
+    /** The URI to add items to hold.*/
     private static final String RM_HOLDS_API = "{0}rma/holds";
+    /**
+     * The URI to  get holds.
+     */
     private static final String GET_RM_HOLDS = RM_HOLDS_API + "?{1}";
 
     /**
@@ -122,15 +128,14 @@ public class HoldsAPI extends BaseAPI
 
         try
         {
-           return  new JSONObject(EntityUtils.toString(httpResponse.getEntity()))
-                                .getString("persistedObject")
+           return convertHTTPResponseToJSON(httpResponse).getString("persistedObject")
                                 .replaceAll(NODE_REF_WORKSPACE_SPACES_STORE, "");
         }
         catch(JSONException error)
         {
             LOGGER.error("Converting message body to JSON failed. Body: {}", httpResponse, error);
         }
-        catch(ParseException | IOException error)
+        catch(ParseException error)
         {
             LOGGER.error("Parsing message body failed.", error);
         }
@@ -176,15 +181,15 @@ public class HoldsAPI extends BaseAPI
      * @param holdName    the hold name
      * @return The HTTP response
      */
-    public HttpResponse addItemToHold(String user, String password, int expectedStatus, String itemNodeRef, String
-            holdName)
+    public HttpResponse addItemToHold(String user, String password, int expectedStatus, String itemNodeRef,
+                                      String holdName)
     {
-        final JSONObject requestParams = createHoldJsonObject(user, password, itemNodeRef, holdName);
+        final JSONObject requestParams = addToHoldJsonObject(user, password, itemNodeRef, holdName);
         return doPostJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
     }
 
     /**
-     * Util method to add item (active content /record/ record folder) to the hold and gets the error message
+     * Util method to add item (active content /record/ record folder) to the hold and get the error message
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -207,7 +212,7 @@ public class HoldsAPI extends BaseAPI
      * @param holdName
      * @return JSONObject fo
      */
-    private JSONObject createHoldJsonObject(String user, String password, String itemNodeRef, String holdName)
+    private JSONObject addToHoldJsonObject(String user, String password, String itemNodeRef, String holdName)
     {
 
         final JSONArray nodeRefs = new JSONArray().put(getNodeRefSpacesStore() + itemNodeRef);
@@ -239,10 +244,11 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Adds item (record/ record folder) to the hold
+     * Remove item (record/ record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
+     * @param expectedStatus  https status code expected
      * @param itemNodeRef the nodeRef of the item to be added to hold
      * @param holdName    the hold name
      * @return The HTTP response
@@ -250,12 +256,12 @@ public class HoldsAPI extends BaseAPI
     public HttpResponse removeItemFromHold(String user, String password, int expectedStatus, String itemNodeRef, String
             holdName)
     {
-        final JSONObject requestParams = createHoldJsonObject(user, password, itemNodeRef, holdName);
+        final JSONObject requestParams = addToHoldJsonObject(user, password, itemNodeRef, holdName);
         return doPutJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
     }
 
     /**
-     * Util method to add item (active content /record/ record folder) to the hold and gets the error message
+     * Util method to remove item (active content /record/ record folder) from hold and get the error message
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -278,9 +284,11 @@ public class HoldsAPI extends BaseAPI
     private String extractErrorMessageFromHttpResponse(HttpResponse httpResponse)
     {
         final HttpEntity entity = httpResponse.getEntity();
-
-        try(InputStream responseStream = entity.getContent(); JsonReader reader = Json.createReader(responseStream))
+        JsonReader reader = null;
+        try
         {
+            final InputStream responseStream = entity.getContent();
+            reader = Json.createReader(responseStream);
             return reader.readObject().getString("message");
         }
         catch (JSONException error)
@@ -291,20 +299,26 @@ public class HoldsAPI extends BaseAPI
         {
             LOGGER.error("Parsing message body failed.", error);
         }
-
+        finally
+        {
+            if (reader != null)
+            {
+                reader.close();
+            }
+        }
         return null;
     }
 
     /**
-     *  Get the list of the available holds which have the item node reference if includedInHold parameter is true
+     *  Get the list of the available holds which have the item node reference if includedInHold parameter is true,
      *   otherwise a list of hold node references will be retrieved which do not include the given node reference.
      *
      * @param user     The username of the user to use.
      * @param password The password of the user.
-     * @param itemNodeRef
-     * @param includedInHold
-     * @param fileOnly
-     * @return return
+     * @param itemNodeRef The item node reference
+     * @param includedInHold True to retrieve the holds which have the item node reference
+     * @param fileOnly True if only files should be return
+     * @return return a list of hold entries
      */
     public List<HoldEntry> getHolds(String user, String password, final String itemNodeRef,
                                     final Boolean includedInHold, final Boolean fileOnly)
@@ -318,6 +332,4 @@ public class HoldsAPI extends BaseAPI
 
         return PojoUtility.jsonToObject(holdEntries, HoldEntry.class);
     }
-
-
 }

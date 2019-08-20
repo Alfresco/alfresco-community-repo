@@ -587,6 +587,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     addFrozenAspect(nodeRef, props);
 
                     // Link the record to the hold
+                    //set in transaction cache in order not to trigger update policy when adding the association
+                    transactionalResourceHelper.getSet("frozen").add(nodeRef);
                     nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
                     // audit item being added to the hold

@@ -245,4 +245,40 @@ public class AddActiveContentToHoldTest extends BaseRMTestCase
             }
         });
     }
+
+    /**
+     * Given active content on hold
+     * When I try to add content to another hold
+     * And I have file permission on the other hold
+     * And I have the appropriate capability to add to hold
+     * Then the active content is contained within both holds
+     * And the active content remains frozen
+     */
+    public void testAddDocumentToAnotherHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef hold;
+            private NodeRef hold2;
+
+            public void given()
+            {
+                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                hold2 = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                holdService.addToHold(hold, dmDocument);
+            }
+
+            public void when()
+            {
+                holdService.addToHold(hold2, dmDocument);
+            }
+
+            public void then()
+            {
+                assertTrue(freezeService.isFrozen(dmDocument));
+                assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
+                assertTrue(holdService.heldBy(dmDocument, true).contains(hold2));
+            }
+        });
+    }
 }

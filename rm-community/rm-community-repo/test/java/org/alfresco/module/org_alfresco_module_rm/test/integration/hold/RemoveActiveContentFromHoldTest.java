@@ -39,7 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
- * Remove Active Content To Hold Integration Tests
+ * Remove active content from hold integration tests
  *
  * @author Ross Gale
  * @since 3.2

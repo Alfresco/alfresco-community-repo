@@ -205,6 +205,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     List<NodeRef> frozenNodes = getHeld(hold);
                     for (NodeRef frozenNode : frozenNodes)
                     {
+                        //set in transaction cache in order not to trigger update policy when removing the child association
+                        transactionalResourceHelper.getSet("frozen").add(frozenNode);
                         removeFreezeAspect(frozenNode, 1);
                     }
 
@@ -231,6 +233,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
             {
                 // remove the freeze aspect from the node
+                //set in transaction cache in order not to trigger update policy when removing the aspect
+                transactionalResourceHelper.getSet("frozen").add(nodeRef);
                 nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
             }
 
@@ -245,6 +249,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         if (recordsOtherHolds.size() == index)
                         {
                             // remove the freeze aspect from the node
+                            //set in transaction cache in order not to trigger update policy when removing the aspect
+                            transactionalResourceHelper.getSet("frozen").add(record);
                             nodeService.removeAspect(record, ASPECT_FROZEN);
                         }
                     }
@@ -646,7 +652,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
         {
             //set in transaction cache in order not to trigger update policy when adding the aspect
-            transactionalResourceHelper.getSet(nodeRef).add("frozen");
+            transactionalResourceHelper.getSet("frozen").add(nodeRef);
             // add freeze aspect
             nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
 
@@ -732,33 +738,26 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 {
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
-                    authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                    {
-                        @Override
-                        public Void doWork()
-                        {
-                            // remove from hold
-                            nodeService.removeChild(hold, nodeRef);
+                    authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                        // remove from hold
+                        //set in transaction cache in order not to trigger update policy when removing the child association
+                        transactionalResourceHelper.getSet("frozen").add(nodeRef);
+                        nodeService.removeChild(hold, nodeRef);
 
-                            // audit that the node has been remove from the hold
-                            // TODO add details of the hold that the node was removed from
-                            recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
+                        // audit that the node has been remove from the hold
+                        // TODO add details of the hold that the node was removed from
+                        recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
 
-                            return null;
-                        }
-                     });
+                        return null;
+
+                    });
                 }
             }
 
             // run as system as we can't be sure if have remove aspect rights on node
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork()
-                {
-                    removeFreezeAspect(nodeRef, 0);
-                    return null;
-                }
+            authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                removeFreezeAspect(nodeRef, 0);
+                return null;
             });
         }
     }

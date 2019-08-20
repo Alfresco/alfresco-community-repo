@@ -43,7 +43,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -91,9 +90,6 @@ public class FrozenAspectUnitTest
     private ChildAssociationRef mockOldRef;
 
     @Mock
-    private ChildAssociationRef mockNewRef;
-
-    @Mock
     private Set mockSet;
 
     @InjectMocks
@@ -116,11 +112,11 @@ public class FrozenAspectUnitTest
         when(mockNodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
         when(mockApplicationContext.getBean("dbNodeService")).thenReturn(mockNodeService);
-        when(mockNodeService.exists(content)).thenReturn(true);
         when(mockFreezeService.isFrozen(content)).thenReturn(false);
         children.add(mockChildRef);
         when(mockNodeService.getChildAssocs(content)).thenReturn(children);
         when(mockChildRef.isPrimary()).thenReturn(true);
+        when(mockNodeService.hasAspect(record, ASPECT_RECORD)).thenReturn(true);
     }
 
     /**
@@ -129,7 +125,6 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForRecords()
     {
-        when(mockNodeService.hasAspect(record, ASPECT_RECORD)).thenReturn(true);
         when(mockNodeService.getPrimaryParent(record)).thenReturn(mockChildAssociationRef);
         when(mockChildAssociationRef.getParentRef()).thenReturn(folder);
         frozenAspect.onRemoveAspect(record, null);
@@ -152,14 +147,14 @@ public class FrozenAspectUnitTest
     }
 
     /**
-     * Test that the remove code is only ran for records or active content
+     * Test that the remove code is only run for records or active content
      */
     @Test
     public void testRemoveAspectForContentDoesntUpdateForOtherTypes()
     {
         when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(mockedNodeTypeUtility.instanceOf(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(false);
         frozenAspect.onRemoveAspect(content, null);
         verify(mockNodeService, times(0)).setProperty(folder, PROP_HELD_CHILDREN_COUNT, 0);
     }
@@ -202,29 +197,28 @@ public class FrozenAspectUnitTest
     @Test
     public void testOnAddAspectForRecord()
     {
-        when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
         when(mockNodeService.getPrimaryParent(record)).thenReturn(mockParentRef);
         when(mockParentRef.getParentRef()).thenReturn(parent);
         when(mockNodeService.hasAspect(parent, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(parent, PROP_HELD_CHILDREN_COUNT)).thenReturn(0);
         frozenAspect.onAddAspect(record,null);
-        verify(mockNodeService, times(1)).setProperty(parent, PROP_HELD_CHILDREN_COUNT,1);
+        verify(mockNodeService, times(1)).setProperty(parent, PROP_HELD_CHILDREN_COUNT, 1);
     }
 
     /**
-     * Test on add for a content node
+     * Test on add aspect for a content node
      */
     @Test
     public void testOnAddAspectForContent()
     {
-        when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(record), ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockNodeService.getPrimaryParent(record)).thenReturn(mockParentRef);
+        when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.getPrimaryParent(content)).thenReturn(mockParentRef);
         when(mockParentRef.getParentRef()).thenReturn(parent);
         when(mockNodeService.hasAspect(parent, ASPECT_HELD_CHILDREN)).thenReturn(false);
         when(mockNodeService.getType(parent)).thenReturn(ContentModel.TYPE_FOLDER);
         when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(parent), ContentModel.TYPE_FOLDER)).thenReturn(true);
-        frozenAspect.onAddAspect(record, null);
+        frozenAspect.onAddAspect(content, null);
         verify(mockNodeService, times(1)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
     }
 

@@ -44,6 +44,7 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -166,7 +167,7 @@ public class FrozenAspectUnitTest
     /**
      * Test before delete throws an error if a node is frozen
      */
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = PermissionDeniedException.class)
     public void testBeforeDeleteNodeThrowsExceptionIfNodeFrozen()
     {
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
@@ -187,7 +188,7 @@ public class FrozenAspectUnitTest
     /**
      * Test before delete throws an error for a node with frozen children
      */
-    @Test (expected = AccessDeniedException.class)
+    @Test (expected = PermissionDeniedException.class)
     public void testBeforeDeleteThrowsExceptionForFrozenChild()
     {
         when(mockChildRef.getChildRef()).thenReturn(child);
@@ -217,56 +218,38 @@ public class FrozenAspectUnitTest
     public void testOnAddAspectForContent()
     {
         when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(record), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.getPrimaryParent(record)).thenReturn(mockParentRef);
         when(mockParentRef.getParentRef()).thenReturn(parent);
         when(mockNodeService.hasAspect(parent, ASPECT_HELD_CHILDREN)).thenReturn(false);
         when(mockNodeService.getType(parent)).thenReturn(ContentModel.TYPE_FOLDER);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(parent), ContentModel.TYPE_FOLDER)).thenReturn(true);
         frozenAspect.onAddAspect(record, null);
         verify(mockNodeService, times(1)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
     }
 
     /**
-     * Test on move throws an error for a frozen node
+     * Test before move throws an error for a frozen node
      */
-    @Test(expected = AccessDeniedException.class)
-    public void testOnMoveThrowsExceptionForFrozenNode()
+    @Test(expected = PermissionDeniedException.class)
+    public void testBeforeMoveThrowsExceptionForFrozenNode()
     {
-        when(mockNewRef.getParentRef()).thenReturn(parent);
-        when(mockNewRef.getChildRef()).thenReturn(child);
-        when(mockNodeService.exists(parent)).thenReturn(true);
+        when(mockOldRef.getParentRef()).thenReturn(parent);
+        when(mockOldRef.getChildRef()).thenReturn(child);
         when(mockNodeService.exists(child)).thenReturn(true);
-        frozenAspect.onMoveNode(mockOldRef, mockNewRef);
+        when(mockFreezeService.isFrozen(child)).thenReturn(true);
+        frozenAspect.beforeMoveNode(mockOldRef, null);
     }
 
     /**
      * Test update properties throws an error for frozen nodes
      */
-    @Test(expected = AccessDeniedException.class)
+    @Test(expected = PermissionDeniedException.class)
     public void testUpdatePropertiesThrowsExceptionForFrozenNode()
     {
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
         when(mockResourceHelper.getSet(content)).thenReturn(mockSet);
         when(mockSet.contains("frozen")).thenReturn(false);
         frozenAspect.onUpdateProperties(content, null, null);
-    }
-
-    /**
-     * Test on content update throws an error for frozen nodes
-     */
-    @Test(expected = AccessDeniedException.class)
-    public void testOnContentUpdateThrowsExceptionForFrozenNode()
-    {
-        when(mockFreezeService.isFrozen(content)).thenReturn(true);
-        frozenAspect.onContentUpdate(content, false);
-    }
-
-    /**
-     * Test before copy throws an error for frozen node
-     */
-    @Test(expected = AccessDeniedException.class)
-    public void testBeforeCopyThrowsExceptionForFrozenNode()
-    {
-        when(mockFreezeService.isFrozen(content)).thenReturn(true);
-        frozenAspect.beforeCopy(null, content, null);
     }
 }

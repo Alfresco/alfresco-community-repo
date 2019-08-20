@@ -148,11 +148,11 @@ public class RoleService
     public UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
                                                                   UserPermissions userPermission)
     {
-        return createUserWithRMRoleAndRMNodePermission(userRole, recordCategory.getId(),userPermission);
+        return createUserWithRMRoleAndRMNodePermission(userRole, recordCategory.getId(), userPermission);
     }
 
     /**
-     * Helper method to create a test user with rm role and permissions on the node ref
+     * Helper method to create a user with rm role and permissions on the node ref
      *
      * @param userRole       the rm role
      * @param userPermission the permissions over the record category
@@ -168,7 +168,7 @@ public class RoleService
         return rmUser;
     }
     /**
-     * Helper method to create a test user with rm role and permissions over the recordCategory and collaborator role
+     * Helper method to create a  user with rm role and permissions over the recordCategory and collaborator role
      * in collaboration site
      *
      * @param siteModel collaboration site
@@ -180,8 +180,8 @@ public class RoleService
     public UserModel createCollaboratorWithRMRoleAndPermission(SiteModel siteModel, RecordCategory recordCategory,
                                                                 UserRoles userRole, UserPermissions userPermission)
     {
-        return createUserWithSiteRoleRMRoleAndPermission(siteModel, UserRole.SiteCollaborator, recordCategory.getId(), userRole,
-                userPermission);
+        return createUserWithSiteRoleRMRoleAndPermission(siteModel, UserRole.SiteCollaborator, recordCategory.getId(),
+                                                        userRole, userPermission);
     }
 
 
@@ -190,9 +190,10 @@ public class RoleService
      * in collaboration site
      *
      * @param siteModel      collaboration site
-     * @param recordCategory the category  on which permission should be given
+     * @param userSiteRoles  user role in the collaboration site
+     * @param rmNodeId       rm node id to grant rm permission
      * @param userRole       the rm role
-     * @param userPermission the permissions over the recordCategory
+     * @param userPermission the permissions over the rmNodeId
      * @return the created user model
      */
     public UserModel createUserWithSiteRoleRMRoleAndPermission(SiteModel siteModel, UserRole userSiteRoles,

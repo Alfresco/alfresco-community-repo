@@ -60,6 +60,8 @@ import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
 import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.v0.HoldsAPI;
@@ -92,15 +94,15 @@ public class AddContentToHoldsTests extends BaseRMRestTest
 
     private SiteModel testSite;
     private String holdNodeRef;
-    private FileModel document, contentToAddToHold, contentAddToHoldNoPermission;
+    private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
     private UserModel userAddHoldPermission;
     private List<UserModel> users = new ArrayList<>();
+    private List<String> nodesToBeClean = new ArrayList<>();
 
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
-
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAddContentToHold() throws Exception
@@ -111,15 +113,15 @@ public class AddContentToHoldsTests extends BaseRMRestTest
 
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        document = dataContent.usingSite(testSite)
-                              .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        documentHeld = dataContent.usingSite(testSite)
+                                  .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentToAddToHold = dataContent.usingSite(testSite)
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentAddToHoldNoPermission = dataContent.usingSite(testSite)
                                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the content to the hold.");
-        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), document
+        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), documentHeld
                 .getNodeRefWithoutVersion(), HOLD);
 
         STEP("Create users");
@@ -142,13 +144,13 @@ public class AddContentToHoldsTests extends BaseRMRestTest
         List<RestNodeModel> documentsHeld = restClient.authenticateUser(getAdminUser()).withCoreAPI()
                                                       .usingNode(toContentModel(holdNodeRef))
                                                       .listChildren().getEntries().stream()
-                                                      .filter(child -> child.onModel().getName().contains(document
+                                                      .filter(child -> child.onModel().getName().contains(documentHeld
                                                               .getName()))
                                                       .collect(Collectors.toList());
         STEP("Check the list of active content");
         assertEquals(documentsHeld.size(), 1, "The active content is not retrive when getting the children from the " +
                 "hold folder");
-        assertEquals(documentsHeld.get(0).onModel().getName(), document.getName());
+        assertEquals(documentsHeld.get(0).onModel().getName(), documentHeld.getName());
     }
 
     /**
@@ -160,7 +162,7 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     public void retrieveTheHoldWhereTheContentIsAdded()
     {
         List<HoldEntry> holdEntries = holdsAPI.getHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
-                document.getNodeRefWithoutVersion(), true, null);
+                documentHeld.getNodeRefWithoutVersion(), true, null);
         assertTrue(holdEntries.stream().anyMatch(holdEntry -> holdEntry.getName().contains(HOLD)), "Could not find " +
                 "hold with name " + HOLD);
     }
@@ -172,24 +174,26 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     public Object[][] getValidNodesForAddToHold() throws Exception
     {
         //create electronic and nonElectronic record in record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId, getFile
+        nodesToBeClean.add(recordFolder.getParentId());
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile
                 (IMAGE_FILE));
         assertStatusCode(CREATED);
 
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
+        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
-        getRestAPIFactory().getRMUserAPI().addUserPermission(recordFolderId, userAddHoldPermission, PERMISSION_FILING);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordFolder.getId(), userAddHoldPermission,
+                PERMISSION_FILING);
 
-        String folderToHold = createCategoryFolderInFilePlan().getId();
-        getRestAPIFactory().getRMUserAPI().addUserPermission(folderToHold, userAddHoldPermission, PERMISSION_FILING);
-
+        RecordCategoryChild folderToHold = createCategoryFolderInFilePlan();
+        getRestAPIFactory().getRMUserAPI().addUserPermission(folderToHold.getId(), userAddHoldPermission,
+                PERMISSION_FILING);
+        nodesToBeClean.add(folderToHold.getParentId());
 
         return new String[][]
                 {       // record folder
-                        { folderToHold },
+                        { folderToHold.getId() },
                         //electronic record
                         { electronicRecord.getId() },
                         // non electronic record
@@ -231,12 +235,13 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     @DataProvider (name = "userWithoutPermissionForAddToHold")
     public Object[][] getUserWithoutPermissionForAddToHold() throws Exception
     {
-        //create electronic and nonElectronic record in record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-        UserModel user = roleService.createUserWithRMRoleAndRMNodePermission(ROLE_RM_MANAGER.roleId, recordFolderId,
+        //create record folder
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
+        //create a rm manager and grant read permission over the record folder created
+        UserModel user = roleService.createUserWithRMRoleAndRMNodePermission(ROLE_RM_MANAGER.roleId, recordFolder.getId(),
                 PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRef, user, PERMISSION_FILING);
-
+        nodesToBeClean.add(recordFolder.getParentId());
         return new Object[][]
                 {       // user without write permission on the content
                         {
@@ -261,7 +266,7 @@ public class AddContentToHoldsTests extends BaseRMRestTest
                         },
                         //user without write permission on RM  record folder
                         {
-                                user, recordFolderId
+                                user, recordFolder.getId()
                         },
 
                 };
@@ -298,19 +303,20 @@ public class AddContentToHoldsTests extends BaseRMRestTest
 
 
     /**
-     * Data provider withh invalid item types that can be added to a hold
+     * Data provider with invalid item types that can be added to a hold
      */
     @DataProvider (name = "invalidNodesForAddToHold")
     public Object[][] getInvalidNodesForAddToHold() throws Exception
     {
-
+        RecordCategory category = createRootCategory(getRandomAlphanumeric());
+        nodesToBeClean.add(category.getId());
         return new Object[][]
                 {       // file plan node id
                         { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE  },
                         //transfer container
                         { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
-                        // an arbitrary record category
-                        { createRootCategory(getRandomAlphanumeric()).getId(), SC_INTERNAL_SERVER_ERROR, ACCESS_DENIED_ERROR_MESSAGE },
+                        // a record category
+                        { category.getId(), SC_INTERNAL_SERVER_ERROR, ACCESS_DENIED_ERROR_MESSAGE },
                         // unfiled records root
                         { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
                         // an arbitrary unfiled records folder
@@ -337,7 +343,7 @@ public class AddContentToHoldsTests extends BaseRMRestTest
         String responseErrorMessage = holdsAPI.addToHoldAndGetMessage(userAddHoldPermission.getUsername(),
                 userAddHoldPermission.getPassword(), responseCode, itemNodeRef, HOLD);
         assertTrue(responseErrorMessage.contains(errorMessage),
-                "Actual message " + responseErrorMessage);
+                "Actual error message " + responseErrorMessage + " expected " + responseErrorMessage);
 
         STEP("Check active content is not frozen.");
         RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
@@ -351,5 +357,6 @@ public class AddContentToHoldsTests extends BaseRMRestTest
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD);
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+        nodesToBeClean.forEach( category -> getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(category));
     }
 }

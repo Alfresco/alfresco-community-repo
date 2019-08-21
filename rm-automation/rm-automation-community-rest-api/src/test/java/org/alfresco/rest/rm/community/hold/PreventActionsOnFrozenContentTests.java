@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -40,11 +41,11 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.HoldsAPI;
+import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -55,6 +56,7 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 3.2
  */
+@AlfrescoTest (jira = "RM-6903")
 public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 {
     private static final String HOLD_ONE = "HOLD" + generateTestPrefix(PreventActionsOnFrozenContentTests.class);
@@ -73,7 +75,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
                 HOLD_ONE, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Create a test file and add to hold");
+        STEP("Create a test file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         contentHeld = dataContent.usingAdmin().usingSite(testSite)
                                  .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -100,11 +102,11 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     public void editPropertiesForContentHeld() throws Exception
     {
         STEP("Update name property of the held content");
-        JsonObject nameUpdated = Json.createObjectBuilder().add("name","HeldNameUpdated").build();
+        JsonObject nameUpdated = Json.createObjectBuilder().add("name", "HeldNameUpdated").build();
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingNode(contentHeld).updateNode(nameUpdated.toString());
 
         STEP("Check the request failed.");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
 
     }
@@ -115,13 +117,14 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      * Then I am not successful
      */
     @Test
+    @AlfrescoTest (jira = "RM-6925")
     public void updateContentForFrozenFile() throws Exception
     {
         STEP("Update content of the held file");
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingNode(contentHeld).updateNodeContent(updatedFile);
 
         STEP("Check the request failed.");
-        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
+        restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
 
     }
@@ -137,7 +140,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingNode(contentHeld).deleteNode(contentHeld.getNodeRefWithoutVersion());
 
         STEP("Check the request failed.");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be deleted.");
 
     }
@@ -148,6 +151,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      * Then I am not successful
      */
     @Test
+    @AlfrescoTest(jira = "RM-6924")
     public void copyFrozenFile() throws Exception
     {
         STEP("Copy frozen file");
@@ -155,8 +159,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         getRestAPIFactory().getNodeAPI(contentHeld).copyNode(postBody);
 
         STEP("Check the request failed.");
-        assertStatusCode(HttpStatus.FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be copied.");
+        assertStatusCode(FORBIDDEN);
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen nodes can not be copied.");
     }
 
     /**
@@ -172,8 +176,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         getRestAPIFactory().getNodeAPI(contentHeld).move(createBodyForMoveCopy(folderModel.getNodeRef()));
 
         STEP("Check the request failed.");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
+        assertStatusCode(FORBIDDEN);
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen nodes can not be moved.");
     }
 
 

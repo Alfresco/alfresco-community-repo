@@ -26,8 +26,12 @@
  */
 package org.alfresco.rest.rm.community.utils;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.RepoTestModel;
 
 /**
  * Utility class for core components models
@@ -63,8 +67,43 @@ public class CoreUtil
      */
     public static ContentModel toContentModel(String nodeId)
     {
-        ContentModel node = new ContentModel();
-        node.setNodeRef(nodeId);
-        return node;
+        return toModel(nodeId, ContentModel.class);
     }
+
+    /**
+     * Helper method to create a File Model
+     *
+     * @return ContentModel
+     * @throws Exception
+     */
+    public  static FileModel toFileModel(String nodeId)
+    {
+        return toModel(nodeId,FileModel.class);
+    }
+
+    /**
+     * Helper method to create a RepoTestModel using the node id
+     *
+     * @param nodeId  node ref of the test model
+     * @param classOf repo test model class
+     * @return
+     */
+    private static <T extends RepoTestModel> T toModel(String nodeId, Class classOf)
+    {
+        T target = null;
+        try
+        {
+            target = (T) classOf.getDeclaredConstructor().newInstance();
+        }
+        catch (InvocationTargetException| NoSuchMethodException| IllegalAccessException | InstantiationException e)
+        {
+            e.printStackTrace();
+        }
+
+        target.setNodeRef(nodeId);
+        return target;
+
+    }
+
+
 }

@@ -26,12 +26,18 @@
  */
 package org.alfresco.rest.core.v0;
 
+import javax.json.Json;
+import javax.json.JsonReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.ParseException;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,5 +81,41 @@ public class APIUtils
         }
         LOGGER.info("Response body:\n{}", source);
         return new JSONObject(source);
+    }
+
+    /**
+     * Util method to extract the message string from the HTTP response
+     *
+     * @param httpResponse http response
+     * @return error message from the http response
+     */
+    public static String extractErrorMessageFromHttpResponse(HttpResponse httpResponse)
+    {
+        final HttpEntity entity = httpResponse.getEntity();
+        JsonReader reader = null;
+        try
+        {
+            final InputStream responseStream = entity.getContent();
+            reader = Json.createReader(responseStream);
+            return reader.readObject().getString("message");
+        }
+        catch (JSONException error)
+        {
+
+            LOGGER.error("Converting message body to JSON failed. Body: {}", httpResponse, error);
+        }
+        catch (ParseException | IOException error)
+        {
+
+            LOGGER.error("Parsing message body failed.", error);
+        }
+        finally
+        {
+            if (reader != null)
+            {
+                reader.close();
+            }
+        }
+        return null;
     }
 }

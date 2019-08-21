@@ -30,21 +30,17 @@ import static org.alfresco.rest.core.v0.APIUtils.convertHTTPResponseToJSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertNotNull;
 
-import javax.json.Json;
-import javax.json.JsonReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.alfresco.rest.core.v0.APIUtils;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
 import org.alfresco.utility.Utility;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.json.JSONArray;
@@ -67,7 +63,9 @@ public class HoldsAPI extends BaseAPI
      */
     private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
 
-    /** The URI to add items to hold.*/
+    /**
+     * The URI to add items to hold or to remove items from hold
+     */
     private static final String RM_HOLDS_API = "{0}rma/holds";
     /**
      * The URI to  get holds.
@@ -77,7 +75,7 @@ public class HoldsAPI extends BaseAPI
     /**
      * Util method to create a hold
      *
-     * @param user        the user creating the category
+     * @param user        the user creating the hold
      * @param password    the user's password
      * @param holdName    the hold name
      * @param reason      hold reason
@@ -111,13 +109,13 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     *  Create a hold and get the node ref of the hold from the response body
+     * Create a hold and get the node ref of the hold from the response body
      *
-     * @param user
-     * @param password
-     * @param holdName
-     * @param reason
-     * @param description
+     * @param user        the user creating the hold
+     * @param password    the user's password
+     * @param holdName    the hold name to be created
+     * @param reason      reason of the hold to be created
+     * @param description hold description
      * @return node ref of the hold created
      */
 
@@ -159,7 +157,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Adds item (active content /record/ record folder) to the hold
+     * Adds item (content /record/ record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -173,7 +171,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Adds item (record/ record folder) to the hold
+     * Adds item (content /record/ record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -184,12 +182,12 @@ public class HoldsAPI extends BaseAPI
     public HttpResponse addItemToHold(String user, String password, int expectedStatus, String itemNodeRef,
                                       String holdName)
     {
-        final JSONObject requestParams = addToHoldJsonObject(user, password, itemNodeRef, holdName);
+        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(user, password, itemNodeRef, holdName);
         return doPostJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
     }
 
     /**
-     * Util method to add item (active content /record/ record folder) to the hold and get the error message
+     * Util method to add item ( content /record/ record folder) to the hold and get the error message
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -201,18 +199,18 @@ public class HoldsAPI extends BaseAPI
             holdName)
     {
         final HttpResponse httpResponse = addItemToHold(user, password, expectedStatus, itemNodeRef, holdName);
-        return extractErrorMessageFromHttpResponse(httpResponse);
+        return APIUtils.extractErrorMessageFromHttpResponse(httpResponse);
     }
 
     /**
-     * Util method to create the request body for adding an item to hold
-     * @param user
-     * @param password
-     * @param itemNodeRef
-     * @param holdName
+     * Util method to create the request body used adding an item to hold or to remove items from hold
+     * @param user user to create the request body for add/remove an item to/from hold
+     * @param password  the user's password
+     * @param itemNodeRef node ref to be added to hold
+     * @param holdName hold names for add/remove item
      * @return JSONObject fo
      */
-    private JSONObject addToHoldJsonObject(String user, String password, String itemNodeRef, String holdName)
+    private JSONObject addOrRemoveToFromHoldJsonObject(String user, String password, String itemNodeRef, String holdName)
     {
 
         final JSONArray nodeRefs = new JSONArray().put(getNodeRefSpacesStore() + itemNodeRef);
@@ -230,9 +228,9 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Remove item (active content /record/ record folder) from the hold
+     * Remove item ( content /record/ record folder) from the hold
      *
-     * @param user        the user who adds the item to the hold
+     * @param user        the user who removes the item from the hold
      * @param password    the user's password
      * @param itemNodeRef the nodeRef of the item to be added to hold
      * @param holdName    the hold name
@@ -244,7 +242,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Remove item (record/ record folder) to the hold
+     * Remove item (content/ record/ record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -256,14 +254,14 @@ public class HoldsAPI extends BaseAPI
     public HttpResponse removeItemFromHold(String user, String password, int expectedStatus, String itemNodeRef, String
             holdName)
     {
-        final JSONObject requestParams = addToHoldJsonObject(user, password, itemNodeRef, holdName);
+        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(user, password, itemNodeRef, holdName);
         return doPutJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
     }
 
     /**
-     * Util method to remove item (active content /record/ record folder) from hold and get the error message
+     * Util method to remove item (content /record/ record folder) from hold and get the error message
      *
-     * @param user        the user who adds the item to the hold
+     * @param user        the user who removes the item from hold
      * @param password    the user's password
      * @param itemNodeRef the nodeRef of the item to be added to hold
      * @param holdName    the hold name
@@ -273,40 +271,7 @@ public class HoldsAPI extends BaseAPI
             holdName)
     {
         final HttpResponse httpResponse = removeItemFromHold(user, password, expectedStatus, itemNodeRef, holdName);
-        return extractErrorMessageFromHttpResponse(httpResponse);
-    }
-
-    /**
-     * Util method to extract the message string from the HTTP response
-     * @param httpResponse
-     * @return
-     */
-    private String extractErrorMessageFromHttpResponse(HttpResponse httpResponse)
-    {
-        final HttpEntity entity = httpResponse.getEntity();
-        JsonReader reader = null;
-        try
-        {
-            final InputStream responseStream = entity.getContent();
-            reader = Json.createReader(responseStream);
-            return reader.readObject().getString("message");
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Converting message body to JSON failed. Body: {}", httpResponse, error);
-        }
-        catch (ParseException | IOException error)
-        {
-            LOGGER.error("Parsing message body failed.", error);
-        }
-        finally
-        {
-            if (reader != null)
-            {
-                reader.close();
-            }
-        }
-        return null;
+        return APIUtils.extractErrorMessageFromHttpResponse(httpResponse);
     }
 
     /**

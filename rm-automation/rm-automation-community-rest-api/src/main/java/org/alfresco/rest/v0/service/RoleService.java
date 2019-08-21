@@ -155,8 +155,8 @@ public class RoleService
      * Helper method to create a user with rm role and permissions on the node ref
      *
      * @param userRole       the rm role
-     * @param userPermission the permissions over the record category
-     * @param componentId the component id to grant rm permission
+     * @param userPermission the permissions over the rm node
+     * @param componentId the node id to grant rm permission
      * @return the created user model
      */
     public UserModel createUserWithRMRoleAndRMNodePermission(String userRole, String componentId,
@@ -167,6 +167,7 @@ public class RoleService
         getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(OK);
         return rmUser;
     }
+
     /**
      * Helper method to create a  user with rm role and permissions over the recordCategory and collaborator role
      * in collaboration site
@@ -184,25 +185,24 @@ public class RoleService
                                                         userRole, userPermission);
     }
 
-
     /**
      * Helper method to create a test user with a rm role and permissions over a rm component and a role
      * in collaboration site
      *
      * @param siteModel      collaboration site
-     * @param userSiteRoles  user role in the collaboration site
+     * @param userSiteRole   user role in the collaboration site
      * @param rmNodeId       rm node id to grant rm permission
      * @param userRole       the rm role
      * @param userPermission the permissions over the rmNodeId
      * @return the created user model
      */
-    public UserModel createUserWithSiteRoleRMRoleAndPermission(SiteModel siteModel, UserRole userSiteRoles,
+    public UserModel createUserWithSiteRoleRMRoleAndPermission(SiteModel siteModel, UserRole userSiteRole,
                                                                String rmNodeId, UserRoles userRole,
                                                                UserPermissions userPermission)
     {
         final UserModel rmUser = createUserWithRMRoleAndRMNodePermission(userRole.roleId, rmNodeId,
                 userPermission);
-        getDataUser().addUserToSite(rmUser, siteModel, userSiteRoles);
+        getDataUser().addUserToSite(rmUser, siteModel, userSiteRole);
         return rmUser;
     }
 }

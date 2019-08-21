@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.dataprep.ContentActions;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
@@ -78,20 +79,20 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * API tests for adding content to holds
+ * API tests for adding content/record folder/records to holds
  *
  * @author Rodica Sutu
  * @since 3.2
  */
 @AlfrescoTest (jira = "RM-6874")
-public class AddContentToHoldsTests extends BaseRMRestTest
+public class AddToHoldsTests extends BaseRMRestTest
 {
-    private static final String HOLD = "HOLD" + generateTestPrefix(AddContentToHoldsTests.class);
+    private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsTests.class);
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
             "permissions to perform this operation.";
     private static final String INVALID_TYPE_ERROR_MESSAGE = "Items added to a hold must be either a record, a " +
             "record folder or active content.";
-
+    private static final String LOCKED_FILE_ERROR_MESSAGE = "Locked nodes can't be added to hold";
     private SiteModel testSite;
     private String holdNodeRef;
     private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
@@ -103,6 +104,8 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private ContentActions contentActions;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAddContentToHold() throws Exception
@@ -148,7 +151,7 @@ public class AddContentToHoldsTests extends BaseRMRestTest
                                                               .getName()))
                                                       .collect(Collectors.toList());
         STEP("Check the list of active content");
-        assertEquals(documentsHeld.size(), 1, "The active content is not retrive when getting the children from the " +
+        assertEquals(documentsHeld.size(), 1, "The active content is not retrieve when getting the children from the " +
                 "hold folder");
         assertEquals(documentsHeld.get(0).onModel().getName(), documentHeld.getName());
     }
@@ -204,27 +207,25 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content not on hold
+     * Given record folder/record/document not on hold
      * And a hold
      * And file permission on the hold
      * And the appropriate capability to add to hold
-     * When I use the existing REST API to add the active content to the hold
-     * Then the active content is added to the hold
-     * And the active content is frozen
+     * When I use the existing REST API to add the node to the hold
+     * Then the record folder/record/document is added to the hold
+     * And the item is frozen
      *
      * @throws Exception
      */
     @Test (dataProvider = "validNodesForAddToHold")
     public void addValidNodesToHoldWithAllowedUser(String nodeId) throws Exception
     {
-        STEP("Add the content to the hold with user with permission.");
+        STEP("Add node to hold with user with permission.");
         holdsAPI.addItemToHold(userAddHoldPermission.getUsername(), userAddHoldPermission.getPassword(),
                 nodeId, HOLD);
 
-        STEP("Check active content is frozen.");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(userAddHoldPermission)
-                                                    .withCoreAPI().usingNode(toContentModel(nodeId)).getNode();
-        assertTrue(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+        STEP("Check the node is frozen.");
+        assertTrue(hasAspect(nodeId, FROZEN_ASPECT));
 
     }
 
@@ -273,12 +274,12 @@ public class AddContentToHoldsTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content not on hold
+     * Given a node not on hold
      * And a hold
      * And user without right permission to add to hold
-     * When I use the existing REST API to add the active content to the hold
-     * Then the active content is not added to the hold
-     * And the active content is frozen
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
      *
      * @throws Exception
      */
@@ -287,68 +288,74 @@ public class AddContentToHoldsTests extends BaseRMRestTest
                                                                                                                Exception
     {
         users.add(userModel);
-        STEP("Add the content to the hold with user with permission.");
-        String response = holdsAPI.addToHoldAndGetMessage(userModel.getUsername(),
-                userModel.getPassword(), SC_INTERNAL_SERVER_ERROR, nodeToBeAddedToHold, HOLD);
+        STEP("Add the node to the hold with user without permission.");
+        String response = holdsAPI.addToHoldAndGetMessage(userModel.getUsername(), userModel.getPassword(),
+                SC_INTERNAL_SERVER_ERROR, nodeToBeAddedToHold, HOLD);
         assertTrue(response.contains(ACCESS_DENIED_ERROR_MESSAGE));
 
-        STEP("Check active content is not frozen.");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
-                                                    .withCoreAPI().usingNode(toContentModel(nodeToBeAddedToHold))
-                                                    .getNode();
-        assertFalse(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+        STEP("Check the node is not frozen.");
+        assertFalse(hasAspect(nodeToBeAddedToHold,FROZEN_ASPECT));
 
     }
 
 
-
     /**
-     * Data provider with invalid item types that can be added to a hold
+     * Data provider with invalid node types that can be added to a hold
      */
     @DataProvider (name = "invalidNodesForAddToHold")
     public Object[][] getInvalidNodesForAddToHold() throws Exception
     {
+        //create locked file
+        FileModel contentLocked = dataContent.usingAdmin().usingSite(testSite)
+                                            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        contentActions.checkOut(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                testSite.getId(), contentLocked.getName());
         RecordCategory category = createRootCategory(getRandomAlphanumeric());
         nodesToBeClean.add(category.getId());
         return new Object[][]
                 {       // file plan node id
-                        { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE  },
+                        { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
                         //transfer container
                         { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
                         // a record category
                         { category.getId(), SC_INTERNAL_SERVER_ERROR, ACCESS_DENIED_ERROR_MESSAGE },
                         // unfiled records root
-                        { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                        { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
                         // an arbitrary unfiled records folder
                         { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " +
-                                getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                                getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
                         //folder,
-                        { dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE }
+                        { dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_BAD_REQUEST,
+                                INVALID_TYPE_ERROR_MESSAGE },
+                        //document locked
+                        { contentLocked.getNodeRefWithoutVersion(), SC_INTERNAL_SERVER_ERROR, LOCKED_FILE_ERROR_MESSAGE }
                 };
     }
 
     /**
-     * unfiled container
-     * unfiled folder
-     * folder
-     * category
-     * fileplan
+     * Given a node that is not a document/record/ record folder ( a valid node type to be added to hold)
+     * And a hold
+     * And user without right permission to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
      *
      * @throws Exception
      */
     @Test (dataProvider = "invalidNodesForAddToHold")
     public void addInvalidNodesToHold(String itemNodeRef, int responseCode, String errorMessage) throws Exception
     {
-        STEP("Add the item to the hold ");
-        String responseErrorMessage = holdsAPI.addToHoldAndGetMessage(userAddHoldPermission.getUsername(),
-                userAddHoldPermission.getPassword(), responseCode, itemNodeRef, HOLD);
+        STEP("Add the node to the hold ");
+        String responseErrorMessage = holdsAPI.addToHoldAndGetMessage(getAdminUser().getUsername(),
+                getAdminUser().getPassword(), responseCode, itemNodeRef, HOLD);
         assertTrue(responseErrorMessage.contains(errorMessage),
-                "Actual error message " + responseErrorMessage + " expected " + responseErrorMessage);
+                "Actual error message " + responseErrorMessage + " expected " + errorMessage);
 
-        STEP("Check active content is not frozen.");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
-                                                    .withCoreAPI().usingNode(toContentModel(itemNodeRef)).getNode();
-        assertFalse(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+        STEP("Check node is not frozen.");
+        assertFalse(hasAspect(itemNodeRef, FROZEN_ASPECT));
     }
 
     @AfterClass (alwaysRun = true)

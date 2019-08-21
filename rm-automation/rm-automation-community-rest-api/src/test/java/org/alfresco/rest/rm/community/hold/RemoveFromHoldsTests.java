@@ -33,7 +33,6 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
@@ -48,7 +47,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -68,16 +66,16 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * API tests for removing content from holds
+ * API tests for removing content/record folder/record from holds
  *
  * @author Rodica Sutu
  * @since 3.2
  */
 @AlfrescoTest (jira = "RM-6874, RM-6873")
-public class RemoveContentFromHoldsTests extends BaseRMRestTest
+public class RemoveFromHoldsTests extends BaseRMRestTest
 {
-    private static final String HOLD_ONE = "HOLD_ONE" + generateTestPrefix(RemoveContentFromHoldsTests.class);
-    private static final String HOLD_TWO = "HOLD_TWO" + generateTestPrefix(RemoveContentFromHoldsTests.class);
+    private static final String HOLD_ONE = "HOLD_ONE" + generateTestPrefix(RemoveFromHoldsTests.class);
+    private static final String HOLD_TWO = "HOLD_TWO" + generateTestPrefix(RemoveFromHoldsTests.class);
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
             "permissions to perform this operation.";
 
@@ -99,14 +97,14 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
         String holdNodeRefTwo = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser()
                         .getUsername(), HOLD_TWO, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Create test files and add them to hold");
+        STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         contentHeld = dataContent.usingSite(testSite)
                               .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentAddToManyHolds = dataContent.usingSite(testSite)
                                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        STEP("Add the content to the hold.");
+        STEP("Add the content to the holds.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentHeld
                 .getNodeRefWithoutVersion(), HOLD_ONE);
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentAddToManyHolds
@@ -148,21 +146,20 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
     }
 
     /**
-     * Given active content that is held
+     * Given content/record folder/record that is held
      * And the corresponding hold
-     * When I use the existing REST API to remove the active content from the hold
-     * Then the active content is removed from the hold
+     * When I use the existing REST API to remove the node from the hold
+     * Then the node is removed from the hold
      * And is no longer frozen
      */
     @Test(dataProvider = "validNodesToRemoveFromHold")
     public void removeContentFromHold(String nodeId) throws Exception
     {
-        STEP("Remove content from hold");
+        STEP("Remove node from hold");
         holdsAPI.removeItemFromHold(getAdminUser().getUsername(), getAdminUser().getPassword(), nodeId, HOLD_ONE);
-        STEP("Check the content is not held");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
-                                                    .withCoreAPI().usingNode(toContentModel(nodeId)).getNode();
-        assertFalse(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+
+        STEP("Check the node is not held");
+        assertFalse(hasAspect(nodeId, FROZEN_ASPECT));
 
         STEP("Check node is not in any hold");
         List<HoldEntry> holdEntries = holdsAPI.getHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
@@ -180,16 +177,14 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
     @Test
     public void removeContentAddedToManyHolds() throws Exception
     {
-        STEP("Remove content from hold");
+        STEP("Remove content from hold. ");
         holdsAPI.removeItemFromHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentAddToManyHolds
                 .getNodeRefWithoutVersion(), HOLD_ONE);
 
-        STEP("Check the content is held");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
-                                                    .withCoreAPI().usingNode(contentAddToManyHolds).getNode();
-        assertTrue(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+        STEP("Check the content is held. ");
+        assertTrue(hasAspect(contentAddToManyHolds.getNodeRefWithoutVersion(), FROZEN_ASPECT));
 
-        STEP("Check node is not in any hold");
+        STEP("Check node is in hold HOLD_TWO. ");
         List<HoldEntry> holdEntries = holdsAPI.getHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
                 contentAddToManyHolds.getNodeRefWithoutVersion(), true, null);
         assertFalse(holdEntries.isEmpty(), "Content held is not held after removing from one hold.");
@@ -198,7 +193,7 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
     }
 
     /**
-     *
+     * Data provider with user without right permission or capability to remove from hold a specific node
      * @return
      * @throws Exception
      */
@@ -241,7 +236,7 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
                         {
                                 roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole
                                                 .SiteCollaborator,
-                                        holdNodeRefOne, UserRoles.ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS),
+                                        holdNodeRefOne, UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING),
                                 contentNoHoldCap.getNodeRefWithoutVersion()
                         },
                         //user without write permission on RM  record folder
@@ -252,25 +247,22 @@ public class RemoveContentFromHoldsTests extends BaseRMRestTest
                 };
     }
     /**
-     * Given active content on hold in a single hold location
-     * And the user does not have sufficient permissions or capabilities to remove the active content from the hold
-     * When the user tries to remove the active content from the hold
-     * Then they are unsuccessful
+     * Given node on hold in a single hold location
+     * And the user does not have sufficient permissions or capabilities to remove the node from the hold
+     * When the user tries to remove the node from the hold
+     * Then it's unsuccessful
      * @throws Exception
      */
     @Test (dataProvider = "userWithoutPermissionForRemoveFromHold")
     public void removeFromHoldWithUserWithoutPermission(UserModel userModel, String nodeIdToBeRemoved) throws Exception
     {
-        STEP("Remove content from hold with user without right permission or capability");
+        STEP("Remove node from hold with user without right permission or capability");
         String responseNoHoldPermission = holdsAPI.removeFromHoldAndGetMessage(userModel.getUsername(),
                 userModel.getPassword(), SC_INTERNAL_SERVER_ERROR, nodeIdToBeRemoved, HOLD_ONE);
         assertTrue(responseNoHoldPermission.contains(ACCESS_DENIED_ERROR_MESSAGE));
 
-        STEP("Check active content is frozen.");
-        RestNodeModel heldActiveContent = restClient.authenticateUser(getAdminUser())
-                                                    .withCoreAPI().usingNode(toContentModel(nodeIdToBeRemoved))
-                                                    .getNode();
-        assertTrue(heldActiveContent.getAspectNames().contains(FROZEN_ASPECT));
+        STEP("Check node is frozen.");
+        assertTrue(hasAspect(nodeIdToBeRemoved, FROZEN_ASPECT));
 
     }
 

@@ -26,6 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,7 +71,7 @@ public class NodeTypeUtilityUnitTest
     public void testNotInstanceOf()
     {
         when(mockedDictionaryService.isSubClass(type, ofType)).thenReturn(false);
-        when(nodeTypeUtility.instanceOf(type, ofType)).thenReturn(false);
+        assertFalse(nodeTypeUtility.instanceOf(type, ofType));
     }
 
     /** test that instanceOf returns true if verified type is subtype of the other */
@@ -77,7 +79,7 @@ public class NodeTypeUtilityUnitTest
     public void testIsInstanceOf()
     {
         when(mockedDictionaryService.isSubClass(type, ofType)).thenReturn(true);
-        when(nodeTypeUtility.instanceOf(type, ofType)).thenReturn(true);
+        assertTrue(nodeTypeUtility.instanceOf(type, ofType));
     }
 
     /** test that instanceOf checks the cache when verifying the same type twice */
@@ -85,7 +87,19 @@ public class NodeTypeUtilityUnitTest
     public void testInstanceOfCacheSameTypes()
     {
         nodeTypeUtility.instanceOf(type, ofType);
+        verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
         nodeTypeUtility.instanceOf(type, ofType);
         verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
+    }
+
+    /** test the invocations when verifying different types */
+    @Test
+    public void testInstanceOfDifferentTypes()
+    {
+        QName anotherType = AlfMock.generateQName();
+        nodeTypeUtility.instanceOf(type, ofType);
+        verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
+        nodeTypeUtility.instanceOf(anotherType, ofType);
+        verify(mockedDictionaryService, times(2)).isSubClass(any(), any());
     }
 }

@@ -108,6 +108,8 @@ public class FrozenAspectUnitTest
     {
         MockitoAnnotations.initMocks(this);
         when(mockNodeService.exists(record)).thenReturn(true);
+        when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(record), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.exists(content)).thenReturn(true);
         when(mockNodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
@@ -116,7 +118,6 @@ public class FrozenAspectUnitTest
         children.add(mockChildRef);
         when(mockNodeService.getChildAssocs(content)).thenReturn(children);
         when(mockChildRef.isPrimary()).thenReturn(true);
-        when(mockNodeService.hasAspect(record, ASPECT_RECORD)).thenReturn(true);
     }
 
     /**

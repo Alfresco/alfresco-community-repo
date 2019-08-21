@@ -616,7 +616,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
     {
-        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+        if (!isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
             final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);

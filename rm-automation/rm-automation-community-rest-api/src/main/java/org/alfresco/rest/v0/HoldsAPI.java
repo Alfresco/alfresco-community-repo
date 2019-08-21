@@ -67,6 +67,7 @@ public class HoldsAPI extends BaseAPI
      * The URI to add items to hold or to remove items from hold
      */
     private static final String RM_HOLDS_API = "{0}rma/holds";
+
     /**
      * The URI to  get holds.
      */
@@ -118,7 +119,6 @@ public class HoldsAPI extends BaseAPI
      * @param description hold description
      * @return node ref of the hold created
      */
-
     public String createHoldAndGetNodeRef(String user, String password,
                                      String holdName, String reason, String description)
     {
@@ -141,8 +141,6 @@ public class HoldsAPI extends BaseAPI
         return null;
     }
 
-
-
     /**
      * Deletes hold
      *
@@ -157,7 +155,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Adds item (content /record/ record folder) to the hold
+     * Adds item(content/record/record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -171,7 +169,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Adds item (content /record/ record folder) to the hold
+     * Adds item(content/record/record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -187,7 +185,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Util method to add item ( content /record/ record folder) to the hold and get the error message
+     * Util method to add item(content/record/record folder) to the hold and get the error message
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -203,7 +201,8 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Util method to create the request body used adding an item to hold or to remove items from hold
+     * Util method to create the request body used when adding an item to holds or when removing an item from holds
+     *
      * @param user user to create the request body for add/remove an item to/from hold
      * @param password  the user's password
      * @param itemNodeRef node ref to be added to hold
@@ -228,7 +227,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Remove item ( content /record/ record folder) from the hold
+     * Remove item(content/record/record folder) from the hold
      *
      * @param user        the user who removes the item from the hold
      * @param password    the user's password
@@ -242,7 +241,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Remove item (content/ record/ record folder) to the hold
+     * Remove item(content/record/record folder) to the hold
      *
      * @param user        the user who adds the item to the hold
      * @param password    the user's password
@@ -259,7 +258,7 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Util method to remove item (content /record/ record folder) from hold and get the error message
+     * Util method to remove item(content/record/record folder) from hold and get the error message
      *
      * @param user        the user who removes the item from hold
      * @param password    the user's password

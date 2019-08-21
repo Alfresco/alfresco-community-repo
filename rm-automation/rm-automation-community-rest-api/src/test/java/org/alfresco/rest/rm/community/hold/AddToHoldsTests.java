@@ -221,12 +221,10 @@ public class AddToHoldsTests extends BaseRMRestTest
     public void addValidNodesToHoldWithAllowedUser(String nodeId) throws Exception
     {
         STEP("Add node to hold with user with permission.");
-        holdsAPI.addItemToHold(userAddHoldPermission.getUsername(), userAddHoldPermission.getPassword(),
-                nodeId, HOLD);
+        holdsAPI.addItemToHold(userAddHoldPermission.getUsername(), userAddHoldPermission.getPassword(), nodeId, HOLD);
 
         STEP("Check the node is frozen.");
         assertTrue(hasAspect(nodeId, FROZEN_ASPECT));
-
     }
 
     /**
@@ -284,8 +282,7 @@ public class AddToHoldsTests extends BaseRMRestTest
      * @throws Exception
      */
     @Test (dataProvider = "userWithoutPermissionForAddToHold")
-    public void addContentToHoldWithUserWithoutHoldPermission(UserModel userModel, String nodeToBeAddedToHold) throws
-                                                                                                               Exception
+    public void addContentToHoldWithUserWithoutHoldPermission(UserModel userModel, String nodeToBeAddedToHold) throws Exception
     {
         users.add(userModel);
         STEP("Add the node to the hold with user without permission.");
@@ -295,9 +292,7 @@ public class AddToHoldsTests extends BaseRMRestTest
 
         STEP("Check the node is not frozen.");
         assertFalse(hasAspect(nodeToBeAddedToHold,FROZEN_ASPECT));
-
     }
-
 
     /**
      * Data provider with invalid node types that can be added to a hold
@@ -319,7 +314,7 @@ public class AddToHoldsTests extends BaseRMRestTest
                         //transfer container
                         { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
                         // a record category
-                        { category.getId(), SC_INTERNAL_SERVER_ERROR, ACCESS_DENIED_ERROR_MESSAGE },
+                        { category.getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
                         // unfiled records root
                         { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST,
                                 INVALID_TYPE_ERROR_MESSAGE },

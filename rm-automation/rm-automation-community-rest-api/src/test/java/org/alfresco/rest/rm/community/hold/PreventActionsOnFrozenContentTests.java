@@ -80,7 +80,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         contentHeld = dataContent.usingAdmin().usingSite(testSite)
                                  .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        STEP("Add the content to the hold.");
+        STEP("Add the file to the hold.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentHeld
                 .getNodeRefWithoutVersion(), HOLD_ONE);
 
@@ -91,6 +91,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         folderModel = dataContent.usingAdmin().usingSite(testSite)
                                  .createFolder();
     }
+
     /**
      * Given active content on hold
      * When I try to edit the properties
@@ -108,7 +109,6 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
-
     }
 
     /*
@@ -126,8 +126,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
-
     }
+
     /*
      * Given active content on hold
      * When I try to delete the content
@@ -142,7 +142,6 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Frozen nodes can not be deleted.");
-
     }
 
     /**
@@ -186,7 +185,6 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         dataSite.usingAdmin().deleteSite(testSite);
-
     }
 
 }

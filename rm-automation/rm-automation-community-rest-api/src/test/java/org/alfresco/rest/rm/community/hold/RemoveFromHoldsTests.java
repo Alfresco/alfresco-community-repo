@@ -104,7 +104,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         contentAddToManyHolds = dataContent.usingSite(testSite)
                                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        STEP("Add the content to the holds.");
+        STEP("Add content to the holds.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentHeld
                 .getNodeRefWithoutVersion(), HOLD_ONE);
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentAddToManyHolds
@@ -194,7 +194,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
     /**
      * Data provider with user without right permission or capability to remove from hold a specific node
-     * @return
+     * @return user model and the node ref to be removed from hold
      * @throws Exception
      */
     @DataProvider (name = "userWithoutPermissionForRemoveFromHold")
@@ -263,7 +263,6 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
         STEP("Check node is frozen.");
         assertTrue(hasAspect(nodeIdToBeRemoved, FROZEN_ASPECT));
-
     }
 
     @AfterClass (alwaysRun = true)

@@ -102,4 +102,12 @@ public class NodeTypeUtilityUnitTest
         nodeTypeUtility.instanceOf(anotherType, ofType);
         verify(mockedDictionaryService, times(2)).isSubClass(any(), any());
     }
+
+    /** test that instanceOf returns true if verified type is equal to the other */
+    @Test
+    public void testTypesAreEqual()
+    {
+        assertTrue(nodeTypeUtility.instanceOf(type, type));
+        verify(mockedDictionaryService, times(0)).isSubClass(any(), any());
+    }
 }

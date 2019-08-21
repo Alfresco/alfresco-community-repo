@@ -172,30 +172,29 @@ public class FrozenAspect extends    BaseBehaviourBean
             kind = BehaviourKind.CLASS,
             notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onRemoveAspect(final NodeRef record, QName aspectTypeQName)
+    public void onRemoveAspect(final NodeRef nodeRef, QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            if (nodeService.exists(record) &&
-                    isRecord(record))
+
+            if (nodeService.exists(nodeRef) &&
+                    (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
             {
-                // get the owning record folder
-                NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+                // get the owning folder
+                final NodeRef owningFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();
 
                 // check that the aspect has been added
-                if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                if (nodeService.hasAspect(owningFolder, ASPECT_HELD_CHILDREN))
                 {
                     // decrement current count
-                    int currentCount = (Integer) nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                    final int currentCount = (Integer) nodeService.getProperty(owningFolder, PROP_HELD_CHILDREN_COUNT);
                     if (currentCount > 0)
                     {
-                        currentCount = currentCount - 1;
-                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                        nodeService.setProperty(owningFolder, PROP_HELD_CHILDREN_COUNT, currentCount - 1);
                     }
                 }
             }
             return null;
         });
-        
     }
 
     /**

@@ -116,33 +116,33 @@ public class HoldsGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        boolean fileOnly = getFileOnly(req);
-        NodeRef itemNodeRef = getItemNodeRef(req);
-        List<NodeRef> holds = new ArrayList<>();
+        final boolean fileOnly = getFileOnly(req);
+        final NodeRef itemNodeRef = getItemNodeRef(req);
+        final List<NodeRef> holds = new ArrayList<>();
 
         if (itemNodeRef == null)
         {
-            NodeRef filePlan = getFilePlan(req);
+            final NodeRef filePlan = getFilePlan(req);
             holds.addAll(holdService.getHolds(filePlan));
         }
         else
         {
-            boolean includedInHold = getIncludedInHold(req);
+            final boolean includedInHold = getIncludedInHold(req);
             holds.addAll(holdService.heldBy(itemNodeRef, includedInHold));
         }
 
-        List<Hold> holdObjects = new ArrayList<>(holds.size());
+        final List<Hold> holdObjects = new ArrayList<>(holds.size());
         for (NodeRef nodeRef : holds)
         {
-            // only add if user has filling permisson on the hold
+            // only add if user has filling permission on the hold
             if (!fileOnly || permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED)
             {
-                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                final String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 holdObjects.add(new Hold(name, nodeRef));
             }
         }
 
-        Map<String, Object> model = new HashMap<>(1);
+        final Map<String, Object> model = new HashMap<>(1);
         sortHoldByName(holdObjects);
         model.put("holds", holdObjects);
 
@@ -159,10 +159,10 @@ public class HoldsGet extends DeclarativeWebScript
     {
         NodeRef filePlan = null;
 
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String storeType = templateVars.get("store_type");
-        String storeId = templateVars.get("store_id");
-        String id = templateVars.get("id");
+        final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        final String storeType = templateVars.get("store_type");
+        final String storeId = templateVars.get("store_id");
+        final String id = templateVars.get("id");
 
         if (StringUtils.isNotBlank(storeType) && StringUtils.isNotBlank(storeId) && StringUtils.isNotBlank(id))
         {
@@ -194,7 +194,7 @@ public class HoldsGet extends DeclarativeWebScript
      */
     private NodeRef getItemNodeRef(WebScriptRequest req)
     {
-        String nodeRef = req.getParameter("itemNodeRef");
+        final String nodeRef = req.getParameter("itemNodeRef");
         NodeRef itemNodeRef = null;
         if (StringUtils.isNotBlank(nodeRef))
         {
@@ -212,10 +212,10 @@ public class HoldsGet extends DeclarativeWebScript
     private boolean getIncludedInHold(WebScriptRequest req)
     {
         boolean result = true;
-        String includedInHold = req.getParameter("includedInHold");
+        final String includedInHold = req.getParameter("includedInHold");
         if (StringUtils.isNotBlank(includedInHold))
         {
-            result = Boolean.valueOf(includedInHold).booleanValue();
+            result = Boolean.parseBoolean(includedInHold);
         }
         return result;
     }
@@ -223,10 +223,10 @@ public class HoldsGet extends DeclarativeWebScript
     private boolean getFileOnly(WebScriptRequest req)
     {
         boolean result = false;
-        String fillingOnly = req.getParameter("fileOnly");
+        final String fillingOnly = req.getParameter("fileOnly");
         if (StringUtils.isNotBlank(fillingOnly))
         {
-            result = Boolean.valueOf(fillingOnly).booleanValue();
+            result = Boolean.parseBoolean(fillingOnly);
         }
         return result;
     }

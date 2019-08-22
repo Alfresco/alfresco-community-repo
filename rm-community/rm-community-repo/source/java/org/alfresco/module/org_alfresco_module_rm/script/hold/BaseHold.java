@@ -33,9 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.json.JSONArray;
@@ -68,6 +70,9 @@ public abstract class BaseHold extends DeclarativeWebScript
     /** node service */
     private NodeService nodeService;
 
+    /** Node type utility */
+    private NodeTypeUtility nodeTypeUtility;
+
     /**
      * Set the hold service
      *
@@ -95,11 +100,19 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * @param nodeTypeUtility node type utility
+     */
+    public void setNodeTypeUtility(NodeTypeUtility nodeTypeUtility)
+    {
+        this.nodeTypeUtility = nodeTypeUtility;
     }
 
     /**
@@ -118,9 +131,9 @@ public abstract class BaseHold extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject json = getJSONFromContent(req);
-        List<NodeRef> holds = getHolds(json);
-        List<NodeRef> nodeRefs = getItemNodeRefs(json);
+        final JSONObject json = getJSONFromContent(req);
+        final List<NodeRef> holds = getHolds(json);
+        final List<NodeRef> nodeRefs = getItemNodeRefs(json);
         doAction(holds, nodeRefs);
         return new HashMap<>();
     }
@@ -130,7 +143,8 @@ public abstract class BaseHold extends DeclarativeWebScript
      * It will either add the item(s) to the hold(s) or remove it/them from the hold(s)
      *
      * @param holds List of hold {@link NodeRef}(s)
-     * @param nodeRefs List of item {@link NodeRef}(s) (record(s) / record folder(s)) which will be either added to the hold(s) or removed from the hold(s)
+     * @param nodeRefs List of item {@link NodeRef}(s) (record(s) / record folder(s) / active content(s)) which will be
+     *                 either added to the hold(s) or removed from the hold(s)
      */
     abstract void doAction(List<NodeRef> holds, List<NodeRef> nodeRefs);
 
@@ -145,7 +159,7 @@ public abstract class BaseHold extends DeclarativeWebScript
         JSONObject json = null;
         try
         {
-            String content = req.getContent().getContent();
+            final String content = req.getContent().getContent();
             json = new JSONObject(new JSONTokener(content));
         }
         catch (IOException iox)
@@ -163,17 +177,18 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * Helper method to get the {@link NodeRef}s for the items(s) (record(s) / record folder(s)) which will be added to the hold(s)
+     * Helper method to get the {@link NodeRef}s for the items(s) (record(s) / record folder(s) / active content(s))
+     * which will be added to the hold(s)
      *
      * @param json The request content as JSON object
      * @return List of item {@link NodeRef}s which will be added to the hold(s)
      */
     protected List<NodeRef> getItemNodeRefs(JSONObject json)
     {
-        List<NodeRef> nodeRefs = new ArrayList<>();
+        final List<NodeRef> nodeRefs = new ArrayList<>();
         try
         {
-            JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
+            final JSONArray nodeRefsArray = json.getJSONArray("nodeRefs");
             for (int i = 0; i < nodeRefsArray.length(); i++)
             {
                 NodeRef nodeReference = new NodeRef(nodeRefsArray.getString(i));
@@ -193,7 +208,7 @@ public abstract class BaseHold extends DeclarativeWebScript
     /**
      * Helper method for checking the node reference for an item
      *
-     * @param nodeRef The {@link NodeRef} of an item (record / record folder)
+     * @param nodeRef The {@link NodeRef} of an item (record / record folder / active content)
      */
     private void checkItemNodeRef(NodeRef nodeRef)
     {
@@ -203,28 +218,29 @@ public abstract class BaseHold extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Item being added to hold does not exist.");
         }
 
-        // ensure that the node we are adding to the hold is a record or record folder
-        if (!recordService.isRecord(nodeRef) && !recordFolderService.isRecordFolder(nodeRef))
+        // ensure that the node we are adding to the hold is a record or record folder or active content
+        if (!recordFolderService.isRecordFolder(nodeRef) &&
+                !nodeTypeUtility.instanceOf(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record or record folder.");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record, a record folder or active content.");
         }
     }
 
     /**
-     * Helper method to get the list of {@link NodeRef}(s) for the hold(s) which will contain the item (record / record folder)
+     * Helper method to get the list of {@link NodeRef}(s) for the hold(s) which will contain the item (record / record folder / active content)
      *
      * @param json The request content as JSON object
      * @return List of {@link NodeRef}(s) of the hold(s)
      */
     protected List<NodeRef> getHolds(JSONObject json)
     {
-        List<NodeRef> holds = new ArrayList<>();
+        final List<NodeRef> holds = new ArrayList<>();
         try
         {
-            JSONArray holdsArray = json.getJSONArray("holds");
+            final JSONArray holdsArray = json.getJSONArray("holds");
             for (int i = 0; i < holdsArray.length(); i++)
             {
-                NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
+                final NodeRef nodeRef = new NodeRef(holdsArray.getString(i));
                 checkHoldNodeRef(nodeRef);
                 holds.add(nodeRef);
             }

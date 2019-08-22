@@ -46,6 +46,7 @@
         <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
         <property name="renditionService" ref="RenditionService" />
         <property name="contentService" ref="ContentService" />
+        <property name="nodeTypeUtility" ref="nodeTypeUtility" />
      </bean>
 
     <!-- Records Management Service Registry -->
@@ -870,9 +871,7 @@
 
     <!--  Freeze Service  -->
 
-    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl">
-        <property name="nodeService" ref="nodeService" />
-        <property name="dictionaryService" ref="DictionaryService" />
+    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl" parent="baseService">
         <property name="filePlanService" ref="FilePlanService" />
         <property name="holdService" ref="HoldService" />
     </bean>
@@ -1003,10 +1002,9 @@
 
     <!--  Record Folder Service -->
 
-    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl">
-        <property name="nodeService" ref="NodeService"/>
+    <bean id="recordFolderService"
+          class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl" parent="baseService">
         <property name="dispositionService" ref="DispositionService" />
-        <property name="dictionaryService" ref="DictionaryService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordService" ref="RecordService" />
     </bean>
@@ -1042,7 +1040,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=ACL_NODE.0.sys:base.Read,RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Create.0
@@ -1535,6 +1533,7 @@
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="permissionService" ref="PermissionService"/>
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+      <property name="capabilityService" ref="CapabilityService"/>
    </bean>
 
    <bean id="HoldService"

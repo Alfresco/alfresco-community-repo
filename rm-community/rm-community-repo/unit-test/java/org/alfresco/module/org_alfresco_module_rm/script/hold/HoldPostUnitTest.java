@@ -31,8 +31,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -105,5 +108,41 @@ public class HoldPostUnitTest extends BaseHoldWebScriptWithContentUnitTest
 
         // verify that the record was added to the holds
         verify(mockedHoldService, times(1)).addToHolds(holds, recordFolders);
+    }
+
+    /**
+     * Test that active content can be added to holds.
+     */
+    @Test
+    public void addActiveContentToHolds() throws Exception
+    {
+        // build json to send to server
+        String content = buildContent(activeContents, holds);
+
+        // execute web script
+        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);
+        assertNotNull(json);
+
+        // verify that the active content was added to the holds
+        verify(mockedHoldService, times(1)).addToHolds(holds, activeContents);
+    }
+
+    /**
+     * Test that active content can be added to holds along with records and record folders.
+     */
+    @Test
+    public void addActiveContentAndRecordsAndRecordFoldersToHolds() throws Exception
+    {
+        List<NodeRef> items = new ArrayList<>(3);
+        Collections.addAll(items, dmNodeRef, record, recordFolder);
+        // build json to send to server
+        String content = buildContent(items, holds);
+
+        // execute web script
+        JSONObject json = executeJSONWebScript(Collections.EMPTY_MAP, content);
+        assertNotNull(json);
+
+        // verify that the active content was added to the holds along with records and record folders
+        verify(mockedHoldService, times(1)).addToHolds(holds, items);
     }
 }

@@ -53,6 +53,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -69,6 +70,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -91,6 +93,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef hold2;
     protected NodeRef activeContent;
 
+    @Mock
+    private CapabilityService mockedCapabilityService;
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
@@ -104,10 +108,15 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         hold = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
 
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedCapabilityService.getCapabilityAccessState(hold2, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.ALLOWED);
+
         activeContent = generateNodeRef();
         QName contentSubtype = QName.createQName("contentSubtype", "contentSubtype");
         when(mockedNodeService.getType(activeContent)).thenReturn(contentSubtype);
-        when(mockedDictionaryService.isSubClass(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(contentSubtype, ContentModel.TYPE_CONTENT)).thenReturn(true);
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
@@ -382,10 +391,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test (expected = AccessDeniedException.class)
-    public void addActiveContentToHoldNoPermissionsOnHold()
+    public void addActiveContentToHoldsNoPermissionsOnHold()
     {
-        when(mockedPermissionService.hasPermission(hold, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
-        holdService.addToHold(hold, activeContent);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)).thenReturn(AccessStatus.DENIED);
+        // build a list of holds
+        List<NodeRef> holds = new ArrayList<>(2);
+        holds.add(hold);
+        holds.add(hold2);
+        holdService.addToHolds(holds, activeContent);
     }
 
     @Test (expected = AccessDeniedException.class)
@@ -399,6 +412,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void addArchivedContentToHold()
     {
         when(mockedNodeService.hasAspect(activeContent, RecordsManagementModel.ASPECT_ARCHIVED)).thenReturn(true);
+        holdService.addToHold(hold, activeContent);
+    }
+
+    @Test (expected = IntegrityException.class)
+    public void addLockedContentToHold()
+    {
+        when(mockedNodeService.hasAspect(activeContent, ContentModel.ASPECT_LOCKABLE)).thenReturn(true);
         holdService.addToHold(hold, activeContent);
     }
 
@@ -434,7 +454,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedRecordsManagementAuditService, times(2)).auditEvent(eq(recordFolder), anyString());
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test (expected = IntegrityException.class)
     public void removeFromHoldNotAHold()
     {
         holdService.removeFromHold(recordFolder, recordFolder);
@@ -531,5 +551,19 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold2, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
+    }
+
+     @Test (expected = AccessDeniedException.class)
+    public void removeActiveContentFromHoldsNoPermissionsOnHold()
+    {
+        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold);
+        doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold2);
+        doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
+        when(mockedCapabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)).thenReturn(AccessStatus.DENIED);
+        // build a list of holds
+        List<NodeRef> holds = new ArrayList<>(2);
+        holds.add(hold);
+        holds.add(hold2);
+        holdService.removeFromHolds(holds, activeContent);
     }
 }

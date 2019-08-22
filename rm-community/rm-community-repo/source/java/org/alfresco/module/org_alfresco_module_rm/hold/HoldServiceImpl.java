@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
+import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +43,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -58,7 +61,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -108,6 +110,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** records management audit service */
     private RecordsManagementAuditService recordsManagementAuditService;
 
+    /** Capability service */
+    private CapabilityService capabilityService;
+
     /**
      * Set the file plan service
      *
@@ -116,16 +121,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * Set the node service
-     *
-     * @param nodeService the node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     /**
@@ -164,6 +159,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
+     /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     /**
@@ -569,7 +572,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
-            if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
+            if (!AccessStatus.ALLOWED.equals(
+                            capabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)))
             {
                 throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
             }
@@ -614,7 +618,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
     {
-        if (!isRecord(nodeRef) && !isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+        if (!isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
             final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
@@ -631,6 +635,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (nodeService.hasAspect(nodeRef, ASPECT_ARCHIVED))
         {
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-archived-node"), null);
+        }
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_LOCKABLE))
+        {
+            throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-locked-node"), null);
         }
     }
 
@@ -711,13 +720,20 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("holds", holds);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        if (holds != null && !holds.isEmpty())
+        if (!holds.isEmpty())
         {
             for (final NodeRef hold : holds)
             {
-                if (!instanceOf(hold, TYPE_HOLD))
+                if (!isHold(hold))
                 {
-                    throw new AlfrescoRuntimeException("Can't remove from hold, because it isn't a hold. (hold=" + hold + ")");
+                    final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                    throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
+                }
+
+                if (!AccessStatus.ALLOWED.equals(
+                        capabilityService.getCapabilityAccessState(hold, RMPermissionModel.REMOVE_FROM_HOLD)))
+                {
+                    throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
                 }
 
                 if (getHeld(hold).contains(nodeRef))

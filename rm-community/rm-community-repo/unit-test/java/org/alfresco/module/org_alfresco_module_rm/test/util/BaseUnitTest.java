@@ -58,6 +58,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -150,6 +151,8 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
 
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
+
+    @Mock protected NodeTypeUtility mockedNodeTypeUtility;
 
     /** expected exception rule */
     @Rule
@@ -313,6 +316,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         if (type != null)
         {
             when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
+            when(mockedNodeTypeUtility.instanceOf(type, type)).thenReturn(true);
         }
         return nodeRef;
     }

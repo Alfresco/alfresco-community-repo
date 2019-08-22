@@ -27,10 +27,14 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.Set;
 
 /**
  * Utility class to duplicate the content of a node without triggering the audit or versioning behaviours
@@ -46,12 +50,58 @@ public class ContentBinDuplicationUtility extends ServiceBaseImpl
     private BehaviourFilter behaviourFilter;
 
     /**
+     * Provides methods for accessing and transforming content.
+     */
+    private ContentService contentService;
+
+    /** Records Management Query DAO */
+    private RecordsManagementQueryDAO recordsManagementQueryDAO;
+
+    /**
      * Setter for behaviour filter
      * @param behaviourFilter BehaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * Setter for content service
+     * @param contentService ContentService
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    /**
+     * Setter for the Records Management QueryDAO
+     *
+     * @param recordsManagementQueryDAO The RM query DAO to set
+     */
+    public void setRecordsManagementQueryDAO(RecordsManagementQueryDAO recordsManagementQueryDAO)
+    {
+        this.recordsManagementQueryDAO = recordsManagementQueryDAO;
+    }
+
+    /**
+     * Determines whether the bin file for a given node has at least one other reference to it
+     * Will return true if the binary exists and is referenced by at least one other node
+     * @param nodeRef Node with the binary in question
+     * @return boolean for if the bin has at least one other reference to it
+     */
+    public boolean hasAtLeastOneOtherReference(NodeRef nodeRef)
+    {
+        boolean hasAtLeastOneOtherReference = false;
+        String contentUrl = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl();
+
+        Set<String> referencesToContentNode = recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(contentUrl);
+        if (referencesToContentNode.size() > 1)
+        {
+            hasAtLeastOneOtherReference = true;
+        }
+        return hasAtLeastOneOtherReference;
     }
 
     /**

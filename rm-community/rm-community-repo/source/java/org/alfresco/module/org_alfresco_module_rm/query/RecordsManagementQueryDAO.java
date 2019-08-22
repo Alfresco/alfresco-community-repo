@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.query;
 
 import java.util.Set;
 
-import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -64,9 +63,8 @@ public interface RecordsManagementQueryDAO
     public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
 
     /**
-     * @param contentUrl    the URL of the content url entity
-     * @return              Return the entity or null if it doesn't exist or is still
-     *                      referenced by a content_data entity
+     * @param contentUrl     the URL of the content url entity
+     * @return               Return a set of UUIDs which reference the given node
      */
-    public ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl);
+    Set<String> getNodeRefsWhichReferenceContentUrl(String contentUrl);
 }

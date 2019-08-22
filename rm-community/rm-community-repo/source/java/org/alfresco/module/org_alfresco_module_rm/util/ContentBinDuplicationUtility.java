@@ -28,12 +28,13 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
-import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.Set;
 
 /**
  * Utility class to duplicate the content of a node without triggering the audit or versioning behaviours
@@ -94,8 +95,9 @@ public class ContentBinDuplicationUtility
     {
         boolean hasAtLeastOneOtherReference = false;
         String contentUrl = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl();
-        ContentUrlEntity contentUrlEntity = recordsManagementQueryDAO.getContentUrlEntityUnreferenced(contentUrl);
-        if (contentUrlEntity == null)
+
+        Set<String> referencesToContentNode = recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(contentUrl);
+        if (referencesToContentNode.size() > 1)
         {
             hasAtLeastOneOtherReference = true;
         }

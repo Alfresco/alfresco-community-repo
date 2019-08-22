@@ -30,18 +30,24 @@ package org.alfresco.module.org_alfresco_module_rm.query;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -54,7 +60,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
     private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetStringPropertyValuesOfChildren";
-    private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
+    private static final String SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL = "select_NodeIdsWhichReferenceContentUrl";
 
     /** SQL session template */
     protected SqlSessionTemplate template;
@@ -103,7 +109,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         if (pair != null)
         {        
             // create query params
-            Map<String, Object> params = new HashMap<String, Object>(2);
+            Map<String, Object> params = new HashMap<>(2);
             params.put("qnameId", pair.getFirst());
             params.put("idValue", identifierValue);
             
@@ -147,7 +153,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     }
 
     @Override
-    public ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl)
+    public Set<String> getNodeRefsWhichReferenceContentUrl(String contentUrl)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
@@ -155,8 +161,31 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
 
-        return contentUrlEntity;
+        // Get all the node ids which reference the given content url
+        List<Long> nodeIds = template.selectList(SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL, contentUrlEntity);
+
+        // create a set of uuids which reference the content url
+        Set<String> nodesReferencingContentUrl = new HashSet<>();
+        for(Long nodeId : nodeIds)
+        {
+            String uuidToAdd;
+
+            // if the referencing node is a version2Store reference to the content url, add the uuid for the version 2 frozen node ref
+            NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+            if (version2FrozenNodeRef != null)
+            {
+                uuidToAdd = version2FrozenNodeRef.getId();
+            }
+
+            // add the uuid for the node ref of the referencing node
+            else
+            {
+                uuidToAdd = (String) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_NODE_UUID);
+            }
+            nodesReferencingContentUrl.add(uuidToAdd);
+        }
+
+        return nodesReferencingContentUrl;
     }
 }

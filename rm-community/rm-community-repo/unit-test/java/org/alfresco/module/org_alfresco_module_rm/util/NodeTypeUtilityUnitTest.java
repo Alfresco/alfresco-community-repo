@@ -87,7 +87,6 @@ public class NodeTypeUtilityUnitTest
     public void testInstanceOfCacheSameTypes()
     {
         nodeTypeUtility.instanceOf(type, ofType);
-        verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
         nodeTypeUtility.instanceOf(type, ofType);
         verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
     }
@@ -98,7 +97,6 @@ public class NodeTypeUtilityUnitTest
     {
         QName anotherType = AlfMock.generateQName();
         nodeTypeUtility.instanceOf(type, ofType);
-        verify(mockedDictionaryService, times(1)).isSubClass(any(), any());
         nodeTypeUtility.instanceOf(anotherType, ofType);
         verify(mockedDictionaryService, times(2)).isSubClass(any(), any());
     }

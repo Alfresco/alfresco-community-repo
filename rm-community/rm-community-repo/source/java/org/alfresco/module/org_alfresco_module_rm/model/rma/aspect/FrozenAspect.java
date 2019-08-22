@@ -140,7 +140,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            if (nodeService.exists(nodeRef) && (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
+            if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_CONTENT))
             {
                 // get the owning folder
                 final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
@@ -151,7 +151,8 @@ public class FrozenAspect extends    BaseBehaviourBean
                     int currentCount = (Integer) nodeService.getProperty(parentRef, PROP_HELD_CHILDREN_COUNT);
                     currentCount = currentCount + 1;
                     nodeService.setProperty(parentRef, PROP_HELD_CHILDREN_COUNT, currentCount);
-                } else
+                }
+                else
                 {
                     if (instanceOf(parentRef, TYPE_FOLDER) && !nodeService.hasAspect(parentRef, ASPECT_SITE_CONTAINER))
                     {
@@ -176,8 +177,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     {
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
 
-            if (nodeService.exists(nodeRef) &&
-                    (isRecord(nodeRef) || instanceOf(nodeRef, TYPE_CONTENT)))
+            if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_CONTENT))
             {
                 // get the owning folder
                 final NodeRef owningFolder = nodeService.getPrimaryParent(nodeRef).getParentRef();

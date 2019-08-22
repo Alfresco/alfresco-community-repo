@@ -253,6 +253,10 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter"/>
    </bean>
 
+   <bean name="nodeTypeUtility" class="org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility">
+      <property name="dictionaryService" ref="DictionaryService"/>
+   </bean>
+
    <!--  Prevent ghosted records being renditioned -->
    <bean id="noRenditionsForGhosts" parent="baseRenditionPreventionClass">
       <constructor-arg value="rma:ghosted"/>

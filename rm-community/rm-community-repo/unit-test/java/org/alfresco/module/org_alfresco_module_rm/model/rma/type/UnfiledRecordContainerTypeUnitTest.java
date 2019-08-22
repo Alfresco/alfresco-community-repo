@@ -59,9 +59,9 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     public void testAddNonAcceptedTypeToUnfiledRecordContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
         NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
@@ -80,9 +80,9 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     public void testAddUnfiledRecordFolderTypeToUnfiledRecordContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
         NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
@@ -101,9 +101,9 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     public void testAddContentTypeToUnfiledRecordContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
         NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
@@ -122,9 +122,9 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     public void testNonElectronicDocumentTypeToUnfiledRecordContainer()
     {
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(true);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(true);
 
         NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 

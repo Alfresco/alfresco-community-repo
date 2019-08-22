@@ -549,7 +549,7 @@
                     <many>true</many>
                 </source>
                 <target>
-                    <class>rma:filePlanComponent</class>
+                    <class>cm:cmobject</class>
                     <mandatory>false</mandatory>
                     <many>true</many>
                 </target>

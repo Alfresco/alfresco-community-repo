@@ -219,7 +219,7 @@ public abstract class BaseHold extends DeclarativeWebScript
         }
 
         // ensure that the node we are adding to the hold is a record or record folder or active content
-        if (!recordService.isRecord(nodeRef) && !recordFolderService.isRecordFolder(nodeRef) &&
+        if (!recordFolderService.isRecordFolder(nodeRef) &&
                 !nodeTypeUtility.instanceOf(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Items added to a hold must be either a record, a record folder or active content.");

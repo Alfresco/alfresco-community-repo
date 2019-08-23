@@ -63,7 +63,7 @@
         <image.tag>latest</image.tag>
 
         <dependency.alfresco-remote-api.version>7.80</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-repository.version>7.107</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>7.110</dependency.alfresco-repository.version>
         <dependency.alfresco-data-model.version>8.48</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>7.21</dependency.alfresco-core.version>
 

@@ -31,7 +31,6 @@ import static org.alfresco.rest.core.v0.APIUtils.ISO_INSTANT_FORMATTER;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
-import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
@@ -48,7 +47,6 @@ import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.core.v0.RMEvents;
-import org.alfresco.utility.Utility;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
@@ -74,8 +72,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class RMRolesAndActionsAPI extends BaseAPI
 {
-    public static final String HOLDS_CONTAINER = "Holds";
-
     /** The URI to view the configured roles and capabilities. */
     private static final String RM_ROLES = "{0}rma/admin/rmroles";
     /** The URI for REST requests about a particular configured role. */
@@ -85,9 +81,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
     // logger
     private static final Logger LOGGER = LoggerFactory.getLogger(RMRolesAndActionsAPI.class);
     private static final String MOVE_ACTIONS_API = "action/rm-move-to/site/rm/documentLibrary/{0}";
-    private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
-    /** The URI to  add items to hold.*/
-    private static final String RM_HOLDS_API = "{0}rma/holds";
 
     /** http client factory */
     @Autowired
@@ -437,75 +430,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
         }
         assertFalse("Not all items were deleted from " + containerName,
                 contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
-    }
-
-    /**
-     * Deletes hold
-     *
-     * @param username user's username
-     * @param password its password
-     * @param holdName the hold name
-     * @throws AssertionError if the deletion was unsuccessful.
-     */
-    public void deleteHold(String username, String password, String holdName)
-    {
-        deleteItem(username, password, String.format("/%s/%s", HOLDS_CONTAINER, holdName));
-    }
-
-    /**
-     * Util method to create a hold
-     *
-     * @param user        the user creating the category
-     * @param password    the user's password
-     * @param holdName    the hold name
-     * @param reason      hold reason
-     * @param description hold description
-     * @return The HTTP response (or null if no POST call was needed).
-     */
-    public HttpResponse createHold(String user, String password, String holdName, String reason, String description)
-    {
-        // if the hold already exists don't try to create it again
-        final String fullHoldPath = Utility.buildPath(getFilePlanPath(), HOLDS_CONTAINER) + holdName;
-        final CmisObject hold = getObjectByPath(user, password, fullHoldPath);
-        if (hold != null)
-        {
-            return null;
-        }
-        // retrieve the Holds container nodeRef
-        final String parentNodeRef = getItemNodeRef(user, password, "/" + HOLDS_CONTAINER);
-
-        final JSONObject requestParams = new JSONObject();
-        requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
-        requestParams.put("prop_cm_name", holdName);
-        requestParams.put("prop_cm_description", description);
-        requestParams.put("prop_rma_holdReason", reason);
-
-        // Make the POST request and throw an assertion error if it fails.
-        final HttpResponse httpResponse = doPostJsonRequest(user, password, SC_OK, requestParams, CREATE_HOLDS_API);
-        assertNotNull("Expected object to have been created at " + fullHoldPath,
-                    getObjectByPath(user, password, fullHoldPath));
-        return httpResponse;
-    }
-
-    /**
-     * Adds item (record/ record folder) to the hold
-     *
-     * @param user        the user who adds the item to the hold
-     * @param password    the user's password
-     * @param itemNodeRef the nodeRef of the item to be added to hold
-     * @param holdName    the hold name
-     * @return The HTTP response
-     */
-    public HttpResponse addItemToHold(String user, String password, String itemNodeRef, String holdName)
-    {
-        final JSONArray nodeRefs = new JSONArray().put(getNodeRefSpacesStore() + itemNodeRef);
-        final String holdNodeRef = getItemNodeRef(user, password, String.format("/%s/%s", HOLDS_CONTAINER, holdName));
-        final JSONArray holds = new JSONArray().put(getNodeRefSpacesStore() + holdNodeRef);
-        final JSONObject requestParams = new JSONObject();
-        requestParams.put("nodeRefs", nodeRefs);
-        requestParams.put("holds", holds);
-
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_HOLDS_API);
     }
 
     /**

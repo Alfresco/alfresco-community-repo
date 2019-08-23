@@ -39,6 +39,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.toFileModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
@@ -823,7 +824,7 @@ public class BaseRMRestTest extends RestTest
      */
     protected boolean hasRecordAspect(FileModel testFile) throws Exception
     {
-        return hasAspect(testFile,RECORD_TYPE);
+        return hasAspect(testFile, RECORD_TYPE);
     }
 
     /**
@@ -837,6 +838,18 @@ public class BaseRMRestTest extends RestTest
     {
         return getRestAPIFactory().getNodeAPI(testFile).getNode()
                                   .getAspectNames().contains(aspectName);
+    }
+
+    /**
+     * Checks if the given node has the given aspect
+     *
+     * @param nodeId   the node to be checked
+     * @param aspectName the matching aspect
+     * @return true if the file has the aspect, false otherwise
+     */
+    protected boolean hasAspect(String nodeId, String aspectName) throws Exception
+    {
+        return hasAspect(toFileModel(nodeId),aspectName);
     }
 
     /**

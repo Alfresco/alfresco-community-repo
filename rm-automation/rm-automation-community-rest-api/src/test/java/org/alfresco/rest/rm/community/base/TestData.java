@@ -97,4 +97,19 @@ public interface TestData
      */
     public static final Set<String> RM_ROLES = newHashSet(ROLE_RM_ADMIN.roleId, ROLE_RM_MANAGER.roleId,
             ROLE_RM_POWER_USER.roleId, ROLE_RM_SECURITY_OFFICER.roleId, ROLE_RM_USER.roleId);
+
+    /**
+     * The default hold description
+     */
+    String HOLD_DESCRIPTION = "Generalized hold case for tests";
+
+    /**
+     * The default hold reason
+     */
+    String HOLD_REASON = "Active content to be reviewed for the CASE McDermott, FINRA ";
+
+    /**
+     * Frozen aspect
+     */
+    String FROZEN_ASPECT = "rma:frozen";
 }

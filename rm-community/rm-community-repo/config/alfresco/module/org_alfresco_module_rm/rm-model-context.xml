@@ -52,6 +52,7 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="recordService" ref="recordService"/>
       <property name="recordFolderService" ref="RecordFolderService"/>
+      <property name="frozenAspect" ref="rma.freeze" />
    </bean>
 
    <bean id="rm.baseBehaviour" abstract="true" parent="baseService">

@@ -68,6 +68,11 @@ public class FrozenAspect extends    BaseBehaviourBean
                                      NodeServicePolicies.OnUpdatePropertiesPolicy,
                                      NodeServicePolicies.BeforeMoveNodePolicy
 {
+    /**
+     * Behaviour name for on update properties for frozen aspect
+     */
+    private static final String ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME = "onUpdatePropertiesFrozenAspect";
+
     /** freeze service */
     protected FreezeService freezeService;
 
@@ -77,6 +82,32 @@ public class FrozenAspect extends    BaseBehaviourBean
     public void setFreezeService(FreezeService freezeService)
     {
         this.freezeService = freezeService;
+    }
+
+
+    /**
+     * Disable the on update properties for frozen aspect behaviour
+     */
+    public void disableOnPropUpdateFrozenAspect()
+    {
+        org.alfresco.repo.policy.Behaviour behaviour = getBehaviour(ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME);
+        if (behaviour != null)
+        {
+            behaviour.disable();
+        }
+
+    }
+
+    /**
+     * Enable the on update properties for frozen aspect
+     */
+    public void enableOnPropUpdateFrozenAspect()
+    {
+        org.alfresco.repo.policy.Behaviour behaviour = getBehaviour(ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME);
+        if (behaviour != null && !behaviour.isEnabled())
+        {
+            behaviour.enable();
+        }
     }
 
     /**
@@ -229,6 +260,7 @@ public class FrozenAspect extends    BaseBehaviourBean
     @Behaviour
             (
                     kind = BehaviourKind.CLASS,
+                    name = ON_UPDATE_PROP_FROZEN_BEHAVIOUR_NAME,
                     notificationFrequency = NotificationFrequency.FIRST_EVENT
             )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)

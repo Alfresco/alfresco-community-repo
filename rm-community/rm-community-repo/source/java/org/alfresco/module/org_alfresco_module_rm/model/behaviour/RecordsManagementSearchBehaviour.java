@@ -45,6 +45,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
@@ -98,6 +99,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
     /** Record service*/
     private RecordService recordService;
+
+    /**
+     * Frozen aspect
+     */
+    private FrozenAspect frozenAspect;
 
     /**
      * @param nodeService the nodeService to set
@@ -154,6 +160,15 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     {
         this.recordService = recordService;
     }
+
+    /**
+     * @param frozenAspect frozen aspect
+     */
+    public void setFrozenAspect(FrozenAspect frozenAspect)
+    {
+        this.frozenAspect = frozenAspect;
+    }
+
 
     /** on add search aspect behaviour */
     private JavaBehaviour onAddSearchAspect = new JavaBehaviour(this, "rmSearchAspectAdd", NotificationFrequency.TRANSACTION_COMMIT);
@@ -800,26 +815,34 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         if (!methodCached("setVitalRecordDefinitionDetails", nodeRef))
         {
             VitalRecordDefinition vrd = vitalRecordService.getVitalRecordDefinition(nodeRef);
-    
-            if (vrd != null && vrd.isEnabled() && vrd.getReviewPeriod() != null)
+            try
             {
-                // Set the property values
-                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, vrd.getReviewPeriod().getPeriodType());
-                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, vrd.getReviewPeriod().getExpression());
-    
-                if (logger.isDebugEnabled())
+               frozenAspect.disableOnPropUpdateFrozenAspect();
+                if (vrd != null && vrd.isEnabled() && vrd.getReviewPeriod() != null)
                 {
-                    logger.debug("Set rma:recordSearchVitalRecordReviewPeriod for node " + nodeRef + " to: " +
+                    // Set the property values
+                    nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, vrd.getReviewPeriod().getPeriodType());
+                    nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, vrd.getReviewPeriod().getExpression());
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Set rma:recordSearchVitalRecordReviewPeriod for node " + nodeRef + " to: " +
                                 vrd.getReviewPeriod().getPeriodType());
-                    logger.debug("Set rma:recordSearchVitalRecordReviewPeriodExpression for node " + nodeRef + " to: " +
+                        logger.debug("Set rma:recordSearchVitalRecordReviewPeriodExpression for node " + nodeRef + " to: " +
                                 vrd.getReviewPeriod().getExpression());
+                    }
+                }
+                else
+                {
+                    // Clear the vital record properties
+                    nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, null);
+                    nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, null);
                 }
             }
-            else
+            finally
             {
-                // Clear the vital record properties
-                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, null);
-                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, null);
+               frozenAspect.enableOnPropUpdateFrozenAspect();
+
             }
         }
     }
@@ -871,13 +894,21 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     {
         if (schedule != null)
         {
-            nodeService.setProperty(recordOrFolder, PROP_RS_DISPOITION_AUTHORITY, schedule.getDispositionAuthority());
-            nodeService.setProperty(recordOrFolder, PROP_RS_DISPOITION_INSTRUCTIONS, schedule.getDispositionInstructions());
-
-            if (logger.isDebugEnabled())
+            try
             {
-                logger.debug("Set rma:recordSearchDispositionAuthority for node " + recordOrFolder + " to: " + schedule.getDispositionAuthority());
-                logger.debug("Set rma:recordSearchDispositionInstructions for node " + recordOrFolder + " to: " + schedule.getDispositionInstructions());
+                frozenAspect.disableOnPropUpdateFrozenAspect();
+                nodeService.setProperty(recordOrFolder, PROP_RS_DISPOITION_AUTHORITY, schedule.getDispositionAuthority());
+                nodeService.setProperty(recordOrFolder, PROP_RS_DISPOITION_INSTRUCTIONS, schedule.getDispositionInstructions());
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Set rma:recordSearchDispositionAuthority for node " + recordOrFolder + " to: " + schedule.getDispositionAuthority());
+                    logger.debug("Set rma:recordSearchDispositionInstructions for node " + recordOrFolder + " to: " + schedule.getDispositionInstructions());
+                }
+            }
+            finally
+            {
+                frozenAspect.enableOnPropUpdateFrozenAspect();
             }
         }
     }

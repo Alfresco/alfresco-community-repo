@@ -28,10 +28,18 @@ package org.alfresco.rest.rm.community.hold;
 
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_VITAL_RECORD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_VITAL_RECORD_DEFINITION;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertFalse;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -40,7 +48,14 @@ import java.io.File;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
 import org.alfresco.rest.v0.HoldsAPI;
+import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
@@ -64,9 +79,14 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     private static FileModel contentHeld;
     private static File updatedFile;
     private static FolderModel folderModel;
+    private static RecordCategoryChild recordFolder;
+    private static Record recordFrozen, recordNotHeld;
 
     @Autowired
     private HoldsAPI holdsAPI;
+
+    @Autowired
+    private DispositionScheduleService dispositionScheduleService;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForPreventActionsOnFrozenContent() throws Exception
@@ -90,6 +110,15 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         STEP("Create a folder withing the test site .");
         folderModel = dataContent.usingAdmin().usingSite(testSite)
                                  .createFolder();
+
+        STEP("Create a record folder with some records");
+        recordFolder = createCategoryFolderInFilePlan();
+        recordFrozen = createElectronicRecord(recordFolder.getId(), getRandomName("elRecordFrozen"));
+        recordNotHeld = createElectronicRecord(recordFolder.getId(), getRandomName("elRecordNotHeld"));
+        assertStatusCode(CREATED);
+
+        STEP("Add the record to the hold.");
+        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), recordFrozen.getId(), HOLD_ONE);
     }
 
     /**
@@ -179,12 +208,80 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen nodes can not be moved.");
     }
 
+    /**
+     * Given a record folder with a frozen record and another record not in held
+     * When I update the record folder and make the records as vital
+     * Then I am successful and the records not held are mark as vital
+     * And the frozen nodes have the vital record search properties updated
+     *
+     * @throws Exception
+     */
+    @Test
+    @AlfrescoTest (jira = "RM-6929")
+    public void updateRecordFolderVitalProperties() throws Exception
+    {
+        STEP("Update the vital record properties for the record folder");
+        // Create the record folder properties to update
+        RecordFolder recordFolderToUpdate = RecordFolder.builder()
+                                                        .properties(RecordFolderProperties.builder()
+                                                                                          .vitalRecordIndicator(true)
+                                                                                          .reviewPeriod(new ReviewPeriod("month", "1"))
+                                                                                          .build())
+                                                        .build();
 
+        // Update the record folder
+        RecordFolder updatedRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder
+                (recordFolderToUpdate,
+                        recordFolder.getId());
+        assertStatusCode(OK);
+        assertTrue(updatedRecordFolder.getAspectNames().contains(ASPECTS_VITAL_RECORD_DEFINITION));
+
+
+        STEP("Check the frozen record was not mark as vital");
+        recordFrozen = getRestAPIFactory().getRecordsAPI().getRecord(recordFrozen.getId());
+        assertFalse(recordFrozen.getAspectNames().contains(ASPECTS_VITAL_RECORD));
+        assertTrue(recordFrozen.getProperties().getRecordSearchVitalRecordReviewPeriod().contains("month"));
+        assertTrue(recordFrozen.getProperties().getRecordSearchVitalRecordReviewPeriodExpression().contains("1"));
+
+        STEP("Check the record not held was mark as vital");
+        recordNotHeld = getRestAPIFactory().getRecordsAPI().getRecord(recordNotHeld.getId());
+        assertTrue(recordNotHeld.getAspectNames().contains(ASPECTS_VITAL_RECORD));
+        assertNotNull(recordNotHeld.getProperties().getReviewAsOf());
+        assertTrue(recordNotHeld.getProperties().getRecordSearchVitalRecordReviewPeriod().contains("month"));
+        assertTrue(recordNotHeld.getProperties().getRecordSearchVitalRecordReviewPeriodExpression().contains("1"));
+    }
+
+    /**
+     * Given a record folder with a frozen record and another record not in held
+     * When I add a disposition schedule
+     * Then I am successful
+     * And the record search disposition schedule properties are updated
+     *
+     * @throws Exception
+     */
+    @Test
+    @AlfrescoTest (jira = "RM-6929")
+    public void createDispositionScheduleOnCategoryWithHeldChildren() throws Exception
+    {
+        STEP("Create a retention schedule on the category with frozen children");
+        RecordCategory categoryWithRS = getRestAPIFactory().getRecordCategoryAPI()
+                                                           .getRecordCategory(recordFolder.getParentId());
+        dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), false);
+        dispositionScheduleService.addCutOffAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+
+        STEP("Check the record folder has a disposition schedule");
+        RecordFolder folderWithRS = getRestAPIFactory().getRecordFolderAPI().getRecordFolder(recordFolder.getId());
+        assertNotNull(folderWithRS.getProperties().getRecordSearchDispositionAuthority());
+        assertNotNull(folderWithRS.getProperties().getRecordSearchDispositionInstructions());
+
+    }
     @AfterClass (alwaysRun = true)
     public void cleanUpPreventActionsOnFrozenContent() throws Exception
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         dataSite.usingAdmin().deleteSite(testSite);
+        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordFolder.getParentId());
     }
 
 }

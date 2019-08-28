@@ -209,9 +209,9 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record folder with a frozen record and another record not in held
+     * Given a record folder with a frozen record and another record not held
      * When I update the record folder and make the records as vital
-     * Then I am successful and the records not held are mark as vital
+     * Then I am successful and the records not held are marked as vital
      * And the frozen nodes have the vital record search properties updated
      *
      * @throws Exception
@@ -237,13 +237,13 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         assertTrue(updatedRecordFolder.getAspectNames().contains(ASPECTS_VITAL_RECORD_DEFINITION));
 
 
-        STEP("Check the frozen record was not mark as vital");
+        STEP("Check the frozen record was not marked as vital");
         recordFrozen = getRestAPIFactory().getRecordsAPI().getRecord(recordFrozen.getId());
         assertFalse(recordFrozen.getAspectNames().contains(ASPECTS_VITAL_RECORD));
         assertTrue(recordFrozen.getProperties().getRecordSearchVitalRecordReviewPeriod().contains("month"));
         assertTrue(recordFrozen.getProperties().getRecordSearchVitalRecordReviewPeriodExpression().contains("1"));
 
-        STEP("Check the record not held was mark as vital");
+        STEP("Check the record not held was marked as vital");
         recordNotHeld = getRestAPIFactory().getRecordsAPI().getRecord(recordNotHeld.getId());
         assertTrue(recordNotHeld.getAspectNames().contains(ASPECTS_VITAL_RECORD));
         assertNotNull(recordNotHeld.getProperties().getReviewAsOf());
@@ -252,7 +252,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     /**
-     * Given a record folder with a frozen record and another record not in held
+     * Given a record folder with a frozen record and another record not held
      * When I add a disposition schedule
      * Then I am successful
      * And the record search disposition schedule properties are updated

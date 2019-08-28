@@ -60,7 +60,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RESOLUTION_UNIT;
+
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_AS_OF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SHELF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SOFTWARE;
@@ -77,14 +81,13 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for record properties
@@ -237,4 +240,13 @@ public class RecordProperties extends TestModel
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
     private String recordSearchDispositionInstructions;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
+    private String recordSearchVitalRecordReviewPeriod;
+
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION)
+    private String recordSearchVitalRecordReviewPeriodExpression;
+
+    @JsonProperty(PROPERTIES_REVIEW_AS_OF)
+    private Date reviewAsOf;
 }

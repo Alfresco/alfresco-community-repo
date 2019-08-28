@@ -36,4 +36,10 @@ public class FilePlanComponentAspects
 {
     // aspect present on completed records
     public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
+    
+	// aspect present on record folders/categories with vital records
+    public static final String ASPECTS_VITAL_RECORD_DEFINITION= "rma:vitalRecordDefinition";
+    
+	// aspect present on vital records
+    public static final String ASPECTS_VITAL_RECORD = "rma:vitalRecord";
 }

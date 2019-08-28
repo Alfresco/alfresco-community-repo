@@ -82,6 +82,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_CLASSIFICATION = "sc:classification";
     public static final String PROPERTIES_DATE_FILED = "rma:dateFiled";
     public static final String PROPERTIES_ORIGINAL_NAME = "rma:origionalName";
+    public static final String PROPERTIES_REVIEW_AS_OF = "rma:reviewAsOf";
 
     /** Electronic record properties */
     public static final String PROPERTIES_VERSION_TYPE = "cm:versionType";

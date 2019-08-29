@@ -64,7 +64,7 @@ public interface RecordsManagementQueryDAO
 
     /**
      * @param contentUrl     the URL of the content url entity
-     * @return               Return a set of UUIDs which reference the given node
+     * @return Set<NodeRef>  a set of nodes that reference the given content url
      */
-    Set<String> getNodeRefsWhichReferenceContentUrl(String contentUrl);
+    Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl);
 }

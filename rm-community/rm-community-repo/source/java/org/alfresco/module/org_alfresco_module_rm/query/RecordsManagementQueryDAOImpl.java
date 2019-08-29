@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -159,11 +158,11 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     /**
      * Get a set of node reference which reference the provided content URL
      * 
-     * @param	String	contentUrl	content URL 
-     * @return Set<String>	set of node references as strings
+     * @param	String		contentUrl	content URL 
+     * @return Set<NodeRef>	set of nodes that reference the provided content URL
      */
     @Override
-    public Set<String> getNodeRefsWhichReferenceContentUrl(String contentUrl)
+    public Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl)
     {
     	if (logger.isDebugEnabled())
     	{
@@ -192,45 +191,54 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         }
 
         // create a set of uuids which reference the content url
-        Set<String> nodesReferencingContentUrl = new HashSet<>();
+        Set<NodeRef> nodesReferencingContentUrl = new HashSet<NodeRef>(nodeIds.size());
         for(Long nodeId : nodeIds)
         {
         	StringBuilder logMessage = null;
-            String uuidToAdd;
+            NodeRef nodeRefToAdd;
             
-            if (logger.isDebugEnabled())
+            if (nodeDAO.exists(nodeId))
             {
-            	logMessage = new StringBuilder("Adding uuid ");
+	            if (logger.isDebugEnabled())
+	            {
+	            	logMessage = new StringBuilder("Adding uuid ");
+	            }
+	
+	            // if the referencing node is a version2Store reference to the content url, add the uuid for the version 2 frozen node ref
+	            NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+	            if (version2FrozenNodeRef != null)
+	            {            	
+	            	nodeRefToAdd = version2FrozenNodeRef;
+	                
+	                if (logger.isDebugEnabled())
+	                {
+	                	logMessage.append(nodeRefToAdd).append(" (from version)");
+	                }
+	            }
+	
+	            // add the uuid for the node ref of the referencing node
+	            else
+	            {
+	            	nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId).getNodeRef();
+	                if (logger.isDebugEnabled())
+	                {
+	                	logMessage.append(nodeRefToAdd);
+	                }
+	            }
+	            
+	            nodesReferencingContentUrl.add(nodeRefToAdd);
+	            
+	            if (logger.isDebugEnabled())
+	            {
+	            	logger.debug(logMessage.toString());
+	            }
             }
-
-            // if the referencing node is a version2Store reference to the content url, add the uuid for the version 2 frozen node ref
-            NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
-            if (version2FrozenNodeRef != null)
-            {            	
-                uuidToAdd = version2FrozenNodeRef.getId();
-                
-                if (logger.isDebugEnabled())
-                {
-                	logMessage.append(uuidToAdd).append(" (from version)");
-                }
-            }
-
-            // add the uuid for the node ref of the referencing node
             else
             {
-                uuidToAdd = (String) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_NODE_UUID);
-                
-                if (logger.isDebugEnabled())
-                {
-                	logMessage.append(uuidToAdd);
-                }
-            }
-            
-            nodesReferencingContentUrl.add(uuidToAdd);
-            
-            if (logger.isDebugEnabled())
-            {
-            	logger.debug(logMessage.toString());
+            	if (logger.isDebugEnabled())
+	            {
+	            	logger.debug("Not adding " + nodeId + " (exist==false)");
+	            }
             }
         }
 

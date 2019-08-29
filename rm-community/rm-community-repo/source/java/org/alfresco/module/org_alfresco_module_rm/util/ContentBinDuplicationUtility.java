@@ -96,7 +96,7 @@ public class ContentBinDuplicationUtility extends ServiceBaseImpl
         boolean hasAtLeastOneOtherReference = false;
         String contentUrl = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT).getContentUrl();
 
-        Set<String> referencesToContentNode = recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(contentUrl);
+        Set<NodeRef> referencesToContentNode = recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(contentUrl);
         if (referencesToContentNode.size() > 1)
         {
             hasAtLeastOneOtherReference = true;

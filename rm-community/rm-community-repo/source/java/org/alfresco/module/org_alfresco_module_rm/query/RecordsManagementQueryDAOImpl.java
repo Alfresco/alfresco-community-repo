@@ -197,7 +197,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         	StringBuilder logMessage = null;
             NodeRef nodeRefToAdd;
             
-            if (nodeDAO.exists(nodeId))
+            if (nodeId != null && nodeDAO.exists(nodeId))
             {
 	            if (logger.isDebugEnabled())
 	            {
@@ -206,7 +206,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 	
 	            // if the referencing node is a version2Store reference to the content url, add the uuid for the version 2 frozen node ref
 	            NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
-	            if (version2FrozenNodeRef != null)
+	            if (version2FrozenNodeRef != null && nodeDAO.exists(version2FrozenNodeRef))
 	            {            	
 	            	nodeRefToAdd = version2FrozenNodeRef;
 	                

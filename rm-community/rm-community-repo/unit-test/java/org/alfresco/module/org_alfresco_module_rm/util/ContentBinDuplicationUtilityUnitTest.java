@@ -116,8 +116,8 @@ public class ContentBinDuplicationUtilityUnitTest
     @Test
     public void testHasAtLeastOneOtherReference()
     {
-        Set<String> multipleReferences = new HashSet<>();
-        Collections.addAll(multipleReferences, NODE_REF.getId(), NODE_REF2.getId());
+        Set<NodeRef> multipleReferences = new HashSet<>();
+        Collections.addAll(multipleReferences, NODE_REF, NODE_REF2);
 
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(contentReader);
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
@@ -132,7 +132,7 @@ public class ContentBinDuplicationUtilityUnitTest
     @Test
     public void testHasNoOtherReference()
     {
-        Set<String> singleReference = Collections.singleton(NODE_REF.getId());
+        Set<NodeRef> singleReference = Collections.singleton(NODE_REF);
 
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(contentReader);
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
@@ -147,7 +147,7 @@ public class ContentBinDuplicationUtilityUnitTest
     @Test
     public void testHasNoReferences()
     {
-        Set<String> noReferences = Collections.<String> emptySet();
+        Set<NodeRef> noReferences = Collections.<NodeRef> emptySet();
 
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(contentReader);
         when(contentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);

@@ -171,11 +171,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     	
     	// create the content URL entity used to query for nodes
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        contentUrlEntity.setContentUrl(contentUrl);
-        if (contentUrlEntity.getContentUrlShort() != null)
-        {
-            contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
-        }
+        contentUrlEntity.setContentUrl(contentUrl.toLowerCase());
 
         if (logger.isDebugEnabled())
     	{
@@ -201,10 +197,10 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
             {
 	            if (logger.isDebugEnabled())
 	            {
-	            	logMessage = new StringBuilder("Adding uuid ");
+	            	logMessage = new StringBuilder("Adding noderef ");
 	            }
 	
-	            // if the referencing node is a version2Store reference to the content url, add the uuid for the version 2 frozen node ref
+	            // if the referencing node is a version2Store reference to the content url, add the version 2 frozen node ref
 	            NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
 	            if (version2FrozenNodeRef != null && nodeDAO.exists(version2FrozenNodeRef))
 	            {            	
@@ -216,7 +212,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 	                }
 	            }
 	
-	            // add the uuid for the node ref of the referencing node
+	            // add the node ref of the referencing node
 	            else
 	            {
 	            	nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId).getNodeRef();

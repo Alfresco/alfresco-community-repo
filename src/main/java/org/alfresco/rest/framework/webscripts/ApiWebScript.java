@@ -31,11 +31,11 @@ import java.util.Map;
 
 import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStreamFactory;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
-import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;
@@ -56,7 +56,8 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected String tempDirectoryName = null;
     protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
     protected long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
-    protected TempStoreOutputStreamFactory streamFactory = null;
+    protected TempOutputStreamFactory streamFactory = null;
+    protected TempOutputStreamFactory responseStreamFactory = null;
     protected TransactionService transactionService;
 
     public void setTransactionService(TransactionService transactionService)
@@ -88,7 +89,7 @@ public abstract class ApiWebScript extends AbstractWebScript
         this.maxContentSize = maxContentSize;
     }
 
-    public void setStreamFactory(TempStoreOutputStreamFactory streamFactory)
+    public void setStreamFactory(TempOutputStreamFactory streamFactory)
     {
         this.streamFactory = streamFactory;
     }
@@ -96,7 +97,8 @@ public abstract class ApiWebScript extends AbstractWebScript
     public void init()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-        this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+        this.streamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, false, false);
+        this.responseStreamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, false, true);
     }
 
     @Override

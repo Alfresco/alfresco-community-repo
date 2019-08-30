@@ -27,8 +27,9 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.web.scripts.BufferedResponse;
+import org.alfresco.repo.web.scripts.TempOutputStream;
+import org.alfresco.repo.web.scripts.TempOutputStreamFactory;
 import org.alfresco.util.TempFileProvider;
-import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,7 +55,7 @@ public class BufferedResponseTest
 
     private static final String TEMP_DIRECTORY_NAME = "testLargeFile";
     private static final String LARGE_FILE_NAME = "largeFile.tmp";
-    private static final String FILE_PREFIX = "opencmis";
+    private static final String FILE_PREFIX = TempOutputStream.TEMP_FILE_PREFIX;
 
     private static final Integer LARGE_FILE_SIZE_BYTES = 5 * 1024 * 1024;
     private static final Integer MEMORY_THRESHOLD = 4 * 1024 * 1024;
@@ -81,12 +82,14 @@ public class BufferedResponseTest
     public void testOutputStream() throws IOException
     {
         File bufferTempDirectory = TempFileProvider.getTempDir(TEMP_DIRECTORY_NAME);
-        TempStoreOutputStreamFactory streamFactory = TempStoreOutputStreamFactory.newInstance(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE,false);
+        TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false,true);
         BufferedResponse response = new BufferedResponse(null, 0, streamFactory);
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX );
         copyFileToOutputStream(response);
         long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory, FILE_PREFIX);
+        
+        response.getOutputStream().close();
 
         Assert.assertEquals(countBefore + 1, countAfter);
 

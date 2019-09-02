@@ -2,6 +2,11 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 
+    <typeAliases>
+        <!-- Content -->
+        <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
+    </typeAliases>
+
     <typeHandlers>
         <typeHandler javaType="java.io.Serializable" handler="org.alfresco.ibatis.SerializableTypeHandler"/>
     </typeHandlers>

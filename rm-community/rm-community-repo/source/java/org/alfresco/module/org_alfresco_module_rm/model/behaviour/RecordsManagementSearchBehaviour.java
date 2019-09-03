@@ -526,11 +526,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
 		            // Clear the events
 		            nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Set rma:recordSearchDispositionEvents for node " + record + " to: " +
-                               null);
-                    }
 
 		        }
 		        
@@ -651,10 +646,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 }
                 events.add((String)nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_NAME));
                 nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, (Serializable)events);
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Set rma:recordSearchDispositionEvents for node from eventExecutionUpdate" + record + " to: " + events);
-                }
 
             }
         }

@@ -28,11 +28,18 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -52,6 +59,9 @@ import org.mockito.MockitoAnnotations;
  */
 public class ContentBinDuplicationUtilityUnitTest
 {
+    private final static NodeRef NODE_REF = new NodeRef("some://test/noderef");
+    private final static NodeRef NODE_REF2 = new NodeRef("some://test/anothernoderef");
+    private final static String CONTENT_URL = "someContentUrl";
 
     @Mock
     private ContentService mockContentService;
@@ -66,6 +76,9 @@ public class ContentBinDuplicationUtilityUnitTest
     private ContentWriter mockContentWriter;
     @Mock
     private NodeService mockNodeService;
+
+    @Mock
+    private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
     @InjectMocks
     private ContentBinDuplicationUtility contentBinDuplicationUtility;
@@ -82,10 +95,9 @@ public class ContentBinDuplicationUtilityUnitTest
     @Test
     public void testContentUrlIsUpdated()
     {
-        NodeRef nodeRef = new NodeRef("some://test/noderef");
-        when(mockContentService.getReader(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
-        contentBinDuplicationUtility.duplicate(nodeRef);
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
+        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
+        contentBinDuplicationUtility.duplicate(NODE_REF);
         verify(mockContentWriter, times(1)).putContent(mockContentReader);
         checkBehaviours(1);
     }
@@ -96,9 +108,8 @@ public class ContentBinDuplicationUtilityUnitTest
     @Test
     public void testDuplicationDoesntHappenWithNoContent()
     {
-        NodeRef nodeRef = new NodeRef("some://test/noderef");
-        when(mockContentService.getReader(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(null);
-        contentBinDuplicationUtility.duplicate(nodeRef);
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
+        contentBinDuplicationUtility.duplicate(NODE_REF);
         verify(mockContentWriter, times(0)).putContent(mockContentReader);
         checkBehaviours(1);
     }
@@ -118,6 +129,52 @@ public class ContentBinDuplicationUtilityUnitTest
         verify(mockContentReader, times(0)).getReader();
         checkBehaviours(0);
     }
+    /**
+     * Test hasAtLeastOneOtherReference returns true when node has another reference to it
+     */
+    @Test
+    public void testHasAtLeastOneOtherReference()
+    {
+        Set<NodeRef> multipleReferences = new HashSet<>();
+        Collections.addAll(multipleReferences, NODE_REF, NODE_REF2);
+
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
+        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(multipleReferences);
+
+        assertTrue(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
+    }
+
+    /**
+     * Test hasAtLeastOneOtherReference returns false when node has no other reference to it other than its own content ref
+     */
+    @Test
+    public void testHasNoOtherReference()
+    {
+        Set<NodeRef> singleReference = Collections.singleton(NODE_REF);
+
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
+        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(singleReference);
+
+        assertFalse(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
+    }
+
+    /**
+     * Test hasAtLeastOneOtherReference returns false when node has no references to it at all
+     */
+    @Test
+    public void testHasNoReferences()
+    {
+        Set<NodeRef> noReferences = Collections.<NodeRef> emptySet();
+
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
+        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
+        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(noReferences);
+
+        assertFalse(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
+    }
+
     /**
      * Check that the behaviours are disabled and re-enabled the correct number of times
      * @param times the times the behaviours should be called

@@ -61,4 +61,10 @@ public interface RecordsManagementQueryDAO
      * @return list of distinct property values
      */
     public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
+
+    /**
+     * @param contentUrl     the URL of the content url entity
+     * @return Set<NodeRef>  a set of nodes that reference the given content url
+     */
+    Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl);
 }

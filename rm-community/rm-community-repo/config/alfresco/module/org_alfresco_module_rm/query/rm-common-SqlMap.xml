@@ -7,6 +7,10 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
     </parameterMap>
+
+    <resultMap id="result_NodeIds" type="java.lang.Long">
+        <result property="node.id" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
     
     <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
         select
@@ -35,6 +39,21 @@
 
    </select>
 
+    <!-- Get list of node ids which reference given content url -->
+    <select id="select_NodeIdsWhichReferenceContentUrl"
+            parameterType="ContentUrl"
+            resultMap="result_NodeIds">
+      select
+         p.node_id
+      from
+         alf_content_url cu
+      LEFT OUTER JOIN alf_content_data cd ON (cd.content_url_id = cu.id)
+      LEFT OUTER JOIN alf_node_properties p ON (p.long_value = cd.id)
+      WHERE
+         content_url_short = #{contentUrlShort} and
+         content_url_crc = #{contentUrlCrc}
+
+   </select>
 
 
 </mapper>

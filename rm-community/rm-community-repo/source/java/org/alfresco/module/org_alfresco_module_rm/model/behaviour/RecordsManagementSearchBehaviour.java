@@ -526,6 +526,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
 		            // Clear the events
 		            nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Set rma:recordSearchDispositionEvents for node " + record + " to: " +
+                               null);
+                    }
+
 		        }
 		        
 		        return null;
@@ -587,7 +593,17 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             }
         }
 
-        nodeService.setProperties(record, props);
+        try
+        {
+            //disable on properties update policy for the frozen aspect
+            frozenAspect.disableOnPropUpdateFrozenAspect();
+            nodeService.setProperties(record, props);
+        }
+        finally
+        {
+            frozenAspect.enableOnPropUpdateFrozenAspect();
+        }
+
 
         if (logger.isDebugEnabled())
         {
@@ -635,6 +651,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 }
                 events.add((String)nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_NAME));
                 nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, (Serializable)events);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Set rma:recordSearchDispositionEvents for node from eventExecutionUpdate" + record + " to: " + events);
+                }
+
             }
         }
     }

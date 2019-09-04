@@ -702,6 +702,7 @@ public abstract class BaseAPI
     public enum RM_ACTIONS
     {
         EDIT_DISPOSITION_DATE("editDispositionActionAsOfDate"),
+        END_RETENTION("retain"),
         CUT_OFF("cutoff"),
         UNDO_CUT_OFF("undoCutoff"),
         TRANSFER("transfer"),

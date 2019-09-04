@@ -526,7 +526,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
 
 		            // Clear the events
 		            nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
-
 		        }
 		        
 		        return null;
@@ -599,7 +598,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             frozenAspect.enableOnPropUpdateFrozenAspect();
         }
 
-
         if (logger.isDebugEnabled())
         {
             logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
@@ -646,7 +644,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 }
                 events.add((String)nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_NAME));
                 nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, (Serializable)events);
-
             }
         }
     }

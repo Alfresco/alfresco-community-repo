@@ -18,6 +18,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="cleansingEnabled" value="${rm.content.cleansing.enabled}" />
+      <property name="contentBinDuplicationUtility" ref="contentBinDuplicationUtility"/>
    </bean>
 
    <!--  extended eager content store cleaner -->

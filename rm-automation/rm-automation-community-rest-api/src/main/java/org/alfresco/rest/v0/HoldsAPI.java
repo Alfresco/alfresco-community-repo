@@ -127,7 +127,7 @@ public class HoldsAPI extends BaseAPI
         try
         {
            return convertHTTPResponseToJSON(httpResponse).getString("persistedObject")
-                                .replaceAll(NODE_REF_WORKSPACE_SPACES_STORE, "");
+                                .replace(NODE_REF_WORKSPACE_SPACES_STORE, "");
         }
         catch(JSONException error)
         {
@@ -172,7 +172,22 @@ public class HoldsAPI extends BaseAPI
     /**
      * Adds a list of items (content/record/record folder) to a list of holds
      *
-     * @param user         the user who adds the item to the hold
+     * @param user         the user who adds the items to the holds
+     * @param password     the user's password
+     * @param itemNodeRefs the list of items nodeRefs to be added to holds
+     * @param holdNames    the list of holds
+     * @return The HTTP response
+     */
+    public HttpResponse addItemsToHolds(String user, String password, List<String> itemNodeRefs,
+                                        List<String> holdNames)
+    {
+        return addItemsToHolds(user, password, SC_OK, itemNodeRefs, holdNames);
+    }
+
+    /**
+     * Adds a list of items (content/record/record folder) to a list of holds
+     *
+     * @param user         the user who adds the items to the holds
      * @param password     the user's password
      * @param itemNodeRefs the list of items nodeRefs to be added to holds
      * @param holdNames    the list of holds
@@ -239,6 +254,21 @@ public class HoldsAPI extends BaseAPI
     {
         return removeItemsFromHolds(user, password, SC_OK, Collections.singletonList(itemNodeRef),
                 Collections.singletonList(holdName));
+    }
+
+    /**
+     * Remove a list of items (content/record/record folder) from a list of holds
+     *
+     * @param user           the user who removes the item from the hold
+     * @param password       the user's password
+     * @param itemNodeRefs   the list of items nodeRefs to be removed from hold
+     * @param holdNames      the list of hold names
+     * @return The HTTP response
+     */
+    public HttpResponse removeItemsFromHolds(String user, String password, List<String> itemNodeRefs,
+                                             List<String> holdNames)
+    {
+        return removeItemsFromHolds(user, password, SC_OK, itemNodeRefs, holdNames);
     }
 
     /**

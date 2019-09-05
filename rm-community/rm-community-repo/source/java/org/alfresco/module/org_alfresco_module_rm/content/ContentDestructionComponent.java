@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.module.org_alfresco_module_rm.util.ContentBinDuplicationUtility;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -62,6 +63,9 @@ public class ContentDestructionComponent
 
     /** behaviour filter */
     private BehaviourFilter behaviourFilter;
+
+    /** Utility class for duplicating content */
+    private ContentBinDuplicationUtility contentBinDuplicationUtility;
 
     /** indicates whether cleansing is enabled or not */
     private boolean cleansingEnabled = false;
@@ -136,6 +140,15 @@ public class ContentDestructionComponent
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * Setter for content duplication utility class
+     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
+     */
+    public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
+    {
+        this.contentBinDuplicationUtility = contentBinDuplicationUtility;
     }
 
     /**
@@ -214,16 +227,19 @@ public class ContentDestructionComponent
                 // get content data
                 ContentData dataContent = (ContentData)entry.getValue();
 
-                // if enabled cleanse content
-                if (isCleansingEnabled())
+                if (!contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef))
                 {
-                    // register for cleanse then immediate destruction
-                    getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
-                }
-                else
-                {
-                    // register for immediate destruction
-                    getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                    // if enabled cleanse content
+                    if (isCleansingEnabled())
+                    {
+                        // register for cleanse then immediate destruction
+                        getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
+                    }
+                    else
+                    {
+                        // register for immediate destruction
+                        getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                    }
                 }
 
                 // clear the property

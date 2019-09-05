@@ -47,6 +47,7 @@ import java.io.File;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.JsonBodyGenerator;
+import org.alfresco.rest.core.v0.BaseAPI.RM_ACTIONS;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -55,6 +56,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
 import org.alfresco.rest.v0.HoldsAPI;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
@@ -81,12 +83,16 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     private static FolderModel folderModel;
     private static RecordCategoryChild recordFolder;
     private static Record recordFrozen, recordNotHeld;
+    private static RecordCategory categoryWithRS;
 
     @Autowired
     private HoldsAPI holdsAPI;
 
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
+
+    @Autowired
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForPreventActionsOnFrozenContent() throws Exception
@@ -276,12 +282,52 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         assertNotNull(folderWithRS.getProperties().getRecordSearchDispositionInstructions());
 
     }
+
+    /**
+     * Given a record category with a disposition schedule applied to records
+     * And the disposition schedule has a retain step  immediately and destroy step immediately
+     * And a complete record added to one hold
+     * When I execute the retain action
+     * Then the action is executed
+     * And the record search disposition schedule properties are updated
+     *
+     * @throws Exception
+     */
+    @Test
+    @AlfrescoTest (jira = "RM-6931")
+    public void retainActionOnFrozenHeldRecords() throws Exception
+    {
+        STEP("Add a category with a disposition schedule.");
+        categoryWithRS = createRootCategory(getRandomName("CategoryWithRS"));
+        dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRS.getName(), true);
+        dispositionScheduleService.addRetainAfterPeriodStep(categoryWithRS.getName(), "immediately");
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(categoryWithRS.getName(), "immediately");
+
+        STEP("Create record folder with a record.");
+        RecordCategoryChild folder = createFolder(categoryWithRS.getId(), getRandomName("RecFolder"));
+        Record record = createElectronicRecord(folder.getId(), getRandomName("elRecord"));
+        completeRecord(record.getId());
+
+        STEP("Add the record to the hold");
+        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getId(), HOLD_ONE);
+
+        STEP("Execute the retain action");
+        rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getPassword(), record.getName(),
+                RM_ACTIONS.END_RETENTION);
+
+        STEP("Check the record search disposition properties");
+        Record recordUpdated = getRestAPIFactory().getRecordsAPI().getRecord(record.getId());
+        assertTrue(recordUpdated.getProperties().getRecordSearchDispositionActionName().contains(RM_ACTIONS.DESTROY.getAction()));
+        assertTrue(recordUpdated.getProperties().getRecordSearchDispositionPeriod().contains("immediately"));
+    }
+
     @AfterClass (alwaysRun = true)
     public void cleanUpPreventActionsOnFrozenContent() throws Exception
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         dataSite.usingAdmin().deleteSite(testSite);
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordFolder.getParentId());
+        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(categoryWithRS.getId());
     }
 
 }

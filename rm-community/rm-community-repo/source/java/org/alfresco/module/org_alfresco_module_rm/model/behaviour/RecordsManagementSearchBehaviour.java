@@ -587,7 +587,16 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             }
         }
 
-        nodeService.setProperties(record, props);
+        try
+        {
+            //disable on properties update policy for the frozen aspect
+            frozenAspect.disableOnPropUpdateFrozenAspect();
+            nodeService.setProperties(record, props);
+        }
+        finally
+        {
+            frozenAspect.enableOnPropUpdateFrozenAspect();
+        }
 
         if (logger.isDebugEnabled())
         {

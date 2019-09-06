@@ -40,11 +40,13 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -86,6 +88,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
+    private static final String IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER = "isHoldVisibleForCurrentUser";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -115,6 +118,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
      * Disposition service
      */
     private DispositionService dispositionService;
+
+    /** Hold service */
+    private HoldService holdService;
 
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<>();
@@ -264,6 +270,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
+     * @param holdService hold service
+     */
+    public void setHoldService(HoldService holdService)
+    {
+        this.holdService = holdService;
+    }
+
+    /**
      * The initialise method
      */
     public void init()
@@ -325,6 +339,20 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
                     boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
                     rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
+                }
+            }
+
+            List<NodeRef> holds = holdService.heldBy(nodeRef, false);
+            if (!CollectionUtils.isEmpty(holds))
+            {
+                for (NodeRef hold : holds)
+                {
+                    // return true as soon as we find one hold we have filling permission on
+                    if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(hold, RMPermissionModel.FILING)))
+                    {
+                        rootJSONObject.put(IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER, true);
+                        break;
+                    }
                 }
             }
         }

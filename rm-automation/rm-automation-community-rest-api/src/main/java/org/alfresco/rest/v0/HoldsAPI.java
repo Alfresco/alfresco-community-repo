@@ -165,8 +165,7 @@ public class HoldsAPI extends BaseAPI
      */
     public HttpResponse addItemToHold(String user, String password, String itemNodeRef, String holdName)
     {
-        return addItemsToHolds(user, password, SC_OK, Collections.singletonList(itemNodeRef),
-                Collections.singletonList(holdName));
+        return addItemsToHolds(user, password, Collections.singletonList(itemNodeRef), Collections.singletonList(holdName));
     }
 
     /**
@@ -178,8 +177,7 @@ public class HoldsAPI extends BaseAPI
      * @param holdNames    the list of holds
      * @return The HTTP response
      */
-    public HttpResponse addItemsToHolds(String user, String password, List<String> itemNodeRefs,
-                                        List<String> holdNames)
+    public HttpResponse addItemsToHolds(String user, String password, List<String> itemNodeRefs, List<String> holdNames)
     {
         return addItemsToHolds(user, password, SC_OK, itemNodeRefs, holdNames);
     }
@@ -252,8 +250,7 @@ public class HoldsAPI extends BaseAPI
      */
     public HttpResponse removeItemFromHold(String user, String password, String itemNodeRef, String holdName)
     {
-        return removeItemsFromHolds(user, password, SC_OK, Collections.singletonList(itemNodeRef),
-                Collections.singletonList(holdName));
+        return removeItemsFromHolds(user, password, Collections.singletonList(itemNodeRef), Collections.singletonList(holdName));
     }
 
     /**
@@ -265,8 +262,7 @@ public class HoldsAPI extends BaseAPI
      * @param holdNames      the list of hold names
      * @return The HTTP response
      */
-    public HttpResponse removeItemsFromHolds(String user, String password, List<String> itemNodeRefs,
-                                             List<String> holdNames)
+    public HttpResponse removeItemsFromHolds(String user, String password, List<String> itemNodeRefs, List<String> holdNames)
     {
         return removeItemsFromHolds(user, password, SC_OK, itemNodeRefs, holdNames);
     }

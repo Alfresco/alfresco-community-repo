@@ -62,8 +62,8 @@
         <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
 
-        <dependency.alfresco-remote-api.version>7.84</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-repository.version>7.110</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>7.85</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-repository.version>7.111</dependency.alfresco-repository.version>
         <dependency.alfresco-data-model.version>8.48</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>7.21</dependency.alfresco-core.version>
 
@@ -81,6 +81,8 @@
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>4.2.0</dependency.fabric8.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.9.9.3</dependency.jackson-databind.version>
+
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
 
         <!-- Alfresco Share version -->
@@ -363,7 +365,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${dependency.jackson.version}</version>
+                <version>${dependency.jackson-databind.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

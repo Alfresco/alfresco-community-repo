@@ -57,7 +57,7 @@ public class AutomaticDispositionTest extends BaseRMRestTest
      * When the correct duration of time passes
      * Then the record will be automatically cut off
      */
-    @Test(enabled = false)
+    @Test//(enabled = false)
     public void testAutomaticCutOff() throws Exception
     {
         STEP("Create record category with retention schedule and apply it to records.");

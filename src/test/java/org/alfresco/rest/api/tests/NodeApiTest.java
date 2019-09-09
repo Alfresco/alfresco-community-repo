@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -2755,6 +2756,131 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // -ve test - create a file with a duplicate name (d1-2.txt), but set the autoRename to false
         post(postUrl, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
+    }
+
+    @Test
+    public void testUpdateNodeConcurrentlyUsingInMemoryBacked() throws Exception
+    {
+        // Less than its memory threshold ( 4 MB )
+        updateNodeConcurrently(1024L);
+    }
+
+    @Test
+    public void testUpdateNodeConcurrentlyUsingFileBacked() throws Exception
+    {
+        // Bigger than its memory threshold ( 5 > 4 MB )
+        updateNodeConcurrently(5 * 1024 * 1024L);
+    }
+
+    private void updateNodeConcurrently(Long contentSize) throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create folder
+        String folder0Name = "f0-testUpdateNodeConcurrently-" + RUNID;
+        String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
+
+        // Create empty file
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        Map params = new HashMap<>();
+        params.put("majorVersion", "true");
+
+        Document documentResp = createEmptyTextFile(f0Id, d1.getName(), params, 201);
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+        String docId = documentResp.getId();
+
+        // Store the threads so that we can check if they are done
+        List<Thread> threads = new ArrayList<Thread>();
+
+        // Create threads
+        for (int i = 0; i < 2; i++)
+        {
+            Runnable task = new UpdateNodeRunnable(docId, contentSize);
+
+            Thread worker = new Thread(task);
+            worker.setName(String.valueOf(i));
+            worker.start();
+
+            // Remember the thread for later usage
+            threads.add(worker);
+        }
+        int running = 0;
+        do
+        {
+            running = 0;
+            for (Thread thread : threads)
+            {
+                if (thread.isAlive())
+                {
+                    running++;
+                }
+            }
+        } while (running > 0);
+
+        HttpResponse response = getSingle(URL_NODES, docId, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertTrue("File size is 0 bytes", documentResp.getContent().getSizeInBytes().intValue() > 0);
+    }
+
+    private class UpdateNodeRunnable implements Runnable
+    {
+        private final String docId;
+        private final Long contentSize;
+
+        UpdateNodeRunnable(String docId, Long contentSize)
+        {
+            this.docId = docId;
+            this.contentSize = contentSize;
+        }
+
+        @Override
+        public void run()
+        {
+            setRequestContext(user1);
+
+            Map<String, String> params = new HashMap<>();
+            params.put("majorVersion", "true");
+
+            Document documentResp = null;
+            try
+            {
+                documentResp = updateTextFileWithRandomContent(docId, contentSize, params);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(documentResp.getProperties());
+
+            assertEquals(contentSize, documentResp.getContent().getSizeInBytes());
+        }
+    }
+
+    protected Document updateTextFileWithRandomContent(String contentId, Long contentSize, Map<String, String> params) throws Exception
+    {
+        return updateTextFileWithRandomContent(contentId, contentSize, params, 200);
+    }
+
+    protected Document updateTextFileWithRandomContent(String contentId, Long contentSize, Map<String, String> params, int expectedStatus) throws Exception
+    {
+        File txtFile = TempFileProvider.createTempFile(getClass().getSimpleName(), ".txt");
+        RandomAccessFile file = new RandomAccessFile(txtFile.getPath(), "rw");
+        file.setLength(contentSize);
+        file.close();
+
+        BinaryPayload payload = new BinaryPayload(txtFile);
+
+        HttpResponse response = putBinary(getNodeContentUrl(contentId), payload, null, params, expectedStatus);
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
     /**

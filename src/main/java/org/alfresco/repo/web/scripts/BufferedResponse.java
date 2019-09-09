@@ -30,8 +30,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.chemistry.opencmis.commons.server.TempStoreOutputStream;
-import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.StringBuilderWriter;
@@ -49,10 +47,10 @@ public class BufferedResponse implements WrappingWebScriptResponse
     // Logger
     protected static final Log logger = LogFactory.getLog(BufferedResponse.class);
 
-    private TempStoreOutputStreamFactory streamFactory;
+    private TempOutputStreamFactory streamFactory;
     private WebScriptResponse res;
     private int bufferSize;
-    private TempStoreOutputStream outputStream = null;
+    private TempOutputStream outputStream = null;
     private StringBuilderWriter outputWriter = null;
     
 
@@ -62,7 +60,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
      * @param res WebScriptResponse
      * @param bufferSize int
      */
-    public BufferedResponse(WebScriptResponse res, int bufferSize, TempStoreOutputStreamFactory streamFactory)
+    public BufferedResponse(WebScriptResponse res, int bufferSize, TempOutputStreamFactory streamFactory)
     {
         this.res = res;
         this.bufferSize = bufferSize;
@@ -133,7 +131,7 @@ public class BufferedResponse implements WrappingWebScriptResponse
             {
                 throw new AlfrescoRuntimeException("Already buffering output writer");
             }
-            outputStream = streamFactory.newOutputStream();
+            outputStream = streamFactory.createOutputStream();
         }
         return outputStream;
     }

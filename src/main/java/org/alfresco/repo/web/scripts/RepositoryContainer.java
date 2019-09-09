@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
-import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -96,7 +95,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private String tempDirectoryName = null;
     private int memoryThreshold = 4 * 1024 * 1024; // 4mb
     private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
-    private TempStoreOutputStreamFactory streamFactory = null;
+    private TempOutputStreamFactory streamFactory = null;
+    private TempOutputStreamFactory responseStreamFactory = null;
     private String preserveHeadersPattern = null;
 
     private Class<?>[] notPublicExceptions = new Class<?>[] {};
@@ -108,7 +108,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     public void setup()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-    	this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+        this.streamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles, false);
+        this.responseStreamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles, true);
     }
 
     public void setEncryptTempFiles(Boolean encryptTempFiles)
@@ -486,7 +487,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 
                         // create buffered request and response that allow transaction retrying
                         bufferedReq = new BufferedRequest(scriptReq, streamFactory);
-                        bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize(), streamFactory);
+                        bufferedRes = new BufferedResponse(scriptRes, trxParams.getBufferSize(), responseStreamFactory);
                     }
                     else
                     {

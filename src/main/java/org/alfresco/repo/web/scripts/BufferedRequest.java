@@ -26,13 +26,10 @@
 package org.alfresco.repo.web.scripts;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.chemistry.opencmis.commons.server.TempStoreOutputStream;
-import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Description.FormatStyle;
 import org.springframework.extensions.webscripts.Match;
@@ -43,33 +40,51 @@ import org.springframework.util.FileCopyUtils;
 
 public class BufferedRequest implements WrappingWebScriptRequest
 {
-	private TempStoreOutputStreamFactory streamFactory;
+    private TempOutputStreamFactory streamFactory;
     private WebScriptRequest req;
-    private File requestBody;
+    private TempOutputStream bufferStream;
     private InputStream contentStream;
     private BufferedReader contentReader;
     
-    public BufferedRequest(WebScriptRequest req, TempStoreOutputStreamFactory streamFactory)
+    public BufferedRequest(WebScriptRequest req, TempOutputStreamFactory streamFactory)
     {
         this.req = req;
         this.streamFactory = streamFactory;
     }
 
+    private TempOutputStream getBufferedBodyAsTempStream() throws IOException
+    {
+        if (bufferStream == null)
+        {
+            bufferStream = streamFactory.createOutputStream();
+
+            try
+            {
+                // Copy the stream
+                FileCopyUtils.copy(req.getContent().getInputStream(), bufferStream);
+            }
+            catch (IOException e)
+            {
+                bufferStream.destroy();
+                throw e;
+            }
+        }
+
+        return bufferStream;
+    }
+
     private InputStream bufferInputStream() throws IOException
     {
-        TempStoreOutputStream bufferStream = streamFactory.newOutputStream();
-
-        try
+        if (contentReader != null)
         {
-        	FileCopyUtils.copy(req.getContent().getInputStream(), bufferStream);
+            throw new IllegalStateException("Reader in use");
         }
-        catch (IOException e)
+        if (contentStream == null)
         {
-            bufferStream.destroy(e); // remove temp file
-            throw e;
+            contentStream = getBufferedBodyAsTempStream().getInputStream();
         }
 
-        return bufferStream.getInputStream();
+        return contentStream;
     }
 
     public void reset()
@@ -101,16 +116,16 @@ public class BufferedRequest implements WrappingWebScriptRequest
     public void close()
     {
         reset();
-        if (requestBody != null)
+        if (bufferStream != null)
         {
             try
             {
-                requestBody.delete();
+                bufferStream.destroy();
             }
             catch (Exception e)
             {
             }
-            requestBody = null;
+            bufferStream = null;
         }
     }
 

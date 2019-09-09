@@ -24,6 +24,7 @@
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="dispositionService" ref="dispositionService" />
       <property name="holdService" ref="HoldService" />
+      <property name="freezeService" ref="FreezeService" />
    </bean>
 
    <!--  extends core bean with RM extensions -->

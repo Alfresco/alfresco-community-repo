@@ -46,6 +46,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -89,6 +90,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
     private static final String IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER = "isHoldVisibleForCurrentUser";
+    private static final String IS_FROZEN_ACTIVE_CONTENT = "isFrozenActiveContent";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -113,6 +115,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** site service */
     private SiteService siteService;
+
+    /** freeze service */
+    private FreezeService freezeService;
 
     /**
      * Disposition service
@@ -278,6 +283,12 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
+     *
+     * @param freezeService
+     */
+    public void setFreezeService(FreezeService freezeService) { this.freezeService = freezeService; }
+
+    /**
      * The initialise method
      */
     public void init()
@@ -353,6 +364,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         rootJSONObject.put(IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER, true);
                         break;
                     }
+                }
+                if (freezeService.isFrozen(nodeRef))
+                {
+                    rootJSONObject.put(IS_FROZEN_ACTIVE_CONTENT, true);
                 }
             }
         }

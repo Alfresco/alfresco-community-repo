@@ -99,12 +99,21 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
     }
 
     @Override
+    protected String getTransform()
+    {
+        return "PdfBox";
+    }
+    
+    
+    @Override
     protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
                                    ContentWriter writer, TransformationOptions options,
                                    String sourceMimetype, String targetMimetype,
                                    String sourceExtension, String targetExtension,
                                    String targetEncoding) throws Exception
     {
+
+        String transform = getTransform();
         long timeoutMs = options.getTimeoutMs();
         String notExtractBookmarksText = null;
 
@@ -115,6 +124,7 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
 
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger, 
+                "transform", transform,
                 "notExtractBookmarksText", notExtractBookmarksText,
                 "targetMimetype", targetMimetype, 
                 "targetEncoding", targetEncoding);

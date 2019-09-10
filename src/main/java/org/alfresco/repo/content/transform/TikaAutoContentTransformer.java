@@ -131,4 +131,10 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
     {
        return parser;
     }
+
+    @Override
+    protected String getTransform()
+    {
+        return "TikaAuto";
+    }
 }

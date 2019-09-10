@@ -51,4 +51,10 @@ public class TextMiningContentTransformer extends TikaPoweredContentTransformer
     protected Parser getParser() {
         return new OfficeParser();
     }
+
+    @Override
+    protected String getTransform()
+    {
+        return "TextMining";
+    }
 }

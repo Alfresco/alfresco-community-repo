@@ -42,4 +42,10 @@ public abstract class AbstractTransformServiceRegistry implements TransformServi
         long maxSize = getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
         return maxSize != 0 && (maxSize == -1L || maxSize >= size);
     }
+
+    @Override
+    public String getTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
+    {
+        throw new UnsupportedOperationException("AbstractTransformServiceRegistry.getTransformerName(...) is not supported. Only supported in ");
+    }
 }

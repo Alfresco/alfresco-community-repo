@@ -142,19 +142,12 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
     }
 
     @Override
-    protected String getTransform()
-    {
-        return "Archive";
-    }
-
-    @Override
     protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
                                    ContentWriter writer, TransformationOptions options,
                                    String sourceMimetype, String targetMimetype,
                                    String sourceExtension, String targetExtension,
                                    String targetEncoding) throws Exception
     {
-        String transform = getTransform();
         long timeoutMs = options.getTimeoutMs();
         boolean recurse = includeContents;
         if(options.getIncludeEmbedded() != null)
@@ -162,7 +155,7 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
             recurse = options.getIncludeEmbedded();
         }
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
-                timeoutMs, logger, "transform", transform, "includeContents", Boolean.toString(recurse),
+                timeoutMs, logger, "includeContents", Boolean.toString(recurse),
                 "targetMimetype", targetMimetype, "targetEncoding", targetEncoding);
     }
 }

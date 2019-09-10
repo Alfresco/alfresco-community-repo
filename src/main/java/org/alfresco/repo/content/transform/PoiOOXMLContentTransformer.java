@@ -65,10 +65,4 @@ public class PoiOOXMLContentTransformer extends TikaPoweredContentTransformer
     protected Parser getParser() {
        return new OOXMLParser();
     }
-
-    @Override
-    protected String getTransform()
-    {
-        return "OOXML";
-    }
 }

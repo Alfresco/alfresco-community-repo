@@ -44,7 +44,7 @@
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.11</dependency.alfresco-hb-data-sender.version>
-
+        <dependency.transform.model.version>repo4639.1</dependency.transform.model.version>
 
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.httpcomponents.version>4.5.9</dependency.httpcomponents.version>
@@ -66,7 +66,6 @@
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
         <dependency.jackson-databind.version>2.9.9.3</dependency.jackson-databind.version>
-        <dependency.transform.model.version>1.0.2.5</dependency.transform.model.version>
     </properties>
 
     <dependencyManagement>
@@ -1050,6 +1049,13 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-transform-model</artifactId>
+            <version>${dependency.transform.model.version}</version>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>

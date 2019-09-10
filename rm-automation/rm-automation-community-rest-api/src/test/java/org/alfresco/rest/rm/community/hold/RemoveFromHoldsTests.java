@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
+import static java.util.Arrays.asList;
+
 import static org.alfresco.rest.rm.community.base.TestData.FROZEN_ASPECT;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
@@ -43,7 +45,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,16 +114,15 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         STEP("Add content to the holds.");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentHeld
                 .getNodeRefWithoutVersion(), HOLD_ONE);
-        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), contentAddToManyHolds
-                .getNodeRefWithoutVersion(), String.format("%s,%s", HOLD_ONE, HOLD_TWO));
-
+        holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                Collections.singletonList(contentAddToManyHolds.getNodeRefWithoutVersion()), asList(HOLD_ONE, HOLD_TWO));
     }
 
     /**
      * Valid nodes to be removed from hold
      */
     @DataProvider (name = "validNodesToRemoveFromHold")
-    public Object[][] getValidNodesToRemoveFromHold() throws Exception
+    public Object[][] getValidNodesToRemoveFromHold()
     {
         //create electronic and nonElectronic record in record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -135,8 +136,8 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
         RecordCategoryChild folderToHeld = createCategoryFolderInFilePlan();
         nodesToBeClean.add(folderToHeld.getParentId());
-        Arrays.asList(electronicRecord.getId(), nonElectronicRecord.getId(), folderToHeld.getId()).forEach(item ->
-                holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), item, HOLD_ONE));
+        holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                asList(electronicRecord.getId(), nonElectronicRecord.getId(), folderToHeld.getId()), Collections.singletonList(HOLD_ONE));
 
         return new String[][]
                 {       // record folder
@@ -215,11 +216,11 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         FileModel contentNoHoldCap = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         FileModel privateFile = dataContent.usingSite(privateSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         //add files to hold
-        Arrays.asList(recordFolder.getId(), contentNoHoldCap.getNodeRefWithoutVersion(),
-                contentNoHoldPerm.getNodeRefWithoutVersion(), privateFile.getNodeRefWithoutVersion()).forEach(
-                        node -> holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), node,
-                                HOLD_ONE)
-                                                                                  );
+        holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                asList(recordFolder.getId(), contentNoHoldCap.getNodeRefWithoutVersion(),
+                        contentNoHoldPerm.getNodeRefWithoutVersion(), privateFile.getNodeRefWithoutVersion()),
+                Collections.singletonList(HOLD_ONE));
+
         return new Object[][]
                 {
                         // user with read permission on the content, with remove from hold capability and without
@@ -290,10 +291,8 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         FileModel contentPermission = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         //add files to hold
-        Arrays.asList(recordFolder.getId(), contentPermission.getNodeRefWithoutVersion()).forEach(
-                node -> holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), node,
-                        HOLD_ONE)
-                                                                                                                     );
+        holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
+                asList(recordFolder.getId(), contentPermission.getNodeRefWithoutVersion()), Collections.singletonList(HOLD_ONE));
 
         return new Object[][]
                 {
@@ -325,7 +324,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpRemoveContentFromHold() throws Exception
+    public void cleanUpRemoveContentFromHold()
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_TWO);

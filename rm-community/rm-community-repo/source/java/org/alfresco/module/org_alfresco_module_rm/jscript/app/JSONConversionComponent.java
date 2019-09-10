@@ -353,6 +353,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
 
+            if (freezeService.isFrozen(nodeRef))
+            {
+                rootJSONObject.put(IS_FROZEN_ACTIVE_CONTENT, true);
+            }
+
             List<NodeRef> holds = holdService.heldBy(nodeRef, false);
             if (!CollectionUtils.isEmpty(holds))
             {
@@ -364,10 +369,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         rootJSONObject.put(IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER, true);
                         break;
                     }
-                }
-                if (freezeService.isFrozen(nodeRef))
-                {
-                    rootJSONObject.put(IS_FROZEN_ACTIVE_CONTENT, true);
                 }
             }
         }

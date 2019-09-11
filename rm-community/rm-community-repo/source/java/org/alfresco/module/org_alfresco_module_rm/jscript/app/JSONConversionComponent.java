@@ -317,6 +317,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
 
+            rootJSONObject.put("uiType", getUIType(nodeInfo.getNodeRef()));
+
             // check the existence of the RM site
             checkRmSiteExistence(rootJSONObject);
 
@@ -632,6 +634,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     {
         String result = "unknown";
 
+        if (freezeService.isFrozen(nodeRef))
+        {
+            return "frozencontent";
+        }
+
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (kind != null)
         {
@@ -699,7 +706,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
         }
-
         return result;
     }
 

@@ -90,7 +90,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
     private static final String IS_ANY_HOLD_VISIBLE_FOR_CURRENT_USER = "isHoldVisibleForCurrentUser";
-    private static final String IS_FROZEN_ACTIVE_CONTENT = "isFrozenActiveContent";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -353,11 +352,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
                     rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
                 }
-            }
-
-            if (freezeService.isFrozen(nodeRef))
-            {
-                rootJSONObject.put(IS_FROZEN_ACTIVE_CONTENT, true);
             }
 
             List<NodeRef> holds = holdService.heldBy(nodeRef, false);
@@ -636,7 +630,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
         if (freezeService.isFrozen(nodeRef))
         {
-            return "frozencontent";
+            result = "frozencontent";
         }
 
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);

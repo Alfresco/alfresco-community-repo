@@ -628,11 +628,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     {
         String result = "unknown";
 
-        if (freezeService.isFrozen(nodeRef))
-        {
-            result = "frozencontent";
-        }
-
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         if (kind != null)
         {
@@ -699,6 +694,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     break;
                 }
             }
+        }
+        else if (freezeService.isFrozen(nodeRef))
+        {
+            result = "frozencontent";
         }
         return result;
     }

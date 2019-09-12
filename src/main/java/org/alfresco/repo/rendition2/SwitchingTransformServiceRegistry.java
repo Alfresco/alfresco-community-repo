@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 import java.util.Map;
 
@@ -46,17 +46,17 @@ public class SwitchingTransformServiceRegistry extends AbstractTransformServiceR
     }
 
     @Override
-    public long getMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
+    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
     {
         long maxSize;
-        long primaryMaxSize = primary.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+        long primaryMaxSize = primary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
         if (primaryMaxSize == -1L)
         {
             maxSize = -1L;
         }
         else
         {
-            long secondaryMaxSize = secondary.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+            long secondaryMaxSize = secondary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
             maxSize = primaryMaxSize == 0
                 ? secondaryMaxSize
                 : secondaryMaxSize == 0

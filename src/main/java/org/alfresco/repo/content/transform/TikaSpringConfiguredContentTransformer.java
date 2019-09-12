@@ -107,10 +107,4 @@ public class TikaSpringConfiguredContentTransformer extends TikaPoweredContentTr
           throw new AlfrescoRuntimeException("Unable to create specified Parser", e);
        }
     }
-
-    @Override
-    protected String getTransform()
-    {
-        return "tikaspring"; // This transformer is no longer created by Spring, so is not supported by the Tika transformer image
-    }
 }

@@ -143,11 +143,11 @@ public class LocalTransformImpl extends AbstractLocalTransform
                                  String sourceExtension, String targetExtension,
                                  String renditionName, NodeRef sourceNodeRef) throws Exception
     {
-        // At some point in the future, we may decide to only pass the sourceEncoding and other dynamic values like
-        // it if they were supplied in the rendition definition without a value. The sourceEncoding value is also
-        // supplied in the TransformRequest (message to the T-Router).
+        // Only pass the sourceEncoding and other dynamic values like it if they were supplied in the rendition
+        // definition without a value. The sourceEncoding value is also supplied in the RenditionEventProducer in
+        // the message to the T-Router.
         transformOptions = new HashMap<>(transformOptions);
-        if (transformOptions.get(SOURCE_ENCODING) == null)
+        if (transformOptions.containsKey(SOURCE_ENCODING) && transformOptions.get(SOURCE_ENCODING) == null)
         {
             String sourceEncoding = reader.getEncoding();
             transformOptions.put(SOURCE_ENCODING, sourceEncoding);

@@ -27,7 +27,7 @@ package org.alfresco.repo.rendition2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.ConfigFileFinder;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.Pair;
@@ -343,7 +343,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
             String targetMimetype = renditionDefinition2.getTargetMimetype();
             String renditionName = renditionDefinition2.getRenditionName();
             Map<String, String> options = renditionDefinition2.getTransformOptions();
-            Long maxSize = transformServiceRegistry.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+            Long maxSize = transformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
             if (maxSize != null)
             {
                 String renditionNameMaxSizePair = entry.getKey();

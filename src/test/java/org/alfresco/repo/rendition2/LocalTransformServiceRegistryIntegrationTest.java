@@ -26,8 +26,8 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
+import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

@@ -59,6 +59,6 @@ public class LocalRenditionTest extends AbstractRenditionTest
     @Test
     public void testAllSourceExtensions() throws Exception
     {
-        internalTestAllSourceExtensions(57, 0);
+        internalTestAllSourceExtensions(81, 0);
     }
 }

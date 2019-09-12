@@ -39,7 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
+import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

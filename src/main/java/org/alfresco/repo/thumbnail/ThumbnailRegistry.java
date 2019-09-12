@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -457,7 +457,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         {
             Map<String, String> options = renditionDefinition.getTransformOptions();
             String renditionName = renditionDefinition.getRenditionName();
-            maxSize = transformServiceRegistry.getMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+            maxSize = transformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
         }
         else
         {

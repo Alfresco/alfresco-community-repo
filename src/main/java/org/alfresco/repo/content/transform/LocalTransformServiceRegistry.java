@@ -25,20 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.transform.client.model.config.CombinedConfig;
-import org.alfresco.transform.client.model.config.InlineTransformer;
-import org.alfresco.transform.client.model.config.TransformServiceRegistry;
-import org.alfresco.transform.client.model.config.TransformServiceRegistryImpl;
-import org.alfresco.transform.client.model.config.TransformStep;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +33,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.transform.client.registry.CombinedConfig;
+import org.alfresco.transform.client.model.config.TransformOption;
+import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
+import org.alfresco.transform.client.model.config.TransformStep;
+import org.alfresco.transform.client.model.config.Transformer;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a local transformation
@@ -156,7 +157,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    protected void register(InlineTransformer transformer, String baseUrl, String readFrom)
+    public void register(Transformer transformer, Map<String, Set<TransformOption>> transformOptions,
+        String baseUrl, String readFrom)
     {
         try
         {
@@ -242,7 +244,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                 }
             }
             localTransforms.put(name, localTransform);
-            super.register(transformer, baseUrl, readFrom);
+            super.register(transformer, transformOptions, baseUrl, readFrom);
         }
         catch (IllegalArgumentException e)
         {
@@ -394,7 +396,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    public long getMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
+    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
     {
         // This message is not logged if placed in afterPropertiesSet
         if (getFirstTime())
@@ -404,7 +406,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         }
 
         return enabled
-                ? super.getMaxSize(sourceMimetype, targetMimetype, options, renditionName)
+                ? super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName)
                 : 0;
     }
 
@@ -422,7 +424,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     public LocalTransform getLocalTransform(Map<String, String> actualOptions, String renditionName,
                                             String sourceMimetype, String targetMimetype, long sourceSizeInBytes)
     {
-        String name = getTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        String name = findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
         LocalData data = getData();
         Map<String, LocalTransform> localTransforms = data.localTransforms;
         return localTransforms.get(name);

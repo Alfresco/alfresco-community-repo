@@ -87,7 +87,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
-    private static final String IS_ADD_TO_HOLD_AVAILABLE = "isAddToHoldAvailable";
+    private static final String IS_ADD_TO_HOLD_VISIBLE = "isAddToHoldVisible";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -332,7 +332,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
             if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.WRITE)))
             {
-                rootJSONObject.put(IS_ADD_TO_HOLD_AVAILABLE, true);
+                rootJSONObject.put(IS_ADD_TO_HOLD_VISIBLE, true);
             }
         }
     }

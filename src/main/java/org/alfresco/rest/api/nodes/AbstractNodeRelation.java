@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -74,7 +74,6 @@ public class AbstractNodeRelation implements InitializingBean
 
     protected ServiceRegistry sr;
     protected NodeService nodeService;
-    protected NodeAssocService nodeAssocService; // wraps initial Peer Assoc permissions
     protected NamespaceService namespaceService;
     protected DictionaryService dictionaryService;
     protected Nodes nodes;
@@ -87,12 +86,6 @@ public class AbstractNodeRelation implements InitializingBean
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
-    }
-
-    // Introduces permissions for Node Assoc (see public-rest-context.xml)
-    public void setNodeAssocService(NodeAssocService nodeAssocService)
-    {
-        this.nodeAssocService = nodeAssocService;
     }
 
     @Override

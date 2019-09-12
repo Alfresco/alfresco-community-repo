@@ -516,7 +516,6 @@
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
         <property name="poster" ref="activitiesPoster" />
-        <property name="nodeAssocService" ref="NodeAssocService"/>
         <property name="smartStore" ref="smartStore"/>
     </bean>
 
@@ -934,7 +933,6 @@
     <bean id="baseNodeRelation" class="org.alfresco.rest.api.nodes.AbstractNodeRelation" abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodes" ref="Nodes" />
-        <property name="nodeAssocService" ref="NodeAssocService"/>
     </bean>
 
     <bean id="nodeVersionsRelation" class="org.alfresco.rest.api.nodes.NodeVersionsRelation" parent="baseNodeRelation">
@@ -1424,50 +1422,6 @@
         <property name="authentications" ref="Authentications" />
     </bean>
 
-
-    <!-- TODO: introduce Node Assoc Permissions for REST API - eventually we will remove this (once we have pushed down to NodeService permission def) -->
-    <bean id="NodeAssocService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <list>
-                <value>org.alfresco.rest.api.nodes.NodeAssocService</value>
-            </list>
-        </property>
-        <property name="target">
-            <ref bean="nodeAssocService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="NodeService_transaction"/>
-                <idref bean="AuditMethodInterceptor"/>
-                <idref bean="exceptionTranslator"/>
-                <idref bean="NodeAssocService_security"/>
-                <idref bean="disableAuditablePolicySetPropertyInterceptor"/>
-            </list>
-        </property>
-    </bean>
-
-    <!-- TODO: introduce Node Assoc Permissions for REST API - eventually we will remove this (once we have pushed down to NodeService permission def) -->
-    <bean id="NodeAssocService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
-        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
-        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
-        <property name="objectDefinitionSource">
-            <value>
-                org.alfresco.rest.api.nodes.NodeAssocService.createAssociation=ACL_NODE.0.sys:base.WriteProperties,ACL_NODE.1.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.removeAssociation=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.setAssociations=ACL_NODE.0.sys:base.WriteProperties,ACL_NODE.2.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.getTargetAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.getSourceAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.getAssoc=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
-                org.alfresco.rest.api.nodes.NodeAssocService.*=ACL_DENY
-            </value>
-        </property>
-    </bean>
-
-    <!-- TODO: introduce Node Assoc Permissions for REST API - eventually we will remove this (once we have pushed down to NodeService permission def) -->
-    <bean id="nodeAssocService" class=" org.alfresco.rest.api.nodes.NodeAssocServiceImpl">
-        <property name="nodeService" ref="NodeService"/>
-    </bean>
 
     <!--                               -->
     <!--    Groups REST API   -->

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -68,7 +68,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<AssociationRef> assocRefs = nodeAssocService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
+        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
 
         return listNodePeerAssocs(assocRefs, parameters, true);
     }
@@ -95,17 +95,14 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
             assocTypeQName = RegexQNamePattern.MATCH_ALL;
         }
 
-        // note: even if assocType is provided, we currently don't use nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
-        // since silent it returns void even if nothing deleted, where as we return 404
-
         boolean found = false;
 
-        List<AssociationRef> assocRefs = nodeAssocService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), assocTypeQName);
+        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), assocTypeQName);
         for (AssociationRef assocRef : assocRefs)
         {
             if (assocRef.getTargetRef().equals(tgtNodeRef))
             {
-                nodeAssocService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
+                nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
                 found = true;
             }
         }

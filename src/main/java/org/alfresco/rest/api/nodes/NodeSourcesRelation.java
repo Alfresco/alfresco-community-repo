@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -58,7 +58,7 @@ public class NodeSourcesRelation extends AbstractNodeRelation implements Relatio
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<AssociationRef> assocRefs = nodeAssocService.getSourceAssocs(targetNodeRef, assocTypeQNameParam);
+        List<AssociationRef> assocRefs = nodeService.getSourceAssocs(targetNodeRef, assocTypeQNameParam);
 
         return listNodePeerAssocs(assocRefs, parameters, false);
     }

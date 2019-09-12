@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -94,7 +94,6 @@ import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.UserInfo;
-import org.alfresco.rest.api.nodes.NodeAssocService;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -214,7 +213,6 @@ public class NodesImpl implements Nodes
     private SiteService siteService;
     private ActivityPoster poster;
     private RetryingTransactionHelper retryingTransactionHelper;
-    private NodeAssocService nodeAssocService;
     private LockService lockService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
 
@@ -308,12 +306,6 @@ public class NodesImpl implements Nodes
     public void setPoster(ActivityPoster poster)
     {
         this.poster = poster;
-    }
-
-    // Introduces permissions for Node Assoc (see public-rest-context.xml)
-    public void setNodeAssocService(NodeAssocService nodeAssocService)
-    {
-        this.nodeAssocService = nodeAssocService;
     }
 
     public void setSmartStore(VirtualStore smartStore)
@@ -1973,7 +1965,7 @@ public class NodesImpl implements Nodes
             try
             {
                 NodeRef tgtNodeRef = validateNode(targetNodeId);
-                nodeAssocService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
+                nodeService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
             }
             catch (AssociationExistsException aee)
             {
@@ -3537,11 +3529,6 @@ public class NodesImpl implements Nodes
     protected RetryingTransactionHelper getRetryingTransactionHelper()
     {
         return retryingTransactionHelper;
-    }
-
-    protected NodeAssocService getNodeAssocService()
-    {
-        return nodeAssocService;
     }
 
     protected LockService getLockService()

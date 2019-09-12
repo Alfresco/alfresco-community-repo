@@ -23,7 +23,6 @@
       <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="dispositionService" ref="dispositionService" />
-      <property name="holdService" ref="HoldService" />
       <property name="freezeService" ref="freezeService" />
    </bean>
 

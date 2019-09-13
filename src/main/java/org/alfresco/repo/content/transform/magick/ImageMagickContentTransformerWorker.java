@@ -189,7 +189,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
                 {
                     setAvailable(true);
                     versionString = result.getSecond().trim();
-                    logger.info("Using legacy ImageMagick: " + versionString);
+                    logger.debug("Using legacy ImageMagick: " + versionString);
                 }
                 else
                 {

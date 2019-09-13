@@ -163,7 +163,7 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
                 {
                     versionString = result.getSecond();
                     setAvailable(true);
-                    logger.info("Using legacy Alfresco PDF Renderer: " + versionString);
+                    logger.debug("Using legacy Alfresco PDF Renderer: " + versionString);
                 }
                 else
                 {

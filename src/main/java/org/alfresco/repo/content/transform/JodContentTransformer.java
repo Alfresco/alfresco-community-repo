@@ -100,7 +100,7 @@ public class JodContentTransformer extends OOoContentTransformerHelper implement
                 if (isAvailable != null && isAvailable)
                 {
                     String versionString = result.getSecond().trim();
-                    logger.info("Using legacy JodCoverter: " + versionString);
+                    logger.debug("Using legacy JodCoverter: " + versionString);
                 }
                 else
                 {

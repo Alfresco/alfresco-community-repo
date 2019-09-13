@@ -97,7 +97,7 @@ public abstract class AbstractRemoteContentTransformer extends AbstractContentTr
                     {
                         String versionString = msg;
                         setAvailable(true);
-                        logger.info("Using legacy " + getName() + ": " + versionString);
+                        logger.debug("Using legacy " + getName() + ": " + versionString);
                     }
                     else
                     {

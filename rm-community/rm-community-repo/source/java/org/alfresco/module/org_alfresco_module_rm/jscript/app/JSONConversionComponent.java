@@ -89,6 +89,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
     private static final String IS_ADD_TO_HOLD_VISIBLE = "isAddToHoldVisible";
+    private static final String FROZEN_ACTIVE_CONTENT = "frozencontent";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -676,7 +677,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         }
         else if (freezeService.isFrozen(nodeRef))
         {
-            result = "frozencontent";
+            result = FROZEN_ACTIVE_CONTENT;
         }
         return result;
     }

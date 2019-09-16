@@ -110,7 +110,7 @@ public abstract class ConfigFileFinder
         }
         catch (IOException e)
         {
-            log.error("Error reading from "+path);
+            log.error("Error reading from "+path, e);
             successReadingConfig.set(false);
         }
         return successReadingConfig.get();
@@ -155,9 +155,17 @@ public abstract class ConfigFileFinder
             Arrays.sort(files, (file1, file2) -> file1.getName().compareTo(file2.getName()));
             for (File file : files)
             {
-                FileReader reader = new FileReader(file);
-                String filePath = file.getPath();
-                readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
+                // Only read files in the config directory
+                if (!file.isDirectory())
+                {
+                    FileReader reader = new FileReader(file);
+                    String filePath = file.getPath();
+                    readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
+                }
+                else
+                {
+                    log.debug("Skipping directory " + file.getName() + " in " + path);
+                }
             }
         }
         else
@@ -209,7 +217,7 @@ public abstract class ConfigFileFinder
         }
         catch (Exception e)
         {
-            log.error("Error reading "+path);
+            log.error("Error reading "+path, e);
             successReadingConfig = false;
         }
         return successReadingConfig;

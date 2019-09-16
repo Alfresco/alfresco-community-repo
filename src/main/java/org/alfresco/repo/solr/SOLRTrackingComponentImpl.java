@@ -43,6 +43,7 @@ import java.util.zip.CRC32;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.coci.CheckOutCheckInServiceImpl;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -80,6 +81,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Component providing data for SOLR tracking
@@ -103,6 +106,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private AspectIndexFilter aspectIndexFilter;
     private ShardRegistry shardRegistry;
     private NamespaceService namespaceService;
+
+    private static Log logger = LogFactory.getLog(SOLRTrackingComponentImpl.class);
     
     
     @Override
@@ -366,21 +371,24 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 	            PropertyDefinition pdef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceService, dictionaryService, nodeParameters.getShardProperty());
 	            if(pdef == null)
 	            {
-	                throw new AlfrescoRuntimeException("Invalid shard property: "+nodeParameters.getShardProperty());
-	            }
+	                logger.warn("Invalid shard property: "+nodeParameters.getShardProperty());
+	            } else
+                {
+                    shardPropertyType = pdef.getDataType().getName();
 
-	            shardPropertyType = pdef.getDataType().getName();
-
-                if (!shardPropertyType.equals(DataTypeDefinition.TEXT)
-                        && !shardPropertyType.equals(DataTypeDefinition.DATE)
-                        && !shardPropertyType.equals(DataTypeDefinition.DATETIME)
-                        && !shardPropertyType.equals(DataTypeDefinition.INT)
-                        && !shardPropertyType.equals(DataTypeDefinition.LONG))
-	            {
-	                throw new AlfrescoRuntimeException("Unsupported shard property type: "+(pdef.getDataType().getName() + " for " +nodeParameters.getShardProperty()));
-	            }
-
-	            shardPropertQName = pdef.getName();
+                    if (!shardPropertyType.equals(DataTypeDefinition.TEXT)
+                            && !shardPropertyType.equals(DataTypeDefinition.DATE)
+                            && !shardPropertyType.equals(DataTypeDefinition.DATETIME)
+                            && !shardPropertyType.equals(DataTypeDefinition.INT)
+                            && !shardPropertyType.equals(DataTypeDefinition.LONG))
+                    {
+                        logger.warn("Unsupported shard property type: "+(pdef.getDataType().getName() + " for " +nodeParameters.getShardProperty()));
+                    }
+                    else
+                    {
+                        shardPropertQName = pdef.getName();
+                    }
+                }
 	        }
 
 

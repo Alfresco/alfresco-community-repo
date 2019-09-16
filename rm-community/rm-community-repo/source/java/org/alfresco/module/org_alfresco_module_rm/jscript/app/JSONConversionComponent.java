@@ -45,6 +45,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -86,6 +87,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
+    private static final String FROZEN_ACTIVE_CONTENT = "frozencontent";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -110,6 +112,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** site service */
     private SiteService siteService;
+
+    /** freeze service */
+    private FreezeService freezeService;
 
     /**
      * Disposition service
@@ -264,6 +269,12 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
+     *
+     * @param freezeService
+     */
+    public void setFreezeService(FreezeService freezeService) { this.freezeService = freezeService; }
+
+    /**
      * The initialise method
      */
     public void init()
@@ -291,6 +302,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         {
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
+
+            rootJSONObject.put("uiType", getUIType(nodeInfo.getNodeRef()));
 
             // check the existence of the RM site
             checkRmSiteExistence(rootJSONObject);
@@ -655,7 +668,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
         }
-
+        else if (freezeService.isFrozen(nodeRef))
+        {
+            result = FROZEN_ACTIVE_CONTENT;
+        }
         return result;
     }
 

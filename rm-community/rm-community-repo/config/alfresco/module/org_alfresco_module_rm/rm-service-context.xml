@@ -908,7 +908,7 @@
             <value>
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isHold=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isFrozen=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isFrozen=ACL_ALLOW,RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFrozen=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.freeze=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.unFreeze=RM_ALLOW

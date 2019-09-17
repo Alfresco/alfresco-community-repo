@@ -61,7 +61,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -88,7 +87,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
-    private static final String IS_ADD_TO_HOLD_VISIBLE = "isAddToHoldVisible";
     private static final String FROZEN_ACTIVE_CONTENT = "frozencontent";
 
     /** true if record contributor group is enabled, false otherwise */
@@ -341,11 +339,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
                     rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
                 }
-            }
-
-            if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.WRITE)))
-            {
-                rootJSONObject.put(IS_ADD_TO_HOLD_VISIBLE, true);
             }
         }
     }

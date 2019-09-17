@@ -55,11 +55,6 @@
             <version>4.3.1</version>
         </dependency>
         <dependency>
-            <groupId>taglibs</groupId>
-            <artifactId>standard</artifactId>
-            <version>1.1.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-log-sanitizer</artifactId>
         </dependency>

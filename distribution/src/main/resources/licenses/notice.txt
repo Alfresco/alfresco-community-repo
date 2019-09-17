@@ -74,7 +74,6 @@ JSlidesShare    http://code.google.com/p/jslideshare/
 JSON.simple http://code.google.com/p/json-simple/
 jsr107cache http://jsr107cache.sourceforge.net/
 JSR 305 http://findbugs.sourceforge.net/
-jstl    http://tomcat.apache.org/taglibs/index.html
 jug-asl http://jug.safehaus.org/ 
 LESS for Java   http://www.asual.com/lesscss/
 LiveTribe   http://livetribe.codehaus.org/

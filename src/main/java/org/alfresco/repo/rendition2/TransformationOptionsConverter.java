@@ -104,7 +104,7 @@ public class TransformationOptionsConverter implements InitializingBean
                     ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
             }));
 
-    private static Set<String> IMAGE_OPTIONS = new HashSet<>();
+    protected static Set<String> IMAGE_OPTIONS = new HashSet<>();
     static
     {
         IMAGE_OPTIONS.addAll(PAGED_OPTIONS);
@@ -313,7 +313,7 @@ public class TransformationOptionsConverter implements InitializingBean
         return transformationOptions;
     }
 
-    private <T> void ifSet(Map<String, String> options, String key, TransformationOptionsConverter.Setter setter)
+    protected <T> void ifSet(Map<String, String> options, String key, TransformationOptionsConverter.Setter setter)
     {
         String value = options.get(key);
         if (value != null)

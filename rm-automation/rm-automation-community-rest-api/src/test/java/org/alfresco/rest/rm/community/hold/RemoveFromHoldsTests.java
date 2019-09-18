@@ -106,7 +106,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         privateSite = dataSite.usingAdmin().createPrivateRandomSite();
-        contentHeld = dataContent.usingSite(testSite)
+        contentHeld = dataContent.usingAdmin().usingSite(testSite)
                               .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         contentAddToManyHolds = dataContent.usingSite(testSite)
                                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -212,9 +212,9 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
         UserModel user = roleService.createUserWithRMRole(ROLE_RM_MANAGER.roleId);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRefOne, user, PERMISSION_FILING);
         //create files that will be removed from hold
-        FileModel contentNoHoldPerm = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        FileModel contentNoHoldCap = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        FileModel privateFile = dataContent.usingSite(privateSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel contentNoHoldPerm = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel contentNoHoldCap = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel privateFile = dataContent.usingAdmin().usingSite(privateSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         //add files to hold
         holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),
                 asList(recordFolder.getId(), contentNoHoldCap.getNodeRefWithoutVersion(),
@@ -288,7 +288,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
                 PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(holdNodeRefOne, user, PERMISSION_FILING);
         //create file that will be removed from hold
-        FileModel contentPermission = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel contentPermission = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         //add files to hold
         holdsAPI.addItemsToHolds(getAdminUser().getUsername(), getAdminUser().getPassword(),

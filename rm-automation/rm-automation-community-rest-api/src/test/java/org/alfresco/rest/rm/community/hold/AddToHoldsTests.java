@@ -116,11 +116,11 @@ public class AddToHoldsTests extends BaseRMRestTest
 
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        documentHeld = dataContent.usingSite(testSite)
+        documentHeld = dataContent.usingAdmin().usingSite(testSite)
                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        contentToAddToHold = dataContent.usingSite(testSite)
+        contentToAddToHold = dataContent.usingAdmin().usingSite(testSite)
                                         .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        contentAddToHoldNoPermission = dataContent.usingSite(testSite)
+        contentAddToHoldNoPermission = dataContent.usingAdmin().usingSite(testSite)
                                                   .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the content to the hold.");

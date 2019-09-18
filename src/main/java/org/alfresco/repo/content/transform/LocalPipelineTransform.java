@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.util.TempFileProvider;
 
 import java.io.File;
@@ -59,10 +60,11 @@ public class LocalPipelineTransform extends AbstractLocalTransform
                                   MimetypeService mimetypeService, boolean strictMimeTypeCheck,
                                   Map<String, Set<String>> strictMimetypeExceptions,
                                   boolean retryTransformOnDifferentMimeType,
+                                  Set<TransformOption> transformsTransformOptions,
                                   LocalTransformServiceRegistry localTransformServiceRegistry)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
     }
 
     @Override
@@ -77,6 +79,11 @@ public class LocalPipelineTransform extends AbstractLocalTransform
         transformer.intermediateTransformer = intermediateTransformer;
         transformer.targetMimetype = targetMimetype;
         transformers.add(transformer);
+    }
+
+    public LocalTransform getIntermediateTransformer(int i)
+    {
+        return i >= transformers.size() ? null : transformers.get(i).intermediateTransformer;
     }
 
     @Override

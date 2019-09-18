@@ -31,6 +31,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.Collections;
+
 /**
  * Repeats quick file rendition tests with local transforms and legacy transformers disabled.
  * The Transform Service does not exist for the Community edition.
@@ -64,7 +66,7 @@ public class NoneRenditionTest extends AbstractRenditionTest
     @Override
     public void testAllSourceExtensions() throws Exception
     {
-        internalTestAllSourceExtensions(0, 0);
+        internalTestAllSourceExtensions(0, 0, Collections.emptyList());
     }
 
     @Test

@@ -37,6 +37,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
+
 /**
  * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
  *  <a href="@link http://pdfbox.apache.org/">Apache PDFBox</a> to perform
@@ -118,6 +120,6 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
                 "notExtractBookmarksText", notExtractBookmarksText,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "targetEncoding", targetEncoding);
+                TARGET_ENCODING, targetEncoding);
     }
 }

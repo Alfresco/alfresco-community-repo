@@ -41,6 +41,8 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pkg.PackageParser;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
+
 /**
  * This class transforms archive files (zip, tar etc) to text, which enables indexing
  *  and searching of archives as well as webpreviewing.
@@ -159,6 +161,6 @@ public class ArchiveContentTransformer extends TikaPoweredContentTransformer
                 "includeContents", Boolean.toString(recurse),
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "targetEncoding", targetEncoding);
+                TARGET_ENCODING, targetEncoding);
     }
 }

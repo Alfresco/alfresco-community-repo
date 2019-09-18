@@ -38,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
 
 /**
  * Converts any textual format to plain text.
@@ -187,7 +188,7 @@ public class StringExtractingContentTransformer extends AbstractRemoteContentTra
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
                 SOURCE_ENCODING, sourceEncoding,
-                "targetEncoding", targetEncoding);
+                TARGET_ENCODING, targetEncoding);
 
     }
 }

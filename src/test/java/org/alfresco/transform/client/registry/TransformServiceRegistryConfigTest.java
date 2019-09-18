@@ -127,14 +127,19 @@ public class TransformServiceRegistryConfigTest extends TransformRegistryTest
     @Test
     public void testJsonConfig() throws IOException
     {
+        internalTestJsonConfig(60, 60);
+    }
+
+    protected void internalTestJsonConfig(int expectedSourceTargetUniqueCount, int expectedSourceTargetCount)  throws IOException
+    {
         register(getTransformServiceConfig());
 
         // Check the count of transforms supported
         assertEquals("The number of UNIQUE source to target mimetypes transforms has changed. Config change?",
-                60, countSupportedTransforms(true));
+                expectedSourceTargetUniqueCount, countSupportedTransforms(true));
         assertEquals("The number of source to target mimetypes transforms has changed. " +
                         "There may be multiple transformers for the same combination. Config change?",
-                60, countSupportedTransforms(false));
+                expectedSourceTargetCount, countSupportedTransforms(false));
 
         // Check a supported transform for each transformer.
         assertSupported(DOC, 1234, PDF, emptyMap(), null, ""); // libreoffice

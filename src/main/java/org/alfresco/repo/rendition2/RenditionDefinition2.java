@@ -110,6 +110,12 @@ public interface RenditionDefinition2
      */
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
 
+    /**
+     * The encoding of a Target Node is automatically added to the Transform Options if not specified and the
+     * transformer knows about it.
+     */
+    public static final String TARGET_ENCODING = "targetEncoding";
+
     String getRenditionName();
 
     String getTargetMimetype();

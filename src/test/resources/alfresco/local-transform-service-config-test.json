@@ -57,7 +57,10 @@
         {"sourceMediaType": "image/png",  "targetMediaType": "image/tiff"},
 
         {"sourceMediaType": "image/tiff", "targetMediaType": "image/gif" },
-        {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"}
+        {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target3" }
       ],
       "transformOptions": [
         "imagemagickOptions"
@@ -73,7 +76,10 @@
         {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",   "targetMediaType": "text/plain"},
         {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",         "targetMediaType": "text/plain" },
         {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "text/plain" },
-        {"sourceMediaType": "application/vnd.ms-outlook",                                                "targetMediaType": "text/plain"}
+        {"sourceMediaType": "application/vnd.ms-outlook",                                                "targetMediaType": "text/plain"},
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target3" }
       ],
       "transformOptions": [
         "tikaOptions"
@@ -82,7 +88,10 @@
     {
       "transformerName": "pdfrenderer",
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" },
+        {"sourceMediaType": "source", "priority": "50","targetMediaType": "target1" },
+        {"sourceMediaType": "source", "priority": "55","targetMediaType": "target2" },
+        {"sourceMediaType": "source", "priority": "60","targetMediaType": "target3" }
       ],
       "transformOptions": [
         "pdfRendererOptions"

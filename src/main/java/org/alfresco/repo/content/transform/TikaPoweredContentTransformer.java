@@ -52,6 +52,8 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.ExpandedTitleContentHandler;
 import org.xml.sax.ContentHandler;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
+
 /**
  * Provides helpful services for {@link org.alfresco.repo.content.transform.ContentTransformer}
  *  implementations which are powered by Apache Tika.
@@ -298,7 +300,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
                 timeoutMs, logger,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
-                "targetEncoding", targetEncoding);
+                TARGET_ENCODING, targetEncoding);
     }
 
     private String calculateMemoryAndTimeUsage(ContentReader reader, long startTime)

@@ -31,9 +31,14 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.transform.client.model.config.TransformOption;
+import org.alfresco.transform.client.model.config.TransformOptionGroup;
+import org.alfresco.transform.client.model.config.TransformOptionValue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +53,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
     protected final MimetypeService mimetypeService;
     protected final TransformerDebug transformerDebug;
 
+    protected final Set<String> transformsTransformOptionNames = new HashSet<>();
     private final LocalTransformServiceRegistry localTransformServiceRegistry;
     private final boolean strictMimeTypeCheck;
     private final Map<String, Set<String>> strictMimetypeExceptions;
@@ -57,6 +63,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
     AbstractLocalTransform(String name, TransformerDebug transformerDebug,
                            MimetypeService mimetypeService, boolean strictMimeTypeCheck,
                            Map<String, Set<String>> strictMimetypeExceptions, boolean retryTransformOnDifferentMimeType,
+                           Set<TransformOption> transformsTransformOptions,
                            LocalTransformServiceRegistry localTransformServiceRegistry)
     {
         this.name = name;
@@ -66,6 +73,8 @@ public abstract class AbstractLocalTransform implements LocalTransform
         this.strictMimetypeExceptions = strictMimetypeExceptions;
         this.retryTransformOnDifferentMimeType = retryTransformOnDifferentMimeType;
         this.localTransformServiceRegistry = localTransformServiceRegistry;
+
+        addOptionNames(transformsTransformOptionNames, transformsTransformOptions);
     }
 
     public abstract boolean isAvailable();
@@ -76,6 +85,16 @@ public abstract class AbstractLocalTransform implements LocalTransform
                                           String sourceExtension, String targetExtension,
                                           String renditionName, NodeRef sourceNodeRef)
                                           throws Exception;
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public Set<String> getTransformsTransformOptionNames()
+    {
+        return transformsTransformOptionNames;
+    }
 
     @Override
     public void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
@@ -98,6 +117,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
                         "   target extension: " + targetExtension);
             }
 
+            transformOptions = getStrippedTransformOptions(transformOptions);
             transformWithDebug(reader, writer, transformOptions, renditionName, sourceNodeRef, sourceMimetype,
                     targetMimetype, sourceExtension, targetExtension);
 
@@ -111,10 +131,14 @@ public abstract class AbstractLocalTransform implements LocalTransform
         }
         else
         {
-            log.debug("Local transformer not available: \n" +
-                    "   source: " + reader + "\n" +
-                    "   target: " + writer + "\n" +
-                    "   options: " + transformOptions);
+            if (log.isDebugEnabled())
+            {
+                transformOptions = getStrippedTransformOptions(transformOptions);
+                log.debug("Local transformer not available: \n" +
+                        "   source: " + reader + "\n" +
+                        "   target: " + writer + "\n" +
+                        "   options: " + transformOptions);
+            }
         }
     }
 
@@ -224,7 +248,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
                     long sourceSizeInBytes = reader.getSize();
 
                     LocalTransform localTransform = localTransformServiceRegistry.getLocalTransform(
-                            transformOptions, renditionName, differentType, targetMimetype, sourceSizeInBytes);
+                            differentType, sourceSizeInBytes, targetMimetype, transformOptions, renditionName);
                     if (localTransform == null)
                     {
                         transformerDebug.debug("          Failed", e);
@@ -253,5 +277,55 @@ public abstract class AbstractLocalTransform implements LocalTransform
                 }
             }
         }
+    }
+
+    /**
+     * Returns a list of transform option names known to this transformer. When a transform is part of a pipeline or a
+     * failover, the rendition options may include options needed for other transforms. So that extra options are not
+     * passed to the T-Engine for this transform and rejected, {@link #getStrippedTransformOptions(Map)} removes them
+     * using the names obtained here.
+     */
+    private static void addOptionNames(Set<String> transformsTransformOptionNames, Set<TransformOption> transformsTransformOptions)
+    {
+        for (TransformOption transformOption : transformsTransformOptions)
+        {
+            if (transformOption instanceof TransformOptionValue)
+            {
+                transformsTransformOptionNames.add(((TransformOptionValue)transformOption).getName());
+            }
+            else
+            {
+                addOptionNames(transformsTransformOptionNames, ((TransformOptionGroup)transformOption).getTransformOptions());
+            }
+        }
+    }
+
+    /**
+     * Returns a subset of the supplied actual transform options from the rendition definition that are known to this
+     * transformer. The ones that will be passed to the T-Engine. It strips out extra ones.
+     * @param transformOptions the complete set of actual transform options. This will be returned if all options are
+     *                         known to this transformer. Otherwise a new Map is returned.
+     * @return the transformOptions to be past to the T-Engine.
+     */
+    public Map<String, String> getStrippedTransformOptions(Map<String, String> transformOptions)
+    {
+        Set<String> optionNames = transformOptions.keySet();
+        if (transformsTransformOptionNames.containsAll(optionNames))
+        {
+            return transformOptions;
+        }
+
+        Map<String, String> strippedTransformOptions = new HashMap<>(transformOptions.size());
+        for (Map.Entry<String, String> entry : transformOptions.entrySet())
+        {
+            String key = entry.getKey();
+            if (transformsTransformOptionNames.contains(key))
+            {
+                String value = entry.getValue();
+                strippedTransformOptions.put(key, value);
+            }
+        }
+
+        return strippedTransformOptions;
     }
 }

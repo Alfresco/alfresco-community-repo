@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.transform.client.model.config.TransformConfig;
 import org.alfresco.transform.client.model.config.TransformOption;
+import org.alfresco.transform.client.model.config.TransformStep;
 import org.alfresco.transform.client.model.config.Transformer;
 import org.alfresco.util.ConfigFileFinder;
 import org.apache.commons.logging.Log;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -234,8 +236,71 @@ public class CombinedConfig
         data.setTEngineCount(tEngineCount);
         data.setFileCount(configFileFinder.getFileCount());
 
+        combinedTransformers = sortTransformers(combinedTransformers);
+
         combinedTransformers.forEach(transformer ->
             registry.register(transformer.transformer, combinedTransformOptions,
                     transformer.baseUrl, transformer.readFrom));
+    }
+
+    // Sort transformers so there are no forward references, if that is possible.
+    private static List<TransformAndItsOrigin> sortTransformers(List<TransformAndItsOrigin> original)
+    {
+        List<TransformAndItsOrigin> transformers = new ArrayList<>(original.size());
+        List<TransformAndItsOrigin> todo = new ArrayList<>(original.size());
+        Set<String> transformerNames = new HashSet<>();
+        boolean added;
+        do
+        {
+            added = false;
+            for (TransformAndItsOrigin entry : original)
+            {
+                String name = entry.transformer.getTransformerName();
+                List<TransformStep> pipeline = entry.transformer.getTransformerPipeline();
+                Set<String> referencedTransformerNames = new HashSet<>();
+                boolean addEntry = true;
+                if (pipeline != null)
+                {
+                    for (TransformStep step : pipeline)
+                    {
+                        String stepName = step.getTransformerName();
+                        referencedTransformerNames.add(stepName);
+                    }
+                }
+                List<String> failover = entry.transformer.getTransformerFailover();
+                if (failover != null)
+                {
+                    referencedTransformerNames.addAll(failover);
+                }
+
+                for (String referencedTransformerName : referencedTransformerNames)
+                {
+                    if (!transformerNames.contains(referencedTransformerName))
+                    {
+                        todo.add(entry);
+                        addEntry = false;
+                        break;
+                    }
+                }
+
+                if (addEntry)
+                {
+                    transformers.add(entry);
+                    added = true;
+                    if (name != null)
+                    {
+                        transformerNames.add(name);
+                    }
+                }
+            }
+            original.clear();
+            original.addAll(todo);
+            todo.clear();
+        }
+        while (added && !original.isEmpty());
+
+        transformers.addAll(todo);
+
+        return transformers;
     }
 }

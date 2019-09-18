@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.util.Pair;
 
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import java.util.Set;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
 
 /**
  * A local transformer using flat transform options.
@@ -56,11 +58,12 @@ public class LocalTransformImpl extends AbstractLocalTransform
                               MimetypeService mimetypeService, boolean strictMimeTypeCheck,
                               Map<String, Set<String>> strictMimetypeExceptions,
                               boolean retryTransformOnDifferentMimeType,
+                              Set<TransformOption> transformsTransformOptions,
                               LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
                               int startupRetryPeriodSeconds)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
         remoteTransformerClient = new RemoteTransformerClient(name, baseUrl);
         remoteTransformerClient.setStartupRetryPeriodSeconds(startupRetryPeriodSeconds);
 
@@ -155,6 +158,13 @@ public class LocalTransformImpl extends AbstractLocalTransform
         if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
         {
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
+        }
+
+        // The targetEncoding is passed as an option if it is know to the transformer and has not been set.
+        if (transformOptions.get(TARGET_ENCODING) == null && transformsTransformOptionNames.contains(TARGET_ENCODING))
+        {
+            String targetEncoding = writer.getEncoding();
+            transformOptions.put(TARGET_ENCODING, targetEncoding);
         }
 
         // Build an array of option names and values and extract the timeout.

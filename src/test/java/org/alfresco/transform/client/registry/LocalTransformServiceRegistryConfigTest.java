@@ -27,11 +27,15 @@ package org.alfresco.transform.client.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractLocalTransform;
+import org.alfresco.repo.content.transform.LocalPipelineTransform;
+import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
 import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.transform.client.model.config.Transformer;
+import org.apache.camel.processor.Pipeline;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -42,6 +46,7 @@ import org.quartz.CronExpression;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,6 +204,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     {
         CombinedConfig combinedConfig = new CombinedConfig(log);
         combinedConfig.addLocalConfig(LOCAL_TRANSFORM_SERVICE_CONFIG);
+        combinedConfig.register(registry);
         mapOfTransformOptions = combinedConfig.combinedTransformOptions;
         transformerList = combinedConfig.combinedTransformers;
     }
@@ -231,6 +237,11 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         imagemagickSupportedTransformation.put("image/gif", targetMimetype);
         imagemagickSupportedTransformation.put("image/jpeg", targetMimetype);
         imagemagickSupportedTransformation.put("image/png", targetMimetype);
+        targetMimetype = new ArrayList<>();
+        targetMimetype.add("target1");
+        targetMimetype.add("target2");
+        targetMimetype.add("target3");
+        imagemagickSupportedTransformation.put("source", targetMimetype);
 
         // Tika Supported Source and Target List:
         targetMimetype = new ArrayList<>();
@@ -244,6 +255,11 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         tikaSupportedTransformation.put("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", targetMimetype);
         tikaSupportedTransformation.put("application/vnd.openxmlformats-officedocument.presentationml.presentation", targetMimetype);
         tikaSupportedTransformation.put("application/vnd.ms-outlook", targetMimetype);
+        targetMimetype = new ArrayList<>();
+        targetMimetype.add("target1");
+        targetMimetype.add("target2");
+        targetMimetype.add("target3");
+        tikaSupportedTransformation.put("source", targetMimetype);
 
         // Libre Office Source and Target List:
         targetMimetype = new ArrayList<>();
@@ -263,6 +279,11 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
         pdfRendererSupportedTransformation = new HashMap<>();
         targetMimetype.add("image/png");
         pdfRendererSupportedTransformation.put("application/pdf", targetMimetype);
+        targetMimetype = new ArrayList<>();
+        targetMimetype.add("target1");
+        targetMimetype.add("target2");
+        targetMimetype.add("target3");
+        pdfRendererSupportedTransformation.put("source", targetMimetype);
 
         // Office to Image via Pdf Pipeline Transformer Source and Target List:
         targetMimetype = new ArrayList<>();
@@ -299,6 +320,14 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     }
 
     @Test
+    @Override
+    public void testJsonConfig() throws IOException
+    {
+        // Not 60, 60 as we have added source->target1..3 to three transformers
+        internalTestJsonConfig(63, 69);
+    }
+
+    @Test
     public void testReadWriteJson() throws IOException
     {
         // Override super method so it passes, as there is nothing more to be gained for LocalTransforms.
@@ -329,7 +358,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             switch (t.transformer.getTransformerName())
             {
                 case "imagemagick":
-                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 14, t.transformer.getSupportedSourceAndTargetList().size());
+                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 17, t.transformer.getSupportedSourceAndTargetList().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform option names", 1, t.transformer.getTransformOptions().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform options", 6, countTopLevelOptions(t.transformer.getTransformOptions()));
                     assertEquals(t.transformer.getTransformerName() + " expected to not be a transformer pipeline", t.transformer.getTransformerPipeline().size(), 0);
@@ -344,7 +373,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
                     break;
 
                 case "tika":
-                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 8, t.transformer.getSupportedSourceAndTargetList().size());
+                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 11, t.transformer.getSupportedSourceAndTargetList().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform option names", 1, t.transformer.getTransformOptions().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(t.transformer.getTransformOptions()));
                     assertEquals(t.transformer.getTransformerName() + " expected to not be a transformer pipeline", t.transformer.getTransformerPipeline().size(), 0);
@@ -359,7 +388,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
                     break;
 
                 case "pdfrenderer":
-                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 1, t.transformer.getSupportedSourceAndTargetList().size());
+                    assertEquals(t.transformer.getTransformerName() + " incorrect number of supported transform", 4, t.transformer.getSupportedSourceAndTargetList().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform option names", 1, t.transformer.getTransformOptions().size());
                     assertEquals( t.transformer.getTransformerName() + "incorrect number of transform options", 5, countTopLevelOptions(t.transformer.getTransformOptions()));
                     assertEquals(t.transformer.getTransformerName() + " expected to not be a transformer pipeline", t.transformer.getTransformerPipeline().size(), 0);
@@ -498,5 +527,50 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
             registry.setInitialAndOnErrorCronExpression(origInitialAndOnErrorCronExpression);
             registry.setPipelineConfigDir(origPipelineConfigDir);
         }
+    }
+
+    @Test
+    public void testStripExtraOptions()
+    {
+        retrieveLocalTransformList();
+
+        Map<String, String> actualOptions = Map.of(
+                "autoOrient", "true",
+                "width", "100",
+                "height", "50");
+        LocalPipelineTransform officeToImageViaPdf =
+                (LocalPipelineTransform)((LocalTransformServiceRegistry)registry).getLocalTransform(
+                        "application/msword", -1, "image/gif", actualOptions, null);
+        assertEquals("Original number of options officeToImageViaPdf", 21, officeToImageViaPdf.getTransformsTransformOptionNames().size());
+
+        AbstractLocalTransform libreoffice = (AbstractLocalTransform) officeToImageViaPdf.getIntermediateTransformer(0);
+        assertEquals("libreoffice options", 0, libreoffice.getTransformsTransformOptionNames().size());
+        assertEquals("libreoffice actual options", 0, libreoffice.getStrippedTransformOptions(actualOptions).size());
+
+        AbstractLocalTransform pdfrenderer = (AbstractLocalTransform) officeToImageViaPdf.getIntermediateTransformer(1);
+        assertEquals("pdfrenderer options", 5, pdfrenderer.getTransformsTransformOptionNames().size());
+        assertEquals("pdfrenderer actual options", 2, pdfrenderer.getStrippedTransformOptions(actualOptions).size()); // width, height
+
+        AbstractLocalTransform imagemagick = (AbstractLocalTransform) officeToImageViaPdf.getIntermediateTransformer(2);
+        assertEquals("imagemagick options", 16, imagemagick.getTransformsTransformOptionNames().size());
+        assertEquals("imagemagick actual options", 1, imagemagick.getStrippedTransformOptions(actualOptions).size()); // autoOrient
+    }
+
+    @Test
+    public void testPriority()
+    {
+        retrieveLocalTransformList();
+
+        assertEquals("pdfrenderer",
+                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                        "target1", Collections.emptyMap(), null)).getName());
+
+        assertEquals("imagemagick",
+                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                        "target2", Collections.emptyMap(), null)).getName());
+
+        assertEquals("tika",
+                ((AbstractLocalTransform)registry.getLocalTransform("source", -1,
+                        "target3", Collections.emptyMap(), null)).getName());
     }
 }

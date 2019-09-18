@@ -317,7 +317,7 @@ public class DeleteRecordTests extends BaseRMRestTest
     {
         STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create a copy of the file.");
         RestNodeModel copyOfTestFile = copyNode(testFile.getNodeRefWithoutVersion(), testSite.getGuid());
@@ -352,8 +352,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     {
         STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        FolderModel folderModel = dataContent.usingSite(testSite).createFolder();
+        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FolderModel folderModel = dataContent.usingAdmin().usingSite(testSite).createFolder();
 
         STEP("Create a copy of the file.");
         RestNodeModel copy = copyNode(testFile.getNodeRefWithoutVersion(), folderModel.getNodeRefWithoutVersion());
@@ -406,7 +406,7 @@ public class DeleteRecordTests extends BaseRMRestTest
     {
         STEP("Create a file.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare file version as record.");
         recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),

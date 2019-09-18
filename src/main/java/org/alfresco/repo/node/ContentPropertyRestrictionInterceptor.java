@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -215,7 +216,17 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         }
         else
         {
-            return !existingValue.equals(newValue);
+            if (newValue instanceof ContentData && existingValue instanceof ContentData)
+            {
+                // ContentData may be changed in mimetype, locale, size or encoding
+                String existingUrl = ((ContentData) existingValue).getContentUrl();
+                String newUrl = ((ContentData) newValue).getContentUrl();
+                return !Objects.equals(existingUrl, newUrl);
+            }
+            else
+            {
+                return !existingValue.equals(newValue);
+            }
         }
     }
 
@@ -228,10 +239,7 @@ public class ContentPropertyRestrictionInterceptor implements MethodInterceptor
         if (propValue instanceof ContentData)
         {
             String contentUrl = ((ContentData) propValue).getContentUrl();
-            if (contentUrl == null || contentUrl.isEmpty())
-            {
-                return false;
-            }
+            return contentUrl != null && !contentUrl.isEmpty();
         }
         return true;
     }

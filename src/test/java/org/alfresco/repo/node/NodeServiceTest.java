@@ -51,6 +51,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -2356,6 +2357,78 @@ public class NodeServiceTest
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, aspectProps);
             assertTrue("Aspect should be added", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE));
             assertNull("The content property was not correct.", nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            return null;
+        }, userName1);
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testChangeContentPropertyParameters()
+    {
+        NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        String userName1 = GUID.generate();
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userName1);
+        personService.createPerson(properties);
+
+        Map<QName, Serializable> props = new HashMap<>(3);
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder1 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        permissionService.setPermission(folder1, userName1, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder1, false);
+
+        AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = createContentNode(folder1);
+            ContentData oldContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData newContentData = new ContentData(oldContentData.getContentUrl(), MimetypeMap.MIMETYPE_PDF,
+                    oldContentData.getSize(), oldContentData.getEncoding(), oldContentData.getLocale());
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, newContentData);
+            assertEquals("The content property was not correct.", newContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+            oldContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            newContentData = new ContentData(oldContentData.getContentUrl(), oldContentData.getMimetype(),
+                    oldContentData.getSize() + 1, oldContentData.getEncoding(), oldContentData.getLocale());
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, newContentData);
+            assertEquals("The content property was not correct.", newContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+            oldContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            newContentData = new ContentData(oldContentData.getContentUrl(), oldContentData.getMimetype(),
+                    oldContentData.getSize(), "UTF-16", oldContentData.getLocale());
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, newContentData);
+            assertEquals("The content property was not correct.", newContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+            oldContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            newContentData = new ContentData(oldContentData.getContentUrl(), oldContentData.getMimetype(),
+                    oldContentData.getSize(), oldContentData.getEncoding(), Locale.GERMAN);
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, newContentData);
+            assertEquals("The content property was not correct.", newContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            try
+            {
+                nodeRef = createContentNode(folder1);
+                oldContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+                newContentData = new ContentData("fake://url/123", oldContentData.getMimetype(),
+                        oldContentData.getSize(), oldContentData.getEncoding(), oldContentData.getLocale());
+                nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, newContentData);
+                fail("Should not be possible to change content URL");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
 
             return null;
         }, userName1);

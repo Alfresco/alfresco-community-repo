@@ -26,17 +26,17 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
-import static com.jayway.restassured.RestAssured.basic;
-import static com.jayway.restassured.RestAssured.given;
-
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import static io.restassured.RestAssured.basic;
+import static io.restassured.RestAssured.given;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;

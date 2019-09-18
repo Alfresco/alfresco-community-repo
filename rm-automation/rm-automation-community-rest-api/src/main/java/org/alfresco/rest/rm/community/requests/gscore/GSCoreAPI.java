@@ -29,7 +29,7 @@ package org.alfresco.rest.rm.community.requests.gscore;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;

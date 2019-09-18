@@ -51,7 +51,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
-import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -74,10 +73,16 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.Policy;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
@@ -86,6 +91,9 @@ import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -132,6 +140,9 @@ public class NodeServiceTest
     
     private static ServiceRegistry serviceRegistry;
     private static NodeService nodeService;
+    private static PersonService personService;
+    private static ContentService contentService;
+    private static PermissionService permissionService;
     private static NodeDAO nodeDAO;
     private static TransactionService txnService;
     private static PolicyComponent policyComponent;
@@ -152,6 +163,9 @@ public class NodeServiceTest
 
         serviceRegistry = (ServiceRegistry) APP_CONTEXT_INIT.getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
+        personService = serviceRegistry.getPersonService();
+        contentService = serviceRegistry.getContentService();
+        permissionService = serviceRegistry.getPermissionService();
         nodeDAO = (NodeDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("nodeDAO");
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent");
@@ -1875,5 +1889,504 @@ public class NodeServiceTest
         Long singleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
         assertFalse(doubleLinkCRC2.equals(singleLinkCRC2));
         
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testUpdateContentPermissionWithoutRestrictions()
+    {
+        ContentPropertyRestrictionInterceptor contentPropertyRestrictionInterceptor =
+                (ContentPropertyRestrictionInterceptor) APP_CONTEXT_INIT.getApplicationContext().getBean("contentPropertyRestrictionInterceptor");
+
+        contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictions(false);
+        try
+        {
+            updateContentPermissionCommonWork();
+        }
+        finally
+        {
+            contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictions(true);
+        }
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testUpdateContentPermissionWithRestrictions()
+    {
+        NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        String content = "Some content";
+        String userName1 = GUID.generate();
+        String userName2 = GUID.generate();
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userName1);
+        personService.createPerson(properties);
+        properties.put(ContentModel.PROP_USERNAME, userName2);
+        personService.createPerson(properties);
+
+        Map<QName, Serializable> props = new HashMap<>(3);
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder1 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder2 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        permissionService.setPermission(folder1, userName1, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder1, false);
+        permissionService.setPermission(folder2, userName2, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder2, false);
+
+        ContentData contentProp1 = AuthenticationUtil.runAs(() -> {
+            NodeRef nodeRef = createContentNode(folder1);
+
+            // Should be possible to add content via contentService
+            addContentToNode(nodeRef);
+
+            try
+            {
+                AuthenticationUtil.runAs(() -> {
+                    contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                    fail("The content of node1 should not be readable by user 2");
+                    return null;
+                }, userName2);
+            }
+            catch (Exception e)
+            {
+                // expected
+                assertTrue("The AccessDeniedException should be thrown.", e instanceof AccessDeniedException);
+            }
+
+            return DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+        }, userName1);
+
+        AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = nodeService.createNode(
+                    folder2,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(GUID.generate()),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+
+            try
+            {
+                nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentProp1);
+                fail("Should not be possible to call setProperty directly to set content");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
+
+            try
+            {
+                Map<QName, Serializable> testProps = new HashMap<>();
+                testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+                nodeService.setProperties(nodeRef, testProps);
+                fail("Should not be possible to call setProperties directly to set content");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
+
+            try
+            {
+                Map<QName, Serializable> testProps = new HashMap<>();
+                testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+                nodeService.addProperties(nodeRef, testProps);
+                fail("Should not be possible to call addProperties directly to set content");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
+
+            try
+            {
+                Map<QName, Serializable> testProps = new HashMap<>();
+                testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+                nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, testProps);
+                fail("Should not be possible to call addAspect directly to set content");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
+
+            try
+            {
+                Map<QName, Serializable> testProps = new HashMap<>();
+                testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+                createContentNode(folder2, testProps);
+                fail("Should not be possible to call createNode directly to set content");
+            }
+            catch (InvalidTypeException ite)
+            {
+                // expected
+            }
+
+            ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNull("The second node should not have any content (all attempts should fail)", contentReader);
+            return null;
+        }, userName2);
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testUpdateContentPermissionWithRestrictionsAndWhiteList()
+    {
+        ContentPropertyRestrictionInterceptor contentPropertyRestrictionInterceptor =
+                (ContentPropertyRestrictionInterceptor) APP_CONTEXT_INIT.getApplicationContext().getBean("contentPropertyRestrictionInterceptor");
+
+        contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictionWhiteList(this.getClass().getName());
+        try
+        {
+            updateContentPermissionCommonWork();
+        }
+        finally
+        {
+            contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictionWhiteList("");
+        }
+    }
+
+    private void updateContentPermissionCommonWork()
+    {
+        NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        String content = "Some content";
+        String userName1 = GUID.generate();
+        String userName2 = GUID.generate();
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userName1);
+        personService.createPerson(properties);
+        properties.put(ContentModel.PROP_USERNAME, userName2);
+        personService.createPerson(properties);
+
+        Map<QName, Serializable> props = new HashMap<>(3);
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder1 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder2 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        permissionService.setPermission(folder1, userName1, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder1, false);
+        permissionService.setPermission(folder2, userName2, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder2, false);
+
+
+        ContentData contentProp1 = AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = createContentNode(folder1);
+
+            // Should be possible to add content via contentService
+            addContentToNode(nodeRef);
+
+            try
+            {
+                AuthenticationUtil.runAs(() ->
+                {
+                    contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                    fail("The content of node1 should not be readable by user 2");
+                    return null;
+                }, userName2);
+            }
+            catch (Exception e)
+            {
+                // expected
+                assertTrue("The AccessDeniedException should be thrown.", e instanceof AccessDeniedException);
+            }
+
+            return DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+        }, userName1);
+
+        AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = createContentNode(folder2);
+
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentProp1);
+            ContentReader contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("The node should have the content set", contentReader);
+            assertEquals("The property should be set successfully", content, contentReader.getContentString());
+
+            // reset the property
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+
+            Map<QName, Serializable> testProps = new HashMap<>();
+            testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+            nodeService.setProperties(nodeRef, testProps);
+            contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("The node should have the content set", contentReader);
+            assertEquals("The property should be set successfully", content, contentReader.getContentString());
+
+            // reset the property
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+
+            testProps = new HashMap<>();
+            testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, testProps);
+            contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("The node should have the content set", contentReader);
+            assertEquals("The property should be set successfully", content, contentReader.getContentString());
+
+            // reset the property
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+
+            testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+            nodeService.addProperties(nodeRef, testProps);
+            contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("The node should have the content set", contentReader);
+            assertEquals("The property should be set successfully", content, contentReader.getContentString());
+
+            testProps.put(ContentModel.PROP_CONTENT, contentProp1);
+            NodeRef newNode = createContentNode(folder2, testProps);
+            contentReader = contentService.getReader(newNode, ContentModel.PROP_CONTENT);
+            assertNotNull("The node should have the content set", contentReader);
+            assertEquals("The property should be set successfully", content, contentReader.getContentString());
+
+            contentReader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+            assertNotNull("The second node should not have any content (all attempts should fail)", contentReader);
+            return null;
+        }, userName2);
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testSetContentPropertiesWithoutModification()
+    {
+        NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        String userName1 = GUID.generate();
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userName1);
+        personService.createPerson(properties);
+
+        Map<QName, Serializable> props = new HashMap<>(3);
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder1 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        permissionService.setPermission(folder1, userName1, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder1, false);
+
+        AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = createContentNode(folder1);
+
+            // Should be possible to add content via contentService
+            addContentToNode(nodeRef);
+
+            Serializable contentProp = nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+
+            Map<QName, Serializable> existingProps = nodeService.getProperties(nodeRef);
+            String description = "Some description";
+            existingProps.put(ContentModel.PROP_DESCRIPTION, description);
+
+            nodeService.setProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", description, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+
+            existingProps = new HashMap<>(2);
+            existingProps.put(ContentModel.PROP_CONTENT, contentProp); // same prop
+            String title = "Some title";
+            existingProps.put(ContentModel.PROP_TITLE, title);
+
+            nodeService.addProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", title, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentProp);
+
+            Map<QName, Serializable> aspectProps = new HashMap<>();
+            aspectProps.put(ContentModel.PROP_CONTENT, contentProp);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, aspectProps);
+            assertTrue("Aspect should be added", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE));
+
+            return null;
+        }, userName1);
+    }
+
+    /**
+     * See MNT-20850
+     */
+    @Test
+    public void testSetContentPropertyToNull()
+    {
+        NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        ContentData nullContentData = new ContentData(null, "text/plain", 0L, "UTF-8", Locale.ENGLISH);
+        ContentData emptyContentData = new ContentData("", "text/plain", 0L, "UTF-8", Locale.ENGLISH);
+        String userName1 = GUID.generate();
+        HashMap<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_USERNAME, userName1);
+        personService.createPerson(properties);
+
+        Map<QName, Serializable> props = new HashMap<>(3);
+        props.put(ContentModel.PROP_NAME, GUID.generate());
+        NodeRef folder1 = nodeService.createNode(
+                workspaceRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NAMESPACE, GUID.generate()),
+                ContentModel.TYPE_FOLDER,
+                props).getChildRef();
+
+        permissionService.setPermission(folder1, userName1, PermissionService.ALL_PERMISSIONS, true);
+        permissionService.setInheritParentPermissions(folder1, false);
+
+        AuthenticationUtil.runAs(() ->
+        {
+            NodeRef nodeRef = createContentNode(folder1);
+
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, emptyContentData);
+            assertEquals("The content property was not correct.", emptyContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, nullContentData);
+            assertEquals("The content property was not correct.", nullContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
+            assertNull("The content property was not correct.", nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            Map<QName, Serializable> existingProps = nodeService.getProperties(nodeRef);
+            String description = "Some description 1";
+            existingProps.put(ContentModel.PROP_DESCRIPTION, description);
+            existingProps.put(ContentModel.PROP_CONTENT, emptyContentData);
+            nodeService.setProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", description, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+            assertEquals("The content property was not correct.", emptyContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            existingProps = nodeService.getProperties(nodeRef);
+            description = "Some description 2";
+            existingProps.put(ContentModel.PROP_DESCRIPTION, description);
+            existingProps.put(ContentModel.PROP_CONTENT, nullContentData);
+            nodeService.setProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", description, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+            assertEquals("The content property was not correct.", nullContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            existingProps = nodeService.getProperties(nodeRef);
+            description = "Some description 3";
+            existingProps.put(ContentModel.PROP_DESCRIPTION, description);
+            existingProps.put(ContentModel.PROP_CONTENT, null);
+            nodeService.setProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", description, nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION));
+            assertNull("The content property was not correct.", nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            existingProps = new HashMap<>(2);
+            existingProps.put(ContentModel.PROP_CONTENT, emptyContentData);
+            String title = "Some title 1";
+            existingProps.put(ContentModel.PROP_TITLE, title);
+
+            nodeService.addProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", title, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+            assertEquals("The content property was not correct.", emptyContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            existingProps = new HashMap<>(2);
+            existingProps.put(ContentModel.PROP_CONTENT, nullContentData);
+            title = "Some title 2";
+            existingProps.put(ContentModel.PROP_TITLE, title);
+
+            nodeService.addProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", title, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+            assertEquals("The content property was not correct.", nullContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            existingProps = new HashMap<>(2);
+            existingProps.put(ContentModel.PROP_CONTENT, null);
+            title = "Some title 3";
+            existingProps.put(ContentModel.PROP_TITLE, title);
+
+            nodeService.addProperties(nodeRef, existingProps);
+            assertEquals("Additional property should be set", title, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+            assertNull("The content property was not correct.", nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            Map<QName, Serializable> aspectProps = new HashMap<>();
+            aspectProps.put(ContentModel.PROP_CONTENT, emptyContentData);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, aspectProps);
+            assertTrue("Aspect should be added", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE));
+            assertEquals("The content property was not correct.", emptyContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            aspectProps = new HashMap<>();
+            aspectProps.put(ContentModel.PROP_CONTENT, nullContentData);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, aspectProps);
+            assertTrue("Aspect should be added", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE));
+            assertEquals("The content property was not correct.", nullContentData, nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            nodeRef = createContentNode(folder1);
+
+            aspectProps = new HashMap<>();
+            aspectProps.put(ContentModel.PROP_CONTENT, null);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_OWNABLE, aspectProps);
+            assertTrue("Aspect should be added", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE));
+            assertNull("The content property was not correct.", nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT));
+
+            return null;
+        }, userName1);
+    }
+
+    private void addContentToNode(NodeRef nodeRef)
+    {
+        String content = "Some content";
+        ContentWriter contentWriter = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(content);
+    }
+
+    private NodeRef createContentNode(NodeRef parentRef)
+    {
+        NodeRef nodeRef = nodeService.createNode(
+                parentRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(GUID.generate()),
+                ContentModel.TYPE_CONTENT).getChildRef();
+        addContentToNode(nodeRef);
+        return nodeRef;
+    }
+    private NodeRef createContentNode(NodeRef parentRef, Map<QName, Serializable> properties)
+    {
+        return nodeService.createNode(
+                parentRef,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(GUID.generate()),
+                ContentModel.TYPE_CONTENT,
+                properties).getChildRef();
     }
 }

@@ -46,6 +46,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -218,12 +219,9 @@ public class ImporterActionExecuterTest
         URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(resource);
         final File file = new File(url.getFile());
         
-        contentService.getWriter(zipFileNodeRef, ContentModel.PROP_CONTENT, true).putContent(file);
-
-        ContentData contentData = (ContentData) nodeService.getProperty(zipFileNodeRef, ContentModel.PROP_CONTENT);
-        ContentData newContentData = ContentData.setMimetype(contentData, MimetypeMap.MIMETYPE_ZIP);
-
-        nodeService.setProperty(zipFileNodeRef, ContentModel.PROP_CONTENT, newContentData);
+        ContentWriter writer = contentService.getWriter(zipFileNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_ZIP);
+        writer.putContent(file);
     }
 
     private Action createAction(NodeRef nodeRef, String actionDefinitionName, NodeRef targetNodeRef)

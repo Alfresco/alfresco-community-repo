@@ -66,6 +66,8 @@ import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -181,6 +183,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     protected RetryingTransactionHelper retryingTransactionHelper;
     protected AuthenticationComponent authenticationComponent;
     protected NodeService nodeService;
+    protected ContentService contentService;
     protected MetadataEncryptor metadataEncryptor;
     /** populated during setup */
     protected NodeRef rootNodeRef;
@@ -195,6 +198,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        contentService = (ContentService) applicationContext.getBean("contentService");
         
         authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -426,7 +430,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         // LEVEL 4
         properties.clear();
-        properties.put(PROP_QNAME_TEST_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
         properties.put(PROP_QNAME_TEST_TITLE, "node8");
         qname = QName.createQName(ns, "n6_p_n8");
         assoc = nodeService.createNode(n6, ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, TYPE_QNAME_TEST_CONTENT, properties);
@@ -681,7 +684,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             Serializable value = null;
             if (propertyTypeQName.equals(DataTypeDefinition.CONTENT))
             {
-                value = new ContentData(null, MimetypeMap.EXTENSION_BINARY, 0L, "UTF-8");
+                // skip, it is not possible to add content directly
+                continue;
             }
             else if (propertyTypeQName.equals(DataTypeDefinition.LOCALE))
             {
@@ -956,19 +960,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         nodeService.addAspect(fileNodeRef, ASPECT_QNAME_TEST_RENDERED, null);
         int pageNumber = 0;
-        for (ContentData renditionContentPage : renditionContentPages)
+        for (int i = 0; i < 100; i++)
         {
             pageNumber++;
             QName renditionQName = makePageAssocName(pageNumber);
-            Map<QName, Serializable> properties = Collections.singletonMap(
-                    PROP_QNAME_TEST_RENDITION_PAGE_CONTENT,
-                    (Serializable) renditionContentPage);
-            nodeService.createNode(
+            NodeRef nodeRef = nodeService.createNode(
                     fileNodeRef,
                     ASSOC_TYPE_QNAME_TEST_RENDITION,
                     renditionQName,
-                    TYPE_QNAME_TEST_RENDITION_PAGE,
-                    properties);
+                    TYPE_QNAME_TEST_RENDITION_PAGE).getChildRef();
+            ContentWriter writer = contentService.getWriter(nodeRef, PROP_QNAME_TEST_RENDITION_PAGE_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+            writer.setEncoding("UTF-8");
+            writer.putContent("Some content");
         }
         
         // That's it for uploading.  Now we retrieve them.
@@ -1041,7 +1045,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Create a normal node
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         // fill properties
-        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
         
         // create node for real
@@ -1051,7 +1054,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("MyContent"),
                 TYPE_QNAME_TEST_CONTENT,
                 properties).getChildRef();
-        
+        ContentWriter writer = contentService.getWriter(nodeRef, TYPE_QNAME_TEST_CONTENT, true);
+        writer.putContent("Some content");
+
         // Modify name using the long string
         nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, longString);
     }
@@ -1064,7 +1069,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         // fill properties
-        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
         
         // create node for real
@@ -1814,11 +1818,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     @Test
     public void testSerializableProperties() throws Exception
     {
-        ContentData contentData = new ContentData(null, null, 0L, null);
         QName qname = PROP_QNAME_CONTENT_VALUE;
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
-        properties.put(PROP_QNAME_CONTENT_VALUE, contentData);
         properties.put(PROP_QNAME_SERIALIZABLE_VALUE, qname);
         // create node
         NodeRef nodeRef = nodeService.createNode(
@@ -1832,9 +1834,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
-        Serializable checkPropertyContentData = checkProperties.get(PROP_QNAME_CONTENT_VALUE);
         Serializable checkPropertyQname = checkProperties.get(PROP_QNAME_SERIALIZABLE_VALUE);
-        assertTrue("Serialization/deserialization of ContentData failed", checkPropertyContentData instanceof ContentData);
         assertTrue("Serialization/deserialization failed", checkPropertyQname instanceof QName);
     }
 
@@ -2123,9 +2123,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(PROP_QNAME_DATE_VALUE, new Date());
         properties.put(PROP_QNAME_SERIALIZABLE_VALUE, "456");
         properties.put(PROP_QNAME_NODEREF_VALUE, rootNodeRef);
-        properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
         properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
-        properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
         properties.put(PROP_QNAME_CATEGORY_VALUE, cat);
         properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
         properties.put(PROP_QNAME_NULL_VALUE, null);
@@ -2712,8 +2710,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     private AssociationRef createAssociation(NodeRef sourceRef) throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
-        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
-        fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
+        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);        fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
         
         if (sourceRef == null)
         {
@@ -2768,7 +2765,6 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         
         // create another
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
-        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
         ChildAssociationRef childAssocRef = nodeService.createNode(
                 rootNodeRef,

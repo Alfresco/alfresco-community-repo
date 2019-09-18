@@ -57,6 +57,7 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -476,6 +477,17 @@ public class CommentsTest
             {
                 // Fails because is not the lock owner
             }
+            catch (ContentIOException cioe)
+            {
+                if (cioe.getCause() instanceof NodeLockedException)
+                {
+                    // caught when content of the comment is being set
+                }
+                else
+                {
+                    throw cioe;
+                }
+            }
 
             authenticationComponent.setCurrentUser(USER_ONE_NAME);
 
@@ -495,6 +507,17 @@ public class CommentsTest
             catch (NodeLockedException e)
             {
                 // Fails because is not the lock owner
+            }
+            catch (ContentIOException cioe)
+            {
+                if (cioe.getCause() instanceof NodeLockedException)
+                {
+                    // caught when content of the comment is being set
+                }
+                else
+                {
+                    throw cioe;
+                }
             }
 
             // change to lock owner
@@ -631,7 +654,6 @@ public class CommentsTest
         }
 
         NodeRef postNode = nodeService.createNode(topicNode, ContentModel.ASSOC_CONTAINS, QName.createQName("comment" + System.currentTimeMillis()), ForumModel.TYPE_POST).getChildRef();
-        nodeService.setProperty(postNode, ContentModel.PROP_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
         ContentWriter writer = contentService.getWriter(postNode, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.setEncoding("UTF-8");

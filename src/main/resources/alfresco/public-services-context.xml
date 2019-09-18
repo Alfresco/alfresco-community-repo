@@ -78,6 +78,7 @@
                 <idref bean="exceptionTranslator"/>
                 <idref bean="NodeService_security"/>
                 <idref bean="disableAuditablePolicySetPropertyInterceptor"/>
+                <idref bean="contentPropertyRestrictionInterceptor"/>
 				
                 <!-- Bug prevents use.
                      Also, the interception of this sort will lead to issues with other clients
@@ -85,6 +86,13 @@
                 -->
             </list>
         </property>
+    </bean>
+
+    <bean id="contentPropertyRestrictionInterceptor" class="org.alfresco.repo.node.ContentPropertyRestrictionInterceptor">
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="nodeService" ref="mlAwareNodeService" />
+        <property name="globalContentPropertyRestrictions" value="${contentPropertyRestrictions.enabled}" />
+        <property name="globalContentPropertyRestrictionWhiteList" value="{contentPropertyRestrictions.whitelist}"/>
     </bean>
 
     <bean id="disableAuditablePolicySetPropertyInterceptor" class="org.alfresco.repo.audit.DisableAuditableBehaviourInterceptor">

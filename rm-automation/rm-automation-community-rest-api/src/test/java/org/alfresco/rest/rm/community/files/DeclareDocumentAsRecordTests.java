@@ -261,7 +261,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     public void declareAsRecordAFileWithARecordVersion() throws Exception
     {
         STEP("Create a file.");
-        FileModel testFile = dataContent.usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare file version as record and check that record is successfully created.");
         recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),

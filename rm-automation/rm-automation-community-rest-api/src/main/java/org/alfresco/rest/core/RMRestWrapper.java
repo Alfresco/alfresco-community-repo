@@ -26,7 +26,7 @@
  */
 package org.alfresco.rest.core;
 
-import com.jayway.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.RequestSpecBuilder;
 
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestErrorModel;

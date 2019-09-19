@@ -7,10 +7,10 @@
         {"transformerName": "imagemagick"}
       ],
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "application/pdf",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/pdf",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/pdf",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/pdf",  "targetMediaType": "image/tiff"}
+        {"sourceMediaType": "application/pdf",                    "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/pdf",                    "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/pdf",  "priority": "60", "targetMediaType": "image/png" },
+        {"sourceMediaType": "application/pdf",                    "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
         "pdfRendererOptions",
@@ -24,10 +24,10 @@
         {"transformerName": "imagemagick"}
       ],
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "application/illustrator",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/illustrator",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/illustrator",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/illustrator",  "targetMediaType": "image/tiff"}
+        {"sourceMediaType": "application/illustrator",                    "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/illustrator",                    "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/illustrator",  "priority": "60", "targetMediaType": "image/png" },
+        {"sourceMediaType": "application/illustrator",                    "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
         "pdfRendererOptions",

@@ -273,6 +273,23 @@
       "transformOptions": [
         "archiveOptions"
       ]
+    },
+    {
+      "transformerName": "textBasedToImageViaText",
+      "transformerPipeline" : [
+        {"transformerName": "string",                                 "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/dita+xml",                   "targetMediaType": "image/gif" },
+        {"sourceMediaType": "application/dita+xml",                   "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "application/dita+xml",                   "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "application/dita+xml",                   "targetMediaType": "image/png" }
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
     }
   ]
 }

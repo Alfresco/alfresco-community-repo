@@ -484,8 +484,10 @@
       <maven.javadoc.skip>true</maven.javadoc.skip>
       <maven.war.plugin.version>3.2.2</maven.war.plugin.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
-      <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
-      <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
+      <java.version>11</java.version>
+      <maven.compiler.source>${java.version}</maven.compiler.source>
+      <maven.compiler.target>${java.version}</maven.compiler.target>
+      <testJavaVersion>${java.version}</testJavaVersion>
       <maven.buildhelper.version>1.9.1</maven.buildhelper.version>
       <maven.compiler.version>3.8.0</maven.compiler.version>
       <maven.enforcer.plugin>3.0.0-M2</maven.enforcer.plugin>
@@ -603,12 +605,16 @@
                   <configuration>
                      <rules>
                         <requireJavaVersion>
-                           <version>[1.8.0,)</version>
+                           <version>[${java.version},)</version>
                         </requireJavaVersion>
                      </rules>
                   </configuration>
                </execution>
             </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
          </plugin>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -838,8 +844,8 @@
                <artifactId>maven-compiler-plugin</artifactId>
                <version>${maven.compiler.version}</version>
                <configuration>
-                  <source>${maven.build.sourceVersion}</source>
-                  <target>${maven.build.sourceVersion}</target>
+                  <source>${maven.compiler.source}</source>
+                  <target>${maven.compiler.target}</target>
                </configuration>
                <executions>
                   <execution>
@@ -849,8 +855,8 @@
                         <goal>testCompile</goal>
                      </goals>
                      <configuration>
-                        <source>${maven.build.testSourceVersion}</source>
-                        <target>${maven.build.testSourceVersion}</target>
+                        <source>${testJavaVersion}</source>
+                        <target>${testJavaVersion}</target>
                      </configuration>
                   </execution>
                </executions>
@@ -945,7 +951,7 @@
                <artifactId>maven-javadoc-plugin</artifactId>
                <configuration>
                   <doclint>none</doclint>
-                  <source>8</source>
+                  <source>${java.version}</source>
                </configuration>
             </plugin>
 

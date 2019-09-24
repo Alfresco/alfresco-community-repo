@@ -258,8 +258,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <configuration>
                         <images>
                            <image>
@@ -300,8 +300,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <configuration>
                         <images>
                            <image>
@@ -338,8 +338,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <configuration>
                         <images>
                            <image>
@@ -382,8 +382,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <configuration>
                         <images>
                            <image>
@@ -420,8 +420,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <configuration>
                         <images>
                            <image>
@@ -520,7 +520,6 @@
       <app.properties.test.include>**</app.properties.test.include>
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
 
-      <fabric8.maven.version>3.5.37</fabric8.maven.version>
       <image.name>imageNameNotSet</image.name>
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>

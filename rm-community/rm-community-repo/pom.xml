@@ -628,7 +628,7 @@
                <plugins>
                    <plugin>
                        <groupId>io.fabric8</groupId>
-                       <artifactId>fabric8-maven-plugin</artifactId>
+                       <artifactId>docker-maven-plugin</artifactId>
                    </plugin>
                </plugins>
            </build>
@@ -639,7 +639,7 @@
                <plugins>
                    <plugin>
                        <groupId>io.fabric8</groupId>
-                       <artifactId>fabric8-maven-plugin</artifactId>
+                       <artifactId>docker-maven-plugin</artifactId>
                    </plugin>
                </plugins>
            </build>
@@ -650,7 +650,7 @@
                <plugins>
                    <plugin>
                        <groupId>io.fabric8</groupId>
-                       <artifactId>fabric8-maven-plugin</artifactId>
+                       <artifactId>docker-maven-plugin</artifactId>
                    </plugin>
                </plugins>
            </build>
@@ -661,7 +661,7 @@
             <plugins>
                <plugin>
                   <groupId>io.fabric8</groupId>
-                  <artifactId>fabric8-maven-plugin</artifactId>
+                  <artifactId>docker-maven-plugin</artifactId>
                </plugin>
             </plugins>
          </build>

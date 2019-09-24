@@ -42,6 +42,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
+import org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -91,6 +92,9 @@ public class FrozenAspectUnitTest
 
     @Mock
     private Set mockSet;
+
+    @Mock
+    private PropertyModificationAllowedCheck mockPropertyModificationAllowedCheck;
 
     @InjectMocks
     private FrozenAspect frozenAspect;
@@ -245,6 +249,7 @@ public class FrozenAspectUnitTest
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
         when(mockResourceHelper.getSet(content)).thenReturn(mockSet);
         when(mockSet.contains("frozen")).thenReturn(false);
+        when(mockPropertyModificationAllowedCheck.check(null, null)).thenReturn(false);
         frozenAspect.onUpdateProperties(content, null, null);
     }
 }

@@ -38,6 +38,7 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -77,6 +78,11 @@ public class FrozenAspect extends    BaseBehaviourBean
     protected FreezeService freezeService;
 
     /**
+     * Utility class for property modification
+     */
+    private PropertyModificationAllowedCheck propertyModificationAllowedCheck;
+
+    /**
      * @param freezeService freeze service
      */
     public void setFreezeService(FreezeService freezeService)
@@ -84,6 +90,14 @@ public class FrozenAspect extends    BaseBehaviourBean
         this.freezeService = freezeService;
     }
 
+    /**
+     * Setter for property modification check utility
+     * @param propertyModificationAllowedCheck Utility class for property modification
+     */
+    public void setPropertyModificationAllowedCheck(PropertyModificationAllowedCheck propertyModificationAllowedCheck)
+    {
+        this.propertyModificationAllowedCheck = propertyModificationAllowedCheck;
+    }
 
     /**
      * Disable the on update properties for frozen aspect behaviour
@@ -268,7 +282,8 @@ public class FrozenAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             // check to not throw exception when the aspect is being added
             if (nodeService.exists(nodeRef) && freezeService.isFrozen(nodeRef) &&
-                    !transactionalResourceHelper.getSet("frozen").contains(nodeRef) )
+                    !transactionalResourceHelper.getSet("frozen").contains(nodeRef) &&
+                        !propertyModificationAllowedCheck.check(before, after))
                 {
                     throw new PermissionDeniedException(I18NUtil.getMessage("rm.hold.update-frozen-node"));
                 }

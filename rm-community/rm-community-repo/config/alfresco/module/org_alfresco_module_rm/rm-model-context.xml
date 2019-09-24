@@ -1,8 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/util
+      http://www.springframework.org/schema/util/spring-util.xsd">
 
 
    <!-- Ensure backwards compatibility with 4.2 and 4.2.1 -->
@@ -170,6 +173,18 @@
 
    <bean id="rma.freeze" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect" parent="rm.baseBehaviour">
       <property name="freezeService" ref="FreezeService" />
+      <property name="propertyModificationAllowedCheck" ref="updateFrozenPropertyCheck"/>
+   </bean>
+
+   <util:constant id="propThumbnailModification" static-field="org.alfresco.model.ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA" />
+
+   <bean name="updateFrozenPropertyCheck"
+         class="org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck">
+      <property name="whiteList">
+         <list>
+            <ref bean="propThumbnailModification" />
+         </list>
+      </property>
    </bean>
 
    <bean id="rma.vitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VitalRecordDefinitionAspect" parent="rm.baseBehaviour">

@@ -666,5 +666,22 @@
             </plugins>
          </build>
       </profile>
+      <profile>
+         <id>start-db</id>
+         <activation>
+            <property>
+               <name>skip.integrationtests</name>
+               <value>false</value>
+            </property>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>io.fabric8</groupId>
+                  <artifactId>docker-maven-plugin</artifactId>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
    </profiles>
 </project>

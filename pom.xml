@@ -511,40 +511,6 @@
                            <goals>
                               <goal>stop</goal>
                            </goals>
-                           <configuration>
-                              <images>
-                                 <image>
-                                    <alias>test-database</alias>
-                                    <name>postgres:${postgres.version}</name>
-                                    <run>
-                                       <ports>
-                                          <port>${database.port}:${postgresql.port}</port>
-                                       </ports>
-                                       <env>
-                                          <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
-                                          <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
-                                          <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
-                                       </env>
-                                       <cmd>
-                                          <shell>-c max_connections=300</shell>
-                                       </cmd>
-                                       <wait>
-                                          <log>database system is ready to accept connections</log>
-                                          <time>20000</time>
-                                       </wait>
-                                    </run>
-                                 </image>
-                                 <image>
-                                    <name>alfresco/alfresco-activemq:${activemq.version}</name>
-                                    <run>
-                                       <ports>
-                                          <port>${activemq.port1}:${activemq.port1}</port>
-                                          <port>${activemq.port2}:${activemq.port2}</port>
-                                       </ports>
-                                    </run>
-                                 </image>
-                              </images>
-                           </configuration>
                         </execution>
                      </executions>
                   </plugin>

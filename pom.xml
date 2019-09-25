@@ -273,7 +273,8 @@
                      <executions>
                         <execution>
                            <id>build-image</id>
-                           <phase>install</phase>
+                           <!-- This will still be executed if the tests are skipped. -->
+                           <phase>verify</phase>
                            <goals>
                               <goal>build</goal>
                            </goals>

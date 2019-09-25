@@ -555,7 +555,6 @@
 
       <jackson.version>2.9.8</jackson.version>
       <fabric8.docker.version>0.25.0</fabric8.docker.version>
-      <docker.source.dir>.</docker.source.dir>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.5</postgresql.version>
       <postgresql.port>5432</postgresql.port>

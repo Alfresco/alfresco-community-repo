@@ -258,32 +258,26 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
-                     <configuration>
-                        <images>
-                           <image>
-                              <name>${image.name}</name>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                        </images>
-                     </configuration>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <executions>
                         <execution>
                            <id>build-image</id>
-                           <phase>install</phase>
-                           <goals>
-                              <goal>build</goal>
-                           </goals>
-                        </execution>
-                        <execution>
-                           <id>build-image-verify</id>
+                           <!-- This will still be executed if the tests are skipped. -->
                            <phase>verify</phase>
                            <goals>
                               <goal>build</goal>
                            </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}</name>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
                         </execution>
                      </executions>
                   </plugin>
@@ -300,19 +294,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
-                     <configuration>
-                        <images>
-                           <image>
-                              <name>${image.name}:${image.tag}</name>
-                              <registry>${image.registry}</registry>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                        </images>
-                     </configuration>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <executions>
                         <execution>
                            <id>build-push-image</id>
@@ -321,6 +304,17 @@
                               <goal>build</goal>
                               <goal>push</goal>
                            </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <registry>${image.registry}</registry>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
                         </execution>
                      </executions>
                   </plugin>
@@ -338,25 +332,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
-                     <configuration>
-                        <images>
-                           <image>
-                              <name>${image.name}:${image.tag}</name>
-                              <registry>${image.registry}</registry>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                           <image>
-                              <name>${image.name}:${image.tag}</name>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                        </images>
-                     </configuration>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <executions>
                         <execution>
                            <id>build-push-image</id>
@@ -365,6 +342,23 @@
                               <goal>build</goal>
                               <goal>push</goal>
                            </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <registry>${image.registry}</registry>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                                 <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
                         </execution>
                      </executions>
                   </plugin>
@@ -382,19 +376,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
-                     <configuration>
-                        <images>
-                           <image>
-                              <name>${image.name}:${project.version}</name>
-                              <registry>${image.registry}</registry>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                        </images>
-                     </configuration>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <executions>
                         <execution>
                            <id>build-push-image</id>
@@ -403,6 +386,17 @@
                               <goal>build</goal>
                               <goal>push</goal>
                            </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}:${project.version}</name>
+                                    <registry>${image.registry}</registry>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
                         </execution>
                      </executions>
                   </plugin>
@@ -420,25 +414,8 @@
                <plugins>
                   <plugin>
                      <groupId>io.fabric8</groupId>
-                     <artifactId>fabric8-maven-plugin</artifactId>
-                     <version>${fabric8.maven.version}</version>
-                     <configuration>
-                        <images>
-                           <image>
-                              <name>${image.name}:${project.version}</name>
-                              <registry>${image.registry}</registry>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                           <image>
-                              <name>${image.name}:${project.version}</name>
-                              <build>
-                                 <dockerFileDir>${project.basedir}/</dockerFileDir>
-                              </build>
-                           </image>
-                        </images>
-                     </configuration>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
                      <executions>
                         <execution>
                            <id>build-push-image</id>
@@ -446,6 +423,93 @@
                            <goals>
                               <goal>build</goal>
                               <goal>push</goal>
+                           </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <name>${image.name}:${project.version}</name>
+                                    <registry>${image.registry}</registry>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                                 <image>
+                                    <name>${image.name}:${project.version}</name>
+                                    <build>
+                                       <dockerFileDir>${project.basedir}/</dockerFileDir>
+                                    </build>
+                                 </image>
+                              </images>
+                           </configuration>
+                        </execution>
+                     </executions>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+         </build>
+      </profile>
+      <profile>
+         <id>start-db</id>
+         <activation>
+            <property>
+               <name>skip.integrationtests</name>
+               <value>false</value>
+            </property>
+         </activation>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>io.fabric8</groupId>
+                     <artifactId>docker-maven-plugin</artifactId>
+                     <version>${fabric8.docker.version}</version>
+                     <executions>
+                        <execution>
+                           <id>start</id>
+                           <phase>pre-integration-test</phase>
+                           <goals>
+                              <goal>start</goal>
+                           </goals>
+                           <configuration>
+                              <images>
+                                 <image>
+                                    <alias>test-database</alias>
+                                    <name>postgres:${postgres.version}</name>
+                                    <run>
+                                       <ports>
+                                          <port>${database.port}:${postgresql.port}</port>
+                                       </ports>
+                                       <env>
+                                          <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
+                                          <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
+                                          <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
+                                       </env>
+                                       <cmd>
+                                          <shell>-c max_connections=300</shell>
+                                       </cmd>
+                                       <wait>
+                                          <log>database system is ready to accept connections</log>
+                                          <time>20000</time>
+                                       </wait>
+                                    </run>
+                                 </image>
+                                 <image>
+                                    <name>alfresco/alfresco-activemq:${activemq.version}</name>
+                                    <run>
+                                       <ports>
+                                          <port>${activemq.port1}:${activemq.port1}</port>
+                                          <port>${activemq.port2}:${activemq.port2}</port>
+                                       </ports>
+                                    </run>
+                                 </image>
+                              </images>
+                           </configuration>
+                        </execution>
+                        <execution>
+                           <id>stop</id>
+                           <phase>post-integration-test</phase>
+                           <goals>
+                              <goal>stop</goal>
                            </goals>
                         </execution>
                      </executions>
@@ -522,7 +586,6 @@
       <app.properties.test.include>**</app.properties.test.include>
       <app.properties.test.folder>src/test/properties/local</app.properties.test.folder>
 
-      <fabric8.maven.version>3.5.37</fabric8.maven.version>
       <image.name>imageNameNotSet</image.name>
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>
@@ -1122,62 +1185,6 @@
                         <warSourceDirectory>src/main/resources/META-INF</warSourceDirectory>
                         <jswarn>false</jswarn>
                      </configuration>
-                  </execution>
-               </executions>
-            </plugin>
-            <plugin>
-               <groupId>io.fabric8</groupId>
-               <artifactId>docker-maven-plugin</artifactId>
-               <version>${fabric8.docker.version}</version>
-               <configuration>
-                  <images>
-                     <image>
-                        <alias>test-database</alias>
-                        <name>postgres:${postgres.version}</name>
-                        <run>
-                           <ports>
-                              <port>${database.port}:${postgresql.port}</port>
-                           </ports>
-                           <env>
-                              <POSTGRES_PASSWORD>${alfresco.db.password}</POSTGRES_PASSWORD>
-                              <POSTGRES_USER>${alfresco.db.username}</POSTGRES_USER>
-                              <POSTGRES_DB>${alfresco.test.db.name}</POSTGRES_DB>
-                           </env>
-                           <cmd>
-                              <shell>-c max_connections=300</shell>
-                           </cmd>
-                           <wait>
-                              <log>database system is ready to accept connections</log>
-                              <time>20000</time>
-                           </wait>
-                        </run>
-                     </image>
-                     <image>
-                        <name>alfresco/alfresco-activemq:${activemq.version}</name>
-                        <run>
-                           <ports>
-                              <port>${activemq.port1}:${activemq.port1}</port>
-                              <port>${activemq.port2}:${activemq.port2}</port>
-                           </ports>
-                        </run>
-                     </image>
-                  </images>
-                  <skip>${skip.integrationtests}</skip>
-               </configuration>
-               <executions>
-                  <execution>
-                     <id>start</id>
-                     <phase>pre-integration-test</phase>
-                     <goals>
-                        <goal>start</goal>
-                     </goals>
-                  </execution>
-                  <execution>
-                     <id>stop</id>
-                     <phase>post-integration-test</phase>
-                     <goals>
-                        <goal>stop</goal>
-                     </goals>
                   </execution>
                </executions>
             </plugin>

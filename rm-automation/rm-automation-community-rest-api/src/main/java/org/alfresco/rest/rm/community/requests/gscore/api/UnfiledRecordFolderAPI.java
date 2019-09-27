@@ -45,8 +45,8 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;

@@ -37,12 +37,13 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
-import com.jayway.restassured.response.ResponseBody;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.record.RecordBodyFile;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
+
+import io.restassured.response.ResponseBody;
 
 /**
  * Records REST API Wrapper

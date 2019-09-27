@@ -45,7 +45,7 @@
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
         <dependency.jackson-databind.version>2.9.9.3</dependency.jackson-databind.version>
 
-        <dependency.webscripts.version>7.8</dependency.webscripts.version>
+        <dependency.webscripts.version>7.9</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>42.2.6</dependency.postgresql.version>

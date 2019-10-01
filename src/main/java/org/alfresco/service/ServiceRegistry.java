@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -146,6 +147,7 @@ public interface ServiceRegistry
     static final QName RATING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RatingService");
     static final QName REPO_ADMIN_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RepoAdminService");
     static final QName NODE_LOCATOR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "nodeLocatorService");
+    static final QName BLOG_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "BlogService");
     static final QName CALENDAR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CalendarService");
     static final QName NOTIFICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NotificationService");
     static final QName DOCUMENT_LINK_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DocumentLinkService");
@@ -471,7 +473,17 @@ public interface ServiceRegistry
      */
     @NotAuditable
     NodeLocatorService getNodeLocatorService();
-
+    
+    /**
+     * Get the blog service (or null if one is not provided)
+     * 
+     * @since 4.0
+     * @deprecated This method has been deprecated as it would return a service that is not part of the public API. 
+     * The service itself is not deprecated, but access to it via the ServiceRegistry will be removed in the future.
+     */
+    @NotAuditable
+    BlogService getBlogService();
+    
     /**
      * Get the calendar service (or null if one is not provided)
      * 

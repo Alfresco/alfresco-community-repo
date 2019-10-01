@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -401,6 +402,12 @@ public class ServiceDescriptorRegistry
     public NodeLocatorService getNodeLocatorService() 
     {
         return (NodeLocatorService)getService(NODE_LOCATOR_SERVICE);
+    }
+    
+    @Override
+    public BlogService getBlogService() 
+    {
+        return (BlogService)getService(BLOG_SERVICE);
     }
     
     @Override

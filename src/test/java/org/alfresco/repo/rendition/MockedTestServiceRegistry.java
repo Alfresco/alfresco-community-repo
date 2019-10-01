@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
+import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -460,6 +461,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
 
     @Override
     public SysAdminParams getSysAdminParams()
+    {
+        // A mock response
+        return null;
+    }
+
+    @Override
+    public BlogService getBlogService()
     {
         // A mock response
         return null;

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.blogs">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Blog" type="Blog">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="publishedDate" column="published_date" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="postedDate" column="posted_date" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+    </resultMap>
+    
+    <!-- GetBlogs Canned Query (model-specific) - note: date properties are stored as ISO 8061 string -->
+    
+    <select id="select_GetBlogsCannedQuery" parameterType="Blog" resultMap="result_Blog">
+       select
+            childNode.id             as id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid,
+            childNode.audit_created  as audit_created,
+            childNode.audit_creator  as audit_creator,
+            prop_pub.string_value    as published_date,
+            <if test="blogIntPostedQNameId != null">
+            prop_posted.string_value as posted_date,
+            </if>
+            prop_name.string_value   as name
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+            <if test="blogIntAspectQNameId != null">
+            join alf_node_aspects hasAspect on (hasAspect.node_id = childNode.id and hasAspect.qname_id = #{blogIntAspectQNameId})
+            </if>
+            <if test="blogIntPostedQNameId != null">
+            left join alf_node_properties prop_posted on (prop_posted.node_id = childNode.id and prop_posted.qname_id = #{blogIntPostedQNameId})
+            </if>
+            left join alf_node_properties prop_pub on (prop_pub.node_id = childNode.id and prop_pub.qname_id = #{publishedQNameId})
+            left join alf_node_properties prop_name on (prop_name.node_id = childNode.id and prop_name.qname_id = #{nameQNameId})
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and childNode.type_qname_id = #{contentTypeQNameId}
+    </select>
+    
+</mapper>

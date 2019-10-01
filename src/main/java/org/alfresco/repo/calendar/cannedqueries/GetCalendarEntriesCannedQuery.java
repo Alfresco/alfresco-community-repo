@@ -70,7 +70,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
     private Log logger = LogFactory.getLog(getClass());
     
     private static final String QUERY_NAMESPACE = "alfresco.query.calendar";
-    private static final String QUERY_SELECT_GET_CALENDAR_ENTRIES = "select_GetCalendarEntriesCannedQuery";
+    private static final String QUERY_SELECT_GET_BLOGS = "select_GetCalendarEntriesCannedQuery";
     
     private final CannedQueryDAO cannedQueryDAO;
     private final TaggingService taggingService;
@@ -109,7 +109,7 @@ public class GetCalendarEntriesCannedQuery extends AbstractCannedQueryPermission
         Date entriesToDate = paramBean.getEntriesToDate();
         
         // note: refer to SQL for specific DB filtering (eg.parent nodes etc)
-        List<CalendarEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CALENDAR_ENTRIES, paramBean, 0, Integer.MAX_VALUE);
+        List<CalendarEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_BLOGS, paramBean, 0, Integer.MAX_VALUE);
         
         List<CalendarEntity> filtered = new ArrayList<CalendarEntity>(results.size());
         for (CalendarEntity result : results)

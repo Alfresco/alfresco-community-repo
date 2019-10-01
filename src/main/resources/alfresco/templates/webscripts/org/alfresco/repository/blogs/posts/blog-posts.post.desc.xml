@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Create blog post</shortname>
+  <description>Creates a new blog post.</description>
+  <url>/api/blog/site/{site}/{container}/{path}/posts</url>
+  <url>/api/blog/site/{site}/{container}/posts</url>
+  <url>/api/blog/node/{store_type}/{store_id}/{id}/posts</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

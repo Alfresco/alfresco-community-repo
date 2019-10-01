@@ -120,7 +120,7 @@ public class CalendarRestApiTest extends BaseWebScriptTest
         SiteInfo siteInfo = this.siteService.getSite(SITE_SHORT_NAME_CALENDAR);
         if (siteInfo == null)
         {
-            this.siteService.createSite("CalendarSitePreset", SITE_SHORT_NAME_CALENDAR, "CalendarSiteTitle", "CalendarSiteDescription", SiteVisibility.PUBLIC);
+            this.siteService.createSite("CalendarSitePreset", SITE_SHORT_NAME_CALENDAR, "CalendarSiteTitle", "BlogSiteDescription", SiteVisibility.PUBLIC);
         }
         
         // Ensure the calendar container is there

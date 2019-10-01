@@ -78,7 +78,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * TODO: Fix the loose transaction handling.
- * TODO: Rationalise with other v0 Comment REST API tests. See also ACE-5437.
+ * TODO: Rationalise with other v0 Comment REST API tests (eg. see BlogServiceTest ... etc). See also ACE-5437.
  */
 public class CommentsApiTest extends BaseWebScriptTest
 {

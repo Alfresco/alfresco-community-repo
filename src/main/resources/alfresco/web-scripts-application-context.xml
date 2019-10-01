@@ -891,6 +891,13 @@
           parent="baseArchivedNodeWebScript">
     </bean>
     
+    
+    <!--                              -->
+    <!--      BlogService REST API    -->
+    <!--                              -->
+    <import resource="blogs/web-scripts-blog-context.xml"/>
+    
+    
     <!--                                   -->
     <!--      Workflow Service REST API    -->
     <!--                                   -->
@@ -1321,6 +1328,89 @@
    <bean id="webscript.org.alfresco.repository.links.links-delete.post"
          class="org.alfresco.repo.web.scripts.links.LinksDeletePost"
          parent="abstractLinksWebScript">
+   </bean>
+   
+   <!--                                        -->
+   <!--      Discussions Pages REST API        -->
+   <!--                                        -->
+   
+   <!-- abstract discussions web script -->
+   <bean id="abstractDiscussionWebScript" parent="webscript" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="activityService" ref="activityService"/>
+        <property name="discussionService" ref="DiscussionService"/>
+        <property name="permissionService" ref="PermissionService" />
+   </bean>
+
+   <!-- Fetches the details of one discussions post or topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Updates a discussions post or topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.put"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostPut"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Deletes a discussion post or topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post.delete"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostDelete"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Creates a new discussions reply post for a topic -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post-replies.post"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostRepliesPost"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the discussions replies for a topic or post -->
+   <bean id="webscript.org.alfresco.repository.discussions.posts.forum-post-replies.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumPostRepliesGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+
+   <!-- Creates a new discussions topic and primary post -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.post"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicPost"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   
+   <!-- Lists the discussion topics for a site -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the discussion topics for the user of a site -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts-mine.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsMineGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the recent discussion topics for a site -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts-new.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsRecentGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the discussion topics with recent replies for a site -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts-hot.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsHotGet"
+         parent="abstractDiscussionWebScript">
+   </bean>
+   
+   <!-- Lists the discussion topics matching filters -->
+   <bean id="webscript.org.alfresco.repository.discussions.forum.forum-posts-filtered.get"
+         class="org.alfresco.repo.web.scripts.discussion.ForumTopicsFilteredGet"
+         parent="abstractDiscussionWebScript">
+      <property name="nodeService" ref="NodeService" />
+      <property name="searchService" ref="SearchService" />
    </bean>
    
    <!--                                        -->

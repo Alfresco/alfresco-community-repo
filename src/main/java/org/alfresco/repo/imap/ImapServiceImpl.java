@@ -2109,6 +2109,12 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 case "calendar":
                     url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/calendar");
                     break;
+                case "discussions":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/discussions-topiclist");
+                    break;
+                case "blog":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/blog-postlist");
+                    break;
                 case "documentlibrary":
                     String pathFromSites = getPathFromSites(nodeService.getPrimaryParent(contentNodeRef).getParentRef());
                     StringBuilder parsedPath = new StringBuilder();

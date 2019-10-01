@@ -57,6 +57,8 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
 {
     private static final String TEST_SITE_NAME = "readOnlyTestSite";
     
+
+    private static final String URL_GET_SITE_FORUM_POSTS = "/api/forum/site/" + TEST_SITE_NAME + "/discussions/posts";
     private static final String URL_GET_SITE_BLOG = "/api/blog/site/" + TEST_SITE_NAME + "/blog";
     private static final String URL_GET_SITE_LINKS = "/api/links/site/" + TEST_SITE_NAME + "/links?page=1&pageSize=10";
     private static final String URL_GET_SITE_LINK = "/api/links/link/site/" + TEST_SITE_NAME + "/links/123456789";
@@ -129,6 +131,13 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
         nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(site.getNodeRef()));
         
         AuthenticationUtil.clearCurrentSecurityContext();
+    }
+       
+    public void testGetSiteForumPosts() throws Exception
+    {
+        Response response = sendRequest(new GetRequest(URL_GET_SITE_FORUM_POSTS), 200);
+        logResponse(response);
+        assertEquals(Status.STATUS_OK, response.getStatus());
     }
     
     public void testGetSiteBlog() throws Exception

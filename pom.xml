@@ -43,7 +43,7 @@
 
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.9.9.3</dependency.jackson-databind.version>
+        <dependency.jackson-databind.version>2.9.10</dependency.jackson-databind.version>
 
         <dependency.webscripts.version>7.9</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>

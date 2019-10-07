@@ -42,7 +42,6 @@ public class TransactionQueryEntity
     private Long maxCommitTime;
     private List<Long> includeTxnIds;
     private List<Long> excludeTxnIds;
-    private Long excludeServerId;
     private Boolean ascending;
     private Long typeQNameId;
     private Long storeId;
@@ -66,7 +65,6 @@ public class TransactionQueryEntity
           .append(", maxCommitTime=").append(maxCommitTime)
           .append(", includeTxnIds=").append(includeTxnIds)
           .append(", excludeTxnIds=").append(excludeTxnIds)
-          .append(", excludeServerId=").append(excludeServerId)
           .append(", ascending=").append(ascending)
           .append(", typeQNameId=").append(typeQNameId)
           .append(", storeId=").append(storeId)
@@ -142,16 +140,6 @@ public class TransactionQueryEntity
     public void setExcludeTxnIds(List<Long> excludeTxnIds)
     {
         this.excludeTxnIds = excludeTxnIds;
-    }
-
-    public Long getExcludeServerId()
-    {
-        return excludeServerId;
-    }
-
-    public void setExcludeServerId(Long excludeServerId)
-    {
-        this.excludeServerId = excludeServerId;
     }
 
     public Boolean getAscending()

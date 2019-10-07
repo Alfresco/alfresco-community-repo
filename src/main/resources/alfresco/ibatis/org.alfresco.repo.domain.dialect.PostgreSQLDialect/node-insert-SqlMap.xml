@@ -4,14 +4,6 @@
 
 <mapper namespace="alfresco.node.insert">
 
-    <insert id="insert_Server" parameterType="Server" >
-        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
-            select nextVal('alf_server_seq')
-        </selectKey>
-        
-        <include refid="alfresco.node.insert_Server_Sequence"/>
-    </insert>
-
     <insert id="insert_Store" parameterType="Store" >
         <selectKey resultType="long" keyProperty="id" order="BEFORE" >
             select nextVal('alf_store_seq')

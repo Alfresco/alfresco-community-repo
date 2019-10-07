@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 <!--
     Database scripts and patches
 -->
-
-<beans>
 
     <bean id="schema.create.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
         <property name="schemaBootstrap" ref="schemaBootstrap" />
@@ -54,6 +54,7 @@
                 <ref bean="patch.db-V5.1-metadata-query-indexes" />
                 <ref bean="patch.db-V5.2-remove-jbpm-tables-from-db" />
                 <ref bean="patch.db-V6.0-change-set-indexes" />
+                <ref bean="patch.db-V6.3-remove-alf_server-table" />
             </list>
         </property>
     </bean>

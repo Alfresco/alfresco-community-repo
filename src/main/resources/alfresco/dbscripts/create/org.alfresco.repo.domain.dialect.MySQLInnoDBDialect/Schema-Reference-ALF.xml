@@ -2464,38 +2464,6 @@
         </index>
         </indexes>
     </table>
-    <table name="alf_server">
-      <columns>
-        <column name="id" order="1">
-          <type>bigint</type>
-          <nullable>false</nullable>
-          <autoincrement>true</autoincrement>
-        </column>
-        <column name="version" order="2">
-          <type>bigint</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="ip_address" order="3">
-          <type>varchar(39)</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-      </columns>
-      <primarykey name="PRIMARY">
-        <columnnames>
-          <columnname order="1">id</columnname>
-        </columnnames>
-      </primarykey>
-      <foreignkeys/>
-      <indexes>
-        <index name="ip_address" unique="true">
-          <columnnames>
-            <columnname>ip_address</columnname>
-          </columnnames>
-        </index>
-      </indexes>
-    </table>
     <table name="alf_store">
       <columns>
         <column name="id" order="1">
@@ -2642,17 +2610,12 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="server_id" order="3">
-          <type>bigint</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="change_txn_id" order="4">
+        <column name="change_txn_id" order="3">
           <type>varchar(56)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="commit_time_ms" order="5">
+        <column name="commit_time_ms" order="4">
           <type>bigint</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
@@ -2663,22 +2626,10 @@
           <columnname order="1">id</columnname>
         </columnnames>
       </primarykey>
-      <foreignkeys>
-        <foreignkey name="fk_alf_txn_svr">
-          <localcolumn>server_id</localcolumn>
-          <targettable>alf_server</targettable>
-          <targetcolumn>id</targetcolumn>
-        </foreignkey>
-      </foreignkeys>
       <indexes>
         <index name="idx_alf_txn_ctms" unique="false">
           <columnnames>
             <columnname>commit_time_ms</columnname>
-          </columnnames>
-        </index>
-        <index name="fk_alf_txn_svr" unique="false">
-          <columnnames>
-            <columnname>server_id</columnname>
           </columnnames>
         </index>
       </indexes>

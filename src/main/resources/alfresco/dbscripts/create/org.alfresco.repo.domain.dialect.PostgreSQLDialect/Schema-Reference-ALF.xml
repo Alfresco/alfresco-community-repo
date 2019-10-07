@@ -44,7 +44,6 @@
     <sequence name="alf_prop_unique_ctx_seq"/>
     <sequence name="alf_prop_value_seq"/>
     <sequence name="alf_qname_seq"/>
-    <sequence name="alf_server_seq"/>
     <sequence name="alf_store_seq"/>
     <sequence name="alf_transaction_seq"/>
     <sequence name="alf_usage_delta_seq"/>
@@ -2535,38 +2534,6 @@
         </index>
         </indexes>
     </table>
-    <table name="alf_server">
-      <columns>
-        <column name="id" order="1">
-          <type>int8</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="version" order="2">
-          <type>int8</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="ip_address" order="3">
-          <type>varchar(39)</type>
-          <nullable>false</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-      </columns>
-      <primarykey name="alf_server_pkey">
-        <columnnames>
-          <columnname order="1">id</columnname>
-        </columnnames>
-      </primarykey>
-      <foreignkeys/>
-      <indexes>
-        <index name="ip_address" unique="true">
-          <columnnames>
-            <columnname>ip_address</columnname>
-          </columnnames>
-        </index>
-      </indexes>
-    </table>
     <table name="alf_store">
       <columns>
         <column name="id" order="1">
@@ -2713,17 +2680,12 @@
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="server_id" order="3">
-          <type>int8</type>
-          <nullable>true</nullable>
-          <autoincrement>false</autoincrement>
-        </column>
-        <column name="change_txn_id" order="4">
+        <column name="change_txn_id" order="3">
           <type>varchar(56)</type>
           <nullable>false</nullable>
           <autoincrement>false</autoincrement>
         </column>
-        <column name="commit_time_ms" order="5">
+        <column name="commit_time_ms" order="4">
           <type>int8</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
@@ -2734,19 +2696,7 @@
           <columnname order="1">id</columnname>
         </columnnames>
       </primarykey>
-      <foreignkeys>
-        <foreignkey name="fk_alf_txn_svr">
-          <localcolumn>server_id</localcolumn>
-          <targettable>alf_server</targettable>
-          <targetcolumn>id</targetcolumn>
-        </foreignkey>
-      </foreignkeys>
       <indexes>
-        <index name="fk_alf_txn_svr" unique="false">
-          <columnnames>
-            <columnname>server_id</columnname>
-          </columnnames>
-        </index>
         <index name="idx_alf_txn_ctms" unique="false">
           <columnnames>
             <columnname>commit_time_ms</columnname>

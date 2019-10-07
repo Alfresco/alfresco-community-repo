@@ -174,29 +174,16 @@ CREATE UNIQUE INDEX auth_id ON alf_authority_alias (auth_id, alias_id);
 CREATE INDEX fk_alf_autha_ali ON alf_authority_alias (alias_id);
 CREATE INDEX fk_alf_autha_aut ON alf_authority_alias (auth_id);
 
-CREATE SEQUENCE alf_server_seq START WITH 1 INCREMENT BY 1;
-CREATE TABLE alf_server
-(
-    id INT8 NOT NULL,
-    version INT8 NOT NULL,
-    ip_address VARCHAR(39) NOT NULL,
-    PRIMARY KEY (id)
-);
-CREATE UNIQUE INDEX ip_address ON alf_server (ip_address);
-
 CREATE SEQUENCE alf_transaction_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_transaction
 (
     id INT8 NOT NULL,
     version INT8 NOT NULL,
-    server_id INT8,
     change_txn_id VARCHAR(56) NOT NULL,
     commit_time_ms INT8,
-    PRIMARY KEY (id),
-    CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id)
+    PRIMARY KEY (id)
 );
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms, id);
-CREATE INDEX fk_alf_txn_svr ON alf_transaction (server_id);
 
 CREATE SEQUENCE alf_store_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_store

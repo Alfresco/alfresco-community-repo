@@ -4,10 +4,6 @@
 
 <mapper namespace="alfresco.node.insert">
 
-    <insert id="insert_Server" parameterType="Server" useGeneratedKeys="true" keyProperty="id">
-        <include refid="alfresco.node.insert_Server_AutoIncrement"/>
-    </insert>
-
     <insert id="insert_Store" parameterType="Store" useGeneratedKeys="true" keyProperty="id">
         <include refid="alfresco.node.insert_Store_AutoIncrement"/>
     </insert>

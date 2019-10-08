@@ -15,9 +15,7 @@ branches:
   only:
     - master
     - /support\/.*/
-addons:
-  srcclr: true
-
+       
 stages:
   - test
   - release

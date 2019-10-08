@@ -134,14 +134,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         // setup record folder in multiple holds
         List<ChildAssociationRef> holds = new ArrayList<>(4);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, recordFolder, true, 2));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, activeContent, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold2, ASSOC_FROZEN_RECORDS, activeContent, true, 2));
-        doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, recordFolder, true, 2));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, activeContent, true, 2));
+        doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
         //setup active content in multiple holds
-        doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
         doReturn(Collections.singleton(filePlan)).when(mockedFilePlanService).getFilePlans();
 
@@ -202,9 +202,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         // setup record folder in hold
         List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, recordFolder, true, 1));
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_RECORDS, hold, ASSOC_FROZEN_RECORDS, activeContent, true, 1));
-        doReturn(holds).when(mockedNodeService).getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, recordFolder, true, 1));
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, activeContent, true, 1));
+        doReturn(holds).when(mockedNodeService).getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
 
         List<NodeRef> list = holdService.getHeld(hold);
         assertEquals(2, list.size());
@@ -332,19 +332,19 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, record);
-        verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(2)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService).auditEvent(eq(record), anyString());
 
         holdService.addToHold(hold, activeContent);
-        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
@@ -357,14 +357,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, activeContent);
 
-        verify(mockedNodeService, never()).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService, never()).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(activeContent), anyString());
     }
@@ -379,13 +379,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         holdService.addToHold(hold, recordFolder);
 
-        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, activeContent);
-        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
@@ -447,8 +447,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.addToHolds(holds, recordFolder);
 
         // verify the interactions
-        verify(mockedNodeService, times(1)).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-        verify(mockedNodeService, times(1)).addChild(hold2, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        verify(mockedNodeService, times(1)).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+        verify(mockedNodeService, times(1)).addChild(hold2, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, times(1)).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(1)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedRecordsManagementAuditService, times(2)).auditEvent(eq(recordFolder), anyString());

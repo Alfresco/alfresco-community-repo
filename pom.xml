@@ -42,7 +42,7 @@
         <dependency.alfresco-core.version>7.21</dependency.alfresco-core.version>
 
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-        <dependency.jackson.version>2.9.9</dependency.jackson.version>
+        <dependency.jackson.version>2.10.0</dependency.jackson.version>
         <dependency.jackson-databind.version>2.9.10</dependency.jackson-databind.version>
 
         <dependency.webscripts.version>7.9</dependency.webscripts.version>

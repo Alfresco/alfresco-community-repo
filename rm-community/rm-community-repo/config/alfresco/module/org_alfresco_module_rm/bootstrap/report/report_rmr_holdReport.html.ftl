@@ -112,7 +112,12 @@
                                                                <td>
                                                                   <table cellpadding="2" cellspacing="0" border="0">
                                                                      <tr>
-                                                                        <td>${child.properties["rma:identifier"]} <b>${child.properties.name}</b></td>
+                                                                        <td>
+                                                                           <#if child.properties["rma:identifier"]??>
+                                                                           ${child.properties["rma:identifier"]}
+                                                                           </#if>
+                                                                           <b>${child.properties.name}</b>
+                                                                        </td>
                                                                      </tr>
                                                                   </table>
                                                                </td>

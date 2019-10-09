@@ -9,6 +9,10 @@ services:
 cache:
   directories:
     - $HOME/.m2
+# the cache can grow constantly
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-remote-api
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-repository
 
 branches:
   only:

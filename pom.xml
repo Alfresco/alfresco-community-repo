@@ -86,8 +86,8 @@
         <dependency.cxf.version>3.3.2</dependency.cxf.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>6.2.0-RC2</alfresco.share.version>
-        <alfresco.alfresco-share-services.version>6.2.0-RC2</alfresco.alfresco-share-services.version>
+        <alfresco.share.version>6.2.0-RC3</alfresco.share.version>
+        <alfresco.alfresco-share-services.version>6.2.0-RC3</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.1.0</alfresco.googledocs.version>

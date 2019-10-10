@@ -343,6 +343,11 @@ public interface Nodes
      * @param exclusions
      */
     void updateCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions);
+
+    void validateAspects(List<String> aspectNames, List<String> excludedNS, List<QName> excludedAspects);
+
+    void validateProperties(Map<String, Object> properties, List<String> excludedNS, List<QName> excludedProperties);
+
     
     /**
      * API Constants - query parameters, etc

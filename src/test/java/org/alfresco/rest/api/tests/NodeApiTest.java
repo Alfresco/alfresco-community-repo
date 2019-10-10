@@ -92,6 +92,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.collections.map.MultiValueMap;
@@ -5471,7 +5472,66 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(propUpdateResponse.get("custom:locations"));
         assertTrue(((ArrayList) (propUpdateResponse.get("custom:locations"))).size() == 1);
     }
-    
+
+    @Test public void testAuditableProperties() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+
+        UserInfo expectedUser = new UserInfo(user1);
+
+        String auditCreator = "unacceptable creator";
+        String auditCreated = "unacceptable created";
+        String auditModifier = "unacceptable modifier";
+        String auditModified = "unacceptable modified";
+        String auditAccessed = "unacceptable accessed";
+
+        Map<String, Object> auditableProperties = new HashMap<>();
+        auditableProperties.put("cm:creator", auditCreator);
+        auditableProperties.put("cm:created", auditCreated);
+        auditableProperties.put("cm:modifier", auditModifier);
+        auditableProperties.put("cm:modified", auditModified);
+        auditableProperties.put("cm:accessed", auditAccessed);
+
+        Map<String, Object> systemProperties = new HashMap<>();
+        systemProperties.put("sys:node:uuid", "someRandomID");
+
+        //create folder node
+        Node node = new Node();
+        node.setName("folderName");
+        node.setNodeType(TYPE_CM_FOLDER);
+        node.setProperties(auditableProperties);
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), RestApiUtil.toJsonAsStringNonNull(node), 400);
+
+        node.setProperties(systemProperties);
+        post(getNodeChildrenUrl(myNodeId), RestApiUtil.toJsonAsStringNonNull(node), 400);
+
+        node.setProperties(new HashMap<>());
+        response = post(getNodeChildrenUrl(myNodeId), RestApiUtil.toJsonAsStringNonNull(node), 201);
+        Node createdFolder =  RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertEquals(createdFolder.getCreatedByUser().getId(), expectedUser.getId());
+        validateAuditableProperties(auditableProperties, createdFolder);
+
+        //update folder node
+        createdFolder.setProperties(auditableProperties);
+        put(URL_NODES, createdFolder.getId(), toJsonAsStringNonNull(createdFolder), null, 400);
+
+        Map<String, Object> otherProperties = new HashMap<>();
+        otherProperties.put("cm:title", "newTitle");
+        createdFolder.setProperties(otherProperties);
+        response = put(URL_NODES, createdFolder.getId(), toJsonAsStringNonNull(createdFolder), null, 200);
+        Node updateFolderResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        validateAuditableProperties(auditableProperties, updateFolderResponse);
+    }
+
+    private void validateAuditableProperties(Map<String, Object> givenProperties, Node node)
+    {
+        assertFalse(givenProperties.get("cm:creator").equals(node.getCreatedByUser().getDisplayName()));
+        assertFalse(givenProperties.get("cm:created").equals(node.getCreatedAt().getTime()));
+        assertFalse(givenProperties.get("cm:modifier").equals(node.getModifiedAt().getTime()));
+        assertFalse(givenProperties.get("cm:modified").equals(node.getModifiedByUser().getDisplayName()));
+    }
+
     private String getDataDictionaryNodeId() throws Exception
     {
         Map params = new HashMap<>();

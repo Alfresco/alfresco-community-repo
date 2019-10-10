@@ -647,7 +647,8 @@ public class PeopleImpl implements People
         checkRequiredField("password", person.getPassword());
 
         validateUsername(person.getUserName());
-        validateNamespaces(person.getAspectNames(), person.getProperties());
+        nodes.validateAspects(person.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
+        nodes.validateProperties(person.getProperties(), EXCLUDED_NS, EXCLUDED_PROPS);
     }
 
     private void validateUsername(String username)
@@ -671,33 +672,6 @@ public class PeopleImpl implements People
             {
                 throw new IllegalArgumentException("Username cannot start with the reserved prefix '"+prefix+"'.");
             }
-        }
-    }
-
-    private void validateNamespaces(List<String> aspectNames, Map<String, Object> properties)
-    {
-        if (aspectNames != null)
-        {
-            Set<QName> aspects = nodes.mapToNodeAspects(aspectNames);
-            aspects.forEach(aspect ->
-            {
-                if (EXCLUDED_NS.contains(aspect.getNamespaceURI()))
-                {
-                    throw new IllegalArgumentException("Namespace cannot be used by People API: "+aspect.toPrefixString());
-                }
-            });
-        }
-        
-        if (properties != null)
-        {
-            Map<QName, Serializable> nodeProps = nodes.mapToNodeProperties(properties);
-            nodeProps.keySet().forEach(qname ->
-            {
-                if (EXCLUDED_NS.contains(qname.getNamespaceURI()))
-                {
-                    throw new IllegalArgumentException("Namespace cannot be used by People API: "+qname.toPrefixString());
-                }
-            });
         }
     }
 
@@ -794,7 +768,8 @@ public class PeopleImpl implements People
 
     private void validateUpdatePersonData(Person person)
     {
-        validateNamespaces(person.getAspectNames(), person.getProperties());
+        nodes.validateAspects(person.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
+        nodes.validateProperties(person.getProperties(), EXCLUDED_NS, EXCLUDED_PROPS);
         
         if (person.wasSet(ContentModel.PROP_FIRSTNAME))
         {

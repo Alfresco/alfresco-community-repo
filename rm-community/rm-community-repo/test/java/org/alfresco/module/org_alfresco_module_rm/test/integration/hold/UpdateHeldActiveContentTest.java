@@ -34,6 +34,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
@@ -77,7 +78,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
                 }
                 catch (PermissionDeniedException pde)
                 {
-                    assertTrue(pde.getMessage().contains("Frozen nodes can not be deleted."));
+                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.delete-frozen-node")));
                 }
             }
         });
@@ -135,7 +136,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
                 }
                 catch (PermissionDeniedException pde)
                 {
-                    assertTrue(pde.getMessage().contains("Frozen nodes can not be moved."));
+                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.move-frozen-node")));
                 }
             }
         });
@@ -169,7 +170,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
                 }
                 catch (PermissionDeniedException pde)
                 {
-                    assertTrue(pde.getMessage().contains("Frozen nodes can not be updated."));
+                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.update-frozen-node")));
                 }
             }
         });
@@ -204,7 +205,7 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
                 }
                 catch (PermissionDeniedException pde)
                 {
-                    assertTrue(pde.getMessage().contains("Frozen nodes can not be updated."));
+                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.update-frozen-node")));
                 }
             }
         });

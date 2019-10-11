@@ -92,7 +92,7 @@ public class AddToHoldsTests extends BaseRMRestTest
             "permissions to perform this operation.";
     private static final String INVALID_TYPE_ERROR_MESSAGE = "Items added to a hold must be either a record, a " +
             "record folder or active content.";
-    private static final String LOCKED_FILE_ERROR_MESSAGE = "Locked nodes can't be added to hold";
+    private static final String LOCKED_FILE_ERROR_MESSAGE = "Locked content can't be added to a hold.";
     private SiteModel testSite;
     private String holdNodeRef;
     private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;

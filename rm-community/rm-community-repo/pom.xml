@@ -24,11 +24,11 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
-      <!-- 6.1.1 changes -->
-      <dependency.alfresco-core.version>7.5.7.0</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>7.33.42.0</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>7.34.25.0</dependency.alfresco-remote-api.version>
-      <alfresco.alfresco-share-services.version>6.1.1</alfresco.alfresco-share-services.version>
+      <!-- 6.1.2-ga changes -->
+      <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>7.33.12</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>7.34.1</dependency.alfresco-remote-api.version>
+      <alfresco.alfresco-share-services.version>6.1.0</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
       <maven.javadoc.skip>false</maven.javadoc.skip>

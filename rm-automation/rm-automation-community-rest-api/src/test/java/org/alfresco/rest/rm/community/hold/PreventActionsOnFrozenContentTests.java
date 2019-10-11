@@ -143,7 +143,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
+        restClient.assertLastError().containsSummary("Frozen content can't be updated.");
     }
 
     /*
@@ -160,7 +160,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be updated.");
+        restClient.assertLastError().containsSummary("Frozen content can't be updated.");
     }
 
     /*
@@ -176,7 +176,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Frozen nodes can not be deleted.");
+        restClient.assertLastError().containsSummary("Frozen content can't be deleted.");
     }
 
     /**
@@ -186,7 +186,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6924")
-    public void copyFrozenFile() throws Exception
+    public void copyFrozenFile()
     {
         STEP("Copy frozen file");
         String postBody = JsonBodyGenerator.keyValueJson("targetParentId",folderModel.getNodeRef());
@@ -211,7 +211,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         assertStatusCode(FORBIDDEN);
-        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen nodes can not be moved.");
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen content can't be moved.");
     }
 
     /**
@@ -219,12 +219,10 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
      * When I update the record folder and make the records as vital
      * Then I am successful and the records not held are marked as vital
      * And the frozen nodes have the vital record search properties updated
-     *
-     * @throws Exception
      */
     @Test
     @AlfrescoTest (jira = "RM-6929")
-    public void updateRecordFolderVitalProperties() throws Exception
+    public void updateRecordFolderVitalProperties()
     {
         STEP("Update the vital record properties for the record folder");
         // Create the record folder properties to update
@@ -322,7 +320,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpPreventActionsOnFrozenContent() throws Exception
+    public void cleanUpPreventActionsOnFrozenContent()
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_ONE);
         dataSite.usingAdmin().deleteSite(testSite);

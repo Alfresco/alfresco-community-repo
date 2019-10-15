@@ -253,9 +253,6 @@
       <!-- Profile used only to build docker images-->
       <profile>
          <id>buildDockerImage</id>
-         <properties>
-            <docker.buildArg.TOMCAT_DIR>/usr/local/tomcat</docker.buildArg.TOMCAT_DIR>
-         </properties>
          <build>
             <pluginManagement>
                <plugins>
@@ -292,9 +289,6 @@
       <!-- Profile used to build docker images with a specific tag and push them to the given image registry (quay.io)-->
       <profile>
          <id>internal</id>
-         <properties>
-            <docker.buildArg.TOMCAT_DIR>/usr/local/tomcat</docker.buildArg.TOMCAT_DIR>
-         </properties>
          <build>
             <pluginManagement>
                <plugins>
@@ -333,9 +327,6 @@
        hub.docker -->
       <profile>
          <id>master</id>
-         <properties>
-            <docker.buildArg.TOMCAT_DIR>/usr/local/tomcat</docker.buildArg.TOMCAT_DIR>
-         </properties>
          <build>
             <pluginManagement>
                <plugins>
@@ -380,9 +371,6 @@
       <!-- Profile used to build and push docker images with project.version tag to hub.docker when the enterprise deploy goal encounters-->
       <profile>
          <id>release-enterprise</id>
-         <properties>
-            <docker.buildArg.TOMCAT_DIR>/usr/local/tomcat</docker.buildArg.TOMCAT_DIR>
-         </properties>
          <build>
             <pluginManagement>
                <plugins>

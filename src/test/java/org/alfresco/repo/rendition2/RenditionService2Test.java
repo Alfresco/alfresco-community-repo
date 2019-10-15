@@ -132,7 +132,7 @@ public class RenditionService2Test
         Map<String, String> options = new HashMap<>();
         options.put("width", "960");
         options.put("height", "1024");
-        new RenditionDefinition2Impl(TEST_RENDITION, JPEG, options, renditionDefinitionRegistry2);
+        new RenditionDefinition2Impl(TEST_RENDITION, JPEG, options, true, renditionDefinitionRegistry2);
     }
 
     private class RenditionRequestSchedulerMock extends PostTxnCallbackScheduler

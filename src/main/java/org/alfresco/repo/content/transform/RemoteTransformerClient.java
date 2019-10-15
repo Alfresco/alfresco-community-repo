@@ -128,7 +128,7 @@ public class RemoteTransformerClient
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)
     {
-        String url = baseUrl + "/transform";
+        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform";
         HttpPost httppost = new HttpPost(url);
         httppost.setEntity(reqEntity);
 

@@ -36,9 +36,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
@@ -81,7 +79,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     public void testLocalRenderPagesToJpeg() throws Exception
     {
         legacyTransformServiceRegistry.setEnabled(false);
-        new RenditionDefinition2Impl("pagesToJpeg", "image/jpeg", new HashMap<>(), renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("pagesToJpeg", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
         try
         {
             checkClientRendition("quick2009.pages", "pagesToJpeg", true);
@@ -90,6 +88,36 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
         {
             // Remove rendition even if check throws an exception to not interfere with other tests
             renditionDefinitionRegistry2.unregister("pagesToJpeg");
+        }
+    }
+
+    @Test
+    public void testReloadOfStaticDefinitions() throws Exception
+    {
+        legacyTransformServiceRegistry.setEnabled(false);
+        new RenditionDefinition2Impl("dynamic1", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("dynamic2", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("static1", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2 );
+        new RenditionDefinition2Impl("static2", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2 );
+
+        try
+        {
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("dynamic1"));
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("dynamic2"));
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("static1"));
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("static2"));
+
+            renditionDefinitionRegistry2.reloadRegistry();
+
+            assertNull(renditionDefinitionRegistry2.getRenditionDefinition("dynamic1"));
+            assertNull(renditionDefinitionRegistry2.getRenditionDefinition("dynamic2"));
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("static1"));
+            assertNotNull(renditionDefinitionRegistry2.getRenditionDefinition("static2"));
+        }
+        finally
+        {
+            renditionDefinitionRegistry2.unregister("static1");
+            renditionDefinitionRegistry2.unregister("static2");
         }
     }
 

@@ -62,8 +62,6 @@ import java.util.Set;
  */
 public class CombinedConfig
 {
-    private static final String TRANSFORM_CONFIG = "/transform/config";
-
     private final Log log;
 
     static class TransformAndItsOrigin
@@ -128,7 +126,7 @@ public class CombinedConfig
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
-        String url = baseUrl + TRANSFORM_CONFIG;
+        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config";
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try

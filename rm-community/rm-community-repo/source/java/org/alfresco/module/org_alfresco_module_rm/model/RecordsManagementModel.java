@@ -200,7 +200,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Hold type
     QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
     QName PROP_HOLD_REASON = QName.createQName(RM_URI, "holdReason");
+    //since 3.2
+    @Deprecated
     QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");
+    QName ASSOC_FROZEN_CONTENT = QName.createQName(RM_URI, "frozenContent");
 
     // Record meta data aspect
     QName ASPECT_RECORD_META_DATA = QName.createQName(RM_URI, "recordMetaData");

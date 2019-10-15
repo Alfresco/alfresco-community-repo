@@ -92,7 +92,7 @@
                                                 <td>${reportDate}</td>
                                              </tr>
                                           </table>
-                                          <#if  node.childAssociations["rma:frozenRecords"]??>
+                                          <#if  node.childAssociations["rma:frozenContent"]??>
                                              <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                              <table cellpadding="2" cellspacing="3" border="0">
                                                 <tr>
@@ -104,7 +104,7 @@
                                                 <tr>
                                                    <td>
                                                       <table cellpadding="0" cellspacing="0" border="0">
-                                                         <#list node.childAssociations["rma:frozenRecords"] as child>
+                                                         <#list node.childAssociations["rma:frozenContent"] as child>
                                                             <tr>
                                                                <td valign="top">
                                                                   <img src="${url}/${child.icon32}" alt="" width="32" height="32" border="0" style="padding-right: 10px;" />

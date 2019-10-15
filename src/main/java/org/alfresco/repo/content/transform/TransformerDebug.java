@@ -1691,7 +1691,7 @@ public class TransformerDebug implements ApplicationContextAware
             {
                 setStringBuilder(sb);
                 RenditionDefinition2 renditionDefinition = new RenditionDefinition2Impl(testRenditionName, targetMimetype,
-                        Collections.emptyMap(), renditionDefinitionRegistry2);
+                        Collections.emptyMap(), true, renditionDefinitionRegistry2);
 
                 sourceNodeRef = createSourceNode(sourceExtension, sourceMimetype);
                 ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);

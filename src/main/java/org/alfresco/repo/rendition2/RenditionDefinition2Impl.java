@@ -38,17 +38,36 @@ public class RenditionDefinition2Impl implements RenditionDefinition2
     private final String renditionName;
     private final String targetMimetype;
     private final Map<String, String> transformOptions;
+    private final boolean dynamicallyLoaded;
 
+    /**
+     * Constructor used by statically (e.g. XML Spring beans) defined renditions.
+     */
     public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
                                     RenditionDefinitionRegistry2Impl registry)
+    {
+        this(renditionName, targetMimetype, transformOptions, false, registry);
+    }
+
+    /**
+     * Constructor used by dynamically defined renditions that may be changed without restarting.
+     */
+    public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
+                                    boolean dynamicallyLoaded, RenditionDefinitionRegistry2Impl registry)
     {
         this.renditionName = renditionName;
         this.targetMimetype = targetMimetype;
         this.transformOptions = transformOptions;
+        this.dynamicallyLoaded = dynamicallyLoaded;
         if (registry != null)
         {
             registry.register(this);
         }
+    }
+
+    public boolean isDynamicallyLoaded()
+    {
+        return dynamicallyLoaded;
     }
 
     @Override

@@ -58,12 +58,36 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         Map<String, RenditionDefinition2> renditionDefinitions = new HashMap();
         Map<String, Set<Pair<String, Long>>> renditionsFor = new HashMap<>();
         private int fileCount;
+        private int staticCount;
+
+        /**
+         * @param currentData (optional) the registry's current data. Used to preload renditions that have been loaded
+         *                    from a source other than one of the dynamically loadable JSON files. Normally static
+         *                    Spring beans. These must be added again as the registry does not know where to look for
+         *                    them.
+         */
+        public Data(Data currentData)
+        {
+            if (currentData != null)
+            {
+                currentData.renditionDefinitions.forEach((renditionName, renditionDefinition) ->
+                {
+                    if (renditionDefinition instanceof RenditionDefinition2Impl &&
+                        !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
+                    {
+                        log.debug("Adding static rendition "+renditionName+" back into the registry");
+                        renditionDefinitions.put(renditionName, renditionDefinition);
+                        staticCount++;
+                    }
+                });
+            }
+        }
 
         @Override
         public String toString()
         {
             int renditionCount = renditionDefinitions.size();
-            return "(renditions: "+renditionCount+" files: "+fileCount+")";
+            return "(renditions: "+renditionCount+" files: "+fileCount+" static: "+staticCount+")";
         }
 
         public void setFileCount(int fileCount)
@@ -126,6 +150,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     private ObjectMapper jsonObjectMapper;
     private CronExpression cronExpression;
     private CronExpression initialAndOnErrorCronExpression;
+    private boolean firstTime = true;
 
     private ConfigScheduler<Data> configScheduler = new ConfigScheduler(this)
     {
@@ -145,6 +170,13 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
             return RenditionDefinitionRegistry2Impl.this.createData();
         }
     };
+
+    // Only for use in testing
+    void reloadRegistry()
+    {
+        configScheduler.readConfigAndReplace(false);
+    }
+
     private ConfigFileFinder configFileFinder;
 
     public void setTransformServiceRegistry(TransformServiceRegistry transformServiceRegistry)
@@ -220,7 +252,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
                             {
                                 map.put(RenditionDefinition2.TIMEOUT, timeoutDefault);
                             }
-                            new RenditionDefinition2Impl(def.renditionName, def.targetMediaType, map,
+                            new RenditionDefinition2Impl(def.renditionName, def.targetMediaType, map, true,
                                     RenditionDefinitionRegistry2Impl.this);
                         }
                     }
@@ -236,7 +268,16 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
 
     public Data createData()
     {
-        return new Data();
+        Data currentData = null;
+        if (firstTime)
+        {
+            firstTime = false;
+        }
+        else
+        {
+            currentData = getData();
+        }
+        return new Data(currentData);
     }
 
     public Data getData()
@@ -280,6 +321,12 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
         }
         Data data = getData();
         data.renditionDefinitions.put(renditionName, renditionDefinition);
+        if (renditionDefinition instanceof RenditionDefinition2Impl &&
+                !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
+        {
+            log.debug("Adding static rendition "+renditionName+" into the registry");
+            data.staticCount++;
+        }
         data.setFileCount(configFileFinder == null ? 0 : configFileFinder.getFileCount());
     }
 

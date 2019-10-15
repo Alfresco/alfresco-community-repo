@@ -105,7 +105,7 @@ public abstract class ConfigFileFinder
 
             if (!somethingRead.get())
             {
-                log.warn("No config read from "+path);
+                log.debug("No config read from "+path);
             }
         }
         catch (IOException e)

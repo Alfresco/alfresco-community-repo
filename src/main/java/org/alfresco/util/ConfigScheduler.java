@@ -193,7 +193,10 @@ public abstract class ConfigScheduler<Data>
         }
     }
 
-    private boolean readConfigAndReplace(boolean scheduledRead)
+    /**
+     * Should only be called directly from test code.
+     */
+    public boolean readConfigAndReplace(boolean scheduledRead)
     {
         boolean successReadingConfig;
         log.debug((scheduledRead ? "Scheduled" : "Unscheduled")+" config read started");

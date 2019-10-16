@@ -1,3 +1,69 @@
+<h1>        Release Notes - Alfresco - Version Community Edition 201910 EA
+</h1>
+<h2>
+  New Features
+</h2>
+<ul>
+  <li>
+    <h4>Custom Transforms and Renditions</h4>
+    <p>Alfresco Content Services (ACS) provides a number of content
+     transforms, but also allows custom transforms to be added.
+    <p>It is now possible to create custom transforms that run in 
+    separate processes known as T-Engines (short for Transformer
+    Engines). The same engines may be used in Community and 
+    Enterprise Editions. They may be directly connected to the ACS 
+    repository as Local Transforms.
+    <p>For more information see <a href='https://github.com/Alfresco/acs-packaging/blob/master/docs/custom-transforms-and-renditions.md'>Custom Transforms and Renditions</a>
+  </li>
+      <li>
+      <h4>Open-source Transformation Engines</h4>
+      <p>The core T-Engine images can now be used in Community
+       Edition.</p>
+       <p>T-Engines code has been Open-Sourced and is available on Github:</p>
+       <ul><a href='https://github.com/Alfresco/alfresco-transform-core'>alfresco/alfresco-transform-core</a></ul>
+       <p>Images are available on Docker Hub:</p>
+       <ul><a href='https://hub.docker.com/r/alfresco/alfresco-imagemagick'>alfresco/alfresco-imagemagick</a></ul>
+       <ul><a href='https://hub.docker.com/r/alfresco/alfresco-pdf-renderer'>alfresco/alfresco-pdf-renderer</a></ul>
+       <ul><a href='https://hub.docker.com/r/alfresco/alfresco-libreoffice'>alfresco/alfresco-libreoffice</a></ul>
+       <ul><a href='https://hub.docker.com/r/alfresco/alfresco-tika'>alfresco/alfresco-tika</a></ul>
+       <ul><a href='https://hub.docker.com/r/alfresco/alfresco-transform-misc'>alfresco/alfresco-transform-misc</a></ul>
+       </p>
+    </li>
+    <li>
+    <h4>Removal of external executables from docker image</h4>
+    <p>With the introduction of the new Local Transform Service
+    in Alfresco Community Edition, the capability of executing
+    remote transformations on T-Engines was enabled. Because of
+    this, the external executables (Alfresco-Pdf-renderer, Libreoffice
+    and Imagemagick) have been removed from the docker container to
+    facilitate the usage of out-of-process transformations.
+     </p>
+  </li>
+</ul>
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22013'>ALF-22013</a>] -         Docker Image for Base Tomcat locale is POSIX
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22060'>ALF-22060</a>] -         Reader on the backing store is obtained twice in CachingContentStore
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22056'>ALF-22056</a>] -         onCopyCompleteBehaviour not called in order of copy-action
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22073'>ALF-22073</a>] -         MailActionExecutor doesn't consider email bodies with a HTML doctype as HTML
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-21988'>ALF-21988</a>] -         Tab order for number ranges not ok
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22097'>ALF-22097</a>] -         T Engine - add source nodeId parameter
+</li>
+</ul>
+<h2>        Improvement
+</h2>
+<ul>
+<li>[<a href='https://issues.alfresco.com/jira/browse/REPO-4318'>REPO-4318</a>] -         [COMPLETE] Extraction of transformers and metadata extractors
+</li>
+</ul>
+<h2>
+
 <h1>        Release Notes - Alfresco - Version Community Edition 201901 GA
 </h1>
 <h2>
@@ -68,6 +134,7 @@
     Due to the changes to the RenditionService the Media Management AMP is not supported yet.<br/>
   </li>
 </ul>
+<h2>
 
 <h1>        Release Notes - Alfresco - Version Community Edition 201810 EA
 </h1>  
@@ -83,8 +150,7 @@
 </li>
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22030'>ALF-22030</a>] -         ADF UI freezes noticeably on a periodic basis during KeyCloak auth requests
 </li>
-</ul>
-                                                                                                    
+</ul>                                                                                
 <h2>        Improvement
 </h2>
 <ul>
@@ -101,6 +167,7 @@
 <li>[<a href='https://issues.alfresco.com/jira/browse/REPO-3703'>REPO-3703</a>] -         AWS Services: Native Services of ACS
 </li>
 </ul>
+<h2>
 
 <h1>        Release Notes - Alfresco - Version Community Edition 201808 EA
 </h1>                                                                                                                                                                                                                                                            
@@ -114,14 +181,12 @@
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22007'>ALF-22007</a>] -         TransactionListeners are executed in unpredictable order
 </li>
 </ul>
-                
 <h2>        Improvement
 </h2>
 <ul>
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22011'>ALF-22011</a>] -         Upgrade to XMLBeans 3.0.0
 </li>
 </ul>
-
 
 <h1>        Release Notes - Alfresco - Version Community Edition 201806 GA
 </h1>                                                                                                                                                                                                                                                            

@@ -12,7 +12,10 @@
     separate processes known as T-Engines (short for Transformer
     Engines). The same engines may be used in Community and 
     Enterprise Editions. They may be directly connected to the ACS 
-    repository as Local Transforms.
+    repository as Local Transforms, but in the Enterprise edition there 
+    is the option to include them as part of the Transform Service 
+    which provides more balanced throughput and better administration 
+    capabilities.
     <p>For more information see <a href='https://github.com/Alfresco/acs-packaging/blob/master/docs/custom-transforms-and-renditions.md'>Custom Transforms and Renditions</a>
   </li>
       <li>

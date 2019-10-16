@@ -29,7 +29,6 @@
     <!-- The default HeartBeat job scheduler, this scheduler schedules jobs which lock execution on collector id.
     Only one repository node in a cluster will send data for collectors with this type of job -->
     <bean id="hbLockingJobScheduler" class="org.alfresco.heartbeat.jobs.LockingJobScheduler">
-        <property name="testMode" value="${heartbeat.collectors.testMode}"/>
         <property name="scheduler" ref="schedulerFactory" />
         <property name="hbDataSenderService" ref="hbDataSenderService" />
         <property name="jobLockService" ref="jobLockService" />
@@ -38,7 +37,6 @@
     <!-- This scheduler schedules jobs which execute without any locking.
     The scheduler can be added to a collector by setting the hbJobScheduler property -->
     <bean id="hbNonLockingJobScheduler" class="org.alfresco.heartbeat.jobs.NonLockingJobScheduler">
-        <property name="testMode" value="${heartbeat.collectors.testMode}"/>
         <property name="scheduler" ref="schedulerFactory" />
         <property name="hbDataSenderService" ref="hbDataSenderService" />
     </bean>

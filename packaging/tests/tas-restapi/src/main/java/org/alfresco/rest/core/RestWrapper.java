@@ -132,9 +132,10 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     public void initializeRequestSpecBuilder()
     {
         requestSpecBuilder = new RequestSpecBuilder();
-        configureServerEndpoint(
-                restProperties.envProperty().getTestServerUrl(),
-                restProperties.envProperty().getPort());
+        RestAssured.baseURI = restProperties.envProperty().getTestServerUrl();
+        RestAssured.port = restProperties.envProperty().getPort();
+        configureRequestSpec().setBaseUri(restProperties.envProperty().getTestServerUrl());
+        configureRequestSpec().setPort(restProperties.envProperty().getPort());
     }
 
     /**
@@ -1091,26 +1092,17 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
     public void configureSyncServiceEndPoint()
     {
-        configureServerEndpoint(
-                restProperties.envProperty().getSyncServerUrl(),
-                restProperties.envProperty().getSyncPort());
+        RestAssured.baseURI = restProperties.envProperty().getSyncServerUrl();
+        RestAssured.port = restProperties.envProperty().getSyncPort();
+        configureRequestSpec().setBaseUri(restProperties.envProperty().getSyncServerUrl());
+        configureRequestSpec().setPort(restProperties.envProperty().getSyncPort());
     }
 
     public void configureSolrEndPoint()
     {
-        configureServerEndpoint(
-                restProperties.envProperty().getSolrServerUrl(),
-                restProperties.envProperty().getSolrPort());
-    }
-
-    /**
-     * @param baseURI String of format http://127.0.0.1 without port
-     */
-    public void configureServerEndpoint(String baseURI, int port)
-    {
-        RestAssured.baseURI = baseURI;
-        RestAssured.port = port;
-        configureRequestSpec().setBaseUri(baseURI);
-        configureRequestSpec().setPort(port);
+        RestAssured.baseURI = restProperties.envProperty().getSolrServerUrl();
+        RestAssured.port = restProperties.envProperty().getSolrPort();
+        configureRequestSpec().setBaseUri(restProperties.envProperty().getSolrServerUrl());
+        configureRequestSpec().setPort(restProperties.envProperty().getSolrPort());
     }
 }

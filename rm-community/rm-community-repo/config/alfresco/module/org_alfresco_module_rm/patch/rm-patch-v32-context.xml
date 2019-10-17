@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+   <!-- RM v3.2 Patches -->
+
+   <bean id="rm.holdChildAssocPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v32.RMv32HoldChildAssocPatch">
+      <property name="description" value="Change hold child assoc from frozenRecords frozenContent to support holding active content."/>
+      <property name="fixesToSchema" value="2700"/>
+      <property name="targetSchema" value="3200"/>
+      <property name="qnameDAO" ref="qnameDAO" />
+      <property name="filePlanService" ref="filePlanService" />
+      <property name="holdService" ref="holdService" />
+      <property name="nodeService" ref="nodeService" />
+   </bean>
+   
+</beans>

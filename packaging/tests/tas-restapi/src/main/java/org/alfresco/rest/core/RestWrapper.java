@@ -96,6 +96,23 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     private RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
     private Headers responseHeaders;
     private RestResponse response;
+    private String serverURI;
+    private int serverPort;
+
+    /**
+     * After configuring {@link #setServerURI(String)} and {@link #setServerPort(int)} call {@link #configureServerEndpoint()}
+     *
+     * @param serverURI in format of "http://localhost", without port. Set port via {@link #setServerPort(int)}
+     */
+    public void setServerURI(String serverURI)
+    {
+        this.serverURI = serverURI;
+    }
+
+    public void setServerPort(int serverPort)
+    {
+        this.serverPort = serverPort;
+    }
 
     @Autowired
     private RestAisAuthentication aisAuthentication;
@@ -131,11 +148,9 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     @PostConstruct
     public void initializeRequestSpecBuilder()
     {
-        requestSpecBuilder = new RequestSpecBuilder();
-        RestAssured.baseURI = restProperties.envProperty().getTestServerUrl();
-        RestAssured.port = restProperties.envProperty().getPort();
-        configureRequestSpec().setBaseUri(restProperties.envProperty().getTestServerUrl());
-        configureRequestSpec().setPort(restProperties.envProperty().getPort());
+        this.serverURI = restProperties.envProperty().getTestServerUrl();
+        this.serverPort = restProperties.envProperty().getPort();
+        configureServerEndpoint();
     }
 
     /**
@@ -617,7 +632,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
         logResponseInformation(restRequest, returnedResponse);
 
-        initializeRequestSpecBuilder();
+        configureServerEndpoint();
         response = new RestResponse(returnedResponse);
         return returnedResponse;
     }
@@ -1092,17 +1107,31 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
     public void configureSyncServiceEndPoint()
     {
-        RestAssured.baseURI = restProperties.envProperty().getSyncServerUrl();
-        RestAssured.port = restProperties.envProperty().getSyncPort();
-        configureRequestSpec().setBaseUri(restProperties.envProperty().getSyncServerUrl());
-        configureRequestSpec().setPort(restProperties.envProperty().getSyncPort());
+        this.serverURI = restProperties.envProperty().getSyncServerUrl();
+        this.serverPort = restProperties.envProperty().getSyncPort();
+        configureServerEndpoint();
     }
 
     public void configureSolrEndPoint()
     {
-        RestAssured.baseURI = restProperties.envProperty().getSolrServerUrl();
-        RestAssured.port = restProperties.envProperty().getSolrPort();
-        configureRequestSpec().setBaseUri(restProperties.envProperty().getSolrServerUrl());
-        configureRequestSpec().setPort(restProperties.envProperty().getSolrPort());
+        this.serverURI = restProperties.envProperty().getSolrServerUrl();
+        this.serverPort = restProperties.envProperty().getSolrPort();
+        configureServerEndpoint();
+    }
+
+    /**
+     * Use {@link #setServerURI(String)} and {@link #setServerPort(int)}
+     */
+    public void configureServerEndpoint()
+    {
+        requestSpecBuilder = new RequestSpecBuilder();
+
+        // use static variables for logs, etc
+        // the request spec is built from data set via setters, see RestWrapper#onRequest
+        RestAssured.baseURI = this.serverURI;
+        RestAssured.port = this.serverPort;
+
+        configureRequestSpec().setBaseUri(this.serverURI);
+        configureRequestSpec().setPort(this.serverPort);
     }
 }

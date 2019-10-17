@@ -163,7 +163,7 @@ public class Node implements Comparable<Node>
                 PersonService.PersonInfo pInfo = null;
                 try
                 {
-                    NodeRef pNodeRef = personService.getPerson(userName, false);
+                    NodeRef pNodeRef = personService.getPersonOrNull(userName);
                     if (pNodeRef != null)
                     {
                         pInfo = personService.getPerson(pNodeRef);

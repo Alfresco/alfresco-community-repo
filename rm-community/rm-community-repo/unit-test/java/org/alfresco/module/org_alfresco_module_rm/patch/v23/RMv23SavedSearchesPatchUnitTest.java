@@ -29,6 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 
 import static java.util.Arrays.asList;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,6 +42,10 @@ import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearch
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -57,6 +64,12 @@ public class RMv23SavedSearchesPatchUnitTest
     private NodeService nodeService;
 
     @Mock
+    private SiteService siteService;
+
+    @Mock
+    private SiteInfo siteInfo;
+
+    @Mock
     private RecordsManagementSearchServiceImpl recordsManagementSearchService;
 
     @Mock
@@ -64,6 +77,12 @@ public class RMv23SavedSearchesPatchUnitTest
 
     @InjectMocks
     private RMv23SavedSearchesPatch patch;
+
+    @Before
+    public void setUp()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
 
     /**
      * Given that I am upgrading an existing repository to v2.3
@@ -73,19 +92,33 @@ public class RMv23SavedSearchesPatchUnitTest
     @Test
     public void executePatch()
     {
-        MockitoAnnotations.initMocks(this);
         NodeRef noderef1 = new NodeRef("foo://123/456");
         NodeRef noderef2 = new NodeRef("bar://123/456");
         List<SavedSearchDetails> searches = asList(mockSavedSearchDetails1, mockSavedSearchDetails2);
         when(mockSavedSearchDetails1.getNodeRef()).thenReturn(noderef1);
         when(mockSavedSearchDetails2.getNodeRef()).thenReturn(noderef2);
         when(recordsManagementSearchService.getSavedSearches("rm")).thenReturn(searches);
+        when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(siteInfo);
 
         // execute patch
         patch.applyInternal();
 
         verify(nodeService, times(1)).addAspect(noderef1, ASPECT_SAVED_SEARCH, null);
         verify(nodeService, times(1)).addAspect(noderef2, ASPECT_SAVED_SEARCH, null);
+    }
+
+    /**
+     * Test patch code doesnt run with an rm site
+     */
+    @Test
+    public void testPatchDoesntRunWithoutRmSite()
+    {
+        when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(null);
+
+        // execute patch
+        patch.applyInternal();
+
+        verify(nodeService, times(0)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
     }
 
 }

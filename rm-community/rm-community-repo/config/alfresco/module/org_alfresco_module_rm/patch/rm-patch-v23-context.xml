@@ -42,6 +42,7 @@
       <property name="fixesToSchema" value="2700"/>
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
       <property name="nodeService" ref="NodeService"/>
+      <property name="siteService" ref="SiteService"/>
    </bean>
 
 

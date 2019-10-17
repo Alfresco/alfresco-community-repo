@@ -542,6 +542,7 @@
 
          <associations>
 
+            <!-- @deprecated as of 3.2 -->
             <child-association name="rma:frozenRecords">
                 <title>Frozen Records</title>
                 <source>
@@ -549,10 +550,23 @@
                     <many>true</many>
                 </source>
                 <target>
-                    <class>cm:cmobject</class>
+                    <class>rma:filePlanComponent</class>
                     <mandatory>false</mandatory>
                     <many>true</many>
                 </target>
+            </child-association>
+
+            <child-association name="rma:frozenContent">
+               <title>Frozen Records</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
             </child-association>
 
          </associations>

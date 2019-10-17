@@ -346,7 +346,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     private Set<NodeRef> getParentHolds(NodeRef nodeRef)
     {
-        List<ChildAssociationRef> holdsAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+        List<ChildAssociationRef> holdsAssocs = nodeService.getParentAssocs(nodeRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         Set<NodeRef> holds = new HashSet<>(holdsAssocs.size());
         for (ChildAssociationRef holdAssoc : holdsAssocs)
         {
@@ -392,7 +392,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't get the node's held, because passed node reference isn't a hold. (hold=" + hold.toString() + ")");
         }
 
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
         if (childAssocs != null && !childAssocs.isEmpty())
         {
             for (ChildAssociationRef childAssociationRef : childAssocs)
@@ -593,7 +593,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     // Link the record to the hold
                     //set in transaction cache in order not to trigger update policy when adding the association
                     transactionalResourceHelper.getSet("frozen").add(nodeRef);
-                    nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+                    nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
                     // audit item being added to the hold
                     recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);

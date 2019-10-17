@@ -107,15 +107,18 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        qnameDAO.updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
-        for (NodeRef filePlan : filePlanService.getFilePlans())
+        if(qnameDAO.getQName(ASSOC_FROZEN_RECORDS) != null)
         {
-            for (NodeRef hold : holdService.getHolds(filePlan))
+            qnameDAO.updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
+            for (NodeRef filePlan : filePlanService.getFilePlans())
             {
-                for (ChildAssociationRef ref : nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS))
+                for (NodeRef hold : holdService.getHolds(filePlan))
                 {
-                    holdService.removeFromHold(hold, ref.getChildRef());
-                    holdService.addToHold(hold, ref.getChildRef());
+                    for (ChildAssociationRef ref : nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS))
+                    {
+                        holdService.removeFromHold(hold, ref.getChildRef());
+                        holdService.addToHold(hold, ref.getChildRef());
+                    }
                 }
             }
         }

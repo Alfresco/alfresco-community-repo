@@ -58,6 +58,8 @@
 </li>
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22097'>ALF-22097</a>] -         T Engine - add source nodeId parameter
 </li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20714'>MNT-20714</a>] -         REST API /nodes/{nodeId}/content endpoint fails for content created by a deleted user
+</li>
 </ul>
 <h2>        Improvement
 </h2>

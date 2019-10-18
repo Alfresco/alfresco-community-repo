@@ -104,6 +104,7 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
         this.nodeService = nodeService;
     }
 
+    @SuppressWarnings ("depricated")
     @Override
     public void applyInternal()
     {

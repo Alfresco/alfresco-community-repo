@@ -40,6 +40,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23SavedSearchesPatch">
       <property name="description" value="Add aspect to saved searches."/>
       <property name="fixesToSchema" value="2700"/>
+      <property name="targetSchema" value="2701" />
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="siteService" ref="SiteService"/>

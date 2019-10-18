@@ -10,7 +10,7 @@
    <bean id="rm.holdChildAssocPatch"
          parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v32.RMv32HoldChildAssocPatch">
-      <property name="description" value="Change hold child assoc from frozenRecords to frozenContent to support holding active content."/>
+      <property name="description" value="Change hold child association from frozenRecords to frozenContent to support holding active content."/>
       <property name="fixesToSchema" value="2701"/>
       <property name="targetSchema" value="3200"/>
       <property name="qnameDAO" ref="qnameDAO" />

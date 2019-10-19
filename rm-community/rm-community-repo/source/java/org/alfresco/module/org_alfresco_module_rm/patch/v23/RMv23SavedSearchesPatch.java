@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteService;
 
 /**
  * RM v2.3 patch that adds the saved search aspect.
@@ -54,6 +55,11 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     private NodeService nodeService;
 
     /**
+     * Site service fundamental API.
+     */
+    private SiteService siteService;
+
+    /**
      * @param recordsManagementSearchService records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
@@ -70,18 +76,30 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     }
 
     /**
+     * Setter for siteService
+     * @param siteService Site service fundamental API.
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    /**
      * Retrieves all saved searches for the records management site and adds ASPECT_SAVED_SEARCH
      */
     @Override
     public void applyInternal()
     {
-        for (SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
+        if(siteService.getSite(DEFAULT_SITE_NAME) != null)
         {
-            if(nodeService.hasAspect(savedSearchDetails.getNodeRef(),ASPECT_SAVED_SEARCH))
+            for (SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
             {
-                break;
+                if (nodeService.hasAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH))
+                {
+                    break;
+                }
+                nodeService.addAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH, null);
             }
-            nodeService.addAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH, null);
         }
     }
 }

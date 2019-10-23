@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v32;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_RECORDS;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +45,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -105,6 +107,7 @@ public class RMv32HoldChildAssocPatchUnitTest
     @Test
     public void testAHoldIsRemovedAndReplacedDuringUpgrade()
     {
+        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(new Pair(ASSOC_FROZEN_CONTENT,null));
         when(filePlanService.getFilePlans()).thenReturn(fileplans);
         when(holdService.getHolds(filePlanRef)).thenReturn(holds);
         when(nodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS)).thenReturn(childAssocs);
@@ -112,5 +115,16 @@ public class RMv32HoldChildAssocPatchUnitTest
         patch.applyInternal();
         verify(holdService, times(1)).removeFromHold(holdRef, heldItemRef);
         verify(holdService, times(1)).addToHold(holdRef, heldItemRef);
+    }
+
+    /**
+     * Test patch doesnt run without an association added during rm site creation
+     */
+    @Test
+    public void testAHoldIsntRemovedAndReplacedDuringUpgradeWithNoRmSite()
+    {
+        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(null);
+        patch.applyInternal();
+        verify(qNameDAO, never()).updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
     }
 }

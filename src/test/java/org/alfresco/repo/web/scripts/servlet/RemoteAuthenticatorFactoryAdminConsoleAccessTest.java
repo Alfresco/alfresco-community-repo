@@ -25,13 +25,20 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.PropertyMap;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -73,6 +80,9 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     private RemoteUserAuthenticatorFactory remoteUserAuthenticatorFactory;
     private BlockingRemoteUserMapper blockingRemoteUserMapper;
     private PersonService personService;
+    private MutableAuthenticationService authenticationService;
+    private AuthenticationComponent authenticationComponent;
+    private AuthorityService authorityService;
 
     @Before
     public void before() throws Exception
@@ -86,6 +96,10 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         remoteUserAuthenticatorFactory
             .setGetRemoteUserTimeoutMilliseconds((long) (BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS / 2));//highly impatient
         personService = (PersonService) applicationContext.getBean("PersonService");
+
+        authenticationService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
+        authenticationComponent = applicationContext.getBean("AuthenticationComponent", AuthenticationComponent.class);
+        authorityService = applicationContext.getBean("AuthorityService", AuthorityService.class);
 
         childApplicationContextManager.stop();
         childApplicationContextManager.setProperty("chain", "external1:external,alfrescoNtlm1:alfrescoNtlm");
@@ -198,6 +212,33 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         complexCheckOfScriptCases(families);
     }
 
+    /**
+     * Tested access to the AdminConsole for an non literal admin user
+     * but with admin permissions (user added to ALFRESCO_ADMINISTRATORS)
+     * and accessing via Basic Auth
+     */
+    @Test
+    public void testUserCanAccessAdminConsoleScript()
+    {
+        Set<String> families = new HashSet<>();
+        families.add("AdminConsole");
+
+        // Run as System to be able to give permissions
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        String username = RandomStringUtils.randomAlphabetic(10);
+        String password = RandomStringUtils.randomAlphabetic(10);
+        createUser(username, password);
+        authorityService.addAuthority("GROUP_ALFRESCO_ADMINISTRATORS", username);
+
+        authenticationComponent.clearCurrentSecurityContext();
+
+        String headerToAdd = getBasicAuthHeader(username, password);
+
+        checkAdminConsoleFamilyWithBasicAuthHeaderPresentUser(families, headerToAdd);
+
+    }
+
     private void complexCheckOfScriptCases(final Set<String> families)
     {
         final String headerToAdd = "Basic YWRtaW46YWRtaW4="; //admin:admin
@@ -228,6 +269,18 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
+    private void checkAdminConsoleFamilyPage(Set<String> families)
+    {
+        blockingRemoteUserMapper.reset();
+        // now try an admin console family page
+        final boolean authenticated = authenticate(families, null);
+
+        assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
+        assertEquals("Status should be 401", 401, setStatusCode);
+        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
+        assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
+    }
+
     private void checkAdminConsoleFamilyWithBasicAuthHeaderPresent(Set<String> families, String headerToAdd)
     {
         blockingRemoteUserMapper.reset();
@@ -241,16 +294,23 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
-    private void checkAdminConsoleFamilyPage(Set<String> families)
+    private void checkAdminConsoleFamilyWithBasicAuthHeaderPresentUser(Set<String> families, String headerToAdd)
     {
         blockingRemoteUserMapper.reset();
-        // now try an admin console family page
-        final boolean authenticated = authenticate(families, null);
+        // now try with valid basic auth as well
+        boolean authenticated = false;
 
-        assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
-        assertEquals("Status should be 401", 401, setStatusCode);
-        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
-        assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
+        try {
+            authenticated = authenticate(families, headerToAdd);
+        } catch (Exception e) {
+            logger.error(String.format("The authentication should not require secure context to be set. %s", e.getMessage()), e);
+        }
+
+        assertTrue("It is an AdminConsole webscript and a User with Admin access and basic auth header was present. It should succeed.", authenticated);
+        // status is not checked here, as it is not returned by this framework we are testing. It should eventually be 200
+        final String message = "The code from blockingRemoteUserMapper shouldn't have been called";
+        assertFalse(message, blockingRemoteUserMapper.isWasInterrupted());
+        assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
     private void checkAdminConsoleFamilyPageWithRemoteUserMapperDisabled(Set<String> families)
@@ -394,6 +454,40 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
             }
         }).when(mockHttpResponse).setStatus(anyInt());
         return mockResponse;
+    }
+
+    /**
+     * User creation consists of creating a user and an authentication to be compared when a login is asked
+     * @param userName
+     * @param password
+     */
+    private void createUser(String userName, String password)
+    {
+        if (!personService.personExists(userName))
+        {
+            this.authenticationService.createAuthentication(userName, password.toCharArray());
+
+            PropertyMap personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, userName);
+            personProps.put(ContentModel.PROP_FIRSTNAME, "myFirstName");
+            personProps.put(ContentModel.PROP_LASTNAME, "myLastName");
+            personProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
+            personProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
+            personProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
+
+            this.personService.createPerson(personProps);
+        }
+    }
+
+    /**
+     * Formats the value for a basic auth to be put in headers
+     * @param userName
+     * @param password
+     * @return
+     */
+    private String getBasicAuthHeader(String userName, String password)
+    {
+        return String.format("Basic %s", Base64.encodeBase64String(String.format("%s:%s", userName, password).getBytes()));
     }
 }
 

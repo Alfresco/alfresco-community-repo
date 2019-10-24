@@ -324,7 +324,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 return true;
             }
             // then check the admin group
-            return authorityService.isAdminAuthority(auth.getUserName());
+            return AuthenticationUtil.runAsSystem(() -> authorityService.isAdminAuthority(auth.getUserName()));
         }
     }
 

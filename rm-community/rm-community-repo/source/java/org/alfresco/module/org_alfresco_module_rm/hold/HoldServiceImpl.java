@@ -574,7 +574,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         // delete the hold node
         nodeService.deleteNode(hold);
 
-        invokeOnDeleteHold(hold);
+        //invokeOnDeleteHold(hold);
     }
 
     /**

@@ -27,10 +27,21 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
+import static org.alfresco.util.GUID.generate;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -39,7 +50,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class DeleteHoldTest extends BaseRMTestCase
+public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPolicy, OnDeleteHoldPolicy
 {
     /** Constants for the holds */
     protected static final String HOLD1_NAME = "hold one";
@@ -48,6 +59,9 @@ public class DeleteHoldTest extends BaseRMTestCase
     protected static final String HOLD2_REASON = "secrets are everything";
     protected static final String HOLD1_DESC = "but I'll not describe them here!";
     protected static final String HOLD2_DESC = "no then! that's just not on!";
+
+    private boolean beforeDeleteHoldFlag = false;
+    private boolean onDeleteHoldFlag = false;
 
     @Override
     protected boolean isRecordTest()
@@ -233,5 +247,55 @@ public class DeleteHoldTest extends BaseRMTestCase
                return null;
            }
         });
+    }
+
+    public void testPolicyNotificationForDeleteHold() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+
+            @Override
+            public Void run()
+            {
+                BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
+                            HoldServicePolicies.BEFORE_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            new JavaBehaviour(DeleteHoldTest.this, "beforeDeleteHold", NotificationFrequency.EVERY_EVENT));
+
+                BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
+                            HoldServicePolicies.ON_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            new JavaBehaviour(DeleteHoldTest.this, "onDeleteHold", NotificationFrequency.EVERY_EVENT));
+
+                NodeRef hold = holdService.createHold(filePlan, generate(), generate(), generate());
+
+                assertFalse(beforeDeleteHoldFlag);
+                assertFalse(onDeleteHoldFlag);
+
+                // Delete the hold
+                holdService.deleteHold(hold);
+
+                assertTrue(beforeDeleteHoldFlag);
+                assertTrue(onDeleteHoldFlag);
+
+                //clean up
+                policyComponent.removeClassDefinition(beforeDeleteHoldBehaviour);
+                policyComponent.removeClassDefinition(onDeleteHoldBehaviour);
+
+                return null;
+            }
+
+        }, getAdminUserName());
+
+    }
+
+    @Override
+    public void beforeDeleteHold(NodeRef hold)
+    {
+        beforeDeleteHoldFlag = true;
+    }
+
+    @Override
+    public void onDeleteHold(NodeRef hold)
+    {
+        onDeleteHoldFlag = true;
     }
 }

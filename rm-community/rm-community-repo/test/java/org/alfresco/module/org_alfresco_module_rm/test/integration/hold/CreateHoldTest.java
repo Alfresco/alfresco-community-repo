@@ -37,8 +37,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeCreateHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnCreateHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -48,10 +58,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class CreateHoldTest extends BaseRMTestCase
+public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPolicy, OnCreateHoldPolicy
 {
     // Test user
     private String testUser = null;
+
+    private boolean beforeCreateHoldFlag = false;
+    private boolean onCreateHoldFlag = false;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
@@ -107,7 +120,7 @@ public class CreateHoldTest extends BaseRMTestCase
                     {
                         // ensure the user has the correct permission to create the hold
                         filePlanPermissionService.setPermission(holdsContainer, testUser, FILING);
-                        
+
                         return null;
                     }
                 }, getAdminUserName());
@@ -133,5 +146,54 @@ public class CreateHoldTest extends BaseRMTestCase
                 assertEquals(ALLOWED, permissionService.hasPermission(hold, FILING));
             }
         });
+    }
+
+    public void testPolicyNotificationForCreateHold() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            private NodeRef hold;
+
+            @Override
+            public Void run()
+            {
+                BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(
+                            HoldServicePolicies.BEFORE_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD_CONTAINER,
+                            new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
+
+                BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour = policyComponent.bindClassBehaviour(
+                            HoldServicePolicies.ON_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
+
+                assertFalse(beforeCreateHoldFlag);
+                assertFalse(onCreateHoldFlag);
+
+                // Create a hold
+                hold = holdService.createHold(filePlan, generate(), generate(), generate());
+
+                assertTrue(beforeCreateHoldFlag);
+                assertTrue(onCreateHoldFlag);
+
+                //clean up
+                policyComponent.removeClassDefinition(beforeCreateHoldBehaviour);
+                policyComponent.removeClassDefinition(onCreateHoldBehaviour);
+
+                return null;
+            }
+
+        }, getAdminUserName());
+
+    }
+
+    @Override
+    public void beforeCreateHold(String name, String reason)
+    {
+        beforeCreateHoldFlag = true;
+    }
+
+    @Override
+    public void onCreateHold(NodeRef hold)
+    {
+        onCreateHoldFlag = true;
     }
 }

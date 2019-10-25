@@ -41,6 +41,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -49,10 +50,13 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -113,6 +117,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** Capability service */
     private CapabilityService capabilityService;
 
+    /** Policy component */
+    private PolicyComponent policyComponent;
+
     /**
      * Set the file plan service
      *
@@ -170,6 +177,34 @@ public class HoldServiceImpl extends ServiceBaseImpl
     }
 
     /**
+     * Gets the policy component instance
+     *
+     * @return The policy component instance
+     */
+    private PolicyComponent getPolicyComponent()
+    {
+        return this.policyComponent;
+    }
+
+    /**
+     * Sets the policy component instance
+     *
+     * @param policyComponent The policy component instance
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * Policy delegates
+     */
+    private ClassPolicyDelegate<HoldServicePolicies.BeforeCreateHoldPolicy> beforeCreateHoldPolicyDelegate;
+    private ClassPolicyDelegate<HoldServicePolicies.OnCreateHoldPolicy> onCreateHoldPolicyDelegate;
+    private ClassPolicyDelegate<HoldServicePolicies.BeforeDeleteHoldPolicy> beforeDeleteHoldPolicyDelegate;
+    private ClassPolicyDelegate<HoldServicePolicies.OnDeleteHoldPolicy> onDeleteHoldPolicyDelegate;
+
+    /**
      * Initialise hold service
      */
     public void init()
@@ -184,6 +219,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 return null;
             }
         });
+
+        // Register the policies
+        beforeCreateHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(HoldServicePolicies.BeforeCreateHoldPolicy.class);
+        onCreateHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(HoldServicePolicies.OnCreateHoldPolicy.class);
+        beforeDeleteHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(HoldServicePolicies.BeforeDeleteHoldPolicy.class);
+        onDeleteHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(HoldServicePolicies.OnDeleteHoldPolicy.class);
     }
 
     /**
@@ -417,6 +458,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
+        //invoke before create hold
+        beforeCreateHoldPolicyDelegate.get(getTypeAndApsects(holdContainer)).beforeCreateHold(name, reason);
+
         // create map of properties
         Map<QName, Serializable> properties = new HashMap<>(3);
         properties.put(ContentModel.PROP_NAME, name);
@@ -432,7 +476,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
         // create hold
         ChildAssociationRef childAssocRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, assocName, TYPE_HOLD, properties);
 
-        return childAssocRef.getChildRef();
+        NodeRef holdNodeRef = childAssocRef.getChildRef();
+
+        //invoke after hold is created
+        onCreateHoldPolicyDelegate.get(getTypeAndApsects(holdNodeRef)).onCreateHold(holdNodeRef);
+
+        return holdNodeRef;
     }
 
     /**
@@ -520,8 +569,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, because filing permissions for the following items are needed: " + sb.toString());
         }
 
+        beforeDeleteHoldPolicyDelegate.get(getTypeAndApsects(hold)).beforeDeleteHold(hold);
+
         // delete the hold node
         nodeService.deleteNode(hold);
+
+        onDeleteHoldPolicyDelegate.get(getTypeAndApsects(hold)).onDeleteHold(hold);
     }
 
     /**

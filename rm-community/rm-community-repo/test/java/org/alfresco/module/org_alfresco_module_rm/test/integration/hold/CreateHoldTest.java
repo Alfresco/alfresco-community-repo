@@ -158,11 +158,11 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
             public Void run()
             {
                 BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.BEFORE_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD_CONTAINER,
+                            HoldServicePolicies.BeforeCreateHoldPolicy.BEFORE_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD_CONTAINER,
                             new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
 
                 BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.ON_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            HoldServicePolicies.OnCreateHoldPolicy.ON_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
 
                 assertFalse(beforeCreateHoldFlag);

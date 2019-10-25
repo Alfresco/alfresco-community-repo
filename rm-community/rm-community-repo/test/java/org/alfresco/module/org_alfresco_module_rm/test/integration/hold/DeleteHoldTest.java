@@ -258,11 +258,11 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
             public Void run()
             {
                 BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.BEFORE_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            HoldServicePolicies.BeforeDeleteHoldPolicy.BEFORE_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(DeleteHoldTest.this, "beforeDeleteHold", NotificationFrequency.EVERY_EVENT));
 
                 BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.ON_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                            HoldServicePolicies.OnDeleteHoldPolicy.ON_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(DeleteHoldTest.this, "onDeleteHold", NotificationFrequency.EVERY_EVENT));
 
                 NodeRef hold = holdService.createHold(filePlan, generate(), generate(), generate());

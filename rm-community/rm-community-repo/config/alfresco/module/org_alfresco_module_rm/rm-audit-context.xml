@@ -127,4 +127,10 @@
       <property name="label" value="recordable-version-config"/>
    </bean>
 
+    <bean id="audit-event.createHold" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateHoldAuditEvent">
+        <property name="nodeService" ref="nodeService" />
+        <property name="name" value="Create Hold"/>
+        <property name="label" value="rm.audit.createHold"/>
+    </bean>
+
 </beans>

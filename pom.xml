@@ -560,7 +560,7 @@
 
       <jackson.version>2.9.9</jackson.version>
       <jackson-databind.version>2.9.9.3</jackson-databind.version>
-      <fabric8.docker.version>0.25.0</fabric8.docker.version>
+      <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
       <postgresql.version>42.2.6</postgresql.version>
       <postgresql.port>5432</postgresql.port>

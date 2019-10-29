@@ -94,6 +94,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     /** I18N */
     private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
+    private static final String MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR = "rm.hold.generic-permission-error";
+    private static final String MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR = "rm.hold.detailed-permission-error";
 
     /** File Plan Service */
     private FilePlanService filePlanService;
@@ -496,14 +498,25 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             try
             {
-                if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+                String permission;
+
+                if (recordService.isRecord(nodeRef) || recordFolderService.isRecordFolder(nodeRef))
+                {
+                    permission = RMPermissionModel.FILING;
+                }
+                else
+                {
+                    permission =  PermissionService.READ;
+                }
+
+                if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
                 {
                     heldNames.add((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
                 }
             }
             catch (AccessDeniedException ade)
             {
-                throw new AlfrescoRuntimeException("Can't delete hold, because you don't have filling permissions on all the items held within the hold.", ade);
+                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR), ade);
             }
         }
 
@@ -517,7 +530,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 sb.append(name);
                 sb.append("'");
             }
-            throw new AlfrescoRuntimeException("Can't delete hold, because filing permissions for the following items are needed: " + sb.toString());
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
         }
 
         // delete the hold node

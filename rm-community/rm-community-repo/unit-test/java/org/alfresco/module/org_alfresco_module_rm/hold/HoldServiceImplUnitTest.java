@@ -95,6 +95,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
     @Mock
     private CapabilityService mockedCapabilityService;
+
     @Spy @InjectMocks HoldServiceImpl holdService;
 
     @Before
@@ -565,5 +566,80 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(hold);
         holds.add(hold2);
         holdService.removeFromHolds(holds, activeContent);
+    }
+
+    /**
+     * test delete hold throws exception for failed read permission check for content
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void testDeleteHoldThrowsExceptionForActiveContentWithoutReadPermission()
+    {
+        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
+        NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
+        when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
+        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.DENIED);
+        when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
+
+        holdService.deleteHold(holdNode);
+    }
+
+    /**
+     * test delete hold throws exception for failed read permission check for records
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void testDeleteHoldThrowsExceptionForARecordWithoutReadPermission()
+    {
+        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
+        NodeRef heldContent = generateNodeRef();
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedRecordService.isRecord(heldContent)).thenThrow(new AccessDeniedException(""));
+
+        holdService.deleteHold(holdNode);
+
+    }
+
+    /**
+     * test delete hold throws exception for failed file permission check for records
+     */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void testDeleteHoldThrowsExceptionForARecordWithoutFilePermission()
+    {
+        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
+        NodeRef heldContent = generateNodeRef();
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedRecordService.isRecord(heldContent)).thenReturn(true);
+        when(mockedPermissionService.hasPermission(heldContent, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+        when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
+
+        holdService.deleteHold(holdNode);
+    }
+
+    /**
+     * Test hold deleted for active content with read permission
+     */
+    @Test
+    public void testDeleteHoldChecksReadPermissionForActiveContent()
+    {
+        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
+        NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
+        when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
+        when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.ALLOWED);
+        when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
+
+        holdService.deleteHold(holdNode);
+
+        verify(mockedNodeService, times(1)).deleteNode(holdNode);
     }
 }

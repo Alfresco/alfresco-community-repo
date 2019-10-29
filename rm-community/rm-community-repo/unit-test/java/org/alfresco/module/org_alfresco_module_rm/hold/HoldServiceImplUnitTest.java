@@ -314,7 +314,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         // mocks for policies
         doNothing().when(holdService).invokeBeforeDeleteHold(any());
-        doNothing().when(holdService).invokeOnDeleteHold(any());
+        doNothing().when(holdService).invokeOnDeleteHold(any(), any());
 
         // delete hold
         holdService.deleteHold(hold);

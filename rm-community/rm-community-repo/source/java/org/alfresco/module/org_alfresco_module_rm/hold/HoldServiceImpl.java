@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
+import static org.alfresco.model.ContentModel.PROP_NAME;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,7 +42,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -253,7 +253,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         transactionalResourceHelper.getSet("frozen").add(frozenNode);
                         removeFreezeAspect(frozenNode, 1);
                     }
-
                     return null;
                 }
             };
@@ -571,10 +570,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
         }
 
         invokeBeforeDeleteHold(hold);
+
+        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
+        Set<QName> classQNames = getTypeAndApsects(hold);
+
         // delete the hold node
         nodeService.deleteNode(hold);
 
-        //invokeOnDeleteHold(hold);
+        invokeOnDeleteHold(holdName, classQNames);
     }
 
     /**
@@ -902,12 +905,15 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onDeleteHold policy
      *
-     * @param nodeRef node reference
+     * @param holdName name of the hold
+     * @param classQNames hold types and aspects
      */
-    protected void invokeOnDeleteHold(NodeRef nodeRef)
+    protected void invokeOnDeleteHold(String holdName, Set<QName> classQNames)
     {
         // execute policy for node type and aspects
-        OnDeleteHoldPolicy policy = onDeleteHoldPolicyDelegate.get(getTypeAndApsects(nodeRef));
-        policy.onDeleteHold(nodeRef);
+        OnDeleteHoldPolicy policy = onDeleteHoldPolicyDelegate.get(classQNames);
+        policy.onDeleteHold(holdName);
+
     }
+
 }

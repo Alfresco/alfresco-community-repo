@@ -39,9 +39,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeCreateHoldPolicy;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnCreateHoldPolicy;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -150,38 +148,43 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
 
     public void testPolicyNotificationForCreateHold() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private NodeRef hold;
+            BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour;
+            BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour;
 
-            @Override
-            public Void run()
+            public void given()
             {
-                BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.BeforeCreateHoldPolicy.BEFORE_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD_CONTAINER,
+                beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(HoldServicePolicies.BeforeCreateHoldPolicy.BEFORE_CREATE_HOLD,
+                            RecordsManagementModel.TYPE_HOLD_CONTAINER,
                             new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
 
-                BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.OnCreateHoldPolicy.ON_CREATE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                onCreateHoldBehaviour = policyComponent.bindClassBehaviour(HoldServicePolicies.OnCreateHoldPolicy.ON_CREATE_HOLD,
+                            RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
 
                 assertFalse(beforeCreateHoldFlag);
                 assertFalse(onCreateHoldFlag);
-
-                // Create a hold
-                hold = holdService.createHold(filePlan, generate(), generate(), generate());
-
-                assertTrue(beforeCreateHoldFlag);
-                assertTrue(onCreateHoldFlag);
-
-                //clean up
-                policyComponent.removeClassDefinition(beforeCreateHoldBehaviour);
-                policyComponent.removeClassDefinition(onCreateHoldBehaviour);
-
-                return null;
             }
 
-        }, getAdminUserName());
+            public void when()
+            {
+                // Create a hold
+                NodeRef hold = holdService.createHold(filePlan, generate(), generate(), generate());
+            }
+
+            public void then()
+            {
+                assertTrue(beforeCreateHoldFlag);
+                assertTrue(onCreateHoldFlag);
+            }
+
+            public void after()
+            {
+                policyComponent.removeClassDefinition(beforeCreateHoldBehaviour);
+                policyComponent.removeClassDefinition(onCreateHoldBehaviour);
+            }
+        });
 
     }
 

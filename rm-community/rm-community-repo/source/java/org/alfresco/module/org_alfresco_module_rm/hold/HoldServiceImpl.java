@@ -41,16 +41,19 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeAddToHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeCreateHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeRemoveFromHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnCreateHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -206,6 +209,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     private ClassPolicyDelegate<OnCreateHoldPolicy> onCreateHoldPolicyDelegate;
     private ClassPolicyDelegate<BeforeDeleteHoldPolicy> beforeDeleteHoldPolicyDelegate;
     private ClassPolicyDelegate<OnDeleteHoldPolicy> onDeleteHoldPolicyDelegate;
+    private ClassPolicyDelegate<BeforeAddToHoldPolicy> beforeAddToHoldPolicyDelegate;
+    private ClassPolicyDelegate<OnAddToHoldPolicy> onAddToHoldPolicyDelegate;
+    private ClassPolicyDelegate<BeforeRemoveFromHoldPolicy> beforeRemoveFromHoldPolicyDelegate;
+    private ClassPolicyDelegate<OnRemoveFromHoldPolicy> onRemoveFromHoldPolicyDelegate;
 
     /**
      * Initialise hold service
@@ -228,6 +235,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
         onCreateHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(OnCreateHoldPolicy.class);
         beforeDeleteHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(BeforeDeleteHoldPolicy.class);
         onDeleteHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(OnDeleteHoldPolicy.class);
+        beforeAddToHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(BeforeAddToHoldPolicy.class);
+        onAddToHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(OnAddToHoldPolicy.class);
+        beforeRemoveFromHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(BeforeRemoveFromHoldPolicy.class);
+        onRemoveFromHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(OnRemoveFromHoldPolicy.class);
+
     }
 
     /**
@@ -634,6 +646,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
             // check that the node isn't already in the hold
             if (!getHeld(hold).contains(nodeRef))
             {
+                // fire before add to hold policy
+                beforeAddToHoldPolicyDelegate.get(getTypeAndApsects(hold)).beforeAddToHold(hold, nodeRef);
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
                 authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                     // gather freeze properties
@@ -657,6 +671,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         final List<NodeRef> records = recordService.getRecords(nodeRef);
                         records.forEach(record -> addFrozenAspect(record, props));
                     }
+
+                    // fire on add to hold policy
+                    onAddToHoldPolicyDelegate.get(getTypeAndApsects(hold)).onAddToHold(hold, nodeRef);
 
                     return null;
                 });
@@ -794,6 +811,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
                     authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                        // fire before remove from hold policy
+                        beforeRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold)).beforeRemoveFromHold(hold, nodeRef);
                         // remove from hold
                         //set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(nodeRef);
@@ -802,6 +821,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         // audit that the node has been remove from the hold
                         // TODO add details of the hold that the node was removed from
                         recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
+
+                        // fire on remove from hold policy
+                        onRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold)).onRemoveFromHold(hold, nodeRef);
 
                         return null;
 

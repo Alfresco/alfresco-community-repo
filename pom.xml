@@ -592,6 +592,7 @@
       <image.registry>quay.io</image.registry>
 
       <javax-jaxb.version>2.3.0</javax-jaxb.version>
+      <apache-compress.version>1.19</apache-compress.version>
    </properties>
 
    <dependencyManagement>
@@ -1120,7 +1121,7 @@
                   <dependency>
                      <groupId>org.apache.commons</groupId>
                      <artifactId>commons-compress</artifactId>
-                     <version>1.18</version>
+                     <version>${apache-compress.version}</version>
                   </dependency>
                   <dependency>
                      <groupId>org.alfresco.maven.plugin</groupId>

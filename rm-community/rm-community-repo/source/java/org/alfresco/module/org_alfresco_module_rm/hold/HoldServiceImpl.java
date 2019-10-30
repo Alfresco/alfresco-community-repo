@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
+import static org.alfresco.model.ContentModel.PROP_NAME;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -265,7 +266,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         transactionalResourceHelper.getSet("frozen").add(frozenNode);
                         removeFreezeAspect(frozenNode, 1);
                     }
-
                     return null;
                 }
             };
@@ -583,10 +583,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
         }
 
         invokeBeforeDeleteHold(hold);
+
+        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
+        Set<QName> classQNames = getTypeAndApsects(hold);
+
         // delete the hold node
         nodeService.deleteNode(hold);
 
-        //invokeOnDeleteHold(hold);
+        invokeOnDeleteHold(holdName, classQNames);
     }
 
     /**
@@ -924,12 +928,15 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onDeleteHold policy
      *
-     * @param nodeRef node reference
+     * @param holdName name of the hold
+     * @param classQNames hold types and aspects
      */
-    protected void invokeOnDeleteHold(NodeRef nodeRef)
+    protected void invokeOnDeleteHold(String holdName, Set<QName> classQNames)
     {
         // execute policy for node type and aspects
-        OnDeleteHoldPolicy policy = onDeleteHoldPolicyDelegate.get(getTypeAndApsects(nodeRef));
-        policy.onDeleteHold(nodeRef);
+        OnDeleteHoldPolicy policy = onDeleteHoldPolicyDelegate.get(classQNames);
+        policy.onDeleteHold(holdName);
+
     }
+
 }

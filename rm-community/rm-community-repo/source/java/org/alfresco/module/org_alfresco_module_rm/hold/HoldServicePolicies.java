@@ -83,9 +83,9 @@ public interface HoldServicePolicies
         /**
          * Called when a hold is deleted.
          *
-         * @param hold node reference
+         * @param holdname name of the deleted hold
          */
-        void onDeleteHold(NodeRef hold);
+        void onDeleteHold(String holdname);
     }
 
     interface BeforeAddToHoldPolicy extends ClassPolicy

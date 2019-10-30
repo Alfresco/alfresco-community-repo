@@ -27,13 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
-import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
 import static org.alfresco.util.GUID.generate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -251,39 +249,47 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
 
     public void testPolicyNotificationForDeleteHold() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
+            BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour;
+            BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour;
+            NodeRef hold;
 
-            @Override
-            public Void run()
+            public void given()
             {
-                BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.BeforeDeleteHoldPolicy.BEFORE_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                beforeDeleteHoldBehaviour = policyComponent.bindClassBehaviour(BeforeDeleteHoldPolicy.BEFORE_DELETE_HOLD,
+                            RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(DeleteHoldTest.this, "beforeDeleteHold", NotificationFrequency.EVERY_EVENT));
 
-                BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour = policyComponent.bindClassBehaviour(
-                            HoldServicePolicies.OnDeleteHoldPolicy.ON_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
+                onDeleteHoldBehaviour = policyComponent.bindClassBehaviour(OnDeleteHoldPolicy.ON_DELETE_HOLD, RecordsManagementModel.TYPE_HOLD,
                             new JavaBehaviour(DeleteHoldTest.this, "onDeleteHold", NotificationFrequency.EVERY_EVENT));
 
-                NodeRef hold = holdService.createHold(filePlan, generate(), generate(), generate());
+                // Create a hold
+                hold = holdService.createHold(filePlan, generate(), generate(), generate());
 
                 assertFalse(beforeDeleteHoldFlag);
-                assertFalse(onDeleteHoldFlag);
+                assertFalse(beforeDeleteHoldFlag);
+            }
 
+            public void when()
+            {
                 // Delete the hold
                 holdService.deleteHold(hold);
 
-                assertTrue(beforeDeleteHoldFlag);
-                assertTrue(onDeleteHoldFlag);
-
-                //clean up
-                policyComponent.removeClassDefinition(beforeDeleteHoldBehaviour);
-                policyComponent.removeClassDefinition(onDeleteHoldBehaviour);
-
-                return null;
             }
 
-        }, getAdminUserName());
+            public void then()
+            {
+                assertTrue(beforeDeleteHoldFlag);
+                assertTrue(onDeleteHoldFlag);
+            }
+
+            public void after()
+            {
+                policyComponent.removeClassDefinition(beforeDeleteHoldBehaviour);
+                policyComponent.removeClassDefinition(onDeleteHoldBehaviour);
+            }
+        });
 
     }
 
@@ -294,7 +300,7 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
     }
 
     @Override
-    public void onDeleteHold(NodeRef hold)
+    public void onDeleteHold(String holdName)
     {
         onDeleteHoldFlag = true;
     }

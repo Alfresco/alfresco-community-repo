@@ -58,6 +58,7 @@ public class PropertyModificationAllowedCheckUnitTest
     private QName qName, qName2;
 
     private List<QName> list;
+    private List<String> editableURIs;
 
     @Mock
     private Serializable serializable, serializable2;
@@ -74,6 +75,9 @@ public class PropertyModificationAllowedCheckUnitTest
         before.put(qName, serializable);
         after.put(qName, serializable2);
         list = new ArrayList();
+        editableURIs =new ArrayList<>();
+        propertyModificationAllowedCheck.setWhiteList(list);
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
     }
 
     /**

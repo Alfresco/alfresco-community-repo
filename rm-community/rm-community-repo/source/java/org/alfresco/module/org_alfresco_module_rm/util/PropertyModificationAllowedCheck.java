@@ -45,6 +45,29 @@ public class PropertyModificationAllowedCheck
      * List of qnames that can be modified
      */
     private List<QName> whiteList;
+    
+	/**
+     * List of model URI's for which the properties can be updated
+     */
+    private List<String> editableURIs;
+
+    /**
+     * Setter for list of model URI's
+     * @param editableURIs List<String>
+     */
+    public void setEditableURIs(List<String> editableURIs)
+    {
+        this.editableURIs = editableURIs;
+    }
+
+    /**
+     * Getter for list of model URI's
+     * @return return the list of model URI's
+     */
+    public List<String> getEditableURIs()
+    {
+        return editableURIs;
+    }
 
     /**
      * Setter for list of qnames
@@ -93,7 +116,7 @@ public class PropertyModificationAllowedCheck
             if (before.get(key) != null && after.get(key) != null && !(after.get(key).equals(before.get(key))))
             {
                 //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
+                proceed = whiteList.contains(key) || getEditableURIs().contains(key.getNamespaceURI());
                 if (!proceed)
                 {
                     break;
@@ -102,5 +125,6 @@ public class PropertyModificationAllowedCheck
         }
         return proceed;
     }
+
 
 }

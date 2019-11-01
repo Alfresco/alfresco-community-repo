@@ -630,7 +630,6 @@
    <!-- Abstract parent bean for many POST and PUT Hold beans -->
    <bean id="rmBaseHold" parent="webscript" abstract="true">
       <property name="holdService" ref="HoldService" />
-      <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="nodeService" ref="NodeService" />
       <property name="nodeTypeUtility" ref="nodeTypeUtility" />

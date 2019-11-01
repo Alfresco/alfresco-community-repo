@@ -85,6 +85,8 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -93,6 +95,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.collections.map.MultiValueMap;
@@ -126,6 +129,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     protected PermissionService permissionService;
     protected AuthorityService authorityService;
+    private NodeService nodeService;
 
     private String rootGroupName = null;
     private String groupA = null;
@@ -138,6 +142,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+        nodeService = applicationContext.getBean("NodeService", NodeService.class);
     }
     
     @After
@@ -5600,6 +5605,50 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse(givenProperties.get("cm:created").equals(node.getCreatedAt().getTime()));
         assertFalse(givenProperties.get("cm:modifier").equals(node.getModifiedAt().getTime()));
         assertFalse(givenProperties.get("cm:modified").equals(node.getModifiedByUser().getDisplayName()));
+    }
+
+    @Test public void testPrimaryPath() throws Exception
+    {
+        setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        String myNodeId = getMyNodeId();
+
+        String nameA = "folder_A";
+        String nameA01 = "folder_A01";
+        String nameA02 = "folder_A02";
+        String nameA03 = "folder_A03";
+        String nameB = "folder_B";
+
+        // /Company Home/User Homes/user<timestamp>/folder_A/folder_B
+        Folder folderA = createFolder(myNodeId, nameA);
+        Folder folderB = createFolder(folderA.getId(), nameB);
+        NodeRef folderANodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderA.getId());
+        NodeRef folderBNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB.getId());
+
+        folderA.setName(nameA01);
+        put(URL_NODES, folderA.getId(), toJsonAsStringNonNull(folderA), null, 200);
+        Path folderAPath = nodeService.getPath(folderANodeRef);
+        Path.ChildAssocElement pathElement = (Path.ChildAssocElement) folderAPath.last();
+        String localNameForFolderA = pathElement.getRef().getQName().getLocalName();
+        assertFalse(nameA.equals(localNameForFolderA));
+
+        folderA.setName(nameA02);
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("cm:name", nameA03);
+        folderA.setProperties(properties);
+        put(URL_NODES, folderA.getId(), toJsonAsStringNonNull(folderA), null, 200);
+        folderAPath = nodeService.getPath(folderANodeRef);
+        pathElement = (Path.ChildAssocElement) folderAPath.last();
+        localNameForFolderA = pathElement.getRef().getQName().getLocalName();
+        assertFalse(nameA.equals(localNameForFolderA));
+        assertFalse(nameA03.equals(localNameForFolderA));
+        assertTrue(nameA02.equals(localNameForFolderA));
+
+        Path folderBPath = nodeService.getPath(folderBNodeRef);
+        Path.ChildAssocElement pathBLastElement = (Path.ChildAssocElement) folderBPath.last();
+        String currentPath = folderBPath.toDisplayPath(nodeService, permissionService) + "/" + pathBLastElement.getRef().getQName().getLocalName();
+        String expectedPath = "/Company Home/User Homes/" + user1 + "/" + nameA02 + "/" + nameB;
+        assertTrue(currentPath.equals(expectedPath));
     }
 
     private String getDataDictionaryNodeId() throws Exception

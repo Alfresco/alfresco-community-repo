@@ -2313,6 +2313,7 @@ public class NodesImpl implements Nodes
 
             try
             {
+                handleNodeRename(props, nodeRef);
                 // update node properties - note: null will unset the specified property
                 nodeService.addProperties(nodeRef, props);
             }
@@ -2325,6 +2326,20 @@ public class NodesImpl implements Nodes
         processNodePermissions(nodeRef, nodeInfo);
         
         return nodeRef;
+    }
+
+    private void handleNodeRename(Map<QName, Serializable> props, NodeRef nodeRef)
+    {
+        Serializable nameProp = props.get(ContentModel.PROP_NAME);
+        if ((nameProp != null))
+        {
+            String currentName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            String newName = (String) nameProp;
+            if (!currentName.equals(newName))
+            {
+                rename(nodeRef, newName);
+            }
+        }
     }
 
     protected void processNodePermissions(NodeRef nodeRef, Node nodeInfo)
@@ -2538,7 +2553,25 @@ public class NodesImpl implements Nodes
             }
         }
     }
-    
+
+    private void rename(NodeRef nodeRef, String name)
+    {
+        try
+        {
+            fileFolderService.rename(nodeRef, name);
+        }
+        catch (FileNotFoundException fnfe)
+        {
+            // convert checked exception
+            throw new EntityNotFoundException(nodeRef.getId());
+        }
+        catch (FileExistsException fee)
+        {
+            // duplicate - name clash
+            throw new ConstraintViolatedException("Name already exists in target parent: " + name);
+        }
+    }
+
     protected FileInfo moveOrCopyImpl(NodeRef nodeRef, NodeRef parentNodeRef, String name, boolean isCopy)
     {
         String targetParentId = parentNodeRef.getId();

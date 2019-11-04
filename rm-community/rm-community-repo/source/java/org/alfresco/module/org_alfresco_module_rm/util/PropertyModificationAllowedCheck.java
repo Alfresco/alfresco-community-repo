@@ -95,7 +95,7 @@ public class PropertyModificationAllowedCheck
             if (!before.containsKey(key)  || !after.containsKey(key))
             {
                 //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
+                proceed = allowPropertyUpdate(key);
                 if (!proceed)
                 {
                     break;
@@ -106,7 +106,7 @@ public class PropertyModificationAllowedCheck
                     (after.get(key) == null && before.get(key) != null))
             {
                 //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
+                proceed = allowPropertyUpdate(key);
                 if (!proceed)
                 {
                     break;
@@ -116,7 +116,7 @@ public class PropertyModificationAllowedCheck
             if (before.get(key) != null && after.get(key) != null && !(after.get(key).equals(before.get(key))))
             {
                 //Property modified check to see if allowed
-                proceed = whiteList.contains(key) || getEditableURIs().contains(key.getNamespaceURI());
+                proceed = allowPropertyUpdate(key);
                 if (!proceed)
                 {
                     break;
@@ -126,5 +126,14 @@ public class PropertyModificationAllowedCheck
         return proceed;
     }
 
+    /**
+     * Determines whether the property should be allowed to be updated or not.
+     * @param key property
+     * @return true if property update us allowed
+     */
+    private boolean allowPropertyUpdate(QName key)
+    {
+        return whiteList.contains(key) || getEditableURIs().contains(key.getNamespaceURI());
+    }
 
 }

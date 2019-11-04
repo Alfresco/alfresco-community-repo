@@ -31,7 +31,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeAddToHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeRemoveFromHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.GUID;
 
@@ -41,9 +50,14 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class AddRemoveFromHoldTest extends BaseRMTestCase
+public class AddRemoveFromHoldTest extends BaseRMTestCase implements BeforeAddToHoldPolicy, OnAddToHoldPolicy, BeforeRemoveFromHoldPolicy, OnRemoveFromHoldPolicy
 {
     private static final int RECORD_COUNT = 10;
+
+    private boolean beforeAddToHoldFlag = false;
+    private boolean onAddToHoldFlag = false;
+    private boolean beforeRemoveFromHoldFlag = false;
+    private boolean onRemoveFromHoldFlag = false;
 
     public void testAddRecordToHold()
     { 
@@ -420,5 +434,127 @@ public class AddRemoveFromHoldTest extends BaseRMTestCase
                 assertEquals(0, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
             }            
         });         
+    }
+
+    public void testPolicyNotificationForAddToHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef hold;
+            private NodeRef recordCategory;
+            private NodeRef recordFolder;
+            BehaviourDefinition<ClassBehaviourBinding> beforeAddToHoldBehaviour;
+            BehaviourDefinition<ClassBehaviourBinding> onAddToHoldBehaviour;
+
+            public void given()
+            {
+                // create a hold
+                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                // create a record category -> record folder
+                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
+
+                beforeAddToHoldBehaviour = policyComponent.bindClassBehaviour(BeforeAddToHoldPolicy.QNAME,
+                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(AddRemoveFromHoldTest.this, "beforeAddToHold", NotificationFrequency.EVERY_EVENT));
+
+                onAddToHoldBehaviour = policyComponent.bindClassBehaviour(OnAddToHoldPolicy.QNAME,
+                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(AddRemoveFromHoldTest.this, "onAddToHold", NotificationFrequency.EVERY_EVENT));
+
+                assertFalse(beforeAddToHoldFlag);
+                assertFalse(onAddToHoldFlag);
+            }
+
+            public void when() throws Exception
+            {
+                // add the record folder to hold
+                holdService.addToHold(hold, recordFolder);
+            }
+
+            public void then()
+            {
+                assertTrue(beforeAddToHoldFlag);
+                assertTrue(onAddToHoldFlag);
+            }
+
+            public void after()
+            {
+                policyComponent.removeClassDefinition(beforeAddToHoldBehaviour);
+                policyComponent.removeClassDefinition(onAddToHoldBehaviour);
+            }
+        });
+    }
+
+    public void testPolicyNotificationForRemoveFromHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef hold;
+            private NodeRef recordCategory;
+            private NodeRef recordFolder;
+            BehaviourDefinition<ClassBehaviourBinding> beforeRemoveFromHoldBehaviour;
+            BehaviourDefinition<ClassBehaviourBinding> onRemoveFromHoldBehaviour;
+
+            public void given()
+            {
+                // create a hold
+                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+                // create a record category -> record folder
+                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
+                // add the record folder to hold
+                holdService.addToHold(hold, recordFolder);
+
+                beforeRemoveFromHoldBehaviour = policyComponent.bindClassBehaviour(BeforeRemoveFromHoldPolicy.QNAME,
+                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(AddRemoveFromHoldTest.this, "beforeRemoveFromHold", NotificationFrequency.EVERY_EVENT));
+
+                onRemoveFromHoldBehaviour = policyComponent.bindClassBehaviour(OnRemoveFromHoldPolicy.QNAME,
+                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(AddRemoveFromHoldTest.this, "onRemoveFromHold", NotificationFrequency.EVERY_EVENT));
+
+                assertFalse(beforeRemoveFromHoldFlag);
+                assertFalse(onRemoveFromHoldFlag);
+            }
+
+            public void when() throws Exception
+            {
+                // remove the record folder from the hold
+                holdService.removeFromHold(hold, recordFolder);
+            }
+
+            public void then()
+            {
+                assertTrue(beforeRemoveFromHoldFlag);
+                assertTrue(onRemoveFromHoldFlag);
+            }
+
+            public void after()
+            {
+                policyComponent.removeClassDefinition(beforeRemoveFromHoldBehaviour);
+                policyComponent.removeClassDefinition(onRemoveFromHoldBehaviour);
+            }
+        });
+    }
+
+    @Override
+    public void beforeAddToHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        beforeAddToHoldFlag = true;
+    }
+
+    @Override
+    public void onAddToHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        onAddToHoldFlag = true;
+    }
+
+    @Override
+    public void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        beforeRemoveFromHoldFlag = true;
+    }
+
+    @Override
+    public void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        onRemoveFromHoldFlag = true;
     }
 }

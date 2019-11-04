@@ -236,4 +236,26 @@ public class PropertyModificationAllowedCheckUnitTest
         after.put(qName, null);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
+
+    /**
+     * Test update of a property from the model URI for which properties can be updated
+     */
+    @Test
+    public void testUpdatePropertyFromAllowedModelURI()
+    {
+        editableURIs.add("foo");
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
+        assertTrue(propertyModificationAllowedCheck.check(before, after));
+    }
+
+    /**
+     * Test update of a property that is not in the model URI for which properties can be updated
+     */
+    @Test
+    public void testUpdatePropertyFromNotAllowedModelURI()
+    {
+        editableURIs.add("bar");
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
+        assertFalse(propertyModificationAllowedCheck.check(before, after));
+    }
 }

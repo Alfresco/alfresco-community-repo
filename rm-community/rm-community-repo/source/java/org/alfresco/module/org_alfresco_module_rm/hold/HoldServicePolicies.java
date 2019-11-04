@@ -43,7 +43,7 @@ public interface HoldServicePolicies
 {
     interface BeforeCreateHoldPolicy extends ClassPolicy
     {
-        QName BEFORE_CREATE_HOLD = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateHold");
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateHold");
         /**
          * Called before a hold is created.
          *
@@ -55,7 +55,7 @@ public interface HoldServicePolicies
 
     interface OnCreateHoldPolicy extends ClassPolicy
     {
-        QName ON_CREATE_HOLD = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateHold");
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateHold");
         /**
          * Called when a hold is created.
          *
@@ -66,9 +66,9 @@ public interface HoldServicePolicies
 
     interface BeforeDeleteHoldPolicy extends ClassPolicy
     {
-        QName BEFORE_DELETE_HOLD = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteHold");
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteHold");
         /**
-         * Called before a hold is created.
+         * Called before a hold is deleted.
          *
          * @param hold node reference
          */
@@ -77,7 +77,7 @@ public interface HoldServicePolicies
 
     interface OnDeleteHoldPolicy extends ClassPolicy
     {
-        QName ON_DELETE_HOLD = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteHold");
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteHold");
 
         /**
          * Called when a hold is deleted.

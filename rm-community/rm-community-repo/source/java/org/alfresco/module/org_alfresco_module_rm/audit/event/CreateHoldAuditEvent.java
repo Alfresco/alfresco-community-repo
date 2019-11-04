@@ -28,21 +28,16 @@
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-
-import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Create hold audit event.
@@ -51,12 +46,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @since 3.3
  */
 @BehaviourBean
-public class CreateHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnCreateHoldPolicy
+public class CreateHoldAuditEvent extends AuditEvent
 {
-    /** QNames to display for the hold's properties. */
-    private static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
-    private static final QName HOLD_DESCRIPTION = QName.createQName(RecordsManagementModel.RM_URI, "Hold Description");
-
     /** Node Service */
     private NodeService nodeService;
 
@@ -71,20 +62,21 @@ public class CreateHoldAuditEvent extends AuditEvent implements HoldServicePolic
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnCreateHoldPolicy#onCreateHold(org.alfresco.service.cmr.repository.NodeRef)
+     * @param childAssociationRef child association reference
      */
-    @Override
     @Behaviour
             (
                     kind = BehaviourKind.CLASS,
-                    type = "rma:hold"
+                    type = "rma:hold",
+                    policy = "alf:onCreateNode",
+                    notificationFrequency= NotificationFrequency.TRANSACTION_COMMIT
             )
-    public void onCreateHold(NodeRef holdNodeRef)
+    public void onCreateHold(ChildAssociationRef childAssociationRef)
     {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(holdNodeRef, ContentModel.PROP_NAME));
+        NodeRef holdNodeRef = childAssociationRef.getChildRef();
+
+        Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
         auditProperties.put(PROP_HOLD_REASON, nodeService.getProperty(holdNodeRef, PROP_HOLD_REASON));
-        auditProperties.put(PROP_DESCRIPTION, nodeService.getProperty(holdNodeRef, PROP_DESCRIPTION));
 
         recordsManagementAuditService.auditEvent(holdNodeRef, getName(), null, auditProperties);
     }

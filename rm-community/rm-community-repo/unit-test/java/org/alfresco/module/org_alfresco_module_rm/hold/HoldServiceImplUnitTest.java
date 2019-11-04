@@ -39,6 +39,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -70,6 +71,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
@@ -220,6 +222,10 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         when(mockedNodeService.createNode(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), any(QName.class) , eq(TYPE_HOLD), any(Map.class)))
             .thenReturn(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, holdContainer, generateQName(), hold));
 
+        // mocks for policies
+        doNothing().when(holdService).invokeBeforeCreateHold(any(), anyString(), anyString());
+        doNothing().when(holdService).invokeOnCreateHold(any());
+
         // create hold
         NodeRef newHold = holdService.createHold(filePlan, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         assertNotNull(newHold);
@@ -306,6 +312,10 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void deleteHold()
     {
+        // mocks for policies
+        doNothing().when(holdService).invokeBeforeDeleteHold(any());
+        doNothing().when(holdService).invokeOnDeleteHold(any(), any());
+
         // delete hold
         holdService.deleteHold(hold);
         verify(mockedNodeService).deleteNode(hold);

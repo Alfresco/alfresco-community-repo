@@ -99,7 +99,8 @@ public class PropertyModificationAllowedCheck
                     && !after.get(key).equals(beforeValue);
 
             //check if the property has been emptied or removed
-            boolean propertyRemovedEmptied = after.get(key) == null || !after.containsKey(key);
+            boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue !=null)
+                                                || !after.containsKey(key);
             if (modified || propertyRemovedEmptied)
             {
                 proceed = allowPropertyUpdate(key);

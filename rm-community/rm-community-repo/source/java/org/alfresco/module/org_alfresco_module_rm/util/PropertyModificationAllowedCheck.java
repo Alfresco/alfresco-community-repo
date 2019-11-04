@@ -30,6 +30,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
@@ -80,48 +81,43 @@ public class PropertyModificationAllowedCheck
 
     /**
      * Compares the node properties with the requested update to make sure all potential updates are permitted
+     *
      * @param before current node properties
-     * @param after updated properties for the node
+     * @param after  updated properties for the node
      * @return true -  if all modified property keys are in the whitelist
      */
     public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         boolean proceed = true;
-        HashSet<QName> unionKeys = new HashSet<>(before.keySet());
-        unionKeys.addAll(after.keySet());
-        for (QName key : unionKeys)
+        // Initially check for changes to existing keys and values.
+        for (Map.Entry<QName, Serializable> entry : before.entrySet())
         {
-            //Check if property has been added or removed
-            if (!before.containsKey(key)  || !after.containsKey(key))
+            QName key = entry.getKey();
+            Serializable beforeValue = entry.getValue();
+            //check if property has been updated
+            boolean modified = after.containsKey(key) && after.get(key) != null
+                    && !after.get(key).equals(beforeValue);
+
+            //check if the property has been emptied or removed
+            boolean propertyRemovedEmptied = after.get(key) == null || !after.containsKey(key);
+            if (modified || propertyRemovedEmptied)
             {
-                //Property modified check to see if allowed
                 proceed = allowPropertyUpdate(key);
-                if (!proceed)
-                {
-                    break;
-                }
             }
-            //Check if property emptied or empty property filled
-            if  ((before.get(key) == null && after.get(key) != null) ||
-                    (after.get(key) == null && before.get(key) != null))
+            if (!proceed)
             {
-                //Property modified check to see if allowed
-                proceed = allowPropertyUpdate(key);
-                if (!proceed)
-                {
-                    break;
-                }
+                return proceed;
             }
-            //If properties aren't missing or empty check equality
-            if (before.get(key) != null && after.get(key) != null && !(after.get(key).equals(before.get(key))))
-            {
-                //Property modified check to see if allowed
-                proceed = allowPropertyUpdate(key);
-                if (!proceed)
-                {
-                    break;
-                }
-            }
+        }
+
+        // Check for new values. Record individual values and group as a single map.
+        Set<QName> newKeys = new HashSet<>(after.keySet());
+        newKeys.removeAll(before.keySet());
+        for (QName key : newKeys)
+        {
+            proceed = allowPropertyUpdate(key);
+            if (!proceed)
+                break;
         }
         return proceed;
     }

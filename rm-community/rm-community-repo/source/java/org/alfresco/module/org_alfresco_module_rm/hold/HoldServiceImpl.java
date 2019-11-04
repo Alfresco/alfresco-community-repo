@@ -651,7 +651,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (!getHeld(hold).contains(nodeRef))
             {
                 // fire before add to hold policy
-                beforeAddToHoldPolicyDelegate.get(getTypeAndApsects(hold)).beforeAddToHold(hold, nodeRef);
+                invokeBeforeAddToHold(hold, nodeRef);
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
                 authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                     // gather freeze properties
@@ -677,7 +677,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     }
 
                     // fire on add to hold policy
-                    onAddToHoldPolicyDelegate.get(getTypeAndApsects(hold)).onAddToHold(hold, nodeRef);
+                    invokeOnAddToHold(hold, nodeRef);
 
                     return null;
                 });
@@ -816,7 +816,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     // we already know we have to have the correct capability to get here
                     authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                         // fire before remove from hold policy
-                        beforeRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold)).beforeRemoveFromHold(hold, nodeRef);
+                        invokeBeforeRemoveFromHold(hold, nodeRef);
                         // remove from hold
                         //set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(nodeRef);
@@ -827,7 +827,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
 
                         // fire on remove from hold policy
-                        onRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold)).onRemoveFromHold(hold, nodeRef);
+                        invokeOnRemoveFromHold(hold, nodeRef);
 
                         return null;
 
@@ -939,4 +939,52 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     }
 
+    /**
+     * Invoke beforeAddToHold policy
+     *
+     * @param hold hold node reference
+     * @param contentNodeRef content node reference
+     */
+    protected void invokeBeforeAddToHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        BeforeAddToHoldPolicy policy = beforeAddToHoldPolicyDelegate.get(getTypeAndApsects(hold));
+        policy.beforeAddToHold(hold, contentNodeRef);
+    }
+
+    /**
+     * Invoke onAddToHold policy
+     *
+     *@param hold hold node reference
+     *@param contentNodeRef content node reference
+     */
+    protected void invokeOnAddToHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        OnAddToHoldPolicy policy = onAddToHoldPolicyDelegate.get(getTypeAndApsects(hold));
+        policy.onAddToHold(hold, contentNodeRef);
+    }
+
+    /**
+     * Invoke beforeRemoveFromHold policy
+     *
+     *@param hold hold node reference
+     *@param contentNodeRef content node reference
+     */
+    protected void invokeBeforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        BeforeRemoveFromHoldPolicy policy = beforeRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold));
+        policy.beforeRemoveFromHold(hold, contentNodeRef);
+    }
+
+    /**
+     * Invoke onRemoveFromHold policy
+     *
+     * @param hold hold node reference
+     * @param contentNodeRef content node reference
+     */
+    protected void invokeOnRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
+    {
+        OnRemoveFromHoldPolicy policy = onRemoveFromHoldPolicyDelegate.get(getTypeAndApsects(hold));
+        policy.onRemoveFromHold(hold, contentNodeRef);
+
+    }
 }

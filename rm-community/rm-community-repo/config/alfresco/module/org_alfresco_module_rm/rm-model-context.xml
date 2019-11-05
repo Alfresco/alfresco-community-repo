@@ -178,7 +178,7 @@
 
    <util:constant id="propThumbnailModification" static-field="org.alfresco.model.ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA" />
    
-<!-- Defines a list of namespace URIs for properties, which should be always editable for a frozen node-->
+   <!-- Defines a list of namespace URIs for properties, which should be always editable for a frozen node-->
    <util:list id="frozen_alwaysEditURIs" value-type="java.lang.String">
       <value>http://www.alfresco.org/model/system/1.0</value>
    </util:list>

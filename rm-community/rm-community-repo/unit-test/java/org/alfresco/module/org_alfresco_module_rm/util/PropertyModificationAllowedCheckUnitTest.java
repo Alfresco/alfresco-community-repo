@@ -68,14 +68,14 @@ public class PropertyModificationAllowedCheckUnitTest
     {
         MockitoAnnotations.initMocks(this);
         propertyModificationAllowedCheck = new PropertyModificationAllowedCheck();
-        before =  new HashMap();
+        before = new HashMap();
         after = new HashMap();
-        qName = QName.createQName("foo","bar");
+        qName = QName.createQName("foo", "bar");
         qName2 = QName.createQName("bar", "foo");
         before.put(qName, serializable);
         after.put(qName, serializable2);
         list = new ArrayList();
-        editableURIs =new ArrayList<>();
+        editableURIs = new ArrayList<>();
         propertyModificationAllowedCheck.setWhiteList(list);
         propertyModificationAllowedCheck.setEditableURIs(editableURIs);
     }

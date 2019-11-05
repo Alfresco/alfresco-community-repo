@@ -46,14 +46,25 @@ public class PropertyModificationAllowedCheck
      * List of qnames that can be modified
      */
     private List<QName> whiteList;
-    
-	/**
+
+    /**
      * List of model URI's for which the properties can be updated
      */
     private List<String> editableURIs;
 
     /**
+     * Getter for list of model URI's
+     *
+     * @return return the list of model URI's
+     */
+    private List<String> getEditableURIs()
+    {
+        return editableURIs;
+    }
+
+    /**
      * Setter for list of model URI's
+     *
      * @param editableURIs List<String>
      */
     public void setEditableURIs(List<String> editableURIs)
@@ -62,16 +73,8 @@ public class PropertyModificationAllowedCheck
     }
 
     /**
-     * Getter for list of model URI's
-     * @return return the list of model URI's
-     */
-    public List<String> getEditableURIs()
-    {
-        return editableURIs;
-    }
-
-    /**
      * Setter for list of qnames
+     *
      * @param whiteList List<QName>
      */
     public void setWhiteList(List<QName> whiteList)
@@ -90,17 +93,17 @@ public class PropertyModificationAllowedCheck
     {
         boolean proceed = true;
         // Initially check for changes to existing keys and values.
-        for (Map.Entry<QName, Serializable> entry : before.entrySet())
+        for (final Map.Entry<QName, Serializable> entry : before.entrySet())
         {
-            QName key = entry.getKey();
-            Serializable beforeValue = entry.getValue();
+            final QName key = entry.getKey();
+            final Serializable beforeValue = entry.getValue();
             //check if property has been updated
-            boolean modified = after.containsKey(key) && after.get(key) != null
+            final boolean modified = after.containsKey(key) && after.get(key) != null
                     && !after.get(key).equals(beforeValue);
 
             //check if the property has been emptied or removed
-            boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue !=null)
-                                                || !after.containsKey(key);
+            final boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue != null)
+                                            || !after.containsKey(key);
             if (modified || propertyRemovedEmptied)
             {
                 proceed = allowPropertyUpdate(key);
@@ -112,21 +115,24 @@ public class PropertyModificationAllowedCheck
         }
 
         // Check for new values. Record individual values and group as a single map.
-        Set<QName> newKeys = new HashSet<>(after.keySet());
+        final Set<QName> newKeys = new HashSet<>(after.keySet());
         newKeys.removeAll(before.keySet());
-        for (QName key : newKeys)
+        for (final QName key : newKeys)
         {
             proceed = allowPropertyUpdate(key);
             if (!proceed)
+            {
                 break;
+            }
         }
         return proceed;
     }
 
     /**
      * Determines whether the property should be allowed to be updated or not.
+     *
      * @param key property
-     * @return true if property update us allowed
+     * @return true if property update is allowed
      */
     private boolean allowPropertyUpdate(QName key)
     {

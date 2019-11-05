@@ -71,7 +71,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
@@ -340,6 +339,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void addToHoldNotInHold()
     {
+        mockPoliciesForAddToHold();
+
         holdService.addToHold(hold, recordFolder);
 
         verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
@@ -386,6 +387,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(activeContent, ASPECT_FROZEN);
+
+        mockPoliciesForAddToHold();
 
         holdService.addToHold(hold, recordFolder);
 
@@ -448,6 +451,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         }).when(mockedNodeService).addAspect(any(NodeRef.class), eq(ASPECT_FROZEN), any(Map.class));
 
+        mockPoliciesForAddToHold();
+
         // build a list of holds
         List<NodeRef> holds = new ArrayList<>(2);
         holds.add(hold);
@@ -473,6 +478,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void removeFromHoldNotInHold()
     {
+        mockPoliciesForRemoveFromHold();
+
         holdService.removeFromHold(hold, recordFolder);
 
         verify(mockedNodeService, never()).removeChild(hold, recordFolder);
@@ -487,6 +494,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
+
+        mockPoliciesForRemoveFromHold();
 
         holdService.removeFromHold(hold, recordFolder);
 
@@ -503,6 +512,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         doReturn(Collections.singletonList(recordFolder)).when(holdService).getHeld(hold2);
         doReturn(true).when(mockedNodeService).hasAspect(recordFolder, ASPECT_FROZEN);
         doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_FROZEN);
+
+        mockPoliciesForRemoveFromHold();
 
         // build a list of holds
         List<NodeRef> holds = new ArrayList<>(2);
@@ -535,6 +546,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
             }
 
         }).when(mockedNodeService).removeChild(hold, recordFolder);
+
+        mockPoliciesForRemoveFromHold();
 
         doAnswer(new Answer<Void>()
         {
@@ -575,5 +588,23 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(hold);
         holds.add(hold2);
         holdService.removeFromHolds(holds, activeContent);
+    }
+
+    /**
+     * mocks policies for add to hold
+     */
+    private void mockPoliciesForAddToHold()
+    {
+        doNothing().when(holdService).invokeBeforeAddToHold(any(), any());
+        doNothing().when(holdService).invokeOnAddToHold(any(), any());
+    }
+
+    /**
+     * mocks policies for remove from hold
+     */
+    private void mockPoliciesForRemoveFromHold()
+    {
+        doNothing().when(holdService).invokeBeforeRemoveFromHold(any(), any());
+        doNothing().when(holdService).invokeOnRemoveFromHold(any(), any());
     }
 }

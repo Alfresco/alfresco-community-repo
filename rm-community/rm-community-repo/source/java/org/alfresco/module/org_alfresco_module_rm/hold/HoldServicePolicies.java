@@ -36,6 +36,7 @@ import org.alfresco.service.namespace.QName;
  * Hold Service Policies
  *
  * @author Ramona Popa
+ * @author Roxana Lucanu
  * @since 3.3
  */
 
@@ -86,4 +87,57 @@ public interface HoldServicePolicies
          */
         void onDeleteHold(String holdname);
     }
+
+    interface BeforeAddToHoldPolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddToHold");
+
+        /**
+         * Called before adding content to hold.
+         *
+         * @param hold           the hold to be added into
+         * @param contentNodeRef the item to be added to hold
+         */
+        void beforeAddToHold(NodeRef hold, NodeRef contentNodeRef);
+    }
+
+    interface OnAddToHoldPolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onAddToHold");
+
+        /**
+         * Called when content is added to hold.
+         *
+         * @param hold           the hold to be added into
+         * @param contentNodeRef the item to be added to hold
+         */
+        void onAddToHold(NodeRef hold, NodeRef contentNodeRef);
+    }
+
+    interface BeforeRemoveFromHoldPolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveFromHold");
+
+        /**
+         * Called before removing content from hold.
+         *
+         * @param hold           the hold to be removed from
+         * @param contentNodeRef the item to be removed from hold
+         */
+        void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
+    }
+
+    interface OnRemoveFromHoldPolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveFromHold");
+
+        /**
+         * Called when removing content from hold.
+         *
+         * @param hold           the hold to be removed from
+         * @param contentNodeRef the item to be removed from hold
+         */
+        void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
+    }
+
 }

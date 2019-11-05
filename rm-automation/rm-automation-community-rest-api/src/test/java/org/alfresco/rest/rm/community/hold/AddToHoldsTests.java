@@ -108,7 +108,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     private ContentActions contentActions;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForAddContentToHold() throws Exception
+    public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
         holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
@@ -174,7 +174,7 @@ public class AddToHoldsTests extends BaseRMRestTest
      * Valid nodes to be added to hold
      */
     @DataProvider (name = "validNodesForAddToHold")
-    public Object[][] getValidNodesForAddToHold() throws Exception
+    public Object[][] getValidNodesForAddToHold()
     {
         //create electronic and nonElectronic record in record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -354,7 +354,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAddContentToHold() throws Exception
+    public void cleanUpAddContentToHold()
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD);
         dataSite.usingAdmin().deleteSite(testSite);

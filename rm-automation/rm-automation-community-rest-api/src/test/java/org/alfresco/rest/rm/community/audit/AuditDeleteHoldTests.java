@@ -161,7 +161,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAuditHoldTests()
+    public void cleanUpAuditDeleteHoldTests()
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD);
         asList(rmAdmin, rmManager).forEach(user -> getDataUser().usingAdmin().deleteUser(user));

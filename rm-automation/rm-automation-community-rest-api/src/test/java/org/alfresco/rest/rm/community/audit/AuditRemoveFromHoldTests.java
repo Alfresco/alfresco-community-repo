@@ -82,7 +82,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private FileModel heldContent;
 
     @BeforeClass (alwaysRun = true)
-    public void createAuditHoldTestsPrecondition() throws Exception
+    public void preconditionForAuditRemoveFromHoldTests() throws Exception
     {
         STEP("Create an user with full rights to remove content from a hold.");
         rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
@@ -327,7 +327,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAuditHoldTests()
+    public void cleanUpAuditRemoveFromHoldTests()
     {
         holdsList.forEach(hold -> holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));
         dataSite.usingAdmin().deleteSite(privateSite);

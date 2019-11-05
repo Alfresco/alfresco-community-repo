@@ -186,7 +186,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAuditHoldTests()
+    public void cleanUpAuditCreateHoldTests()
     {
         asList(HOLD1, HOLD2, HOLD3).forEach(hold ->
                 holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));

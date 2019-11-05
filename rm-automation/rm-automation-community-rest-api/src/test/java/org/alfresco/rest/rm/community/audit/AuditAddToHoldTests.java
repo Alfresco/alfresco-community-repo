@@ -292,7 +292,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAuditHoldTests()
+    public void cleanUpAuditAddToHoldTests()
     {
         holdsList.forEach(hold -> holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));
         dataSite.usingAdmin().deleteSite(privateSite);

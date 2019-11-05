@@ -66,7 +66,7 @@ public class AuditUserEventsTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6223")
-    public void createUserEventIsAudited() throws Exception
+    public void createUserEventIsAudited()
     {
         STEP("Create a new user.");
         String userName = "auditCreateUser" + PREFIX;

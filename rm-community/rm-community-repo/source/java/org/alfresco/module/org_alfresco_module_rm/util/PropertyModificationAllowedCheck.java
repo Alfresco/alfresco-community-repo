@@ -26,6 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +61,7 @@ public class PropertyModificationAllowedCheck
      */
     private List<String> getEditableURIs()
     {
-        return editableURIs;
+        return unmodifiableList(editableURIs);
     }
 
     /**
@@ -69,7 +71,7 @@ public class PropertyModificationAllowedCheck
      */
     public void setEditableURIs(List<String> editableURIs)
     {
-        this.editableURIs = editableURIs;
+        this.editableURIs = unmodifiableList(editableURIs);
     }
 
     /**
@@ -79,7 +81,8 @@ public class PropertyModificationAllowedCheck
      */
     public void setWhiteList(List<QName> whiteList)
     {
-        this.whiteList = whiteList;
+        this.whiteList = unmodifiableList(whiteList);
+
     }
 
     /**
@@ -87,7 +90,8 @@ public class PropertyModificationAllowedCheck
      *
      * @param before current node properties
      * @param after  updated properties for the node
-     * @return true -  if all modified property keys are in the whitelist
+     * @return true -  if all modified property keys are in the whitelist or
+     *                    in the list of model URI's for which the properties can be modified
      */
     public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {

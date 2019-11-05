@@ -942,7 +942,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeAddToHold policy
      *
-     * @param hold hold node reference
+     * @param hold           hold node reference
      * @param contentNodeRef content node reference
      */
     protected void invokeBeforeAddToHold(NodeRef hold, NodeRef contentNodeRef)
@@ -954,8 +954,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onAddToHold policy
      *
-     *@param hold hold node reference
-     *@param contentNodeRef content node reference
+     * @param hold           hold node reference
+     * @param contentNodeRef content node reference
      */
     protected void invokeOnAddToHold(NodeRef hold, NodeRef contentNodeRef)
     {
@@ -966,8 +966,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeRemoveFromHold policy
      *
-     *@param hold hold node reference
-     *@param contentNodeRef content node reference
+     * @param hold           hold node reference
+     * @param contentNodeRef content node reference
      */
     protected void invokeBeforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
     {
@@ -978,7 +978,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onRemoveFromHold policy
      *
-     * @param hold hold node reference
+     * @param hold           hold node reference
      * @param contentNodeRef content node reference
      */
     protected void invokeOnRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)

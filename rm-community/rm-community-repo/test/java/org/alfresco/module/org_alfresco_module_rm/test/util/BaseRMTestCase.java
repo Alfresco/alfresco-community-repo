@@ -721,6 +721,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
+     * Util method to delete a hold.
+     * @param nodeRef  hold node reference
+     */
+    protected void deleteHold(NodeRef nodeRef)
+    {
+        holdService.deleteHold(nodeRef);
+    }
+
+    /**
      * Setup multi hierarchy test data
      */
     protected void setupMultiHierarchyTestData()

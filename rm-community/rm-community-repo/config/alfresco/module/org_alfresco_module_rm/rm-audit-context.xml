@@ -138,4 +138,11 @@
         <property name="name" value="Delete Hold"/>
         <property name="label" value="rm.audit.deleteHold"/>
     </bean>
+
+    <bean id="audit-event.addToHold" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AddToHoldAuditEvent">
+        <property name="nodeService" ref="nodeService" />
+        <property name="name" value="Add To Hold"/>
+        <property name="label" value="rm.audit.addToHold"/>
+    </bean>
+
 </beans>

@@ -28,7 +28,6 @@ package org.alfresco.rest.v0;
 
 import static org.alfresco.rest.core.v0.APIUtils.convertHTTPResponseToJSON;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.testng.AssertJUnit.assertNotNull;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -39,8 +38,6 @@ import org.alfresco.rest.core.v0.APIUtils;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
-import org.alfresco.utility.Utility;
-import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.json.JSONArray;

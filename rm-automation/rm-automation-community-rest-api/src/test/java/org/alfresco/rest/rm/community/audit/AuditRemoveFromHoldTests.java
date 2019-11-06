@@ -4,9 +4,24 @@
  * %%
  * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
- * License rights for this program may be obtained from Alfresco Software, Ltd.
- * pursuant to a written agreement and any use of this program without such an
- * agreement is prohibited.
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.rm.community.audit;
@@ -19,10 +34,9 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +50,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.HoldsAPI;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
@@ -62,10 +76,10 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private final String HOLD1 = PREFIX + "hold1";
     private final String HOLD2 = PREFIX + "hold2";
     private final String HOLD3 = PREFIX + "hold3";
-    private final String HOLD_TO_BE_DELETED = PREFIX + "holdToBeDeleted";
+    private final String DELETED_HOLD = PREFIX + "deletedHold";
 
     @Autowired
-    private RMAuditAPI rmAuditAPI;
+    private RMAuditService rmAuditService;
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
@@ -78,8 +92,8 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private Record heldRecord;
     private List<AuditEntry> auditEntries;
     private List<String> holdsList = asList(HOLD1, HOLD2, HOLD3);
-    private AuditEntry auditEntry;
     private FileModel heldContent;
+    private String hold1NodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditRemoveFromHoldTests() throws Exception
@@ -91,12 +105,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         privateSite = dataSite.usingUser(rmAdmin).createPrivateRandomSite();
 
         STEP("Create new holds.");
-        String hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(),
+        hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(),
                 HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD3, HOLD_REASON, HOLD_DESCRIPTION);
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_TO_BE_DELETED,
-                HOLD_REASON, HOLD_DESCRIPTION);
+        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), DELETED_HOLD, HOLD_REASON, HOLD_DESCRIPTION);
 
         STEP("Create a new record category with a record folder.");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
@@ -166,27 +179,14 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @Test (dataProvider = "validNodesForRemoveFromHold")
     public void removeFromHoldEventIsAudited(String nodeId, String nodeName)
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Remove node from hold.");
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD3);
 
-        STEP("Get the list of audit entries for the remove from hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                REMOVE_FROM_HOLD.event);
-
-        STEP("Check the audit log contains the entry for the remove from hold.");
-        assertFalse("The list of events should contain Remove From Hold entry ", auditEntries.isEmpty());
-        auditEntry = auditEntries.get(0);
-        assertTrue("The list of events is not filtered by Remove From Hold",
-                auditEntry.getEvent().equals(REMOVE_FROM_HOLD.eventDisplayName));
-        assertTrue("The hold name value for the remove from hold is not audited.",
-                auditEntry.getNodeName().equals(HOLD3));
-        assertTrue("The user who removed the node from the hold is not audited.",
-                auditEntry.getUserName().equals(rmAdmin.getUsername()));
-        assertFalse("The date when the add to hold occurred is not audited.", auditEntry.getTimestamp().isEmpty());
-        //TODO check content name
+        STEP("Check the audit log contains the entry for the remove from hold event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, HOLD3, Collections.emptyList());
+        //TODO replace changed values
     }
 
     /**
@@ -199,22 +199,17 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     {
         STEP("Add a file to the hold that will be deleted");
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(),
-                heldContent.getNodeRefWithoutVersion(), HOLD_TO_BE_DELETED);
+                heldContent.getNodeRefWithoutVersion(), DELETED_HOLD);
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Delete the hold.");
-        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD_TO_BE_DELETED);
-
-        STEP("Get the list of audit entries for the remove from hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                REMOVE_FROM_HOLD.event);
+        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), DELETED_HOLD);
 
         STEP("Check the audit log contains the entry for the remove from hold.");
-        assertFalse("The list of events should contain Remove From Hold entry ", auditEntries.isEmpty());
-        assertTrue("The hold name value for the remove from hold is not audited.",
-                auditEntries.get(0).getNodeName().equals(HOLD_TO_BE_DELETED));
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, DELETED_HOLD,
+                Collections.emptyList());
+        //TODO replace changed values
     }
 
     /**
@@ -225,25 +220,16 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @Test
     public void unsuccessfulRemoveFromHoldIsNotAudited()
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Try to remove the record from a hold by an user with no rights.");
-        try
-        {
-            holdsAPI.removeItemFromHold(rmManagerNoRightsOnHold.getUsername(), rmManagerNoRightsOnHold.getPassword(),
-                    heldRecord.getId(), HOLD1);
-            fail("Remove from hold action was successful.");
-        }
-        catch (Exception e)
-        {
-            STEP("Get the list of audit entries for the remove from hold event.");
-            auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                    REMOVE_FROM_HOLD.event);
+        holdsAPI.removeItemsFromHolds(rmManagerNoRightsOnHold.getUsername(), rmManagerNoRightsOnHold.getPassword(),
+                SC_INTERNAL_SERVER_ERROR, Collections.singletonList(heldRecord.getId()),
+                Collections.singletonList(hold1NodeRef));
 
-            STEP("Check the audit log doesn't contain the entry for the unsuccessful remove from hold.");
-            assertTrue("The list of events should not contain remove from hold entry ", auditEntries.isEmpty());
-        }
+        STEP("Check the audit log doesn't contain the entry for the unsuccessful remove from hold.");
+        assertTrue("The list of events should not contain remove from hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), REMOVE_FROM_HOLD).isEmpty());
     }
 
     /**
@@ -261,15 +247,13 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         STEP("Add the record folder to a hold.");
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Remove record folder from hold.");
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
 
         STEP("Get the list of audit entries for the remove from hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                REMOVE_FROM_HOLD.event);
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), REMOVE_FROM_HOLD);
 
         STEP("Check the audit log contains only an entry for remove from hold.");
         assertEquals("The list of events should not contain Remove from Hold entry for the record", 1,
@@ -285,16 +269,14 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @Test
     public void removeFromHoldIsAuditedInBulkRemoval()
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Remove record folder from multiple holds.");
         holdsAPI.removeItemsFromHolds(rmAdmin.getUsername(), rmAdmin.getPassword(),
                 Collections.singletonList(heldRecordFolder.getId()), asList(HOLD1, HOLD2));
 
         STEP("Get the list of audit entries for the remove from hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                REMOVE_FROM_HOLD.event);
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), REMOVE_FROM_HOLD);
 
         STEP("Check the audit log contains entries for both removal.");
         assertEquals("The list of events should contain remove from Hold entries for both holds", 2,
@@ -313,17 +295,14 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @Test (dataProvider = "invalidUsersForRemoveFromHold")
     public void removeFromHoldAuditEntryNotVisible(UserModel user)
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Remove held content from a hold.");
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldContent.getNodeRefWithoutVersion(), HOLD1);
 
-        STEP("Get the list of audit entries for the remove from hold event as an user with no Read permissions.");
-        auditEntries = rmAuditAPI.getRMAuditLog(user.getUsername(), user.getPassword(), 100, REMOVE_FROM_HOLD.event);
-
-        STEP("Check the audit log doesn't contain the entry for the remove from hold event.");
-        assertTrue("The list of events should not contain Remove from Hold entry ", auditEntries.isEmpty());
+        STEP("Check that an user with no Read permissions can't see the entry for the remove from hold event.");
+        assertTrue("The list of events should not contain Remove from Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(user, REMOVE_FROM_HOLD).isEmpty());
     }
 
     @AfterClass (alwaysRun = true)

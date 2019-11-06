@@ -6,6 +6,7 @@
 .project
 .settings
 .history
+*.bak
 *.eml
 *.iml
 *.log*
@@ -16,6 +17,8 @@ build.local.properties
 dist
 explodedDeps
 local.properties
+rebel.xml
+rebel-remote.xml
 target
 test-output
 

@@ -100,7 +100,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     private static Log logger = LogFactory.getLog(HoldServiceImpl.class);
 
     /** Audit event keys */
-    private static final String AUDIT_ADD_TO_HOLD = "addToHold";
     private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
 
     /** I18N */
@@ -225,7 +224,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
             @Override
             public Void doWork() throws Exception
             {
-                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_ADD_TO_HOLD, "capability.AddToHold.title"));
                 recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_REMOVE_FROM_HOLD, "capability.RemoveFromHold.title"));
                 return null;
             }
@@ -665,9 +663,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     //set in transaction cache in order not to trigger update policy when adding the association
                     transactionalResourceHelper.getSet("frozen").add(nodeRef);
                     nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
-
-                    // audit item being added to the hold
-                    recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);
 
                     // Mark all the folders contents as frozen
                     if (isRecordFolder(nodeRef))

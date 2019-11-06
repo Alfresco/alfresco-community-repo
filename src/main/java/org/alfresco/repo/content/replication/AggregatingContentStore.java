@@ -34,6 +34,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -164,6 +165,76 @@ public class AggregatingContentStore extends AbstractContentStore
         {
             readLock.unlock();
         }     
+    }
+
+    public boolean exists(String contentUrl)
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try
+        {
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = false;
+
+            boolean contentUrlExists = false;
+
+            // Check the primary store
+            try
+            {
+                contentUrlExists = primaryStore.exists(contentUrl);
+
+                // At least the content URL was supported
+                contentUrlSupported = true;
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+            }
+
+            if (contentUrlExists)
+            {
+                return true;
+            }
+
+            // the content is not in the primary store so we have to go looking for it
+            for (ContentStore store : secondaryStores)
+            {
+                contentUrlExists = false;
+                try
+                {
+                    contentUrlExists = store.exists(contentUrl);
+
+                    // At least the content URL was supported
+                    contentUrlSupported = true;
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // The store can't handle the content URL
+                }
+
+                if (contentUrlExists)
+                {
+                    break;
+                }
+            }
+
+            // Check if the content URL was supported
+            if (!contentUrlSupported)
+            {
+                throw new UnsupportedContentUrlException(this, contentUrl);
+            }
+
+            return contentUrlExists;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 
     public ContentWriter getWriter(ContentContext ctx)

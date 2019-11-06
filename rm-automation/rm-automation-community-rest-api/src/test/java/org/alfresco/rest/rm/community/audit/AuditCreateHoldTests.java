@@ -4,9 +4,24 @@
  * %%
  * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
- * License rights for this program may be obtained from Alfresco Software, Ltd.
- * pursuant to a written agreement and any use of this program without such an
- * agreement is prohibited.
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.rm.community.audit;
@@ -18,8 +33,8 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
@@ -30,7 +45,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.HoldsAPI;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
@@ -54,14 +69,13 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     private final String HOLD3 = PREFIX + "createHold3";
 
     @Autowired
-    private RMAuditAPI rmAuditAPI;
+    private RMAuditService rmAuditService;
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
 
     private UserModel rmAdmin, rmManager;
-    private List<AuditEntry> auditEntries;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditCreateHoldTests()
@@ -83,28 +97,15 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     @Test
     public void createHoldEventIsAuditedForNewHold()
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Get the list of audit entries for the create hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                CREATE_HOLD.event);
-
         STEP("Check the audit log contains the entry for the created hold with the hold details.");
-        assertFalse("The list of events should contain Create Hold entry ", auditEntries.isEmpty());
-        AuditEntry auditEntry = auditEntries.get(0);
-        assertTrue("The list of events is not filtered by Create Hold",
-                auditEntry.getEvent().equals(CREATE_HOLD.eventDisplayName));
-        assertTrue("The hold name value for the hold created is not audited.", auditEntry.getNodeName().equals(HOLD1));
-        assertTrue("The hold reason value for the hold created is not audited.",
-                auditEntry.getChangedValues().contains(
-                        ImmutableMap.of("new", HOLD_REASON, "previous", "", "name", "Hold Reason")));
-        assertTrue("The user who created the hold is not audited.",
-                auditEntry.getUserName().equals(rmAdmin.getUsername()));
-        assertFalse("The date when the hold creation occurred is not audited.", auditEntry.getTimestamp().isEmpty());
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_HOLD, rmAdmin, HOLD1,
+                asList(ImmutableMap.of("new", HOLD_REASON, "previous", "", "name", "Hold Reason"),
+                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Name")));
     }
 
     /**
@@ -118,18 +119,15 @@ public class AuditCreateHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
-        STEP("Try to create again the same hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
-
-        STEP("Get the list of audit entries for the create hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                CREATE_HOLD.event);
+        STEP("Try to create again the same hold and expect action to fail.");
+        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION,
+                SC_INTERNAL_SERVER_ERROR);
 
         STEP("Check the audit log doesn't contain the entry for the second create hold event.");
-        assertTrue("The list of events should not contain Create Hold entry ", auditEntries.isEmpty());
+        assertTrue("The list of events should not contain Create Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD).isEmpty());
     }
 
     /**
@@ -141,26 +139,22 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     public void createHoldAuditEntryIsNotLost()
     {
         final String holdName = PREFIX + "holdToBeDeleted";
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), holdName, HOLD_REASON, HOLD_DESCRIPTION);
 
         STEP("Get the list of audit entries for the create hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                CREATE_HOLD.event);
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
 
         STEP("Delete the created hold.");
         holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), holdName);
 
         STEP("Get again the list of audit entries for the create hold event.");
-        List<AuditEntry> auditEntriesAfterDelete = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, CREATE_HOLD.event);
+        List<AuditEntry> auditEntriesAfterDelete = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
 
         STEP("Check that the audit entry for the created hold didn't change after hold deletion.");
-        assertEquals("The list of events is not filtered by Create Hold",
-                auditEntries, auditEntriesAfterDelete);
+        assertEquals("The audit entry for Create Hold has been changed", auditEntries, auditEntriesAfterDelete);
     }
 
     /**
@@ -171,18 +165,14 @@ public class AuditCreateHoldTests extends BaseRMRestTest
     @Test
     public void createHoldAuditEntryNotVisible()
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD3, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Get the list of audit entries for the create hold event as an user with no Read permissions over the hold.");
-        auditEntries = rmAuditAPI.getRMAuditLog(rmManager.getUsername(), rmManager.getPassword(), 100,
-                CREATE_HOLD.event);
-
-        STEP("Check the audit log doesn't contain the entry for the create hold event.");
-        assertTrue("The list of events should not contain Create Hold entry ", auditEntries.isEmpty());
+        STEP("Check that an user with no Read permissions over the hold can't see the entry for the create hold event");
+        assertTrue("The list of events should not contain Create Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(rmManager, CREATE_HOLD).isEmpty());
     }
 
     @AfterClass (alwaysRun = true)

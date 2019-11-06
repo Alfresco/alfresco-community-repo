@@ -4,9 +4,24 @@
  * %%
  * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
- * License rights for this program may be obtained from Alfresco Software, Ltd.
- * pursuant to a written agreement and any use of this program without such an
- * agreement is prohibited.
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.rm.community.audit;
@@ -17,18 +32,17 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.AssertJUnit.assertFalse;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
-import java.util.List;
+import java.util.Collections;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.HoldsAPI;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
@@ -51,20 +65,21 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     private final String HOLD2 = PREFIX + "deleteHold";
 
     @Autowired
-    private RMAuditAPI rmAuditAPI;
+    private RMAuditService rmAuditService;
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
 
     private UserModel rmAdmin, rmManager;
-    private List<AuditEntry> auditEntries;
+    private String holdNodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditDeleteHoldTests()
     {
         STEP("Create a new hold.");
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD, HOLD_REASON, HOLD_DESCRIPTION);
+        holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD,
+                HOLD_REASON, HOLD_DESCRIPTION);
 
         STEP("Create 2 users with different permissions for the created hold.");
         rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
@@ -85,26 +100,13 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Delete the created hold.");
         holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2);
 
-        STEP("Get the list of audit entries for the delete hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                DELETE_HOLD.event);
-
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
-        assertFalse("The list of events should contain Delete Hold entry ", auditEntries.isEmpty());
-        AuditEntry auditEntry = auditEntries.get(0);
-        assertTrue("The list of events is not filtered by Delete Hold",
-                auditEntry.getEvent().equals(DELETE_HOLD.eventDisplayName));
-        assertTrue("The hold name value for the deleted hold is not audited.",
-                auditEntry.getNodeName().equals(HOLD2));
-        assertTrue("The user who deleted the hold is not audited.",
-                auditEntry.getUserName().equals(rmAdmin.getUsername()));
-        assertFalse("The date when the hold deletion occurred is not audited.", auditEntry.getTimestamp().isEmpty());
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2, Collections.emptyList());
     }
 
     /**
@@ -113,26 +115,17 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
      * Then the delete hold event isn't audited
      */
     @Test
-    public void unsuccessfulDeleteHoldIsNotAudited()
+    public void unsuccessfulDeleteHoldIsNotAudited() throws Exception
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Try to delete a hold by an user with no Read permissions over the hold.");
-        try
-        {
-            holdsAPI.deleteHold(rmManager.getUsername(), rmManager.getPassword(), HOLD);
-            fail("Delete hold action was successful.");
-        }
-        catch (Exception e)
-        {
-            STEP("Get the list of audit entries for the delete hold event.");
-            auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                    DELETE_HOLD.event);
+        getRestAPIFactory().getNodeAPI(rmManager, toContentModel(holdNodeRef)).deleteNode(holdNodeRef);
+        assertStatusCode(FORBIDDEN);
 
-            STEP("Check the audit log doesn't contain the entry for the unsuccessful delete hold.");
-            assertTrue("The list of events should not contain Delete Hold entry ", auditEntries.isEmpty());
-        }
+        STEP("Check the audit log doesn't contain the entry for the unsuccessful delete hold.");
+        assertTrue("The list of events should not contain Delete Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), DELETE_HOLD).isEmpty());
     }
 
     /**
@@ -146,18 +139,14 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Delete the created hold.");
         holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2);
 
-        STEP("Get the list of audit entries for the delete hold event as an user with no Read permissions over the hold.");
-        auditEntries = rmAuditAPI.getRMAuditLog(rmManager.getUsername(), rmManager.getPassword(), 100,
-                DELETE_HOLD.event);
-
-        STEP("Check the audit log doesn't contain the entry for the delete hold event.");
-        assertTrue("The list of events should not contain Delete Hold entry ", auditEntries.isEmpty());
+        STEP("Check that an user with no Read permissions over the hold can't see the entry for the delete hold event.");
+        assertTrue("The list of events should not contain Delete Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(rmManager, DELETE_HOLD).isEmpty());
     }
 
     @AfterClass (alwaysRun = true)

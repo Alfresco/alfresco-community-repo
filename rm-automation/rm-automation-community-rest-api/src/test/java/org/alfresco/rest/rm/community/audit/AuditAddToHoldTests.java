@@ -4,9 +4,24 @@
  * %%
  * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
- * License rights for this program may be obtained from Alfresco Software, Ltd.
- * pursuant to a written agreement and any use of this program without such an
- * agreement is prohibited.
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.rm.community.audit;
@@ -19,10 +34,9 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +50,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.HoldsAPI;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
@@ -63,7 +77,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private final String HOLD2 = PREFIX + "hold2";
 
     @Autowired
-    private RMAuditAPI rmAuditAPI;
+    private RMAuditService rmAuditService;
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
@@ -75,13 +89,13 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
     private List<String> holdsList = asList(HOLD1, HOLD2);
-    private AuditEntry auditEntry;
+    private String hold1NodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditAddToHoldTests() throws Exception
     {
         STEP("Create 2 holds.");
-        String hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
+        hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
 
@@ -154,27 +168,14 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @Test (dataProvider = "validNodesForAddToHold")
     public void addToHoldEventIsAudited(String nodeId, String nodeName)
     {
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Add node to hold.");
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
 
-        STEP("Get the list of audit entries for the add to hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                ADD_TO_HOLD.event);
-
-        STEP("Check the audit log contains the entry for the add to hold.");
-        assertFalse("The list of events should contain Add To Hold entry ", auditEntries.isEmpty());
-        auditEntry = auditEntries.get(0);
-        assertTrue("The list of events is not filtered by Add To Hold",
-                auditEntry.getEvent().equals(ADD_TO_HOLD.eventDisplayName));
-        assertTrue("The hold name value for the add to hold is not audited.",
-                auditEntry.getNodeName().equals(HOLD1));
-        assertTrue("The user who added the node to the hold is not audited.",
-                auditEntry.getUserName().equals(rmAdmin.getUsername()));
-        assertFalse("The date when the add to hold occurred is not audited.", auditEntry.getTimestamp().isEmpty());
-        //TODO check content name
+        STEP("Check the audit log contains the entry for the add to hold event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, HOLD1, Collections.emptyList());
+        //TODO replace changed values
     }
 
     /**
@@ -188,25 +189,16 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Create a new record");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Try to add the record to a hold by an user with no rights.");
-        try
-        {
-            holdsAPI.addItemToHold(rmManagerNoRightsOnHold.getUsername(), rmManagerNoRightsOnHold.getPassword(),
-                    recordToBeAdded.getId(), HOLD1);
-            fail("Add to hold action was successful.");
-        }
-        catch (Exception e)
-        {
-            STEP("Get the list of audit entries for the add to hold event.");
-            auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                    ADD_TO_HOLD.event);
+        holdsAPI.addItemsToHolds(rmManagerNoRightsOnHold.getUsername(), rmManagerNoRightsOnHold.getPassword(),
+                SC_INTERNAL_SERVER_ERROR, Collections.singletonList(recordToBeAdded.getId()),
+                Collections.singletonList(hold1NodeRef));
 
-            STEP("Check the audit log doesn't contain the entry for the unsuccessful add to hold.");
-            assertTrue("The list of events should not contain Add to Hold entry ", auditEntries.isEmpty());
-        }
+        STEP("Check the audit log doesn't contain the entry for the unsuccessful add to hold.");
+        assertTrue("The list of events should not contain Add to Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD).isEmpty());
     }
 
     /**
@@ -221,15 +213,12 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
         createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Add record folder to hold.");
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
 
-        STEP("Get the list of audit entries for the add to hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                ADD_TO_HOLD.event);
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
         STEP("Check the audit log contains only an entry for add to hold.");
         assertEquals("The list of events should not contain Add to Hold entry for the record", 1, auditEntries.size());
@@ -247,16 +236,13 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Create a new record");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
 
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Add record to multiple holds.");
         holdsAPI.addItemsToHolds(rmAdmin.getUsername(), rmAdmin.getPassword(),
                 Collections.singletonList(recordToBeAdded.getId()), holdsList);
 
-        STEP("Get the list of audit entries for the add to hold event.");
-        auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword(), 100,
-                ADD_TO_HOLD.event);
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
         STEP("Check the audit log contains entries for both additions.");
         assertEquals("The list of events should contain Add to Hold entries for both holds", 2, auditEntries.size());
@@ -277,18 +263,14 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Create a new file");
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
                                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-
-        STEP("Clean audit logs.");
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
 
-        STEP("Get the list of audit entries for the add to hold event as an user with no Read permissions.");
-        auditEntries = rmAuditAPI.getRMAuditLog(user.getUsername(), user.getPassword(), 100, ADD_TO_HOLD.event);
-
-        STEP("Check the audit log doesn't contain the entry for the add to hold event.");
-        assertTrue("The list of events should not contain Add to Hold entry ", auditEntries.isEmpty());
+        STEP("Check that an user with no Read permissions can't see the entry for the add to hold event.");
+        assertTrue("The list of events should not contain Add to Hold entry ",
+                rmAuditService.getAuditEntriesFilteredByEvent(user, ADD_TO_HOLD).isEmpty());
     }
 
     @AfterClass (alwaysRun = true)

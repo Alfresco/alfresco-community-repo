@@ -1534,6 +1534,7 @@
       <property name="permissionService" ref="PermissionService"/>
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
       <property name="capabilityService" ref="CapabilityService"/>
+      <property name="policyComponent" ref="policyComponent"/>
    </bean>
 
    <bean id="HoldService"

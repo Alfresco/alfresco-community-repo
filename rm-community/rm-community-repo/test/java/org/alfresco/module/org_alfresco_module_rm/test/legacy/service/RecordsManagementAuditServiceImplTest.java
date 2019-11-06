@@ -40,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQu
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -60,6 +61,9 @@ import org.alfresco.util.Pair;
 public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                                                    implements RMPermissionModel
 {
+    /** A QName to display for the hold name. */
+    public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+
     /** Test record */
     private NodeRef record;
 
@@ -606,7 +610,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             {
                 // check create hold audit event includes the hold name
                 assertEquals("Create Hold event does not include hold name.", holdName,
-                    auditEventProperties.get(PROP_NAME));
+                    auditEventProperties.get(HOLD_NAME));
 
                 // check create hold audit event includes the hold reason
                 assertEquals("Create Hold event does not include hold reason.", holdReason,

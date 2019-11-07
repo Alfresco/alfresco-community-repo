@@ -41,7 +41,7 @@ import java.util.Map;
  * @author adavis
  */
 @Deprecated
-public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+public class LegacyTransformServiceRegistry implements InitializingBean, TransformServiceRegistry
 {
     private ContentService contentService;
     private TransformationOptionsConverter converter;
@@ -107,5 +107,11 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
             }
         }
         return maxSize;
+    }
+
+    @Override
+    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
+    {
+        throw new UnsupportedOperationException("Unsupported operation LegacyTransformServiceRegistry.findTransformerName");
     }
 }

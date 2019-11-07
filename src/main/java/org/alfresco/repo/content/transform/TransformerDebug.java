@@ -28,12 +28,9 @@ package org.alfresco.repo.content.transform;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.repo.rendition2.RenditionDefinition2Impl;
-import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
-import org.alfresco.repo.rendition2.TransformClient;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -75,8 +72,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import static org.alfresco.repo.rendition2.RenditionService2Impl.SOURCE_HAS_NO_CONTENT;
-
 /**
  * Debugs transformers selection and activity.<p>
  *
@@ -109,10 +104,9 @@ public class TransformerDebug implements ApplicationContextAware
 
     private ApplicationContext applicationContext;
     private ContentService contentService;
-    private TransformClient transformClient;
+    private SynchronousTransformClient synchronousTransformClient;
     private Repository repositoryHelper;
     private TransactionService transactionService;
-    private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
 
     private enum Call
     {
@@ -350,18 +344,18 @@ public class TransformerDebug implements ApplicationContextAware
         this.contentService = contentService;
     }
 
-    private TransformClient getTransformClient()
+    private SynchronousTransformClient getSynchronousTransformClient()
     {
-        if (transformClient == null)
+        if (synchronousTransformClient == null)
         {
-            transformClient = (TransformClient) applicationContext.getBean("transformClient");
+            synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("legacySynchronousTransformClient");
         }
-        return transformClient;
+        return synchronousTransformClient;
     }
 
-    public void setTransformClient(TransformClient transformClient)
+    public void setSynchronousTransformClient(SynchronousTransformClient transformClient)
     {
-        this.transformClient = transformClient;
+        this.synchronousTransformClient = transformClient;
     }
 
     public Repository getRepositoryHelper()
@@ -390,20 +384,6 @@ public class TransformerDebug implements ApplicationContextAware
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
-    }
-
-    public RenditionDefinitionRegistry2Impl getRenditionDefinitionRegistry2Impl()
-    {
-        if (renditionDefinitionRegistry2 == null)
-        {
-            renditionDefinitionRegistry2 = (RenditionDefinitionRegistry2Impl) applicationContext.getBean("renditionDefinitionRegistry2");
-        }
-        return renditionDefinitionRegistry2;
-    }
-
-    public void setRenditionDefinitionRegistry2(RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2)
-    {
-        this.renditionDefinitionRegistry2 = renditionDefinitionRegistry2;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -1675,8 +1655,6 @@ public class TransformerDebug implements ApplicationContextAware
 
         private String runWithinTransaction(String sourceExtension, String targetExtension)
         {
-            RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2 = getRenditionDefinitionRegistry2Impl();
-
             String targetMimetype = getMimetype(targetExtension, false);
             String sourceMimetype = getMimetype(sourceExtension, true);
             File tempFile = TempFileProvider.createTempFile(
@@ -1684,46 +1662,25 @@ public class TransformerDebug implements ApplicationContextAware
             ContentWriter writer = new FileContentWriter(tempFile);
             writer.setMimetype(targetMimetype);
 
-            String testRenditionName = "testTransform"+System.currentTimeMillis();
             NodeRef sourceNodeRef = null;
             StringBuilder sb = new StringBuilder();
             try
             {
                 setStringBuilder(sb);
-                RenditionDefinition2 renditionDefinition = new RenditionDefinition2Impl(testRenditionName, targetMimetype,
-                        Collections.emptyMap(), true, renditionDefinitionRegistry2);
-
                 sourceNodeRef = createSourceNode(sourceExtension, sourceMimetype);
-                ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
-                if (contentData != null)
-                {
-                    String contentUrl = contentData.getContentUrl();
-                    if (contentUrl != null)
-                    {
-                        long size = contentData.getSize();
-                        int sourceContentHashCode = SOURCE_HAS_NO_CONTENT;
-                        String contentString = contentData.getContentUrl()+contentData.getMimetype();
-                        if (contentString != null)
-                        {
-                            sourceContentHashCode = contentString.hashCode();
-                        }
-
-                        TransformClient transformClient = getTransformClient();
-                        transformClient.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl);
-                        transformClient.transform(sourceNodeRef, renditionDefinition, "testTransform", sourceContentHashCode);
-                    }
-                }
+                ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                SynchronousTransformClient synchronousTransformClient = getSynchronousTransformClient();
+                Map<String, String> actualOptions = Collections.emptyMap();
+                synchronousTransformClient.isSupported(sourceNodeRef, targetMimetype, actualOptions, null, nodeService);
+                synchronousTransformClient.transform(reader, writer, actualOptions, null, sourceNodeRef);
+            }
+            catch (Exception e)
+            {
+                logger.debug("Unexpected test transform error", e);
             }
             finally
             {
                 setStringBuilder(null);
-                try
-                {
-                    renditionDefinitionRegistry2.unregister(testRenditionName);
-                }
-                catch (IllegalArgumentException ignore)
-                {
-                }
                 deleteSourceNode(sourceNodeRef);
             }
             return sb.toString();

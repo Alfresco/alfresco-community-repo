@@ -55,8 +55,8 @@ import static java.util.Collections.emptySet;
 
 /**
  * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a local transformation
- * (based on {@link LocalTransform} request is supported. It also extends this interface to provide a
- * {@link #transform} method.
+ * (based on {@link LocalTransform} request is supported.
+ *
  * @author adavis
  */
 public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl implements InitializingBean
@@ -485,17 +485,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         return enabled
                 ? super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName)
                 : 0;
-    }
-
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String renditionName, NodeRef sourceNodeRef) throws Exception
-    {
-
-        String sourceMimetype = reader.getMimetype();
-        String targetMimetype = writer.getMimetype();
-        long sourceSizeInBytes = reader.getSize();
-        LocalTransform localTransform = getLocalTransform(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
     }
 
     public LocalTransform getLocalTransform(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)

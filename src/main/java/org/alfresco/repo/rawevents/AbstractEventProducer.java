@@ -25,15 +25,15 @@
  */
 package org.alfresco.repo.rawevents;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.activemq.transport.amqp.message.AmqpMessageSupport;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract helper to send events to an endpoint. The
@@ -90,6 +90,11 @@ public abstract class AbstractEventProducer
 
     public void send(String endpointUri, Object event, Map<String, Object> headers)
     {
+        send(endpointUri, null, event, headers);
+    }
+
+    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
+    {
         try
         {
             if (StringUtils.isEmpty(endpointUri))
@@ -102,12 +107,16 @@ public abstract class AbstractEventProducer
                 event = this.objectMapper.writeValueAsString(event);
             }
 
-            this.producer.sendBodyAndHeaders(endpointUri, event, this.addHeaders(headers));
+            if (exchangePattern == null)
+            {
+                exchangePattern = ExchangePattern.InOnly;
+            }
+
+            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
         }
         catch (Exception e)
         {
             throw new AlfrescoRuntimeException(ERROR_SENDING, e);
         }
     }
-
 }

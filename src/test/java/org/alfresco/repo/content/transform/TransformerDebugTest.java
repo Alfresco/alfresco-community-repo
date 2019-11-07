@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.rendition2.TransformClient;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
@@ -65,7 +65,7 @@ public class TransformerDebugTest
     private TransformerConfig transformerConfig;
 
     @Mock
-    private TransformClient transformClient;
+    private SynchronousTransformClient synchronousTransformClient;
 
     @Mock
     private AbstractContentTransformerLimits transformer1;
@@ -112,7 +112,7 @@ public class TransformerDebugTest
         transformerDebug.setTransformerConfig(transformerConfig);
         transformerDebug.setTransformerLog(log);
         transformerDebug.setTransformerDebugLog(debug);
-        transformerDebug.setTransformClient(transformClient);
+        transformerDebug.setSynchronousTransformClient(synchronousTransformClient);
 
         log.setTransformerDebug(transformerDebug);
         log.setTransformerConfig(transformerConfig);

@@ -34,7 +34,7 @@ import java.util.Map;
  *
  * @author adavis
  */
-public class SwitchingTransformServiceRegistry extends AbstractTransformServiceRegistry
+public class SwitchingTransformServiceRegistry implements TransformServiceRegistry
 {
     private final TransformServiceRegistry primary;
     private final TransformServiceRegistry secondary;
@@ -62,9 +62,15 @@ public class SwitchingTransformServiceRegistry extends AbstractTransformServiceR
                 : secondaryMaxSize == 0
                     ? primaryMaxSize
                     : secondaryMaxSize == -1L
-                        ? new Long(-1L)
-                        : new Long(Math.max(primaryMaxSize, secondaryMaxSize));
+                        ? Long.valueOf(-1L)
+                        : Long.valueOf(Math.max(primaryMaxSize, secondaryMaxSize));
         }
         return maxSize;
+    }
+
+    @Override
+    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
+    {
+        throw new UnsupportedOperationException("Unsupported operation SwitchingTransformServiceRegistry.findTransformerName");
     }
 }

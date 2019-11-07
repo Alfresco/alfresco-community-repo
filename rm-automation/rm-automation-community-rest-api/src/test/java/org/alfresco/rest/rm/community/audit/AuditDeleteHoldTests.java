@@ -39,6 +39,8 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.Collections;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.HoldsAPI;
@@ -106,7 +108,8 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2, Collections.emptyList());
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2,
+                Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name")));
     }
 
     /**

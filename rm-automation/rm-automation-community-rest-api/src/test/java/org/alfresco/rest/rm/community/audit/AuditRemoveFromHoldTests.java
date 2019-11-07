@@ -41,6 +41,8 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -185,8 +187,9 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD3);
 
         STEP("Check the audit log contains the entry for the remove from hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, HOLD3, Collections.emptyList());
-        //TODO replace changed values
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, HOLD3,
+                asList(ImmutableMap.of("new", "", "previous", nodeName, "name", "Name"),
+                        ImmutableMap.of("new", "", "previous", HOLD3, "name", "Hold Name")));
     }
 
     /**
@@ -208,8 +211,8 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
 
         STEP("Check the audit log contains the entry for the remove from hold.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, DELETED_HOLD,
-                Collections.emptyList());
-        //TODO replace changed values
+                asList(ImmutableMap.of("new", "", "previous", heldContent.getName(), "name", "Name"),
+                        ImmutableMap.of("new", "", "previous", DELETED_HOLD, "name", "Hold Name")));
     }
 
     /**
@@ -242,7 +245,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     {
         STEP("Create a new record folder with a record inside");
         RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
-        createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
+        Record record = createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
 
         STEP("Add the record folder to a hold.");
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
@@ -256,9 +259,10 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), REMOVE_FROM_HOLD);
 
         STEP("Check the audit log contains only an entry for remove from hold.");
-        assertEquals("The list of events should not contain Remove from Hold entry for the record", 1,
-                auditEntries.size());
-        //TODO check content name
+        assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
+        assertTrue("The list of events should not contain Remove from Hold entry for the record",
+                auditEntries.stream().noneMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", "", "previous", record.getName(), "name", "Name")))));
     }
 
     /**

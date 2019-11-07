@@ -41,6 +41,8 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -174,8 +176,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
 
         STEP("Check the audit log contains the entry for the add to hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, HOLD1, Collections.emptyList());
-        //TODO replace changed values
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, HOLD1,
+                asList(ImmutableMap.of("new", nodeName, "previous", "", "name", "Name"),
+                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
     }
 
     /**
@@ -211,7 +214,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     {
         STEP("Create a new record folder with a record inside");
         RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
-        createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
+        Record record = createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
 
         rmAuditService.clearAuditLog();
 
@@ -221,8 +224,10 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
         STEP("Check the audit log contains only an entry for add to hold.");
-        assertEquals("The list of events should not contain Add to Hold entry for the record", 1, auditEntries.size());
-        //TODO check content name
+        assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
+        assertTrue("The list of events should not contain Add to Hold entry for the record",
+                auditEntries.stream().noneMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", record.getName(), "previous", "", "name", "Name")))));
     }
 
     /**

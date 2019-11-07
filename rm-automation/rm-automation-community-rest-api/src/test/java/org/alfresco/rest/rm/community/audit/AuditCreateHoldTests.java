@@ -105,7 +105,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
         STEP("Check the audit log contains the entry for the created hold with the hold details.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_HOLD, rmAdmin, HOLD1,
                 asList(ImmutableMap.of("new", HOLD_REASON, "previous", "", "name", "Hold Reason"),
-                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Name")));
+                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
     }
 
     /**

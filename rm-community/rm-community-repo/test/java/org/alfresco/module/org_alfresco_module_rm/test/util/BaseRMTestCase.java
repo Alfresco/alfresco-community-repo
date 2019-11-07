@@ -92,6 +92,8 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.RetryingTransactionHelperTestCase;
 import org.springframework.context.ApplicationContext;
 
+import static org.alfresco.util.GUID.generate;
+
 /**
  * Base test case class to use for RM unit tests.
  *
@@ -705,6 +707,17 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef createPerson(String userName)
     {
         return createPerson(userName, true);
+    }
+
+    /**
+     * Util method to create a hold.
+     * @param holdName  hold name
+     * @param holdReason hold reason
+     * @return NodeRef  hold node reference
+     */
+    protected NodeRef createHold(String holdName, String holdReason)
+    {
+        return holdService.createHold(filePlan, holdName, holdReason, generate());
     }
 
     /**

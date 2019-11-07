@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
@@ -42,12 +40,14 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQu
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
 /**
@@ -61,6 +61,9 @@ import org.alfresco.util.Pair;
 public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                                                    implements RMPermissionModel
 {
+    /** A QName to display for the hold name. */
+    public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+
     /** Test record */
     private NodeRef record;
 
@@ -571,6 +574,59 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given I have created a hold
+     * When I will get the RM audit filter by create hold event
+     * Then there will be an entry for the created hold, including the hold name and reason
+     */
+    @org.junit.Test
+    public void testAuditForCreateHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String CREATE_HOLD_AUDIT_EVENT = "Create Hold";
+
+            String holdName = "Hold " + GUID.generate();
+            String holdReason = "Reason " + GUID.generate();
+
+            NodeRef hold;
+            Map<QName, Serializable> auditEventProperties;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+                hold = createHold(holdName, holdReason);
+            }
+
+            @Override
+            public void when()
+            {
+                auditEventProperties = getAuditEntry(CREATE_HOLD_AUDIT_EVENT).getAfterProperties();
+            }
+
+            @Override
+            public void then()
+            {
+                // check create hold audit event includes the hold name
+                assertEquals("Create Hold event does not include hold name.", holdName,
+                    auditEventProperties.get(HOLD_NAME));
+
+                // check create hold audit event includes the hold reason
+                assertEquals("Create Hold event does not include hold reason.", holdReason,
+                    auditEventProperties.get(PROP_HOLD_REASON));
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+    }
+
     /** === Helper methods === */
 
     private List<RecordsManagementAuditEntry> getAuditTrail(String asUser)
@@ -617,5 +673,23 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 return updatedProperty;
             }
         }, asUser);
+    }
+
+    private RecordsManagementAuditEntry getAuditEntry(String auditEvent)
+    {
+        // set the audit query param for the given event
+        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+        params.setEvent(auditEvent);
+
+        // get the audit entries for the given event
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+
+        // verify we have the expected audit event
+        RecordsManagementAuditEntry auditEntry = auditEntries.get(0);
+        assertEquals(auditEvent + " event is not audited.", auditEvent, auditEntry.getEvent());
+
+        // return the properties of the audit event
+        return auditEntry;
     }
 }

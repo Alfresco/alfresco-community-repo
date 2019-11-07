@@ -1024,7 +1024,7 @@
    </bean>
 
    <bean id="deleteHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeleteHoldAction" parent="rmAction">
-      <property name="auditedImmediately" value="true"/>
+      <property name="auditable" value="false"/>
    </bean>
 
    <bean id="deleteHold_proxy" parent="rmProxyAction" >

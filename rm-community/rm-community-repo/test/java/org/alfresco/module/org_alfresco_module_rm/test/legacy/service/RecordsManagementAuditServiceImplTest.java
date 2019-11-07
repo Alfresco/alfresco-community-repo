@@ -576,6 +576,55 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     /**
      * Given I have created a hold
+     * When I delete the hold and get the RM audit filter by delete hold event
+     * Then there will be an entry for the deleted hold, including the hold name
+     */
+    @org.junit.Test
+    public void testAuditForDeleteHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String DELETE_HOLD_AUDIT_EVENT = "Delete Hold";
+
+            String holdName = "Hold " + GUID.generate();
+
+            NodeRef hold;
+            Map<QName, Serializable> auditEventProperties;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+                hold = createHold(holdName, "Reason " + GUID.generate());
+            }
+
+            @Override
+            public void when()
+            {
+                deleteHold(hold);
+                auditEventProperties = getAuditEntry(DELETE_HOLD_AUDIT_EVENT).getBeforeProperties();
+            }
+
+            @Override
+            public void then()
+            {
+                // check delete hold audit event includes the hold name
+                assertEquals("Delete Hold event does not include hold name.", holdName,
+                    auditEventProperties.get(HOLD_NAME));
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+    }
+
+    /**
+     * Given I have created a hold
      * When I will get the RM audit filter by create hold event
      * Then there will be an entry for the created hold, including the hold name and reason
      */

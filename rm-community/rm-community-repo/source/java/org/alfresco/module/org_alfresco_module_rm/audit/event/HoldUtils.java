@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -44,6 +45,8 @@ import java.util.Map;
  */
 class HoldUtils
 {
+    /** A QName to display for the hold name. */
+    public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
     /**
      * Create a properties map containing the hold name for the given hold.
      *
@@ -55,7 +58,7 @@ class HoldUtils
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
 
-        auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+        auditProperties.put(HOLD_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
 
         return auditProperties;
     }

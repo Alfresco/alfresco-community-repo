@@ -58,6 +58,7 @@ public class PropertyModificationAllowedCheckUnitTest
     private QName qName, qName2;
 
     private List<QName> list;
+    private List<String> editableURIs;
 
     @Mock
     private Serializable serializable, serializable2;
@@ -67,13 +68,16 @@ public class PropertyModificationAllowedCheckUnitTest
     {
         MockitoAnnotations.initMocks(this);
         propertyModificationAllowedCheck = new PropertyModificationAllowedCheck();
-        before =  new HashMap();
+        before = new HashMap();
         after = new HashMap();
-        qName = QName.createQName("foo","bar");
+        qName = QName.createQName("foo", "bar");
         qName2 = QName.createQName("bar", "foo");
         before.put(qName, serializable);
         after.put(qName, serializable2);
         list = new ArrayList();
+        editableURIs = new ArrayList<>();
+        propertyModificationAllowedCheck.setWhiteList(list);
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
     }
 
     /**
@@ -231,5 +235,27 @@ public class PropertyModificationAllowedCheckUnitTest
         before.put(qName, null);
         after.put(qName, null);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
+    }
+
+    /**
+     * Test update of a property from the model URI for which properties can be updated
+     */
+    @Test
+    public void testUpdatePropertyFromAllowedModelURI()
+    {
+        editableURIs.add("foo");
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
+        assertTrue(propertyModificationAllowedCheck.check(before, after));
+    }
+
+    /**
+     * Test update of a property that is not in the model URI for which properties can be updated
+     */
+    @Test
+    public void testUpdatePropertyFromNotAllowedModelURI()
+    {
+        editableURIs.add("bar");
+        propertyModificationAllowedCheck.setEditableURIs(editableURIs);
+        assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 }

@@ -177,6 +177,11 @@
    </bean>
 
    <util:constant id="propThumbnailModification" static-field="org.alfresco.model.ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA" />
+   
+   <!-- Defines a list of namespace URIs for properties, which should be always editable for a frozen node-->
+   <util:list id="frozen_alwaysEditURIs" value-type="java.lang.String">
+      <value>http://www.alfresco.org/model/system/1.0</value>
+   </util:list>
 
    <bean name="updateFrozenPropertyCheck"
          class="org.alfresco.module.org_alfresco_module_rm.util.PropertyModificationAllowedCheck">
@@ -185,6 +190,7 @@
             <ref bean="propThumbnailModification" />
          </list>
       </property>
+      <property name="editableURIs" ref="frozen_alwaysEditURIs" />
    </bean>
 
    <bean id="rma.vitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VitalRecordDefinitionAspect" parent="rm.baseBehaviour">

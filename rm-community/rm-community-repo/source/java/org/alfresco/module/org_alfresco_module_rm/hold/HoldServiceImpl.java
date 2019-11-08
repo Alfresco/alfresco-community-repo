@@ -653,7 +653,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 // fire before add to hold policy
                 invokeBeforeAddToHold(hold, nodeRef);
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
-                authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
+                {
                     // gather freeze properties
                     final Map<QName, Serializable> props = new HashMap<>(2);
                     props.put(PROP_FROZEN_AT, new Date());
@@ -676,11 +677,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         records.forEach(record -> addFrozenAspect(record, props));
                     }
 
-                    // fire on add to hold policy
-                    invokeOnAddToHold(hold, nodeRef);
-
                     return null;
                 });
+
+                // fire on add to hold policy
+                invokeOnAddToHold(hold, nodeRef);
             }
         }
     }
@@ -796,6 +797,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!holds.isEmpty())
         {
+            List<NodeRef> removedHolds = new ArrayList<NodeRef>();
             for (final NodeRef hold : holds)
             {
                 if (!isHold(hold))
@@ -812,34 +814,38 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                 if (getHeld(hold).contains(nodeRef))
                 {
+                    // fire before remove from hold policy
+                    invokeBeforeRemoveFromHold(hold, nodeRef);
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
-                    authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-                        // fire before remove from hold policy
-                        invokeBeforeRemoveFromHold(hold, nodeRef);
+                    authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
+                    {
                         // remove from hold
                         //set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(nodeRef);
                         nodeService.removeChild(hold, nodeRef);
 
-                        // audit that the node has been remove from the hold
+                        // audit that the node has been removed from the hold
                         // TODO add details of the hold that the node was removed from
                         recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
 
-                        // fire on remove from hold policy
-                        invokeOnRemoveFromHold(hold, nodeRef);
-
                         return null;
-
                     });
+                    removedHolds.add(hold);
                 }
             }
 
             // run as system as we can't be sure if have remove aspect rights on node
-            authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+            authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
+            {
                 removeFreezeAspect(nodeRef, 0);
                 return null;
             });
+            for (NodeRef removedHold : removedHolds)
+            {
+                // fire on remove from hold policy
+                invokeOnRemoveFromHold(removedHold, nodeRef);
+            }
         }
     }
 

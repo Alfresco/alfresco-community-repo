@@ -38,6 +38,7 @@ import org.alfresco.rest.core.v0.APIUtils;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
+import org.alfresco.utility.model.UserModel;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.json.JSONArray;
@@ -144,7 +145,36 @@ public class HoldsAPI extends BaseAPI
     }
 
     /**
-     * Deletes hold
+     * Deletes hold using RM Actions API and expect action to be successful
+     *
+     * @param user the user who does the request
+     * @param holdNodeRef the hold node ref
+     * @return The HTTP Response or throws AssertionError if the request is not successful.
+     */
+    public HttpResponse deleteHold(UserModel user, String holdNodeRef)
+    {
+        return deleteHold(user.getUsername(), user.getPassword(), holdNodeRef, SC_OK);
+    }
+
+    /**
+     * Deletes hold using RM Actions API and expect a specific status code
+     *
+     * @param username user's username
+     * @param password its password
+     * @param holdNodeRef the hold node ref
+     * @return The HTTP Response or throws AssertionError if the returned status code is not as expected.
+     */
+    public HttpResponse deleteHold(String username, String password, String holdNodeRef, int expectedStatusCode)
+    {
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "deleteHold");
+        requestParams.put("nodeRef", getNodeRefSpacesStore() + holdNodeRef);
+
+        return doPostJsonRequest(username, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
+    }
+
+    /**
+     * Deletes hold using cmis
      *
      * @param username user's username
      * @param password its password

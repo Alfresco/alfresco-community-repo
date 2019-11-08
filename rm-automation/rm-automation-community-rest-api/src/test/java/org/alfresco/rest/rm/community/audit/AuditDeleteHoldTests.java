@@ -32,9 +32,8 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.Collections;
@@ -100,12 +99,13 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     public void deleteHoldEventIsAudited()
     {
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        String holdRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2,
+                HOLD_REASON, HOLD_DESCRIPTION);
 
         rmAuditService.clearAuditLog();
 
         STEP("Delete the created hold.");
-        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2);
+        holdsAPI.deleteHold(rmAdmin, holdRef);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2,
@@ -118,13 +118,12 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
      * Then the delete hold event isn't audited
      */
     @Test
-    public void unsuccessfulDeleteHoldIsNotAudited() throws Exception
+    public void unsuccessfulDeleteHoldIsNotAudited()
     {
         rmAuditService.clearAuditLog();
 
         STEP("Try to delete a hold by an user with no Read permissions over the hold.");
-        getRestAPIFactory().getNodeAPI(rmManager, toContentModel(holdNodeRef)).deleteNode(holdNodeRef);
-        assertStatusCode(FORBIDDEN);
+        holdsAPI.deleteHold(rmManager.getUsername(), rmManager.getPassword(), holdNodeRef, SC_INTERNAL_SERVER_ERROR);
 
         STEP("Check the audit log doesn't contain the entry for the unsuccessful delete hold.");
         assertTrue("The list of events should not contain Delete Hold entry ",
@@ -140,12 +139,13 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     public void deleteHoldAuditEntryNotVisible()
     {
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        String holdRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON,
+                HOLD_DESCRIPTION);
 
         rmAuditService.clearAuditLog();
 
         STEP("Delete the created hold.");
-        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2);
+        holdsAPI.deleteHold(rmAdmin, holdRef);
 
         STEP("Check that an user with no Read permissions over the hold can't see the entry for the delete hold event.");
         assertTrue("The list of events should not contain Delete Hold entry ",

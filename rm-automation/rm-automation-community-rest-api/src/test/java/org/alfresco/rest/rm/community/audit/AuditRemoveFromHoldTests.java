@@ -187,7 +187,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD3);
 
         STEP("Check the audit log contains the entry for the remove from hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, HOLD3,
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, nodeName,
                 asList(ImmutableMap.of("new", "", "previous", nodeName, "name", "Name"),
                         ImmutableMap.of("new", "", "previous", HOLD3, "name", "Hold Name")));
     }
@@ -210,7 +210,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), DELETED_HOLD);
 
         STEP("Check the audit log contains the entry for the remove from hold.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, DELETED_HOLD,
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, heldContent.getName(),
                 asList(ImmutableMap.of("new", "", "previous", heldContent.getName(), "name", "Name"),
                         ImmutableMap.of("new", "", "previous", DELETED_HOLD, "name", "Hold Name")));
     }
@@ -261,12 +261,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         STEP("Check the audit log contains only an entry for remove from hold.");
         assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
         assertTrue("The list of events should not contain Remove from Hold entry for the record",
-                auditEntries.stream().noneMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", "", "previous", record.getName(), "name", "Name")))));
+                auditEntries.stream().noneMatch(entry -> entry.getNodeName().equals(record.getName())));
     }
 
     /**
-     * Given a document/record/record folder is removed from multiple holds
+     * Given a record folder is removed from multiple holds
      * When I view the audit log
      * Then multiple entries have been created in the audit log for each remove from hold event
      */
@@ -286,9 +285,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         assertEquals("The list of events should contain remove from Hold entries for both holds", 2,
                 auditEntries.size());
         assertTrue("The hold name value for the first remove from hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getNodeName().equals(HOLD1)));
+                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD1, "name", "Hold Name")))));
         assertTrue("The hold name value for the second remove from hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getNodeName().equals(HOLD2)));
+                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name")))));
     }
 
     /**

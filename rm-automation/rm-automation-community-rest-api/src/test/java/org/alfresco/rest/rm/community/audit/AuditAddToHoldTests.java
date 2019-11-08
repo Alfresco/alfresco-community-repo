@@ -176,7 +176,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
 
         STEP("Check the audit log contains the entry for the add to hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, HOLD1,
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName,
                 asList(ImmutableMap.of("new", nodeName, "previous", "", "name", "Name"),
                         ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
     }
@@ -226,12 +226,11 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Check the audit log contains only an entry for add to hold.");
         assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
         assertTrue("The list of events should not contain Add to Hold entry for the record",
-                auditEntries.stream().noneMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", record.getName(), "previous", "", "name", "Name")))));
+                auditEntries.stream().noneMatch(entry -> entry.getNodeName().equals(record.getName())));
     }
 
     /**
-     * Given a document/record/record folder is added to multiple holds
+     * Given a record is added to multiple holds
      * When I view the audit log
      * Then multiple entries have been created in the audit log for each add to hold event
      */
@@ -252,14 +251,16 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         STEP("Check the audit log contains entries for both additions.");
         assertEquals("The list of events should contain Add to Hold entries for both holds", 2, auditEntries.size());
         assertTrue("The hold name value for the first add to hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getNodeName().equals(HOLD1)));
+                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")))));
         assertTrue("The hold name value for the second add to hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getNodeName().equals(HOLD2)));
+                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                        Collections.singletonList(ImmutableMap.of("new", HOLD2, "previous", "", "name", "Hold Name")))));
     }
 
     /**
-     * Given a document/record/record folder is added to a hold
-     * When I view the audit log as an user with no Read permissions over the hold or the node
+     * Given a document is added to a hold
+     * When I view the audit log as an user with no Read permissions over the hold or the document
      * Then the add to hold entry isn't visible
      */
     @Test (dataProvider = "invalidUsersForAddToHold")

@@ -676,6 +676,65 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         });
     }
 
+    /**
+     * Given I have added an item a hold
+     * When I will get the RM audit filter by add to hold event
+     * Then there will be an entry for the item added to the hold, including both the item name and hold name
+     */
+    @org.junit.Test
+    public void testAuditForAddContentToHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String ADD_TO_HOLD_AUDIT_EVENT = "Add To Hold";
+
+            String holdName = "Hold " + GUID.generate();
+            NodeRef hold;
+
+            NodeRef content;
+
+            Map<QName, Serializable> auditEventProperties;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+
+                hold = createHold(holdName, "Reason " + GUID.generate());
+                content = utils.createRecord(rmFolder, "Record " + GUID.generate() + ".txt");
+
+                addContentToHold(hold, content);
+            }
+
+            @Override
+            public void when()
+            {
+                auditEventProperties = getAuditEntry(ADD_TO_HOLD_AUDIT_EVENT).getAfterProperties();
+            }
+
+            @Override
+            public void then()
+            {
+                // check add to hold audit event includes the hold name
+                assertEquals("Add To Hold event does not include hold name.", holdName,
+                        auditEventProperties.get(HOLD_NAME));
+
+                // check add to hold audit event includes the content name
+                String contentName = (String) nodeService.getProperty(content, PROP_NAME);
+                assertEquals("Add To Hold event does not include content name.", contentName,
+                        auditEventProperties.get(PROP_NAME));
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+    }
+
     /** === Helper methods === */
 
     private List<RecordsManagementAuditEntry> getAuditTrail(String asUser)

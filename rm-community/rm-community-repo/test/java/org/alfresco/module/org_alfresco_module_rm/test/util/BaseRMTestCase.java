@@ -730,6 +730,16 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
+     * Util method to add content to a hold.
+     * @param holdNodeRef  hold node reference
+     * @param contentNodeRef  content node reference
+     */
+    protected void addContentToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
+    {
+        holdService.addToHold(holdNodeRef, contentNodeRef);
+    }
+
+    /**
      * Setup multi hierarchy test data
      */
     protected void setupMultiHierarchyTestData()

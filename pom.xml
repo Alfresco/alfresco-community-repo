@@ -65,7 +65,7 @@
         <dependency.activemq.version>5.15.10</dependency.activemq.version>
         <dependency.pdfbox.version>2.0.17</dependency.pdfbox.version>
         <dependency.cxf.version>3.3.4</dependency.cxf.version>
-        <dependency.jackson.version>2.10.0</dependency.jackson.version>
+        <dependency.jackson.version>2.10.1</dependency.jackson.version>
         <dependency.jackson-databind.version>2.9.10</dependency.jackson-databind.version>
     </properties>
 

@@ -85,7 +85,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @Autowired
     private RoleService roleService;
 
-    private UserModel rmAdmin, rmManagerNoRightsOnHold, rmManagerNoRightsOnNode;
+    private UserModel rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode;
     private SiteModel privateSite;
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
@@ -112,9 +112,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         privateSite = dataSite.usingUser(rmAdmin).createPrivateRandomSite();
 
         STEP("Create users without rights to add content to a hold.");
-        rmManagerNoRightsOnHold = roleService.createUserWithSiteRoleRMRoleAndPermission(privateSite,
+        rmManagerNoReadOnHold = roleService.createUserWithSiteRoleRMRoleAndPermission(privateSite,
                 UserRole.SiteManager, recordCategory.getId(), UserRoles.ROLE_RM_MANAGER, UserPermissions.PERMISSION_FILING);
-        rmManagerNoRightsOnNode = roleService.createUserWithRMRoleAndRMNodePermission(UserRoles.ROLE_RM_MANAGER.roleId,
+        rmManagerNoReadOnNode = roleService.createUserWithRMRoleAndRMNodePermission(UserRoles.ROLE_RM_MANAGER.roleId,
                 hold1NodeRef, UserPermissions.PERMISSION_FILING);
     }
 
@@ -153,8 +153,8 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     {
         return new UserModel[][]
         {
-            { rmManagerNoRightsOnHold },
-            { rmManagerNoRightsOnNode }
+            { rmManagerNoReadOnHold },
+            { rmManagerNoReadOnNode }
         };
     }
 
@@ -195,7 +195,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Try to add the record to a hold by an user with no rights.");
-        holdsAPI.addItemsToHolds(rmManagerNoRightsOnHold.getUsername(), rmManagerNoRightsOnHold.getPassword(),
+        holdsAPI.addItemsToHolds(rmManagerNoReadOnHold.getUsername(), rmManagerNoReadOnHold.getPassword(),
                 SC_INTERNAL_SERVER_ERROR, Collections.singletonList(recordToBeAdded.getId()),
                 Collections.singletonList(hold1NodeRef));
 
@@ -284,7 +284,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     {
         holdsList.forEach(hold -> holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), hold));
         dataSite.usingAdmin().deleteSite(privateSite);
-        asList(rmAdmin, rmManagerNoRightsOnHold, rmManagerNoRightsOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+        asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(recordCategory.getId());
     }
 }

@@ -130,28 +130,6 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
                 rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), DELETE_HOLD).isEmpty());
     }
 
-    /**
-     * Given a hold is deleted
-     * When I view the audit log as an user with no Read permissions over the deleted hold
-     * Then the delete hold entry isn't visible
-     */
-    @Test
-    public void deleteHoldAuditEntryNotVisible()
-    {
-        STEP("Create a new hold.");
-        String holdRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON,
-                HOLD_DESCRIPTION);
-
-        rmAuditService.clearAuditLog();
-
-        STEP("Delete the created hold.");
-        holdsAPI.deleteHold(rmAdmin, holdRef);
-
-        STEP("Check that an user with no Read permissions over the hold can't see the entry for the delete hold event.");
-        assertTrue("The list of events should not contain Delete Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(rmManager, DELETE_HOLD).isEmpty());
-    }
-
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditDeleteHoldTests()
     {

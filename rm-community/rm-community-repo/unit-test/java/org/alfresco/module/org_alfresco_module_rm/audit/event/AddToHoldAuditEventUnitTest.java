@@ -87,6 +87,6 @@ public class AddToHoldAuditEventUnitTest extends BaseUnitTest
     public void testAddToHoldCausesAuditEvent()
     {
         addToHoldAuditEvent.onAddToHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), isNull(Map.class), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), isNull(Map.class), any(Map.class), eq(true), eq(false));
     }
 }

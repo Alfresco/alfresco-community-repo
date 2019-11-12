@@ -32,6 +32,8 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.Utility.buildPath;
+import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -121,25 +123,32 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     /**
      * Data provider with valid nodes that can be added to a hold
      *
-     * @return the node id and the node name
+     * @return the node id, the node name and the node path
      * @throws Exception
      */
     @DataProvider (name = "validNodesForAddToHold")
     public Object[][] getValidNodesForAddToHold() throws Exception
     {
+        String documentLibrary = "/documentLibrary";
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
                                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         RecordCategoryChild recordFolderToBeAdded = createRecordFolder(recordCategory.getId(), PREFIX + "recFolderToBeAdded");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
+        String recordFolderPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+                recordFolderToBeAdded.getName()));
+        String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+                recordFolder.getName(), recordToBeAdded.getName()));
+        String contentPath = contentToBeAdded.getCmisLocation();
+        contentPath = contentPath.substring(contentPath.indexOf(documentLibrary));
 
         return new String[][]
         {
             // a record folder
-            { recordFolderToBeAdded.getId(), recordFolderToBeAdded.getName() },
+            { recordFolderToBeAdded.getId(), recordFolderToBeAdded.getName(), recordFolderPath },
             // a record
-            { recordToBeAdded.getId(), recordToBeAdded.getName() },
+            { recordToBeAdded.getId(), recordToBeAdded.getName(), recordPath },
             //an active content,
-            { contentToBeAdded.getNodeRefWithoutVersion(), contentToBeAdded.getName() }
+            { contentToBeAdded.getNodeRefWithoutVersion(), contentToBeAdded.getName(), contentPath }
         };
     }
 
@@ -166,9 +175,10 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      *      name of the document/record/record folder added
      *      user who added the content
      *      date the content was added
+     *      path of the node
      */
     @Test (dataProvider = "validNodesForAddToHold")
-    public void addToHoldEventIsAudited(String nodeId, String nodeName)
+    public void addToHoldEventIsAudited(String nodeId, String nodeName, String nodePath)
     {
         rmAuditService.clearAuditLog();
 
@@ -176,7 +186,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
 
         STEP("Check the audit log contains the entry for the add to hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName,
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName, nodePath,
                 asList(ImmutableMap.of("new", nodeName, "previous", "", "name", "Name"),
                         ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
     }

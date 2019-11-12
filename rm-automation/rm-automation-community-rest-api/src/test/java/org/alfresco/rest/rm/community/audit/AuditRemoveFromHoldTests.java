@@ -32,6 +32,8 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.Utility.buildPath;
+import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -137,19 +139,26 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     /**
      * Data provider with valid nodes that can be removed from a hold
      *
-     * @return the node id and the node name
+     * @return the node id, the node name and the node path
      */
     @DataProvider (name = "validNodesForRemoveFromHold")
     public Object[][] getValidNodesForRemoveFromHold()
     {
+        String documentLibrary = "/documentLibrary";
+        String recordFolderPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+                heldRecordFolder.getName()));
+        String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+                recordFolder.getName(), heldRecord.getName()));
+        String contentPath = heldContent.getCmisLocation();
+        contentPath = contentPath.substring(contentPath.indexOf(documentLibrary));
         return new String[][]
         {
             // a record folder
-            { heldRecordFolder.getId(), heldRecordFolder.getName() },
+            { heldRecordFolder.getId(), heldRecordFolder.getName(), recordFolderPath },
             // a record
-            { heldRecord.getId(), heldRecord.getName() },
+            { heldRecord.getId(), heldRecord.getName(), recordPath },
             //an active content,
-            { heldContent.getNodeRefWithoutVersion(), heldContent.getName() }
+            { heldContent.getNodeRefWithoutVersion(), heldContent.getName(), contentPath }
         };
     }
 
@@ -176,9 +185,10 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
      *      name of the document/record/record folder removed
      *      user who removed the content
      *      date the content was removed
+     *      path of the node
      */
     @Test (dataProvider = "validNodesForRemoveFromHold")
-    public void removeFromHoldEventIsAudited(String nodeId, String nodeName)
+    public void removeFromHoldEventIsAudited(String nodeId, String nodeName, String nodePath)
     {
         rmAuditService.clearAuditLog();
 
@@ -186,7 +196,7 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
         holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD3);
 
         STEP("Check the audit log contains the entry for the remove from hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, nodeName,
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, nodeName, nodePath,
                 asList(ImmutableMap.of("new", "", "previous", nodeName, "name", "Name"),
                         ImmutableMap.of("new", "", "previous", HOLD3, "name", "Hold Name")));
     }

@@ -19,6 +19,8 @@
       <property name="nodeService" ref="nodeService" />
       <property name="filePlanService" ref="filePlanService" />
       <property name="ruleService" ref="RuleService" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="freezeService" ref="FreezeService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNodeRefPathDataExtractor">

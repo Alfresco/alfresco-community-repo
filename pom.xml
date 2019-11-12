@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-remote-api</artifactId>
     <name>Alfresco Remote API</name>
-    <version>7.108-SNAPSHOT</version>
+    <version>7.107.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -37,7 +37,7 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>7.134</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>7.134.1</dependency.alfresco-repository.version>
         <dependency.alfresco-data-model.version>8.50.2</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>7.22</dependency.alfresco-core.version>
 

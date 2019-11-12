@@ -797,7 +797,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!holds.isEmpty())
         {
-            List<NodeRef> removedHolds = new ArrayList<NodeRef>();
+            List<NodeRef> removedHolds = new ArrayList<>();
             for (final NodeRef hold : holds)
             {
                 if (!isHold(hold))

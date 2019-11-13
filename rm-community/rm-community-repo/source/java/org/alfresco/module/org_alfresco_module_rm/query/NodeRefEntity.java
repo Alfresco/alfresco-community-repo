@@ -24,37 +24,54 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.List;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-
 /**
- * Records management query DAO
- * 
- * NOTE:  a place holder that can be extended later when we want to enhance performance with canned queries.
- * 
- * @author Roy Wetherall
- * @since 2.1
+ * NodeRef Entity - used by {@link RecordsManagementQueryDAOImpl}.
+ *
+ * @author Tom Page
+ * @since 2.5.0.4
  */
-public interface RecordsManagementQueryDAO
+public class NodeRefEntity
 {
-    /**
-     * Get the number of objects with the given identifier value.
-     * 
-     * Note:  this is provided as an example and is not currently used
-     * 
-     * @param identifierValue   id value
-     * @return int  count
-     */
-    int getCountRmaIdentifier(String identifierValue);
+    private String protocol;
+    private String identifier;
+    private String uuid;
 
     /**
-     * Returns a list of nodeRef for all record folders in the system
-     * that have the property recordSearchHasDispositionSchedule:true
-     * @return List of nodeRefs
+     * Default constructor.
      */
-    public List<NodeRef> getRecordFoldersWithSchedules();
+    public NodeRefEntity()
+    {
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol)
+    {
+        this.protocol = protocol;
+    }
+
+    public String getIdentifier()
+    {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier)
+    {
+        this.identifier = identifier;
+    }
+
+    public String getUuid()
+    {
+        return uuid;
+    }
+
+    public void setUuid(String uuid)
+    {
+        this.uuid = uuid;
+    }
 }

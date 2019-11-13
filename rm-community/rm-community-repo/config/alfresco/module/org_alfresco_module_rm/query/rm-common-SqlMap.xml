@@ -7,8 +7,15 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
     </parameterMap>
-    
-    <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
+
+   <resultMap id="result_NodeRefEntity" type="org.alfresco.module.org_alfresco_module_rm.query.NodeRefEntity">
+      <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String" />
+   </resultMap>
+
+
+   <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
         select
             count(*)
         from
@@ -19,5 +26,27 @@
             prop.string_value = ?
             
     </select>
-    
+
+   <!-- Get list of node ids which reference given content url query used for RMv24DispositionInheritancePatch-->
+   <select id="select_RecordFoldersWithSchedules"
+           resultMap="result_NodeRefEntity">
+         select alfs.protocol, alfs.identifier, alfn.uuid
+         from alf_node alfn,
+               alf_store alfs
+         where alfn.id in (
+           select node_id
+           from alf_node_properties
+           where qname_id = (
+               select id
+               from alf_qname
+               where local_name = 'recordSearchHasDispositionSchedule')
+               and boolean_value = true )
+           and type_qname_id = (
+               select id
+               from alf_qname
+               where local_name = 'recordFolder')
+           and alfn.store_id = alfs.id
+      </select>
+
+
 </mapper>

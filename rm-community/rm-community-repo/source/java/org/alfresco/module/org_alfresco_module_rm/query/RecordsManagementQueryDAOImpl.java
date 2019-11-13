@@ -27,11 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -45,6 +48,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
+    private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
     
     /** SQL session template */
     protected SqlSessionTemplate template;
@@ -95,6 +99,25 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         }
         
         return result;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules()
+     */
+    @Override
+    public List<NodeRef> getRecordFoldersWithSchedules()
+    {
+        List<NodeRefEntity> entities = template.selectList(SCHEDULED_FOLDERS);
+
+        List<NodeRef> results = new ArrayList<>();
+
+        // convert the entities to NodeRefs
+        for (NodeRefEntity nodeRefEntity : entities)
+        {
+            results.add(new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
+        }
+
+        return results;
     }
 
 }

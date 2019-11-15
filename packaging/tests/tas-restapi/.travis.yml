@@ -22,7 +22,7 @@ jobs:
   include:
     - stage: test
       name: "Build and test"
-      script: travis_retry mvn test
+      script: travis_retry mvn test -Dtest=ModelAssertionTest
     - stage: release
       name: "Push to Nexus"
       if: fork = false AND branch = master AND type != pull_request AND commit_message !~ /\[no-release\]/

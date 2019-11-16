@@ -62,7 +62,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                                                    implements RMPermissionModel
 {
     /** A QName to display for the hold name. */
-    public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    private static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
 
     /** Test record */
     private NodeRef record;
@@ -104,6 +104,15 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
      */
     @Override
     protected boolean isUserTest()
+    {
+        return true;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
+     */
+    @Override
+    protected boolean isCollaborationSiteTest()
     {
         return true;
     }
@@ -576,59 +585,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     /**
      * Given I have created a hold
-     * When I delete the hold and get the RM audit filter by delete hold event
-     * Then there will be an entry for the deleted hold, including the hold name
-     */
-    @org.junit.Test
-    public void testAuditForDeleteHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            final static String DELETE_HOLD_AUDIT_EVENT = "Delete Hold";
-
-            String holdName = "Hold " + GUID.generate();
-
-            NodeRef hold;
-            Map<QName, Serializable> auditEventProperties;
-
-            @Override
-            public void given()
-            {
-                rmAuditService.clearAuditLog(filePlan);
-                hold = createHold(holdName, "Reason " + GUID.generate());
-            }
-
-            @Override
-            public void when()
-            {
-                deleteHold(hold);
-                auditEventProperties = getAuditEntry(DELETE_HOLD_AUDIT_EVENT).getBeforeProperties();
-            }
-
-            @Override
-            public void then()
-            {
-                // check delete hold audit event includes the hold name
-                assertEquals("Delete Hold event does not include hold name.", holdName,
-                    auditEventProperties.get(HOLD_NAME));
-            }
-
-            @Override
-            public void after()
-            {
-                // Stop and delete all entries
-                rmAuditService.stopAuditLog(filePlan);
-                rmAuditService.clearAuditLog(filePlan);
-            }
-        });
-    }
-
-    /**
-     * Given I have created a hold
      * When I will get the RM audit filter by create hold event
      * Then there will be an entry for the created hold, including the hold name and reason
      */
-    @org.junit.Test
     public void testAuditForCreateHold()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -638,14 +597,13 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             String holdName = "Hold " + GUID.generate();
             String holdReason = "Reason " + GUID.generate();
 
-            NodeRef hold;
             Map<QName, Serializable> auditEventProperties;
 
             @Override
             public void given()
             {
                 rmAuditService.clearAuditLog(filePlan);
-                hold = createHold(holdName, holdReason);
+                utils.createHold(filePlan, holdName, holdReason);
             }
 
             @Override
@@ -677,11 +635,58 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     }
 
     /**
-     * Given I have added an item a hold
-     * When I will get the RM audit filter by add to hold event
+     * Given I have created a hold
+     * When I delete the hold and get the RM audit filter by delete hold event
+     * Then there will be an entry for the deleted hold, including the hold name
+     */
+    public void testAuditForDeleteHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String DELETE_HOLD_AUDIT_EVENT = "Delete Hold";
+
+            String holdName = "Hold " + GUID.generate();
+
+            NodeRef hold;
+            Map<QName, Serializable> auditEventProperties;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+                hold = utils.createHold(filePlan, holdName, "Reason " + GUID.generate());
+            }
+
+            @Override
+            public void when()
+            {
+                utils.deleteHold(hold);
+                auditEventProperties = getAuditEntry(DELETE_HOLD_AUDIT_EVENT).getBeforeProperties();
+            }
+
+            @Override
+            public void then()
+            {
+                // check delete hold audit event includes the hold name
+                assertEquals("Delete Hold event does not include hold name.", holdName,
+                        auditEventProperties.get(HOLD_NAME));
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+    }
+
+    /**
+     * Given I have added an item of content to a hold
+     * When I get the RM audit filter by add to hold event
      * Then there will be an entry for the item added to the hold, including both the item name and hold name
      */
-    @org.junit.Test
     public void testAuditForAddContentToHold()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -691,19 +696,14 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             String holdName = "Hold " + GUID.generate();
             NodeRef hold;
 
-            NodeRef content;
-
             Map<QName, Serializable> auditEventProperties;
 
             @Override
             public void given()
             {
                 rmAuditService.clearAuditLog(filePlan);
-
-                hold = createHold(holdName, "Reason " + GUID.generate());
-                content = utils.createRecord(rmFolder, "Record " + GUID.generate() + ".txt");
-
-                addContentToHold(hold, content);
+                hold = utils.createHold(filePlan, holdName, "Reason " + GUID.generate());
+                utils.addItemToHold(hold, dmDocument);
             }
 
             @Override
@@ -720,7 +720,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                         auditEventProperties.get(HOLD_NAME));
 
                 // check add to hold audit event includes the content name
-                String contentName = (String) nodeService.getProperty(content, PROP_NAME);
+                String contentName = (String) nodeService.getProperty(dmDocument, PROP_NAME);
                 assertEquals("Add To Hold event does not include content name.", contentName,
                         auditEventProperties.get(PROP_NAME));
             }

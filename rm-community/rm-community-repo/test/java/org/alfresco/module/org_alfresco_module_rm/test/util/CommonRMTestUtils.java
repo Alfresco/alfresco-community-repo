@@ -48,6 +48,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -65,6 +66,8 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import static org.alfresco.util.GUID.generate;
+
 /**
  * Common RM test utility methods.
  *
@@ -80,6 +83,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     private FilePlanRoleService filePlanRoleService;
     private CapabilityService capabilityService;
     private RecordService recordService;
+    private HoldService holdService;
 
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
@@ -107,6 +111,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
         recordService = (RecordService)applicationContext.getBean("RecordService");
+        holdService = (HoldService)applicationContext.getBean("HoldService");
     }
 
     /**
@@ -403,5 +408,35 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         // complete event
         actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params);
+    }
+
+    /**
+     * Helper method to create a hold.
+     * @param holdName  hold name
+     * @param holdReason hold reason
+     * @return NodeRef  hold node reference
+     */
+    public NodeRef createHold(NodeRef filePlan, String holdName, String holdReason)
+    {
+        return holdService.createHold(filePlan, holdName, holdReason, generate());
+    }
+
+    /**
+     * Helper method to delete a hold.
+     * @param nodeRef  hold node reference
+     */
+    public void deleteHold(NodeRef nodeRef)
+    {
+        holdService.deleteHold(nodeRef);
+    }
+
+    /**
+     * Util method to add content to a hold.
+     * @param holdNodeRef  hold node reference
+     * @param contentNodeRef  content node reference
+     */
+    public void addItemToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
+    {
+        holdService.addToHold(holdNodeRef, contentNodeRef);
     }
 }

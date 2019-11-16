@@ -40,6 +40,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import static org.alfresco.module.org_alfresco_module_rm.audit.event.HoldUtils.HOLD_NAME;
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 
 /**
@@ -72,7 +73,7 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
             (
                     kind = BehaviourKind.CLASS,
                     type = "rma:hold",
-                    notificationFrequency = TRANSACTION_COMMIT
+                    notificationFrequency = EVERY_EVENT
             )
     public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {

@@ -8,14 +8,14 @@
         <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
     </parameterMap>
 
-   <parameterMap id="parameter_MNT-20864_folderPatchPaging" type="map">
+   <parameterMap id="parameter_folderPatchPaging" type="map">
       <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
    </parameterMap>
 
-   <parameterMap id="parameter_MNT-20864_folderPatchCount" type="map">
+   <parameterMap id="parameter_folderPatchCount" type="map">
       <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
    </parameterMap>

@@ -52,9 +52,18 @@ public interface RecordsManagementQueryDAO
     int getCountRmaIdentifier(String identifierValue);
 
     /**
-     * Returns a list of nodeRef for all record folders in the system
+     * Returns a number of nodeRefs for record folders in the system
      * that have the property recordSearchHasDispositionSchedule:true
-     * @return List of nodeRefs
+     * (used for MNT-20864)
+     * @param start long - the first result row to return
+     * @param end long - the last result row to return
+     * @return list of node refs
      */
-    public List<NodeRef> getRecordFoldersWithSchedules();
+    public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
+
+    /**
+     * Returns the count of record folders with a schedule applied (used for MNT-20864)
+     * @return the number of record folders with a disposition schedule
+     */
+    public int getRecordFoldersWithSchedulesCount();
 }

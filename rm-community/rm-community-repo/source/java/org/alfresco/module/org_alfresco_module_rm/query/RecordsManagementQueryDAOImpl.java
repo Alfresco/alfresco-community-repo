@@ -49,7 +49,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
     private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
-    
+    private static final String SCHEDULED_FOLDERS_COUNT = "alfresco.query.rm.select_RecordFoldersWithSchedulesCount";
+
     /** SQL session template */
     protected SqlSessionTemplate template;
     
@@ -105,9 +106,16 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
      * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules()
      */
     @Override
-    public List<NodeRef> getRecordFoldersWithSchedules()
+    public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
     {
-        List<NodeRefEntity> entities = template.selectList(SCHEDULED_FOLDERS);
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        params.put("dispositionQnameId", qnameDAO.getQName(PROP_RS_HAS_DISPOITION_SCHEDULE)
+            .getFirst());
+        params.put("folderQnameId",qnameDAO.getQName(TYPE_RECORD_FOLDER).getFirst());
+        params.put("start", start);
+        params.put("end", end);
+
+        List<NodeRefEntity> entities = template.selectList(SCHEDULED_FOLDERS, params);
 
         List<NodeRef> results = new ArrayList<>();
 
@@ -118,6 +126,26 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         }
 
         return results;
+    }
+
+    public int getRecordFoldersWithSchedulesCount()
+    {
+        int result = 0;
+
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        params.put("dispositionQnameId", qnameDAO.getQName(PROP_RS_HAS_DISPOITION_SCHEDULE)
+            .getFirst());
+        params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
+            .getFirst());
+
+        Integer count = template.selectOne(SCHEDULED_FOLDERS_COUNT, params);
+
+        if (count != null)
+        {
+            result = count;
+        }
+
+        return result;
     }
 
 }

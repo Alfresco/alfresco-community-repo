@@ -954,6 +954,34 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             {
                 // Get this disposition instructions for the node
                 DispositionSchedule di = getDispositionSchedule(nodeRef);
+
+                updateNextDispositionAction(nodeRef, di);
+
+                return null;
+            }
+
+        };
+
+        AuthenticationUtil.runAsSystem(runAsWork);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     */
+    @Override
+    public void updateNextDispositionAction(final NodeRef nodeRef, final DispositionSchedule di)
+    {
+
+
+        RunAsWork<Void> runAsWork = new RunAsWork<Void>()
+        {
+            /**
+             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             */
+            @Override
+            public Void doWork()
+            {
+
                 if (di != null)
                 {
                     // Get the current action node

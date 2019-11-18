@@ -124,10 +124,10 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                             {
                                 logger.info("Checking folder: " + folder);
                             }
-                            behaviourFilter.disableBehaviour(folder);
                             DispositionSchedule schedule = dispositionService.getDispositionSchedule(folder);
                             if (schedule.isRecordLevelDisposition())
                             {
+                                behaviourFilter.disableBehaviour(folder);
                                 List<NodeRef> records = recordService.getRecords(folder);
                                 for (NodeRef record : records)
                                 {
@@ -143,8 +143,8 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                                         behaviourFilter.enableBehaviour(record);
                                     }
                                 }
+                                behaviourFilter.enableBehaviour(folder);
                             }
-                            behaviourFilter.enableBehaviour(folder);
                         }
                         return recordCount;
                     }

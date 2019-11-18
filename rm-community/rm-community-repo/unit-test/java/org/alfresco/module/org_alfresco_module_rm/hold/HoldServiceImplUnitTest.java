@@ -222,9 +222,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         when(mockedNodeService.createNode(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), any(QName.class) , eq(TYPE_HOLD), any(Map.class)))
             .thenReturn(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, holdContainer, generateQName(), hold));
 
-        // mocks for policies
-        doNothing().when(holdService).invokeBeforeCreateHold(any(), anyString(), anyString());
-        doNothing().when(holdService).invokeOnCreateHold(any());
+        mockPoliciesForCreateHold();
 
         // create hold
         NodeRef newHold = holdService.createHold(filePlan, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
@@ -312,9 +310,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void deleteHold()
     {
-        // mocks for policies
-        doNothing().when(holdService).invokeBeforeDeleteHold(any());
-        doNothing().when(holdService).invokeOnDeleteHold(any(), any());
+        mockPoliciesForDeleteHold();
 
         // delete hold
         holdService.deleteHold(hold);
@@ -597,17 +593,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test (expected = AlfrescoRuntimeException.class)
     public void testDeleteHoldThrowsExceptionForActiveContentWithoutReadPermission()
     {
-        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
-        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
-        when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
-        when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
+        List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
+
+        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
         when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.DENIED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
-        holdService.deleteHold(holdNode);
+        holdService.deleteHold(hold);
     }
 
     /**
@@ -616,15 +609,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test (expected = AlfrescoRuntimeException.class)
     public void testDeleteHoldThrowsExceptionForARecordWithoutReadPermission()
     {
-        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
         NodeRef heldContent = generateNodeRef();
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
-        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
+
+        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
         when(mockedRecordService.isRecord(heldContent)).thenThrow(new AccessDeniedException(""));
 
-        holdService.deleteHold(holdNode);
-
+        holdService.deleteHold(hold);
     }
 
     /**
@@ -633,16 +624,15 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test (expected = AlfrescoRuntimeException.class)
     public void testDeleteHoldThrowsExceptionForARecordWithoutFilePermission()
     {
-        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
         NodeRef heldContent = generateNodeRef();
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
-        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
+
+        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
         when(mockedRecordService.isRecord(heldContent)).thenReturn(true);
         when(mockedPermissionService.hasPermission(heldContent, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
-        holdService.deleteHold(holdNode);
+        holdService.deleteHold(hold);
     }
 
     /**
@@ -651,19 +641,47 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test
     public void testDeleteHoldChecksReadPermissionForActiveContent()
     {
-        NodeRef holdNode = generateNodeRef(TYPE_HOLD);
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
-        List<ChildAssociationRef> holds = new ArrayList<>(2);
-        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, holdNode, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
-        when(mockedNodeService.getChildAssocs(holdNode, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
+        List<ChildAssociationRef> holds = createListOfHoldAssociations(heldContent);
+
+        mockPoliciesForDeleteHold();
+        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(holds);
         when(mockedRecordService.isRecord(heldContent)).thenReturn(false);
         when(mockedRecordFolderService.isRecordFolder(heldContent)).thenReturn(false);
         when(mockedPermissionService.hasPermission(heldContent, PermissionService.READ)).thenReturn(AccessStatus.ALLOWED);
         when(mockedNodeService.getProperty(heldContent, ContentModel.PROP_NAME)).thenReturn("foo");
 
-        holdService.deleteHold(holdNode);
+        holdService.deleteHold(hold);
 
-        verify(mockedNodeService, times(1)).deleteNode(holdNode);
+        verify(mockedNodeService, times(1)).deleteNode(hold);
+    }
+
+    /**
+     * Helper method to create hold and associations with given content
+     */
+    private List<ChildAssociationRef> createListOfHoldAssociations(NodeRef heldContent)
+    {
+        List<ChildAssociationRef> holds = new ArrayList<>(2);
+        holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold, ASSOC_FROZEN_CONTENT, heldContent, true, 1));
+        return holds;
+    }
+
+    /**
+     * mocks policies for create hold
+     */
+    private void mockPoliciesForCreateHold()
+    {
+        doNothing().when(holdService).invokeBeforeCreateHold(any(), anyString(), anyString());
+        doNothing().when(holdService).invokeOnCreateHold(any());
+    }
+
+    /**
+     * mocks policies for delete hold
+     */
+    private void mockPoliciesForDeleteHold()
+    {
+        doNothing().when(holdService).invokeBeforeDeleteHold(any());
+        doNothing().when(holdService).invokeOnDeleteHold(any(), any());
     }
 
     /**

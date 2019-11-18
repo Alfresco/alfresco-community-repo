@@ -578,7 +578,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
             catch (AccessDeniedException ade)
             {
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR), ade);
+                throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR), ade);
             }
         }
 
@@ -592,7 +592,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 sb.append(name);
                 sb.append("'");
             }
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
+            throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
         }
 
         invokeBeforeDeleteHold(hold);

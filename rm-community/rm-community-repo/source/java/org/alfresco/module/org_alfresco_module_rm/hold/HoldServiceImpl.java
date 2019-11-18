@@ -543,7 +543,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!isHold(hold))
         {
-            throw new AlfrescoRuntimeException("Can't delete hold, becuase passed node is not a hold. (hold=" + hold.toString() + ")");
+            throw new AlfrescoRuntimeException("Can't delete hold, because passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
         List<NodeRef> held = AuthenticationUtil.runAsSystem(new RunAsWork<List<NodeRef>>()

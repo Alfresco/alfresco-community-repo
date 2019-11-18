@@ -27,10 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
+
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -38,18 +40,19 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
-
 /**
  * Delete hold audit event.
+ * This listens to the NodeServicePolicies.BeforeDeleteNodePolicy in order to cover the delete hold using nodes service
  *
  * @author Sara Aspery
  * @since 3.3
  */
 @BehaviourBean
-public class DeleteHoldAuditEvent extends AuditEvent implements HoldServicePolicies.BeforeDeleteHoldPolicy
+public class DeleteHoldAuditEvent extends AuditEvent implements NodeServicePolicies.BeforeDeleteNodePolicy
 {
-    /** Node Service */
+    /**
+     * Node Service
+     */
     private NodeService nodeService;
 
     /**
@@ -63,16 +66,15 @@ public class DeleteHoldAuditEvent extends AuditEvent implements HoldServicePolic
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy#beforeDeleteHold(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = EVERY_EVENT
-            )
-    public void beforeDeleteHold(NodeRef holdNodeRef)
+    @Behaviour (
+            kind = BehaviourKind.CLASS,
+            type = "rma:hold",
+            notificationFrequency = EVERY_EVENT
+    )
+    public void beforeDeleteNode(NodeRef holdNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
         recordsManagementAuditService.auditEvent(holdNodeRef, getName(), auditProperties, null, true, false);

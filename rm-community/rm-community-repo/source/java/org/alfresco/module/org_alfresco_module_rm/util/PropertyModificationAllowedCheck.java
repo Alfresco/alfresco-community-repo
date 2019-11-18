@@ -26,10 +26,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
 
@@ -47,60 +50,97 @@ public class PropertyModificationAllowedCheck
     private List<QName> whiteList;
 
     /**
+     * List of model URI's for which the properties can be updated
+     */
+    private List<String> editableURIs;
+
+    /**
+     * Getter for list of model URI's
+     *
+     * @return return the list of model URI's
+     */
+    private List<String> getEditableURIs()
+    {
+        return unmodifiableList(editableURIs);
+    }
+
+    /**
+     * Setter for list of model URI's
+     *
+     * @param editableURIs List<String>
+     */
+    public void setEditableURIs(List<String> editableURIs)
+    {
+        this.editableURIs = unmodifiableList(editableURIs);
+    }
+
+    /**
      * Setter for list of qnames
+     *
      * @param whiteList List<QName>
      */
     public void setWhiteList(List<QName> whiteList)
     {
-        this.whiteList = whiteList;
+        this.whiteList = unmodifiableList(whiteList);
+
     }
 
     /**
      * Compares the node properties with the requested update to make sure all potential updates are permitted
+     *
      * @param before current node properties
-     * @param after updated properties for the node
-     * @return true -  if all modified property keys are in the whitelist
+     * @param after  updated properties for the node
+     * @return true -  if all modified property keys are in the whitelist or
+     *                    in the list of model URI's for which the properties can be modified
      */
     public boolean check(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         boolean proceed = true;
-        HashSet<QName> unionKeys = new HashSet<>(before.keySet());
-        unionKeys.addAll(after.keySet());
-        for (QName key : unionKeys)
+        // Initially check for changes to existing keys and values.
+        for (final Map.Entry<QName, Serializable> entry : before.entrySet())
         {
-            //Check if property has been added or removed
-            if (!before.containsKey(key)  || !after.containsKey(key))
+            final QName key = entry.getKey();
+            final Serializable beforeValue = entry.getValue();
+            //check if property has been updated
+            final boolean modified = after.containsKey(key) && after.get(key) != null
+                    && !after.get(key).equals(beforeValue);
+
+            //check if the property has been emptied or removed
+            final boolean propertyRemovedEmptied = (after.get(key) == null && beforeValue != null)
+                                            || !after.containsKey(key);
+            if (modified || propertyRemovedEmptied)
             {
-                //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
-                if (!proceed)
-                {
-                    break;
-                }
+                proceed = allowPropertyUpdate(key);
             }
-            //Check if property emptied or empty property filled
-            if  ((before.get(key) == null && after.get(key) != null) ||
-                    (after.get(key) == null && before.get(key) != null))
+            if (!proceed)
             {
-                //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
-                if (!proceed)
-                {
-                    break;
-                }
+                return proceed;
             }
-            //If properties aren't missing or empty check equality
-            if (before.get(key) != null && after.get(key) != null && !(after.get(key).equals(before.get(key))))
+        }
+
+        // Check for new values. Record individual values and group as a single map.
+        final Set<QName> newKeys = new HashSet<>(after.keySet());
+        newKeys.removeAll(before.keySet());
+        for (final QName key : newKeys)
+        {
+            proceed = allowPropertyUpdate(key);
+            if (!proceed)
             {
-                //Property modified check to see if allowed
-                proceed = whiteList.contains(key);
-                if (!proceed)
-                {
-                    break;
-                }
+                break;
             }
         }
         return proceed;
+    }
+
+    /**
+     * Determines whether the property should be allowed to be updated or not.
+     *
+     * @param key property
+     * @return true if property update is allowed
+     */
+    private boolean allowPropertyUpdate(QName key)
+    {
+        return whiteList.contains(key) || getEditableURIs().contains(key.getNamespaceURI());
     }
 
 }

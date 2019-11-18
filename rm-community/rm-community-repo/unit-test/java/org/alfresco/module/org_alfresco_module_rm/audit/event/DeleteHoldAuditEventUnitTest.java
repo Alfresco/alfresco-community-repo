@@ -82,7 +82,7 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     @Test
     public void testDeleteHoldCausesAuditEvent()
     {
-        deleteHoldAuditEvent.beforeDeleteHold(holdNodeRef);
+        deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
         verify(mockedRecordsManagementAuditService, times(1))
             .auditEvent(eq(holdNodeRef), any(String.class), any(Map.class), isNull(Map.class), Matchers.eq(true), Matchers.eq(false));
     }

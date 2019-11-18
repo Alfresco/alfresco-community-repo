@@ -87,7 +87,7 @@ public class CreateHoldAuditEventUnitTest extends BaseUnitTest
     @Test
     public void testCreateHoldCausesAuditEvent()
     {
-        createHoldAuditEvent.onCreateHold(childAssociationRef);
+        createHoldAuditEvent.onCreateNode(childAssociationRef);
         verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(holdNodeRef), any(String.class), isNull(Map.class), any(Map.class));
     }
 }

@@ -25,6 +25,7 @@
       <property name="recordService" ref="RecordService" />
       <property name="nodeService" ref="nodeService" />
       <property name="recordsManagementQueryDAO" ref="recordsManagementQueryDAO" />
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 
 </beans>

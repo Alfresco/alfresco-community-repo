@@ -39,9 +39,7 @@ import org.alfresco.service.namespace.QName;
 import java.io.Serializable;
 import java.util.Map;
 
-import static org.alfresco.module.org_alfresco_module_rm.audit.event.HoldUtils.HOLD_NAME;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 
 /**
  * Add to hold audit event.

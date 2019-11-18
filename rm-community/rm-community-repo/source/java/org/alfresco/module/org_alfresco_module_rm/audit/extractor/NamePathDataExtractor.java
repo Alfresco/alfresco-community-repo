@@ -102,8 +102,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it either represents
-     *                      a fileplan component or is frozen
+     * @return  Returns <tt>true</tt> if the data is a NodeRef and it either represents
+     *          a fileplan component or is frozen
      */
     public boolean isSupported(Serializable data)
     {
@@ -112,7 +112,7 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
             return false;
         }
         NodeRef nodeRef = (NodeRef) data;
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
+        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
                 dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT);
     }
 
@@ -136,7 +136,7 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
 
                 for (NodeRef pathNodeRef : nodeRefPath)
                 {
-                    String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
+                    String name = (String) nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
                     sb.append("/").append(name);
                 }
             }
@@ -146,7 +146,7 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
                 Path nodeRefPath = nodeService.getPath(nodeRef);
                 sb.append(nodeRefPath.toDisplayPath(nodeService, permissionService));
                 // Get node name
-                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 sb.append("/").append(name);
             }
 

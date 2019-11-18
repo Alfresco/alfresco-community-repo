@@ -28,15 +28,19 @@
 package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_FROZEN;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -66,6 +70,8 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
 
     private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
+    private BehaviourFilter behaviourFilter;
+
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
@@ -86,6 +92,11 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
         this.recordsManagementQueryDAO = recordsManagementQueryDAO;
     }
 
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     /**
      * @see AbstractModulePatch#applyInternal()
      * <p>
@@ -94,11 +105,10 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        logger.info("********************Patch start********************");
-        int maxNode = recordsManagementQueryDAO.getRecordFoldersWithSchedulesCount();
-        logger.info("nodes to update: "+ maxNode);
+        int totalFolders = recordsManagementQueryDAO.getRecordFoldersWithSchedulesCount();
+        logger.info("Folders to update: "+ totalFolders);
 
-        for (Long i = 0L; i < maxNode; i += BATCH_SIZE)
+        for (Long i = 0L; i < totalFolders; i += BATCH_SIZE)
         {
             final Long finali = i;
             int updatedRecords = transactionService.getRetryingTransactionHelper()
@@ -107,17 +117,14 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                     public Integer execute() throws Throwable
                     {
                         int recordCount = 0;
-                        logger.info("********************Patch start********************");
-                        logger.info("********************Query start********************");
-                        logger.info(finali);
-                        logger.info(finali + BATCH_SIZE);
-                        logger.info(recordsManagementQueryDAO.getRecordFoldersWithSchedules(finali, finali + BATCH_SIZE));
                         List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(finali, finali + BATCH_SIZE);
-                        logger.info("********************Query end********************");
                         for (NodeRef folder : folders)
-
                         {
-
+                            if (LOGGER.isDebugEnabled())
+                            {
+                                logger.info("Checking folder: " + folder);
+                            }
+                            behaviourFilter.disableBehaviour(folder);
                             DispositionSchedule schedule = dispositionService.getDispositionSchedule(folder);
                             if (schedule.isRecordLevelDisposition())
                             {
@@ -126,19 +133,25 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                                 {
                                     if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
                                     {
-                                        logger.info("updating record: " + record);
+                                        if (LOGGER.isDebugEnabled())
+                                        {
+                                            logger.info("updating record: " + record);
+                                        }
+                                        behaviourFilter.disableBehaviour(record);
                                         dispositionService.updateNextDispositionAction(record, schedule);
                                         recordCount ++;
+                                        behaviourFilter.enableBehaviour(record);
                                     }
                                 }
                             }
+                            behaviourFilter.enableBehaviour(folder);
                         }
-                        logger.info("********************Patch end********************");
                         return recordCount;
                     }
                 }, false, true);
 
-            logger.info("....completed: "+ updatedRecords);
+            logger.info("Records updated: "+ updatedRecords);
+            logger.info("Updating folders: "+ finali + " to: " +(finali + BATCH_SIZE) + " of "+totalFolders);
         }
     }
 }

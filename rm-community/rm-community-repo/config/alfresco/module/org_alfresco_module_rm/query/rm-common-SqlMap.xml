@@ -15,6 +15,14 @@
       <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
    </parameterMap>
 
+   <parameterMap id="parameter_folderPatchPagingExtended" type="map">
+      <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="processed" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
+   </parameterMap>
+
    <parameterMap id="parameter_folderPatchCount" type="map">
       <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -44,20 +52,39 @@
    <select id="select_RecordFoldersWithSchedules"
            parameterMap="parameter_folderPatchPaging"
            resultMap="result_NodeRefEntity">
-      select * from (
-      select ROW_NUMBER() over (order by alfn.uuid) as rnum, alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
+      select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
       from alf_node alfn,
       alf_store alfs
       where alfn.id in (
-      select node_id
-      from alf_node_properties
-      where qname_id = ?
-      and boolean_value = true )
+         select node_id
+         from alf_node_properties
+         where qname_id = ?
+         and boolean_value = true
+         )
       and type_qname_id = ?
       and alfn.store_id = alfs.id
-      order by alfn.uuid
-      ) as foo where foo.rnum BETWEEN  ? and ?
+      and alfn.id between ? and ?
       </select>
+
+   <select id="select_RecordFoldersWithSchedulesExtended"
+           parameterMap="parameter_folderPatchPagingExtended"
+           resultMap="result_NodeRefEntity">
+      select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
+      from alf_node alfn,
+      alf_store alfs
+      where alfn.id in (
+         select node_id
+         from alf_node_properties
+         where qname_id = ?
+         and boolean_value = true
+         and node_id not in (
+            select node_id
+            from alf_node_aspects
+            where qname_id = ? ))
+      and type_qname_id = ?
+      and alfn.store_id = alfs.id
+      and alfn.id between ? and ?
+</select>
 
    <select id="select_RecordFoldersWithSchedulesCount"
            parameterMap="parameter_folderPatchCount"

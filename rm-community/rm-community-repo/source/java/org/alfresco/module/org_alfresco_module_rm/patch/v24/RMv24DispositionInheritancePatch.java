@@ -27,11 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_FROZEN;
-
+import java.io.Serializable;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -40,12 +42,17 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.*;
 
 /**
  * RM v2.4 patch that ensures that file plan root containers do not inherited rules, because this is no longer enforced
@@ -60,7 +67,7 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
 {
     private static final Log logger = LogFactory.getLog(RMv24DispositionInheritancePatch.class);
 
-    private static final long BATCH_SIZE = 5L;
+    private static final long BATCH_SIZE = 1000L;
 
     private DispositionService dispositionService;
 
@@ -71,6 +78,10 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
     private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
     private BehaviourFilter behaviourFilter;
+
+    protected QNameDAO qnameDAO;
+
+    private NodeDAO nodeDAO;
 
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -97,6 +108,16 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
         this.behaviourFilter = behaviourFilter;
     }
 
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
     /**
      * @see AbstractModulePatch#applyInternal()
      * <p>
@@ -105,10 +126,21 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        int totalFolders = recordsManagementQueryDAO.getRecordFoldersWithSchedulesCount();
-        logger.info("Folders to update: "+ totalFolders);
+        Long maxNodeId = nodeDAO.getMaxNodeId();
 
-        for (Long i = 0L; i < totalFolders; i += BATCH_SIZE)
+        //int totalFolders = recordsManagementQueryDAO.getRecordFoldersWithSchedulesCount();
+        int batchCount = 0;
+        //logger.info("Folders to update: "+ totalFolders);
+        transactionService.getRetryingTransactionHelper()
+            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+            {
+                public String execute() throws Throwable
+                {
+                    qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
+                    return null;
+                }
+            }, false, true);
+        for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
         {
             final Long finali = i;
             int updatedRecords = transactionService.getRetryingTransactionHelper()
@@ -120,6 +152,7 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                         List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(finali, finali + BATCH_SIZE);
                         for (NodeRef folder : folders)
                         {
+                            behaviourFilter.disableBehaviour(folder);
                             if (LOGGER.isDebugEnabled())
                             {
                                 logger.info("Checking folder: " + folder);
@@ -127,7 +160,6 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                             DispositionSchedule schedule = dispositionService.getDispositionSchedule(folder);
                             if (schedule.isRecordLevelDisposition())
                             {
-                                behaviourFilter.disableBehaviour(folder);
                                 List<NodeRef> records = recordService.getRecords(folder);
                                 for (NodeRef record : records)
                                 {
@@ -143,15 +175,16 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
                                         behaviourFilter.enableBehaviour(record);
                                     }
                                 }
-                                behaviourFilter.enableBehaviour(folder);
                             }
+                            nodeService.addAspect(folder, ASPECT_DISPOSITION_PROCESSED, null);
+                            behaviourFilter.enableBehaviour(folder);
                         }
                         return recordCount;
                     }
                 }, false, true);
-
+            batchCount ++;
             logger.info("Records updated: "+ updatedRecords);
-            logger.info("Updating folders: "+ finali + " to: " +(finali + BATCH_SIZE) + " of "+totalFolders);
+            logger.info("Completed batch "+ batchCount+" of "+ (Math.ceil(maxNodeId/BATCH_SIZE)+1));
         }
     }
 }

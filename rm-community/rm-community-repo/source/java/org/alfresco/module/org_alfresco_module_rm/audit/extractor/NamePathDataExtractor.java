@@ -51,7 +51,8 @@ import org.alfresco.service.cmr.security.PermissionService;
  * @see FilePlanService#getNodeRefPath(NodeRef)
  *
  * @author Derek Hulley
- * @since 3.2
+ * @author Sara Aspery
+ * @since 3.3
  */
 public final class NamePathDataExtractor extends AbstractDataExtractor
 {

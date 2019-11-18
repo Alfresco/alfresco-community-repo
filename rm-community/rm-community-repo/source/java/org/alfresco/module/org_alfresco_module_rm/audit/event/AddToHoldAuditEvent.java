@@ -27,6 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
+
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -35,11 +40,6 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.Map;
-
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
 /**
  * Add to hold audit event.
@@ -50,7 +50,9 @@ import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVE
 @BehaviourBean
 public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnAddToHoldPolicy
 {
-    /** Node Service */
+    /**
+     * Node Service
+     */
     private NodeService nodeService;
 
     /**

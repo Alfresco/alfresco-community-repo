@@ -590,7 +590,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test delete hold throws exception for failed read permission check for content
      */
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test (expected = AccessDeniedException.class)
     public void testDeleteHoldThrowsExceptionForActiveContentWithoutReadPermission()
     {
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
@@ -606,7 +606,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test delete hold throws exception for failed read permission check for records
      */
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test (expected = AccessDeniedException.class)
     public void testDeleteHoldThrowsExceptionForARecordWithoutReadPermission()
     {
         NodeRef heldContent = generateNodeRef();
@@ -621,7 +621,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test delete hold throws exception for failed file permission check for records
      */
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test (expected = AccessDeniedException.class)
     public void testDeleteHoldThrowsExceptionForARecordWithoutFilePermission()
     {
         NodeRef heldContent = generateNodeRef();

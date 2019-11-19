@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Updates Record Schedules based on Hierarchical Disposition Instructions</shortname>
+  <description><![CDATA[
+  Updates records schedules by reviewing disposition instructions defined withing the principle hierarchy.<br/>
+  URL parameter maxRecordFolders is optional, and represents the maximum number of record folders that should be processed.  If not specified maxRecordFolders will be set to 10000<br/>
+  URL parameter recordFolder is optional, and represents the nodeRef of a record folder who's records should be processed.  If specified then maxRecordFolders will be ignored.<br/>
+  ]]>
+  </description>
+  <url>/api/rm/rm-updateRecordSchedule?maxRecordFolders={maxRecordFolders?}&amp;recordFolder={recordFolder?}</url>
+  <format default="json">argument</format>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+</webscript>

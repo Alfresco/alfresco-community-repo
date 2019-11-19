@@ -345,7 +345,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                     nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
                     nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
                     actionService.executeRecordsManagementAction(record, "declareRecord");
-                } finally
+                }
+                finally
                 {
                     modelSecurityService.setEnabled(true);
                 }
@@ -368,7 +369,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 try
                 {
                     actionService.executeRecordsManagementAction(recordFolder, "closeRecordFolder");
-                } finally
+                }
+                finally
                 {
                     modelSecurityService.setEnabled(true);
                 }

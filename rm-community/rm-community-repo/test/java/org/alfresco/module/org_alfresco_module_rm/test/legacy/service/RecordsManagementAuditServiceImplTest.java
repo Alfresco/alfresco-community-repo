@@ -73,6 +73,12 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     private Date testStartTime;
 
     /**
+     * Remove from hold audit event name.
+     */
+    private static final String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
+
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setUp()
      */
     @Override
@@ -748,12 +754,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName = "Hold " + GUID.generate();
             NodeRef hold;
-
-            Map<QName, Serializable> auditEventProperties;
 
             @Override
             public void given()
@@ -772,7 +774,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public void then()
             {
-                auditEventProperties = getAuditEntry(REMOVE_FROM_HOLD_AUDIT_EVENT).getBeforeProperties();
+                Map<QName, Serializable> auditEventProperties = getAuditEntry(REMOVE_FROM_HOLD_AUDIT_EVENT).getBeforeProperties();
 
                 // check remove from hold audit event includes the hold name
                 assertEquals("Remove From Hold event does not include hold name.", holdName,
@@ -806,13 +808,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName1 = "Hold " + GUID.generate();
             String holdName2 = "Hold " + GUID.generate();
             NodeRef hold1, hold2;
-
-            List<Map<QName, Serializable>> auditEventPropertiesList;
 
             @Override
             public void given()
@@ -823,26 +821,21 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 hold2 = utils.createHold(filePlan, holdName2, "Reason " + GUID.generate());
                 utils.addItemToHold(hold1, dmDocument);
                 utils.addItemToHold(hold2, dmDocument);
-
             }
 
             @Override
             public void when()
             {
-                utils.removeItemFromHold(hold1, dmDocument);
-                utils.removeItemFromHold(hold2, dmDocument);
+                utils.removeItemsFromHolds(Arrays.asList(hold1, hold2), Arrays.asList(dmDocument));
             }
 
             @Override
             public void then()
             {
-                auditEventPropertiesList = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT)
-                        .stream()
-                        .map(RecordsManagementAuditEntry::getBeforeProperties)
-                        .collect(Collectors.toList());
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
 
-                // check remove from hold audit event exists for both records
-                assertEquals(2, auditEventPropertiesList.size());
+                // check remove from hold audit event exists for both holds
+                assertEquals(2, auditEntries.size());
             }
 
             @Override
@@ -867,12 +860,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName = "Hold " + GUID.generate();
             NodeRef hold;
-
-            List<Map<QName, Serializable>> auditEventPropertiesList;
 
             @Override
             public void given()
@@ -893,13 +882,10 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public void then()
             {
-                auditEventPropertiesList = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT)
-                        .stream()
-                        .map(RecordsManagementAuditEntry::getBeforeProperties)
-                        .collect(Collectors.toList());
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
 
-                // check remove from hold audit event exists for both records
-                assertEquals(2, auditEventPropertiesList.size());
+                // check remove from hold audit event exists for both documents
+                assertEquals(2, auditEntries.size());
             }
 
             @Override

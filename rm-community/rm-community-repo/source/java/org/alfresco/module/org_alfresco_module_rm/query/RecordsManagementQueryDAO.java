@@ -61,9 +61,4 @@ public interface RecordsManagementQueryDAO
      */
     public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
 
-    /**
-     * Returns the count of record folders with a schedule applied (used for MNT-20864)
-     * @return the number of record folders with a disposition schedule
-     */
-    public int getRecordFoldersWithSchedulesCount();
 }

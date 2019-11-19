@@ -10,22 +10,10 @@
 
    <parameterMap id="parameter_folderPatchPaging" type="map">
       <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-      <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-      <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
-      <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
-   </parameterMap>
-
-   <parameterMap id="parameter_folderPatchPagingExtended" type="map">
-      <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="processed" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
-   </parameterMap>
-
-   <parameterMap id="parameter_folderPatchCount" type="map">
-      <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-      <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
    </parameterMap>
 
    <resultMap id="result_NodeRefEntity" type="org.alfresco.module.org_alfresco_module_rm.query.NodeRefEntity">
@@ -48,26 +36,8 @@
             
     </select>
 
-   <!-- Get list of node ids which reference given content url query used for RMv24DispositionInheritancePatch-->
    <select id="select_RecordFoldersWithSchedules"
            parameterMap="parameter_folderPatchPaging"
-           resultMap="result_NodeRefEntity">
-      select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
-      from alf_node alfn,
-      alf_store alfs
-      where alfn.id in (
-         select node_id
-         from alf_node_properties
-         where qname_id = ?
-         and boolean_value = true
-         )
-      and type_qname_id = ?
-      and alfn.store_id = alfs.id
-      and alfn.id between ? and ?
-      </select>
-
-   <select id="select_RecordFoldersWithSchedulesExtended"
-           parameterMap="parameter_folderPatchPagingExtended"
            resultMap="result_NodeRefEntity">
       select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
       from alf_node alfn,
@@ -84,22 +54,6 @@
       and type_qname_id = ?
       and alfn.store_id = alfs.id
       and alfn.id between ? and ?
-</select>
-
-   <select id="select_RecordFoldersWithSchedulesCount"
-           parameterMap="parameter_folderPatchCount"
-           resultType="java.lang.Integer">
-      select count(*) from
-       alf_node alfn,
-      alf_store alfs
-      where alfn.id in (
-      select node_id
-      from alf_node_properties
-      where qname_id = ?
-      and boolean_value = true )
-      and type_qname_id = ?
-      and alfn.store_id = alfs.id
-      </select>
-
+    </select>
 
 </mapper>

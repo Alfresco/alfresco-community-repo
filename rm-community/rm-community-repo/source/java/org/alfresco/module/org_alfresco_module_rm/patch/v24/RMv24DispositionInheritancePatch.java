@@ -27,18 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
-import java.io.Serializable;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_PROCESSED;
 
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -48,20 +43,11 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.*;
-
 /**
- * RM v2.4 patch that ensures that file plan root containers do not inherited rules, because this is no longer enforced
- * in the service code anymore.
- * <p>
- * See https://issues.alfresco.com/jira/browse/RM-3154
- *
- * @author Roy Wetherall
- * @since 2.4
+ * 
  */
 public class RMv24DispositionInheritancePatch extends AbstractModulePatch
 {
@@ -127,65 +113,64 @@ public class RMv24DispositionInheritancePatch extends AbstractModulePatch
     public void applyInternal()
     {
         Long maxNodeId = nodeDAO.getMaxNodeId();
-
-        //int totalFolders = recordsManagementQueryDAO.getRecordFoldersWithSchedulesCount();
         int batchCount = 0;
-        //logger.info("Folders to update: "+ totalFolders);
-        transactionService.getRetryingTransactionHelper()
-            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
-            {
-                public String execute() throws Throwable
-                {
-                    qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
-                    return null;
-                }
-            }, false, true);
+
+        qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
+        
         for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
         {
-            final Long finali = i;
-            int updatedRecords = transactionService.getRetryingTransactionHelper()
-                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
-                {
-                    public Integer execute() throws Throwable
-                    {
-                        int recordCount = 0;
-                        List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(finali, finali + BATCH_SIZE);
-                        for (NodeRef folder : folders)
-                        {
-                            behaviourFilter.disableBehaviour(folder);
-                            if (LOGGER.isDebugEnabled())
-                            {
-                                logger.info("Checking folder: " + folder);
-                            }
-                            DispositionSchedule schedule = dispositionService.getDispositionSchedule(folder);
-                            if (schedule.isRecordLevelDisposition())
-                            {
-                                List<NodeRef> records = recordService.getRecords(folder);
-                                for (NodeRef record : records)
-                                {
-                                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
-                                    {
-                                        if (LOGGER.isDebugEnabled())
-                                        {
-                                            logger.info("updating record: " + record);
-                                        }
-                                        behaviourFilter.disableBehaviour(record);
-                                        dispositionService.updateNextDispositionAction(record, schedule);
-                                        recordCount ++;
-                                        behaviourFilter.enableBehaviour(record);
-                                    }
-                                }
-                            }
-                            nodeService.addAspect(folder, ASPECT_DISPOSITION_PROCESSED, null);
-                            behaviourFilter.enableBehaviour(folder);
-                        }
-                        return recordCount;
-                    }
-                }, false, true);
+            int updatedRecords = 0;
+            List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(i, i + BATCH_SIZE);
+            for (NodeRef folder : folders)
+            {
+            	updatedRecords = updatedRecords + updateRecordFolder(folder);
+            }
+
             batchCount ++;
             logger.info("Records updated: "+ updatedRecords);
             logger.info("Completed batch "+ batchCount+" of "+ (Math.ceil(maxNodeId/BATCH_SIZE)+1));
         }
+    }
+    
+    private int updateRecordFolder(final NodeRef recordFolder) 
+    {
+    	return transactionService.getRetryingTransactionHelper()
+	    	.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+		{
+	        public Integer execute() throws Throwable
+	        {   
+	        	int recordCount = 0;
+	        	
+	            behaviourFilter.disableBehaviour(recordFolder);
+	            if (LOGGER.isDebugEnabled())
+	            {
+	                logger.info("Checking folder: " + recordFolder);
+	            }
+	            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
+	            if (schedule.isRecordLevelDisposition())
+	            {
+	                List<NodeRef> records = recordService.getRecords(recordFolder);
+	                for (NodeRef record : records)
+	                {
+	                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
+	                    {
+	                        if (LOGGER.isDebugEnabled())
+	                        {
+	                            logger.info("updating record: " + record);
+	                        }
+	                        behaviourFilter.disableBehaviour(record);
+	                        dispositionService.updateNextDispositionAction(record, schedule);
+	                        recordCount ++;
+	                        behaviourFilter.enableBehaviour(record);
+	                    }
+	                }
+	            }
+	            nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
+	            behaviourFilter.enableBehaviour(recordFolder);
+	            
+	            return recordCount;
+	        }
+		}, false, true);
     }
 }
 

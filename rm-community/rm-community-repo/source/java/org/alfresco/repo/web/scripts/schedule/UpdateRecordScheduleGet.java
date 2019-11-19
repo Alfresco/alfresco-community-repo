@@ -154,10 +154,20 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     protected Map<String, Object> buildModel(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         Map<String, Object> model = new HashMap<String, Object>();
-    
+        transactionService.getRetryingTransactionHelper()
+            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
+            {
+                public String execute() throws Throwable
+                {
+                    qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
+                    return null;
+                }
+
+            },false,true);
+
         int maxRecordFolders = getMaxRecordFolders(req);
         NodeRef recordFolder = getRecordFolder(req);
-        
+
         int processedRecords = 0;
         
         if (recordFolder != null)
@@ -170,9 +180,6 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
         	int processedRecordFolders = 0;
         	int queryBatchSize = 10000;
         	Long maxNodeId = nodeDAO.getMaxNodeId();
-        	
-        	qnameDAO.getOrCreateQName(ASPECT_DISPOSITION_PROCESSED);
-        	
         	for (Long i = 0L; i < maxNodeId; i += queryBatchSize)
             {
                 List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(i, i + queryBatchSize);

@@ -343,18 +343,15 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, record);
         verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(2)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService).auditEvent(eq(record), anyString());
 
         holdService.addToHold(hold, activeContent);
         verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
 
     @SuppressWarnings("unchecked")
@@ -368,13 +365,11 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, activeContent);
 
         verify(mockedNodeService, never()).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(activeContent), anyString());
     }
 
     @SuppressWarnings("unchecked")
@@ -392,12 +387,10 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, activeContent);
         verify(mockedNodeService).addChild(hold, activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, never()).addAspect(eq(activeContent), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService).auditEvent(eq(activeContent), anyString());
     }
 
     @Test (expected = AccessDeniedException.class)
@@ -463,7 +456,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).addChild(hold2, recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
         verify(mockedNodeService, times(1)).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(1)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-        verify(mockedRecordsManagementAuditService, times(2)).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test (expected = IntegrityException.class)

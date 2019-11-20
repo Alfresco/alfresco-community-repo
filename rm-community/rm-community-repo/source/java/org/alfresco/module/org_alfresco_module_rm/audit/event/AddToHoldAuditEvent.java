@@ -27,6 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
+
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -35,11 +40,6 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.Map;
-
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 
 /**
  * Add to hold audit event.
@@ -50,7 +50,9 @@ import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTI
 @BehaviourBean
 public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnAddToHoldPolicy
 {
-    /** Node Service */
+    /**
+     * Node Service
+     */
     private NodeService nodeService;
 
     /**
@@ -71,13 +73,13 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
             (
                     kind = BehaviourKind.CLASS,
                     type = "rma:hold",
-                    notificationFrequency = TRANSACTION_COMMIT
+                    notificationFrequency = EVERY_EVENT
             )
     public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
         auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
 
-        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), null, auditProperties);
+        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), null, auditProperties, true, false);
     }
 }

@@ -149,8 +149,8 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
                 heldRecordFolder.getName()));
         String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
                 recordFolder.getName(), heldRecord.getName()));
-        String contentPath = heldContent.getCmisLocation();
-        contentPath = contentPath.substring(contentPath.indexOf(documentLibrary));
+        String contentPath = "/Company Home" + heldContent.getCmisLocation();
+
         return new String[][]
         {
             // a record folder
@@ -295,10 +295,10 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
                 auditEntries.size());
         assertTrue("The hold name value for the first remove from hold is not audited.",
                 auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD1, "name", "Hold Name")))));
+                        ImmutableMap.of("new", "", "previous", HOLD1, "name", "Hold Name"))));
         assertTrue("The hold name value for the second remove from hold is not audited.",
                 auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name")))));
+                        ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name"))));
     }
 
     /**

@@ -138,8 +138,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
                 recordFolderToBeAdded.getName()));
         String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
                 recordFolder.getName(), recordToBeAdded.getName()));
-        String contentPath = contentToBeAdded.getCmisLocation();
-        contentPath = contentPath.substring(contentPath.indexOf(documentLibrary));
+        String contentPath = "/Company Home" + contentToBeAdded.getCmisLocation();
 
         return new String[][]
         {
@@ -262,10 +261,10 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         assertEquals("The list of events should contain Add to Hold entries for both holds", 2, auditEntries.size());
         assertTrue("The hold name value for the first add to hold is not audited.",
                 auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")))));
+                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name"))));
         assertTrue("The hold name value for the second add to hold is not audited.",
                 auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        Collections.singletonList(ImmutableMap.of("new", HOLD2, "previous", "", "name", "Hold Name")))));
+                        ImmutableMap.of("new", HOLD2, "previous", "", "name", "Hold Name"))));
     }
 
     /**

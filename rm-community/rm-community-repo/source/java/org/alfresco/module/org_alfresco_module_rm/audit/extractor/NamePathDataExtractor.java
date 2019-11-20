@@ -35,25 +35,33 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * An extractor that extracts the <b>cm:name</b> path from the RM root down to
  * - and including - the node's own name.  This will only extract data if the
- * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
+ * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}
+ * or is a subtype of content.
  *
  * @see FilePlanService#getNodeRefPath(NodeRef)
  *
  * @author Derek Hulley
  * @since 3.2
+ * @author Sara Aspery
+ * @since AGS 3.3
  */
-public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
+public final class NamePathDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
     private FilePlanService filePlanService;
     private RuleService ruleService;
+    private PermissionService permissionService;
+    private DictionaryService dictionaryService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -68,8 +76,8 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @param ruleService the ruleService to set
@@ -80,8 +88,24 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
+     * @param permissionService	permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    /**
+     * @param dictionaryService	dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * @return  Returns <tt>true</tt> if the data is a NodeRef and it either represents
+     *          a fileplan component or is frozen
      */
     public boolean isSupported(Serializable data)
     {
@@ -89,7 +113,9 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         {
             return false;
         }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+        NodeRef nodeRef = (NodeRef) data;
+        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
+                dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT);
     }
 
     /**
@@ -97,24 +123,33 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
      */
     public Serializable extractData(Serializable value)
     {
-        String extractedData = null;
+        String extractedData;
 
         ruleService.disableRules();
         try
         {
             NodeRef nodeRef = (NodeRef) value;
             StringBuilder sb = new StringBuilder(128);
-            
+
             if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
             {
                 // Get path from the RM root
                 List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-    
+
                 for (NodeRef pathNodeRef : nodeRefPath)
                 {
-                    String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
+                    String name = (String) nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
                     sb.append("/").append(name);
                 }
+            }
+            else if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+            {
+                // Get path from the DM root
+                Path nodeRefPath = nodeService.getPath(nodeRef);
+                sb.append(nodeRefPath.toDisplayPath(nodeService, permissionService));
+                // Get node name
+                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                sb.append("/").append(name);
             }
 
             // Done
@@ -143,9 +178,9 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         {
             return false;
         }
-        FilePlanNamePathDataExtractor that = (FilePlanNamePathDataExtractor) o;
+        NamePathDataExtractor that = (NamePathDataExtractor) o;
         return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
-            && Objects.equals(ruleService, that.ruleService);
+                && Objects.equals(ruleService, that.ruleService);
     }
 
     @Override
@@ -154,3 +189,4 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         return Objects.hash(nodeService, filePlanService, ruleService);
     }
 }
+

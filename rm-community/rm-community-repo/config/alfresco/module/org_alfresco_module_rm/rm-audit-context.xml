@@ -14,11 +14,13 @@
       <property name="filePlanRoleService" ref="filePlanRoleService" />
    </bean>
 
-   <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNamePathDataExtractor">
+   <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.NamePathDataExtractor">
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
       <property name="filePlanService" ref="filePlanService" />
       <property name="ruleService" ref="RuleService" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNodeRefPathDataExtractor">
@@ -126,5 +128,23 @@
       <property name="name" value="recordableVersionConfig"/>
       <property name="label" value="recordable-version-config"/>
    </bean>
+
+    <bean id="audit-event.createHold" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateHoldAuditEvent">
+        <property name="nodeService" ref="nodeService" />
+        <property name="name" value="Create Hold"/>
+        <property name="label" value="rm.audit.createHold"/>
+    </bean>
+
+    <bean id="audit-event.deleteHold" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeleteHoldAuditEvent">
+        <property name="nodeService" ref="nodeService" />
+        <property name="name" value="Delete Hold"/>
+        <property name="label" value="rm.audit.deleteHold"/>
+    </bean>
+
+    <bean id="audit-event.addToHold" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AddToHoldAuditEvent">
+        <property name="nodeService" ref="nodeService" />
+        <property name="name" value="Add To Hold"/>
+        <property name="label" value="rm.audit.addToHold"/>
+    </bean>
 
 </beans>

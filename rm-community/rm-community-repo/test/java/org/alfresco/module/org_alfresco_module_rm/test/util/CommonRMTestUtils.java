@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import static org.alfresco.util.GUID.generate;
+
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -72,16 +75,9 @@ import org.springframework.context.ApplicationContext;
  */
 public class CommonRMTestUtils implements RecordsManagementModel
 {
-    private DispositionService dispositionService;
-    private NodeService nodeService;
-    private ContentService contentService;
-    private RecordsManagementActionService actionService;
-    private ModelSecurityService modelSecurityService;
-    private FilePlanRoleService filePlanRoleService;
-    private CapabilityService capabilityService;
-    private RecordService recordService;
-
-    /** test values */
+    /**
+     * test values
+     */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
     public static final String DEFAULT_DISPOSITION_INSTRUCTIONS = "disposition instructions";
     public static final String DEFAULT_DISPOSITION_DESCRIPTION = "disposition action description";
@@ -91,22 +87,32 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String PERIOD_ONE_WEEK = "week|1";
     public static final String PERIOD_ONE_YEAR = "year|1";
     public static final String PERIOD_THREE_YEARS = "year|3";
+    private DispositionService dispositionService;
+    private NodeService nodeService;
+    private ContentService contentService;
+    private RecordsManagementActionService actionService;
+    private ModelSecurityService modelSecurityService;
+    private FilePlanRoleService filePlanRoleService;
+    private CapabilityService capabilityService;
+    private RecordService recordService;
+    private HoldService holdService;
 
     /**
      * Constructor
      *
-     * @param applicationContext    application context
+     * @param applicationContext application context
      */
     public CommonRMTestUtils(ApplicationContext applicationContext)
     {
-        dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-        nodeService = (NodeService)applicationContext.getBean("NodeService");
-        contentService = (ContentService)applicationContext.getBean("ContentService");
-        actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
-        modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
-        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
-        capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
-        recordService = (RecordService)applicationContext.getBean("RecordService");
+        dispositionService = (DispositionService) applicationContext.getBean("DispositionService");
+        nodeService = (NodeService) applicationContext.getBean("NodeService");
+        contentService = (ContentService) applicationContext.getBean("ContentService");
+        actionService = (RecordsManagementActionService) applicationContext.getBean("RecordsManagementActionService");
+        modelSecurityService = (ModelSecurityService) applicationContext.getBean("ModelSecurityService");
+        filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+        capabilityService = (CapabilityService) applicationContext.getBean("CapabilityService");
+        recordService = (RecordService) applicationContext.getBean("RecordService");
+        holdService = (HoldService) applicationContext.getBean("HoldService");
     }
 
     /**
@@ -123,26 +129,26 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Create test disposition schedule
      */
-   public DispositionSchedule createBasicDispositionSchedule(
-                                   NodeRef container,
-                                   String dispositionInstructions,
-                                   String dispositionAuthority,
-                                   boolean isRecordLevel,
-                                   boolean defaultDispositionActions)
-   {
-       return createDispositionSchedule(container, dispositionInstructions, dispositionAuthority, isRecordLevel, defaultDispositionActions, false);
-   }
+    public DispositionSchedule createBasicDispositionSchedule(
+            NodeRef container,
+            String dispositionInstructions,
+            String dispositionAuthority,
+            boolean isRecordLevel,
+            boolean defaultDispositionActions)
+    {
+        return createDispositionSchedule(container, dispositionInstructions, dispositionAuthority, isRecordLevel, defaultDispositionActions, false);
+    }
 
     /**
      * Create test disposition schedule
      */
     public DispositionSchedule createDispositionSchedule(
-                                    NodeRef container,
-                                    String dispositionInstructions,
-                                    String dispositionAuthority,
-                                    boolean isRecordLevel,
-                                    boolean defaultDispositionActions,
-                                    boolean extendedDispositionSchedule)
+            NodeRef container,
+            String dispositionInstructions,
+            String dispositionAuthority,
+            boolean isRecordLevel,
+            boolean defaultDispositionActions,
+            boolean extendedDispositionSchedule)
     {
         return createDispositionSchedule(
                 container,
@@ -158,13 +164,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
      * Create test disposition schedule
      */
     public DispositionSchedule createDispositionSchedule(
-                                    NodeRef container,
-                                    String dispositionInstructions,
-                                    String dispositionAuthority,
-                                    boolean isRecordLevel,
-                                    boolean defaultDispositionActions,
-                                    boolean extendedDispositionSchedule,
-                                    String defaultEvent)
+            NodeRef container,
+            String dispositionInstructions,
+            String dispositionAuthority,
+            boolean isRecordLevel,
+            boolean defaultDispositionActions,
+            boolean extendedDispositionSchedule,
+            String defaultEvent)
     {
         Map<QName, Serializable> dsProps = new HashMap<>(3);
         dsProps.put(PROP_DISPOSITION_AUTHORITY, dispositionAuthority);
@@ -180,7 +186,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
             List<String> events = new ArrayList<>(1);
             events.add(defaultEvent);
-            adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
+            adParams.put(PROP_DISPOSITION_EVENT, (Serializable) events);
 
             dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);
 
@@ -209,8 +215,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder      record folder
-     * @param name              name of record
+     * @param recordFolder record folder
+     * @param name         name of record
      * @return {@link NodeRef}  record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name)
@@ -221,9 +227,9 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder      record folder
-     * @param name              name of the record
-     * @param title             title of the record
+     * @param recordFolder record folder
+     * @param name         name of the record
+     * @param title        title of the record
      * @return {@link NodeRef}  record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, String title)
@@ -236,10 +242,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder      record folder
-     * @param name              name of record
-     * @param properties        properties of the record
-     * @param content           content of the record
+     * @param recordFolder record folder
+     * @param name         name of record
+     * @param properties   properties of the record
+     * @param content      content of the record
      * @return {@link NodeRef}  record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
@@ -259,10 +265,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder      record folder
-     * @param name              name of record
-     * @param properties        properties of the record
-     * @param content           content of the record
+     * @param recordFolder record folder
+     * @param name         name of record
+     * @param properties   properties of the record
+     * @param content      content of the record
      * @return {@link NodeRef}  record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String mimetype, InputStream content)
@@ -373,7 +379,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         }, AuthenticationUtil.getAdminUserName());
     }
 
-    public Role createRole(NodeRef filePlan, String roleName, String ... capabilityNames)
+    public Role createRole(NodeRef filePlan, String roleName, String... capabilityNames)
     {
         Set<Capability> capabilities = new HashSet<>(capabilityNames.length);
         for (String name : capabilityNames)
@@ -392,8 +398,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to complete event on disposable item
      *
-     * @param disposableItem    disposable item (record or record folder)
-     * @param eventName         event name
+     * @param disposableItem disposable item (record or record folder)
+     * @param eventName      event name
      */
     public void completeEvent(NodeRef disposableItem, String eventName)
     {
@@ -403,5 +409,38 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         // complete event
         actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params);
+    }
+
+    /**
+     * Helper method to create a hold.
+     *
+     * @param holdName   hold name
+     * @param holdReason hold reason
+     * @return NodeRef  hold node reference
+     */
+    public NodeRef createHold(NodeRef filePlan, String holdName, String holdReason)
+    {
+        return holdService.createHold(filePlan, holdName, holdReason, generate());
+    }
+
+    /**
+     * Helper method to delete a hold.
+     *
+     * @param nodeRef hold node reference
+     */
+    public void deleteHold(NodeRef nodeRef)
+    {
+        holdService.deleteHold(nodeRef);
+    }
+
+    /**
+     * Util method to add content to a hold.
+     *
+     * @param holdNodeRef    hold node reference
+     * @param contentNodeRef content node reference
+     */
+    public void addItemToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
+    {
+        holdService.addToHold(holdNodeRef, contentNodeRef);
     }
 }

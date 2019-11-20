@@ -97,6 +97,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private static final String MODEL_STATUS = "responsestatus";
     private static final String MODEL_MESSAGE = "message";
     private static final String MESSAGE_ALL_TEMPLATE = "Updated {0} records with updated disposition instructions.";
+    private static final String MESSAGE_FOLDER_TEMPLATE = "Updated records in folder {0} with updated disposition instructions.";
 
     /** services */
     private NodeService nodeService;
@@ -170,11 +171,12 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
         NodeRef recordFolder = getRecordFolder(req);
 
         int processedRecords = 0;
-        
+        String message;
         if (recordFolder != null)
         {
         	// Process the specified record folder
-        	processedRecords = processedRecords + updateRecordFolder(recordFolder);
+        	updateRecordFolder(recordFolder);
+            message = MessageFormat.format(MESSAGE_FOLDER_TEMPLATE, recordFolder);
         }
         else
         {
@@ -202,9 +204,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             		break;
             	}
             }
+            message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedRecords);
         }
-
-        String message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedRecords);
 
         model.put(MODEL_STATUS, SUCCESS_STATUS);
         model.put(MODEL_MESSAGE, message);

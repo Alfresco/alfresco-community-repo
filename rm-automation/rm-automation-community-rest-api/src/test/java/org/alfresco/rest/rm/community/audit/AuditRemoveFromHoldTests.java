@@ -286,10 +286,15 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @Test (dataProvider = "invalidUsersForRemoveFromHold")
     public void removeFromHoldAuditEntryNotVisible(UserModel user)
     {
+        STEP("Add content to a hold.");
+        FileModel heldFile = dataContent.usingAdmin().usingSite(privateSite)
+                                           .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldFile.getNodeRefWithoutVersion(), HOLD1);
+
         rmAuditService.clearAuditLog();
 
-        STEP("Remove held content from a hold.");
-        holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldContent.getNodeRefWithoutVersion(), HOLD1);
+        STEP("Remove held content from the hold.");
+        holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldFile.getNodeRefWithoutVersion(), HOLD1);
 
         STEP("Check that an user with no Read permissions can't see the entry for the remove from hold event.");
         assertTrue("The list of events should not contain Remove from Hold entry ",

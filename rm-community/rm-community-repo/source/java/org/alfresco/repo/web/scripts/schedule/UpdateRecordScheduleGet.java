@@ -63,6 +63,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -350,45 +351,56 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     	
     	return value;
     }
-    
-    private int updateRecordFolder(final NodeRef recordFolder) 
+
+    private int updateRecordFolder(final NodeRef recordFolder)
     {
-    	return transactionService.getRetryingTransactionHelper()
-	    	.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
-		{
-	        public Integer execute() throws Throwable
-	        {   
-	        	int recordCount = 0;
-	        	
-	            behaviourFilter.disableBehaviour(recordFolder);
-	            if (logger.isDebugEnabled())
-	            {
-	                logger.info("Checking folder: " + recordFolder);
-	            }
-	            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
-	            if (schedule.isRecordLevelDisposition())
-	            {
-	                List<NodeRef> records = recordService.getRecords(recordFolder);
-	                for (NodeRef record : records)
-	                {
-	                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
-	                    {
-	                        if (logger.isDebugEnabled())
-	                        {
-	                            logger.info("updating record: " + record);
-	                        }
-	                        behaviourFilter.disableBehaviour(record);
-	                        dispositionService.updateNextDispositionAction(record, schedule);
-	                        recordCount ++;
-	                        behaviourFilter.enableBehaviour(record);
-	                    }
-	                }
-	            }
-	            nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
-	            behaviourFilter.enableBehaviour(recordFolder);
-	            
-	            return recordCount;
-	        }
-		}, false, true);
+        return transactionService.getRetryingTransactionHelper()
+            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Integer>()
+            {
+                public Integer execute() throws Throwable
+                {
+                    int recordCount = 0;
+
+                    behaviourFilter.disableBehaviour(recordFolder);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.info("Checking folder: " + recordFolder);
+                    }
+                    recordCount = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Integer>()
+                    {
+                        @Override
+                        public Integer doWork() throws Exception
+                        {
+                            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
+                            int innerRecordCount = 0;
+                            if (schedule.isRecordLevelDisposition())
+                            {
+
+                                List<NodeRef> records = recordService.getRecords(recordFolder);
+                                for (NodeRef record : records)
+                                {
+                                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
+                                    {
+                                        if (logger.isDebugEnabled())
+                                        {
+                                            logger.info("updating record: " + record);
+                                        }
+                                        behaviourFilter.disableBehaviour(record);
+                                        dispositionService.updateNextDispositionAction(record, schedule);
+                                        innerRecordCount++;
+                                        behaviourFilter.enableBehaviour(record);
+
+                                    }
+                                }
+
+                            }
+                            return innerRecordCount;
+                        }
+                    });
+                    nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
+                    behaviourFilter.enableBehaviour(recordFolder);
+                    return recordCount;
+                }
+            }, false, true);
     }
 }

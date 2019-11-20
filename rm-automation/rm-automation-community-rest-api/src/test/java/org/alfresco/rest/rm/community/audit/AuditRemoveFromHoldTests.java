@@ -202,29 +202,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Given a not empty hold is deleted
-     * When I view the audit log
-     * Then an entry has been created in the audit log for each item removed from that hold
-     */
-    @Test
-    public void removeFromHoldAuditedWhenHoldIsDeleted()
-    {
-        STEP("Add a file to the hold that will be deleted");
-        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(),
-                heldContent.getNodeRefWithoutVersion(), DELETED_HOLD);
-
-        rmAuditService.clearAuditLog();
-
-        STEP("Delete the hold.");
-        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), DELETED_HOLD);
-
-        STEP("Check the audit log contains the entry for the remove from hold.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_HOLD, rmAdmin, heldContent.getName(),
-                asList(ImmutableMap.of("new", "", "previous", heldContent.getName(), "name", "Name"),
-                        ImmutableMap.of("new", "", "previous", DELETED_HOLD, "name", "Hold Name")));
-    }
-
-    /**
      * Given an unsuccessful remove from hold action
      * When I view the audit log
      * Then the remove from hold event isn't audited

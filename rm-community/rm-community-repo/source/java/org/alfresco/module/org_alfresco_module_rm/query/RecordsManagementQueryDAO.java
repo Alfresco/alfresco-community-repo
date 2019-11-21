@@ -59,6 +59,6 @@ public interface RecordsManagementQueryDAO
      * @param end long - the last result row to return
      * @return list of node refs
      */
-    public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
+    List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
 
 }

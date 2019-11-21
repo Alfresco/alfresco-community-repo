@@ -42,6 +42,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.repo.web.scripts.schedule;
 
 import java.io.IOException;
@@ -86,20 +87,26 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  */
 public class UpdateRecordScheduleGet extends AbstractWebScript implements RecordsManagementModel
 {
-    /** logger */
+    /**
+     * logger
+     */
     private static Log logger = LogFactory.getLog(UpdateRecordScheduleGet.class);
-    
-    /** parameters */
+
+    /**
+     * parameters
+     */
     private static final String PARAM_MAX_RECORD_FOLDERS = "maxRecordFolders";
     private static final String PARAM_RECORD_FOLDER = "recordFolder";
-    
-    private static final String SUCCESS_STATUS = "success";    
+
+    private static final String SUCCESS_STATUS = "success";
     private static final String MODEL_STATUS = "responsestatus";
     private static final String MODEL_MESSAGE = "message";
     private static final String MESSAGE_ALL_TEMPLATE = "Updated {0} records from {1} folders with updated disposition instructions.";
     private static final String MESSAGE_FOLDER_TEMPLATE = "Updated records in folder {0} with updated disposition instructions.";
 
-    /** services */
+    /**
+     * services
+     */
     private NodeService nodeService;
     private DispositionService dispositionService;
     private RecordService recordService;
@@ -108,54 +115,56 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private BehaviourFilter behaviourFilter;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-    
-    /** service setters */
+
+    /**
+     * service setters
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    public void setRecordsManagementQueryDAO(RecordsManagementQueryDAO recordsManagementQueryDAO) 
+    public void setRecordsManagementQueryDAO(RecordsManagementQueryDAO recordsManagementQueryDAO)
     {
-		this.recordsManagementQueryDAO = recordsManagementQueryDAO;
-	}
-    
-    public void setRecordService(RecordService recordService) 
-    {
-		this.recordService = recordService;
-	}
+        this.recordsManagementQueryDAO = recordsManagementQueryDAO;
+    }
 
-    public void setDispositionService(DispositionService dispositionService) 
+    public void setRecordService(RecordService recordService)
     {
-		this.dispositionService = dispositionService;
-	}
-    
+        this.recordService = recordService;
+    }
+
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter) 
-    {
-		this.behaviourFilter = behaviourFilter;
-	}
-    
-    public void setNodeDAO(NodeDAO nodeDAO) 
-    {
-		this.nodeDAO = nodeDAO;
-	}
 
-    public void setQnameDAO(QNameDAO qnameDAO) 
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
-		this.qnameDAO = qnameDAO;
-	}
-    
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
     /**
      * Build web script model
      */
     protected Map<String, Object> buildModel(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
         transactionService.getRetryingTransactionHelper()
             .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<String>()
             {
@@ -165,7 +174,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                     return null;
                 }
 
-            },false,true);
+            }, false, true);
 
         int maxRecordFolders = getMaxRecordFolders(req);
         NodeRef recordFolder = getRecordFolder(req);
@@ -174,35 +183,35 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
         String message;
         if (recordFolder != null)
         {
-        	// Process the specified record folder
-        	updateRecordFolder(recordFolder);
+            // Process the specified record folder
+            updateRecordFolder(recordFolder);
             message = MessageFormat.format(MESSAGE_FOLDER_TEMPLATE, recordFolder);
         }
         else
         {
-        	int processedRecordFolders = 0;
-        	int queryBatchSize = 10000;
-        	Long maxNodeId = nodeDAO.getMaxNodeId();
-        	for (Long i = 0L; i < maxNodeId; i += queryBatchSize)
+            int processedRecordFolders = 0;
+            int queryBatchSize = 10000;
+            Long maxNodeId = nodeDAO.getMaxNodeId();
+            for (Long i = 0L; i < maxNodeId; i += queryBatchSize)
             {
                 List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(i, i + queryBatchSize);
                 for (NodeRef folder : folders)
                 {
-                	processedRecords = processedRecords + updateRecordFolder(folder);
-                	processedRecordFolders++;
-                	
-                	if (processedRecordFolders >= maxRecordFolders)
-                	{
-                		// stop processing since we have meet our limit
-                		break;
-                	}
+                    processedRecords = processedRecords + updateRecordFolder(folder);
+                    processedRecordFolders++;
+
+                    if (processedRecordFolders >= maxRecordFolders)
+                    {
+                        // stop processing since we have meet our limit
+                        break;
+                    }
                 }
-                
+
                 if (processedRecordFolders >= maxRecordFolders)
-            	{
-            		// stop processing since we have meet our limit
-            		break;
-            	}
+                {
+                    // stop processing since we have meet our limit
+                    break;
+                }
             }
             message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedRecords, processedRecordFolders);
         }
@@ -227,18 +236,19 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
 
         try
         {
-            String mimetype = getContainer().getFormatRegistry().getMimeType(req.getAgent(), format);
-            if (mimetype == null) 
-            { 
+            String mimetype = getContainer().getFormatRegistry()
+                .getMimeType(req.getAgent(), format);
+            if (mimetype == null)
+            {
                 throw new WebScriptException("Web Script format '" + format + "' is not registered");
             }
 
             // construct model for script / template
             Status status = new Status();
             Cache cache = new Cache(getDescription().getRequiredCache());
-            
+
             Map<String, Object> model = buildModel(req, res);
-            
+
             if (model == null) { return; }
             model.put("status", status);
             model.put("cache", cache);
@@ -261,7 +271,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             String location = status.getLocation();
             if (location != null && location.length() > 0)
             {
-                if (logger.isDebugEnabled()) logger.debug("Setting location to " + location);
+                if (logger.isDebugEnabled())
+                    logger.debug("Setting location to " + location);
                 res.setHeader(WebScriptResponse.HEADER_LOCATION, location);
             }
 
@@ -275,12 +286,15 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             }
             if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
             {
-                if (logger.isDebugEnabled()) logger.debug("Rendering JSON callback response: content type="
-                            + Format.JAVASCRIPT.mimetype() + ", status=" + statusCode + ", callback=" + callback);
+                if (logger.isDebugEnabled())
+                    logger.debug(
+                        "Rendering JSON callback response: content type=" + Format.JAVASCRIPT.mimetype() + ", status="
+                            + statusCode + ", callback=" + callback);
 
                 // NOTE: special case for wrapping JSON results in a javascript function callback
                 res.setContentType(Format.JAVASCRIPT.mimetype() + ";charset=UTF-8");
-                res.getWriter().write((callback + "("));
+                res.getWriter()
+                    .write((callback + "("));
             }
             else
             {
@@ -296,7 +310,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
             {
                 // NOTE: special case for wrapping JSON results in a javascript function callback
-                res.getWriter().write(")");
+                res.getWriter()
+                    .write(")");
             }
         }
         catch (Throwable e)
@@ -318,7 +333,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
 
         String templatePath = getDescription().getId() + "." + format;
 
-        if (logger.isDebugEnabled()) logger.debug("Rendering template '" + templatePath + "'");
+        if (logger.isDebugEnabled())
+            logger.debug("Rendering template '" + templatePath + "'");
 
         renderTemplate(templatePath, model, writer);
     }
@@ -333,24 +349,24 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             {
                 value = Integer.parseInt(valueStr);
             }
-            catch(NumberFormatException ex)
+            catch (NumberFormatException ex)
             {
                 //do nothing here, the value will remain 0L in this case
             }
         }
         return value;
-    }    
-    
+    }
+
     protected NodeRef getRecordFolder(WebScriptRequest req)
     {
-    	String valueStr = req.getParameter(PARAM_RECORD_FOLDER);
-    	NodeRef value = null;
-    	if (StringUtils.isNotBlank(valueStr))
-    	{
-    		value = new NodeRef(valueStr);
-    	}
-    	
-    	return value;
+        String valueStr = req.getParameter(PARAM_RECORD_FOLDER);
+        NodeRef value = null;
+        if (StringUtils.isNotBlank(valueStr))
+        {
+            value = new NodeRef(valueStr);
+        }
+
+        return value;
     }
 
     private int updateRecordFolder(final NodeRef recordFolder)
@@ -382,7 +398,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                                 {
                                     if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
                                     {
-                                        if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
+                                        if (recordFolder.equals(nodeService.getPrimaryParent(record)
+                                            .getParentRef()))
                                         {
                                             if (logger.isDebugEnabled())
                                             {

@@ -1,0 +1,77 @@
+version: "3"
+
+# The acs-community-deployment project contains the product version of docker-compose.
+#
+# This version is for testing and development use. For testing and debug we need to have a more open version.
+# For remote debug we need the CATALINA_OPTS and to expose port 8000.
+
+services:
+  alfresco:
+    image: alfresco/alfresco-content-repository-community:latest
+    environment:
+      CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      JAVA_OPTS :
+        "
+        -Ddb.driver=org.postgresql.Driver
+        -Ddb.username=alfresco
+        -Ddb.password=alfresco
+        -Ddb.url=jdbc:postgresql://postgres:5432/alfresco
+        -Dsolr.host=solr6
+        -Dsolr.port=8983
+        -Dsolr.secureComms=none
+        -Dsolr.base.url=/solr
+        -Dindex.subsystem.name=solr6
+        -Dalfresco.restApi.basicAuthScheme=true
+        -Dimap.server.enabled=true
+        -Dftp.enabled=true
+        -Dftp.dataPortFrom=30000
+        -Dftp.dataPortTo=30099
+        -Dshare.host=localhost
+        -Daos.baseUrlOverwrite=http://localhost:8082/alfresco/aos
+        -Dmessaging.broker.url=\"failover:(tcp://activemq:61616)?timeout=3000&jms.useCompression=true\"
+
+        -Dlocal.transform.service.enabled=false
+        -Dlegacy.transform.service.enabled=false
+
+        -Dimap.server.port=1143
+        -Dftp.port=1221
+        -Dcors.enabled=true
+        -Dcors.allowed.origins=http://localhost:4200
+        "
+    ports:
+      - 8082:8080
+      - 8000:8000
+      - 143:1143
+      - 21:1221
+      - 30000-30099:30000-30099
+
+  postgres:
+    image: library/postgres:${POSTGRES_TAG}
+    environment:
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+      - POSTGRES_DB=alfresco
+
+  solr6:
+    image: alfresco/alfresco-search-services:${SOLR6_TAG}
+    environment:
+      #Solr needs to know how to register itself with Alfresco
+      - SOLR_ALFRESCO_HOST=alfresco
+      - SOLR_ALFRESCO_PORT=8080
+      #Alfresco needs to know how to call solr
+      - SOLR_SOLR_HOST=solr6
+      - SOLR_SOLR_PORT=8983
+      #Create the default alfresco and archive cores
+      - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
+      #HTTP by default
+      - ALFRESCO_SECURE_COMMS=none
+    ports:
+      - 8083:8983 #Browser port
+
+  activemq:
+    image: alfresco/alfresco-activemq:${ACTIVEMQ_TAG}
+    ports:
+      - 8161:8161 # Web Console
+      - 5672:5672 # AMQP
+      - 61616:61616 # OpenWire
+      - 61613:61613 # STOMP

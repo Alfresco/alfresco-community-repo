@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Tests for Test Group = sanity" verbose="1">
+   <listeners>
+		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener" />
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener" />
+   </listeners>
+
+   <test name="Tas email sanity suite">
+      <classes>
+         <class name="org.alfresco.email.imap.ImapMoveMessagesTests">
+            <methods>
+               <include name="siteManagerShouldMoveNonEmptyFile" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapMessageFlagsTests">
+            <methods>
+               <include name="siteManagerShouldSetFlagsToAContent" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapCopyFolderTests">
+            <methods>
+               <include name="adminShouldCopyNonEmptyFolder" />
+               <include name="siteManagerShouldCopyFolder" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapDeleteMessagesTests">
+            <methods>
+               <include name="adminShouldDeleteMessage" />
+               <include name="siteManagerShouldDeleteMessage" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapRenameFolderTests">
+            <methods>
+               <include name="adminShouldRenameFolder" />
+               <include name="siteManagerShouldRenameFolder" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapRenameMessagesTests">
+            <methods>
+               <include name="siteManagerShouldVerifyFileContentForRenamedFileViaImap" />
+            </methods>
+         </class>
+         <!-- <class name="org.alfresco.email.imap.ImapSearchMessagesTests">
+            <methods>
+               <include name="noResultsReturnedWhenSearchingForNotExistingMessage" />
+               <include name="searchedMessageIsReturnedWhenSearchingForFullMessageName" />
+            </methods>
+         </class> -->
+         <class name="org.alfresco.email.smtp.SmtpOverwriteDuplicatesTests">
+            <methods>
+               <include name="overwriteFileWhenOverwriteDuplicatesIsDisabled" />
+               <include name="overwriteFileWhenOverwriteDuplicatesIsEnabled" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapDeleteFolderTests">
+            <methods>
+               <include name="adminShouldDeleteFolder" />
+               <include name="siteManagerShouldDeleteNonEmptyFolder" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapReadMessagesTests">
+            <methods>
+               <include name="adminShouldGetFoldersCreatedInRepositoryViaImap" />
+               <include name="siteManagerShouldGetFileAndItsContentsViaImap" />
+               <include name="siteManagerShouldVerifyFileContent" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapConnectionTests">
+            <methods>
+               <include name="correctUserConnectsToIMAPSuccessfully" />
+               <include name="userDisconnectsFromImapServerSuccessfully" />
+               <include name="userFailsConnectToIMAPOnDifferentPort" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapCopyMessagesTests">
+            <methods>
+               <include name="siteManagerShouldCopyNonEmptyFile" />
+               <include name="siteManagerShouldCopyNonEmptyFiles" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpConnectionTests">
+            <methods>
+               <include name="adminShouldConnectToSMTP" />
+               <include name="adminShouldNotConnectToDisabledServer" />
+               <!-- <include name="updateSmtpServerPort" /> -->
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapCheckFolderTests">
+            <methods>
+               <include name="adminShouldGetCurrentWorkingDirectory" />
+               <include name="siteManagerShouldGetCurrentWorkingDirectory" />
+               <include name="siteManagerShouldGetDirectoriesListOfRoot" />
+               <include name="userShouldFindAllIMAPSitesFoldersInAlfrescoIMAPFolder" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpUnknownUserTests">
+            <methods>
+               <include name="emailSentSuccessfullyWithAnExistingUser" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpAllowedSendersTests">
+            <methods>
+               <include name="sendMailIsSuccessfulForAllowedUser" />
+               <include name="sendingMailIsSuccessfulForAllUsers" />
+               <include name="sendingMailIsSuccessfulForUsersBelongingToDomain" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapMoveFolderTests">
+            <methods>
+               <include name="adminShouldMoveNonEmptyFolder" />
+               <include name="siteManagerShouldMoveFolder" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpBlockedSendersTests">
+            <methods>
+               <include name="emailSentSuccessfullyWithUserAddedToEmailContributorsGroup" />
+               <include name="sendMailIsDeniedForAllUsers" />
+               <include name="sendMailIsDeniedForBlockedUser" />
+               <include name="sendMailIsDeniedForUsersBelongingToDomain" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.imap.ImapCreateFolderTests">
+            <methods>
+               <include name="adminCanCreateFolderInAlfrescoImapRoot" />
+               <include name="adminCanCreateFolderInSitesFolder" />
+               <include name="managerCanCreateFolderInIMAPSite" />
+               <include name="userCanCreateFolderInAlfrescoImapRootButNotDisplayedInRepo" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpDisableInboundEmailTests">
+            <methods>
+               <include name="randomUserCannotConnectWithInboundDisabled" />
+            </methods>
+         </class>
+         <class name="org.alfresco.email.smtp.SmtpFolderAliasTests">
+            <methods>
+               <include name="randomUserWithAliasFolderReceivesEmail" />
+            </methods>
+         </class>
+      </classes>
+   </test>
+</suite>

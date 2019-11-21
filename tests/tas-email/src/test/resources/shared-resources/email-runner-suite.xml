@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="EMAILProtocol" parallel="classes" preserve-order="true" thread-count="1">
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
+		<listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"></listener>
+	</listeners>	
+	<test name="EMAIL">
+		<method-selectors>
+			<!-- -DincludeGroups=sanity,comments,people -DexcludeGroups=networks,othergroup -DrunBugs=true -DupdateTestRail=true-->
+			<method-selector>
+				<script language="beanshell"><![CDATA[
+                includedGroups = System.getProperty("includeGroups");
+                excludedGroups = System.getProperty("excludeGroups");
+				runBugs = System.getProperty("runBugs");
+
+			    if((runBugs != null))
+			    {
+			     bugAnnotated = method.getAnnotation(org.alfresco.utility.report.Bug.class);
+
+			     if (bugAnnotated != null && runBugs.equals("false") )
+			     {
+			      return false;
+			     }
+			    }
+
+                if ((includedGroups == null) || (includedGroups.isEmpty())) {
+                	return false;
+                } else
+                {
+                   StringTokenizer includedGroupsList = new StringTokenizer(includedGroups, ",");
+
+					if ((excludedGroups != null)) {
+						StringTokenizer excludedGroupsList = new StringTokenizer(excludedGroups, ",");
+						while (excludedGroupsList.hasMoreTokens()) {
+						exG = excludedGroupsList.nextToken();
+						if (groups.containsKey(exG))
+						{
+							return  false;
+						}
+						}
+					}
+
+                    while (includedGroupsList.hasMoreTokens()) {
+                      grp = includedGroupsList.nextToken();
+                      if ((groups.containsKey(grp)))
+                      {
+                      	 return true;
+                      }
+                    }
+                }
+                return false;
+                ]]>
+				</script>
+			</method-selector>
+		</method-selectors>
+		<packages>
+			<package name="org.alfresco.email.*" />
+		</packages>
+	</test>
+</suite>

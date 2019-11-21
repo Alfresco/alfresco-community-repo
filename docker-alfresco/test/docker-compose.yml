@@ -54,8 +54,8 @@ services:
             - 8082:8080
             - 8000:8000
             - 143:1143
-            - "21:1221"
-            - "30000-30099:30000-30099"
+            - 21:1221
+            - 30000-30099:30000-30099
 
     alfresco-pdf-renderer:
         image: alfresco/alfresco-pdf-renderer:${TRANSFORMERS_TAG}
@@ -106,8 +106,6 @@ services:
             - POSTGRES_PASSWORD=alfresco
             - POSTGRES_USER=alfresco
             - POSTGRES_DB=alfresco
-        ports:
-            - 5432:5432
 
     solr6:
         image: alfresco/alfresco-search-services:${SOLR6_TAG}

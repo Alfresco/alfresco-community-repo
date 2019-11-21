@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="EMAIL API" preserve-order="true">
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.HtmlReportListener"></listener>
+		<listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"></listener>
+		<listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"></listener>
+	</listeners>
+
+	<test name="Sanity">
+		<groups>
+			<run>
+				<include name="sanity" />
+				<exclude name="demo"></exclude>
+				<exclude name="unit"></exclude>
+				<!-- networks is related to tenant tests -->
+				<exclude name="networks"></exclude>
+			</run>
+		</groups>
+		<packages>
+			<package name="org.alfresco.email.imap.*"></package>
+			<package name="org.alfresco.email.smtp.*"></package>
+		</packages>
+	</test>
+
+	<test name="Core">
+		<groups>
+			<run>
+				<include name="core" />
+				<exclude name="demo"></exclude>
+				<exclude name="unit"></exclude>
+				<!-- networks is related to tenant tests -->
+				<exclude name="networks"></exclude>
+			</run>
+		</groups>
+		<packages>
+			<package name="org.alfresco.email.imap.*"></package>
+			<package name="org.alfresco.email.smtp.*"></package>
+		</packages>
+	</test>
+
+	<test name="Full">
+		<groups>
+			<run>
+				<include name="full" />
+				<exclude name="demo"></exclude>
+				<exclude name="unit"></exclude>
+				<!-- networks is related to tenant tests -->
+				<exclude name="networks"></exclude>
+			</run>
+		</groups>
+		<packages>
+				<package name="org.alfresco.email.imap.*"></package>
+				<package name="org.alfresco.email.smtp.*"></package>
+		</packages>
+	</test>
+	
+	<test name="Tenant">
+		<groups>
+			<run>
+				<!-- networks is related to tenant tests -->
+				<include name="networks" />
+			</run>
+		</groups>
+		<packages>
+				<package name="org.alfresco.email.imap.*"></package>
+				<package name="org.alfresco.email.smtp.*"></package>
+		</packages>
+	</test>
+	
+
+</suite> <!-- Suite -->

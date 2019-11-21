@@ -14,10 +14,6 @@ cache:
 env:
   global:
     - VERSION_EDITION=Community
-    - DOCKER_IMAGE_TAG=latest
-    - DOCKER_IMAGE_REGISTRY=quay.io
-    - DOCKER_COMPOSE_VERSION=1.23.2
-    - ALFRESCO_IMAGE_NAME=alfresco/alfresco-content-repository-community
 
 branches:
   only:
@@ -29,13 +25,49 @@ matrix:
       # only on master and if it is not a PR
       if: fork = false AND branch = master AND type != pull_request
       install:
-        - travis_retry travis_wait 30 mvn -q install -Dbuild-number=${TRAVIS_BUILD_NUMBER} "-Dbuild-key=${TRAVIS_COMMIT}" "-Dbuild-name=${TRAVIS_BUILD_WEB_URL}" "-Dscm-path=${TRAVIS_REPO_SLUG}" "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
+        - travis_retry travis_wait 30 mvn -q install "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
       script:
         # Download the latest version of WhiteSource Unified Agent
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/raw/master/standAlone/wss-unified-agent.jar
         # Run WhiteSource Unified Agent
         - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./war
-    - name: "Build packaging"
-      install: skip
+    - name: "REST API TAS tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal+transforms.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_retry travis_wait 40 mvn install -q -Dbuild-number=${TRAVIS_BUILD_NUMBER} -Dbuild-key=${TRAVIS_COMMIT} -Dbuild-name="${TRAVIS_BUILD_WEB_URL}" -Dscm-path=${TRAVIS_REPO_SLUG} "-Dversion.edition=${VERSION_EDITION}" "-Dimage.tag=${DOCKER_IMAGE_TAG}" -Dimage.registry=${DOCKER_IMAGE_REGISTRY} -Dimage.name=${ALFRESCO_IMAGE_NAME} -Dmaven.javadoc.skip=true -PcommunityDocker
+        - travis_wait 60 mvn install -q -f tests/tas-restapi/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+    - name: "CMIS TAS tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal+transforms.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 40 mvn install -q -f tests/tas-cmis/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+    - name: "Email TAS tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 30 mvn install -q -f tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+    - name: "WebDAV TAS tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 30 mvn install -q -f tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+    - name: "Integration TAS tests"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 30 mvn install -q -f tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false

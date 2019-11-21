@@ -443,4 +443,27 @@ public class CommonRMTestUtils implements RecordsManagementModel
     {
         holdService.addToHold(holdNodeRef, contentNodeRef);
     }
+
+    /**
+     * Util method to remove content from a hold.
+     *
+     * @param holdNodeRef    hold node reference
+     * @param contentNodeRef content node reference
+     */
+    public void removeItemFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
+    {
+        holdService.removeFromHold(holdNodeRef, contentNodeRef);
+    }
+
+    /**
+     * Util method to remove items from holds.
+     *
+     * @param holdNodeRefs   the list {@link NodeRef}s of the holds
+     * @param contentNodeRef the list of items which will be removed from the given holds
+     */
+    public void removeItemsFromHolds(List<NodeRef> holdNodeRefs, List<NodeRef> contentNodeRef)
+    {
+        holdService.removeFromHolds(holdNodeRefs, contentNodeRef);
+    }
+
 }

@@ -99,9 +99,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** Logger */
     private static Log logger = LogFactory.getLog(HoldServiceImpl.class);
 
-    /** Audit event keys */
-    private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
-
     /** I18N */
     private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
     private static final String MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR = "rm.hold.generic-permission-error";
@@ -221,16 +218,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     public void init()
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_REMOVE_FROM_HOLD, "capability.RemoveFromHold.title"));
-                return null;
-            }
-        });
-
         // Register the policies
         beforeCreateHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(BeforeCreateHoldPolicy.class);
         onCreateHoldPolicyDelegate = getPolicyComponent().registerClassPolicy(OnCreateHoldPolicy.class);
@@ -832,10 +819,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         //set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(nodeRef);
                         nodeService.removeChild(hold, nodeRef);
-
-                        // audit that the node has been removed from the hold
-                        // TODO add details of the hold that the node was removed from
-                        recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
 
                         return null;
                     });

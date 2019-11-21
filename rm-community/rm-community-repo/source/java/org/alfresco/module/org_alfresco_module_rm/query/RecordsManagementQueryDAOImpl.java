@@ -103,15 +103,16 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules()
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules(Long, Long)
      */
     @Override
     public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
     {
-        Map<String, Object> params = new HashMap<String, Object>(2);
+        Map<String, Object> params = new HashMap<>(2);
         params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
             .getFirst());
-        params.put("folderQnameId",qnameDAO.getQName(TYPE_RECORD_FOLDER).getFirst());
+        params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
+            .getFirst());
         params.put("start", start);
         params.put("end", end);
 
@@ -122,7 +123,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         // convert the entities to NodeRefs
         for (NodeRefEntity nodeRefEntity : entities)
         {
-            results.add(new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
+            results.add(
+                new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
         }
 
         return results;

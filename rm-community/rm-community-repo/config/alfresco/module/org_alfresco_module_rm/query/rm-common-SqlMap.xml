@@ -39,8 +39,7 @@
            parameterMap="parameter_folderPatchPaging"
            resultMap="result_NodeRefEntity">
       select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
-      from alf_node alfn,
-      alf_store alfs
+      from alf_node alfn, alf_store alfs
       where alfn.id not in (
             select node_id
             from alf_node_aspects

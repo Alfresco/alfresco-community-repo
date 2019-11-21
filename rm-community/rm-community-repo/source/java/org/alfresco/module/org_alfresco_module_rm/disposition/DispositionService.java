@@ -240,8 +240,8 @@ public interface DispositionService
     /**
      * Updates the next disposition action
      *
-     * @param nodeRef node reference
-     * @param  DispositionSchedule the schedule to be applied
+     * @param nodeRef             node reference
+     * @param dispositionSchedule the schedule to be applied
      */
     void updateNextDispositionAction(NodeRef nodeRef, DispositionSchedule dispositionSchedule);
 

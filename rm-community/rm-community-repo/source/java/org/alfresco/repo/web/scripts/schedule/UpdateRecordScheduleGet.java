@@ -96,7 +96,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private static final String SUCCESS_STATUS = "success";    
     private static final String MODEL_STATUS = "responsestatus";
     private static final String MODEL_MESSAGE = "message";
-    private static final String MESSAGE_ALL_TEMPLATE = "Updated {0} records with updated disposition instructions.";
+    private static final String MESSAGE_ALL_TEMPLATE = "Updated {0} records from {1} folders with updated disposition instructions.";
     private static final String MESSAGE_FOLDER_TEMPLATE = "Updated records in folder {0} with updated disposition instructions.";
 
     /** services */
@@ -204,7 +204,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
             		break;
             	}
             }
-            message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedRecords);
+            message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedRecords, processedRecordFolders);
         }
 
         model.put(MODEL_STATUS, SUCCESS_STATUS);
@@ -374,7 +374,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                         {
                             DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
                             int innerRecordCount = 0;
-                            if (schedule.isRecordLevelDisposition())
+                            if (schedule != null && schedule.isRecordLevelDisposition())
                             {
 
                                 List<NodeRef> records = recordService.getRecords(recordFolder);
@@ -382,14 +382,17 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                                 {
                                     if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
                                     {
-                                        if (logger.isDebugEnabled())
+                                        if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
                                         {
-                                            logger.info("updating record: " + record);
+                                            if (logger.isDebugEnabled())
+                                            {
+                                                logger.info("updating record: " + record);
+                                            }
+                                            behaviourFilter.disableBehaviour(record);
+                                            dispositionService.updateNextDispositionAction(record, schedule);
+                                            innerRecordCount++;
+                                            behaviourFilter.enableBehaviour(record);
                                         }
-                                        behaviourFilter.disableBehaviour(record);
-                                        dispositionService.updateNextDispositionAction(record, schedule);
-                                        innerRecordCount++;
-                                        behaviourFilter.enableBehaviour(record);
 
                                     }
                                 }

@@ -109,8 +109,6 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
-        params.put("dispositionQnameId", qnameDAO.getQName(PROP_RS_HAS_DISPOITION_SCHEDULE)
-            .getFirst());
         params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
             .getFirst());
         params.put("folderQnameId",qnameDAO.getQName(TYPE_RECORD_FOLDER).getFirst());

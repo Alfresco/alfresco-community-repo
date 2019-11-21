@@ -25,19 +25,7 @@
  * #L%
  */
 
- package org.alfresco.module.org_alfresco_module_rm.audit.event;
-
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-
-import java.util.Map;
+package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -47,23 +35,38 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.Map;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.GUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
 /**
- * Unit tests for {@link DeleteHoldAuditEvent}.
+ * Unit tests for {@link RemoveFromHoldAuditEvent}.
  *
- * @author Sara Aspery
+ * @author Chris Shields
  * @since 3.3
  */
-public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
+public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
 {
     @InjectMocks
-    private DeleteHoldAuditEvent deleteHoldAuditEvent;
+    private RemoveFromHoldAuditEvent removeFromHoldAuditEvent;
 
     @Mock
     private NodeService mockedNodeService;
 
     private NodeRef holdNodeRef;
+    private NodeRef contentNodeRef;
 
-    /** Set up the mocks. */
+    /**
+     * Set up the mocks.
+     */
     @Before
     public void setUp()
     {
@@ -72,18 +75,21 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
         holdNodeRef = generateNodeRef();
         String holdName = "Hold " + GUID.generate();
 
+        contentNodeRef = generateNodeRef();
+        String contentName = "Content " + GUID.generate();
+
         when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
+        when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
     }
 
     /**
-     * Check that the delete hold event calls an audit event.
-     *
+     * Check that the remove from hold event calls an audit event.
      */
     @Test
-    public void testDeleteHoldCausesAuditEvent()
+    public void testRemoveFromHoldCausesAuditEvent()
     {
-        deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1))
-            .auditEvent(eq(holdNodeRef), any(String.class), any(Map.class), isNull(Map.class), Matchers.eq(true), Matchers.eq(false));
+        removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), any(Map.class), isNull(Map.class), eq(true));
     }
+
 }

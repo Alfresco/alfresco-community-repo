@@ -27,13 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
-
 import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -42,13 +41,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Add to hold audit event.
+ * Delete from hold audit event.
  *
- * @author Sara Aspery
+ * @author Chris Shields
  * @since 3.3
  */
 @BehaviourBean
-public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnAddToHoldPolicy
+public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnRemoveFromHoldPolicy
 {
     /**
      * Node Service
@@ -66,20 +65,20 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy#onAddToHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     @Behaviour
             (
                     kind = BehaviourKind.CLASS,
                     type = "rma:hold",
-                    notificationFrequency = EVERY_EVENT
+                    notificationFrequency = NotificationFrequency.EVERY_EVENT
             )
-    public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
+    public void onRemoveFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
         auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
 
-        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), null, auditProperties, true, false);
+        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), auditProperties, null, true);
     }
 }

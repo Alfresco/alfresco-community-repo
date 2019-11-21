@@ -361,48 +361,54 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                 public Integer execute() throws Throwable
                 {
                     int recordCount = 0;
-
-                    behaviourFilter.disableBehaviour(recordFolder);
-                    if (logger.isDebugEnabled())
+                    
+                    behaviourFilter.disableBehaviour(ASPECT_FILE_PLAN_COMPONENT);
+                    try
                     {
-                        logger.info("Checking folder: " + recordFolder);
+	                    if (logger.isDebugEnabled())
+	                    {
+	                        logger.info("Checking folder: " + recordFolder);
+	                    }
+	                    recordCount = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Integer>()
+	                    {
+	                        @Override
+	                        public Integer doWork() throws Exception
+	                        {
+	                            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
+	                            int innerRecordCount = 0;
+	                            if (schedule != null && schedule.isRecordLevelDisposition())
+	                            {
+	
+	                                List<NodeRef> records = recordService.getRecords(recordFolder);
+	                                for (NodeRef record : records)
+	                                {
+	                                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
+	                                    {
+	                                        if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
+	                                        {
+	                                            if (logger.isDebugEnabled())
+	                                            {
+	                                                logger.info("updating record: " + record);
+	                                            }
+
+	                                            // update record disposition information
+	                                            dispositionService.updateNextDispositionAction(record, schedule);
+	                                            innerRecordCount++;
+	                                        }
+	                                    }
+	                                }
+	
+	                            }
+	                            return innerRecordCount;
+	                        }
+	                    });
+	                    
+	                    nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
                     }
-                    recordCount = AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Integer>()
+                    finally
                     {
-                        @Override
-                        public Integer doWork() throws Exception
-                        {
-                            DispositionSchedule schedule = dispositionService.getDispositionSchedule(recordFolder);
-                            int innerRecordCount = 0;
-                            if (schedule != null && schedule.isRecordLevelDisposition())
-                            {
-
-                                List<NodeRef> records = recordService.getRecords(recordFolder);
-                                for (NodeRef record : records)
-                                {
-                                    if (!nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE))
-                                    {
-                                        if (recordFolder.equals(nodeService.getPrimaryParent(record).getParentRef()))
-                                        {
-                                            if (logger.isDebugEnabled())
-                                            {
-                                                logger.info("updating record: " + record);
-                                            }
-                                            behaviourFilter.disableBehaviour(record);
-                                            dispositionService.updateNextDispositionAction(record, schedule);
-                                            innerRecordCount++;
-                                            behaviourFilter.enableBehaviour(record);
-                                        }
-
-                                    }
-                                }
-
-                            }
-                            return innerRecordCount;
-                        }
-                    });
-                    nodeService.addAspect(recordFolder, ASPECT_DISPOSITION_PROCESSED, null);
-                    behaviourFilter.enableBehaviour(recordFolder);
+	                    behaviourFilter.enableBehaviour(ASPECT_FILE_PLAN_COMPONENT);
+                    }
                     return recordCount;
                 }
             }, false, true);

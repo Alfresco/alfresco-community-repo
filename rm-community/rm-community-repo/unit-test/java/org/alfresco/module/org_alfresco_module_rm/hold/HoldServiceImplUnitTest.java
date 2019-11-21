@@ -477,7 +477,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).removeChild(hold, recordFolder);
         verify(mockedNodeService, never()).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, never()).removeAspect(record, ASPECT_FROZEN);
-        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test

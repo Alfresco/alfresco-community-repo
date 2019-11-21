@@ -48,7 +48,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 /**
- * Unit tests for {@link CreateHoldAuditEvent}.
+ * Unit tests for {@link RemoveFromHoldAuditEvent}.
  *
  * @author Chris Shields
  * @since 3.3
@@ -86,7 +86,7 @@ public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
      * Check that the remove from hold event calls an audit event.
      */
     @Test
-    public void testAddToHoldCausesAuditEvent()
+    public void testRemoveFromHoldCausesAuditEvent()
     {
         removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
         verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), any(Map.class), isNull(Map.class), eq(true));

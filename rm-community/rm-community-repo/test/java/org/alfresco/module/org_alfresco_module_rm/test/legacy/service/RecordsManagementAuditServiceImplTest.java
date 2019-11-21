@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
@@ -71,6 +70,12 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     /** Test start time */
     private Date testStartTime;
+
+    /**
+     * Remove from hold audit event name.
+     */
+    private static final String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
+
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setUp()
@@ -504,8 +509,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit wuery param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(DELETE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(DELETE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Delete Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -560,8 +564,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit query param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(CREATE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(CREATE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Create Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -748,12 +751,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName = "Hold " + GUID.generate();
             NodeRef hold;
-
-            Map<QName, Serializable> auditEventProperties;
 
             @Override
             public void given()
@@ -772,7 +771,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public void then()
             {
-                auditEventProperties = getAuditEntry(REMOVE_FROM_HOLD_AUDIT_EVENT).getBeforeProperties();
+                Map<QName, Serializable> auditEventProperties = getAuditEntry(REMOVE_FROM_HOLD_AUDIT_EVENT).getBeforeProperties();
 
                 // check remove from hold audit event includes the hold name
                 assertEquals("Remove From Hold event does not include hold name.", holdName,
@@ -806,13 +805,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName1 = "Hold " + GUID.generate();
             String holdName2 = "Hold " + GUID.generate();
             NodeRef hold1, hold2;
-
-            List<Map<QName, Serializable>> auditEventPropertiesList;
 
             @Override
             public void given()
@@ -823,26 +818,21 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 hold2 = utils.createHold(filePlan, holdName2, "Reason " + GUID.generate());
                 utils.addItemToHold(hold1, dmDocument);
                 utils.addItemToHold(hold2, dmDocument);
-
             }
 
             @Override
             public void when()
             {
-                utils.removeItemFromHold(hold1, dmDocument);
-                utils.removeItemFromHold(hold2, dmDocument);
+                utils.removeItemsFromHolds(Arrays.asList(hold1, hold2), Arrays.asList(dmDocument));
             }
 
             @Override
             public void then()
             {
-                auditEventPropertiesList = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT)
-                        .stream()
-                        .map(RecordsManagementAuditEntry::getBeforeProperties)
-                        .collect(Collectors.toList());
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
 
-                // check remove from hold audit event exists for both records
-                assertEquals(2, auditEventPropertiesList.size());
+                // check remove from hold audit event exists for both holds
+                assertEquals(2, auditEntries.size());
             }
 
             @Override
@@ -867,12 +857,8 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            final static String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
-
             String holdName = "Hold " + GUID.generate();
             NodeRef hold;
-
-            List<Map<QName, Serializable>> auditEventPropertiesList;
 
             @Override
             public void given()
@@ -893,13 +879,10 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public void then()
             {
-                auditEventPropertiesList = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT)
-                        .stream()
-                        .map(RecordsManagementAuditEntry::getBeforeProperties)
-                        .collect(Collectors.toList());
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
 
-                // check remove from hold audit event exists for both records
-                assertEquals(2, auditEventPropertiesList.size());
+                // check remove from hold audit event exists for both documents
+                assertEquals(2, auditEntries.size());
             }
 
             @Override
@@ -964,13 +947,11 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     private RecordsManagementAuditEntry getAuditEntry(String auditEvent)
     {
-        // set the audit query param for the given event
-        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        params.setEvent(auditEvent);
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
 
         // get the audit entries for the given event
-        List<RecordsManagementAuditEntry> auditEntries;
-        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        List<RecordsManagementAuditEntry> auditEntries = getAuditEntryAssertOnlyOne(params);
 
         // verify we have the expected audit event
         RecordsManagementAuditEntry auditEntry = auditEntries.get(0);
@@ -980,17 +961,36 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         return auditEntry;
     }
 
+    private List<RecordsManagementAuditEntry> getAuditEntryAssertOnlyOne(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        return auditEntries;
+    }
+
     private List<RecordsManagementAuditEntry> getAuditEntries(String auditEvent)
     {
-        // set the audit query param for the given event
-        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        params.setEvent(auditEvent);
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
 
         // get the audit entries for the given event
-        List<RecordsManagementAuditEntry> auditEntries;
-        auditEntries = getAuditTrail(params, -1, ADMIN_USER);
+        List<RecordsManagementAuditEntry> auditEntries = getAllAuditEntries(params);
 
         return auditEntries;
+    }
+
+    private List<RecordsManagementAuditEntry> getAllAuditEntries(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, -1, ADMIN_USER);
+        return auditEntries;
+    }
+
+    private RecordsManagementAuditQueryParameters createAuditQueryParameters(String auditEvent)
+    {
+        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+        params.setEvent(auditEvent);
+        return params;
     }
 
 }

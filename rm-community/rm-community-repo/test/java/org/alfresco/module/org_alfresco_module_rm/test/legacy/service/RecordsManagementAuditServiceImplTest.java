@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,12 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     /** Test start time */
     private Date testStartTime;
+
+    /**
+     * Remove from hold audit event name.
+     */
+    private static final String REMOVE_FROM_HOLD_AUDIT_EVENT = "Remove From Hold";
+
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setUp()
@@ -502,8 +509,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit wuery param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(DELETE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(DELETE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Delete Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -558,8 +564,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit query param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(CREATE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(CREATE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Create Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -735,6 +740,163 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         });
     }
 
+
+    /**
+     * Given I have an item in a hold
+     * When I remove the item from the hold
+     * Then there will be an audit entry for the item removed from the hold, including both the item name and hold name
+     */
+    @org.junit.Test
+    public void testAuditForRemoveContentFromHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            String holdName = "Hold " + GUID.generate();
+            NodeRef hold;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+                hold = utils.createHold(filePlan, holdName, "Reason " + GUID.generate());
+                utils.addItemToHold(hold, dmDocument);
+            }
+
+            @Override
+            public void when()
+            {
+                utils.removeItemFromHold(hold, dmDocument);
+            }
+
+            @Override
+            public void then()
+            {
+                Map<QName, Serializable> auditEventProperties = getAuditEntry(REMOVE_FROM_HOLD_AUDIT_EVENT).getBeforeProperties();
+
+                // check remove from hold audit event includes the hold name
+                assertEquals("Remove From Hold event does not include hold name.", holdName,
+                        auditEventProperties.get(HOLD_NAME));
+
+                // check remove from hold audit event includes the content name
+                String contentName = (String) nodeService.getProperty(dmDocument, PROP_NAME);
+                assertEquals("Remove From Hold event does not include content name.", contentName,
+                        auditEventProperties.get(PROP_NAME));
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+
+    }
+
+
+    /**
+     * Given I have removed an item from multiple holds
+     * When I will get the RM audit filter by remove from hold events
+     * Then there will be entries for the item removed from each hold, including both the item name and hold name
+     */
+    @org.junit.Test
+    public void testAuditForRemoveContentFromMultipleHolds()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            String holdName1 = "Hold " + GUID.generate();
+            String holdName2 = "Hold " + GUID.generate();
+            NodeRef hold1, hold2;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+
+                hold1 = utils.createHold(filePlan, holdName1, "Reason " + GUID.generate());
+                hold2 = utils.createHold(filePlan, holdName2, "Reason " + GUID.generate());
+                utils.addItemToHold(hold1, dmDocument);
+                utils.addItemToHold(hold2, dmDocument);
+            }
+
+            @Override
+            public void when()
+            {
+                utils.removeItemsFromHolds(Arrays.asList(hold1, hold2), Arrays.asList(dmDocument));
+            }
+
+            @Override
+            public void then()
+            {
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
+
+                // check remove from hold audit event exists for both holds
+                assertEquals(2, auditEntries.size());
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+
+    }
+
+
+    /**
+     * Given I have removed items from a hold
+     * When I will get the RM audit filter by remove from hold events
+     * Then there will be entries for the items removed from the hold, including both the item name and hold name
+     */
+    @org.junit.Test
+    public void testAuditForRemoveMultipleContentFromHold()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            String holdName = "Hold " + GUID.generate();
+            NodeRef hold;
+
+            @Override
+            public void given()
+            {
+                rmAuditService.clearAuditLog(filePlan);
+
+                hold = utils.createHold(filePlan, holdName, "Reason " + GUID.generate());
+                utils.addItemToHold(hold, dmDocument);
+                utils.addItemToHold(hold, dmDocument1);
+            }
+
+            @Override
+            public void when()
+            {
+                utils.removeItemsFromHolds(Arrays.asList(hold), Arrays.asList(dmDocument, dmDocument1));
+            }
+
+            @Override
+            public void then()
+            {
+                List<RecordsManagementAuditEntry> auditEntries = getAuditEntries(REMOVE_FROM_HOLD_AUDIT_EVENT);
+
+                // check remove from hold audit event exists for both documents
+                assertEquals(2, auditEntries.size());
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+        });
+
+    }
+
+
     /** === Helper methods === */
 
     private List<RecordsManagementAuditEntry> getAuditTrail(String asUser)
@@ -785,13 +947,11 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     private RecordsManagementAuditEntry getAuditEntry(String auditEvent)
     {
-        // set the audit query param for the given event
-        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        params.setEvent(auditEvent);
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
 
         // get the audit entries for the given event
-        List<RecordsManagementAuditEntry> auditEntries;
-        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        List<RecordsManagementAuditEntry> auditEntries = getAuditEntryAssertOnlyOne(params);
 
         // verify we have the expected audit event
         RecordsManagementAuditEntry auditEntry = auditEntries.get(0);
@@ -800,4 +960,37 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         // return the properties of the audit event
         return auditEntry;
     }
+
+    private List<RecordsManagementAuditEntry> getAuditEntryAssertOnlyOne(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        return auditEntries;
+    }
+
+    private List<RecordsManagementAuditEntry> getAuditEntries(String auditEvent)
+    {
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
+
+        // get the audit entries for the given event
+        List<RecordsManagementAuditEntry> auditEntries = getAllAuditEntries(params);
+
+        return auditEntries;
+    }
+
+    private List<RecordsManagementAuditEntry> getAllAuditEntries(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, -1, ADMIN_USER);
+        return auditEntries;
+    }
+
+    private RecordsManagementAuditQueryParameters createAuditQueryParameters(String auditEvent)
+    {
+        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+        params.setEvent(auditEvent);
+        return params;
+    }
+
 }

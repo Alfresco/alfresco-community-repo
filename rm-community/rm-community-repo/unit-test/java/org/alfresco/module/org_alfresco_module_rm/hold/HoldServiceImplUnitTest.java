@@ -477,7 +477,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).removeChild(hold, recordFolder);
         verify(mockedNodeService, never()).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, never()).removeAspect(record, ASPECT_FROZEN);
-        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test
@@ -494,7 +493,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test
@@ -518,7 +516,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold2, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
-        verify(mockedRecordsManagementAuditService, times(2)).auditEvent(any(NodeRef.class), anyString());
     }
 
     @Test

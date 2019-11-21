@@ -1522,7 +1522,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 setNodeName(entry, json);
 
                 // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Delete RM Object"))
+                if (entry.getEvent().equals("Delete RM Object") || entry.getEvent().equals("Delete Hold"))
                 {
                     json.put("deleteObject", true);
                 }

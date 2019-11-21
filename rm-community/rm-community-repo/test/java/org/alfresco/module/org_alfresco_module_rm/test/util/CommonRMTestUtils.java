@@ -456,7 +456,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     }
 
     /**
-     * Util method to remove items from a holds.
+     * Util method to remove items from holds.
      *
      * @param holdNodeRefs   the list {@link NodeRef}s of the holds
      * @param contentNodeRef the list of items which will be removed from the given holds

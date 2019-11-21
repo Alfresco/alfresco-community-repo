@@ -49,7 +49,9 @@ import org.alfresco.service.namespace.QName;
 @BehaviourBean
 public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnRemoveFromHoldPolicy
 {
-    /** Node Service */
+    /**
+     * Node Service
+     */
     private NodeService nodeService;
 
     /**
@@ -63,7 +65,7 @@ public class RemoveFromHoldAuditEvent extends AuditEvent implements HoldServiceP
     }
 
     /**
-     * @see @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy#onRemoveFromHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     @Behaviour

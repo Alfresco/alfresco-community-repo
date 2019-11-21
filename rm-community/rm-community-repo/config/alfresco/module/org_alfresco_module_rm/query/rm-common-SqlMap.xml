@@ -9,7 +9,6 @@
     </parameterMap>
 
    <parameterMap id="parameter_folderPatchPaging" type="map">
-      <parameter property="dispositionQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="processed" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
       <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -42,15 +41,10 @@
       select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
       from alf_node alfn,
       alf_store alfs
-      where alfn.id in (
-         select node_id
-         from alf_node_properties
-         where qname_id = ?
-         and boolean_value = true
-         and node_id not in (
+      where alfn.id not in (
             select node_id
             from alf_node_aspects
-            where qname_id = ? ))
+            where qname_id = ? )
       and type_qname_id = ?
       and alfn.store_id = alfs.id
       and alfn.id between ? and ?

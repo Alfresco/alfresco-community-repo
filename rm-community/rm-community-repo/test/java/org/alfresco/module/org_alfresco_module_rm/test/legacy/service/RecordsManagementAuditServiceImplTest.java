@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
@@ -510,8 +509,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit wuery param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(DELETE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(DELETE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Delete Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -566,8 +564,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 // set the audit query param
-                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                params.setEvent(CREATE_USER_AUDIT_EVENT);
+                RecordsManagementAuditQueryParameters params = createAuditQueryParameters(CREATE_USER_AUDIT_EVENT);
 
                 // get the audit events for "Create Person"
                 entry = getAuditTrail(params, 1, ADMIN_USER);
@@ -950,13 +947,11 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
     private RecordsManagementAuditEntry getAuditEntry(String auditEvent)
     {
-        // set the audit query param for the given event
-        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        params.setEvent(auditEvent);
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
 
         // get the audit entries for the given event
-        List<RecordsManagementAuditEntry> auditEntries;
-        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        List<RecordsManagementAuditEntry> auditEntries = getAuditEntryAssertOnlyOne(params);
 
         // verify we have the expected audit event
         RecordsManagementAuditEntry auditEntry = auditEntries.get(0);
@@ -966,17 +961,36 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         return auditEntry;
     }
 
+    private List<RecordsManagementAuditEntry> getAuditEntryAssertOnlyOne(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, 1, ADMIN_USER);
+        return auditEntries;
+    }
+
     private List<RecordsManagementAuditEntry> getAuditEntries(String auditEvent)
     {
-        // set the audit query param for the given event
-        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-        params.setEvent(auditEvent);
+        // create the audit query parameters for the given event
+        RecordsManagementAuditQueryParameters params = createAuditQueryParameters(auditEvent);
 
         // get the audit entries for the given event
-        List<RecordsManagementAuditEntry> auditEntries;
-        auditEntries = getAuditTrail(params, -1, ADMIN_USER);
+        List<RecordsManagementAuditEntry> auditEntries = getAllAuditEntries(params);
 
         return auditEntries;
+    }
+
+    private List<RecordsManagementAuditEntry> getAllAuditEntries(RecordsManagementAuditQueryParameters params)
+    {
+        List<RecordsManagementAuditEntry> auditEntries;
+        auditEntries = getAuditTrail(params, -1, ADMIN_USER);
+        return auditEntries;
+    }
+
+    private RecordsManagementAuditQueryParameters createAuditQueryParameters(String auditEvent)
+    {
+        RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+        params.setEvent(auditEvent);
+        return params;
     }
 
 }

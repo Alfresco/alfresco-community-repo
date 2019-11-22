@@ -103,7 +103,7 @@ public abstract class BaseAPI
      */
     protected List<String> getPropertyValues(JSONObject result, String propertyName)
     {
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results = new ArrayList<>();
         try
         {
             JSONArray items = result.getJSONArray("items");
@@ -541,7 +541,6 @@ public abstract class BaseAPI
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         T request = requestType.newInstance();
 
-        HttpResponse response = null;
         JSONObject responseBody = null;
         JSONObject returnValues = null;
 
@@ -555,7 +554,7 @@ public abstract class BaseAPI
             }
             LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
             LOGGER.info("Request body: {}", requestParams);
-            response = client.execute(adminUser, adminPassword, request);
+            HttpResponse response = client.execute(adminUser, adminPassword, request);
             LOGGER.info("Response: {}", response.getStatusLine());
 
             try
@@ -587,13 +586,13 @@ public abstract class BaseAPI
                 case HttpStatus.SC_UNPROCESSABLE_ENTITY:
                     if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
                     {
-                        LOGGER.error("Request failed: " + responseBody.getString(EXCEPTION_KEY));
+                        LOGGER.error("Request failed: {}", responseBody.getString(EXCEPTION_KEY));
                         returnValues = responseBody;
                     }
                     break;
 
                 default:
-                    LOGGER.error("Request returned unexpected HTTP status " + response.getStatusLine().getStatusCode());
+                    LOGGER.error("Request returned unexpected HTTP status {}", response.getStatusLine().getStatusCode());
                     break;
             }
         }

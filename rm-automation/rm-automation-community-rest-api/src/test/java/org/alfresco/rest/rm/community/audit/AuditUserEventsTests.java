@@ -29,18 +29,17 @@ package org.alfresco.rest.rm.community.audit;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_PERSON;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.List;
+import java.util.Collections;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.audit.AuditEntry;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -52,10 +51,9 @@ import org.testng.annotations.Test;
 public class AuditUserEventsTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditUserEventsTests.class);
-
     private UserModel createUser;
     @Autowired
-    private RMAuditAPI rmAuditAPI;
+    private RMAuditService rmAuditService;
 
     /**
      * Given I have created a new user
@@ -66,30 +64,16 @@ public class AuditUserEventsTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6223")
-    public void createUserEventIsAudited() throws Exception
+    public void createUserEventIsAudited()
     {
+        rmAuditService.clearAuditLog();
         STEP("Create a new user.");
         String userName = "auditCreateUser" + PREFIX;
         createUser = getDataUser().createUser(userName);
 
-        STEP("Get the list of audit entries for the create person event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, CREATE_PERSON.event);
-
-        STEP("Check the audit log contains only the entries for the created user.");
-        assertTrue("The list of events is not filtered by " + CREATE_PERSON.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(CREATE_PERSON.eventDisplayName)));
-
-        assertTrue("The username value for the user created is not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(CREATE_PERSON.eventDisplayName))
-                            .allMatch(auditEntry -> auditEntry.getNodeName().equals(userName)));
-    }
-
-    @BeforeClass (alwaysRun = true)
-    public void cleanAuditLogs()
-    {
-        //clean audit logs
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        STEP("Check the audit log contains the entry for the created user event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_PERSON, getAdminUser(), userName,
+                Collections.singletonList(ImmutableMap.of("new", userName, "previous", "", "name", "User Name")));
     }
 
     @AfterClass (alwaysRun = true)

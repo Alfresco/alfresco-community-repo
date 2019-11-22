@@ -1620,10 +1620,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     break;
 
                 case "Delete RM Object":
-                    nodeName = entry.getNodeName();
-                    json.put("deleteObject", true);
-                    break;
-
                 case "Delete Hold":
                     nodeName = entry.getNodeName();
                     json.put("deleteObject", true);

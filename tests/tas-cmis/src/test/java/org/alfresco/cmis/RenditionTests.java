@@ -1,5 +1,6 @@
 package org.alfresco.cmis;
 
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
@@ -44,9 +45,9 @@ public class RenditionTests extends CmisTest
     public void adminShouldGetRenditionsForDocument() throws Exception
     {
         FileModel txtModel = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);
-        cmisApi.authenticateUser(dataUser.getAdminUser()).usingShared().createFile(txtModel)
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(dataUser.getAdminUser()).usingShared().createFile(txtModel)
             .then().usingResource(txtModel).assertThat().renditionIsAvailable()
-                .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisObjectNotFoundException.class})
@@ -66,9 +67,9 @@ public class RenditionTests extends CmisTest
             description = "Verify site manager can get renditions for valid Document")
     public void managerGetRenditionsForDocument() throws Exception
     {
-        cmisApi.authenticateUser(testUser)
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(testUser)
             .usingResource(testFile).assertThat().renditionIsAvailable()
-                .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -76,9 +77,9 @@ public class RenditionTests extends CmisTest
             description = "Verify site collaborator can get renditions for valid Document")
     public void collaboratorGetRenditionsForDocument() throws Exception
     {
-        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
             .usingResource(testFile).assertThat().renditionIsAvailable()
-                .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -86,9 +87,9 @@ public class RenditionTests extends CmisTest
             description = "Verify site contributor can get renditions for valid Document")
     public void contributorGetRenditionsForDocument() throws Exception
     {
-        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
             .usingResource(testFile).assertThat().renditionIsAvailable()
-                .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -96,9 +97,9 @@ public class RenditionTests extends CmisTest
             description = "Verify site consumer can get renditions for valid Document")
     public void consumerGetRenditionsForDocument() throws Exception
     {
-        cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
             .usingResource(testFile).assertThat().renditionIsAvailable()
-                .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -107,11 +108,11 @@ public class RenditionTests extends CmisTest
     public void managerGetRenditionsForCheckedOutDocument() throws Exception
     {
         FileModel checkedDoc = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, documentContent);
-        cmisApi.authenticateUser(testUser)
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(testUser)
             .usingSite(testSite).createFile(checkedDoc, VersioningState.CHECKEDOUT).assertThat().documentIsCheckedOut()
                     .usingResource(checkedDoc)
                         .assertThat().renditionIsAvailable()
-                            .assertThat().thumbnailRenditionIsAvailable();
+                            .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
@@ -119,10 +120,10 @@ public class RenditionTests extends CmisTest
             description = "Verify non invited user can get renditions in public site")
     public void nonInvitedUserGetRenditionsInPublicSite() throws Exception
     {
-        cmisApi.authenticateUser(nonInvitedUser)
+        Utility.sleep(300, 10000, () -> cmisApi.authenticateUser(nonInvitedUser)
             .usingResource(testFile)
                 .assertThat().renditionIsAvailable()
-                    .assertThat().thumbnailRenditionIsAvailable();
+                .assertThat().thumbnailRenditionIsAvailable());
     }
     
     @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions={CmisPermissionDeniedException.class, CmisUnauthorizedException.class})

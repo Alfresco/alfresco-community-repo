@@ -281,4 +281,5 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_COUNT = QName.createQName(RM_URI, "count");
 
     QName ASPECT_SAVED_SEARCH = QName.createQName(RM_URI, "savedSearch");
+    QName ASPECT_DISPOSITION_PROCESSED = QName.createQName(RM_URI, "dispositionProcessed");
 }

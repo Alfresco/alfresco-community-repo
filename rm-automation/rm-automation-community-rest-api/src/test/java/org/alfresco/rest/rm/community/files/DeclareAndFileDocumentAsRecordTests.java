@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.files;
 
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
@@ -87,7 +89,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute create-record action, because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute create-record action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
-    private final static String HOLD_NAME = "holdName";
+    private final static String HOLD_NAME = getRandomName("holdName");
     private final static String RECORD_FOLDER_NAME_WITH_SPACE = "Folder With Spaces In Name";
 
     private UserModel userFillingPermission, userReadOnlyPermission;
@@ -411,8 +413,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileToHeldRecordFolderUsingFilesAPI() throws Exception
     {
         RecordCategoryChild heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
-        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, "hold reason",
-                "hold description");
+        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
                 HOLD_NAME);
 

@@ -26,20 +26,20 @@
  */
 package org.alfresco.rest.rm.community.audit;
 
+import static java.util.Arrays.asList;
+
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_USER_GROUP;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_USER_GROUP;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.List;
+import java.util.Collections;
 
 import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.audit.AuditEntry;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.GroupModel;
 import org.alfresco.utility.model.UserModel;
@@ -57,16 +57,14 @@ import org.testng.annotations.Test;
 public class AuditGroupEventsTests extends BaseRMRestTest
 {
     @Autowired
-    private RMAuditAPI rmAuditAPI;
-
+    private RMAuditService rmAuditService;
     private GroupModel testGroup;
     private UserModel testUser;
 
     @BeforeClass (alwaysRun = true)
     public void cleanAuditLogs()
     {
-        //clean audit logs
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
+        rmAuditService.clearAuditLog();
     }
 
     /**
@@ -79,17 +77,10 @@ public class AuditGroupEventsTests extends BaseRMRestTest
     {
         testGroup = dataGroup.createRandomGroup();
 
-        STEP("Get the list of audit entries for the create group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, CREATE_USER_GROUP.event);
-
-        STEP("Check the audit log contains only the entries for the created group.");
-        assertTrue("The list of events is not filtered by " + CREATE_USER_GROUP.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(CREATE_USER_GROUP.eventDisplayName)));
-
-        assertTrue("The group name for the new group created is not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(CREATE_USER_GROUP.eventDisplayName))
-                            .anyMatch(auditEntry -> auditEntry.getNodeName().equals(testGroup.getGroupIdentifier())));
+        STEP("Check the audit log contains the entry for the created group.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
+                Collections.singletonList(ImmutableMap.of("new", testGroup.getGroupIdentifier(), "previous", "",
+                        "name", "authorityDisplayName")));
     }
 
     /**
@@ -104,19 +95,10 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         testUser = getDataUser().createRandomTestUser();
         dataGroup.usingUser(testUser).addUserToGroup(testGroup);
 
-        STEP("Get the list of audit entries for the add user to group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, ADD_TO_USER_GROUP.event);
-
-        STEP("Check the audit log contains only the entries for the add user to group event.");
-        assertTrue("The list of events is not filtered by " + ADD_TO_USER_GROUP.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(ADD_TO_USER_GROUP.eventDisplayName)));
-
-        assertTrue("The username and destination group are not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(ADD_TO_USER_GROUP.eventDisplayName))
-                            .anyMatch(auditEntry -> auditEntry.getNodeName().equals(testGroup.getGroupIdentifier())
-                                    && auditEntry.getChangedValues().contains(ImmutableMap.of("new", testUser.getUsername(), "previous", "", "name", "User Name"))
-                                    && auditEntry.getChangedValues().contains(ImmutableMap.of("new", testGroup.getGroupIdentifier(), "previous", "", "name", "Parent Group"))));
+        STEP("Check the audit log contains the entry for the add user to group event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
+                asList(ImmutableMap.of("new", testUser.getUsername(), "previous", "", "name", "User Name"),
+                        ImmutableMap.of("new", testGroup.getGroupIdentifier(), "previous", "", "name", "Parent Group")));
     }
 
     /**
@@ -132,19 +114,10 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         dataGroup.usingUser(testUser).addUserToGroup(testGroup);
         dataGroup.removeUserFromGroup(testGroup, testUser);
 
-        STEP("Get the list of audit entries for the add user to group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, REMOVE_FROM_USER_GROUP.event);
-
-        STEP("Check the audit log contains only the entries for the remove user from group event.");
-        assertTrue("The list of events is not filtered by " + REMOVE_FROM_USER_GROUP.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(REMOVE_FROM_USER_GROUP.eventDisplayName)));
-
-        assertTrue("The username and previous parent group are not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(REMOVE_FROM_USER_GROUP.eventDisplayName))
-                            .anyMatch(auditEntry -> auditEntry.getNodeName().equals(testGroup.getGroupIdentifier())
-                                    && auditEntry.getChangedValues().contains(ImmutableMap.of("new", "", "previous", testUser.getUsername(), "name", "User Name"))
-                                    && auditEntry.getChangedValues().contains(ImmutableMap.of("new", "","previous", testGroup.getGroupIdentifier(), "name", "Parent Group"))));
+        STEP("Check the audit log contains the entry for the remove user from group event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), REMOVE_FROM_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
+                asList(ImmutableMap.of("new", "", "previous", testUser.getUsername(), "name", "User Name"),
+                        ImmutableMap.of("new", "","previous", testGroup.getGroupIdentifier(), "name", "Parent Group")));
     }
 
     /**
@@ -158,17 +131,9 @@ public class AuditGroupEventsTests extends BaseRMRestTest
         testGroup = dataGroup.createRandomGroup();
         dataGroup.deleteGroup(testGroup);
 
-        STEP("Get the list of audit entries for the delete group event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, DELETE_USER_GROUP.event);
-
-        STEP("Check the audit log contains only the entries for the created group.");
-        assertTrue("The list of events is not filtered by " + DELETE_USER_GROUP.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(DELETE_USER_GROUP.eventDisplayName)));
-
-        assertTrue("The group name for the deleted group is not audited.",
-                auditEntries.stream().filter(auditEntry -> auditEntry.getEvent().equals(DELETE_USER_GROUP.eventDisplayName))
-                            .anyMatch(auditEntry -> auditEntry.getNodeName().equals(testGroup.getGroupIdentifier())
-                                    && auditEntry.getChangedValues().contains(ImmutableMap.of("new", "", "previous", testGroup.getGroupIdentifier(), "name", "authorityDisplayName"))));
+        STEP("Check the audit log contains the entry for the delete group event.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_USER_GROUP, getAdminUser(), testGroup.getGroupIdentifier(),
+                Collections.singletonList(ImmutableMap.of("new", "", "previous", testGroup.getGroupIdentifier(),
+                        "name", "authorityDisplayName")));
     }
 }

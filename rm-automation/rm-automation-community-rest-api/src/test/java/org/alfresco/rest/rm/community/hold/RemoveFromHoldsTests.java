@@ -95,12 +95,12 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
     private RoleService roleService;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForRemoveContentFromHold() throws Exception
+    public void preconditionForRemoveContentFromHold()
     {
         STEP("Create two holds.");
         holdNodeRefOne = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
                 HOLD_ONE, HOLD_REASON, HOLD_DESCRIPTION);
-        String holdNodeRefTwo = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser()
+        holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser()
                         .getUsername(), HOLD_TWO, HOLD_REASON, HOLD_DESCRIPTION);
 
         STEP("Create test files.");
@@ -265,7 +265,7 @@ public class RemoveFromHoldsTests extends BaseRMRestTest
 
         STEP("Remove node from hold with user without right permission or capability");
         String responseNoHoldPermission = holdsAPI.removeFromHoldAndGetMessage(userModel.getUsername(),
-                userModel.getPassword(), SC_INTERNAL_SERVER_ERROR, nodeIdToBeRemoved, HOLD_ONE);
+                userModel.getPassword(), SC_INTERNAL_SERVER_ERROR, nodeIdToBeRemoved, holdNodeRefOne);
         assertTrue(responseNoHoldPermission.contains(ACCESS_DENIED_ERROR_MESSAGE));
 
         STEP("Check node is frozen.");

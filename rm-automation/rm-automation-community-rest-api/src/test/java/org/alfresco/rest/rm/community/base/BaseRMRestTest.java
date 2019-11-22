@@ -616,37 +616,6 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create a test user with rm role
-     *
-     * @param userRole the rm role
-     * @return the created user model
-     */
-    protected UserModel createUserWithRMRole(String userRole)
-    {
-        UserModel rmUser = getDataUser().createRandomTestUser();
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), userRole);
-        assertStatusCode(OK);
-        return rmUser;
-    }
-
-    /**
-     * Helper method to create a test user with rm role and permissions over the record category
-     *
-     * @param userRole the rm role
-     * @param userPermission the permissions over the record category
-     * @param recordCategory the category on which user has permissions
-     * @return the created user model
-     */
-    protected UserModel createUserWithRMRoleAndCategoryPermission(String userRole, RecordCategory recordCategory,
-                                                                  UserPermissions userPermission)
-    {
-        UserModel rmUser = createUserWithRMRole(userRole);
-        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), rmUser, userPermission);
-        assertStatusCode(OK);
-        return rmUser;
-    }
-
-    /**
      * Returns search results for the given search term
      *
      * @param user

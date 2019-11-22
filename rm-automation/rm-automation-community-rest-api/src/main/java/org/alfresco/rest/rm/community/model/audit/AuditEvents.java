@@ -41,7 +41,11 @@ public enum AuditEvents
     DELETE_USER_GROUP("Delete User Group", "Delete User Group"),
     ADD_TO_USER_GROUP("Add To User Group", "Add To User Group"),
     REMOVE_FROM_USER_GROUP("Remove From User Group", "Remove From User Group"),
-    LOGIN_UNSUCCESSFUL("Login.Failure", "Login Unsuccessful");
+    LOGIN_UNSUCCESSFUL("Login.Failure", "Login Unsuccessful"),
+    CREATE_HOLD("Create Hold", "Create Hold"),
+    DELETE_HOLD("Delete Hold", "Delete Hold"),
+    ADD_TO_HOLD("Add To Hold", "Add To Hold"),
+    REMOVE_FROM_HOLD("Remove From Hold", "Remove From Hold");
 
     /** event audited */
     public final String event;

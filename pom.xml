@@ -85,7 +85,7 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
 
         <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
-        <dependency.fabric8.version>4.2.0</dependency.fabric8.version>
+        <dependency.fabric8.version>4.3.1</dependency.fabric8.version>
         <dependency.jackson.version>2.9.9</dependency.jackson.version>
         <dependency.jackson-databind.version>2.9.10</dependency.jackson-databind.version>
 

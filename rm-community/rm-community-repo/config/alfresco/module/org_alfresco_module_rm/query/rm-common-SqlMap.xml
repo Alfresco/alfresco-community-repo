@@ -7,8 +7,23 @@
         <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
     </parameterMap>
-    
-    <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
+
+   <parameterMap id="parameter_folderPatchPaging" type="map">
+      <parameter property="processed" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="folderQnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="start" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="end" jdbcType="BIGINT" javaType="java.lang.Long"/>
+   </parameterMap>
+
+   <resultMap id="result_NodeRefEntity" type="org.alfresco.module.org_alfresco_module_rm.query.NodeRefEntity">
+      <result property="row" column="row" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String" />
+   </resultMap>
+
+
+   <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
         select
             count(*)
         from
@@ -18,6 +33,21 @@
             prop.qname_id = ? and
             prop.string_value = ?
             
+    </select>
+
+
+   <select id="select_RecordFoldersWithSchedules"
+           parameterMap="parameter_folderPatchPaging"
+           resultMap="result_NodeRefEntity">
+      select alfn.id , alfs.protocol, alfs.identifier, alfn.uuid
+      from alf_node alfn, alf_store alfs
+      where alfn.id not in (
+            select node_id
+            from alf_node_aspects
+            where qname_id = ? )
+      and type_qname_id = ?
+      and alfn.store_id = alfs.id
+      and alfn.id between ? and ?
     </select>
 
    <!-- Counts the children that have at least one of the provided property values for a given property qname -->
@@ -37,5 +67,6 @@
          '${item}'
       </foreach>
    </select>
+
 
 </mapper>

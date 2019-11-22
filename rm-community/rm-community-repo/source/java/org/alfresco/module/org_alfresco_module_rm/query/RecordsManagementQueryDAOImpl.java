@@ -27,8 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -50,8 +52,10 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
+    private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
+    private static final String SCHEDULED_FOLDERS_COUNT = "alfresco.query.rm.select_RecordFoldersWithSchedulesCount";
     private static final String COUNT_CHILDREN_WITH_PROPERTY_VALUES = "select_CountChildrenWithPropertyValues";
-    
+
     /** SQL session template */
     protected SqlSessionTemplate template;
     
@@ -115,6 +119,34 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         return result;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules(Long, Long)
+     */
+    @Override
+    public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
+    {
+        Map<String, Object> params = new HashMap<>(2);
+        params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
+            .getFirst());
+        params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
+            .getFirst());
+        params.put("start", start);
+        params.put("end", end);
+
+        List<NodeRefEntity> entities = template.selectList(SCHEDULED_FOLDERS, params);
+
+        List<NodeRef> results = new ArrayList<>();
+
+        // convert the entities to NodeRefs
+        for (NodeRefEntity nodeRefEntity : entities)
+        {
+            results.add(
+                new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
+        }
+
+        return results;
+    }
+
     @Override
     public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues)
     {
@@ -150,4 +182,5 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         Long count = template.selectOne(COUNT_CHILDREN_WITH_PROPERTY_VALUES, queryParams);
         return count > 0;
     }
+
 }

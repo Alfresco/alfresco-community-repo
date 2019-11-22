@@ -108,7 +108,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     private ContentActions contentActions;
 
     @BeforeClass (alwaysRun = true)
-    public void preconditionForAddContentToHold() throws Exception
+    public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
         holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getUsername(),
@@ -174,7 +174,7 @@ public class AddToHoldsTests extends BaseRMRestTest
      * Valid nodes to be added to hold
      */
     @DataProvider (name = "validNodesForAddToHold")
-    public Object[][] getValidNodesForAddToHold() throws Exception
+    public Object[][] getValidNodesForAddToHold()
     {
         //create electronic and nonElectronic record in record folder
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
@@ -287,7 +287,7 @@ public class AddToHoldsTests extends BaseRMRestTest
         users.add(userModel);
         STEP("Add the node to the hold with user without permission.");
         String response = holdsAPI.addToHoldAndGetMessage(userModel.getUsername(), userModel.getPassword(),
-                SC_INTERNAL_SERVER_ERROR, nodeToBeAddedToHold, HOLD);
+                SC_INTERNAL_SERVER_ERROR, nodeToBeAddedToHold, holdNodeRef);
         assertTrue(response.contains(ACCESS_DENIED_ERROR_MESSAGE));
 
         STEP("Check the node is not frozen.");
@@ -345,7 +345,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     {
         STEP("Add the node to the hold ");
         String responseErrorMessage = holdsAPI.addToHoldAndGetMessage(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), responseCode, itemNodeRef, HOLD);
+                getAdminUser().getPassword(), responseCode, itemNodeRef, holdNodeRef);
         assertTrue(responseErrorMessage.contains(errorMessage),
                 "Actual error message " + responseErrorMessage + " expected " + errorMessage);
 
@@ -354,7 +354,7 @@ public class AddToHoldsTests extends BaseRMRestTest
     }
 
     @AfterClass (alwaysRun = true)
-    public void cleanUpAddContentToHold() throws Exception
+    public void cleanUpAddContentToHold()
     {
         holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD);
         dataSite.usingAdmin().deleteSite(testSite);

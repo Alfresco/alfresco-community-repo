@@ -34,11 +34,10 @@ import java.util.List;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
-import org.alfresco.rest.v0.RMAuditAPI;
+import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -51,14 +50,7 @@ import org.testng.annotations.Test;
 public class AuditLoginEventsTests extends BaseRMRestTest
 {
     @Autowired
-    private RMAuditAPI rmAuditAPI;
-
-    @BeforeClass (alwaysRun = true)
-    public void cleanAuditLogs()
-    {
-        //clean audit logs
-        rmAuditAPI.clearAuditLog(getAdminUser().getUsername(), getAdminUser().getPassword());
-    }
+    private RMAuditService rmAuditService;
 
     /**
      * Given I have tried to login using invalid credentials
@@ -68,12 +60,13 @@ public class AuditLoginEventsTests extends BaseRMRestTest
     @Test
     public void filterByLoginUnsuccessful() throws Exception
     {
+        rmAuditService.clearAuditLog();
         restClient.authenticateUser(new UserModel(getAdminUser().getUsername(), "InvalidPassword"));
         restClient.withCoreAPI().getSites();
 
         STEP("Get the list of audit entries for the login unsuccessful event.");
-        List<AuditEntry> auditEntries = rmAuditAPI.getRMAuditLog(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), 100, LOGIN_UNSUCCESSFUL.event);
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(),
+                LOGIN_UNSUCCESSFUL);
 
         STEP("Check the audit log contains only the entries for the login unsuccessful event.");
         assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,

@@ -14,6 +14,7 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -389,6 +390,7 @@ public class IntegrationSanityTests extends IntegrationTest
      * 15. U1 deletes non empty folder1 using CMIS
      * 16. U1 gets tags and verify all tags are listed
      */
+    @Bug(id = "REPO-4789")
     @Test(groups = { TestGroup.INTEGRATION, TestGroup.SANITY  })
     @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to manage tags.")

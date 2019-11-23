@@ -74,7 +74,7 @@
         <dependency.alfresco-core.version>7.22</dependency.alfresco-core.version>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
-        <dependency.alfresco-spring-webscripts.version>7.9</dependency.alfresco-spring-webscripts.version>
+        <dependency.alfresco-spring-webscripts.version>7.10</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>

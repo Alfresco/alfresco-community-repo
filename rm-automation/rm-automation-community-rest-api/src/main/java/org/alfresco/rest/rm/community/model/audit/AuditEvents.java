@@ -24,50 +24,34 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.query;
-
-import java.util.Collection;
+package org.alfresco.rest.rm.community.model.audit;
 
 /**
- * Select parameter for <b>select_CountChildrenWithPropertyValues</b>.
+ * Enumerates the list of events audited
  *
- * @author Ana Manolache
- * @since 2.6
+ * @author  Rodica Sutu
+ * @since 2.7
+ *
  */
-public class ChildrenWithPropertyValuesQueryParams
+public enum AuditEvents
 {
-    private Long parentId;
-    private Long propertyQnameId;
-    private Collection propertyValues;
+    CREATE_PERSON("Create Person", "Create User"),
+    DELETE_PERSON("Delete Person", "Delete User"),
+    CREATE_USER_GROUP("Create User Group", "Create User Group"),
+    DELETE_USER_GROUP("Delete User Group", "Delete User Group"),
+    ADD_TO_USER_GROUP("Add To User Group", "Add To User Group"),
+    REMOVE_FROM_USER_GROUP("Remove From User Group", "Remove From User Group"),
+    LOGIN_UNSUCCESSFUL("Login.Failure", "Login Unsuccessful");
 
-    public Long getParentId()
-    {
-        return parentId;
-    }
+    /** event audited */
+    public final String event;
 
-    public void setParentId(Long parentId)
-    {
-        this.parentId = parentId;
-    }
+    /** display name for the event audited */
+    public final String eventDisplayName;
 
-    public Long getPropertyQnameId()
+    AuditEvents(String event, String displayName)
     {
-        return propertyQnameId;
-    }
-
-    public void setPropertyQnameId(Long propertyQnameId)
-    {
-        this.propertyQnameId = propertyQnameId;
-    }
-
-    public Collection getPropertyValues()
-    {
-        return propertyValues;
-    }
-
-    public void setPropertyValues(Collection propertyValues)
-    {
-        this.propertyValues = propertyValues;
+        this.event = event;
+        this.eventDisplayName = displayName;
     }
 }
-

@@ -3,10 +3,10 @@
 
 <mapper namespace="alfresco.query.rm">
 
-    <parameterMap id="parameter_CountRMIndentifier" type="map">
-        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
-    </parameterMap>
+   <parameterMap id="parameter_CountRMIndentifier" type="map">
+      <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+      <parameter property="idValue" jdbcType="BIGINT" javaType="java.lang.String"/>
+   </parameterMap>
 
    <parameterMap id="parameter_folderPatchPaging" type="map">
       <parameter property="processed" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -17,11 +17,14 @@
 
    <resultMap id="result_NodeRefEntity" type="org.alfresco.module.org_alfresco_module_rm.query.NodeRefEntity">
       <result property="row" column="row" jdbcType="BIGINT" javaType="java.lang.Long"/>
-      <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+      <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
    </resultMap>
 
+   <resultMap id="result_NodeIds" type="java.lang.Long">
+      <result property="node.id" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+   </resultMap>
 
    <select id="select_CountRMIndentifier" parameterMap="parameter_CountRMIndentifier" resultType="java.lang.Integer">
         select
@@ -32,9 +35,39 @@
         where
             prop.qname_id = ? and
             prop.string_value = ?
-            
+
     </select>
 
+   <!-- Get distinct property values of children for a given property qname -->
+   <select id="select_GetStringPropertyValuesOfChildren"
+           parameterType="org.alfresco.module.org_alfresco_module_rm.query.PropertyValuesOfChildrenQueryParams"
+           resultType="java.lang.String">
+      select
+         distinct childProp.string_value
+      from
+         alf_child_assoc assoc
+         left join alf_node_properties childProp on assoc.child_node_id = childProp.node_id
+      where
+         assoc.parent_node_id = #{parentId} and
+         childProp.qname_id = #{propertyQnameId}
+
+   </select>
+
+   <!-- Get list of node ids which reference given content url -->
+   <select id="select_NodeIdsWhichReferenceContentUrl"
+           parameterType="ContentUrl"
+           resultMap="result_NodeIds">
+      select
+         p.node_id
+      from
+         alf_content_url cu
+      LEFT OUTER JOIN alf_content_data cd ON (cd.content_url_id = cu.id)
+      LEFT OUTER JOIN alf_node_properties p ON (p.long_value = cd.id)
+      WHERE
+         content_url_short = #{contentUrlShort} and
+         content_url_crc = #{contentUrlCrc}
+
+   </select>
 
    <select id="select_RecordFoldersWithSchedules"
            parameterMap="parameter_folderPatchPaging"
@@ -49,24 +82,6 @@
       and alfn.store_id = alfs.id
       and alfn.id between ? and ?
     </select>
-
-   <!-- Counts the children that have at least one of the provided property values for a given property qname -->
-   <select id="select_CountChildrenWithPropertyValues"
-           parameterType="org.alfresco.module.org_alfresco_module_rm.query.ChildrenWithPropertyValuesQueryParams"
-           resultType="java.lang.Long">
-      select
-      count( distinct assoc.child_node_id )
-      from
-      alf_child_assoc assoc
-      left join alf_node_properties childProp on assoc.child_node_id = childProp.node_id
-      where
-      assoc.parent_node_id = #{parentId}
-      and childProp.qname_id = #{propertyQnameId}
-      and childProp.string_value in
-      <foreach item="item" index="index" collection="propertyValues" open="(" separator="," close=")">
-         '${item}'
-      </foreach>
-   </select>
 
 
 </mapper>

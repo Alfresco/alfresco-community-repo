@@ -222,17 +222,6 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Helper method to create an RM site and assert successful creation
-     */
-    private void createRMSite(RMSite rmSiteModel) throws Exception
-    {
-        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
-        rmSiteAPI.deleteRMSite();
-        rmSiteAPI.createRMSite(rmSiteModel);
-        assertStatusCode(CREATED);
-    }
-
-    /**
      * Helper method to create records and and assert successful creation
      */
     private String[][] createAndVerifyRecordsInFolder() throws Exception

@@ -151,4 +151,12 @@ public interface CapabilityService
     * @param group The group which should be removed
     */
    void removeGroup(Group group);
+
+    /**
+     * Check if the current user has the given capability.
+     *
+     * @param capabilityName
+     * @return
+     */
+   boolean hasCapability(NodeRef nodeRef, String capabilityName);
 }

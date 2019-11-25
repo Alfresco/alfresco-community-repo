@@ -27,12 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
-
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -203,18 +200,10 @@ public class RecordFolderType extends    AbstractDisposableItem
             @Override
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
-                boolean result = true;
-
-                if (nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER))
-                {
-                    result = false;
-                }
-                else if (ArrayUtils.contains(unwantedAspects, classQName))
-                {
-                    result = false;
-                }
-
-                return result;
+                boolean targetParentIsRecordFolder = nodeService.getType(copyDetails.getTargetParentNodeRef())
+                            .equals(TYPE_RECORD_FOLDER);
+                boolean containsUnwantedAspect = ArrayUtils.contains(unwantedAspects, classQName);
+                return !(targetParentIsRecordFolder || containsUnwantedAspect);
             }
         };
     }
@@ -253,7 +242,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         }
     }
 
-    /**   
+    /**
      * On transaction commit
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)

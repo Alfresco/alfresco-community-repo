@@ -116,6 +116,34 @@ public class DispositionScheduleService extends BaseAPI
                 dataUser.getAdminUser().getPassword(), categoryName, cutOffStep);
     }
 
+    /**
+     * Helper method for adding an accession step
+     *
+     * @param timeOrEvent
+     * @param events
+     * @param period
+     * @param periodProperty
+     * @param combineConditions
+     * @return
+     */
+    public void addAccessionStep(String categoryName, Boolean timeOrEvent, String events, String period, String
+            periodProperty, Boolean combineConditions)
+    {
+        HashMap<RETENTION_SCHEDULE, String> accessionStep = new HashMap<>();
+        accessionStep.put(RETENTION_SCHEDULE.NAME, "accession");
+        accessionStep.put(RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS, Boolean.toString(combineConditions));
+        accessionStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, period);
+        accessionStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY, periodProperty);
+        if (!timeOrEvent)
+        {
+            accessionStep.put(RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT, Boolean.toString(timeOrEvent));
+        }
+        accessionStep.put(RETENTION_SCHEDULE.RETENTION_EVENTS, events);
+        accessionStep.put(RETENTION_SCHEDULE.DESCRIPTION,
+                    "Accession step with time and event conditions.");
+        recordCategoriesAPI.addDispositionScheduleSteps(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(), categoryName, accessionStep);
+    }
 
     /**
      * Helper method to create retention schedule with general fields for the given category as admin

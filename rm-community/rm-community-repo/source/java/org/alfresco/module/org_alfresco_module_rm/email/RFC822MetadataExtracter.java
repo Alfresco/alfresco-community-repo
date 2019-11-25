@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -69,13 +70,33 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
     protected void filterSystemProperties(Map<QName, Serializable> systemProperties, Map<QName, Serializable> targetProperties)
     {
         NodeRef nodeRef = getNodeRef(targetProperties);
-        if (nodeRef == null || !nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
+        if(nodeRef == null)
+        {
+            return;
+        }
+
+        // Remove record properties from non-record nodes
+        if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
         {
             // Remove all rm namespace properties from the system map
             Map<QName, Serializable> clone = new HashMap<QName, Serializable>(systemProperties);
             for (QName propName : clone.keySet())
             {
                 if (RecordsManagementModel.RM_URI.equals(propName.getNamespaceURI()))
+                {
+                    systemProperties.remove(propName);
+                }
+            }
+        }
+
+        // Remove dod5015 properties from non-dod5015 nodes
+        if (!nodeService.hasAspect(nodeRef, DOD5015Model.ASPECT_DOD_5015_RECORD))
+        {
+            // Remove all dod5015 namespace properties from the system map
+            Map<QName, Serializable> clone = new HashMap<>(systemProperties);
+            for (QName propName : clone.keySet())
+            {
+                if (DOD5015Model.DOD_URI.equals(propName.getNamespaceURI()))
                 {
                     systemProperties.remove(propName);
                 }

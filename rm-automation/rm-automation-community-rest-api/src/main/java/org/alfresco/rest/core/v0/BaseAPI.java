@@ -122,6 +122,37 @@ public abstract class BaseAPI
     }
 
     /**
+     * Helper method to extract the property value for the given nodeRef and property name
+     * 
+     * @param result
+     * @param nodeRef
+     * @param propertyName
+     * @return
+     */
+    protected String getPropertyValue(JSONObject result, String nodeRef, String propertyName)
+    {
+        String propertyValue = "";
+        try
+        {
+            JSONArray items = result.getJSONArray("items");
+            for (int i = 0; i < items.length(); i++)
+            {
+                JSONObject item = items.getJSONObject(i);
+                if(nodeRef.equals(item.getString("nodeRef")))
+                {
+                    propertyValue = item.getJSONObject("properties").getString(propertyName);
+                }
+            }
+        }
+        catch (JSONException error)
+        {
+            throw new RuntimeException("Unable to parse result", error);
+        }
+
+        return propertyValue;
+    }
+    
+    /**
      * Helper method to extract property values from request result and put them in map as a list that corresponds to a unique property value.
      *
      * @param requestResult the request response
@@ -311,6 +342,78 @@ public abstract class BaseAPI
     }
 
     /**
+     * Helper method for PUT requests
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     */
+    protected HttpResponse doPutJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        return doPutJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+    }
+
+    /**
+     * Helper method for PUT requests
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param urlStart the start of the URL (for example "alfresco/s/slingshot").
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     * @throws AssertionError if the returned status code is not as expected.
+     */
+    private HttpResponse doPutJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                String urlStart,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        String requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
+        try
+        {
+            HttpResponse httpResponse = doRequestJson(HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals("PUT request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+            return httpResponse;
+        }
+        catch (InstantiationException | IllegalAccessException error)
+        {
+            throw new IllegalArgumentException("doPutRequest failed", error);
+        }
+    }
+
+    /**
+     * Fill in the parameters for a URL template.
+     *
+     * @param urlStart The start of the URL.
+     * @param urlTemplate The template.
+     * @param urlTemplateParams Any parameters that need to be filled into the URL template.
+     * @return The resultant URL.
+     */
+    private String formatRequestUrl(String urlStart, String urlTemplate, String[] urlTemplateParams)
+    {
+        if (urlTemplateParams.length == 1)
+        {
+            // The format method needs some help to know not to use the whole array object.
+            return MessageFormat.format(urlTemplate, urlStart, urlTemplateParams[0]);
+        }
+        return MessageFormat.format(urlTemplate, urlStart, urlTemplateParams);
+    }
+
+    /**
      * Helper method for POST requests
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
@@ -403,15 +506,12 @@ public abstract class BaseAPI
                 String urlTemplate,
                 String... urlTemplateParams)
     {
-        // Ensure the host is part of the request URL.
-        String requestUrl = MessageFormat.format(
-                    urlTemplate,
-                    urlStart,
-                    urlTemplateParams);
+        String requestUrl;
+        requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("POST request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
+            assertEquals("POST request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)
@@ -453,7 +553,10 @@ public abstract class BaseAPI
             {
                 ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
             }
+            LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
+            LOGGER.info("Request body: {}", requestParams);
             response = client.execute(adminUser, adminPassword, request);
+            LOGGER.info("Response: {}", response.getStatusLine());
 
             try
             {
@@ -573,6 +676,9 @@ public abstract class BaseAPI
         SHELF,
         BOX,
         FILE,
+        ORIGINATOR,
+        ORIGINATING_ORGANIZATION,
+        PUBLICATION_DATE
     }
 
     public enum RETENTION_SCHEDULE
@@ -587,7 +693,7 @@ public abstract class BaseAPI
         RETENTION_GHOST,
         RETENTION_ELIGIBLE_FIRST_EVENT,
         RETENTION_EVENTS,
-
+        COMBINE_DISPOSITION_STEP_CONDITIONS
     }
 
     /**
@@ -599,6 +705,8 @@ public abstract class BaseAPI
         CUT_OFF("cutoff"),
         UNDO_CUT_OFF("undoCutoff"),
         TRANSFER("transfer"),
+        COMPLETE_EVENT("completeEvent"),
+        UNDO_EVENT("undoEvent"),
         DESTROY("destroy");
         String action;
 

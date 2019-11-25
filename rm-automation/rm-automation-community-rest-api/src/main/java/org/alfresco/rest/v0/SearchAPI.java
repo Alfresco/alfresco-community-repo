@@ -63,9 +63,9 @@ public class SearchAPI extends BaseAPI
     /** RM search URL template */
     private static final String RM_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/{1}?{2}";
 
-    /** RM document search filters */
-    private static final String RM_DEFAULT_RECORD_FILTERS =
-        "records/true,undeclared/true,vital/false,folders/false,categories/false,frozen/false,cutoff/false";
+    /** RM all nodes search filters */
+    private static final String RM_DEFAULT_NODES_FILTERS =
+                "records/true,undeclared/true,vital/false,folders/{0},categories/{1},frozen/false,cutoff/false";
 
     /**
      * Perform search request on search endpoint as a user.
@@ -91,6 +91,7 @@ public class SearchAPI extends BaseAPI
      * @param site
      * @param query
      * @param filters
+     * @param sortby
      * @return search results (see API reference for more details), null for any errors
      */
     public JSONObject rmSearch(
@@ -98,11 +99,16 @@ public class SearchAPI extends BaseAPI
         String password,
         String site,
         String query,
-        String filters)
+        String filters,
+        String sortby)
     {
         List<BasicNameValuePair> searchParameters = new ArrayList<BasicNameValuePair>();
         searchParameters.add(new BasicNameValuePair("query", query));
         searchParameters.add(new BasicNameValuePair("filters", filters));
+        if (sortby != null)
+        {
+            searchParameters.add(new BasicNameValuePair("sortby", sortby));
+        }
 
         String requestURL = MessageFormat.format(
             RM_SEARCH_ENDPOINT,
@@ -114,22 +120,45 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
-     * Search as a user for records on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS
+     * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
+     * by sortby
      * <br>
-     * If more fine-grained control of search parameters is required, use rmSearch() directly.
+     *
      * @param username
      * @param password
      * @param query
-     * @return list of record names
+     * @param sortby
+     * @return list of node names
      */
-    public List<String> searchForRecordsAsUser(
-        String username,
-        String password,
-        String query)
+
+    public List<String> searchForNodeNamesAsUser(String username, String password, String query, String sortby,
+                boolean includeCategories, boolean includeFolders)
     {
-        return getItemNames(rmSearch(username, password, "rm", query, RM_DEFAULT_RECORD_FILTERS));
+        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
+                    Boolean.toString(includeCategories));
+        return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
     }
 
+    /**
+     * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
+     * by sortby and returns the property value for the given nodeRef and property name
+     * 
+     * @param username
+     * @param password
+     * @param query
+     * @param sortby
+     * @param includeCategories
+     * @param includeFolders
+     * @return list of node properties
+     */
+    public String searchForNodePropertyAsUser(String username, String password, String nodeRef, String propertyName, String query, String sortby,
+                boolean includeCategories, boolean includeFolders)
+    {
+        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
+                    Boolean.toString(includeCategories));
+        return getItemProperty(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby), nodeRef, propertyName); 
+    }
+    
     /**
      * Generic faceted search.
      * @param username
@@ -199,12 +228,35 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Helper method to extract list of names from search result.
+     * 
      * @param searchResult
      * @return list of document or record names in search result
+     * @throws FileNotFoundException 
+     * @throws JsonSyntaxException 
+     * @throws JsonIOException 
      * @throws RuntimeException for malformed search response
+     */
+    /**
+     * Helper method to extract list of names from search result.
+     * 
+     * @param searchResult
+     * @param getProperties
+     * @return
      */
     private List<String> getItemNames(JSONObject searchResult)
     {
         return getPropertyValues(searchResult, "name");
+    }
+    
+    /**
+     * Helper method to extract list of property values from search result for the given nodeRef.
+     * 
+     * @param searchResult
+     * @param getProperties
+     * @return
+     */
+    private String getItemProperty(JSONObject searchResult, String nodeRef, String propertyName)
+    {
+        return getPropertyValue(searchResult, nodeRef, propertyName);
     }
 }

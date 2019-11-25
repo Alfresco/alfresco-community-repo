@@ -99,6 +99,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_PERIOD_PROPERTY = QName.createQName(RM_URI, "dispositionPeriodProperty");
     QName PROP_DISPOSITION_EVENT = QName.createQName(RM_URI, "dispositionEvent");
     QName PROP_DISPOSITION_EVENT_COMBINATION = QName.createQName(RM_URI, "dispositionEventCombination");
+    QName PROP_COMBINE_DISPOSITION_STEP_CONDITIONS = QName.createQName(RM_URI, "combineDispositionStepConditions");
     QName PROP_DISPOSITION_LOCATION = QName.createQName(RM_URI, "dispositionLocation");
     QName PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY = QName.createQName(RM_URI, "dispositionActionGhostOnDestroy");
 
@@ -246,6 +247,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
     QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT = QName.createQName(RM_URI, "declassificationReviewCompletedAt");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY = QName.createQName(RM_URI, "declassificationReviewCompletedBy");
     /** @depreacted as of 2.2, because disposable items can now be in multiple holds */
     @Deprecated
     QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");

@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
+import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil.REASONS_KEY;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -53,6 +55,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -66,6 +70,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RMSearchGet extends DeclarativeWebScript
 {
+    /** Logger for the class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RMSearchGet.class);
     /** URL Parameters */
     private static final String PARAM_QUERY = "query";
     private static final String PARAM_SORTBY = "sortby";
@@ -95,6 +101,12 @@ public class RMSearchGet extends DeclarativeWebScript
 
     /** Person data cache */
     private Map<String, String> personDataCache = null;
+
+    /** Utility class for record categories */
+    private RecordCategoryUtil recordCategoryUtil;
+
+    /** Utility class for classification reasons (enterprise only) */
+    private ClassificationReasonsUtil classificationReasonsUtil;
 
     /**
      * @param recordsManagementSearchService    records management search service
@@ -145,6 +157,19 @@ public class RMSearchGet extends DeclarativeWebScript
     }
 
     /**
+     * @param recordCategoryUtil utility class for record categories
+     */
+    public void setRecordCategoryUtil(RecordCategoryUtil recordCategoryUtil)
+    {
+        this.recordCategoryUtil = recordCategoryUtil;
+    }
+
+    public void setClassificationReasonsUtil(ClassificationReasonsUtil classificationReasonsUtil)
+    {
+        this.classificationReasonsUtil = classificationReasonsUtil;
+    }
+
+    /**
      * @param personService person service
      */
     public void setPersonService(PersonService personService)
@@ -183,6 +208,12 @@ public class RMSearchGet extends DeclarativeWebScript
             String filters = req.getParameter(PARAM_FILTERS);
             // TODO this is optional
 
+            //Replace any plain text reason ids with the appropriate node reference
+            if(query.contains(REASONS_KEY))
+            {
+                query = classificationReasonsUtil.replaceReasonWithNodeRef(query);
+            }
+
             // Convert into a rm search parameter object
             RecordsManagementSearchParameters searchParameters =
                     SavedSearchDetailsCompatibility.createSearchParameters(filters, new String[]{",", "/"}, sortby, namespaceService);
@@ -211,7 +242,10 @@ public class RMSearchGet extends DeclarativeWebScript
                     Item item = new Item(pair.getFirst(), pair.getSecond());
                     items.add(item);
                 }
-                catch(Exception e) {}
+                catch(Exception e)
+                {
+                    LOGGER.debug("Ignoring failed attempt to add item to search results.", e);
+                }
             }
 
             // Return model
@@ -240,6 +274,7 @@ public class RMSearchGet extends DeclarativeWebScript
         private String createdBy;
         private Map<QName, Serializable> nodeProperties;
         private Map<String, Serializable> properties;
+        private String recordCategoryId;
 
         public Item(NodeRef parent, NodeRef nodeRef)
         {
@@ -333,6 +368,7 @@ public class RMSearchGet extends DeclarativeWebScript
                     properties.put(prefixName, entry.getValue());
                 }
             }
+            properties.put("rma_recordCategoryIdentifier", recordCategoryUtil.getCategoryIdFromNodeId(nodeRef, false));
         }
 
         private String getDisplayName(String userName)
@@ -437,6 +473,16 @@ public class RMSearchGet extends DeclarativeWebScript
         public Map<String, Serializable> getProperties()
         {
             return properties;
+        }
+
+        public String getRecordCategoryId()
+        {
+            return recordCategoryId;
+        }
+
+        public void setRecordCategoryId(String recordCategoryId)
+        {
+            this.recordCategoryId = recordCategoryId;
         }
     }
 }

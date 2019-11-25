@@ -36,6 +36,7 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,8 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javafx.util.Pair;
 
 /**
  * Methods to make API requests using v0 API on records
@@ -322,13 +321,13 @@ public class RecordsAPI extends BaseAPI
         {
             if (response.has("sharedId"))
             {
-                return new Pair<>(true, response.getString("sharedId"));
+                return Pair.of(true, response.getString("sharedId"));
             }
         } catch (JSONException e)
         {
             LOGGER.info("Unable to extract response parameter", e);
         }
-        return new Pair<>(false, String.valueOf(response.getJSONObject("status").getInt("code")));
+        return Pair.of(false, String.valueOf(response.getJSONObject("status").getInt("code")));
     }
 
     /**

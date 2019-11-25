@@ -242,6 +242,12 @@
 			   </index>
             </property>
 
+            <property name="rma:combineDispositionStepConditions">
+               <title>Disposition Evaluator Combination</title>
+               <type>d:boolean</type>
+               <mandatory>false</mandatory>
+            </property>
+
          </properties>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>
@@ -1129,6 +1135,19 @@
 		          <stored>false</stored>
 		          <tokenised>false</tokenised>
 		       </index>
+            </property>
+            <property name="rma:declassificationReviewCompletedAt">
+               <type>d:date</type>
+               <protected>true</protected>
+            </property>
+            <property name="rma:declassificationReviewCompletedBy">
+               <type>d:text</type>
+               <protected>true</protected>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
             </property>
          </properties>
       </aspect>

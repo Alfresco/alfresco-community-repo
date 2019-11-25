@@ -291,7 +291,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         }
         catch (Exception ex)
         {
-            throw new RuntimeException("Unexpected exception thrown. Please refer to the log files for details.", ex);
+            throw new AlfrescoRuntimeException("Unexpected exception thrown. Please refer to the log files for details.", ex);
         }
         finally
         {
@@ -304,7 +304,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                 }
                 catch (IOException ex)
                 {
-                    throw new RuntimeException("Failed to close the input stream!", ex);
+                    throw new AlfrescoRuntimeException("Failed to close the input stream!", ex);
                 }
             }
         }

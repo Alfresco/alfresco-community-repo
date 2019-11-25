@@ -63,8 +63,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 )
 public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                                              implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                                        NodeServicePolicies.BeforeDeleteNodePolicy,
-                                                        CopyServicePolicies.OnCopyCompletePolicy
+                                                        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** I18N */
     private static final String MSG_SET_ID = "rm.service.set-id";
@@ -177,31 +176,6 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
         return new DoNothingCopyBehaviourCallback();
     }
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode, Map copyMap)
-    {
-        //Generate the id for the copy
-        String id = identifierService.generateIdentifier(
-                                            nodeService.getType(nodeService.getPrimaryParent(targetNodeRef).getParentRef()),
-                                            nodeService.getPrimaryParent(targetNodeRef).getParentRef());
-
-        //We need to allow the id to be overwritten disable the policy protecting changes to the id
-        behaviourFilter.disableBehaviour();
-        try
-        {
-            nodeService.setProperty(targetNodeRef, PROP_IDENTIFIER, id);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour();
-        }
-    }
 
     /**
      * Updates the uniqueness check using the values provided.  If the after value is <tt>null</tt>

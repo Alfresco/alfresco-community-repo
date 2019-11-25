@@ -58,6 +58,8 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME = "rma:recordSearchDispositionActionName";
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE = "rma:recordSearchDispositionEventsEligible";
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS = "rma:recordSearchDispositionInstructions";
+    public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_BY = "rma:declassificationReviewCompletedBy";
+    public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_AT = "rma:declassificationReviewCompletedAt";
     
 
     /** File plan properties */
@@ -74,7 +76,9 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD = "rma:recordSearchVitalRecordReviewPeriod";
     public static final String PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = "rma:recordSearchVitalRecordReviewPeriodExpression";
 
-    /** Record properties */
+    /**
+     * Record properties
+     */
     public static final String PROPERTIES_CLASSIFICATION = "sc:classification";
     public static final String PROPERTIES_DATE_FILED = "rma:dateFiled";
     public static final String PROPERTIES_ORIGINAL_NAME = "rma:origionalName";

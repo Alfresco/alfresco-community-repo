@@ -32,6 +32,7 @@ import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -258,25 +259,9 @@ public class DispositionProperty extends BaseBehaviourBean
      */
     private boolean isPropertyUpdated(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        boolean result = false;
-
         Serializable beforeValue = before.get(propertyName);
         Serializable afterValue = after.get(propertyName);
 
-        if (beforeValue == null && afterValue != null)
-        {
-            result = true;
-        }
-        else if (beforeValue != null && afterValue == null)
-        {
-            result = true;
-        }
-        else if (beforeValue != null && afterValue != null &&
-                 !beforeValue.equals(afterValue))
-        {
-            result = true;
-        }
-
-        return result;
+        return !Objects.equals(beforeValue, afterValue);
     }
 }

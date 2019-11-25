@@ -42,7 +42,6 @@ import lombok.NoArgsConstructor;
  * @author Rodica Sutu
  * @since 2.6
  */
-@Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -51,4 +50,13 @@ public class RMSite extends RestSiteModel
 {
     @JsonProperty (required = true)
     private RMSiteCompliance compliance;
+
+    /** Private constructor allowing Lombok to include superclass fields in the builder. */
+    @Builder
+    private RMSite(String title, String description, RMSiteCompliance compliance)
+    {
+        this.setTitle(title);
+        this.setDescription(description);
+        this.compliance = compliance;
+    }
 }

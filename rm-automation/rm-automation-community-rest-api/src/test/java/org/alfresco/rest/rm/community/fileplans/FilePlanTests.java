@@ -488,7 +488,7 @@ public class FilePlanTests extends BaseRMRestTest
             children.add(recordCategory);
         }
 
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
         // Get record category children from API
         getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS)
                            .assertThat().entriesListIsEmpty().assertThat().paginationExist();

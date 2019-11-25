@@ -2,3 +2,28 @@
 
 * [Enterprise Technical Documentation](../../rm-enterprise/documentation/README.md) (the link will only work if this repository contains the enterprise code)
 * [Overview of the design of RM](overview.md)
+* Records Management
+	* File Plan
+	* List of Values
+	* Records
+		* EMail Records
+		* Filed and Unfiled Records
+		* Easy Access Records
+		* Physical Records
+		* Record Import and Export
+		* Version Records
+	* Retention
+		* [Destruction](./destruction)
+		* Retention Schedules and Events
+		* Transfer and Accession
+* Security
+	* [Extended permission service](extendedPermissionService.md)
+	* Roles, Capabilities and Permissions
+* Discovery
+	* Governance Search
+	* Legal Holds
+* Compliance
+	* Governance Audit
+	* Governance Rules
+* Core Module Services
+	* [RM Patch Service](./PatchService.md)

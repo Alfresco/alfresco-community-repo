@@ -26,7 +26,16 @@
  */
 package org.alfresco.rest.rm.community.base;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_SECURITY_OFFICER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+
+import java.util.Set;
 
 /**
  * Test data used in tests
@@ -83,4 +92,9 @@ public interface TestData
     public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
 
     public static final String ALFRESCO_ADMINISTRATORS = "ALFRESCO_ADMINISTRATORS";
+    /**
+     * The ids of the default RM roles.
+     */
+    public static final Set<String> RM_ROLES = newHashSet(ROLE_RM_ADMIN.roleId, ROLE_RM_MANAGER.roleId,
+            ROLE_RM_POWER_USER.roleId, ROLE_RM_SECURITY_OFFICER.roleId, ROLE_RM_USER.roleId);
 }

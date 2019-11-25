@@ -102,7 +102,7 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
         when(mockAction.getName()).thenReturn("mockAction");
         // Set up the disposition service to return a known "disposition as of" date.
         Date asOfDate = new Date();
-        when(mockDispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition, false))
+        when(mockDispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition))
                         .thenReturn(asOfDate);
 
         // Call the method under test.
@@ -160,7 +160,7 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
         when(mockAction.getParameterValue(CHANGED_PROPERTIES)).thenReturn((Serializable) asList(PROP_DISPOSITION_PERIOD_PROPERTY));
         // Set up the expected "as of" date.
         Date newAsOfDate = new Date(123456789000L);
-        when(mockDispositionService.calculateAsOfDate(recordNode, mockActionDefinition, false)).thenReturn(newAsOfDate);
+        when(mockDispositionService.calculateAsOfDate(recordNode, mockActionDefinition)).thenReturn(newAsOfDate);
 
         // Call the method under test.
         action.executeImpl(mockAction, definitionNode);

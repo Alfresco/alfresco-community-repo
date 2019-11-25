@@ -65,6 +65,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
@@ -76,6 +77,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
@@ -112,7 +114,11 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter(value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-    
+
+    @Autowired
+    @Getter(value = PROTECTED)
+    private SearchAPI searchApi;
+
     /**
      * Asserts the given status code
      *
@@ -176,6 +182,21 @@ public class BaseRMRestTest extends RestTest
             // Verify the status code
             assertStatusCode(CREATED);
         }
+    }
+
+    /**
+     * Helper method to delete the RM site if exists and to create a new one
+     */
+    public void createRMSite(RMSite rmSiteModel) throws Exception
+    {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        if (rmSiteAPI.existsRMSite())
+        {
+            rmSiteAPI.deleteRMSite();
+        }
+
+        rmSiteAPI.createRMSite(rmSiteModel);
+        assertStatusCode(CREATED);
     }
 
     /**
@@ -489,7 +510,7 @@ public class BaseRMRestTest extends RestTest
     {
         return getFilePlanAsUser(getAdminUser(), componentId);
     }
-    
+
     /**
      * Recursively delete a folder
      *
@@ -570,6 +591,17 @@ public class BaseRMRestTest extends RestTest
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
         recordFolderAPI.deleteRecordFolder(recordFolderId);
     }
+    
+    /**
+     * Delete a record 
+     *
+     * @param recordId the id of the record to delete
+     */
+    public void deleteRecord(String recordId)
+    {
+        RecordsAPI recordsAPI = restAPIFactory.getRecordsAPI();
+        recordsAPI.deleteRecord(recordId);
+    }
 
     /**
      * Delete a record category
@@ -637,7 +669,8 @@ public class BaseRMRestTest extends RestTest
                     names.add(childNode.onModel().getName());
                 });
                 break;
-            } else
+            }
+            else
             {
                 counter++;
             }
@@ -645,6 +678,100 @@ public class BaseRMRestTest extends RestTest
             waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return names;
+    }
+
+    /**
+     * Returns the list of node names returned by search results for the given search term
+     * 
+     * @param user
+     * @param term
+     * @param sortby
+     * @param includeFolders
+     * @param includeCategories
+     * @param expectedResults
+     * @return List<String>
+     */
+    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, boolean includeFolders,
+                boolean includeCategories, List<String> expectedResults)
+    {
+        List<String> results = new ArrayList<>();
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 6000;
+        while (counter < 3)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+                results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
+                            includeFolders, includeCategories);
+            if (!results.isEmpty() && results.containsAll(expectedResults))
+            {
+                break;
+            }
+            else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
+        }
+        return results;
+    }
+
+    /**
+     * Returns the property value for the given property name and nodeRef of the search results
+     * 
+     * @param user
+     * @param term
+     * @param nodeRef
+     * @param propertyName
+     * @param sortby
+     * @param includeFolders
+     * @param includeCategories
+     * @param expectedResults
+     * @return String
+     */
+    public String searchForRMContentAsUser(UserModel user, String term, String nodeRef, String propertyName,
+                String sortby, boolean includeFolders, boolean includeCategories, String expectedResults)
+    {
+        String result = "";
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 6000;
+        while (counter < 3)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+            result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,
+                        propertyName, term, sortby, includeFolders, includeCategories);
+            if (!result.isEmpty() && result.contains(expectedResults))
+            {
+                break;
+            }
+            else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
+        }
+        return result;
     }
 
     /**
@@ -666,19 +793,6 @@ public class BaseRMRestTest extends RestTest
         documentLibrary.setName(nodes.get(0).onModel().getName());
         documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
         return documentLibrary;
-    }
-
-    /**
-     * Helper method to create a Content Model
-     *
-     * @return ContentModel
-     * @throws Exception
-     */
-    public ContentModel toContentModel(String nodeId)
-    {
-        ContentModel node = new ContentModel();
-        node.setNodeRef(nodeId);
-        return node;
     }
 
 }

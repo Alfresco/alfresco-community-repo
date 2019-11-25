@@ -53,8 +53,41 @@
    </bean>
 
    <bean id="audit-event.create-person" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreatePersonAuditEvent">
+      <property name="nodeService" ref="nodeService" />
       <property name="name" value="Create Person"/>
       <property name="label" value="rm.audit.create-person"/>
+   </bean>
+
+   <bean id="audit-event.delete-person" parent="audit-event"
+         class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeletePersonAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Delete Person" />
+      <property name="label" value="rm.audit.delete-person" />
+   </bean>
+
+   <bean id="audit-event.create-userGroup" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Create User Group"/>
+      <property name="label" value="rm.audit.create-userGroup"/>
+   </bean>
+
+   <bean id="audit-event.delete-userGroup" parent="audit-event"
+         class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeleteUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Delete User Group" />
+      <property name="label" value="rm.audit.delete-userGroup" />
+   </bean>
+
+   <bean id="audit-event.addMember" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AddToUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Add To User Group"/>
+      <property name="label" value="rm.audit.addMember"/>
+   </bean>
+
+   <bean id="audit-event.removeMember" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.RemoveFromUserGroupAuditEvent">
+      <property name="nodeService" ref="nodeService" />
+      <property name="name" value="Remove From User Group"/>
+      <property name="label" value="rm.audit.removeMember"/>
    </bean>
 
    <bean id="audit-event.login-success" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent">

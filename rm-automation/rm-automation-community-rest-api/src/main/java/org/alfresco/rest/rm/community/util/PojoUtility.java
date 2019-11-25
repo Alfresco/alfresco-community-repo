@@ -28,9 +28,18 @@ package org.alfresco.rest.rm.community.util;
 
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for creating the json object
@@ -40,6 +49,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class PojoUtility
 {
+    /**
+     * Logger for the class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(PojoUtility.class);
+
     /**
      * see {@link #toJson(Object, Class, Class)}
      */
@@ -85,4 +99,64 @@ public class PojoUtility
             return error.toString();
         }
     }
+
+    /**
+     * Converting json to  java object
+     *
+     * @param json   The json object to convert
+     * @param classz Class  for the java object
+     * @return The converted java object
+     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     */
+    public static <T> T jsonToObject(JSONObject json, Class<T> classz)
+    {
+        mandatoryObject("model", classz);
+        mandatoryObject("jsonObject", json);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        T obj = null;
+        try
+        {
+            obj = mapper.readValue(json.toString(), classz);
+        }
+        catch (IOException e)
+        {
+            LOGGER.error("Unable to convert the json into a java object.", e.toString());
+        }
+
+        return obj;
+    }
+
+    /**
+     * Converting json array into a list of java objects
+     *
+     * @param json   The json array to convert
+     * @param classz Class  for the java object
+     * @return The list of converted java objects
+     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     */
+    public static <T> List<T> jsonToObject(JSONArray json, Class<T> classz)
+    {
+
+        mandatoryObject("model", classz);
+        mandatoryObject("jsonObject", json);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(List.class, classz);
+        List<T> asList = null;
+        try
+        {
+            asList = mapper.readValue(json.toString(), collectionType);
+        }
+        catch (IOException e)
+        {
+            LOGGER.error("Unable to convert the json array into a java collection.", e.toString());
+        }
+
+
+        return asList;
+    }
+
 }

@@ -39,6 +39,8 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.commons.collections.CollectionUtils;
+
 /**
  * Various common helper methods for Collections. This class is probably only appropriate for use with relatively
  * small collections as it has not been optimised for dealing with large collections.
@@ -225,5 +227,22 @@ public final class RMCollectionUtils
             collection.remove(null);
         }
         return ImmutableSet.copyOf(collection);
+    }
+
+    /**
+     * Check if a property is null or an empty collection. Note that this is the same as
+     * {org.apache.commons.collections.CollectionUtils.isEmpty(Collection)}, except that it takes a Serializable rather
+     * than a Collection. This avoids awkward casting exceptions when working with properties.
+     *
+     * @param value The (probably Collection) value to check.
+     * @return true if the supplied value is null or an empty collection.
+     */
+    public static boolean isEmpty(Serializable value)
+    {
+        if (value instanceof Collection)
+        {
+            return CollectionUtils.isEmpty((Collection) value);
+        }
+        return (value == null);
     }
 }

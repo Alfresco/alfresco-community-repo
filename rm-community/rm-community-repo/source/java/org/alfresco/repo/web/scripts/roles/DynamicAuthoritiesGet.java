@@ -358,7 +358,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
                 res.getWriter().write(")");
             }
         }
-        catch (Throwable e)
+        catch (Exception e)
         {
             if (logger.isDebugEnabled())
             {
@@ -416,7 +416,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
     protected Long getBatchSizeParameter(WebScriptRequest req)
     {
         String batchSizeStr = req.getParameter(BATCH_SIZE);
-        Long size = 0L;
+        Long size;
         if (StringUtils.isBlank(batchSizeStr))
         {
             logger.info(MESSAGE_BATCHSIZE_IS_MANDATORY);

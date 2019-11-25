@@ -27,20 +27,28 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
@@ -51,29 +59,43 @@ import org.mybatis.spring.SqlSessionTemplate;
  */
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
+    /**
+     * logger
+     */
+    @SuppressWarnings("unused")
+    private static final Log logger = LogFactory.getLog(RecordsManagementQueryDAOImpl.class);
+
+    /**
+     * query names
+     */
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
+    private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetStringPropertyValuesOfChildren";
+    private static final String SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL = "select_NodeIdsWhichReferenceContentUrl";
     private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
     private static final String SCHEDULED_FOLDERS_COUNT = "alfresco.query.rm.select_RecordFoldersWithSchedulesCount";
-    private static final String COUNT_CHILDREN_WITH_PROPERTY_VALUES = "select_CountChildrenWithPropertyValues";
 
-    /** SQL session template */
+    /**
+     * SQL session template
+     */
     protected SqlSessionTemplate template;
-    
-    /** QName DAO */
+
+    /**
+     * QName DAO
+     */
     protected QNameDAO qnameDAO;
     protected NodeDAO nodeDAO;
     protected TenantService tenantService;
-    
+
     /**
-     * @param sqlSessionTemplate    SQL session template
+     * @param sqlSessionTemplate SQL session template
      */
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     /**
-     * @param qnameDAO  qname DAO
+     * @param qnameDAO qname DAO
      */
     public final void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -97,26 +119,141 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     public int getCountRmaIdentifier(String identifierValue)
     {
         int result = 0;
-        
+
         // lookup the id of the identifier property qname
         Pair<Long, QName> pair = qnameDAO.getQName(PROP_IDENTIFIER);
         if (pair != null)
-        {        
+        {
             // create query params
-            Map<String, Object> params = new HashMap<String, Object>(2);
+            Map<String, Object> params = new HashMap<>(2);
             params.put("qnameId", pair.getFirst());
             params.put("idValue", identifierValue);
-            
+
             // return the number of rma identifiers found that match the passed value
-            Integer count = (Integer)template.selectOne(COUNT_IDENTIFIER, params);
-            
+            Integer count = (Integer) template.selectOne(COUNT_IDENTIFIER, params);
+
             if (count != null)
             {
                 result = count;
             }
         }
-        
+
         return result;
+    }
+
+    @Override
+    public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property)
+    {
+        PropertyValuesOfChildrenQueryParams queryParams = new PropertyValuesOfChildrenQueryParams();
+
+        // Set the parent node id
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(parent));
+        if (nodePair == null)
+        {
+            throw new InvalidNodeRefException("The parent node does not exist.", parent);
+        }
+        Long parentNodeId = nodePair.getFirst();
+        queryParams.setParentId(parentNodeId);
+
+        // Set the property qname id
+        Pair<Long, QName> pair = qnameDAO.getQName(property);
+        if (pair == null)
+        {
+            return Collections.emptySet();
+        }
+        queryParams.setPropertyQnameId(pair.getFirst());
+
+        // Perform the query
+        return new HashSet<>(template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams));
+
+    }
+
+    /**
+     * Get a set of node reference which reference the provided content URL
+     *
+     * @param String contentUrl	content URL
+     * @return Set<NodeRef>	set of nodes that reference the provided content URL
+     */
+    @Override
+    public Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Getting nodes that reference content URL = " + contentUrl);
+        }
+
+        // create the content URL entity used to query for nodes
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setContentUrl(contentUrl.toLowerCase());
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Executing query " + SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL);
+        }
+
+        // Get all the node ids which reference the given content url
+        List<Long> nodeIds = template.selectList(SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL, contentUrlEntity);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Query " + SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL + " returned " + nodeIds.size() + " results");
+        }
+
+        // create a set of uuids which reference the content url
+        Set<NodeRef> nodesReferencingContentUrl = new HashSet<NodeRef>(nodeIds.size());
+        for (Long nodeId : nodeIds)
+        {
+            StringBuilder logMessage = null;
+            NodeRef nodeRefToAdd;
+
+            if (nodeId != null && nodeDAO.exists(nodeId))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logMessage = new StringBuilder("Adding noderef ");
+                }
+
+                // if the referencing node is a version2Store reference to the content url, add the version 2 frozen node ref
+                NodeRef version2FrozenNodeRef = (NodeRef) nodeDAO.getNodeProperty(nodeId, Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+                if (version2FrozenNodeRef != null && nodeDAO.exists(version2FrozenNodeRef))
+                {
+                    nodeRefToAdd = version2FrozenNodeRef;
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logMessage.append(nodeRefToAdd)
+                            .append(" (from version)");
+                    }
+                }
+
+                // add the node ref of the referencing node
+                else
+                {
+                    nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId)
+                        .getNodeRef();
+                    if (logger.isDebugEnabled())
+                    {
+                        logMessage.append(nodeRefToAdd);
+                    }
+                }
+
+                nodesReferencingContentUrl.add(nodeRefToAdd);
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(logMessage.toString());
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Not adding " + nodeId + " (exist==false)");
+                }
+            }
+        }
+
+        return nodesReferencingContentUrl;
     }
 
     /**
@@ -145,42 +282,6 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         }
 
         return results;
-    }
-
-    @Override
-    public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues)
-    {
-        if(propertyValues.isEmpty())
-        {
-            return false;
-        }
-
-        ChildrenWithPropertyValuesQueryParams queryParams = new ChildrenWithPropertyValuesQueryParams();
-
-        // Set the parent node id
-        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(parent));
-        if (nodePair == null)
-        {
-            throw new InvalidNodeRefException("The parent node does not exist.", parent);
-        }
-        Long parentNodeId = nodePair.getFirst();
-        queryParams.setParentId(parentNodeId);
-
-        // Set the property qname id
-        Pair<Long, QName> pair = qnameDAO.getQName(property);
-        if (pair == null)
-        {
-            return false;
-        }
-        queryParams.setPropertyQnameId(pair.getFirst());
-
-
-        // Set the property values
-        queryParams.setPropertyValues(propertyValues);
-
-        // Perform the query
-        Long count = template.selectOne(COUNT_CHILDREN_WITH_PROPERTY_VALUES, queryParams);
-        return count > 0;
     }
 
 }

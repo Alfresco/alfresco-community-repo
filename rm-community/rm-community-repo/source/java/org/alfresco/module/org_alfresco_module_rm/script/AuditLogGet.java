@@ -57,6 +57,7 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
     private static final String PARAM_EXPORT = "export";
     private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
+    private static final int DEFAULT_VIEW_LOG_MAX_SIZE = 100;
 
     /** Content Streamer */
     protected ContentStreamer contentStreamer;
@@ -66,6 +67,9 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
     /** File plan service */
     protected FilePlanService filePlanService;
+    
+    /** Maximum number of entries to be displayed in View Audit Log */
+    private int viewLogMaxSize;
 
     /**
      * @param contentStreamer
@@ -86,11 +90,20 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
     
     /**
      * 
-     * @param capabilityService Capability Service
+     * @param filePlanService File Plan Service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    /**
+     * 
+     * @param viewLogMaxSize Maximum number of entries to be displayed in View Audit Log 
+     */
+    public void setViewLogMaxSize(int viewLogMaxSize)
+    {
+        this.viewLogMaxSize = (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE: viewLogMaxSize);
     }
 
     @Override
@@ -100,7 +113,6 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
         try
         {
-            
             RecordsManagementAuditQueryParameters queryParams = parseQueryParameters(req);
             ReportFormat reportFormat = parseReportFormat(req);
 
@@ -108,6 +120,13 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access denied because the user does not have the Access Audit capability");
             }
+            
+            // limit the number of audit log entries to be returned
+            if (queryParams.getMaxEntries() <= 0 || queryParams.getMaxEntries() > viewLogMaxSize)
+            {
+                queryParams.setMaxEntries(viewLogMaxSize);
+            }
+            
             // parse the parameters and get a file containing the audit trail
             auditTrail = this.rmAuditService.getAuditTrailFile(queryParams, reportFormat);
 

@@ -933,6 +933,7 @@
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="transactionService" ref="transactionService" />
         <property name="nodeService" ref="nodeService" />
+        <property name="siteService" ref="siteService" />
         <property name="auditComponent" ref="auditComponent" />
         <property name="auditService" ref="auditService" />
         <property name="contentService" ref="ContentService" />

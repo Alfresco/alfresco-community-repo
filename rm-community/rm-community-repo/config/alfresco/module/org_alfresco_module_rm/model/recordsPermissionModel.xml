@@ -490,8 +490,8 @@
         
         <permission name="_EndRetention" expose="false">
             <grantedToGroup permissionGroup="EndRetention"/>
-        </permission>        
-        
+        </permission>
+
     </permissionSet>
 
 </permissions>

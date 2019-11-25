@@ -45,6 +45,10 @@ import org.mockito.stubbing.Answer;
  */
 public class MockAuthenticationUtilHelper
 {
+    public static final String SYSTEM_USER = "system";
+    public static final String ADMIN_USER = "admin";
+    public static final String GUEST_USER = "guest";
+
     /**
      * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
      * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
@@ -95,10 +99,10 @@ public class MockAuthenticationUtilHelper
 
         }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
 
-        when(mockAuthenticationUtil.getAdminUserName()).thenReturn("admin");
+        when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
         when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
         when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
-        when(mockAuthenticationUtil.getSystemUserName()).thenReturn("system");
-        when(mockAuthenticationUtil.getGuestUserName()).thenReturn("guest");
+        when(mockAuthenticationUtil.getSystemUserName()).thenReturn(SYSTEM_USER);
+        when(mockAuthenticationUtil.getGuestUserName()).thenReturn(GUEST_USER);
     }
 }

@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditEntry;
@@ -78,18 +80,18 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-		        // test start time recorded
-		        testStartTime = new Date();
+                // test start time recorded
+                testStartTime = new Date();
 
-		        // Stop and clear the log
-		        rmAuditService.stopAuditLog(filePlan);
-		        rmAuditService.clearAuditLog(filePlan);
-		        rmAuditService.startAuditLog(filePlan);
+                // Stop and clear the log
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+                rmAuditService.startAuditLog(filePlan);
 
-		        // check that audit service is started
-		        assertTrue(rmAuditService.isAuditLogEnabled(filePlan));
+                // check that audit service is started
+                assertTrue(rmAuditService.isAuditLogEnabled(filePlan));
 
-		        return null;
+                return null;
             }
         });
     }
@@ -198,7 +200,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             }
         });
     }
-    
+
     /**
      * Test getAuditTrail method and parameter filters.
      */
@@ -457,6 +459,116 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             }
         }
         assertTrue("Expected to hit successful login attempt for Charles Dickons (cdickons)", found);
+    }
+
+    /**
+     * Given I have deleted a user
+     * When I will get the RM audit filter by delete user event
+     * Then there will be an entry for the deleted user
+     * And the audit entry has the username property value audited
+     * @throws Exception
+     */
+    @org.junit.Test
+    public void testAuditForDeletedUser() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String DELETE_USER_AUDIT_EVENT = "Delete Person";
+            String userName = "auditDeleteUser";
+            NodeRef user;
+            List<RecordsManagementAuditEntry> entry;
+
+            @Override
+            public void given() throws Exception
+            {
+                // create a user
+                user = createPerson(userName);
+                personService.deletePerson(userName);
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                // set the audit wuery param
+                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+                params.setEvent(DELETE_USER_AUDIT_EVENT);
+
+                // get the audit events for "Delete Person"
+                entry = getAuditTrail(params, 1, ADMIN_USER);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertEquals("Delete user event is not audited.", DELETE_USER_AUDIT_EVENT, entry.get(0).getEvent());
+                assertEquals(user.getId(), entry.get(0).getNodeName());
+                assertEquals("Unexpected nr of properties audited for cm:person type when deleting a user.",
+                        1, entry.get(0).getBeforeProperties().size());
+                assertEquals("Wrong value for username property is  audited",
+                        userName, entry.get(0).getBeforeProperties().get(ContentModel.PROP_USERNAME));
+            }
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+
+        });
+    }
+
+    /**
+     * Given I have created a user
+     * When I will get the RM audit filter by create user event
+     * Then there will be an entry for the created user
+     *
+     * @throws Exception
+     */
+    @org.junit.Test
+    public void testAuditForCreateUser() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            final static String CREATE_USER_AUDIT_EVENT = "Create Person";
+            String userName = "auditCreateUser";
+            NodeRef user;
+            List<RecordsManagementAuditEntry> entry;
+
+            @Override
+            public void given() throws Exception
+            {
+                // create a user
+                user = createPerson(userName);
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                // set the audit query param
+                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+                params.setEvent(CREATE_USER_AUDIT_EVENT);
+
+                // get the audit events for "Create Person"
+                entry = getAuditTrail(params, 1, ADMIN_USER);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertEquals("Create user event is not audited.",
+                        CREATE_USER_AUDIT_EVENT, entry.get(0).getEvent());
+            }
+
+            @Override
+            public void after()
+            {
+                // Stop and delete all entries
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+            }
+
+        });
     }
 
     /** === Helper methods === */

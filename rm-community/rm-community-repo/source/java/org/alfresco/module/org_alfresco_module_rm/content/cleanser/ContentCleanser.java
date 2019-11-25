@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Random;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
  * Content cleanser base implementation.
  * 
@@ -41,22 +43,22 @@ import java.util.Random;
  * @since 2.4.a
  */
 public abstract class ContentCleanser
-{    
+{
     /**
      * Cleanse file
      * 
      * @param file  file to cleanse
      */
     public abstract void cleanse(File file);
-    
+
     /**
      * Overwrite files bytes with provided overwrite operation
      * 
-     * @param file                  file 
+     * @param file                  file
      * @param overwriteOperation    overwrite operation
      */
     protected void overwrite(File file, OverwriteOperation overwriteOperation)
-    {   
+    {
         // get the number of bytes
         long bytes = file.length();
         try
@@ -74,18 +76,18 @@ public abstract class ContentCleanser
         catch (IOException ioException)
         {
             // re-throw
-            throw new RuntimeException("Unable to overwrite file", ioException);
+            throw new AlfrescoRuntimeException("Unable to overwrite file", ioException);
         }
     }
-    
+
     /**
-     * Overwrite operation 
+     * Overwrite operation
      */
     protected abstract class OverwriteOperation
     {
         public abstract void operation(OutputStream os) throws IOException;
     }
-    
+
     /**
      * Overwrite with zeros operation
      */
@@ -96,7 +98,7 @@ public abstract class ContentCleanser
             os.write(0);
         }
     };
-    
+
     /**
      * Overwrite with ones operation
      */
@@ -107,14 +109,14 @@ public abstract class ContentCleanser
             os.write(0xff);
         }
     };
-    
+
     /**
      * Overwrite with random operation
      */
     protected OverwriteOperation overwriteRandom = new OverwriteOperation()
     {
         private Random random = new Random();
-        
+
         public void operation(OutputStream os) throws IOException
         {
             byte[] randomByte = new byte[1];

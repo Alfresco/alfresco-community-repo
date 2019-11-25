@@ -130,6 +130,7 @@ public class RecordCategoriesAPI extends BaseAPI
         {
             requestParams.append("events", events);
         }
+        addPropertyToRequest(requestParams, "combineDispositionStepConditions", properties, RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS);
         addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
 
         return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));

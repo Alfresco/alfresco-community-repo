@@ -65,6 +65,11 @@ We use standard Alfresco [data modelling](http://docs.alfresco.com/5.2/reference
 
 ***
 
+### Component Overview
+![Information Governance Component Overview](./resource/component/ig-component.png)
+
+***
+
 ### Design Decisions
 
 | Decision        | Rationale                  | Date         |

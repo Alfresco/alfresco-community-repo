@@ -52,7 +52,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVStrategy;
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -389,8 +389,14 @@ public class UserCSVUploadPost extends DeclarativeWebScript
         throws IOException
     {
         InputStreamReader reader = new InputStreamReader(input, Charset.forName("UTF-8"));
-        CSVParser csv = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
-        String[][] data = csv.getAllValues();
+        CSVFormat format = CSVFormat.EXCEL.withHeader();
+        CSVParser csv = format.parse(reader);
+        String delimiter = String.valueOf(format.getDelimiter());
+
+        String[][] data = (String[][]) csv.getRecords().stream()
+                .map(record -> record.toString().split(delimiter))
+                .toArray();
+
         if(data != null && data.length > 0)
         {
             processSpreadsheetUpload(data, users);

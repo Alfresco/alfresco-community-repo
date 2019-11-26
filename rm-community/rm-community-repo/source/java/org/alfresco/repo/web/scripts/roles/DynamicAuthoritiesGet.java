@@ -44,6 +44,7 @@
  */
 package org.alfresco.repo.web.scripts.roles;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -57,8 +58,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -79,7 +78,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.AbstractWebScript;

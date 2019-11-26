@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action;
 
-import static org.apache.commons.lang.StringUtils.leftPad;
+import static org.apache.commons.lang3.StringUtils.leftPad;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -683,7 +683,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return padded string or the original if already at &gt;= len characters
      *
-     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang.StringUtils#leftPad(String, int)}
+     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang3.StringUtils#leftPad(String, int)}
      */
     @Deprecated
     protected String padString(String s, int len)

@@ -28,7 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;

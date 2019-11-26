@@ -32,7 +32,7 @@ import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagement
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_ORIGIONAL_NAME;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
 import static org.alfresco.util.ParameterCheck.mandatory;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.HashMap;

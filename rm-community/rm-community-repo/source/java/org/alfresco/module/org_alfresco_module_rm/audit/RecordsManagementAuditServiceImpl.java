@@ -1521,12 +1521,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 setNodeName(entry, json);
 
-                // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Delete RM Object"))
-                {
-                    json.put("deleteObject", true);
-                }
-
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
                 json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
                 json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());
@@ -1623,6 +1617,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 case "Remove From User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                    break;
+
+                case "Delete RM Object":
+                case "Delete Hold":
+                    nodeName = entry.getNodeName();
+                    json.put("deleteObject", true);
                     break;
 
                 default:

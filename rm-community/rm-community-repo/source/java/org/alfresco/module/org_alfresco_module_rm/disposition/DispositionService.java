@@ -238,6 +238,14 @@ public interface DispositionService
     void updateNextDispositionAction(NodeRef nodeRef);
 
     /**
+     * Updates the next disposition action
+     *
+     * @param nodeRef             node reference
+     * @param dispositionSchedule the schedule to be applied
+     */
+    void updateNextDispositionAction(NodeRef nodeRef, DispositionSchedule dispositionSchedule);
+
+    /**
      * Refreshes the disposition action details of the given node.
      *
      * @param nodeRef   node reference

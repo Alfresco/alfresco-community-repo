@@ -977,8 +977,36 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 // Get this disposition instructions for the node
-                DispositionSchedule di = getDispositionSchedule(nodeRef);
-                if (di != null)
+                DispositionSchedule dispositionSchedule = getDispositionSchedule(nodeRef);
+
+                updateNextDispositionAction(nodeRef, dispositionSchedule);
+
+                return null;
+            }
+
+        };
+
+        AuthenticationUtil.runAsSystem(runAsWork);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     */
+    @Override
+    public void updateNextDispositionAction(final NodeRef nodeRef, final DispositionSchedule dispositionSchedule)
+    {
+
+
+        RunAsWork<Void> runAsWork = new RunAsWork<Void>()
+        {
+            /**
+             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             */
+            @Override
+            public Void doWork()
+            {
+
+                if (dispositionSchedule != null)
                 {
                     // Get the current action node
                     NodeRef currentDispositionAction = null;
@@ -997,7 +1025,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         nodeService.moveNode(currentDispositionAction, nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, ASSOC_DISPOSITION_ACTION_HISTORY);
                     }
 
-                    List<DispositionActionDefinition> dispositionActionDefinitions = di.getDispositionActionDefinitions();
+                    List<DispositionActionDefinition> dispositionActionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
                     DispositionActionDefinition currentDispositionActionDefinition = null;
                     DispositionActionDefinition nextDispositionActionDefinition = null;
 
@@ -1013,14 +1041,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     {
                         // Get the current action
                         String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
-                        currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
+                        currentDispositionActionDefinition = dispositionSchedule.getDispositionActionDefinition(currentADId);
 
                         // When the record has multiple disposition schedules the current disposition action may not be found by id
                         // In this case it will be searched by name
                         if(currentDispositionActionDefinition == null)
                         {
                             String currentADName = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION);
-                            currentDispositionActionDefinition = di.getDispositionActionDefinitionByName(currentADName);
+                            currentDispositionActionDefinition = dispositionSchedule.getDispositionActionDefinitionByName(currentADName);
                         }
 
                         // Get the next disposition action

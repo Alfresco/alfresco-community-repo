@@ -18,6 +18,7 @@ branches:
   only:
     - master
     - /support\/.*/
+    - fix/REPO-4792
 
 stages:
   - test

@@ -27,9 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import java.util.Collection;
 import org.alfresco.service.namespace.QName;
 
 
@@ -54,6 +56,17 @@ public interface RecordsManagementQueryDAO
     int getCountRmaIdentifier(String identifierValue);
 
     /**
+     * Returns a number of nodeRefs for record folders in the system
+     * that have the property recordSearchHasDispositionSchedule:true
+     * (used for MNT-20864)
+     * @param start long - the first result row to return
+     * @param end long - the last result row to return
+     * @return list of node refs
+     */
+    List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
+
+    /**
+     * Returns whether a given node contains children with one of the given values for the given property
      * Returns distinct property values from children for the given property
      *
      * @param parent         the parent to evaluate
@@ -63,7 +76,7 @@ public interface RecordsManagementQueryDAO
     public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
 
     /**
-     * @param contentUrl     the URL of the content url entity
+     * @param contentUrl the URL of the content url entity
      * @return Set<NodeRef>  a set of nodes that reference the given content url
      */
     Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl);

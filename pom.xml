@@ -4,7 +4,6 @@
     <name>Alfresco Repository</name>
     <version>8.24-SNAPSHOT</version>
     <packaging>jar</packaging>
-
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-super-pom</artifactId>

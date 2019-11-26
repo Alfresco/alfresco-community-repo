@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.jscript;
 
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -32,12 +35,14 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -56,6 +61,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.springframework.context.ApplicationContext;
+
 
 /**
  * @author Kevin Roast
@@ -360,6 +366,75 @@ public class RhinoScriptTest extends TestCase
             });
     }
     
+    // MNT-21009
+    public void testUnsecureScriptAddedOnRepoNode()
+    {
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                NodeRef root = nodeService.getRootNode(store);
+                BaseNodeServiceTest.buildNodeGraph(nodeService, root);
+
+                try
+                {
+                    Map<String, Object> model = new HashMap<String, Object>();
+                    model.put("out", System.out);
+
+                    // create an Alfresco scriptable Node object
+                    // the Node object is a wrapper similar to the TemplateNode
+                    // concept
+                    ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
+                    model.put("root", rootNode);
+
+                    // test executing a script embedded inside Node content
+                    ChildAssociationRef childRef = nodeService.createNode(root, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                            QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"), BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT, null);
+                    NodeRef contentNodeRef = childRef.getChildRef();
+                    ContentWriter writer = contentService.getWriter(contentNodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, true);
+                    writer.setMimetype("application/x-javascript");
+                    writer.putContent(BASIC_JAVA);
+
+                    try
+                    {
+                        scriptService.executeScript(contentNodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
+                        fail("execution of nonsecure script on nodeRef is not allowed.");
+                    }
+                    catch (AlfrescoRuntimeException ex)
+                    {
+                        // expected
+                    }
+                    
+                    
+                    ChildAssociationRef childRef1 = nodeService.createNode(root, BaseNodeServiceTest.ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                            QName.createQName(BaseNodeServiceTest.NAMESPACE, "script_content"), BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT, null);
+                    NodeRef contentNodeRef1 = childRef1.getChildRef();
+                    ContentWriter writer1 = contentService.getWriter(contentNodeRef1, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, true);
+                    writer1.setMimetype("application/x-javascript");
+                    writer1.putContent(REFLECTION_GET_CLASS);
+                    
+                    try
+                    {
+                        scriptService.executeScript(contentNodeRef1, BaseNodeServiceTest.PROP_QNAME_TEST_CONTENT, model);
+                        fail("execution of nonsecure script on nodeRef is not allowed.");
+                    }
+                    catch (AlfrescoRuntimeException ex)
+                    {
+                        // expected
+                    }
+                }
+                finally
+                {
+                }
+
+                return null;
+            }
+        });
+
+    }
+    
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
     private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
     private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
@@ -378,4 +453,13 @@ public class RhinoScriptTest extends TestCase
             "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
             "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
             "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
+    
+    private static final String BASIC_JAVA = 
+            "var list = com.google.common.collect.Lists.newArrayList();\n" + 
+            "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
+    
+    private static final String REFLECTION_GET_CLASS =
+          "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";
+            
+
 }

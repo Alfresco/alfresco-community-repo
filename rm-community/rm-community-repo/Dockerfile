@@ -1,9 +1,5 @@
+### Apply AGS community repo AMP to ACS image
 FROM alfresco/alfresco-content-repository-community:6.2.0-ea
-
-# Default user and group are used to setup permissions for Tomcat process, see parent Dockerfile: Alfresco/acs-community-packaging/docker-alfresco/Dockerfile
-ARG GROUPNAME=Alfresco
-ARG USERNAME=alfresco
-ARG TOMCAT_DIR=/usr/local/tomcat
 
 # Alfresco user does not have permissions to modify webapps or configuration. Switch to root.
 # The access will be fixed after all operations are done.
@@ -22,11 +18,11 @@ RUN mkdir /usr/local/tomcat/webapps/gs-api-explorer && cd /usr/local/tomcat/weba
     jar -xvf /usr/local/tomcat/webapps/gs-api-explorer-*.war && rm -f /usr/local/tomcat/webapps/gs-api-explorer-*.war
 
 # All files in the tomcat folder must be owned by root user and Alfresco group as mentioned in the parent Dockerfile
-RUN chgrp -R ${GROUPNAME} ${TOMCAT_DIR}/webapps && \
-    find ${TOMCAT_DIR}/webapps -type d -exec chmod 0750 {} \; && \
-    find ${TOMCAT_DIR}/webapps -type f -exec chmod 0640 {} \; && \
-    chmod -R g+r ${TOMCAT_DIR}/webapps && \
-    chgrp -R ${GROUPNAME} ${TOMCAT_DIR}
+RUN chgrp -R Alfresco /usr/local/tomcat/webapps && \
+    find /usr/local/tomcat/webapps -type d -exec chmod 0750 {} \; && \
+    find /usr/local/tomcat/webapps -type f -exec chmod 0640 {} \; && \
+    chmod -R g+r /usr/local/tomcat/webapps && \
+    chgrp -R Alfresco /usr/local/tomcat
 
 # Switching back to alfresco user after having added amps files to run the container as non-root
 USER alfresco

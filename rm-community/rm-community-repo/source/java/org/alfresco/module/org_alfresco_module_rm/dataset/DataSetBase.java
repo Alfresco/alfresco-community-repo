@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.dataset;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 public class DataSetBase implements DataSet

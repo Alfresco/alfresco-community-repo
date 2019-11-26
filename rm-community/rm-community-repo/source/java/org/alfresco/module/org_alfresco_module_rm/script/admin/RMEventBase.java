@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;

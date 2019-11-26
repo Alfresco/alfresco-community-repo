@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,8 +39,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -56,7 +55,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -292,7 +291,7 @@ public class TransferReportPost extends BaseTransferWebScript
             writer.write("<table cellpadding=\"3\" cellspacing=\"3\">");
             writer.write("<tr><td class=\"label\">Transfer Date:</td><td>");
             Date transferDate = (Date)this.nodeService.getProperty(transferNode, ContentModel.PROP_CREATED);
-            writer.write(StringEscapeUtils.escapeHtml(transferDate.toString()));
+            writer.write(StringEscapeUtils.escapeHtml4(transferDate.toString()));
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Transfer Location:</td><td>");
             if (isAccession)
@@ -301,16 +300,16 @@ public class TransferReportPost extends BaseTransferWebScript
             }
             else
             {
-                writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(transferNode,
+                writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(transferNode,
                         RecordsManagementModel.PROP_TRANSFER_LOCATION)));
             }
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Performed By:</td><td>");
-            writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(transferNode,
+            writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(transferNode,
                         ContentModel.PROP_CREATOR)));
             writer.write("</td></tr>");
             writer.write("<tr><td class=\"label\">Disposition Authority:</td><td>");
-            writer.write(dispositionAuthority != null ? StringEscapeUtils.escapeHtml(dispositionAuthority) : "");
+            writer.write(dispositionAuthority != null ? StringEscapeUtils.escapeHtml4(dispositionAuthority) : "");
             writer.write("</td></tr></table>\n");
 
             writer.write("<h2>Transferred Items</h2>\n");
@@ -361,10 +360,10 @@ public class TransferReportPost extends BaseTransferWebScript
         throws IOException
     {
         writer.write("<span class=\"nodeName\">");
-        writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(folderNode,
+        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(folderNode,
                     ContentModel.PROP_NAME)));
         writer.write("</span>&nbsp;(Unique Folder Identifier:&nbsp;");
-        writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(folderNode,
+        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(folderNode,
                     RecordsManagementModel.PROP_IDENTIFIER)));
         writer.write(")\n");
 
@@ -399,10 +398,10 @@ public class TransferReportPost extends BaseTransferWebScript
     {
         writer.write("<div class=\"record\">\n");
         writer.write("  <span class=\"nodeName\">");
-        writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(recordNode,
+        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
                     ContentModel.PROP_NAME)));
         writer.write("</span>&nbsp;(Unique Record Identifier:&nbsp;");
-        writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(recordNode,
+        writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
                     RecordsManagementModel.PROP_IDENTIFIER)));
         writer.write(")");
 
@@ -410,10 +409,10 @@ public class TransferReportPost extends BaseTransferWebScript
         {
             Date declaredOn = (Date)this.nodeService.getProperty(recordNode, RecordsManagementModel.PROP_DECLARED_AT);
             writer.write(" declared by ");
-            writer.write(StringEscapeUtils.escapeHtml((String)this.nodeService.getProperty(recordNode,
+            writer.write(StringEscapeUtils.escapeHtml4((String)this.nodeService.getProperty(recordNode,
                         RecordsManagementModel.PROP_DECLARED_BY)));
             writer.write(" on ");
-            writer.write(StringEscapeUtils.escapeHtml(declaredOn.toString()));
+            writer.write(StringEscapeUtils.escapeHtml4(declaredOn.toString()));
         }
 
         writer.write("\n</div>\n");

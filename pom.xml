@@ -276,6 +276,14 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${dependency.spring.version}</version>
+            <!-- exclude spring-jcl which is brought in by spring-core -->
+            <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

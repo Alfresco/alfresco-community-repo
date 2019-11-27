@@ -110,6 +110,8 @@ services:
             - SOLR_SOLR_PORT=8983
             #Create the default alfresco and archive cores
             - SOLR_CREATE_ALFRESCO_DEFAULTS=alfresco,archive
+             #HTTP by default
+            - ALFRESCO_SECURE_COMMS=none
         ports:
             - 8083:8983 #Browser port
 

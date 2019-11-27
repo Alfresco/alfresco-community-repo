@@ -532,7 +532,7 @@
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
       <alfresco-spring-webscripts.version>7.9</alfresco-spring-webscripts.version>
-      <api.explorer.version>6.1.0</api.explorer.version>
+      <api.explorer.version>6.2.0</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.version>0.0</alfresco.version>
 

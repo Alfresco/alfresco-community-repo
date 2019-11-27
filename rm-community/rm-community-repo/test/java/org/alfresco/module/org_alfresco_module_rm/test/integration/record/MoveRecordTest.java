@@ -120,7 +120,7 @@ public class MoveRecordTest extends BaseRMTestCase
                 assertNull(dispositionService.getNextDispositionAction(record));
    
                 // check the search aspect properties
-                assertFalse(nodeService.hasAspect(record, ASPECT_RM_SEARCH));                       
+                assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
 
             }            
         });                 

@@ -39,11 +39,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -103,6 +103,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
     private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
     private static final String MSG_ERR_HOLD_PERMISSION_GENERIC_ERROR = "rm.hold.generic-permission-error";
     private static final String MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR = "rm.hold.detailed-permission-error";
+
+    /** Maximum number of held items to display in error message */
+    private static final int MAX_HELD_ITEMS_LIST_SIZE = 5;
 
     /** File Plan Service */
     private FilePlanService filePlanService;
@@ -570,13 +573,13 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (heldNames.size() > 0)
         {
             StringBuilder sb = new StringBuilder();
-            for (String name : heldNames)
-            {
+            Stream<String> stream1 = heldNames.stream();
+            stream1.limit(MAX_HELD_ITEMS_LIST_SIZE).forEach(name -> {
                 sb.append("\n ");
                 sb.append("'");
                 sb.append(name);
                 sb.append("'");
-            }
+            });
             throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
         }
 

@@ -49,9 +49,12 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.annotation.Behaviour;
+import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -73,7 +76,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 1.0
  */
-public class RecordsManagementSearchBehaviour implements RecordsManagementModel
+public class RecordsManagementSearchBehaviour implements RecordsManagementModel,
+                                                         NodeServicePolicies.OnMoveNodePolicy
 {
     /** logger */
     private static Log logger = LogFactory.getLog(RecordsManagementSearchBehaviour.class);
@@ -172,6 +176,9 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     private JavaBehaviour jbEventExecutionUpdate = new JavaBehaviour(this, "eventExecutionUpdate", NotificationFrequency.TRANSACTION_COMMIT);
     private JavaBehaviour jbEventExecutionDelete = new JavaBehaviour(this, "eventExecutionDelete", NotificationFrequency.TRANSACTION_COMMIT);
 
+    /** on move record or record folder behavior */
+    private JavaBehaviour jbMoveNode = new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT);
+
     /** Array of behaviours related to disposition schedule artifacts */
     private JavaBehaviour[] jbDispositionBehaviours =
     {
@@ -243,6 +250,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_VITAL_RECORD_DEFINITION,
                 new JavaBehaviour(this, "vitalRecordDefintionUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT));
+
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
+                ASPECT_FILE_PLAN_COMPONENT,
+                jbMoveNode);
     }
 
     /**
@@ -906,5 +918,38 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         }
 
         return results;
+    }
+
+    /**
+     * Record and record folder move behavior
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    @Behaviour
+            (
+                    kind = BehaviourKind.CLASS,
+                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+            )
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        // check the parent has actually changed
+        if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
+        {
+            final NodeRef recordOrFolder = newChildAssocRef.getChildRef();
+            final boolean isRecordOrFolder = recordService.isRecord(recordOrFolder) || recordFolderService.isRecordFolder(recordOrFolder);
+            AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork()
+                {
+                    if (nodeService.exists(recordOrFolder) && isRecordOrFolder)
+                    {
+                        applySearchAspect(recordOrFolder);
+                    }
+                    return null;
+                }
+            });
+        }
     }
 }

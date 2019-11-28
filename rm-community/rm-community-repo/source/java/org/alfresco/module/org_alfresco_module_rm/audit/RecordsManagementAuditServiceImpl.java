@@ -82,6 +82,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -206,6 +207,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private FilePlanService filePlanService;
     private NamespaceService namespaceService;
     protected CapabilityService capabilityService;
+    protected PermissionService permissionService;
 
     private boolean shutdown = false;
 
@@ -320,6 +322,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     public void setIgnoredAuditProperties(List<String> ignoredAuditProperties)
     {
         this.ignoredAuditProperties = ignoredAuditProperties;
+    }
+
+    /**
+     *
+     * @param permissionService
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -988,9 +999,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
 
                 if (nodeRef != null && nodeService.exists(nodeRef) &&
-                        filePlanService.isFilePlanComponent(nodeRef) &&
-                        !AccessStatus.ALLOWED.equals(
-                                capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                        ((filePlanService.isFilePlanComponent(nodeRef) &&
+                                !AccessStatus.ALLOWED.equals(
+                                        capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                                || (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ)))))
                 {
                     return true;
                 }
@@ -1522,12 +1534,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 setNodeName(entry, json);
 
-                // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Delete RM Object"))
-                {
-                    json.put("deleteObject", true);
-                }
-
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());
                 json.put("event", entry.getEvent() == null ? "": getAuditEventLabel(entry.getEvent()));
                 json.put("identifier", entry.getIdentifier() == null ? "": entry.getIdentifier());
@@ -1624,6 +1630,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 case "Remove From User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                    break;
+
+                case "Delete RM Object":
+                case "Delete Hold":
+                    nodeName = entry.getNodeName();
+                    json.put("deleteObject", true);
                     break;
 
                 default:

@@ -552,14 +552,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      */
     private void checkPermissionsForDeleteHold(NodeRef hold)
     {
-        List<NodeRef> held = AuthenticationUtil.runAsSystem(new RunAsWork<List<NodeRef>>()
-        {
-            @Override
-            public List<NodeRef> doWork()
-            {
-                return getHeld(hold);
-            }
-        });
+        List<NodeRef> held = AuthenticationUtil.runAsSystem(() -> getHeld(hold));
 
         List<String> heldNames = new ArrayList<>();
         for (NodeRef nodeRef : held)

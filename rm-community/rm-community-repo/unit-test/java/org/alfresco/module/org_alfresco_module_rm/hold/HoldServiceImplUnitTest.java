@@ -320,7 +320,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // TODO check interactions with policy component!!!
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test (expected = AccessDeniedException.class)
     public void deleteHoldNoPermissionsOnContent()
     {
         mockPoliciesForDeleteHold();

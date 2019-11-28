@@ -81,6 +81,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -205,6 +206,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private FilePlanService filePlanService;
     private NamespaceService namespaceService;
     protected CapabilityService capabilityService;
+    protected PermissionService permissionService;
 
     private boolean shutdown = false;
 
@@ -319,6 +321,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     public void setIgnoredAuditProperties(List<String> ignoredAuditProperties)
     {
         this.ignoredAuditProperties = ignoredAuditProperties;
+    }
+
+    /**
+     *
+     * @param permissionService
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -987,9 +998,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
 
                 if (nodeRef != null && nodeService.exists(nodeRef) &&
-                        filePlanService.isFilePlanComponent(nodeRef) &&
-                        !AccessStatus.ALLOWED.equals(
-                                capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                        ((filePlanService.isFilePlanComponent(nodeRef) &&
+                                !AccessStatus.ALLOWED.equals(
+                                        capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                                || (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ)))))
                 {
                     return true;
                 }

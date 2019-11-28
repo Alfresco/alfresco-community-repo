@@ -88,6 +88,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     private static final String HOLD_NAME = "holdname";
     private static final String HOLD_REASON = "holdreason";
     private static final String HOLD_DESCRIPTION = "holddescription";
+    private static final String GENERIC_ERROR_MSG = "any error message text";
 
     protected NodeRef holdContainer;
     protected NodeRef hold;
@@ -317,6 +318,21 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).deleteNode(hold);
 
         // TODO check interactions with policy component!!!
+    }
+
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void deleteHoldNoPermissionsOnContent()
+    {
+        mockPoliciesForDeleteHold();
+
+        ChildAssociationRef childAssociationRef = generateChildAssociationRef(hold, record);
+        when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
+            .thenReturn(Collections.singletonList(childAssociationRef));
+
+        when(mockedPermissionService.hasPermission(record, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
+        when(mockedNodeService.getProperty(record, ContentModel.PROP_NAME)).thenThrow(new AccessDeniedException(GENERIC_ERROR_MSG));
+
+        holdService.beforeDeleteNode(hold);
     }
 
     @Test (expected = IntegrityException.class)

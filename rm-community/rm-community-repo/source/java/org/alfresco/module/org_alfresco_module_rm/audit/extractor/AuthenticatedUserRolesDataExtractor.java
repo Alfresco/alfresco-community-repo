@@ -90,8 +90,8 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents either
-     *                      a fileplan component or a subtype of content
+     * @return  Returns <tt>true</tt> if the data is a NodeRef and it represents either a fileplan component or
+     *          a subtype of content
      */
     public boolean isSupported(Serializable data)
     {

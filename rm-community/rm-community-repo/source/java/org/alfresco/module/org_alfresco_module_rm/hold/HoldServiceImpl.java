@@ -574,7 +574,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             StringBuilder sb = new StringBuilder();
             Stream<String> stream1 = heldNames.stream();
-            stream1.limit(MAX_HELD_ITEMS_LIST_SIZE).forEach((name) -> {
+            stream1.limit(MAX_HELD_ITEMS_LIST_SIZE).forEach(name -> {
                 sb.append("\n ");
                 sb.append("'");
                 sb.append(name);

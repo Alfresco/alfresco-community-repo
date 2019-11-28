@@ -43,7 +43,6 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -241,6 +240,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         if (nodeService.exists(hold) && isHold(hold))
         {
+            checkPermissionsForDeleteHold(hold);
+
             RunAsWork<Void> work = new RunAsWork<Void>()
             {
                 @Override
@@ -531,6 +532,26 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, because passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
+        checkPermissionsForDeleteHold(hold);
+
+        invokeBeforeDeleteHold(hold);
+
+        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
+        Set<QName> classQNames = getTypeAndApsects(hold);
+
+        // delete the hold node
+        nodeService.deleteNode(hold);
+
+        invokeOnDeleteHold(holdName, classQNames);
+    }
+
+    /**
+     * Helper method to check if user has correct permissions to delete hold
+     *
+     * @param hold hold to be deleted
+     */
+    private void checkPermissionsForDeleteHold(NodeRef hold)
+    {
         List<NodeRef> held = AuthenticationUtil.runAsSystem(new RunAsWork<List<NodeRef>>()
         {
             @Override
@@ -579,16 +600,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
             throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
         }
-
-        invokeBeforeDeleteHold(hold);
-
-        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
-        Set<QName> classQNames = getTypeAndApsects(hold);
-
-        // delete the hold node
-        nodeService.deleteNode(hold);
-
-        invokeOnDeleteHold(holdName, classQNames);
     }
 
     /**

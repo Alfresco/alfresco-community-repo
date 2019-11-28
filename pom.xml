@@ -27,7 +27,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-core.version>7.22</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>7.23</dependency.alfresco-core.version>
         <dependency.cxf.version>3.3.3</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>

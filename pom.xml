@@ -36,7 +36,7 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.55</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.56</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>7.23</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
@@ -275,11 +275,27 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${dependency.spring.version}</version>
+            <!-- exclude spring-jcl which is brought in by spring-core -->
+            <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${dependency.spring.version}</version>
+            <!-- exclude spring-jcl which is brought in by spring-orm -->
+            <!-- see https://issues.alfresco.com/jira/browse/REPO-4774 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>

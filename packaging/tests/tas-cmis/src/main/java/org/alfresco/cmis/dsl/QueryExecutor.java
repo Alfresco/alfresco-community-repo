@@ -1,5 +1,6 @@
 package org.alfresco.cmis.dsl;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import static org.alfresco.utility.Utility.checkObjectIsInitialized;
@@ -233,6 +234,16 @@ public class QueryExecutor
             STEP(String.format("Verify that query: '%s' returns the values from %s for column %s", currentQuery, values, queryName));
             Set<T> resultSet = Streams.stream(results).map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toSet());
             Assert.assertEquals(resultSet, values, "Values did not match");
+
+            return this;
+        }
+
+        public <T> QueryResultAssertion isReturningOrderedValues(String queryName, List<T> values)
+        {
+            STEP(String.format("Verify that query: '%s' returns the values from %s for column %s", currentQuery, values, queryName));
+            List<T> resultList = Streams.stream(results).map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toList());
+            // Include both lists in assertion message as TestNG does not provide this information.
+            Assert.assertEquals(resultList, values, "Values did not match expected " + values + " but found " + resultList);
 
             return this;
         }

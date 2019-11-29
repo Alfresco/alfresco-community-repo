@@ -85,7 +85,7 @@ public class People extends ModelRequest<People>
         {
             while ((activityCollection.isEmpty() || activityCollection.getPagination().getCount() != expectedNoOfEntries) && retry < Utility.retryCountSeconds + 20)
             {
-                Utility.waitToLoopTime(2);
+                Thread.sleep(300);
                 activityCollection = restWrapper.processModels(RestActivityModelsCollection.class, request);
                 retry++;
             }

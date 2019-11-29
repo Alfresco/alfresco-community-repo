@@ -12,6 +12,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="filePlanService" ref="filePlanService" />
       <property name="filePlanRoleService" ref="filePlanRoleService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.NamePathDataExtractor">

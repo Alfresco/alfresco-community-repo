@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -710,6 +710,16 @@ public class TransformerDebug implements ApplicationContextAware
         }
     }
 
+    public void debug(String sourceMimetype, String targetMimetype, NodeRef sourceNodeRef, long sourceSize,
+                      String renditionName, String message)
+    {
+        String fileName = getFileName(sourceNodeRef, true, -1);
+        log("              "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
+                ((fileName != null) ? fileName+' ' : "")+
+                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
+                (renditionName != null ? "-- "+renditionName+" -- " : "") + message);
+    }
+
     /**
      * Called after working out what transformers are available and any
      * resulting transform has been called.
@@ -1369,7 +1379,7 @@ public class TransformerDebug implements ApplicationContextAware
 
         boolean componentTransformer = isComponentTransformer(transformer);
         
-        StringBuilder sb = new StringBuilder(name);
+        StringBuilder sb = new StringBuilder("Legacy:").append(name);
         if (componentTransformer || type.length() > 0)
         {
             sb.append("<<");
@@ -1671,7 +1681,6 @@ public class TransformerDebug implements ApplicationContextAware
                 ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
                 SynchronousTransformClient synchronousTransformClient = getSynchronousTransformClient();
                 Map<String, String> actualOptions = Collections.emptyMap();
-                synchronousTransformClient.isSupported(sourceNodeRef, targetMimetype, actualOptions, null, nodeService);
                 synchronousTransformClient.transform(reader, writer, actualOptions, null, sourceNodeRef);
             }
             catch (Exception e)

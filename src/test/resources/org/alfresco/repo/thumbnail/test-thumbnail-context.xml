@@ -1,13 +1,16 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<beans>
-   <bean id="test.transformer.TransientFail"
-         class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$TransientFailTransformer"
-         parent="baseContentTransformer" >
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <bean id="synchronousTransformClient" class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.TestSynchronousTransformClient">
+      <constructor-arg name="delegate" ref="switchingSynchronousTransformClient" />
    </bean>
-   <bean id="test.transformer.LongRunning"
-         class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$LongRunningTransformer"
-         parent="baseContentTransformer" >
+
+   <bean id="transformServiceRegistry" class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.TestTransformServiceRegistry">
+      <constructor-arg name="delegate" ref="localTransformServiceRegistry" />
    </bean>
+
 </beans>

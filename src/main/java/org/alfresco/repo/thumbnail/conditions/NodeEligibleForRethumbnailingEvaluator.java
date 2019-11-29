@@ -63,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  *     {@link FailureHandlingOptions#getRetryCount() system.thumbnail.retryCount} times.</li>
  * <li>These initial retries to produce a thumbnail will occur not more often than every
  *     {@link FailureHandlingOptions#getRetryPeriod() system.thumbnail.retryPeriod} seconds
- *     and will use which ever content transformers the {@link ContentService#getTransformer(String, String) content service} gives.</li>
+ *     and will use which ever content transformers the ContentService#getTransformer(String, String content service gives.</li>
  * <li>If a thumbnail is not successfully produced for a node after these attempts then it is considered to be
  *     a 'difficult' piece of content with respect to thumbnailing and the assumption is that a thumbnail may
  *     never be available for it. However, in order to allow for the possibility of software upgrades or similiar, which may

@@ -216,7 +216,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformer#transform(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public final void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
+    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
         throws ContentIOException
     {
         try

@@ -1076,14 +1076,6 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testTransformAction() throws Throwable
     {
-        ContentTransformer transformer = transformerRegistry.getTransformer(
-                MimetypeMap.MIMETYPE_EXCEL, -1,
-                MimetypeMap.MIMETYPE_TEXT_PLAIN,
-                new TransformationOptions());
-        if (transformer == null)
-        {
-            return;
-        }
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
 		params.put(TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
         params.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, this.rootNodeRef);
@@ -1157,14 +1149,6 @@ public class RuleServiceCoverageTest extends TestCase
      */
     public void testImageTransformAction() throws Throwable
     {
-        ContentTransformer transformer = transformerRegistry.getTransformer(
-                MimetypeMap.MIMETYPE_IMAGE_GIF, -1,
-                MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                new TransformationOptions());
-        if (transformer == null)
-        {
-            return;
-        }
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
 		params.put(ImageTransformActionExecuter.PARAM_DESTINATION_FOLDER, this.rootNodeRef);
         params.put(ImageTransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CHILDREN);
@@ -1993,59 +1977,56 @@ public class RuleServiceCoverageTest extends TestCase
     
     public void testAsyncExecutionWithPotentialLoop()
     {
-        if (this.transformerRegistry.getTransformer(MimetypeMap.MIMETYPE_EXCEL, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions()) != null)
+        try
         {
-    		try
-    		{
-    	        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
-    			params.put(TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-    	        params.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, this.nodeRef);
-    	        params.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS);
-    	        params.put(TransformActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "transformed"));
-    	        
-    	        Rule rule = createRule(
-    	        		RuleType.INBOUND, 
-    	        		TransformActionExecuter.NAME, 
-    	        		params, 
-    	        		NoConditionEvaluator.NAME, 
-    	        		null);
-    	        rule.setExecuteAsynchronously(true);
-    	        rule.setTitle("Transform document to text");
-    	        
-    	        UserTransaction tx0 = transactionService.getUserTransaction();
-    			tx0.begin();   			
-    	        this.ruleService.saveRule(this.nodeRef, rule);
-    	        tx0.commit();    	        
-    	
-    	        UserTransaction tx = transactionService.getUserTransaction();
-    			tx.begin();
-    			
-    			Map<QName, Serializable> props =new HashMap<QName, Serializable>(1);
-    	        props.put(ContentModel.PROP_NAME, "test.xls");
-    			
-    			// Create the node at the root
-    	        NodeRef newNodeRef = this.nodeService.createNode(
-    	                this.nodeRef,
-                        ContentModel.ASSOC_CHILDREN,                
-    	                QName.createQName(TEST_NAMESPACE, "origional"),
-    	                ContentModel.TYPE_CONTENT,
-    	                props).getChildRef(); 
-    			
-    			// Set some content on the origional
-    			ContentWriter contentWriter = this.contentService.getWriter(newNodeRef, ContentModel.PROP_CONTENT, true);
-                contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
-    			File testFile = AbstractContentTransformerTest.loadQuickTestFile("xls");
-    			contentWriter.putContent(testFile);
-    			
-    			tx.commit();
-    	        
-                // Sleep to ensure work is done b4 execution is canceled
-    			Thread.sleep(10000);    			
-    		}
-    		catch (Exception exception)
-    		{
-    			throw new RuntimeException(exception);
-    		}
+            Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+            params.put(TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            params.put(TransformActionExecuter.PARAM_DESTINATION_FOLDER, this.nodeRef);
+            params.put(TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS);
+            params.put(TransformActionExecuter.PARAM_ASSOC_QNAME, QName.createQName(TEST_NAMESPACE, "transformed"));
+
+            Rule rule = createRule(
+                    RuleType.INBOUND,
+                    TransformActionExecuter.NAME,
+                    params,
+                    NoConditionEvaluator.NAME,
+                    null);
+            rule.setExecuteAsynchronously(true);
+            rule.setTitle("Transform document to text");
+
+            UserTransaction tx0 = transactionService.getUserTransaction();
+            tx0.begin();
+            this.ruleService.saveRule(this.nodeRef, rule);
+            tx0.commit();
+
+            UserTransaction tx = transactionService.getUserTransaction();
+            tx.begin();
+
+            Map<QName, Serializable> props =new HashMap<QName, Serializable>(1);
+            props.put(ContentModel.PROP_NAME, "test.xls");
+
+            // Create the node at the root
+            NodeRef newNodeRef = this.nodeService.createNode(
+                    this.nodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE, "origional"),
+                    ContentModel.TYPE_CONTENT,
+                    props).getChildRef();
+
+            // Set some content on the origional
+            ContentWriter contentWriter = this.contentService.getWriter(newNodeRef, ContentModel.PROP_CONTENT, true);
+            contentWriter.setMimetype(MimetypeMap.MIMETYPE_EXCEL);
+            File testFile = AbstractContentTransformerTest.loadQuickTestFile("xls");
+            contentWriter.putContent(testFile);
+
+            tx.commit();
+
+            // Sleep to ensure work is done b4 execution is canceled
+            Thread.sleep(10000);
+        }
+        catch (Exception exception)
+        {
+            throw new RuntimeException(exception);
         }
     }
 }

@@ -49,13 +49,21 @@ public class SwitchingTransformClient implements TransformClient
     {
         try
         {
-            transformClient.set(primary);
             primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+            transformClient.set(primary);
         }
         catch (UnsupportedOperationException e)
         {
-            transformClient.set(secondary);
-            secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+            try
+            {
+                secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
+                transformClient.set(secondary);
+            }
+            catch (UnsupportedOperationException e2)
+            {
+                transformClient.set(null);
+                throw e2;
+            }
         }
     }
 

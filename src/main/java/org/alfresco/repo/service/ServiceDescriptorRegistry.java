@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,7 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -159,6 +160,11 @@ public class ServiceDescriptorRegistry
     public ContentService getContentService()
     {
         return (ContentService)getService(CONTENT_SERVICE);
+    }
+
+    public SynchronousTransformClient getSynchronousTransformClient()
+    {
+        return (SynchronousTransformClient)getService(SYNCHRONOUS_TRANSFORM_CLIENT);
     }
 
     @Override

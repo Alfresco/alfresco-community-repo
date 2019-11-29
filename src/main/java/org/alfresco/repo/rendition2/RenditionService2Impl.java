@@ -86,7 +86,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     private static Log logger = LogFactory.getLog(RenditionService2Impl.class);
 
     // As Async transforms and renditions are so similar, this class provides a way to provide the code that is different.
-    private abstract static class renderOrTransformCallBack
+    private abstract static class RenderOrTransformCallBack
     {
         abstract String getName();
 
@@ -208,7 +208,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void transform(NodeRef sourceNodeRef, TransformDefinition transformDefinition)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new renderOrTransformCallBack()
+        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack()
         {
             @Override
             public String getName()
@@ -228,7 +228,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void render(NodeRef sourceNodeRef, String renditionName)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new renderOrTransformCallBack()
+        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack()
         {
             @Override
             public String getName()
@@ -278,7 +278,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         });
     }
 
-    private void requestAsyncTransformOrRendition(NodeRef sourceNodeRef, renderOrTransformCallBack renderOrTransform)
+    private void requestAsyncTransformOrRendition(NodeRef sourceNodeRef, RenderOrTransformCallBack renderOrTransform)
     {
         try
         {

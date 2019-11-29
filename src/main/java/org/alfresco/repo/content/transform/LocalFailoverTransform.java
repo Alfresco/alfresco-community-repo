@@ -26,6 +26,7 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -77,14 +78,14 @@ public class LocalFailoverTransform extends AbstractLocalTransform
                                  ContentWriter writer, Map<String, String> transformOptions,
                                  String sourceMimetype, String targetMimetype,
                                  String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef) throws Exception
+                                 String renditionName, NodeRef sourceNodeRef)
     {
         final String targetExt = mimetypeService.getExtension(targetMimetype);
 
         // We need to keep a reference to thrown exceptions as we're going to catch them and
         // then move on to the next transformer. In the event that they all fail, we will throw
         // the first exception.
-        Exception transformationException = null;
+        RuntimeException transformationException = null;
 
         for (int i = 0; i < transformers.size(); i++)
         {
@@ -111,7 +112,7 @@ public class LocalFailoverTransform extends AbstractLocalTransform
                 // attempt to transform
                 stepTransformer.transform(reader, currentWriter, transformOptions, renditionName, sourceNodeRef);
             }
-            catch (Exception are)
+            catch (UnsupportedTransformationException | ContentIOException are)
             {
                 if (transformationException == null)
                 {

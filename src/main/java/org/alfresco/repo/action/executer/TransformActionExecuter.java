@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -33,6 +34,8 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -90,7 +93,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     private ContentService contentService;
     private CopyService copyService;
     private MimetypeService mimetypeService;
-    
+    private SynchronousTransformClient synchronousTransformClient;
+    private TransformationOptionsConverter converter;
+
     /**
      * Properties (needed to avoid changing method signatures)
      */
@@ -104,7 +109,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
     /**
      * Set the node service
      */
@@ -144,7 +149,17 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     {
         this.copyService = copyService;
     }
-    
+
+    public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient)
+    {
+        this.synchronousTransformClient = synchronousTransformClient;
+    }
+
+    public void setConverter(TransformationOptionsConverter converter)
+    {
+        this.converter = converter;
+    }
+
     /**
      * Add parameter definitions
      */
@@ -188,13 +203,19 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        TransformationOptions options = newTransformationOptions(ruleAction, actionedUponNodeRef);
-        // getExecuteAsychronously() is not true for async convert content rules, so using Thread name
-        //        options.setUse(ruleAction.getExecuteAsychronously() ? "asyncRule" :"syncRule");
-        options.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
-        if (null == contentService.getTransformer(contentReader.getContentUrl(), contentReader.getMimetype(), contentReader.getSize(), mimeType, options))
+        TransformationOptions transformationOptions = newTransformationOptions(ruleAction, actionedUponNodeRef);
+        // getExecuteAsynchronously() is not true for async convert content rules, so using Thread name
+        // options.setUse(ruleAction.getExecuteAsynchronously() ? "asyncRule" :"syncRule");
+        transformationOptions.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
+
+        String sourceMimetype = contentReader.getMimetype();
+        long sourceSizeInBytes = contentReader.getSize();
+        String contentUrl = contentReader.getContentUrl();
+        Map<String, String> options = converter.getOptions(transformationOptions);
+        if (!synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes,
+                contentUrl, mimeType, options, null, actionedUponNodeRef))
         {
-            throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, contentReader.getMimetype(), mimeType));
+            throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimetype, mimeType));
         }
         
         // Get the details of the copy destination
@@ -325,9 +346,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 
     {
         // transform - will throw NoTransformerException if there are no transformers
-        TransformationOptions options = newTransformationOptions(ruleAction, sourceNodeRef);
-        options.setTargetNodeRef(destinationNodeRef);
-        this.contentService.transform(contentReader, contentWriter, options);
+        TransformationOptions transformationOptions = newTransformationOptions(ruleAction, sourceNodeRef);
+        transformationOptions.setTargetNodeRef(destinationNodeRef);
+        Map<String, String> options = converter.getOptions(transformationOptions);
+        synchronousTransformClient.transform(contentReader, contentWriter, options, null, sourceNodeRef);
     }
     
     /**

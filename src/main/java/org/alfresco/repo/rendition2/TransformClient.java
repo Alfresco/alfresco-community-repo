@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -57,6 +59,12 @@ public interface TransformClient
      * @param renditionDefinition which rendition to perform
      * @param user that requested the transform.
      * @param sourceContentHashCode the hash code of the source node's content URL. Used to check the transform result
+     * @throws UnsupportedTransformationException if there is an unexpected failure to transform, normally in a
+     *         pipeline, where an intermediate transform may not be performed after all because an intermediate
+     *         conversion is too big.
+     * @throws ContentIOException  there is an unexpected communication or transformation failure.
      */
-    void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode);
+    void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
+                   int sourceContentHashCode)
+        throws UnsupportedTransformationException, ContentIOException;
 }

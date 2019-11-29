@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -90,11 +90,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
-/**
- *
- * @deprecated We are introducing the new async RenditionService2.
- */
-@Deprecated
 public class MockedTestServiceRegistry implements ServiceRegistry
 {
     private final ActionService actionService = mock(ActionService.class);

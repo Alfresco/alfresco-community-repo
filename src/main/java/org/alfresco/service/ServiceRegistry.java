@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,6 +38,7 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -112,6 +113,7 @@ public interface ServiceRegistry
     static final QName DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DictionaryService");
     static final QName NODE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NodeService");
     static final QName CONTENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ContentService");
+    static final QName SYNCHRONOUS_TRANSFORM_CLIENT = QName.createQName(NamespaceService.ALFRESCO_URI, "synchronousTransformClient");
     static final QName MIMETYPE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "MimetypeService");
     static final QName CONTENT_FILTER_LANGUAGES_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ContentFilterLanguagesService");
     static final QName MULTILINGUAL_CONTENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "MultilingualContentService");
@@ -620,4 +622,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     RenditionService2 getRenditionService2();
+
+    /**
+     * @return the synchronous transform client (or null, if one is not provided)
+     */
+    @NotAuditable
+    default SynchronousTransformClient getSynchronousTransformClient()
+    {
+        return null;
+    }
 }

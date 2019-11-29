@@ -32,9 +32,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import org.alfresco.repo.rendition2.LegacySynchronousTransformClient;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.descriptor.Descriptor;
@@ -64,7 +64,7 @@ public class TransformerConfigDynamicTransformersTest
     private MimetypeService mimetypeService;
     
     @Mock
-    private ContentService contentService;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
     
     @Mock
     private TransformerDebug transformerDebug;
@@ -118,7 +118,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "transformer1|pdf|transformer2|png|transformer3");
         
-        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
         
         assertEquals(4, transformerRegistry.getAllTransformers().size());
@@ -149,7 +149,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "transformer1|pdf");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
 
@@ -160,7 +160,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "transformer1|pdf|transformer2|png");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
 
@@ -171,7 +171,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformer3.pipeline", "transformer1|pdf|transformer2");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
 
@@ -182,7 +182,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "transformer1|*|transformer2|png|transformer3");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         transformerRegistry.getTransformer("transformer.transformerA");
@@ -195,7 +195,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "transformer1|pdf|*|png|transformer3");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         transformerRegistry.getTransformer("transformer.transformerA");
@@ -208,7 +208,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.pipeline", "unknown1|pdf|unknown2|png|unknown3");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
     
@@ -220,7 +220,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerA.pipeline", "transformer1|pdf|transformer2|png|transformer3",
                 "content.transformer.transformerA.available", "false");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         assertEquals(4, transformerRegistry.getAllTransformers().size());
@@ -238,7 +238,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.failover", "transformer1|transformer2|transformer3");
         
-        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
         
         assertEquals(4, transformerRegistry.getAllTransformers().size());
@@ -255,7 +255,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.failover", "transformer1");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
     
@@ -266,7 +266,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformer3.failover", "transformer1|transformer2");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
     
@@ -277,7 +277,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.failover", "transformer1|*|transformer3");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         transformerRegistry.getTransformer("transformer.transformerA");
@@ -290,7 +290,7 @@ public class TransformerConfigDynamicTransformersTest
         mockProperties(transformerProperties,
                 "content.transformer.transformerA.failover", "unknown1|unknown2|unknown3");
         
-        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(1, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null).getErrorCount());
     }
     
@@ -302,7 +302,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerA.failover", "transformer1|transformer2|transformer3",
                 "content.transformer.transformerA.available", "false");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         assertEquals(4, transformerRegistry.getAllTransformers().size());
@@ -322,7 +322,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerD.failover", "transformer1|transformerE",
                 "content.transformer.transformerE.failover", "transformer1|transformer1");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         assertEquals(5, transformerRegistry.getTransformers().size());
@@ -341,7 +341,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerD.failover", "transformer1|transformerE",
                 "content.transformer.transformerE.failover", "transformer1|transformerC");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, null);
         
         assertEquals(2, transformerRegistry.getTransformers().size());
@@ -358,7 +358,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerA.failover", "transformer1|transformer2|transformer3",
                 "content.transformer.transformerA.edition", "Enterprise");
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, descriptorService, null);
     }
     
@@ -370,7 +370,7 @@ public class TransformerConfigDynamicTransformersTest
                 "content.transformer.transformerA.failover", "transformer1|transformer2|transformer3",
                 "content.transformer.transformerA.amp", moduleId);
         
-        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, moduleService, null, null);
     }
     
@@ -477,7 +477,7 @@ public class TransformerConfigDynamicTransformersTest
         
         mockProperties(transformerProperties, transformerNamesAndValues);
         
-        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+        assertEquals(0, new TransformerConfigDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
                 transformerRegistry, transformerDebug, null, null, properties).getErrorCount());
         
         // Throws an exception if it does not exist

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,14 +27,11 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
-import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;

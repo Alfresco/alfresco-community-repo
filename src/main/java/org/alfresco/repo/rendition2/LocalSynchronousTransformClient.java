@@ -27,6 +27,8 @@ package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
+import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,20 +40,18 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.Map;
 
 /**
- * Request synchronous transforms. Used in refactoring deprecated code, which called Legacy transforms, so that it will
- * first try a Local transform, falling back to Legacy if not available. Transforms take place using transforms
- * available on the local machine (based on {@link LocalTransform}).
+ * Request synchronous transforms.
+ *
+ * Transforms take place using transforms available on the local machine (based on {@link LocalTransform}).
  *
  * @author adavis
  */
-@Deprecated
 public class LocalSynchronousTransformClient implements SynchronousTransformClient, InitializingBean
 {
     private static final String TRANSFORM = "Local synchronous transform ";
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
-    private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
 
     public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
@@ -65,38 +65,58 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     }
 
     @Override
-    public boolean isSupported(NodeRef sourceNodeRef, String sourceMimetype, long sourceSizeInBytes, String contentUrl,
-                        String targetMimetype,  Map<String, String> actualOptions, String transformName)
+    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
+                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        LocalTransform localTransform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
+        LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
                 sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        transform.set(localTransform);
 
         if (logger.isDebugEnabled())
         {
             logger.debug(TRANSFORM + renditionName + " from " + sourceMimetype +
-                    (localTransform == null ? " is unsupported" : " is supported"));
+                    (transform == null ? " is unsupported" : " is supported"));
         }
-        return localTransform != null;
+        return transform != null;
     }
 
     @Override
     public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String transformName, NodeRef sourceNodeRef) throws Exception
+                          String transformName, NodeRef sourceNodeRef)
     {
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        LocalTransform localTransform = transform.get();
         try
         {
-            if (localTransform == null)
+            if (reader == null)
             {
-                throw new IllegalStateException("isSupported was not called prior to transform.");
+                throw new IllegalArgumentException("The content reader must be set");
             }
-
-            if (null == reader || !reader.exists())
+            if (!reader.exists())
             {
                 throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
+            }
+
+            String sourceMimetype = reader.getMimetype();
+            long sourceSizeInBytes = reader.getSize();
+            if (sourceMimetype == null)
+            {
+                throw new IllegalArgumentException("The content reader mimetype must be set");
+            }
+
+            String targetMimetype = writer.getMimetype();
+            if (targetMimetype == null)
+            {
+                throw new IllegalArgumentException("The content writer mimetype must be set");
+            }
+
+            LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
+                    sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+
+            if (transform == null)
+            {
+                throw new UnsupportedTransformationException("Transformation of " + sourceMimetype +
+                        (sourceSizeInBytes > 0 ? " size "+sourceSizeInBytes : "")+ " to " + targetMimetype +
+                        " unsupported");
             }
 
             if (logger.isDebugEnabled())
@@ -104,7 +124,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
                 logger.debug(TRANSFORM + " requested " + renditionName);
             }
 
-            localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
+            transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
             if (logger.isDebugEnabled())
             {

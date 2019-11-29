@@ -43,15 +43,15 @@ import java.util.Map;
 @Deprecated
 public class LegacyTransformServiceRegistry implements InitializingBean, TransformServiceRegistry
 {
-    private ContentService contentService;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
     private TransformationOptionsConverter converter;
     private boolean enabled = true;
     private boolean firstTime = true;
     private TransformerDebug transformerDebug;
 
-    public void setContentService(ContentService contentService)
+    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
     {
-        this.contentService = contentService;
+        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
     }
 
     public void setConverter(TransformationOptionsConverter converter)
@@ -78,7 +78,7 @@ public class LegacyTransformServiceRegistry implements InitializingBean, Transfo
     @Override
     public void afterPropertiesSet()
     {
-        PropertyCheck.mandatory(this, "contentService", contentService);
+        PropertyCheck.mandatory(this, "legacySynchronousTransformClient", legacySynchronousTransformClient);
         PropertyCheck.mandatory(this, "converter", converter);
         PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
     }
@@ -99,7 +99,7 @@ public class LegacyTransformServiceRegistry implements InitializingBean, Transfo
             try
             {
                 TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-                maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+                maxSize = legacySynchronousTransformClient.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
             }
             catch (IllegalArgumentException ignore)
             {

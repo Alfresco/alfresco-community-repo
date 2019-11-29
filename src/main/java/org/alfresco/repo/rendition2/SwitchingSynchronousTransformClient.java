@@ -25,9 +25,12 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 import java.util.Map;
 
@@ -43,7 +46,8 @@ public class SwitchingSynchronousTransformClient implements SynchronousTransform
 {
     private final SynchronousTransformClient primary;
     private final SynchronousTransformClient secondary;
-    private ThreadLocal<SynchronousTransformClient> synchronousTransformClient = new ThreadLocal<>();
+
+    private TransformerDebug transformerDebug;
 
     public SwitchingSynchronousTransformClient(SynchronousTransformClient primary, SynchronousTransformClient secondary)
     {
@@ -51,31 +55,47 @@ public class SwitchingSynchronousTransformClient implements SynchronousTransform
         this.secondary = secondary;
     }
 
-    @Override
-    public boolean isSupported(NodeRef sourceNodeRef, String sourceMimetype, long sourceSizeInBytes, String contentUrl,
-                               String targetMimetype, Map<String, String> actualOptions, String transformName)
+    public void setTransformerDebug(TransformerDebug transformerDebug)
     {
-        boolean supported = true;
-        if (primary.isSupported(sourceNodeRef, sourceMimetype, sourceSizeInBytes, contentUrl,
-                targetMimetype, actualOptions, transformName))
+        this.transformerDebug = transformerDebug;
+    }
+
+    @Override
+    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
+                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
+    {
+        boolean supported =
+                primary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
+                        transformName, sourceNodeRef) ||
+                secondary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
+                        transformName, sourceNodeRef);
+        if (transformerDebug.isEnabled())
         {
-            synchronousTransformClient.set(primary);
-        }
-        else if (secondary.isSupported(sourceNodeRef, sourceMimetype, sourceSizeInBytes, contentUrl,
-                targetMimetype, actualOptions, transformName))
-        {
-            synchronousTransformClient.set(secondary);
-        }
-        else
-        {
-            supported = false;
+            String renditionName = TransformDefinition.convertToRenditionName(transformName);
+            transformerDebug.debug(sourceMimetype, targetMimetype, sourceNodeRef, sourceSizeInBytes, renditionName,
+                    " is "+(supported ? "" : "not ")+"supported");
         }
         return supported;
     }
 
     @Override
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef) throws Exception
+    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
+                          String transformName, NodeRef sourceNodeRef)
     {
-        synchronousTransformClient.get().transform(reader, writer, actualOptions, transformName, sourceNodeRef);
+        try
+        {
+            primary.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
+        }
+        catch (UnsupportedTransformationException primaryException)
+        {
+            try
+            {
+                secondary.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
+            }
+            catch (UnsupportedTransformationException secondaryException)
+            {
+                throw primaryException;
+            }
+        }
     }
 }

@@ -21,6 +21,7 @@
             <value>application/pdf</value>
          </list>    
       </property>
+      <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
    </bean>
 
    <!-- Add pdf -> text transformer using PdfMiner and disable PdfBox version -->

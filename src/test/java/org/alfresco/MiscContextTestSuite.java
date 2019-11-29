@@ -88,6 +88,22 @@ import org.springframework.context.ApplicationContext;
 
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
 
+        // ----------------------------------------------------------------------
+        // Transformer/Rendition contexts
+        //
+        // The following tests can be extracted in a separate test suite
+        // if/when we decide to move the transformations in a separate component
+        // ----------------------------------------------------------------------
+
+        // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
+        // some tests fail locally - on windows
+        org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
+
+        // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
+        // classpath:alfresco/test/global-integration-test-context.xml]
+        // this does NOT passes locally
+        org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
+
     // ----------------------------------------------------------------------
     // Misc contexts
     // ----------------------------------------------------------------------
@@ -121,22 +137,6 @@ import org.springframework.context.ApplicationContext;
 
     // [module/module-component-test-beans.xml]
     org.alfresco.repo.module.ComponentsTest.class,
-
-    // ----------------------------------------------------------------------
-    // Transformer/Rendition contexts
-    //
-    // The following tests can be extracted in a separate test suite
-    // if/when we decide to move the transformations in a separate component
-    // ----------------------------------------------------------------------
-
-    // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
-    // some tests fail locally - on windows
-    org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
-
-    // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
-    // classpath:alfresco/test/global-integration-test-context.xml]
-    // this does NOT passes locally
-    org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
     // [ibatis/hierarchy-test/hierarchy-test-context.xml]
     org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class

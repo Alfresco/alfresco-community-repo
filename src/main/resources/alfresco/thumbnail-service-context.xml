@@ -232,12 +232,13 @@
     <bean id="thumbnailRegistry" parent="baseThumbnailRegistry" class="org.alfresco.repo.thumbnail.ThumbnailRegistry" />
     
     <bean id="baseThumbnailRegistry" abstract="true">
-        <property name="contentService" ref="ContentService"/>
         <property name="renditionService" ref="renditionService" />
         <property name="transactionService" ref="TransactionService" />
         <property name="tenantAdminService" ref="tenantAdminService" />
         <property name="jobLockService" ref="jobLockService" />
         <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
+        <property name="converter" ref="transformOptionsConverter" />
         <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
         <property name="redeployStaticDefsOnStartup" value="${system.thumbnail.redeployStaticDefsOnStartup}" />
         <property name="thumbnailDefinitions">

@@ -493,11 +493,9 @@
                org.alfresco.service.cmr.repository.ContentService.getRawReader=ACL_METHOD.ROLE_ADMINISTRATOR
                org.alfresco.service.cmr.repository.ContentService.getReader=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.getWriter=ACL_NODE.0.sys:base.WriteContent
-               org.alfresco.service.cmr.repository.ContentService.isTransformable=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.getTransformer=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.getMaxSourceSizeBytes=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.getImageTransformer=ACL_ALLOW
-               org.alfresco.service.cmr.repository.ContentService.transform=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentTransformService.getTransformer=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentTransformService.getMaxSourceSizeBytes=ACL_ALLOW
+               org.alfresco.service.cmr.repository.ContentTransformService.transform=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getTempWriter=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.*=ACL_DENY
             </value>

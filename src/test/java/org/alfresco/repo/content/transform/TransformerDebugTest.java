@@ -170,9 +170,9 @@ public class TransformerDebugTest
 
         assertDebugEntriesEquals(new String[] {
         "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
-        "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
-        "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
-        "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
+        "0             --a) [---] Legacy:transformer1<<Component>> > 50 KB\n"+
+        "0             --b) [---] Legacy:transformer3<<Component>> > 50 KB\n"+
+        "0             --c) [---] Legacy:transformer4<<Component>> > 50 KB\n"+
         "0             Finished in NN ms Just checking if a transformer is available"}, unnumbered(untimed(debug.getEntries(10))));
         assertArrayEquals(new String[] {
         "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(stripDateStamp(log.getEntries(10)))));

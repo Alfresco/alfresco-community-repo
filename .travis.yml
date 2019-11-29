@@ -52,11 +52,21 @@ jobs:
       before_install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.4 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
-      script: travis_wait 20 mvn test -B -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-pdf-renderer:2.1.0-RC3
+        - docker run -d -p 8091:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-imagemagick:2.1.0-RC3
+        - docker run -d -p 8092:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-libreoffice:2.1.0-RC3
+        - docker run -d -p 8093:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-tika:2.1.0-RC3
+        - docker run -d -p 8094:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-misc:2.1.0-RC3
+      script: travis_wait 20 mvn test -B -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dalfresco-pdf-renderer.url=http://localhost:8090/ -Djodconverter.url=http://localhost:8092/ -Dimg.url=http://localhost:8091/ -Dtika.url=http://localhost:8093/ -Dtransform.misc.url=http://localhost:8094/
     - name: "AppContext04TestSuite"
       before_install:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.4 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
+        - docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-pdf-renderer:2.1.0-RC3
+        - docker run -d -p 8091:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-imagemagick:2.1.0-RC3
+        - docker run -d -p 8092:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-libreoffice:2.1.0-RC3
+        - docker run -d -p 8093:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-tika:2.1.0-RC3
+        - docker run -d -p 8094:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-misc:2.1.0-RC3
       script: travis_wait 20 mvn test -B -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
     - name: "AppContext05TestSuite"
       before_install:

@@ -62,6 +62,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
     private ContentService contentService;
     private RenditionService2Impl renditionService2;
     private TransformationOptionsConverter converter;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
 
     private ExecutorService executorService;
     private ThreadLocal<ContentTransformer> transform = new ThreadLocal<>();
@@ -86,6 +87,11 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         this.converter = converter;
     }
 
+    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
+    {
+        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
+    }
+
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -98,6 +104,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "converter", converter);
+        PropertyCheck.mandatory(this, "legacySynchronousTransformClient", legacySynchronousTransformClient);
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
@@ -114,7 +121,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
-        ContentTransformer legacyTransform = contentService.getTransformer(contentUrl, sourceMimetype, sourceSizeInBytes, targetMimetype, transformationOptions);
+        ContentTransformer legacyTransform = legacySynchronousTransformClient.getTransformer(contentUrl, sourceMimetype, sourceSizeInBytes, targetMimetype, transformationOptions);
         transform.set(legacyTransform);
 
         String message = TRANSFORM + renditionName + " from " + sourceMimetype +
@@ -145,7 +152,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
                     {
                         if (legacyTransform == null)
                         {
-                            throw new IllegalStateException("isSupported was not called prior to transform.");
+                            throw new IllegalStateException("isSupported was not called prior to an asynchronous transform.");
                         }
 
                         ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
@@ -165,7 +172,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
                         // defined and that makes it simpler to understand what is going on.
                         ContentWriter writer = contentService.getTempWriter();
                         writer.setMimetype(targetMimetype);
-                        contentService.transform(reader, writer, options);
+                        legacySynchronousTransformClient.transform(reader, writer, options);
 
                         InputStream inputStream = writer.getReader().getContentInputStream();
                         if (logger.isDebugEnabled())

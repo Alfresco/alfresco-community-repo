@@ -92,12 +92,16 @@
         <property name="contentService" ref="contentService" />
         <property name="renditionService2" ref="renditionService2" />
         <property name="converter" ref="transformOptionsConverter" />
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
     </bean>
 
     <!-- Deprecated -->
+    <bean id="synchronousTransformClient" parent="switchingSynchronousTransformClient" />
+
     <bean id="switchingSynchronousTransformClient" class="org.alfresco.repo.rendition2.SwitchingSynchronousTransformClient">
         <constructor-arg name="primary" ref="localSynchronousTransformClient" />
         <constructor-arg name="secondary" ref="legacySynchronousTransformClient" />
+        <property name="transformerDebug" ref="transformerDebug" />
     </bean>
 
     <!-- Deprecated -->
@@ -107,7 +111,9 @@
 
     <!-- Deprecated -->
     <bean id="legacySynchronousTransformClient" class="org.alfresco.repo.rendition2.LegacySynchronousTransformClient">
-        <property name="contentService" ref="ContentService" />
+        <property name="mimetypeService" ref="mimetypeService" />
+        <property name="transformerRegistry" ref="contentTransformerRegistry" />
+        <property name="transformerDebug" ref="transformerDebug" />
         <property name="converter" ref="transformOptionsConverter" />
     </bean>
 
@@ -144,7 +150,7 @@
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
 
     <bean id="legacyTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyTransformServiceRegistry" >
-        <property name="contentService" ref="contentService" />
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
         <property name="converter" ref="transformOptionsConverter" />
         <property name="enabled" value="${legacy.transform.service.enabled}" />
         <property name="transformerDebug" ref="transformerDebug" />

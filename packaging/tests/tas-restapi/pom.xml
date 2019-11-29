@@ -38,7 +38,7 @@
         <maven-release.version>2.5.3</maven-release.version>
         <org.glassfish.version>1.1.4</org.glassfish.version>
         <commons-lang3.version>3.8</commons-lang3.version>
-        <scribejava-apis.version>6.5.1</scribejava-apis.version>
+        <scribejava-apis.version>6.9.0</scribejava-apis.version>
         <test.exclude />
         <test.include />
         <java.version>11</java.version>

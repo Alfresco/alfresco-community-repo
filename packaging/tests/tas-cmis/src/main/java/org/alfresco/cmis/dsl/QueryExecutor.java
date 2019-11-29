@@ -1,5 +1,7 @@
 package org.alfresco.cmis.dsl;
 
+import static java.util.stream.Collectors.toSet;
+
 import static org.alfresco.utility.Utility.checkObjectIsInitialized;
 import static org.alfresco.utility.report.log.Step.STEP;
 
@@ -7,7 +9,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.Streams;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.utility.LogFactory;
@@ -47,17 +52,23 @@ public class QueryExecutor
         returnedResults = executeQuery(currentQuery).getPageNumItems();
         return new QueryResultAssertion();
     }
-    
+
     public QueryResultAssertion assertColumnIsOrdered()
     {
-    	results = executeQuery(currentQuery);
-    	return new QueryResultAssertion();
+        results = executeQuery(currentQuery);
+        return new QueryResultAssertion();
     }
-    
+
     public QueryResultAssertion assertColumnValuesRange()
     {
-    	results = executeQuery(currentQuery);
-    	return new QueryResultAssertion();
+        results = executeQuery(currentQuery);
+        return new QueryResultAssertion();
+    }
+
+    public QueryResultAssertion assertValues()
+    {
+        results = executeQuery(currentQuery);
+        return new QueryResultAssertion();
     }
 
     private ItemIterable<QueryResult> executeQuery(String query)
@@ -70,7 +81,7 @@ public class QueryExecutor
 
     /**
      * Call getNodeRef on each test data item used in test and replace that with NODE_REF keywords in your Query
-     * 
+     *
      * @param testData
      * @return
      */
@@ -118,7 +129,7 @@ public class QueryExecutor
     /**
      * if you have in your search 'SELECT * from cmis:document where workspace://SpacesStore/NODE_REF[site1] or workspace://SpacesStore/NODE_REF[site2]'
      * and pass key="NODE_REF" this method will get "site1" and "site2" as values
-     * 
+     *
      * @param key
      * @return
      * @throws TestConfigurationException
@@ -163,7 +174,7 @@ public class QueryExecutor
 
             return this;
         }
-        
+
         public QueryResultAssertion isLowerThan(long expectedValue)
         {
             STEP(String.format("Verify that query: '%s' has more than %d results count returned", currentQuery, expectedValue));
@@ -172,52 +183,60 @@ public class QueryExecutor
 
             return this;
         }
-        
+
         public QueryResultAssertion isOrderedAsc(String queryName)
         {
-        	STEP(String.format("Verify that query: '%s' is returning ascending ordered values for column %s", currentQuery, queryName));
-        	List<Object> columnValues = new ArrayList<>();
-        	results.forEach((r)->{
-        		columnValues.add(r.getPropertyValueByQueryName(queryName));
-        	});
-        	List<Object> orderedColumnValues = columnValues.stream().sorted().collect(Collectors.toList());
-        	Assert.assertEquals(columnValues, orderedColumnValues,
-        	        String.format("%s column values expected to be in ascendent order, but found %s", queryName, columnValues.toString()));
-        		
-        	return this;
-        	
+            STEP(String.format("Verify that query: '%s' is returning ascending ordered values for column %s", currentQuery, queryName));
+            List<Object> columnValues = new ArrayList<>();
+            results.forEach((r) -> {
+                columnValues.add(r.getPropertyValueByQueryName(queryName));
+            });
+            List<Object> orderedColumnValues = columnValues.stream().sorted().collect(Collectors.toList());
+            Assert.assertEquals(columnValues, orderedColumnValues,
+                    String.format("%s column values expected to be in ascendent order, but found %s", queryName, columnValues.toString()));
+
+            return this;
+
         }
 
         public QueryResultAssertion isOrderedDesc(String queryName)
         {
-        	STEP(String.format("Verify that query: '%s' is returning descending ordered values for column %s", currentQuery, queryName));
-        	List<Object> columnValues = new ArrayList<>();
-        	results.forEach((r)->{
-        		columnValues.add(r.getPropertyValueByQueryName(queryName));
-        	});
-        	List<Object> reverseOrderedColumnValues = columnValues.stream().sorted(Collections.reverseOrder()).collect(Collectors.toList());
-        	Assert.assertEquals(columnValues, reverseOrderedColumnValues,
-        	        String.format("%s column values expected to be in descendent order, but found %s", queryName, columnValues.toString()));
-        		
-        	return this;
-        	
+            STEP(String.format("Verify that query: '%s' is returning descending ordered values for column %s", currentQuery, queryName));
+            List<Object> columnValues = new ArrayList<>();
+            results.forEach((r) -> {
+                columnValues.add(r.getPropertyValueByQueryName(queryName));
+            });
+            List<Object> reverseOrderedColumnValues = columnValues.stream().sorted(Collections.reverseOrder()).collect(Collectors.toList());
+            Assert.assertEquals(columnValues, reverseOrderedColumnValues,
+                    String.format("%s column values expected to be in descendent order, but found %s", queryName, columnValues.toString()));
+
+            return this;
+
         }
-        
+
         public QueryResultAssertion isReturningValuesInRange(String queryName, BigDecimal minValue, BigDecimal maxValue)
         {
-        	STEP(String.format("Verify that query: '%s' is returning values for column %s in range from %.4f to %.4f", currentQuery, queryName, minValue, maxValue));
-        	results.forEach((r)->{
-        		BigDecimal value = (BigDecimal) r.getPropertyValueByQueryName(queryName);
-        		if (value.compareTo(minValue) < 0 || value.compareTo(maxValue) > 0)
-        		{
-        			Assert.fail(String.format("%s column values expected to be in range from %.4f to %.4f, but found %.4f", queryName, minValue, maxValue, value));
-        		}
-        	});
-        		
-        	return this;
-        	
+            STEP(String.format("Verify that query: '%s' is returning values for column %s in range from %.4f to %.4f", currentQuery, queryName, minValue, maxValue));
+            results.forEach((r) -> {
+                BigDecimal value = (BigDecimal) r.getPropertyValueByQueryName(queryName);
+                if (value.compareTo(minValue) < 0 || value.compareTo(maxValue) > 0)
+                {
+                    Assert.fail(String.format("%s column values expected to be in range from %.4f to %.4f, but found %.4f", queryName, minValue, maxValue, value));
+                }
+            });
+
+            return this;
         }
-        
+
+        public <T> QueryResultAssertion isReturningValues(String queryName, Set<T> values)
+        {
+            STEP(String.format("Verify that query: '%s' returns the values from %s for column %s", currentQuery, values, queryName));
+            Set<T> resultSet = Streams.stream(results).map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toSet());
+            Assert.assertEquals(resultSet, values, "Values did not match");
+
+            return this;
+        }
+
         private String showErrorMessage()
         {
             return String.format("Returned results count of Query [%s] is not the expected one:", currentQuery);

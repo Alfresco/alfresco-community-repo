@@ -27,7 +27,7 @@
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tas.utility.version>3.0.8</tas.utility.version>
-        <chemistry-opencmis-commons-api>1.0.0</chemistry-opencmis-commons-api>
+        <chemistry-opencmis-commons-api>1.1.0</chemistry-opencmis-commons-api>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
         <java.version>11</java.version>

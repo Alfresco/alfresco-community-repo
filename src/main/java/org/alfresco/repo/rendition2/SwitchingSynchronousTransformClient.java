@@ -64,18 +64,27 @@ public class SwitchingSynchronousTransformClient implements SynchronousTransform
     public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
                                Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
     {
-        boolean supported =
-                primary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
-                        transformName, sourceNodeRef) ||
-                secondary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
-                        transformName, sourceNodeRef);
+        SynchronousTransformClient client = null;
+
+        if (primary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
+                transformName, sourceNodeRef))
+        {
+            client = primary;
+        }
+        else if (secondary.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
+                transformName, sourceNodeRef))
+        {
+            client = secondary;
+        }
+
         if (transformerDebug.isEnabled())
         {
             String renditionName = TransformDefinition.convertToRenditionName(transformName);
             transformerDebug.debug(sourceMimetype, targetMimetype, sourceNodeRef, sourceSizeInBytes, renditionName,
-                    " is "+(supported ? "" : "not ")+"supported");
+                    "synchronous transform is "+
+                            (client == null ? "NOT supported" : "supported by "+client.getName()));
         }
-        return supported;
+        return client != null;
     }
 
     @Override
@@ -97,5 +106,12 @@ public class SwitchingSynchronousTransformClient implements SynchronousTransform
                 throw primaryException;
             }
         }
+    }
+
+    @Override
+    public String getName()
+    {
+        // If we start nesting SwitchingSynchronousTransformClients, we will need to get the current client from a ThreadLocal
+        throw new UnsupportedOperationException("SwitchingSynchronousTransformClients cannot be nested");
     }
 }

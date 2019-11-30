@@ -1568,6 +1568,12 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 delegate.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
             }
         }
+
+        @Override
+        public String getName()
+        {
+            return delegate.getName();
+        }
     }
 
     /**

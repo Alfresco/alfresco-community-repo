@@ -140,4 +140,10 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
             throw e;
         }
     }
+
+    @Override
+    public String getName()
+    {
+        return "Local";
+    }
 }

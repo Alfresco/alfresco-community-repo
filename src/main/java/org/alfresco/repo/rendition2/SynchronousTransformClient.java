@@ -81,4 +81,9 @@ public interface SynchronousTransformClient
     void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
                    String transformName, NodeRef sourceNodeRef)
             throws UnsupportedTransformationException, ContentIOException;
+
+    /**
+     * @return type of transform (Local, Legacy) for use in debug.
+     */
+    String getName();
 }

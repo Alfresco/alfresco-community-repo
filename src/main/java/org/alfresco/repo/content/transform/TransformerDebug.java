@@ -1556,9 +1556,8 @@ public class TransformerDebug implements ApplicationContextAware
         debug(getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
               ((fileName != null) ? fileName+' ' : "")+
               ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
-              (renditionName != null ? "-- "+renditionName+" -- " : "") + " RenditionService2");
+              (renditionName != null ? "-- "+renditionName+" -- " : "") + " TransformService");
         debug(sourceNodeRef.toString() + ' ' +contentHashcode);
-        debug(" **a)  [01] TransformService");
         return pop(Call.AVAILABLE, true, false);
     }
 

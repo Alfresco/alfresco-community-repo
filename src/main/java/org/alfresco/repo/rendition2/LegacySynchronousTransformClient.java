@@ -111,4 +111,10 @@ public class LegacySynchronousTransformClient extends ContentTransformServiceImp
             throw e;
         }
     }
+
+    @Override
+    public String getName()
+    {
+        return "Legacy";
+    }
 }

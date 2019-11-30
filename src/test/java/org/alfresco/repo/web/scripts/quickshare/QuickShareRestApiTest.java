@@ -25,21 +25,12 @@
  */
 package org.alfresco.repo.web.scripts.quickshare;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -72,6 +63,15 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteReque
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class tests QuickShare REST API
@@ -120,7 +120,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private RetryingTransactionHelper transactionHelper;
     private FileFolderService fileFolderService;
     private NodeRef userOneHome;
-    
+    private SynchronousTransformClient synchronousTransformClient;
+
     @Override
     protected void setUp() throws Exception
     {
@@ -135,8 +136,9 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
         transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
         fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
+        synchronousTransformClient = (SynchronousTransformClient) getServer().getApplicationContext().getBean("synchronousTransformClient");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-        
+
         createUser(USER_ONE);
         createUser(USER_TWO);
         
@@ -190,14 +192,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
             @Override
             public Void doWork() throws Exception
             {
-                ContentTransformer transformer = contentService.getImageTransformer();
-
-                assertNotNull("No transformer returned for 'getImageTransformer'", transformer);
-
-                // Check that it is working
-                ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-                if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_PNG, imageTransformationOptions))
-
+                if (!synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, null, MimetypeMap.MIMETYPE_IMAGE_PNG, Collections.emptyMap(), null, null
+                ))
                 {
                     fail("Image transformer is not working.  Please check your image conversion command setup.");
                 }

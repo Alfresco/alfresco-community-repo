@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.web.scripts.content.StreamContent;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -177,9 +178,19 @@ public class NodeContentGet extends StreamContent
             return;
         }
 
+
+        boolean supported = false;
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         Map<String, String> options = Collections.emptyMap();
-        if (!synchronousTransformClient.isSupported(nodeRef, MimetypeMap.MIMETYPE_TEXT_PLAIN, options,
-                "SolrIndexer", nodeService))
+        if (contentData != null && contentData.getContentUrl() != null)
+        {
+            String sourceMimetype = contentData.getMimetype();
+            long sourceSizeInBytes = contentData.getSize();
+            String contentUrl = contentData.getContentUrl();
+            supported = synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl,
+                    MimetypeMap.MIMETYPE_TEXT_PLAIN, options,"SolrIndexer", nodeRef);
+        }
+        if (!supported)
         {
             res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
             res.setStatus(HttpStatus.SC_NO_CONTENT);

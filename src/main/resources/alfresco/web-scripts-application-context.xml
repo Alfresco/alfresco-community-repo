@@ -1241,7 +1241,7 @@
          class="org.alfresco.repo.web.scripts.solr.NodeContentGet"
          parent="webscript">
       <property name="contentService" ref="contentService"/>
-      <property name="synchronousTransformClient" ref="switchingSynchronousTransformClient" />
+      <property name="synchronousTransformClient" ref="synchronousTransformClient" />
       <property name="nodeService" ref="nodeService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="delegate" ref="webscript.content.streamer" />

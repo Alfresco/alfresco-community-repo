@@ -22,7 +22,9 @@ services:
                 -Dindex.subsystem.name=solr6
                 -Dalfresco.restApi.basicAuthScheme=true
                 -Dimap.server.enabled=true
+                -Dimap.server.port=1143
                 -Dftp.enabled=true
+                -Dftp.port=1221
                 -Dftp.dataPortFrom=30000
                 -Dftp.dataPortTo=30099
                 -Dshare.host=localhost
@@ -42,17 +44,12 @@ services:
                 -Dimg.url=http://imagemagick:8090/
                 -Dtika.url=http://tika:8090/
                 -Dtransform.misc.url=http://transform-misc:8090/
-
-                -Dimap.server.port=1143
-                -Dftp.port=1221
-                -Dcors.enabled=true
-                -Dcors.allowed.origins=http://localhost:4200
                 "
         ports:
             - 8080:8080
             - 8000:8000
-            - 143:1143
-            - "21:21"
+            - 1143:1143
+            - "21:1221"
             - "30000-30099:30000-30099"
 
     alfresco-pdf-renderer:

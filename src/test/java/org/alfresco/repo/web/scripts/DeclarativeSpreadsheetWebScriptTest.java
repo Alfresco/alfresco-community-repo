@@ -71,7 +71,7 @@ public class DeclarativeSpreadsheetWebScriptTest extends BaseWebScriptTest
         AuthenticationUtil.clearCurrentSecurityContext();
     };
     
-    public void testCSVFormat() throws Exception
+    public void testCSVStrategy() throws Exception
     {
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(URL);
         Response response = sendRequest(req, Status.STATUS_OK, admin);

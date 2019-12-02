@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
@@ -81,6 +82,10 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 versionProperties = new HashMap<>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+
+                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+                // content property via NodeService.addProperties
+                nodeService.removeProperty(dmDocument, ContentModel.PROP_CONTENT);
 
                 // create version
                 versionService.createVersion(dmDocument, versionProperties);
@@ -184,7 +189,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 versionProperties = new HashMap<>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-
+                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+                // content property via NodeService.addProperties
+                nodeService.removeProperty(customDocument, PROP_CONTENT);
                 // create version
                 versionService.createVersion(customDocument, versionProperties);
 

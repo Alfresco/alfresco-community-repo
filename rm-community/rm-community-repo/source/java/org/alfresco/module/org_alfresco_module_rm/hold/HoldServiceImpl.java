@@ -244,6 +244,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         if (nodeService.exists(hold) && isHold(hold))
         {
+            checkPermissionsForDeleteHold(hold);
+
             RunAsWork<Void> work = new RunAsWork<Void>()
             {
                 @Override
@@ -534,14 +536,25 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, because passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
-        List<NodeRef> held = AuthenticationUtil.runAsSystem(new RunAsWork<List<NodeRef>>()
-        {
-            @Override
-            public List<NodeRef> doWork()
-            {
-                return getHeld(hold);
-            }
-        });
+        invokeBeforeDeleteHold(hold);
+
+        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
+        Set<QName> classQNames = getTypeAndApsects(hold);
+
+        // delete the hold node
+        nodeService.deleteNode(hold);
+
+        invokeOnDeleteHold(holdName, classQNames);
+    }
+
+    /**
+     * Helper method to check if user has correct permissions to delete hold
+     *
+     * @param hold hold to be deleted
+     */
+    private void checkPermissionsForDeleteHold(NodeRef hold)
+    {
+        List<NodeRef> held = AuthenticationUtil.runAsSystem(() -> getHeld(hold));
 
         List<String> heldNames = new ArrayList<>();
         for (NodeRef nodeRef : held)
@@ -582,16 +595,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
             });
             throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_HOLD_PERMISSION_DETAILED_ERROR) + sb.toString());
         }
-
-        invokeBeforeDeleteHold(hold);
-
-        String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
-        Set<QName> classQNames = getTypeAndApsects(hold);
-
-        // delete the hold node
-        nodeService.deleteNode(hold);
-
-        invokeOnDeleteHold(holdName, classQNames);
     }
 
     /**

@@ -1225,9 +1225,8 @@ public class TransformerDebug implements ApplicationContextAware
                                 String transformName = localTransform instanceof AbstractLocalTransform
                                     ? "Local:"+((AbstractLocalTransform)localTransform).getName()
                                     : "";
-                                boolean firstTransformer = transformerCount++ == 0;
                                 activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
-                                        transformName, maxSourceSizeKBytes, firstTransformer);
+                                        transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
                             for (ContentTransformer transformer: availableTransformer)
                             {
@@ -1236,8 +1235,8 @@ public class TransformerDebug implements ApplicationContextAware
                                 {
                                     long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
                                             sourceMimetype, targetMimetype, options);
-                                    activeTransformer(sourceMimetype, targetMimetype,
-                                            transformerCount, transformer, maxSourceSizeKBytes, transformerCount++ == 0);
+                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount,
+                                            transformer, maxSourceSizeKBytes, transformerCount++ == 0);
                                 }
                             }
                         }

@@ -532,8 +532,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, because passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
-        checkPermissionsForDeleteHold(hold);
-
         invokeBeforeDeleteHold(hold);
 
         String holdName = (String) nodeService.getProperty(hold, PROP_NAME);

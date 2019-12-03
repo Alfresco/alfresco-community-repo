@@ -36,8 +36,8 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.57</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>7.23</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.58</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>7.24</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
@@ -46,7 +46,7 @@
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.transform.model.version>1.0.2.7</dependency.transform.model.version>
 
-        <dependency.spring.version>5.1.8.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.2.1.RELEASE</dependency.spring.version>
         <dependency.httpcomponents.version>4.5.10</dependency.httpcomponents.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.1</dependency.poi.version>

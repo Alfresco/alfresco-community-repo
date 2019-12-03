@@ -99,6 +99,7 @@ public class TransformerDebug implements ApplicationContextAware
     private Log logger;
     private NodeService nodeService;
     private MimetypeService mimetypeService;
+    private LocalTransformServiceRegistry localTransformServiceRegistryImpl;
     private ContentTransformerRegistry transformerRegistry;
     private TransformerConfig transformerConfig;
 
@@ -312,6 +313,11 @@ public class TransformerDebug implements ApplicationContextAware
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
+    }
+
+    public void setLocalTransformServiceRegistryImpl(LocalTransformServiceRegistry localTransformServiceRegistryImpl)
+    {
+        this.localTransformServiceRegistryImpl = localTransformServiceRegistryImpl;
     }
 
     public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
@@ -653,17 +659,23 @@ public class TransformerDebug implements ApplicationContextAware
             int transformerCount, ContentTransformer transformer, long maxSourceSizeKBytes,
             boolean firstTransformer)
     {
+        String priority = gePriority(transformer, sourceMimetype, targetMimetype);
+        activeTransformer(sourceMimetype, targetMimetype, transformerCount, priority, getName(transformer),
+                maxSourceSizeKBytes, firstTransformer);
+    }
+
+    private void activeTransformer(String sourceMimetype, String targetMimetype, int transformerCount, String priority, String transformName, long maxSourceSizeKBytes, boolean firstTransformer)
+    {
         String mimetypes = firstTransformer
                 ? getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)
                 : spaces(10);
         char c = (char)('a'+transformerCount);
-        String priority = gePriority(transformer, sourceMimetype, targetMimetype);
         log(mimetypes+
-                "  "+c+") " + priority + ' ' + getName(transformer)+' '+ms(transformer.getTransformationTime(sourceMimetype, targetMimetype))+
-                ' '+fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
+                "  "+c+") " + priority + ' '+transformName+' '+
+                fileSize((maxSourceSizeKBytes > 0) ? maxSourceSizeKBytes*1024 : maxSourceSizeKBytes)+
                 (maxSourceSizeKBytes == 0 ? " disabled" : ""));
     }
-    
+
     private int getLongestTransformerNameLength(List<ContentTransformer> transformers,
             Frame frame)
     {
@@ -1202,6 +1214,21 @@ public class TransformerDebug implements ApplicationContextAware
                         {
                             pushMisc();
                             int transformerCount = 0;
+                            LocalTransform localTransform = localTransformServiceRegistryImpl == null
+                                ? null
+                                : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
+                                    -1, targetMimetype, Collections.emptyMap(), null);
+                            if (localTransform != null)
+                            {
+                                long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
+                                        targetMimetype, Collections.emptyMap(), null);
+                                String transformName = localTransform instanceof AbstractLocalTransform
+                                    ? "Local:"+((AbstractLocalTransform)localTransform).getName()
+                                    : "";
+                                boolean firstTransformer = transformerCount++ == 0;
+                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
+                                        transformName, maxSourceSizeKBytes, firstTransformer);
+                            }
                             for (ContentTransformer transformer: availableTransformer)
                             {
                                 if (!onlyNonDeterministic || transformerCount < 2 ||

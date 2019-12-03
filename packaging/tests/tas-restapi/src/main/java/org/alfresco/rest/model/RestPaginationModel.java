@@ -20,6 +20,10 @@ public class RestPaginationModel extends TestModel implements IModelAssertion<Re
 {
     private int count;
     private boolean hasMoreItems;
+    /**
+     * {code}totalItems{code} is optional and some endpoints don't include it e.g. GET sites/{siteId}/members
+     * See the section entitled "The list object" in https://ts.alfresco.com/share/page/site/prodman/document-details?nodeRef=workspace://SpacesStore/17eacc65-28e5-40bb-8113-edb8c21d57a5
+     */
     private Integer totalItems;
     private int skipCount;
     private int maxItems;
@@ -44,6 +48,11 @@ public class RestPaginationModel extends TestModel implements IModelAssertion<Re
         this.hasMoreItems = hasMoreItems;
     }
 
+    /**
+     * Get the totalItems.
+     *
+     * @return The total number of items, or null if it was not included in the response.
+     */
     public Integer getTotalItems()
     {
         return totalItems;
@@ -75,14 +84,14 @@ public class RestPaginationModel extends TestModel implements IModelAssertion<Re
     }
 
     @Override
-    public ModelAssertion<RestPaginationModel> assertThat() 
+    public ModelAssertion<RestPaginationModel> assertThat()
     {
-      return new ModelAssertion<RestPaginationModel>(this);
-    }       
-    
+      return new ModelAssertion<>(this);
+    }
+
     @Override
-    public ModelAssertion<RestPaginationModel> and() 
+    public ModelAssertion<RestPaginationModel> and()
     {
       return assertThat();
-    }       
+    }
 }    

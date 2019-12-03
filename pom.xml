@@ -7,7 +7,7 @@
       <version>10</version>
    </parent>   
    <artifactId>alfresco-core</artifactId>
-   <version>7.25-SNAPSHOT</version>
+   <version>8.0-SNAPSHOT</version>
    <name>Alfresco Core</name>
    <description>Alfresco core libraries and utils</description>
 
@@ -27,7 +27,7 @@
    
    <properties>
       <dependency.spring.version>5.2.1.RELEASE</dependency.spring.version>
-      <dependency.surf.version>7.9</dependency.surf.version>
+      <dependency.surf.version>8.0</dependency.surf.version>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
    </properties>
 

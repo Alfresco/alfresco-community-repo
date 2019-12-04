@@ -59,6 +59,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FrozenAspect;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -115,7 +117,8 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     private BehaviourFilter behaviourFilter;
     private NodeDAO nodeDAO;
     private QNameDAO qnameDAO;
-
+    private FrozenAspect frozenAspect;
+    private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
     /**
      * service setters
      */
@@ -157,6 +160,16 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
+    }
+
+    public void setFrozenAspect(FrozenAspect frozenAspect)
+    {
+        this.frozenAspect = frozenAspect;
+    }
+
+    public void setRecordsManagementSearchBehaviour(RecordsManagementSearchBehaviour recordsManagementSearchBehaviour)
+    {
+        this.recordsManagementSearchBehaviour = recordsManagementSearchBehaviour;
     }
 
     /**
@@ -377,8 +390,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                 public Integer execute() throws Throwable
                 {
                     int recordCount = 0;
-                    
-                    behaviourFilter.disableBehaviour(ASPECT_FILE_PLAN_COMPONENT);
+                    frozenAspect.disableOnPropUpdateFrozenAspect();
                     try
                     {
 	                    if (logger.isDebugEnabled())
@@ -409,6 +421,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
 
 	                                            // update record disposition information
 	                                            dispositionService.updateNextDispositionAction(record, schedule);
+                                                recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(record,null);
 	                                            innerRecordCount++;
 	                                        }
 	                                    }
@@ -421,7 +434,7 @@ public class UpdateRecordScheduleGet extends AbstractWebScript implements Record
                     }
                     finally
                     {
-	                    behaviourFilter.enableBehaviour(ASPECT_FILE_PLAN_COMPONENT);
+                        frozenAspect.enableOnPropUpdateFrozenAspect();
                     }
                     return recordCount;
                 }

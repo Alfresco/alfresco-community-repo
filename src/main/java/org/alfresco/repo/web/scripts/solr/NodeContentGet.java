@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.solr;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.web.scripts.content.StreamContent;
@@ -178,25 +179,6 @@ public class NodeContentGet extends StreamContent
             return;
         }
 
-
-        boolean supported = false;
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        Map<String, String> options = Collections.emptyMap();
-        if (contentData != null && contentData.getContentUrl() != null)
-        {
-            String sourceMimetype = contentData.getMimetype();
-            long sourceSizeInBytes = contentData.getSize();
-            String contentUrl = contentData.getContentUrl();
-            supported = synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl,
-                    MimetypeMap.MIMETYPE_TEXT_PLAIN, options,"SolrIndexer", nodeRef);
-        }
-        if (!supported)
-        {
-            res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
-            res.setStatus(HttpStatus.SC_NO_CONTENT);
-            return;
-        }
-
         // Perform transformation catering for mimetype AND encoding
         ContentWriter writer = contentService.getTempWriter();
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -205,9 +187,16 @@ public class NodeContentGet extends StreamContent
         try
         {
             long start = System.currentTimeMillis();
+            Map<String, String> options = Collections.emptyMap();
             synchronousTransformClient.transform(reader, writer, options, "SolrIndexer", nodeRef);
             long transformDuration = System.currentTimeMillis() - start;
             res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
+        }
+        catch (UnsupportedTransformationException e)
+        {
+            res.setHeader(TRANSFORM_STATUS_HEADER, "noTransform");
+            res.setStatus(HttpStatus.SC_NO_CONTENT);
+            return;
         }
         catch (Exception e)
         {

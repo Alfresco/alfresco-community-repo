@@ -1210,39 +1210,42 @@ public class TransformerDebug implements ApplicationContextAware
                          transformerConfig.getPriority(availableTransformer.get(1), sourceMimetype, targetMimetype)))
                     {
                         // Log the transformers
-                        try
-                        {
-                            pushMisc();
-                            int transformerCount = 0;
-                            LocalTransform localTransform = localTransformServiceRegistryImpl == null
+                        LocalTransform localTransform = localTransformServiceRegistryImpl == null
                                 ? null
                                 : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
-                                    -1, targetMimetype, Collections.emptyMap(), null);
-                            if (localTransform != null)
+                                -1, targetMimetype, Collections.emptyMap(), null);
+                        if (localTransform != null || size >= 1)
+                        {
+                            try
                             {
-                                long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
-                                        targetMimetype, Collections.emptyMap(), null);
-                                String transformName = localTransform instanceof AbstractLocalTransform
-                                    ? "Local:"+((AbstractLocalTransform)localTransform).getName()
-                                    : "";
-                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
-                                        transformName, maxSourceSizeKBytes, transformerCount++ == 0);
-                            }
-                            for (ContentTransformer transformer: availableTransformer)
-                            {
-                                if (!onlyNonDeterministic || transformerCount < 2 ||
-                                        priority == transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype))
+                                pushMisc();
+                                int transformerCount = 0;
+                                if (localTransform != null)
                                 {
-                                    long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
-                                            sourceMimetype, targetMimetype, options);
-                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount,
-                                            transformer, maxSourceSizeKBytes, transformerCount++ == 0);
+                                    long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
+                                            targetMimetype, Collections.emptyMap(), null);
+                                    String transformName = localTransform instanceof AbstractLocalTransform
+                                            ? "Local:" + ((AbstractLocalTransform) localTransform).getName()
+                                            : "";
+                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
+                                            transformName, maxSourceSizeKBytes, transformerCount++ == 0);
+                                }
+                                for (ContentTransformer transformer: availableTransformer)
+                                {
+                                    if (!onlyNonDeterministic || transformerCount < 2 ||
+                                            priority == transformerConfig.getPriority(transformer, sourceMimetype, targetMimetype))
+                                    {
+                                        long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(
+                                                sourceMimetype, targetMimetype, options);
+                                        activeTransformer(sourceMimetype, targetMimetype, transformerCount,
+                                                transformer, maxSourceSizeKBytes, transformerCount++ == 0);
+                                    }
                                 }
                             }
-                        }
-                        finally
-                        {
-                            popMisc();
+                            finally
+                            {
+                                popMisc();
+                            }
                         }
                     }
                 }

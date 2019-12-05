@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat;
 
-import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 import java.io.File;
 import java.io.InputStream;
@@ -44,6 +44,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.sf.acegisecurity.AccessDeniedException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
@@ -80,8 +81,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import net.sf.acegisecurity.AccessDeniedException;
 
 /**
  * RM Caveat Config component impl
@@ -1042,7 +1041,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                     sb.append("' to the JSONObject 'listMembers' '");
                     sb.append(listMembers);
                     sb.append("': ");
-                    sb.append(getFullStackTrace(error));
+                    sb.append(getStackTrace(error));
                     throw new AlfrescoRuntimeException(sb.toString());
                 }
             }
@@ -1061,7 +1060,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 sb.append("' to the JSONObject 'configJSONObject' '");
                 sb.append(configJSONObject);
                 sb.append("': ");
-                sb.append(getFullStackTrace(error));
+                sb.append(getStackTrace(error));
                 throw new AlfrescoRuntimeException(sb.toString());
             }
         }

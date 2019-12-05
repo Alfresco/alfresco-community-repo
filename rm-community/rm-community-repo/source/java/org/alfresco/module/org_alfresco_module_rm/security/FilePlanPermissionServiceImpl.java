@@ -34,7 +34,7 @@ import static org.alfresco.repo.policy.annotation.BehaviourKind.CLASS;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName;
 import static org.alfresco.service.cmr.security.OwnableService.NO_OWNER;
 import static org.alfresco.util.ParameterCheck.mandatory;
-import static org.apache.commons.lang.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 import java.io.Serializable;
 import java.util.HashMap;

@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility class that contains validation not present in {@link org.alfresco.util.ParameterCheck}.

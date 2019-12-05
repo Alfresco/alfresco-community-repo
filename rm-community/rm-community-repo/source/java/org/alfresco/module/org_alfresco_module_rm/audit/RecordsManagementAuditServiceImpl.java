@@ -1618,29 +1618,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 case "Delete Person":
                     nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
-                    json.put("deletePerson", true);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Create User Group":
                     nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Delete User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Add To User Group":
                     nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Remove From User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Delete RM Object":
                 case "Delete Hold":
                     nodeName = entry.getNodeName();
-                    json.put("deleteObject", true);
+                    json.put("noAvailableLink", true);
                     break;
 
                 default:

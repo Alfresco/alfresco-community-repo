@@ -47,6 +47,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,10 +61,14 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -194,6 +199,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static final String AUDIT_EVENT_VIEW = "audit.view";
     private static final String MSG_AUDIT_VIEW = "rm.audit.audit-view";
 
+    private static final QName PROPERTY_HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private TransactionService transactionService;
@@ -207,6 +214,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private NamespaceService namespaceService;
     protected CapabilityService capabilityService;
     protected PermissionService permissionService;
+    protected HoldService holdService;
 
     private boolean shutdown = false;
 
@@ -330,6 +338,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    /**
+     *
+     * @param holdService
+     */
+    public void setHoldService(HoldService holdService)
+    {
+        this.holdService = holdService;
     }
 
     /**
@@ -686,7 +703,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Helper method to remove system properties from maps
      *
-     * @param properties
+     * @param before
+     * @param after
      */
     private void removeAuditProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -997,13 +1015,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     return true;
                 }
 
-                if (nodeRef != null && nodeService.exists(nodeRef) &&
-                        ((filePlanService.isFilePlanComponent(nodeRef) &&
-                                !AccessStatus.ALLOWED.equals(
-                                        capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
-                                || (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ)))))
+                if (nodeRef != null && nodeService.exists(nodeRef))
                 {
-                    return true;
+                    if ((filePlanService.isFilePlanComponent(nodeRef) &&
+                            !AccessStatus.ALLOWED.equals(
+                                    capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY))) ||
+                            (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ))))
+                    {
+                        return true;
+                    }
+                    // must have read permission on hold to see hold events
+                    else
+                    {
+                        // get hold names, if any, from event properties
+                        Set<String> holdNames = new HashSet<>(2);
+                        addHoldNameFromProperties(holdNames, beforeProperties);
+                        addHoldNameFromProperties(holdNames, afterProperties);
+
+                        // check permission for all hold names found in event properties
+                        for (String holdName: holdNames)
+                        {
+                            if (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(getHold(holdName),
+                                PermissionService.READ)))
+                            {
+                                    return true;
+                            }
+                        }
+                    }
                 }
 
                 // TODO: Refactor this to use the builder pattern
@@ -1037,6 +1075,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 // Keep going
                 return true;
+            }
+
+            /**
+             * Helper method to extract the hold name, if any, from the given event properties
+             * @param holdNames         set of hold names
+             * @param eventProperties   event properties
+             */
+            private void addHoldNameFromProperties(Set<String> holdNames, Map<QName, Serializable> eventProperties)
+            {
+                String name = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
+                if (name != null)
+                {
+                    holdNames.add(name);
+                }
+            }
+
+            /**
+             * Helper method to get the hold for a given hold name
+             * @param holdName      hold name
+             * @return              node ref of hold
+             */
+            private NodeRef getHold(String holdName)
+            {
+                return AuthenticationUtil.runAsSystem(() -> {
+                    NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                    return holdService.getHold(filePlan, holdName);
+                });
             }
 
             private void writeEntryToFile(RecordsManagementAuditEntry entry)

@@ -44,7 +44,7 @@ import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelp
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;

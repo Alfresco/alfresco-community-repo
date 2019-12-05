@@ -137,6 +137,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_SNIPPET_CHANGES = "/changes";
     protected static final String RM_AUDIT_SNIPPET_BEFORE = "/before";
     protected static final String RM_AUDIT_SNIPPET_AFTER = "/after";
+    protected static final String RM_AUDIT_DOCUMENT_LIBRARY_PATH = "/documentLibrary";
 
     protected static final String RM_AUDIT_DATA_PERSON_FULLNAME = "/RM/event/person/fullName";
     protected static final String RM_AUDIT_DATA_PERSON_ROLES = "/RM/event/person/roles";
@@ -1461,11 +1462,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             {
                 // we need to strip off the first part of the path
                 String path = entry.getPath();
-                String displayPath = path;
-                int idx = path.indexOf('/', 1);
+                String displayPath;
+                int idx = path.indexOf(RM_AUDIT_DOCUMENT_LIBRARY_PATH);
                 if (idx != -1)
                 {
-                    displayPath = "/File Plan" + path.substring(idx);
+                    displayPath = path.substring(idx + RM_AUDIT_DOCUMENT_LIBRARY_PATH.length());
+                }
+                else
+                {
+                    displayPath = path;
                 }
 
                 writer.write("<span class=\"label\">Location:</span>");

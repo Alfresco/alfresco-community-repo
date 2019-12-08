@@ -46,11 +46,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
 /**
- * Test class for TransformerDebug.
+ * Test class for LegacyTransformerDebugTest.
  *
  * @author Alan Davis
  */
-public class TransformerDebugTest
+@Deprecated
+public class LegacyTransformerDebugTest
 {
     @Mock
     private NodeService nodeService;
@@ -79,7 +80,7 @@ public class TransformerDebugTest
     @Mock
     private AbstractContentTransformerLimits transformer4;
 
-    private TransformerDebug transformerDebug;
+    private LegacyTransformerDebug transformerDebug;
 
     private TransformerLog log;
 
@@ -105,7 +106,7 @@ public class TransformerDebugTest
         when(transformer3.getName()).thenReturn("transformer3");
         when(transformer4.getName()).thenReturn("transformer4");
 
-        transformerDebug = new TransformerDebug();
+        transformerDebug = new LegacyTransformerDebug();
         transformerDebug.setNodeService(nodeService);
         transformerDebug.setMimetypeService(mimetypeService);
         transformerDebug.setTransformerRegistry(transformerRegistry);

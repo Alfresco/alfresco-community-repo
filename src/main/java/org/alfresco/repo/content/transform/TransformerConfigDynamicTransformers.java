@@ -312,7 +312,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
         
         // unregisteredBaseContentTransformer
         transformer.setMimetypeService(mimetypeService);
-        transformer.setTransformerDebug(transformerDebug);
+        transformer.setTransformerDebug((LegacyTransformerDebug)transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
         transformer.setRegistry(transformerRegistry);
 

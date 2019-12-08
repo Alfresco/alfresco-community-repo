@@ -52,6 +52,7 @@ public interface TransformerConfigMBean
      * @param use or context in which the transformation will be used ("doclib",
      *        "index", "webpreview", "syncRule", "asyncRule"...) or null for the default.
      */
+    @Deprecated
     public String getTransformationsByTransformer(String transformerName, String use);
 
     /**
@@ -69,6 +70,7 @@ public interface TransformerConfigMBean
      * @param sourceExtension to be checked. If null all source mimetypes are included.
      * @param targetExtension to be checked. If null all target mimetypes are included.
      */
+    @Deprecated
     public String getTransformationStatistics(String transformerName, String sourceExtension, String targetExtension);
     
     /**
@@ -86,6 +88,7 @@ public interface TransformerConfigMBean
      * @param listAll list both default and custom values, otherwise includes
      *        only custom values.
      */
+    @Deprecated
     public String getProperties(boolean listAll);
     
     /**
@@ -93,6 +96,7 @@ public interface TransformerConfigMBean
      * @param propertyNamesAndValues
      * @return a confirmation or failure message
      */
+    @Deprecated
     public String setProperties(String propertyNamesAndValues);
     
     /**
@@ -100,6 +104,7 @@ public interface TransformerConfigMBean
      * @param propertyNames to be removed. Any values after the property name are ignored.
      * @return a confirmation or failure message
      */
+    @Deprecated
     String removeProperties(String propertyNames);
     
     /**

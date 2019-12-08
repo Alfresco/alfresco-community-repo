@@ -30,7 +30,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.LegacyTransformerDebug;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -48,7 +48,6 @@ import org.springframework.beans.factory.InitializingBean;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains deprecated code originally from {@link org.alfresco.repo.content.ContentServiceImpl} that is used to perform
@@ -63,7 +62,7 @@ public abstract class ContentTransformServiceImpl implements InitializingBean
 
     private MimetypeService mimetypeService;
     private ContentTransformerRegistry transformerRegistry;
-    private TransformerDebug transformerDebug;
+    private LegacyTransformerDebug transformerDebug;
 
     private boolean transformerFailover = true;
 
@@ -77,7 +76,7 @@ public abstract class ContentTransformServiceImpl implements InitializingBean
         this.transformerRegistry = transformerRegistry;
     }
 
-    public void setTransformerDebug(TransformerDebug transformerDebug)
+    public void setTransformerDebug(LegacyTransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
     }

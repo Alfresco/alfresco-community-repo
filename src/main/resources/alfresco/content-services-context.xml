@@ -338,7 +338,7 @@
    </bean>
 
    <!-- Transformation Debug -->
-    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.TransformerDebug">
+    <bean id="transformerDebug" class="org.alfresco.repo.content.transform.LegacyTransformerDebug">
        <property name="nodeService" ref="nodeService" />
        <property name="mimetypeService" ref="mimetypeService" />
        <property name="transformerRegistry" ref="contentTransformerRegistry" />

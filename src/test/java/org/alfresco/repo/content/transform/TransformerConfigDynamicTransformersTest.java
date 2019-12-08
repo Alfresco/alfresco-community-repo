@@ -67,7 +67,7 @@ public class TransformerConfigDynamicTransformersTest
     private LegacySynchronousTransformClient legacySynchronousTransformClient;
     
     @Mock
-    private TransformerDebug transformerDebug;
+    private LegacyTransformerDebug transformerDebug;
     
     @Mock
     ModuleService moduleService;

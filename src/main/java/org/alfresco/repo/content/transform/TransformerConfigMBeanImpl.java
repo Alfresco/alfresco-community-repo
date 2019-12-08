@@ -45,7 +45,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
 {
     private static final String NO_TRANSFORMATIONS_TO_REPORT = "No transformations to report";
     private ContentTransformerRegistry transformerRegistry;
-    private TransformerDebug transformerDebug;
+    private AdminUiTransformerDebug transformerDebug;
     private TransformerConfig transformerConfig;
     private MimetypeService mimetypeService;
     private LogEntries transformerLog;
@@ -56,7 +56,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
         this.transformerRegistry = transformerRegistry;
     }
 
-    public void setTransformerDebug(TransformerDebug transformerDebug)
+    public void setTransformerDebug(AdminUiTransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
     }
@@ -85,7 +85,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     public String[] getTransformerNames()
     {
         List<String> transformerNames = new ArrayList<String>();
-        Collection<ContentTransformer> transformers = transformerDebug.sortTransformersByName(null);
+        Collection<ContentTransformer> transformers = ((LegacyTransformerDebug)transformerDebug).sortTransformersByName(null);
         for (ContentTransformer transformer: transformers)
         {
             String name = transformer.getName();
@@ -118,8 +118,9 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
             // Need to be able to generate 4.1.4ish output to compare with previous
             // releases without too much effort cutting and pasting to change the order
             return "41".equals(simpleTransformerName)
-                ? transformerDebug.transformationsByTransformer(null, true, false, use)
-                : transformerDebug.transformationsByTransformer(
+                ? ((LegacyTransformerDebug)transformerDebug).transformationsByTransformer(
+                        null, true, false, use)
+                : ((LegacyTransformerDebug)transformerDebug).transformationsByTransformer(
                         getTransformerNameParam(simpleTransformerName), true, true, use);
         }
         catch (IllegalArgumentException e)
@@ -170,7 +171,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
             sourceExtension = nullDefaultLowerParam(sourceExtension);
             targetExtension = nullDefaultLowerParam(targetExtension);
 
-            Collection<ContentTransformer> transformers = transformerDebug.sortTransformersByName(transformerName);
+            Collection<ContentTransformer> transformers = ((LegacyTransformerDebug)transformerDebug).sortTransformersByName(transformerName);
             Collection<String> sourceMimetypes = transformerDebug.getSourceMimetypes(sourceExtension);
             Collection<String> targetMimetypes = transformerDebug.getTargetMimetypes(sourceExtension, targetExtension, sourceMimetypes);
 
@@ -328,10 +329,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
         use = nullDefaultParam(use);
         try
         {
-            String transformerName = getTransformerNameParam(simpleTransformerName);
-            return transformerName == null 
-                    ? transformerDebug.testTransform(                 sourceExtension, targetExtension, use)
-                    : transformerDebug.testTransform(transformerName, sourceExtension, targetExtension, use);
+            return transformerDebug.testTransform( sourceExtension, targetExtension, use);
         }
         catch (IllegalArgumentException e)
         {

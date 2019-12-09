@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.RECORD_SEARCH_ASPECT;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
@@ -41,7 +42,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -50,10 +51,10 @@ import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 import org.alfresco.utility.report.Bug;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -67,19 +68,35 @@ import org.testng.annotations.Test;
 public class FileRecordsTests extends BaseRMRestTest
 {
     private UnfiledContainerChild electronicRecord = UnfiledContainerChild.builder()
-                                                                  .name(ELECTRONIC_RECORD_NAME)
-                                                                  .nodeType(CONTENT_TYPE)
-                                                                  .content(RecordContent.builder().mimeType("text/plain").build())
-                                                                  .build();
+                                                                          .name(ELECTRONIC_RECORD_NAME)
+                                                                          .nodeType(CONTENT_TYPE)
+                                                                          .content(RecordContent.builder().mimeType("text/plain").build())
+                                                                          .build();
 
     private UnfiledContainerChild nonelectronicRecord = UnfiledContainerChild.builder()
-                                                                     .properties(UnfiledContainerChildProperties.builder()
-                                                                                                            .description(NONELECTRONIC_RECORD_NAME)
-                                                                                                            .title("Title")
-                                                                                                            .build())
-                                                                     .name(NONELECTRONIC_RECORD_NAME)
-                                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                                                                     .build();
+                                                                             .properties(UnfiledContainerChildProperties.builder()
+                                                                                                                        .description(NONELECTRONIC_RECORD_NAME)
+                                                                                                                        .title("Title")
+                                                                                                                        .build())
+                                                                             .name(NONELECTRONIC_RECORD_NAME)
+                                                                             .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                                                                             .build();
+
+    private String targetFolderId, folderToLink, closedFolderId, unfiledRecordFolderId;
+
+    @BeforeClass (alwaysRun = true)
+    public void setupFileRecordsTests() throws Exception
+    {
+        // create 3 record folders and close one of them
+        targetFolderId = createCategoryFolderInFilePlan().getId();
+        folderToLink = createCategoryFolderInFilePlan().getId();
+        closedFolderId = createCategoryFolderInFilePlan().getId();
+        closeFolder(closedFolderId);
+
+        //create one unfiled record folder
+        unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
+                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
+    }
 
     /**
      * Invalid  containers where electronic and non-electronic records can be filed
@@ -99,65 +116,61 @@ public class FileRecordsTests extends BaseRMRestTest
     }
 
     /**
+     * Returns the ids of unfiled electronic and non-electronic records from Unfiled Records container
+     */
+    @DataProvider (name = "unfiledRecordsFromUnfiledRecordsContainer")
+    public Object[][] getRecordsFromUnfiledRecordsContainer()
+    {
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord,
+                UNFILED_RECORDS_CONTAINER_ALIAS, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
+        UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
+
+        return new String[][] {
+            { recordElectronic.getId()},
+            { recordNonElect.getId()}
+        };
+    }
+
+    /**
+     * Returns the ids of unfiled electronic and non-electronic records from an Unfiled Record Folder
+     */
+    @DataProvider (name = "unfiledRecordsFromUnfiledRecordFolder")
+    public Object[][] getRecordsFromUnfiledRecordFolder()
+    {
+        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
+        UnfiledContainerChild recordElectronic = unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId,
+                createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
+        UnfiledContainerChild recordNonElect = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId);
+
+        return new String[][] {
+            { recordElectronic.getId()},
+            { recordNonElect.getId()}
+        };
+    }
+
+    /**
      * Given an unfiled record in the root unfiled record container
      * And an open record folder
      * When I file the unfiled record into the record folder
      * Then the record is filed
      */
-    @Test
-    public void fileRecordIntoExistingFolderFromUnfiledContainer() throws Exception
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    public void fileRecordFromUnfiledContainerToOpenFolder(String unfiledRecordId) throws Exception
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        // create a record folder
-        String folderId = createCategoryFolderInFilePlan().getId();
-
-        // create records
-        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-        UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS,
-                                                                                                  createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
-
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(folderId).build();
-        Record recordFiled = recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
+        // file the record to the folder created
+        Record recordFiled = fileRecordToFolder(unfiledRecordId, targetFolderId);
         // check the response status
         assertStatusCode(CREATED);
         // check the parent id for the record returned
-        assertEquals(recordFiled.getParentId(),folderId);
+        assertEquals(recordFiled.getParentId(), targetFolderId);
 
-        // check the record is filed into the record folder
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        assertTrue(recordFolderAPI.getRecordFolderChildren(folderId)
-                                         .getEntries()
-                                         .stream()
-                                         .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
+        // check the record is filed to the record folder
+        assertTrue(isRecordChildOfRecordFolder(unfiledRecordId, targetFolderId), unfiledRecordId + " is not filed to " + targetFolderId);
 
         // check the record doesn't exist into unfiled record container
-        assertFalse(unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
-
-        // file the non-electronic record into the folder created
-        Record nonElectRecordFiled = recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
-        // check the response status code
-        assertStatusCode(CREATED);
-        // check the parent id for the record returned
-        assertEquals(nonElectRecordFiled.getParentId(), folderId);
-
-        // check the record is added into the record folder
-        assertTrue(recordFolderAPI.getRecordFolderChildren(folderId)
-                                         .getEntries()
-                                         .stream()
-                                         .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
-
-        // check the record doesn't exist into unfiled record container
-        assertFalse(unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
+        assertFalse(isRecordChildOfUnfiledContainer(unfiledRecordId), unfiledRecordId + " exists in Unfiled Records");
+        assertTrue(hasAspect(unfiledRecordId, RECORD_SEARCH_ASPECT), "recordSearch aspect is lost after filing!");
     }
 
     /**
@@ -166,62 +179,23 @@ public class FileRecordsTests extends BaseRMRestTest
      * When I file the unfiled record into the record folder
      * Then the record is filed
      */
-    @Test
-    public void fileRecordIntoExistingFolderFromUnfiledRecordFolder() throws Exception
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
+    public void fileRecordFromUnfiledRecordFolderToOpenFolder(String unfiledRecordId) throws Exception
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        // create a record folder
-        String folderId = createCategoryFolderInFilePlan().getId();
-
-        // create records
-        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
-
-        String unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
-
-        UnfiledContainerChild recordElectronic = unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId);
-
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(folderId).build();
-        Record recordFiled = recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
+        // file the record to the folder created
+        Record recordFiled = fileRecordToFolder(unfiledRecordId, targetFolderId);
         // check the response status
         assertStatusCode(CREATED);
         // check the parent id for the record returned
-        assertEquals(recordFiled.getParentId(),folderId);
+        assertEquals(recordFiled.getParentId(), targetFolderId);
 
-        // check the record is filed into the record folder
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        assertTrue(recordFolderAPI.getRecordFolderChildren(folderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
+        // check the record is filed to the record folder
+        assertTrue(isRecordChildOfRecordFolder(unfiledRecordId, targetFolderId), unfiledRecordId + " is not filed to " + targetFolderId);
 
         // check the record doesn't exist into unfiled record folder
-        assertFalse(unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(unfiledRecordFolderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
-
-        // file the non-electronic record into the folder created
-        Record nonElectRecordFiled = recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
-        // check the response status code
-        assertStatusCode(CREATED);
-        // check the parent id for the record returned
-        assertEquals(nonElectRecordFiled.getParentId(), folderId);
-
-        // check the record is added into the record folder
-        assertTrue(recordFolderAPI.getRecordFolderChildren(folderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
-
-        // check the record doesn't exist into unfiled record folder
-        assertFalse(unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(unfiledRecordFolderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
+        assertFalse(isRecordChildOfUnfiledRecordFolder(unfiledRecordId),
+                unfiledRecordId + " exists in " + unfiledRecordFolderId);
+        assertTrue(hasAspect(unfiledRecordId, RECORD_SEARCH_ASPECT), "recordSearch aspect is lost after filing!");
     }
 
     /**
@@ -231,55 +205,19 @@ public class FileRecordsTests extends BaseRMRestTest
      * Then I get an unsupported operation exception
      *
      */
-    @Test
-    public void fileRecordIntoCloseFolderFromUnfiledContainer() throws Exception
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    public void fileRecordFromUnfiledContainerToClosedFolder(String unfiledRecordId)
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        // create a record folder
-        String folderId = createCategoryFolderInFilePlan().getId();
-        closeFolder(folderId);
-        // create records
-        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-
-        UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
-
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(folderId).build();
-        recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
+        // file the record to the closed record folder
+        fileRecordToFolder(unfiledRecordId, closedFolderId);
         // check the response status
         assertStatusCode(FORBIDDEN);
 
-        // check the record is not filed into the record folder
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        assertFalse(recordFolderAPI.getRecordFolderChildren(folderId)
-                                      .getEntries()
-                                      .stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
+        // check the record is not filed to the record folder
+        assertFalse(isRecordChildOfRecordFolder(unfiledRecordId, closedFolderId), unfiledRecordId + " is filed to " + closedFolderId);
 
         // check the record exist into unfiled record container
-        assertTrue(unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
-
-        // file the non-electronic record into the folder created
-        recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
-        // check the response status code
-        assertStatusCode(FORBIDDEN);
-
-        // check the record is not added into the record folder
-        assertFalse(recordFolderAPI.getRecordFolderChildren(folderId)
-                                        .getEntries()
-                                        .stream()
-                                        .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
-
-        // check the record  exist into unfiled record container
-        assertTrue(unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                    .getEntries().stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
+        assertTrue(isRecordChildOfUnfiledContainer(unfiledRecordId), unfiledRecordId + " doesn't exist in Unfiled Records");
     }
 
     /**
@@ -289,56 +227,20 @@ public class FileRecordsTests extends BaseRMRestTest
      * Then I get an unsupported operation exception
      *
      */
-    @Test
-    public void fileRecordIntoCloseFolderFromUnfiledRecordFolder() throws Exception
+    @Test(dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
+    public void fileRecordFromUnfiledRecordFolderToClosedFolder(String unfiledRecordId)
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        // create a record folder
-        String folderId = createCategoryFolderInFilePlan().getId();
-        closeFolder(folderId);
-        // create records
-        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
-
-        String unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
-        UnfiledContainerChild recordElectronic = unfiledRecordFoldersAPI.uploadRecord(electronicRecord, unfiledRecordFolderId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, unfiledRecordFolderId);
-
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(folderId).build();
-        recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
+        // file the record into the closed folder created
+        fileRecordToFolder(unfiledRecordId, closedFolderId);
         // check the response status
         assertStatusCode(FORBIDDEN);
 
         // check the record is not filed into the record folder
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        assertFalse(recordFolderAPI.getRecordFolderChildren(folderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
+        assertFalse(isRecordChildOfRecordFolder(unfiledRecordId, closedFolderId), unfiledRecordId + " is filed to " + closedFolderId);
 
         // check the record exist into unfiled record folder
-        assertTrue(unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(unfiledRecordFolderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordElectronic.getId())));
-
-        // file the non-electronic record into the folder created
-        recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
-        // check the response status code
-        assertStatusCode(FORBIDDEN);
-
-        // check the record is not added into the record folder
-        assertFalse(recordFolderAPI.getRecordFolderChildren(folderId)
-                    .getEntries()
-                    .stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
-
-        // check the record  exist into unfiled record folder
-        assertTrue(unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(unfiledRecordFolderId)
-                    .getEntries().stream()
-                    .anyMatch(c -> c.getEntry().getId().equals(recordNonElect.getId())));
+        assertTrue(isRecordChildOfUnfiledRecordFolder(unfiledRecordId),
+                unfiledRecordId + " doesn't exist in " + unfiledRecordFolderId);
     }
 
     /**
@@ -347,71 +249,34 @@ public class FileRecordsTests extends BaseRMRestTest
      * When I file the filed record into the record folder
      * Then the record is filed in both locations
      */
-    @Test
-    @Bug(id="RM-4578")
-    public void linkRecordInto() throws Exception
+    @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    @Bug (id = "RM-4578")
+    public void linkRecordInto(String unfiledRecordId)
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
-        // create a record folder
-        String parentFolderId = createCategoryFolderInFilePlan().getId();
-
-        // create records
-        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-        UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
-
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(parentFolderId).build();
-        Record recordFiled = recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
-        Record nonElectronicFiled = recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
+        // file the record to the open folder created
+        Record recordFiled = fileRecordToFolder(unfiledRecordId, targetFolderId);
         // check the response status
         assertStatusCode(CREATED);
 
-        // create the second folder
-        String folderToLink = createCategoryFolderInFilePlan().getId();
-        recordBodyFile = RecordBodyFile.builder().targetParentId(folderToLink).build();
-
-        // check the response status
+        // link the record to the second folder
+        Record recordLink = fileRecordToFolder(unfiledRecordId, folderToLink);
         assertStatusCode(CREATED);
-        // link the electronic record
-        Record recordLink = recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
-        assertTrue(recordLink.getParentId().equals(parentFolderId));
-        // check the response status code
-        assertStatusCode(CREATED);
-        // link the nonelectronic record
-        Record nonElectronicLink = recordsAPI.fileRecord(recordBodyFile, nonElectronicFiled.getId());
-        assertStatusCode(CREATED);
-        assertTrue(nonElectronicLink.getParentId().equals(parentFolderId));
+        assertTrue(recordLink.getParentId().equals(targetFolderId));
 
         // check the record is added into the record folder
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        assertTrue(recordFolderAPI.getRecordFolderChildren(parentFolderId)
-                                       .getEntries()
-                                       .stream()
-                                       .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
-                                           c.getEntry().getParentId().equals(parentFolderId)));
+        assertTrue(recordFolderAPI.getRecordFolderChildren(targetFolderId)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
+                                          c.getEntry().getParentId().equals(targetFolderId)));
 
-        // check the record doesn't exist into unfiled record container
+        // check the record has a link in the second folder
         assertTrue(recordFolderAPI.getRecordFolderChildren(folderToLink)
-                                      .getEntries().stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
-                                         c.getEntry().getParentId().equals(parentFolderId) &&
-                                              !c.getEntry().getParentId().equals(folderToLink)));
-        // check the record is added into the record folder
-        assertTrue(recordFolderAPI.getRecordFolderChildren(parentFolderId)
-                                      .getEntries()
-                                      .stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(nonElectronicFiled.getId()) &&
-                                          c.getEntry().getParentId().equals(parentFolderId)));
-
-        // check the record doesn't exist into unfiled record container
-        assertTrue(recordFolderAPI.getRecordFolderChildren(folderToLink)
-                                      .getEntries().stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(nonElectronicFiled.getId()) &&
-                                        c.getEntry().getParentId().equals(parentFolderId) &&
-                                              !c.getEntry().getParentId().equals(folderToLink)));
+                                  .getEntries().stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
+                                          c.getEntry().getParentId().equals(targetFolderId) &&
+                                          !c.getEntry().getParentId().equals(folderToLink)));
     }
 
     /**
@@ -425,24 +290,77 @@ public class FileRecordsTests extends BaseRMRestTest
         dataProvider = "invalidContainersToFile",
         description = "File the unfiled record to the container that is not a record folder"
     )
-    public void invalidContainerToFile(String containerId) throws Exception
+    public void invalidContainerToFile(String containerId)
     {
-        // get API instances
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-
         // create records
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
 
         UnfiledContainerChild recordElectronic = unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
         UnfiledContainerChild recordNonElect = unfiledContainersAPI.createUnfiledContainerChild(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
 
-        // file the record into the folder created
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(containerId).build();
-        recordsAPI.fileRecord(recordBodyFile, recordElectronic.getId());
+        // file the records to a container that is not a record folder
+        fileRecordToFolder(recordElectronic.getId(), containerId);
         assertStatusCode(BAD_REQUEST);
 
-        recordsAPI.fileRecord(recordBodyFile, recordNonElect.getId());
-        // check the response status
+        fileRecordToFolder(recordNonElect.getId(), containerId);
         assertStatusCode(BAD_REQUEST);
+    }
+
+    /**
+     * Files the given record in the target record folder.
+     *
+     * @param recordId       the id of the record to be filed
+     * @param targetFolderId the id of the target record folder
+     */
+    private Record fileRecordToFolder(String recordId, String targetFolderId)
+    {
+        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(targetFolderId).build();
+        return getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, recordId);
+    }
+
+    /**
+     * Returns whether any child of the record folder match the provided record
+     *
+     * @param recordId       the record id
+     * @param recordFolderId the record folder id
+     * @return true if any child of the record folder match the provided record, false otherwise
+     */
+    private boolean isRecordChildOfRecordFolder(String recordId, String recordFolderId)
+    {
+        return getRestAPIFactory().getRecordFolderAPI()
+                                  .getRecordFolderChildren(recordFolderId)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
+    }
+
+    /**
+     * Returns whether any child of the unfiled record folder match the provided record
+     *
+     * @param recordId the record id
+     * @return true if any child of the unfiled record folder match the provided record, false otherwise
+     */
+    private boolean isRecordChildOfUnfiledRecordFolder(String recordId)
+    {
+        return getRestAPIFactory().getUnfiledRecordFoldersAPI()
+                                  .getUnfiledRecordFolderChildren(unfiledRecordFolderId)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
+    }
+
+    /**
+     * Returns whether any child of the unfiled container match the provided record
+     *
+     * @param recordId the record id
+     * @return true if any child of the unfiled container match the provided record, false otherwise
+     */
+    private boolean isRecordChildOfUnfiledContainer(String recordId)
+    {
+        return getRestAPIFactory().getUnfiledContainersAPI()
+                                  .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                                  .getEntries()
+                                  .stream()
+                                  .anyMatch(c -> c.getEntry().getId().equals(recordId));
     }
 }

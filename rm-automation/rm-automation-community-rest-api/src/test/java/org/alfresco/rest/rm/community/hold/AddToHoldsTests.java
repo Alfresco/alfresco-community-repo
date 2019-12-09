@@ -26,12 +26,13 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
-import static org.alfresco.rest.rm.community.base.TestData.FROZEN_ASPECT;
+
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.FROZEN_ASPECT;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;

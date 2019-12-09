@@ -28,9 +28,9 @@ package org.alfresco.rest.rm.community.hold;
 
 import static java.util.Arrays.asList;
 
-import static org.alfresco.rest.rm.community.base.TestData.FROZEN_ASPECT;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.FROZEN_ASPECT;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;

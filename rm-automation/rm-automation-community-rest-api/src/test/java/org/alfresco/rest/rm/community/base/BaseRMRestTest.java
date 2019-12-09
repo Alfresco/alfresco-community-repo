@@ -818,7 +818,7 @@ public class BaseRMRestTest extends RestTest
      */
     protected boolean hasAspect(String nodeId, String aspectName) throws Exception
     {
-        return hasAspect(toFileModel(nodeId),aspectName);
+        return hasAspect(toFileModel(nodeId), aspectName);
     }
 
     /**

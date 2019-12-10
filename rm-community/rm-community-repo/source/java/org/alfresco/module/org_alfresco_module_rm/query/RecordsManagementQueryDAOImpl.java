@@ -27,8 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-import java.util.Collections;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,33 +59,43 @@ import org.mybatis.spring.SqlSessionTemplate;
  */
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
-    /** logger */
-    @SuppressWarnings ("unused")
+    /**
+     * logger
+     */
+    @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(RecordsManagementQueryDAOImpl.class);
 
-    /** query names */
+    /**
+     * query names
+     */
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
     private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetStringPropertyValuesOfChildren";
     private static final String SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL = "select_NodeIdsWhichReferenceContentUrl";
+    private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
+    private static final String SCHEDULED_FOLDERS_COUNT = "alfresco.query.rm.select_RecordFoldersWithSchedulesCount";
 
-    /** SQL session template */
+    /**
+     * SQL session template
+     */
     protected SqlSessionTemplate template;
-    
-    /** QName DAO */
+
+    /**
+     * QName DAO
+     */
     protected QNameDAO qnameDAO;
     protected NodeDAO nodeDAO;
     protected TenantService tenantService;
-    
+
     /**
-     * @param sqlSessionTemplate    SQL session template
+     * @param sqlSessionTemplate SQL session template
      */
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     /**
-     * @param qnameDAO  qname DAO
+     * @param qnameDAO qname DAO
      */
     public final void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -106,25 +119,25 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     public int getCountRmaIdentifier(String identifierValue)
     {
         int result = 0;
-        
+
         // lookup the id of the identifier property qname
         Pair<Long, QName> pair = qnameDAO.getQName(PROP_IDENTIFIER);
         if (pair != null)
-        {        
+        {
             // create query params
             Map<String, Object> params = new HashMap<>(2);
             params.put("qnameId", pair.getFirst());
             params.put("idValue", identifierValue);
-            
+
             // return the number of rma identifiers found that match the passed value
-            Integer count = (Integer)template.selectOne(COUNT_IDENTIFIER, params);
-            
+            Integer count = (Integer) template.selectOne(COUNT_IDENTIFIER, params);
+
             if (count != null)
             {
                 result = count;
             }
         }
-        
+
         return result;
     }
 
@@ -158,8 +171,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     /**
      * Get a set of node reference which reference the provided content URL
      *
+     * @param String contentUrl	content URL
      * @return Set<NodeRef>	set of nodes that reference the provided content URL
-     * @param    String        contentUrl	content URL
      */
     @Override
     public Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl)
@@ -208,14 +221,16 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 
                     if (logger.isDebugEnabled())
                     {
-                        logMessage.append(nodeRefToAdd).append(" (from version)");
+                        logMessage.append(nodeRefToAdd)
+                            .append(" (from version)");
                     }
                 }
 
                 // add the node ref of the referencing node
                 else
                 {
-                    nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId).getNodeRef();
+                    nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId)
+                        .getNodeRef();
                     if (logger.isDebugEnabled())
                     {
                         logMessage.append(nodeRefToAdd);
@@ -240,4 +255,33 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
 
         return nodesReferencingContentUrl;
     }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getRecordFoldersWithSchedules(Long, Long)
+     */
+    @Override
+    public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
+    {
+        Map<String, Object> params = new HashMap<>(2);
+        params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
+            .getFirst());
+        params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
+            .getFirst());
+        params.put("start", start);
+        params.put("end", end);
+
+        List<NodeRefEntity> entities = template.selectList(SCHEDULED_FOLDERS, params);
+
+        List<NodeRef> results = new ArrayList<>();
+
+        // convert the entities to NodeRefs
+        for (NodeRefEntity nodeRefEntity : entities)
+        {
+            results.add(
+                new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
+        }
+
+        return results;
+    }
+
 }

@@ -218,7 +218,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                         assertNull(dispositionService.getNextDispositionAction(recordFolder));
 
                         // check the search aspect properties
-                        assertFalse(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
+                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                     }
                 });
             }

@@ -135,7 +135,8 @@ public final class NamePathDataExtractor extends AbstractDataExtractor
             {
                 // Get path from the RM root
                 List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-
+                NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+                nodeRefPath.add(0, nodeService.getPrimaryParent(filePlan).getParentRef());
                 for (NodeRef pathNodeRef : nodeRefPath)
                 {
                     String name = (String) nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);

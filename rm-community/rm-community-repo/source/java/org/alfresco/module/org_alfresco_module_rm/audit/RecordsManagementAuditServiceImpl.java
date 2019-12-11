@@ -93,7 +93,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,7 +137,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_SNIPPET_CHANGES = "/changes";
     protected static final String RM_AUDIT_SNIPPET_BEFORE = "/before";
     protected static final String RM_AUDIT_SNIPPET_AFTER = "/after";
-    protected static final String RM_AUDIT_DOCUMENT_LIBRARY_PATH = "/documentLibrary";
+    protected static final String RM_AUDIT_SITES_PATH = "/Sites";
 
     protected static final String RM_AUDIT_DATA_PERSON_FULLNAME = "/RM/event/person/fullName";
     protected static final String RM_AUDIT_DATA_PERSON_ROLES = "/RM/event/person/roles";
@@ -1464,10 +1463,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 // we need to strip off the first part of the path
                 String path = entry.getPath();
                 String displayPath;
-                int idx = path.indexOf(RM_AUDIT_DOCUMENT_LIBRARY_PATH);
+                int idx = path.indexOf(RM_AUDIT_SITES_PATH);
                 if (idx != -1)
                 {
-                    displayPath = path.substring(idx + RM_AUDIT_DOCUMENT_LIBRARY_PATH.length());
+                    displayPath = path.substring(idx + RM_AUDIT_SITES_PATH.length());
                 }
                 else
                 {
@@ -1481,7 +1480,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             }
             writer.write("</div>\n");
 
-            if (entry.getChangedProperties() != null)
+            if (entry.getChangedProperties() != null && !entry.getChangedProperties().isEmpty())
             {
                 writer.write("<table class=\"changed-values-table\" cellspacing=\"0\">");
                 writer.write("<tr><th>Property</th><th>Previous Value</th><th>New Value</th></tr>");

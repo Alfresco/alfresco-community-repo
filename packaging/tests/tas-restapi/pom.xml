@@ -29,7 +29,7 @@
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tas.utility.version>3.0.16</tas.utility.version>
-        <rest-assured.version>4.1.2</rest-assured.version>
+        <rest-assured.version>3.3.0</rest-assured.version>
         <httpclient-osgi-version>4.5.3</httpclient-osgi-version>
         <json-path.version>3.3.0</json-path.version>
         <xml-path.version>3.3.0</xml-path.version>

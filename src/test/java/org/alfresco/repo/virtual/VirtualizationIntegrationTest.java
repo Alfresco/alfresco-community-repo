@@ -84,8 +84,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentMatcher;
-import org.mockito.Matchers;
 import org.mockito.Mock;
+import static org.mockito.ArgumentMatchers.argThat;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 
@@ -500,7 +500,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         searchServiceDelegatorSpy = spy(searchServiceDelegator);
         searchServiceDelegator.setSubSystem(searchServiceDelegatorSpy);
 
-        doReturn(dbResults).when(searchServiceDelegatorSpy).query(Matchers.argThat(getArgMatcher()));
+        doReturn(dbResults).when(searchServiceDelegatorSpy).query(argThat(getArgMatcher()));
     }
 
     protected void prepareMocks(String queryMatcher, NodeRef realNodeToReturn)
@@ -549,21 +549,16 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
 
     protected ArgumentMatcher<SearchParameters> getArgMatcher()
     {
-        return new ArgumentMatcher<SearchParameters>()
-        {
-            @Override
-            public boolean matches(Object argument)
+        return argument -> {
+            if (argument!=null)
             {
-                if (argument instanceof SearchParameters)
+                String matchingString = getMatchingString();
+                if (matchingString != null && argument.toString().contains(matchingString))
                 {
-                    String matchingString = getMatchingString();
-                    if (matchingString != null && argument.toString().contains(matchingString))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                return false;
             }
+            return false;
         };
     }
 

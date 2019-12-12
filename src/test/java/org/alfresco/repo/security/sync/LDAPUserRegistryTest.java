@@ -32,7 +32,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.naming.CompositeName;
 import javax.naming.Name;
@@ -49,9 +49,8 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
@@ -106,7 +105,7 @@ public class LDAPUserRegistryTest
                 .thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
         when(contextFactory.getDefaultIntialDirContext()).thenReturn(initialDirContext);
         when(contextFactory.getDefaultIntialDirContext(0)).thenReturn(initialDirContext);
-        when(initialDirContext.search(eq(GROUP_SEARCH_BASE), eq(GROUP_DIFFERENTIAL_QUERY), anyObject())).thenReturn(searchResults);
+        when(initialDirContext.search(eq(GROUP_SEARCH_BASE), eq(GROUP_DIFFERENTIAL_QUERY), any())).thenReturn(searchResults);
         when(searchResults.hasMore()).thenReturn(true);
         when(searchResults.next()).thenReturn(searchResult);
         when(searchResult.getAttributes()).thenReturn(attributes);

@@ -28,9 +28,9 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -235,20 +235,22 @@ public class TransformerConfigMBeanImplTest
         ContentTransformer transformer1 = (ContentTransformer) new DummyContentTransformer("transformer.transformer1");
         ContentTransformer transformer2 = (ContentTransformer) new DummyContentTransformer("transformer.transformer2");
 
+        Collection<ContentTransformer> transformerList1=Arrays.asList(new ContentTransformer[] {transformer1});
         when(transformerDebug.sortTransformersByName("transformer.transformer1")).thenReturn(
-                Arrays.asList(new ContentTransformer[] {transformer1}));
+                    transformerList1);
+        Collection<ContentTransformer> transformerList2=Arrays.asList(new ContentTransformer[] {transformer1, transformer2});
         when(transformerDebug.sortTransformersByName(null)).thenReturn(
-                Arrays.asList(new ContentTransformer[] {transformer1, transformer2}));
+                    transformerList2);
 
         when(transformerDebug.getSourceMimetypes("pdf")).thenReturn(Collections.singletonList("application/pdf"));
         when(transformerDebug.getSourceMimetypes("png")).thenReturn(Collections.singletonList("image/png"));
         when(transformerDebug.getSourceMimetypes("txt")).thenReturn(Collections.singletonList("text/plain"));
         when(transformerDebug.getSourceMimetypes(null)).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
 
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("pdf"), (Collection<String>) any())).thenReturn(Collections.singletonList("application/pdf"));
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("png"), (Collection<String>) any())).thenReturn(Collections.singletonList("image/png"));
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("txt"), (Collection<String>) any())).thenReturn(Collections.singletonList("text/plain"));
-        when(transformerDebug.getTargetMimetypes(anyString(), (String)eq(null), (Collection<String>) any())).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
+        when(transformerDebug.getTargetMimetypes(any(), eq("pdf"), (Collection<String>) any())).thenReturn(Collections.singletonList("application/pdf"));
+        when(transformerDebug.getTargetMimetypes(any(), eq("png"), (Collection<String>) any())).thenReturn(Collections.singletonList("image/png"));
+        when(transformerDebug.getTargetMimetypes(any(), eq("txt"), (Collection<String>) any())).thenReturn(Collections.singletonList("text/plain"));
+        when(transformerDebug.getTargetMimetypes(any(), (String)eq(null), (Collection<String>) any())).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
         
         when(transformerConfig.getStatistics(null, null, null, false)).thenReturn(
                 new TransformerStatisticsImpl(mimetypeService, "*", "*", null, null, 130000, 222, 34));

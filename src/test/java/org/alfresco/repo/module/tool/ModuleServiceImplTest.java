@@ -26,8 +26,8 @@
 package org.alfresco.repo.module.tool;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -66,7 +66,7 @@ public class ModuleServiceImplTest
         RegistryService reg = mock(RegistryService.class);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
-        when(reg.getProperty((RegistryKey) anyObject())).thenAnswer(new Answer<Serializable>()
+        when(reg.getProperty((RegistryKey) any())).thenAnswer(new Answer<Serializable>()
         {
             public Serializable answer(InvocationOnMock invocation) throws Throwable
             {
@@ -74,7 +74,7 @@ public class ModuleServiceImplTest
                 return new ModuleVersionNumber("1.1");
             }
         });
-        doReturn(Arrays.asList("fee", "alfresco-simple-module", "fo")).when(reg).getChildElements((RegistryKey) anyObject());
+        doReturn(Arrays.asList("fee", "alfresco-simple-module", "fo")).when(reg).getChildElements((RegistryKey) any());
         doReturn(new Resource[] {simpleMod}).when(applicationContext).getResources(anyString());
         moduleService.setRegistryService(reg);
         moduleService.setApplicationContext(applicationContext);

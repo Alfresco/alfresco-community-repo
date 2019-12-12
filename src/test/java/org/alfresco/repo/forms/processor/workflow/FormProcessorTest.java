@@ -28,7 +28,7 @@ package org.alfresco.repo.forms.processor.workflow;
 
 import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 import static org.alfresco.repo.workflow.WorkflowModel.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.File;

@@ -44,7 +44,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+
+import org.mockito.junit.MockitoJUnitRunner;
+import org.quartz.CronExpression;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -55,15 +57,11 @@ import java.util.Set;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests the RenditionService2 in a Community context where we only have local transformers.
@@ -140,7 +138,7 @@ public class RenditionService2Test
             }
             renditionService2.consume(sourceNodeRef, null, renditionDefinition, sourceContentHashCode);
             return null;
-        }).when(transformClient).transform(any(), any(), anyString(), anyInt());
+        }).when(transformClient).transform(any(), any(), nullable(String.class), anyInt());
 
         renditionService2.setTransactionService(transactionService);
         renditionService2.setNodeService(nodeService);
@@ -220,7 +218,9 @@ public class RenditionService2Test
     public void useLocalTransformForRenditions()
     {
         renditionService2.render(nodeRef, TEST_RENDITION);
-        verify(transformClient, times(1)).transform(any(), any(), anyString(), anyInt());
+
+        verify(transformClient, times(1)).transform(any(), any(), any(), anyInt());
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
         verify(transformReplyProvider, times(0)).produceTransformEvent(any(), any(), any(), anyInt());
     }
 
@@ -228,8 +228,9 @@ public class RenditionService2Test
     public void useLocalTransformForTransforms()
     {
         renditionService2.transform(nodeRef, TEST_TRANSFORM);
-        verify(transformClient, times(1)).transform(any(), any(), anyString(), anyInt());
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
         verify(transformReplyProvider, times(1)).produceTransformEvent(any(), any(), any(), anyInt());
+
     }
 
     @Test(expected = UnsupportedOperationException.class)

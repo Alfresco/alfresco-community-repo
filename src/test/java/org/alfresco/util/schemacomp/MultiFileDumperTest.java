@@ -26,9 +26,9 @@
 package org.alfresco.util.schemacomp;
 
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,7 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Tests for the MultiFileDumper class.
@@ -139,7 +139,7 @@ public class MultiFileDumperTest
         return new FileNameBeginsWith(startOfName);
     }
     
-    private static class FileNameBeginsWith extends ArgumentMatcher<File>
+    private static class FileNameBeginsWith implements ArgumentMatcher<File>
     {
         private final String startOfName;
         
@@ -149,7 +149,7 @@ public class MultiFileDumperTest
         }
 
         @Override
-        public boolean matches(Object arg)
+        public boolean matches(File arg)
         {
             if (arg != null)
             {

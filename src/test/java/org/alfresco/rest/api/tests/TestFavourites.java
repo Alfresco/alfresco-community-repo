@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,11 +51,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Favourites;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
@@ -62,6 +65,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.SiteMembershipRequests
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Comment;
+import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Favourite;
 import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
 import org.alfresco.rest.api.tests.client.data.FavouriteFolder;
@@ -1882,6 +1886,42 @@ public class TestFavourites extends AbstractBaseApiTest
         // Same results for GET
         file1FavouriteResponse = favouritesProxy.getFavourite(person11Id, file1FavouriteResponse.getTargetGuid(), include);
         assertNotNull("Properties shouldn't be null because we created some properties while locking the file", file1FavouriteResponse.getProperties());
+    }
+
+    /**
+     * REPO-4772 Tests NPE thrown when getting favourites with 'include' properties parameter.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=properties}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=properties}
+     */
+    @Test
+    public void testCreateAndGetFavouriteWithIncludeEmptyPropertiesFile() throws Exception
+    {
+        setRequestContext(networkOne.getId(), networkAdmin, "admin");
+        Map<String, String> include = Collections.singletonMap("include", "properties");
+
+        String f0Id = createFolder(Nodes.PATH_ROOT, "f0-testCreateEmptyFile-"+RUNID).getId();
+        String postUrl = getNodeChildrenUrl(f0Id);
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+        HttpResponse response = post(postUrl, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Favourite the doc (Test Doc1) using POST
+        Favourite file1Favourite = makeFileFavourite(documentResp.getId());
+        Favourite file1FavouriteResponse = favouritesProxy.createFavourite(networkAdmin, file1Favourite, null);
+
+        // Get the favourited doc using GET and include = properties
+        file1FavouriteResponse = favouritesProxy.getFavourite(networkAdmin, file1FavouriteResponse.getTargetGuid(), include);
+        assertNull("Properties should be null, created document is empty", file1FavouriteResponse.getProperties());
+
+        // Get the favourited doc using GET and include = properties, further test to assert on response code range
+        int favouriteStatusCode = favouritesProxy.getSingle("people", networkAdmin, "favorites", file1FavouriteResponse.getTargetGuid(), include, "Failed to get favourite " + file1FavouriteResponse.getTargetGuid(), 200).getStatusCode();
+        assertTrue("Status code should be within the success range", 200 <= favouriteStatusCode && favouriteStatusCode <= 299);
     }
 
     /**

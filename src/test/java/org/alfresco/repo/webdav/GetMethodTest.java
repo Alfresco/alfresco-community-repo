@@ -28,9 +28,10 @@ package org.alfresco.repo.webdav;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -53,7 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -155,7 +156,7 @@ public class GetMethodTest
         ContentIOException contentEx = new ContentIOException("Wrapping the socket exception.", sockEx);
         
         // Reader.getContent() will throw a ContentIOException when a client aborts.
-        doThrow(contentEx).when(reader).getContent(any(OutputStream.class));
+        doThrow(contentEx).when(reader).getContent(nullable(OutputStream.class));
         
         try
         {
@@ -178,7 +179,7 @@ public class GetMethodTest
         RuntimeException rEx = new RuntimeException("Some sort of proper error");
         ContentIOException contentEx = new ContentIOException("Wrapping the exception.", rEx);
         
-        doThrow(contentEx).when(reader).getContent(any(OutputStream.class));
+        doThrow(contentEx).when(reader).getContent(nullable(OutputStream.class));
         
         try
         {
@@ -230,7 +231,7 @@ public class GetMethodTest
         ContentIOException contentEx = new ContentIOException("Wrapping the socket exception.", caEx);
 
         // Reader.getContent() will throw a ContentIOException when a client aborts.
-        doThrow(contentEx).when(reader).getContent(any(OutputStream.class));
+        doThrow(contentEx).when(reader).getContent(nullable(OutputStream.class));
 
         try
         {

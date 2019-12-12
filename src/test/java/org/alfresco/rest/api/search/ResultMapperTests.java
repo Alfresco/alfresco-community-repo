@@ -30,10 +30,11 @@ import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -83,6 +84,7 @@ import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -164,14 +166,14 @@ public class ResultMapperTests
         });
         NodeService nodeService = mock(NodeService.class);
 
-        when(versionService.getVersionHistory(notNull(NodeRef.class))).thenAnswer(invocation ->
+        when(versionService.getVersionHistory(any(NodeRef.class))).thenAnswer(invocation ->
         {
             Object[] args = invocation.getArguments();
             NodeRef aNode = (NodeRef)args[0];
             return versionHistory;
         });
 
-        when(nodeService.getProperties(notNull(NodeRef.class))).thenAnswer(invocation ->
+        when(nodeService.getProperties(any(NodeRef.class))).thenAnswer(invocation ->
         {
             Object[] args = invocation.getArguments();
             NodeRef aNode = (NodeRef)args[0];
@@ -186,7 +188,7 @@ public class ResultMapperTests
         when(sr.getVersionService()).thenReturn(versionService);
         when(sr.getNodeService()).thenReturn(nodeService);
 
-        when(nodes.validateOrLookupNode(notNull(String.class), anyString())).thenAnswer(invocation ->
+        when(nodes.validateOrLookupNode(nullable(String.class), nullable(String.class))).thenAnswer(invocation ->
         {
             Object[] args = invocation.getArguments();
             String aNode = (String)args[0];
@@ -201,7 +203,7 @@ public class ResultMapperTests
         });
 
         //        // NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        when(nodes.getFolderOrDocument(notNull(NodeRef.class), any(), any(), any(), any())).thenAnswer(new Answer<Node>() {
+        when(nodes.getFolderOrDocument(any(NodeRef.class), nullable(NodeRef.class), nullable(QName.class), nullable(List.class), nullable(Map.class))).thenAnswer(new Answer<Node>() {
             @Override
             public Node answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
@@ -215,7 +217,8 @@ public class ResultMapperTests
             }
         });
 
-        when(deletedNodes.getDeletedNode(notNull(String.class), any(), anyBoolean(), any())).thenAnswer(new Answer<Node>() {
+        when(deletedNodes.getDeletedNode(nullable(String.class), nullable(
+                    Parameters.class), anyBoolean(), nullable(Map.class))).thenAnswer(new Answer<Node>() {
             @Override
             public Node answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();

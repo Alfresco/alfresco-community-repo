@@ -53,6 +53,7 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -93,7 +94,7 @@ public class FileRecordsTests extends BaseRMRestTest
         closedFolderId = createCategoryFolderInFilePlan().getId();
         closeFolder(closedFolderId);
 
-        //create one unfiled record folder
+        // create one unfiled record folder
         unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
     }
@@ -156,6 +157,7 @@ public class FileRecordsTests extends BaseRMRestTest
      * Then the record is filed
      */
     @Test (dataProvider = "unfiledRecordsFromUnfiledRecordsContainer")
+    @AlfrescoTest (jira = "RM-7060")
     public void fileRecordFromUnfiledContainerToOpenFolder(String unfiledRecordId) throws Exception
     {
         // file the record to the folder created
@@ -180,6 +182,7 @@ public class FileRecordsTests extends BaseRMRestTest
      * Then the record is filed
      */
     @Test (dataProvider = "unfiledRecordsFromUnfiledRecordFolder")
+    @AlfrescoTest (jira = "RM-7060")
     public void fileRecordFromUnfiledRecordFolderToOpenFolder(String unfiledRecordId) throws Exception
     {
         // file the record to the folder created

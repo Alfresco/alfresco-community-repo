@@ -178,6 +178,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", anothermanager.getUsername()));
     }
 
+    @Bug(id="REPO-4864")
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can delete site member using \"-me-\" in place of personId")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })

@@ -107,9 +107,4 @@ public interface TestData
      * The default hold reason
      */
     String HOLD_REASON = "Active content to be reviewed for the CASE McDermott, FINRA ";
-
-    /**
-     * Frozen aspect
-     */
-    String FROZEN_ASPECT = "rma:frozen";
 }

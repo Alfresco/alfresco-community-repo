@@ -47,7 +47,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -68,7 +67,6 @@ import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -200,6 +198,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static final String MSG_AUDIT_VIEW = "rm.audit.audit-view";
 
     private static final QName PROPERTY_HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    private static final String HOLD_PERMISSION_DENIED_MSG = "rm.audit.holdPermission-Error";
 
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
@@ -881,267 +880,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         // define the callback
-        AuditQueryCallback callback = new AuditQueryCallback()
-        {
-            private boolean firstEntry = true;
-
-
-            @Override
-            public boolean valuesRequired()
-            {
-                return true;
-            }
-
-            /**
-             * Just log the error, but continue
-             */
-            @Override
-            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
-            {
-                logger.warn(errorMsg, error);
-                return true;
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public boolean handleAuditEntry(
-                    Long entryId,
-                    String applicationName,
-                    String user,
-                    long time,
-                    Map<String, Serializable> values)
-            {
-                // Check for context shutdown
-                if (shutdown)
-                {
-                    return false;
-                }
-
-
-                Date timestamp = new Date(time);
-                String eventName = null;
-                String fullName = null;
-                String userRoles = null;
-                NodeRef nodeRef = null;
-                String nodeName = null;
-                String nodeType = null;
-                String nodeIdentifier = null;
-                String namePath = null;
-                Map<QName, Serializable> beforeProperties = null;
-                Map<QName, Serializable> afterProperties = null;
-
-                if (values.containsKey(RM_AUDIT_DATA_EVENT_NAME))
-                {
-                    // This data is /RM/event/...
-                    eventName = (String) values.get(RM_AUDIT_DATA_EVENT_NAME);
-                    fullName = (String) values.get(RM_AUDIT_DATA_PERSON_FULLNAME);
-                    userRoles = (String) values.get(RM_AUDIT_DATA_PERSON_ROLES);
-                    nodeRef = (NodeRef) values.get(RM_AUDIT_DATA_NODE_NODEREF);
-                    nodeName = (String) values.get(RM_AUDIT_DATA_NODE_NAME);
-                    QName nodeTypeQname = (QName) values.get(RM_AUDIT_DATA_NODE_TYPE);
-                    nodeIdentifier = (String) values.get(RM_AUDIT_DATA_NODE_IDENTIFIER);
-                    namePath = (String) values.get(RM_AUDIT_DATA_NODE_NAMEPATH);
-                    beforeProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_BEFORE);
-                    afterProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_AFTER);
-
-                    // Convert some of the values to recognizable forms
-                    nodeType = null;
-                    if (nodeTypeQname != null)
-                    {
-                        TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
-                        nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
-                    }
-                }
-                else if (values.containsKey(DOD5015_AUDIT_DATA_EVENT_NAME))
-                {
-                    // This data is /RM/event/...
-                    eventName = (String) values.get(DOD5015_AUDIT_DATA_EVENT_NAME);
-                    fullName = (String) values.get(DOD5015_AUDIT_DATA_PERSON_FULLNAME);
-                    userRoles = (String) values.get(DOD5015_AUDIT_DATA_PERSON_ROLES);
-                    nodeRef = (NodeRef) values.get(DOD5015_AUDIT_DATA_NODE_NODEREF);
-                    nodeName = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAME);
-                    QName nodeTypeQname = (QName) values.get(DOD5015_AUDIT_DATA_NODE_TYPE);
-                    nodeIdentifier = (String) values.get(DOD5015_AUDIT_DATA_NODE_IDENTIFIER);
-                    namePath = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAMEPATH);
-                    beforeProperties = (Map<QName, Serializable>) values.get( DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
-                    afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
-
-                    // Convert some of the values to recognizable forms
-                    nodeType = null;
-                    if (nodeTypeQname != null)
-                    {
-                        TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
-                        nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
-                    }
-                }
-                else if (values.containsKey(RM_AUDIT_DATA_LOGIN_USERNAME))
-                {
-                    user = (String) values.get(RM_AUDIT_DATA_LOGIN_USERNAME);
-                    if (values.containsKey(RM_AUDIT_DATA_LOGIN_ERROR))
-                    {
-                        eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
-                        // The user didn't log in
-                        fullName = user;
-                    }
-                    else
-                    {
-                        eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
-                        fullName = (String) values.get(RM_AUDIT_DATA_LOGIN_FULLNAME);
-                    }
-                }
-                else if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_USERNAME))
-                {
-                    user = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_USERNAME);
-                    if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_ERROR))
-                    {
-                        eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
-                        // The user didn't log in
-                        fullName = user;
-                    }
-                    else
-                    {
-                        eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
-                        fullName = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_FULLNAME);
-                    }
-                }
-                else
-                {
-                    // This is not recognisable data
-                    logger.warn(
-                            "Unable to process audit entry for RM.  Unexpected data: \n" +
-                            "   Entry: " + entryId + "\n" +
-                            "   Data:  " + values);
-                    // Skip it
-                    return true;
-                }
-
-                if (nodeRef != null && nodeService.exists(nodeRef))
-                {
-                    if ((filePlanService.isFilePlanComponent(nodeRef) &&
-                            !AccessStatus.ALLOWED.equals(
-                                    capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY))) ||
-                            (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ))))
-                    {
-                        return true;
-                    }
-                    // must have read permission on hold to see hold events
-                    else
-                    {
-                        // get hold names, if any, from event properties
-                        Set<String> holdNames = new HashSet<>(2);
-                        addHoldNameFromProperties(holdNames, beforeProperties);
-                        addHoldNameFromProperties(holdNames, afterProperties);
-
-                        // check permission for all hold names found in event properties
-                        for (String holdName: holdNames)
-                        {
-                            if (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(getHold(holdName),
-                                PermissionService.READ)))
-                            {
-                                    return true;
-                            }
-                        }
-                    }
-                }
-
-                // TODO: Refactor this to use the builder pattern
-                RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
-                        timestamp,
-                        user,
-                        fullName,
-                        // A concatenated string of roles
-                        userRoles,
-                        nodeRef,
-                        nodeName,
-                        nodeType,
-                        eventName,
-                        nodeIdentifier,
-                        namePath,
-                        beforeProperties,
-                        afterProperties);
-
-                // write out the entry to the file in requested format
-                writeEntryToFile(entry);
-
-                if (results != null)
-                {
-                    results.add(entry);
-                }
-
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("   " + entry);
-                }
-
-                // Keep going
-                return true;
-            }
-
-            /**
-             * Helper method to extract the hold name, if any, from the given event properties
-             * @param holdNames         set of hold names
-             * @param eventProperties   event properties
-             */
-            private void addHoldNameFromProperties(Set<String> holdNames, Map<QName, Serializable> eventProperties)
-            {
-                String name = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
-                if (name != null)
-                {
-                    holdNames.add(name);
-                }
-            }
-
-            /**
-             * Helper method to get the hold for a given hold name
-             * @param holdName      hold name
-             * @return              node ref of hold
-             */
-            private NodeRef getHold(String holdName)
-            {
-                return AuthenticationUtil.runAsSystem(() -> {
-                    NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-                    return holdService.getHold(filePlan, holdName);
-                });
-            }
-
-            private void writeEntryToFile(RecordsManagementAuditEntry entry)
-            {
-                if (writer == null)
-                {
-                    return;
-                }
-                try
-                {
-                    if (!firstEntry)
-                    {
-                        if (reportFormat == ReportFormat.HTML)
-                        {
-                            writer.write("\n");
-                        }
-                        else
-                        {
-                            writer.write(",");
-                        }
-                    }
-                    else
-                    {
-                        firstEntry = false;
-                    }
-
-                    // write the entry to the file
-                    if (reportFormat == ReportFormat.JSON)
-                    {
-                        writer.write("\n\t\t");
-                    }
-
-                    writeAuditTrailEntry(writer, entry, reportFormat);
-                }
-                catch (IOException ioe)
-                {
-                    throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, ioe);
-                }
-            }
-        };
+        AuditQueryCallback callback = new AuditTrailQueryCallback(results, writer, reportFormat);
 
         String user = params.getUser();
         Long fromTime = getFromDateTime(params.getDateFrom());
@@ -1238,7 +977,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the start of the from date
-     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.getStartOfDay()
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl#getStartOfDay(java.util.Date)
      *
      * @param date The date for which the start should be retrieved.
      * @return Returns null if the given date is null, otherwise the start of the given day.
@@ -1280,7 +1019,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the end of the from date
-     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.getEndOfDay()
+     * @see org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl#getEndOfDay(java.util.Date)
      *
      * @param date The date for which the end should be retrieved.
      * @return Returns null if the given date is null, otherwise the end of the given day.
@@ -1967,5 +1706,277 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             Map<String, Serializable> parameters)
     {
         auditEvent(nodeRef, action.getName());
+    }
+
+    private class AuditTrailQueryCallback implements AuditQueryCallback
+    {
+        private final List<RecordsManagementAuditEntry> results;
+        private final Writer writer;
+        private final ReportFormat reportFormat;
+        private boolean firstEntry;
+
+        public AuditTrailQueryCallback(List<RecordsManagementAuditEntry> results, Writer writer, ReportFormat reportFormat)
+        {
+            this.results = results;
+            this.writer = writer;
+            this.reportFormat = reportFormat;
+            firstEntry = true;
+        }
+
+
+        @Override
+        public boolean valuesRequired()
+        {
+            return true;
+        }
+
+        /**
+         * Just log the error, but continue
+         */
+        @Override
+        public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+        {
+            logger.warn(errorMsg, error);
+            return true;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public boolean handleAuditEntry(
+                Long entryId,
+                String applicationName,
+                String user,
+                long time,
+                Map<String, Serializable> values)
+        {
+            // Check for context shutdown
+            if (shutdown)
+            {
+                return false;
+            }
+
+
+            Date timestamp = new Date(time);
+            String eventName = null;
+            String fullName = null;
+            String userRoles = null;
+            NodeRef nodeRef = null;
+            String nodeName = null;
+            String nodeType = null;
+            String nodeIdentifier = null;
+            String namePath = null;
+            Map<QName, Serializable> beforeProperties = null;
+            Map<QName, Serializable> afterProperties = null;
+
+            if (values.containsKey(RM_AUDIT_DATA_EVENT_NAME))
+            {
+                // This data is /RM/event/...
+                eventName = (String) values.get(RM_AUDIT_DATA_EVENT_NAME);
+                fullName = (String) values.get(RM_AUDIT_DATA_PERSON_FULLNAME);
+                userRoles = (String) values.get(RM_AUDIT_DATA_PERSON_ROLES);
+                nodeRef = (NodeRef) values.get(RM_AUDIT_DATA_NODE_NODEREF);
+                nodeName = (String) values.get(RM_AUDIT_DATA_NODE_NAME);
+                QName nodeTypeQname = (QName) values.get(RM_AUDIT_DATA_NODE_TYPE);
+                nodeIdentifier = (String) values.get(RM_AUDIT_DATA_NODE_IDENTIFIER);
+                namePath = (String) values.get(RM_AUDIT_DATA_NODE_NAMEPATH);
+                beforeProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                afterProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_AFTER);
+
+                // Convert some of the values to recognizable forms
+                nodeType = null;
+                if (nodeTypeQname != null)
+                {
+                    TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
+                    nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
+                }
+            }
+            else if (values.containsKey(DOD5015_AUDIT_DATA_EVENT_NAME))
+            {
+                // This data is /RM/event/...
+                eventName = (String) values.get(DOD5015_AUDIT_DATA_EVENT_NAME);
+                fullName = (String) values.get(DOD5015_AUDIT_DATA_PERSON_FULLNAME);
+                userRoles = (String) values.get(DOD5015_AUDIT_DATA_PERSON_ROLES);
+                nodeRef = (NodeRef) values.get(DOD5015_AUDIT_DATA_NODE_NODEREF);
+                nodeName = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAME);
+                QName nodeTypeQname = (QName) values.get(DOD5015_AUDIT_DATA_NODE_TYPE);
+                nodeIdentifier = (String) values.get(DOD5015_AUDIT_DATA_NODE_IDENTIFIER);
+                namePath = (String) values.get(DOD5015_AUDIT_DATA_NODE_NAMEPATH);
+                beforeProperties = (Map<QName, Serializable>) values.get( DOD5015_AUDIT_DATA_NODE_CHANGES_BEFORE);
+                afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
+
+                // Convert some of the values to recognizable forms
+                nodeType = null;
+                if (nodeTypeQname != null)
+                {
+                    TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
+                    nodeType = (typeDef != null) ? typeDef.getTitle(dictionaryService) : null;
+                }
+            }
+            else if (values.containsKey(RM_AUDIT_DATA_LOGIN_USERNAME))
+            {
+                user = (String) values.get(RM_AUDIT_DATA_LOGIN_USERNAME);
+                if (values.containsKey(RM_AUDIT_DATA_LOGIN_ERROR))
+                {
+                    eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
+                    // The user didn't log in
+                    fullName = user;
+                }
+                else
+                {
+                    eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
+                    fullName = (String) values.get(RM_AUDIT_DATA_LOGIN_FULLNAME);
+                }
+            }
+            else if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_USERNAME))
+            {
+                user = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_USERNAME);
+                if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_ERROR))
+                {
+                    eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
+                    // The user didn't log in
+                    fullName = user;
+                }
+                else
+                {
+                    eventName = RM_AUDIT_EVENT_LOGIN_SUCCESS;
+                    fullName = (String) values.get(DOD5015_AUDIT_DATA_LOGIN_FULLNAME);
+                }
+            }
+            else
+            {
+                // This is not recognisable data
+                logger.warn(
+                        "Unable to process audit entry for RM.  Unexpected data: \n" +
+                        "   Entry: " + entryId + "\n" +
+                        "   Data:  " + values);
+                // Skip it
+                return true;
+            }
+
+            if (nodeRef != null && nodeService.exists(nodeRef))
+            {
+                if ((filePlanService.isFilePlanComponent(nodeRef) &&
+                        !AccessStatus.ALLOWED.equals(
+                                capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY))) ||
+                        (!AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, PermissionService.READ))))
+                {
+                    return true;
+                }
+                else
+                {
+                    // must have read permission on hold to see hold name in event
+                    Map<String, Boolean> holdNamesToHide = new HashMap<>(2);
+                    replaceHoldNameIfRequired(beforeProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                    replaceHoldNameIfRequired(afterProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                }
+            }
+
+            // TODO: Refactor this to use the builder pattern
+            RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
+                    timestamp,
+                    user,
+                    fullName,
+                    // A concatenated string of roles
+                    userRoles,
+                    nodeRef,
+                    nodeName,
+                    nodeType,
+                    eventName,
+                    nodeIdentifier,
+                    namePath,
+                    beforeProperties,
+                    afterProperties);
+
+            // write out the entry to the file in requested format
+            writeEntryToFile(entry);
+
+            if (results != null)
+            {
+                results.add(entry);
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("   " + entry);
+            }
+
+            // Keep going
+            return true;
+        }
+
+        /**
+         * Helper method to replace the hold name, if required, in the given event properties
+         * @param eventProperties   event properties
+         * @param holdNamesToHide   map of hold names and their hide name status
+         * @param replacementText   text to replace hidden hold name
+         */
+        private void replaceHoldNameIfRequired(Map<QName, Serializable> eventProperties,
+                                               Map<String, Boolean> holdNamesToHide, String replacementText)
+        {
+            // get hold name, if any, from audit event properties
+            String holdName = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
+            if (holdName != null)
+            {
+                holdNamesToHide.putIfAbsent(holdName,
+                        !AccessStatus.ALLOWED.equals(permissionService.hasPermission(getHold(holdName),
+                                PermissionService.READ)));
+
+                if (holdNamesToHide.get(holdName) == true)
+                {
+                    eventProperties.replace(PROPERTY_HOLD_NAME, replacementText);
+                }
+            }
+        }
+
+        /**
+         * Helper method to get the hold for a given hold name
+         * @param holdName      hold name
+         * @return              node ref of hold
+         */
+        private NodeRef getHold(String holdName)
+        {
+            return AuthenticationUtil.runAsSystem(() -> {
+                NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                return holdService.getHold(filePlan, holdName);
+            });
+        }
+
+        private void writeEntryToFile(RecordsManagementAuditEntry entry)
+        {
+            if (writer == null)
+            {
+                return;
+            }
+            try
+            {
+                if (!firstEntry)
+                {
+                    if (reportFormat == ReportFormat.HTML)
+                    {
+                        writer.write("\n");
+                    }
+                    else
+                    {
+                        writer.write(",");
+                    }
+                }
+                else
+                {
+                    firstEntry = false;
+                }
+
+                // write the entry to the file
+                if (reportFormat == ReportFormat.JSON)
+                {
+                    writer.write("\n\t\t");
+                }
+
+                writeAuditTrailEntry(writer, entry, reportFormat);
+            }
+            catch (IOException ioe)
+            {
+                throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, ioe);
+            }
+        }
     }
 }

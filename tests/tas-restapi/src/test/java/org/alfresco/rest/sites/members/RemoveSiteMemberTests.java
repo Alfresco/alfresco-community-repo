@@ -280,6 +280,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.NOT_SUFFICIENT_PERMISSIONS, publicSiteModel.getId()));
     }
 
+    @Bug(id="REPO-4865")
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can delete a site member with Contributor role")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })

@@ -2,6 +2,7 @@ package org.alfresco.rest.sites.members;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.exception.DataPreparationException;
@@ -47,8 +48,8 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-            .assertThat().entriesListDoesNotContain("id", testUserModel.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -64,8 +65,9 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-            .assertThat().entriesListContains("id", testUserModel.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI()
+                .usingSite(publicSiteModel).getSiteMembers()
+                .assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -81,8 +83,8 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-            .assertThat().entriesListContains("id", testUserModel.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -98,8 +100,8 @@ public class RemoveSiteMemberTests extends RestTest
                 .deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-            .assertThat().entriesListContains("id", testUserModel.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -171,8 +173,8 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(anothermanager);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-                .assertThat().entriesListDoesNotContain("id", anothermanager.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListDoesNotContain("id", anothermanager.getUsername()));
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
@@ -188,8 +190,8 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(meUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-                .assertThat().entriesListDoesNotContain("id", manager.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListDoesNotContain("id", manager.getUsername()));
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
@@ -288,8 +290,8 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(contributorForDelete);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-                .assertThat().entriesListDoesNotContain("id", contributorForDelete.getUsername());
+        Utility.sleep(300, 10000, () ->  restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListDoesNotContain("id", contributorForDelete.getUsername()));
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
@@ -346,8 +348,8 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(collaboratorForDelete);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-                .assertThat().entriesListDoesNotContain("id", collaboratorForDelete.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListDoesNotContain("id", collaboratorForDelete.getUsername()));
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,

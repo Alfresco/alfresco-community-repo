@@ -16,7 +16,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -30,12 +29,6 @@ public class AddTagTests extends TagsDataPrep
     private RestTagModel returnedModel;
     private RestCommentModel returnedModelComment;
     private RestTagModelsCollection returnedModelTags;
-
-    @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
-        init();
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void generateRandomTag()

@@ -115,7 +115,7 @@ public class SharedLinksSanityTests extends RestTest
          * Get all shared-links while allowing indexing to complete and check
          * that the created shared-link is displayed
          */
-        Utility.sleep(1000, 30000, () ->
+        Utility.sleep(500, 30000, () ->
             {
                 sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
                 restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -223,7 +223,7 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         // GET /renditions: wait until all renditions are created and GET all entries
-        Utility.sleep(1000, 50000, () ->
+        Utility.sleep(500, 50000, () ->
         {
             nodeRenditionInfoCollection = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditions(sharedLink7);
             restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -258,7 +258,7 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         // GET /renditions/{renditionId}/content: get the Range request header for file with shared links endpoints.
-        Utility.sleep(1000, 30000, () ->
+        Utility.sleep(500, 30000, () ->
         {
             restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
             restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditionContent(sharedLink8, "pdf");

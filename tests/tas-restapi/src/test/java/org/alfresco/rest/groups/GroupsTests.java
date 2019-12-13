@@ -153,6 +153,6 @@ public class GroupsTests extends RestTest
                 restClient.assertStatusCodeIs(HttpStatus.OK);
             }
         };
-        Utility.sleep(1000, 35000, op);// Allow indexing to complete.
+        Utility.sleep(500, 35000, op);// Allow indexing to complete.
     }
 }

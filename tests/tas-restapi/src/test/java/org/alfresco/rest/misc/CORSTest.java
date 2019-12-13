@@ -1,4 +1,4 @@
-package org.alfresco.rest.cors;
+package org.alfresco.rest.misc;
 
 import io.restassured.RestAssured;
 import org.alfresco.rest.RestTest;

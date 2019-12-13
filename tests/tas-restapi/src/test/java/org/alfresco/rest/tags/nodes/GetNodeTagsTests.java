@@ -13,23 +13,11 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetNodeTagsTests extends TagsDataPrep
 {
-    private String tagValue;
-    private String tagValue2;
-    
-    @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
-    {
-        init();
-        tagValue = documentTagValue;
-        tagValue2 = documentTagValue2;
-    }
-    
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
                 executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
@@ -40,8 +28,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());
+            .entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -54,8 +42,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase()); 
+            .entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase()); 
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -68,8 +56,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());
+            .entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -82,8 +70,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());
+            .entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -95,8 +83,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", tagValue.toLowerCase())
-            .and().entriesListContains("tag", tagValue2.toLowerCase());
+            .entriesListContains("tag", documentTagValue.toLowerCase())
+            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
@@ -181,13 +169,13 @@ public class GetNodeTagsTests extends TagsDataPrep
     {
         FolderModel folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
-        restClient.withCoreAPI().usingResource(folder).addTag(tagValue);
-        restClient.withCoreAPI().usingResource(folder).addTag(tagValue2);
+        restClient.withCoreAPI().usingResource(folder).addTag(documentTagValue);
+        restClient.withCoreAPI().usingResource(folder).addTag(documentTagValue2);
 
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(folder).getNodeTags()
                 .assertThat()
-                .entriesListContains("tag", tagValue.toLowerCase())
-                .and().entriesListContains("tag", tagValue2.toLowerCase());
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -198,8 +186,8 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("properties=tag").withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedCollection.assertThat().entriesListContains("tag", tagValue.toLowerCase())
-                .and().entriesListContains("tag", tagValue2.toLowerCase())
+        returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase())
                 .and().entriesListDoesNotContain("id");
     }
 
@@ -251,7 +239,7 @@ public class GetNodeTagsTests extends TagsDataPrep
     {
         FileModel file = dataContent.usingAdmin().usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addTag(tagValue);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(file).addTag(documentTagValue);
 
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingResource(file).getNodeTags();

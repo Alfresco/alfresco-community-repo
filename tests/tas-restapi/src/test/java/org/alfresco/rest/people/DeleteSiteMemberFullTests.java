@@ -2,6 +2,7 @@ package org.alfresco.rest.people;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.SiteModel;
@@ -159,9 +160,12 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator)).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(RestErrorModel.ENTITY_NOT_FOUND);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator));
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
-            .when().getSiteMember(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
-            .assertSiteMemberHasRole(UserRole.SiteCollaborator);
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat()
+                .entriesListContains("id",
+                        usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
+                .when().getSiteMember(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
+                .assertSiteMemberHasRole(UserRole.SiteCollaborator));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
@@ -178,8 +182,9 @@ public class DeleteSiteMemberFullTests extends RestTest
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER).stackTraceIs(RestErrorModel.STACKTRACE); 
         
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager));
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers()
-            .assertThat().entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager).getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat()
+                .entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager).getUsername()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
@@ -189,7 +194,8 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(publicSiteModel).addPerson(adminUserModel);
-        restClient.withCoreAPI().usingSite(publicSiteModel).getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername());
+        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+                .getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername()));
     }
     
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })

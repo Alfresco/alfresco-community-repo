@@ -439,12 +439,11 @@ public class IntegrationSanityTests extends IntegrationTest
                 .assertThat().field("tag").is("integration_tag3");
 
         STEP("* 8. U1 gets tags and verify all tags are listed");
-        Utility.waitToLoopTime(30);
-        restAPI.withParams("maxItems=10000").withCoreAPI().getTags()
-                .assertThat().entriesListContains("tag", "integration_tag1")
-                .and().entriesListContains("tag", "integration_tag2")
-                .and().entriesListContains("tag", "integration_tag3");
-
+        Utility.sleep(500, 30000, () ->
+                restAPI.withParams("maxItems=10000").withCoreAPI().getTags()
+                        .assertThat().entriesListContains("tag", "integration_tag1")
+                        .and().entriesListContains("tag", "integration_tag2")
+                        .and().entriesListContains("tag", "integration_tag3"));
         STEP("* 9. U1 gets file1 tags and verify only tag1 and tag2 are listed");
         restAPI.withCoreAPI()
                 .usingResource(testFile1).getNodeTags()

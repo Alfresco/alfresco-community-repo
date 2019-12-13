@@ -15,7 +15,6 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -26,12 +25,6 @@ public class DeleteTagTests extends TagsDataPrep
 {
     private RestTagModel tag;
     private FileModel contributorDoc;
-
-    @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
-    {
-        init();
-    }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify Admin user deletes tags with Rest API and status code is 204")

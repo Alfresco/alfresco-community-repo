@@ -111,8 +111,8 @@ public class CheckInTests extends CmisTest
                 .checkIn().refreshResource()
             .and().assertThat().documentIsNotCheckedOut()
             .then().assertThat().documentHasVersion(2.0);
-        Utility.waitToLoopTime(5);
-        cmisApi.assertThat().contentIs(newContent);
+        Utility.sleep(100, 5000, () ->
+                cmisApi.assertThat().contentIs(newContent));
     }
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,

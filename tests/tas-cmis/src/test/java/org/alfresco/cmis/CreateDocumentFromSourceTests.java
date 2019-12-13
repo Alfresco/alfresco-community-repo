@@ -146,7 +146,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = new FileModel("");
         cmisApi.authenticateUser(siteManager).usingSite(publicSite).createFileFromSource(newFile, sourceFile).then()
                 .usingSite(publicSite).assertThat().doesNotHaveFile(newFile);
-        Utility.sleep(500, 10000, () ->
+        Utility.sleep(100, 10000, () ->
         {
             cmisApi.usingSite(publicSite).assertThat().doesNotHaveFile(newFile);
         });
@@ -160,7 +160,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile);
-        Utility.sleep(500, 10000, () ->
+        Utility.sleep(100, 10000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and().assertThat().contentIs(sourceContent);
         });
@@ -175,7 +175,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile);
-        Utility.sleep(500, 10000, () ->
+        Utility.sleep(100, 10000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and().assertThat().contentIs(sourceContent);
         });
@@ -189,7 +189,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile);
-        Utility.sleep(500, 10000, () ->
+        Utility.sleep(100, 10000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and()
                                             .assertThat().contentIs(sourceContent);
@@ -215,7 +215,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile, VersioningState.MINOR);
-        Utility.sleep(500, 10000, () ->
+        Utility.sleep(100, 10000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and()
                                             .assertThat().contentIs(sourceContent).and()
@@ -232,7 +232,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile, VersioningState.NONE);
-        Utility.sleep(1000, 35000, () ->
+        Utility.sleep(100, 35000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and()
                                             .assertThat().contentIs(sourceContent).and()
@@ -248,7 +248,7 @@ public class CreateDocumentFromSourceTests extends CmisTest
         newFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
                 .createFileFromSource(newFile, sourceFile, VersioningState.CHECKEDOUT);
-        Utility.sleep(1000, 35000, () ->
+        Utility.sleep(100, 35000, () ->
         {
             cmisApi.refreshResource().then().assertThat().existsInRepo().and()
                                             .assertThat().contentIs(sourceContent).and()

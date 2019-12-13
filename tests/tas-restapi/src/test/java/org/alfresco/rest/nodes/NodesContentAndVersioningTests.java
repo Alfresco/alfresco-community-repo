@@ -262,7 +262,7 @@ public class NodesContentAndVersioningTests extends RestTest
         // verify the content is the same as the uploaded file and check in headers for
         // Content-Disposition to validate the download as attachment and fileName.
         // wait for content to be picked up on AWS QS stacks
-        Utility.sleep(1000, 60000, () -> {
+        Utility.sleep(500, 60000, () -> {
             RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
             restClient.assertStatusCodeIs(HttpStatus.OK);
 

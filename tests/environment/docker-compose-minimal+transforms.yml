@@ -7,9 +7,11 @@ version: "3"
 
 services:
   alfresco:
-    image: alfresco/alfresco-content-repository-community:latest
+    build:
+      context: ./alfresco
     environment:
       CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      # Some properties are built in Dockerfile because of cron expressions
       JAVA_OPTS :
         "
         -Ddb.driver=org.postgresql.Driver
@@ -64,7 +66,10 @@ services:
       - POSTGRES_DB=alfresco
 
   solr6:
-    image: alfresco/alfresco-search-services:${SOLR6_TAG}
+    build:
+      context: ./search
+      args:
+        - TAG=${SOLR6_TAG}
     environment:
       #Solr needs to know how to register itself with Alfresco
       - SOLR_ALFRESCO_HOST=alfresco

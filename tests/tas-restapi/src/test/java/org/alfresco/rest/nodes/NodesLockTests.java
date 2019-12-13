@@ -730,7 +730,7 @@ public class NodesLockTests extends RestTest
         query.setIncludeRequest(false);
 
         // Allow indexing to complete.
-        Utility.sleep(1000, 60000, () ->
+        Utility.sleep(500, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -747,7 +747,7 @@ public class NodesLockTests extends RestTest
 
         STEP("7. Verify that childNode1 and childNode2 are not found in the query results.");
         // Allow indexing to complete.
-        Utility.sleep(1000, 60000, () ->
+        Utility.sleep(500, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);

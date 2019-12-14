@@ -160,7 +160,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator)).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(RestErrorModel.ENTITY_NOT_FOUND);
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator));
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat()
                 .entriesListContains("id",
                         usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteCollaborator).getUsername())
@@ -182,7 +182,7 @@ public class DeleteSiteMemberFullTests extends RestTest
             .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER).stackTraceIs(RestErrorModel.STACKTRACE); 
         
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager));
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat()
                 .entriesListContains("id", usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager).getUsername()));
     }
@@ -194,7 +194,7 @@ public class DeleteSiteMemberFullTests extends RestTest
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).deleteSiteMember(publicSiteModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.authenticateUser(usersWithRolesPublicSite.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingSite(publicSiteModel).addPerson(adminUserModel);
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListContains("id", adminUserModel.getUsername()));
     }
     

@@ -48,7 +48,7 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -65,7 +65,7 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI()
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI()
                 .usingSite(publicSiteModel).getSiteMembers()
                 .assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -83,7 +83,7 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -100,7 +100,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .deleteSiteMember(testUserModel);
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListContains("id", testUserModel.getUsername()));
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
@@ -173,7 +173,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(anothermanager);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", anothermanager.getUsername()));
     }
 
@@ -190,7 +190,7 @@ public class RemoveSiteMemberTests extends RestTest
         restClient.withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(meUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", manager.getUsername()));
     }
 
@@ -290,7 +290,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(contributorForDelete);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        Utility.sleep(300, 10000, () ->  restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () ->  restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", contributorForDelete.getUsername()));
     }
 
@@ -348,7 +348,7 @@ public class RemoveSiteMemberTests extends RestTest
                 .withCoreAPI().usingSite(publicSiteModel).deleteSiteMember(collaboratorForDelete);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        Utility.sleep(300, 10000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
+        Utility.sleep(300, 30000, () -> restClient.withCoreAPI().usingSite(publicSiteModel)
                 .getSiteMembers().assertThat().entriesListDoesNotContain("id", collaboratorForDelete.getUsername()));
     }
 

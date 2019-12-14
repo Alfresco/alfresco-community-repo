@@ -461,7 +461,7 @@ public class FunctionalCasesTests extends RestTest
         
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(privateSite).deleteSiteMember(newUser);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        Utility.sleep(200, 10000, () ->
+        Utility.sleep(200, 30000, () ->
                 restClient.withCoreAPI().usingSite(privateSite).getSiteMembers()
                         .assertThat().entriesListDoesNotContain("id", newUser.getUsername()));
         

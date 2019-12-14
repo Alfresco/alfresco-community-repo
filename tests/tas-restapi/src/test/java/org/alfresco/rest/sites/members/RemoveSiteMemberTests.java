@@ -37,7 +37,6 @@ public class RemoveSiteMemberTests extends RestTest
                 UserRole.SiteContributor);
     }
 
-    @Bug(id="REPO-4863")
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.SITES }, executionType = ExecutionType.SANITY, description = "Verify that site manager can delete site member and gets status code 204, 'No Content'")

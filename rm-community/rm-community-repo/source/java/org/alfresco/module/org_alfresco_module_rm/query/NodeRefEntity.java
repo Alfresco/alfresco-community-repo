@@ -24,29 +24,65 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-package org.alfresco.module.org_alfresco_module_rm.util;
-
-import org.apache.commons.lang3.StringUtils;
+package org.alfresco.module.org_alfresco_module_rm.query;
 
 /**
- * Utility class that contains validation not present in {@link org.alfresco.util.ParameterCheck}.
- * 
- * @author tpage
+ * NodeRef Entity - used by {@link RecordsManagementQueryDAOImpl}.
+ *
+ * @author Tom Page
+ * @since 2.5.0.4
  */
-public class RMParameterCheck
+public class NodeRefEntity
 {
+    private Long num;
+    private String protocol;
+    private String identifier;
+    private String uuid;
+
     /**
-     * Checks that the string parameter with the given name is not blank i.e. it is not null, zero length or entirely
-     * composed of whitespace.
-     * 
-     * @param strParamName Name of parameter to check
-     * @param strParamValue Value of the parameter to check
+     * Default constructor.
      */
-    public static void checkNotBlank(final String strParamName, final String strParamValue)
-                throws IllegalArgumentException
+    public NodeRefEntity()
     {
-        if (StringUtils.isBlank(strParamValue)) { throw new IllegalArgumentException(strParamName
-                    + " is a mandatory parameter"); }
+    }
+
+    public Long getNum()
+    {
+        return num;
+    }
+
+    public void setNum(Long num)
+    {
+        this.num = num;
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol)
+    {
+        this.protocol = protocol;
+    }
+
+    public String getIdentifier()
+    {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier)
+    {
+        this.identifier = identifier;
+    }
+
+    public String getUuid()
+    {
+        return uuid;
+    }
+
+    public void setUuid(String uuid)
+    {
+        this.uuid = uuid;
     }
 }

@@ -49,6 +49,7 @@ public class RMSiteUtil
     public static final String RM_ID = "rm";
     public static final String RM_TITLE = "Records Management";
     public static final String RM_DESCRIPTION = "Records Management Site";
+    public static final String FILE_PLAN_PATH = "/rm/documentLibrary";
 
     /**
      * Creates an RM Site model for the given compliance, title and description

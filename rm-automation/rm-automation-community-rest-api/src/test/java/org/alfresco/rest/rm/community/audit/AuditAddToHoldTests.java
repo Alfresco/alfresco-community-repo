@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.FILE_PLAN_PATH;
 import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
@@ -129,14 +130,13 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @DataProvider (name = "validNodesForAddToHold")
     public Object[][] getValidNodesForAddToHold() throws Exception
     {
-        String documentLibrary = "/documentLibrary";
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
                                                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         RecordCategoryChild recordFolderToBeAdded = createRecordFolder(recordCategory.getId(), PREFIX + "recFolderToBeAdded");
         Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
-        String recordFolderPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+        String recordFolderPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
                 recordFolderToBeAdded.getName()));
-        String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+        String recordPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
                 recordFolder.getName(), recordToBeAdded.getName()));
         String contentPath = "/Company Home" + contentToBeAdded.getCmisLocation();
 

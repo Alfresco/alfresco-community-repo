@@ -702,8 +702,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /**
      * Helper method to remove system properties from maps
      *
-     * @param before
-     * @param after
+     * @param before    properties before event
+     * @param after     properties after event
      */
     private void removeAuditProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -1783,7 +1783,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 afterProperties = (Map<QName, Serializable>) values.get(RM_AUDIT_DATA_NODE_CHANGES_AFTER);
 
                 // Convert some of the values to recognizable forms
-                nodeType = null;
                 if (nodeTypeQname != null)
                 {
                     TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
@@ -1792,7 +1791,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             }
             else if (values.containsKey(DOD5015_AUDIT_DATA_EVENT_NAME))
             {
-                // This data is /RM/event/...
+                // This data is /DOD5015/event/...
                 eventName = (String) values.get(DOD5015_AUDIT_DATA_EVENT_NAME);
                 fullName = (String) values.get(DOD5015_AUDIT_DATA_PERSON_FULLNAME);
                 userRoles = (String) values.get(DOD5015_AUDIT_DATA_PERSON_ROLES);
@@ -1805,7 +1804,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 afterProperties = (Map<QName, Serializable>) values.get(DOD5015_AUDIT_DATA_NODE_CHANGES_AFTER);
 
                 // Convert some of the values to recognizable forms
-                nodeType = null;
                 if (nodeTypeQname != null)
                 {
                     TypeDefinition typeDef = dictionaryService.getType(nodeTypeQname);
@@ -1921,7 +1919,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         !AccessStatus.ALLOWED.equals(permissionService.hasPermission(getHold(holdName),
                                 PermissionService.READ)));
 
-                if (holdNamesToHide.get(holdName) == true)
+                if (holdNamesToHide.get(holdName))
                 {
                     eventProperties.replace(PROPERTY_HOLD_NAME, replacementText);
                 }
@@ -1941,6 +1939,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             });
         }
 
+        /**
+         * Helper method to write the audit entry to file
+         * @param entry      audit entry
+         */
         private void writeEntryToFile(RecordsManagementAuditEntry entry)
         {
             if (writer == null)

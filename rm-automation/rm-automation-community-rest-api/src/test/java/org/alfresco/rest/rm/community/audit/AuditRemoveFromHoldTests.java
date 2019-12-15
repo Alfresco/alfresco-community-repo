@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.FILE_PLAN_PATH;
 import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
@@ -144,10 +145,9 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     @DataProvider (name = "validNodesForRemoveFromHold")
     public Object[][] getValidNodesForRemoveFromHold()
     {
-        String documentLibrary = "/documentLibrary";
-        String recordFolderPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+        String recordFolderPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
                 heldRecordFolder.getName()));
-        String recordPath = removeLastSlash(buildPath(documentLibrary, recordCategory.getName(),
+        String recordPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
                 recordFolder.getName(), heldRecord.getName()));
         String contentPath = "/Company Home" + heldContent.getCmisLocation();
 

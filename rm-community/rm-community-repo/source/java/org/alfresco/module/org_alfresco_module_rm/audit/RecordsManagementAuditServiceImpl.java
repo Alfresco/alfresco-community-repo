@@ -33,6 +33,7 @@ import static org.alfresco.model.ContentModel.PROP_USERNAME;
 import static org.alfresco.module.org_alfresco_module_rm.audit.event.UserGroupMembershipUtils.PARENT_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.BufferedWriter;
@@ -95,8 +96,7 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -140,6 +140,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     protected static final String RM_AUDIT_SNIPPET_CHANGES = "/changes";
     protected static final String RM_AUDIT_SNIPPET_BEFORE = "/before";
     protected static final String RM_AUDIT_SNIPPET_AFTER = "/after";
+    protected static final String RM_AUDIT_SITES_PATH = "/Sites";
 
     protected static final String RM_AUDIT_DATA_PERSON_FULLNAME = "/RM/event/person/fullName";
     protected static final String RM_AUDIT_DATA_PERSON_ROLES = "/RM/event/person/roles";
@@ -1159,29 +1160,29 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             writer.write("<span class=\"label\">From:</span>");
             writer.write("<span class=\"value\">");
             Date from = params.getDateFrom();
-            writer.write(from == null ? "&lt;Not Set&gt;" : StringEscapeUtils.escapeHtml(from.toString()));
+            writer.write(from == null ? "&lt;Not Set&gt;" : escapeHtml4(from.toString()));
             writer.write("</span>");
 
             writer.write("<span class=\"label\">To:</span>");
             writer.write("<span class=\"value\">");
             Date to = params.getDateTo();
-            writer.write(to == null ? "&lt;Not Set&gt;" : StringEscapeUtils.escapeHtml(to.toString()));
+            writer.write(to == null ? "&lt;Not Set&gt;" : escapeHtml4(to.toString()));
             writer.write("</span>");
 
             writer.write("<span class=\"label\">Property:</span>");
             writer.write("<span class=\"value\">");
             QName prop = params.getProperty();
-            writer.write(prop == null ? "All" : StringEscapeUtils.escapeHtml(getPropertyLabel(prop)));
+            writer.write(prop == null ? "All" : escapeHtml4(getPropertyLabel(prop)));
             writer.write("</span>");
 
             writer.write("<span class=\"label\">User:</span>");
             writer.write("<span class=\"value\">");
-            writer.write(params.getUser() == null ? "All" : StringEscapeUtils.escapeHtml(params.getUser()));
+            writer.write(params.getUser() == null ? "All" : escapeHtml4(params.getUser()));
             writer.write("</span>");
 
             writer.write("<span class=\"label\">Event:</span>");
             writer.write("<span class=\"value\">");
-            writer.write(params.getEvent() == null ? "All" : StringEscapeUtils.escapeHtml(getAuditEventLabel(params.getEvent())));
+            writer.write(params.getEvent() == null ? "All" : escapeHtml4(getAuditEventLabel(params.getEvent())));
             writer.write("</span>\n");
 
             writer.write("</div>\n");
@@ -1223,26 +1224,26 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             writer.write("<div class=\"audit-entry-header\">");
             writer.write("<span class=\"label\">Timestamp:</span>");
             writer.write("<span class=\"value\">");
-            writer.write(StringEscapeUtils.escapeHtml(entry.getTimestamp().toString()));
+            writer.write(escapeHtml4(entry.getTimestamp().toString()));
             writer.write("</span>");
             writer.write("<span class=\"label\">User:</span>");
             writer.write("<span class=\"value\">");
             writer.write(entry.getFullName() != null ?
-                            StringEscapeUtils.escapeHtml(entry.getFullName()) :
-                            StringEscapeUtils.escapeHtml(entry.getUserName()));
+                            escapeHtml4(entry.getFullName()) :
+                            escapeHtml4(entry.getUserName()));
             writer.write("</span>");
             if (entry.getUserRole() != null && entry.getUserRole().length() > 0)
             {
                 writer.write("<span class=\"label\">Role:</span>");
                 writer.write("<span class=\"value\">");
-                writer.write(StringEscapeUtils.escapeHtml(entry.getUserRole()));
+                writer.write(escapeHtml4(entry.getUserRole()));
                 writer.write("</span>");
             }
             if (entry.getEvent() != null && entry.getEvent().length() > 0)
             {
                 writer.write("<span class=\"label\">Event:</span>");
                 writer.write("<span class=\"value\">");
-                writer.write(StringEscapeUtils.escapeHtml(getAuditEventLabel(entry.getEvent())));
+                writer.write(escapeHtml4(getAuditEventLabel(entry.getEvent())));
                 writer.write("</span>\n");
             }
             writer.write("</div>\n");
@@ -1251,35 +1252,39 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             {
                 writer.write("<span class=\"label\">Identifier:</span>");
                 writer.write("<span class=\"value\">");
-                writer.write(StringEscapeUtils.escapeHtml(entry.getIdentifier()));
+                writer.write(escapeHtml4(entry.getIdentifier()));
                 writer.write("</span>");
             }
             if (entry.getNodeType() != null && entry.getNodeType().length() > 0)
             {
                 writer.write("<span class=\"label\">Type:</span>");
                 writer.write("<span class=\"value\">");
-                writer.write(StringEscapeUtils.escapeHtml(entry.getNodeType()));
+                writer.write(escapeHtml4(entry.getNodeType()));
                 writer.write("</span>");
             }
             if (entry.getPath() != null && entry.getPath().length() > 0)
             {
                 // we need to strip off the first part of the path
                 String path = entry.getPath();
-                String displayPath = path;
-                int idx = path.indexOf('/', 1);
+                String displayPath;
+                int idx = path.indexOf(RM_AUDIT_SITES_PATH);
                 if (idx != -1)
                 {
-                    displayPath = "/File Plan" + path.substring(idx);
+                    displayPath = path.substring(idx + RM_AUDIT_SITES_PATH.length());
+                }
+                else
+                {
+                    displayPath = path;
                 }
 
                 writer.write("<span class=\"label\">Location:</span>");
                 writer.write("<span class=\"value\">");
-                writer.write(StringEscapeUtils.escapeHtml(displayPath));
+                writer.write(escapeHtml4(displayPath));
                 writer.write("</span>");
             }
             writer.write("</div>\n");
 
-            if (entry.getChangedProperties() != null)
+            if (entry.getChangedProperties() != null && !entry.getChangedProperties().isEmpty())
             {
                 writer.write("<table class=\"changed-values-table\" cellspacing=\"0\">");
                 writer.write("<tr><th>Property</th><th>Previous Value</th><th>New Value</th></tr>");
@@ -1302,17 +1307,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                     if(DataTypeDefinition.MLTEXT.equals(propDataType))
                     {
-                        writer.write(values.getFirst() == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(convertToMlText((Map)values.getFirst()).getDefaultValue()));
+                        writer.write(values.getFirst() == null ? "&lt;none&gt;" : escapeHtml4(convertToMlText((Map) values.getFirst()).getDefaultValue()));
                         writer.write("</td><td>");
-                        writer.write(values.getSecond() == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(convertToMlText((Map)values.getSecond()).getDefaultValue()));
+                        writer.write(values.getSecond() == null ? "&lt;none&gt;" : escapeHtml4(convertToMlText((Map) values.getSecond()).getDefaultValue()));
                     }
                     else
                     {
                         Serializable oldValue = values.getFirst();
-                        writer.write(oldValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(oldValue.toString()));
+                        writer.write(oldValue == null ? "&lt;none&gt;" : escapeHtml4(oldValue.toString()));
                         writer.write("</td><td>");
                         Serializable newValue = values.getSecond();
-                        writer.write(newValue == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(newValue.toString()));
+                        writer.write(newValue == null ? "&lt;none&gt;" : escapeHtml4(newValue.toString()));
                     }
 
                     writer.write("</td></tr>");
@@ -1416,29 +1421,33 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
                 case "Delete Person":
                     nodeName = getNodeName(entry.getBeforeProperties(), PROP_USERNAME);
-                    json.put("deletePerson", true);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Create User Group":
                     nodeName = getNodeName(entry.getAfterProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Delete User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PROP_AUTHORITY_DISPLAY_NAME, PROP_AUTHORITY_NAME);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Add To User Group":
                     nodeName = getNodeName(entry.getAfterProperties(), PARENT_GROUP);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Remove From User Group":
                     nodeName = getNodeName(entry.getBeforeProperties(), PARENT_GROUP);
+                    json.put("noAvailableLink", true);
                     break;
 
                 case "Delete RM Object":
                 case "Delete Hold":
                     nodeName = entry.getNodeName();
-                    json.put("deleteObject", true);
+                    json.put("noAvailableLink", true);
                     break;
 
                 default:

@@ -34,6 +34,11 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  */
 public class FilePlanComponentAspects
 {
+    /** Private constructor to prevent instantiation. */
+    private FilePlanComponentAspects()
+    {
+    }
+
     // aspect present on completed records
     public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
     
@@ -42,4 +47,10 @@ public class FilePlanComponentAspects
     
 	// aspect present on vital records
     public static final String ASPECTS_VITAL_RECORD = "rma:vitalRecord";
+
+    // Frozen aspect
+    public static final String FROZEN_ASPECT = "rma:frozen";
+
+    // recordSearch aspect
+    public static final String RECORD_SEARCH_ASPECT = "rma:recordSearch";
 }

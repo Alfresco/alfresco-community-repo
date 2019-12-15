@@ -152,21 +152,6 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Data provider with invalid users that can not add content to a hold
-     *
-     * @return the userModel
-     */
-    @DataProvider (name = "invalidUsersForAddToHold")
-    public Object[][] getInvalidUsersForAddToHold()
-    {
-        return new UserModel[][]
-        {
-            { rmManagerNoReadOnHold },
-            { rmManagerNoReadOnNode }
-        };
-    }
-
-    /**
      * Given a document/record/record folder is added to a hold
      * When I view the audit log
      * Then an entry has been created in the audit log that contains the following:
@@ -269,11 +254,11 @@ public class AuditAddToHoldTests extends BaseRMRestTest
 
     /**
      * Given a document is added to a hold
-     * When I view the audit log as an user with no Read permissions over the hold or the document
+     * When I view the audit log as an user with no Read permissions over the document
      * Then the add to hold entry isn't visible
      */
-    @Test (dataProvider = "invalidUsersForAddToHold")
-    public void addToHoldAuditEntryNotVisible(UserModel user)
+    @Test
+    public void addToHoldAuditEntryNotVisible()
     {
         STEP("Create a new file");
         FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
@@ -285,7 +270,33 @@ public class AuditAddToHoldTests extends BaseRMRestTest
 
         STEP("Check that an user with no Read permissions can't see the entry for the add to hold event.");
         assertTrue("The list of events should not contain Add to Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(user, ADD_TO_HOLD).isEmpty());
+            rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnNode, ADD_TO_HOLD).isEmpty());
+    }
+
+    /**
+     * Given a document is added to a hold
+     * When I view the audit log as an user with no Read permissions over the hold
+     * Then the the hold name is replaced in the add to hold entry
+     */
+    @Test
+    public void addToHoldAuditEntryHoldNameNotVisible()
+    {
+        STEP("Create a new file");
+        FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
+                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        rmAuditService.clearAuditLog();
+
+        STEP("Add file to hold.");
+        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
+
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnHold, ADD_TO_HOLD);
+
+        STEP("Check that an user with no Read permissions can't see the hold name in the add to hold event.");
+        String replacementHoldName = "You don't have permission to view this hold.";
+        assertEquals("The list of events should contain the Add to Hold entry", 1, auditEntries.size());
+        assertTrue("The hold name should not be visible in the Add to Hold entry ",
+            auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                ImmutableMap.of("new", replacementHoldName, "previous", "", "name", "Hold Name"))));
     }
 
     @AfterClass (alwaysRun = true)

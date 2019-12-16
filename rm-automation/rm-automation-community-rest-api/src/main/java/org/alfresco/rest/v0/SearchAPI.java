@@ -102,7 +102,7 @@ public class SearchAPI extends BaseAPI
         String filters,
         String sortby)
     {
-        List<BasicNameValuePair> searchParameters = new ArrayList<BasicNameValuePair>();
+        List<BasicNameValuePair> searchParameters = new ArrayList<>();
         searchParameters.add(new BasicNameValuePair("query", query));
         searchParameters.add(new BasicNameValuePair("filters", filters));
         if (sortby != null)

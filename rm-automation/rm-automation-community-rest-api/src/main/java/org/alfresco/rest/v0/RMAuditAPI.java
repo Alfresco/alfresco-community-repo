@@ -76,7 +76,7 @@ public class RMAuditAPI extends BaseAPI
         }
         catch (UnsupportedEncodingException e)
         {
-            LOGGER.error("Unable to encode the event name" + e.getMessage());
+            LOGGER.error("Unable to encode the event name {}", e.getMessage());
         }
         JSONArray auditEntries =  doGetRequest(user, password,
                 MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");

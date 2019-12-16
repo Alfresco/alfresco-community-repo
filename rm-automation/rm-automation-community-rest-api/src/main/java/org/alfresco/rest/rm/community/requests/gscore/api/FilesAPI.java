@@ -28,7 +28,6 @@ package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.POST;
 
 import org.alfresco.rest.core.RMRestWrapper;

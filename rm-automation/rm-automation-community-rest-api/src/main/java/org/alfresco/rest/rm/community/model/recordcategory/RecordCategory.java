@@ -53,7 +53,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RecordCategory extends TestModel
 {
-    public final static String DEFAULT_FILE_PLAN_ALIAS = "-filePlan-";
+    public static final String DEFAULT_FILE_PLAN_ALIAS = "-filePlan-";
 
     /*************************/
     /** Mandatory parameters */

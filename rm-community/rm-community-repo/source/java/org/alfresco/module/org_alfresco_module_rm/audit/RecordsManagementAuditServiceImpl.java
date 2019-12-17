@@ -1871,10 +1871,29 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 }
                 else
                 {
-                    // must have read permission on hold to see hold name in event
+                    // find any hold names in event properties
                     Map<String, Boolean> holdNamesToHide = new HashMap<>(2);
-                    replaceHoldNameIfRequired(beforeProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
-                    replaceHoldNameIfRequired(afterProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                    buildHoldNamesToHide(holdNamesToHide, beforeProperties);
+                    buildHoldNamesToHide(holdNamesToHide, afterProperties);
+
+                    // if audit event contains any hold names, check if any hold name should be hidden
+                    if (!holdNamesToHide.isEmpty())
+                    {
+                        // get file plan
+                        NodeRef filePlan = getFilePlan(nodeRef);
+                        
+                        // check permissions for each hold name
+                        for (String holdName : holdNamesToHide.keySet())
+                        {
+                            boolean hideHoldName = !AccessStatus.ALLOWED.equals(
+                                permissionService.hasPermission(getHold(filePlan, holdName), PermissionService.READ));
+                            holdNamesToHide.replace(holdName, hideHoldName);
+                        }
+
+                        // hide hold names, if required, in event properties
+                        replaceHoldNameIfRequired(beforeProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                        replaceHoldNameIfRequired(afterProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                    }
                 }
             }
 
@@ -1912,6 +1931,46 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         /**
+         * Helper method to extract the hold name, if any, from the given event properties
+         * @param holdNamesToHide   map of hold names and their hide name status. True if hold name is to be hidden.
+         * @param eventProperties   event properties
+         */
+        private void buildHoldNamesToHide(Map<String, Boolean> holdNamesToHide, Map<QName, Serializable> eventProperties)
+        {
+            // get hold name, if any, from audit event properties
+            String holdName = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
+            if (holdName != null)
+            {
+                // assume hold name should be hidden
+                holdNamesToHide.putIfAbsent(holdName, true);
+            }
+        }
+
+        /**
+         * Helper method to get the file plan
+         * @param nodeRef   node ref for which to get file plan
+         * @return          node ref of file plan
+         */
+         private NodeRef getFilePlan(NodeRef nodeRef)
+         {
+             NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+             if (filePlan == null)
+             {
+                 Set<NodeRef> filePlans = filePlanService.getFilePlans();
+                 if (filePlans != null && !filePlans.isEmpty())
+                 {
+                     filePlan = filePlans.iterator().next();
+                 }
+
+                 if (filePlan == null)
+                 {
+                     filePlan = getDefaultFilePlan();
+                 }
+             }
+             return filePlan;
+         }
+
+        /**
          * Helper method to replace the hold name, if required, in the given event properties
          * @param eventProperties   event properties
          * @param holdNamesToHide   map of hold names and their hide name status
@@ -1924,10 +1983,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             String holdName = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
             if (holdName != null)
             {
-                holdNamesToHide.putIfAbsent(holdName,
-                        !AccessStatus.ALLOWED.equals(permissionService.hasPermission(getHold(holdName),
-                                PermissionService.READ)));
-
                 if (holdNamesToHide.get(holdName))
                 {
                     eventProperties.replace(PROPERTY_HOLD_NAME, replacementText);
@@ -1937,13 +1992,14 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
 
         /**
          * Helper method to get the hold for a given hold name
+         * @param filePlan      file plan
          * @param holdName      hold name
          * @return              node ref of hold
          */
-        private NodeRef getHold(String holdName)
+        private NodeRef getHold(NodeRef filePlan, String holdName)
         {
             return AuthenticationUtil.runAsSystem(() -> {
-                NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                //NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                 return holdService.getHold(filePlan, holdName);
             });
         }

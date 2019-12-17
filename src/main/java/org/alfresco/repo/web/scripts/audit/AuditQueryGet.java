@@ -35,6 +35,7 @@ import java.util.Map;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.springframework.extensions.webscripts.Cache;
@@ -153,6 +154,18 @@ public class AuditQueryGet extends AbstractAuditWebScript
                         {
                             String valueString = DefaultTypeConverter.INSTANCE.convert(String.class, value);
                             valueStrings.put(key, valueString);
+                        }
+                        catch (ClassCastException e)
+                        {
+                            // Fix for symptoms of MNT-20992. It is possible to have MLText values whose underlying
+                            // map's keys are not Locale, as MLText map keys should be. In this case we can expect
+                            // a ClassCastException.
+                            if (!(value instanceof MLText))
+                            {
+                                // Rethrow if the exception was not caused by the expected MLText conversion.
+                                throw e;
+                            }
+                            valueStrings.put(key, value.toString());
                         }
                         catch (TypeConversionException e)
                         {

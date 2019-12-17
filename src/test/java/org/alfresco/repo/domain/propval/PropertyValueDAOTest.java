@@ -38,9 +38,11 @@ import java.util.Random;
 
 import javax.naming.CompositeName;
 
+import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -372,7 +374,7 @@ public class PropertyValueDAOTest
             assertNotNull(entityPairCheck);
             assertEquals(entityPair, entityPairCheck);
         }
-        
+
         // Retrieve it by ID
         RetryingTransactionCallback<Pair<Long, Serializable>> getByIdCallback = new RetryingTransactionCallback<Pair<Long, Serializable>>()
         {
@@ -385,6 +387,40 @@ public class PropertyValueDAOTest
         final Pair<Long, Serializable> entityPairCheck2 = txnHelper.doInTransaction(getByIdCallback, false);
         assertNotNull(entityPairCheck2);
         assertEquals(entityPair, entityPairCheck2);
+    }
+
+    /**
+     * See MNT-20992
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPropertyValue_EmptyMaps() throws Exception
+    {
+        HashMap emptyMap = new HashMap();
+        // Set a real cache, the problem happens in the cache
+        ((AbstractPropertyValueDAOImpl)propertyValueDAO).setPropertyValueCache(new DefaultSimpleCache<Serializable, Object>());
+
+        // Create an empty property of type MLText, this will also cache the new property
+        Pair<Long, Serializable> emptyMLTextPair = txnHelper.doInTransaction(()
+                -> propertyValueDAO.getOrCreatePropertyValue(new MLText()), false);
+
+        // Create an empty HashMap property
+        Pair<Long, Serializable> emptyHashMapPair = txnHelper.doInTransaction(()
+                -> propertyValueDAO.getOrCreatePropertyValue(emptyMap), false);
+
+        // Check that the returned pair representing the empty HashMap is actually a HashMap
+        assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPair.getSecond().getClass());
+
+        // Check again by retrieving the value by value
+        Pair<Long, Serializable> emptyHashMapPairRetrievedByValye = txnHelper.doInTransaction(()
+                -> propertyValueDAO.getPropertyValue(emptyMap), false);
+        assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPairRetrievedByValye.getSecond().getClass());
+
+        // Check again by retrieving the value by id
+        Pair<Long, Serializable> emptyHashMapPairRetrievedByID = txnHelper.doInTransaction(()
+                -> propertyValueDAO.getPropertyValueById(emptyHashMapPair.getFirst()), false);
+        assertEquals("Incorrect type persisted for an empty HashMap.", HashMap.class, emptyHashMapPairRetrievedByID.getSecond().getClass());
     }
     
     @Test

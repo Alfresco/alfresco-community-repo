@@ -578,12 +578,6 @@
             <version>2.0.7</version>
         </dependency>
         <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdf</artifactId>
-            <version>4.2.20</version>
-        </dependency>
-
-        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
             <version>1.2</version>

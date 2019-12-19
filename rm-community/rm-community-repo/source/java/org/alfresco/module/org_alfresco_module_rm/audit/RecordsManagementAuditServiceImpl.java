@@ -199,6 +199,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static final String MSG_AUDIT_VIEW = "rm.audit.audit-view";
 
     private static final QName PROPERTY_HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    private static final QName PROPERTY_HOLD_NODEREF = QName.createQName(RecordsManagementModel.RM_URI, "Hold NodeRef");
     private static final String HOLD_PERMISSION_DENIED_MSG = "rm.audit.holdPermission-Error";
 
     private PolicyComponent policyComponent;
@@ -1869,31 +1870,30 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 {
                     return true;
                 }
-                else
+
+                // get hold nodeRef, if any, from audit event properties
+                NodeRef holdNodeRef = beforeProperties != null ? (NodeRef) beforeProperties.get(PROPERTY_HOLD_NODEREF) : null;
+                if (holdNodeRef != null)
                 {
-                    // find any hold names in event properties
-                    Map<String, Boolean> holdNamesToHide = new HashMap<>(2);
-                    buildHoldNamesToHide(holdNamesToHide, beforeProperties);
-                    buildHoldNamesToHide(holdNamesToHide, afterProperties);
-
-                    // if audit event contains any hold names, check if any hold name should be hidden
-                    if (!holdNamesToHide.isEmpty())
+                    if (!AccessStatus.ALLOWED.equals(
+                            permissionService.hasPermission(holdNodeRef, PermissionService.READ)))
                     {
-                        // get file plan
-                        NodeRef filePlan = getFilePlan(nodeRef);
-                        
-                        // check permissions for each hold name
-                        for (String holdName : holdNamesToHide.keySet())
-                        {
-                            boolean hideHoldName = !AccessStatus.ALLOWED.equals(
-                                permissionService.hasPermission(getHold(filePlan, holdName), PermissionService.READ));
-                            holdNamesToHide.replace(holdName, hideHoldName);
-                        }
-
-                        // hide hold names, if required, in event properties
-                        replaceHoldNameIfRequired(beforeProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
-                        replaceHoldNameIfRequired(afterProperties, holdNamesToHide, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                        beforeProperties.replace(PROPERTY_HOLD_NAME, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
                     }
+                    // remove hold node ref from view
+                    beforeProperties.remove(PROPERTY_HOLD_NODEREF);
+                }
+
+                holdNodeRef = afterProperties != null ? (NodeRef) afterProperties.get(PROPERTY_HOLD_NODEREF) : null;
+                if (holdNodeRef != null)
+                {
+                    if (!AccessStatus.ALLOWED.equals(
+                            permissionService.hasPermission(holdNodeRef, PermissionService.READ)))
+                    {
+                        afterProperties.replace(PROPERTY_HOLD_NAME, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
+                    }
+                    // remove hold node ref from view
+                    afterProperties.remove(PROPERTY_HOLD_NODEREF);
                 }
             }
 

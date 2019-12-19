@@ -27,6 +27,8 @@ package org.alfresco.rest.api.search.context;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 
 /**
@@ -55,6 +57,7 @@ public class FacetFieldContext
 
     public static class Bucket
     {
+        @JsonInclude(JsonInclude.Include.NON_NULL)
         private final String label;
         private final String filterQuery;
         private final int count;

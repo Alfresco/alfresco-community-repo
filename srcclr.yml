@@ -1,1 +1,1 @@
-vuln_methods_ignored_directories: rm-automation,rm-automation-community-rest-api,rm-automation-enterprise-rest-api,rm-automation-ui
+vuln_methods_ignored_directories: rm-automation,rm-automation/rm-automation-community-rest-api,rm-automation/rm-automation-enterprise-rest-api,rm-automation/rm-automation-ui

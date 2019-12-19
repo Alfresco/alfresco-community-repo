@@ -1,1 +1,1 @@
-vuln_methods_ignored_directories: rm-automation,rm-automation/rm-automation-community-rest-api,rm-automation/rm-automation-enterprise-rest-api,rm-automation/rm-automation-ui
+custom_maven_command: clean compile -Dcheckstyle.skip=true -e -DskipTests -DskipITs -Dmaven.test.skip=true --fail-fast --nsu -Denforcer.skip=true -pl '!rm-automation'

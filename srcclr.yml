@@ -1,2 +1,3 @@
 # The scope of this file is to have a custom scan directive for SourceClear excluding automation and benchmark projects from the scan.
-custom_maven_command: compile -Dcheckstyle.skip=true -e -DskipTests -DskipITs --fail-fast -Dmaven.test.skip=true -Denforcer.skip=true -pl '!rm-automation,!rm-automation/rm-automation-community-rest-api,!rm-automation/rm-automation-enterprise-rest-api,!rm-automation/rm-automation-ui,!rm-benchmark'
+custom_maven_command: clean install -Dcheckstyle.skip=true -e -DskipTests -DskipITs -Dmaven.test.skip=true -Denforcer.skip=true -pl '!rm-automation,!rm-automation/rm-automation-community-rest-api,!rm-automation/rm-automation-enterprise-rest-api,!rm-automation/rm-automation-ui,!rm-benchmark'
+install_first: true

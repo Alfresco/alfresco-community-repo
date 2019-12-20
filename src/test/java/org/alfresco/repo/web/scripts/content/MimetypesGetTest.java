@@ -26,8 +26,7 @@
 package org.alfresco.repo.web.scripts.content;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.PdfBoxContentTransformer;
+import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.springframework.context.ApplicationContext;
 
@@ -36,16 +35,15 @@ import org.springframework.context.ApplicationContext;
  */
 public class MimetypesGetTest extends BaseWebScriptTest
 {
-    
     private ApplicationContext ctx;
-    private ContentTransformerRegistry contentTransformerRegistry;
-    
+    private LocalTransformServiceRegistry localTransformServiceRegistry;
+
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         ctx = getServer().getApplicationContext();
-        contentTransformerRegistry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
+        localTransformServiceRegistry = (LocalTransformServiceRegistry) ctx.getBean("localTransformServiceRegistry");
     }
     
     /**
@@ -57,29 +55,12 @@ public class MimetypesGetTest extends BaseWebScriptTest
     public void testGetTransformer() throws Exception
     {
         MimetypesGet mimetypesGet = new MimetypesGet();
-        mimetypesGet.setApplicationContext(ctx);
-        mimetypesGet.setContentTransformerRegistry(contentTransformerRegistry);
-        mimetypesGet.afterPropertiesSet();
-        
-        // Test a Java transformer name
-        String transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_PDF, 1000, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertEquals(PdfBoxContentTransformer.class.getCanonicalName(), transformerName);
-        
-        // Test a generic proxy transformer name
-        transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_IMAGE_JPEG, 1000, MimetypeMap.MIMETYPE_IMAGE_PNG);
-        assertNotNull(transformerName);
-        assertTrue("Expected transformerName to contain 'Proxy' but was " + transformerName,
-                transformerName.contains("Proxy via"));
-        
-        boolean jodPresent = ctx.containsBean(MimetypesGet.JOD_WORKER_BEAN);
-        
-        // Test the office transformer name
-        transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_WORD, 1000, MimetypeMap.MIMETYPE_PDF);
-        assertNotNull(transformerName);
-        if (jodPresent)
-        {
-            assertEquals("Using JOD Converter / Open Office", transformerName);
-        }
-    }
+        mimetypesGet.setLocalTransformServiceRegistry(localTransformServiceRegistry);
 
+        String transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_PDF, 1000, MimetypeMap.MIMETYPE_PDF);
+        assertEquals("PassThrough", transformerName);
+
+        transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_PDF, 1000, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        assertEquals("PdfBox", transformerName);
+    }
 }

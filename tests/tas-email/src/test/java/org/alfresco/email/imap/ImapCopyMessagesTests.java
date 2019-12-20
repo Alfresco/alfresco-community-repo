@@ -94,7 +94,7 @@ public class ImapCopyMessagesTests extends EmailTest
     @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
             description = "Verify user cannot copy file via IMAP client to a location where you don't have permissions")
     @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE }, expectedExceptions = MessagingException.class,
-                                                                            expectedExceptionsMessageRegExp = ".*A4 NO APPEND failed. Can't append message - Permission denied.*")
+                                                                            expectedExceptionsMessageRegExp = ".*NO APPEND failed. Can't append message - Permission denied.*")
     public void userCannotCopyFileWhereNoPermissions() throws Exception
     {
         testFolder = dataContent.usingUser(testUser).usingSite(testSite).createFolder();

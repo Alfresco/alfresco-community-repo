@@ -109,7 +109,7 @@ public class Record extends TestModel implements IRestModel<RestNodeModel>
     @Override
     public ModelAssertion<RestNodeModel> assertThat()
     {
-        return new ModelAssertion<RestNodeModel>(this);
+        return new ModelAssertion<>(this);
     }
 
     @Override

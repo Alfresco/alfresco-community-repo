@@ -941,6 +941,7 @@
         <property name="namespaceService" ref="NamespaceService" />
         <property name="capabilityService" ref="CapabilityService" />
         <property name="permissionService" ref="PermissionService" />
+        <property name="holdService" ref="HoldService" />
         <property name="ignoredAuditProperties">
             <list>
                 <value>cm:lastThumbnailModification</value>
@@ -1533,7 +1534,6 @@
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="permissionService" ref="PermissionService"/>
-      <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="policyComponent" ref="policyComponent"/>
    </bean>

@@ -43,7 +43,6 @@ import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -119,9 +118,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** Permission service */
     private PermissionService permissionService;
 
-    /** records management audit service */
-    private RecordsManagementAuditService recordsManagementAuditService;
-
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -166,14 +162,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
-    }
-
-    /**
-     * @param recordsManagementAuditService records management audit service
-     */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
-    {
-        this.recordsManagementAuditService = recordsManagementAuditService;
     }
 
      /**

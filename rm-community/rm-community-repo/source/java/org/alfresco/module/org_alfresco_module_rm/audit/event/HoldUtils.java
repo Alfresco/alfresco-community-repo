@@ -47,18 +47,22 @@ class HoldUtils
 {
     /** A QName to display for the hold name. */
     public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    /** A QName to display for the hold node ref. */
+    public static final QName HOLD_NODEREF = QName.createQName(RecordsManagementModel.RM_URI, "Hold NodeRef");
+
     /**
-     * Create a properties map containing the hold name for the given hold.
+     * Create a properties map containing the hold name and node ref for the given hold.
      *
      * @param nodeRef The nodeRef of the hold.
      * @param nodeService The node service.
-     * @return A map containing the name of the hold.
+     * @return A map containing the name and noderef of the hold.
      */
     static Map<QName, Serializable> makePropertiesMap(NodeRef nodeRef, NodeService nodeService)
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
 
         auditProperties.put(HOLD_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+        auditProperties.put(HOLD_NODEREF, nodeRef);
 
         return auditProperties;
     }

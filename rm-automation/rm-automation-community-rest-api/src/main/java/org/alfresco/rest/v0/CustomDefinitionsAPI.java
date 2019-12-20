@@ -105,7 +105,7 @@ public class CustomDefinitionsAPI extends BaseAPI
             }
             catch (JSONException error)
             {
-                LOGGER.error("Unable to get the refId for the custom reference definition " + customDefinition);
+                LOGGER.error("Unable to get the refId for the custom reference definition {}", customDefinition);
             }
         }
         return null;

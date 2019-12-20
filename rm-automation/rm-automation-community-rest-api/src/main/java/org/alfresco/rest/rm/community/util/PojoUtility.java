@@ -54,6 +54,10 @@ public class PojoUtility
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PojoUtility.class);
 
+    /** Private constructor to prevent instantiation. */
+    private PojoUtility()
+    {}
+
     /**
      * see {@link #toJson(Object, Class, Class)}
      */
@@ -122,7 +126,7 @@ public class PojoUtility
         }
         catch (IOException e)
         {
-            LOGGER.error("Unable to convert the json into a java object.", e.toString());
+            LOGGER.error("Unable to convert the json into a java object.", e);
         }
 
         return obj;
@@ -152,7 +156,7 @@ public class PojoUtility
         }
         catch (IOException e)
         {
-            LOGGER.error("Unable to convert the json array into a java collection.", e.toString());
+            LOGGER.error("Unable to convert the json array into a java collection.", e);
         }
 
 

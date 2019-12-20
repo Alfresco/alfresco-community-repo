@@ -67,7 +67,6 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -1871,31 +1870,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     return true;
                 }
 
-                // get hold nodeRef, if any, from audit event properties
-                NodeRef holdNodeRef = beforeProperties != null ? (NodeRef) beforeProperties.get(PROPERTY_HOLD_NODEREF) : null;
-                if (holdNodeRef != null)
-                {
-                    if (!AccessStatus.ALLOWED.equals(
-                            permissionService.hasPermission(holdNodeRef, PermissionService.READ)))
-                    {
-                        beforeProperties.replace(PROPERTY_HOLD_NAME, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
-                    }
-                    // remove hold node ref from view
-                    beforeProperties.remove(PROPERTY_HOLD_NODEREF);
-                }
-
-                holdNodeRef = afterProperties != null ? (NodeRef) afterProperties.get(PROPERTY_HOLD_NODEREF) : null;
-                if (holdNodeRef != null)
-                {
-                    if (!AccessStatus.ALLOWED.equals(
-                            permissionService.hasPermission(holdNodeRef, PermissionService.READ)))
-                    {
-                        afterProperties.replace(PROPERTY_HOLD_NAME, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
-                    }
-                    // remove hold node ref from view
-                    afterProperties.remove(PROPERTY_HOLD_NODEREF);
-                }
+                checkPermissionIfHoldInProperties(beforeProperties);
+                checkPermissionIfHoldInProperties(afterProperties);
             }
+
+            // remove any hold node refs from view
+            removeHoldNodeRefIfPresent(beforeProperties);
+            removeHoldNodeRefIfPresent(afterProperties);
 
             // TODO: Refactor this to use the builder pattern
             RecordsManagementAuditEntry entry = new RecordsManagementAuditEntry(
@@ -1931,77 +1912,32 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * Helper method to extract the hold name, if any, from the given event properties
-         * @param holdNamesToHide   map of hold names and their hide name status. True if hold name is to be hidden.
+         * Helper method to check permission on the hold, if any, from the given event properties
          * @param eventProperties   event properties
          */
-        private void buildHoldNamesToHide(Map<String, Boolean> holdNamesToHide, Map<QName, Serializable> eventProperties)
+        private void checkPermissionIfHoldInProperties(Map<QName, Serializable> eventProperties)
         {
-            // get hold name, if any, from audit event properties
-            String holdName = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
-            if (holdName != null)
+            NodeRef holdNodeRef = eventProperties != null ? (NodeRef) eventProperties.get(PROPERTY_HOLD_NODEREF) : null;
+            if (holdNodeRef != null)
             {
-                // assume hold name should be hidden
-                holdNamesToHide.putIfAbsent(holdName, true);
-            }
-        }
-
-        /**
-         * Helper method to get the file plan
-         * @param nodeRef   node ref for which to get file plan
-         * @return          node ref of file plan
-         */
-         private NodeRef getFilePlan(NodeRef nodeRef)
-         {
-             NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-             if (filePlan == null)
-             {
-                 Set<NodeRef> filePlans = filePlanService.getFilePlans();
-                 if (filePlans != null && !filePlans.isEmpty())
-                 {
-                     filePlan = filePlans.iterator().next();
-                 }
-
-                 if (filePlan == null)
-                 {
-                     filePlan = getDefaultFilePlan();
-                 }
-             }
-             return filePlan;
-         }
-
-        /**
-         * Helper method to replace the hold name, if required, in the given event properties
-         * @param eventProperties   event properties
-         * @param holdNamesToHide   map of hold names and their hide name status
-         * @param replacementText   text to replace hidden hold name
-         */
-        private void replaceHoldNameIfRequired(Map<QName, Serializable> eventProperties,
-                                               Map<String, Boolean> holdNamesToHide, String replacementText)
-        {
-            // get hold name, if any, from audit event properties
-            String holdName = eventProperties != null ? (String) eventProperties.get(PROPERTY_HOLD_NAME) : null;
-            if (holdName != null)
-            {
-                if (holdNamesToHide.get(holdName))
+                if (!AccessStatus.ALLOWED.equals(
+                        permissionService.hasPermission(holdNodeRef, PermissionService.READ)))
                 {
-                    eventProperties.replace(PROPERTY_HOLD_NAME, replacementText);
+                    eventProperties.replace(PROPERTY_HOLD_NAME, I18NUtil.getMessage(HOLD_PERMISSION_DENIED_MSG));
                 }
             }
         }
 
         /**
-         * Helper method to get the hold for a given hold name
-         * @param filePlan      file plan
-         * @param holdName      hold name
-         * @return              node ref of hold
+         * Helper method to remove the hold node ref, if any, from the given event properties
+         * @param eventProperties   event properties
          */
-        private NodeRef getHold(NodeRef filePlan, String holdName)
+        private void removeHoldNodeRefIfPresent(Map<QName, Serializable> eventProperties)
         {
-            return AuthenticationUtil.runAsSystem(() -> {
-                //NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-                return holdService.getHold(filePlan, holdName);
-            });
+            if (eventProperties != null)
+            {
+                eventProperties.remove(PROPERTY_HOLD_NODEREF);
+            }
         }
 
         /**

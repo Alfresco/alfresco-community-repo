@@ -163,21 +163,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     }
 
     /**
-     * Data provider with invalid users that can not remove content from a hold
-     *
-     * @return the userModel
-     */
-    @DataProvider (name = "invalidUsersForRemoveFromHold")
-    public Object[][] getInvalidUsersForRemoveFromHold()
-    {
-        return new UserModel[][]
-        {
-            { rmManagerNoReadOnHold },
-            { rmManagerNoReadOnNode }
-        };
-    }
-
-    /**
      * Given a document/record/record folder is removed from a hold
      * When I view the audit log
      * Then an entry has been created in the audit log that contains the following:
@@ -280,11 +265,11 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
 
     /**
      * Given a document/record/record folder is removed from a hold
-     * When I view the audit log as an user with no Read permissions over the hold or the node
+     * When I view the audit log as an user with no Read permissions over the node
      * Then the remove from hold entry isn't visible
      */
-    @Test (dataProvider = "invalidUsersForRemoveFromHold")
-    public void removeFromHoldAuditEntryNotVisible(UserModel user)
+    @Test
+    public void removeFromHoldAuditEntryNotVisible()
     {
         STEP("Add content to a hold.");
         FileModel heldFile = dataContent.usingAdmin().usingSite(privateSite)
@@ -298,7 +283,35 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
 
         STEP("Check that an user with no Read permissions can't see the entry for the remove from hold event.");
         assertTrue("The list of events should not contain Remove from Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(user, REMOVE_FROM_HOLD).isEmpty());
+                rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnNode, REMOVE_FROM_HOLD).isEmpty());
+    }
+
+    /**
+     * Given a document/record/record folder is removed from a hold
+     * When I view the audit log as an user with no Read permissions over the hold
+     * Then the the hold name is replaced in the remove from hold entry
+     */
+    @Test
+    public void removeFromHoldAuditEntryHoldNameNotVisible()
+    {
+        STEP("Add content to a hold.");
+        FileModel heldFile = dataContent.usingAdmin().usingSite(privateSite)
+                                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldFile.getNodeRefWithoutVersion(), HOLD1);
+
+        rmAuditService.clearAuditLog();
+
+        STEP("Remove held content from the hold.");
+        holdsAPI.removeItemFromHold(rmAdmin.getUsername(), rmAdmin.getPassword(), heldFile.getNodeRefWithoutVersion(), HOLD1);
+
+        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnHold, REMOVE_FROM_HOLD);
+
+        STEP("Check that an user with no Read permissions can't see the hold name in the remove from hold event.");
+        String replacementHoldName = "You don't have permission to view this hold.";
+        assertEquals("The list of events should contain the Remove from Hold entry", 1, auditEntries.size());
+        assertTrue("The hold name should not be visible in the Remove from Hold entry ",
+            auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
+                ImmutableMap.of("new", "", "previous", replacementHoldName, "name", "Hold Name"))));
     }
 
     @AfterClass (alwaysRun = true)

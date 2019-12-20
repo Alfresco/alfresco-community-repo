@@ -345,7 +345,8 @@
        <property name="transformerConfig" ref="transformerConfig" />
        <property name="transformerLog" ref="transformerLog" />
        <property name="transformerDebugLog" ref="transformerDebugLog" />
-       <property name="localTransformServiceRegistryImpl" ref="localTransformServiceRegistryImpl" />
+        <property name="localTransformServiceRegistryImpl" ref="localTransformServiceRegistryImpl" />
+        <property name="remoteTransformServiceRegistry" ref="remoteTransformServiceRegistry" />
    </bean>
 
    <!-- Import the transformer configuration from the transformers subsystem -->

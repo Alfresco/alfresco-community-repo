@@ -26,51 +26,27 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.LogTee;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
-import java.io.File;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 
 /**
  * Debugs transformers selection and activity.<p>
@@ -78,11 +54,7 @@ import java.util.regex.Pattern;
  * As transformations are frequently composed of lower level transformations, log
  * messages include a prefix to identify the transformation. A numeric dot notation
  * is used (such as {@code 123.1.2} indicating the second third level transformation
- * of the 123rd top level transformation).<p>
- * 
- * In order to track the nesting of transforms, this class has a stack to represent
- * the Transformers. Each Transformer calls {@link #pushTransform} at the start of a
- * transform and {@link #popTransform} at the end.
+ * of the 123rd top level transformation).
  * 
  * @author Alan Davis
  */
@@ -90,6 +62,7 @@ public class TransformerDebug
 {
     protected static final String FINISHED_IN = "Finished in ";
     protected static final String NO_TRANSFORMERS = "No transformers";
+    protected static final String TRANSFORM_SERVICE_NAME = "TransformService";
 
     private Log info;
     protected Log logger;
@@ -229,6 +202,11 @@ public class TransformerDebug
         {
             return transformerName;
         }
+
+        public String getRenditionName()
+        {
+            return renditionName;
+        }
     }
 
     @Deprecated
@@ -311,12 +289,13 @@ public class TransformerDebug
     }
 
     public void pushTransform(String transformerName, String fromUrl, String sourceMimetype,
-                              String targetMimetype, long sourceSize, String renditionName, NodeRef sourceNodeRef)
+                              String targetMimetype, long sourceSize, Map<String, String> options,
+                              String renditionName, NodeRef sourceNodeRef)
     {
         if (isEnabled())
         {
             push(transformerName, fromUrl, sourceMimetype, targetMimetype, sourceSize,
-                    renditionName, sourceNodeRef, Call.TRANSFORM);
+                    options, renditionName, sourceNodeRef, Call.TRANSFORM);
         }
     }
 
@@ -329,12 +308,14 @@ public class TransformerDebug
     {
         if (isEnabled())
         {
-            push(null, null, null, null, -1, null, null, Call.AVAILABLE);
+            push(null, null, null, null, -1, null,
+                    null, null, Call.AVAILABLE);
         }
     }
 
     void push(String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
-              long sourceSize, String renditionName, NodeRef sourceNodeRef, Call callType)
+              long sourceSize, Map<String, String> options,
+              String renditionName, NodeRef sourceNodeRef, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
         Frame frame = ourStack.peek();
@@ -355,11 +336,12 @@ public class TransformerDebug
         if (callType == Call.TRANSFORM)
         {
             // Log the basic info about this transformation
-            logBasicDetails(frame, sourceSize, renditionName, transformerName, (ourStack.size() == 1));
+            logBasicDetails(frame, sourceSize, options, renditionName, transformerName, (ourStack.size() == 1));
         }
     }
 
-    protected void logBasicDetails(Frame frame, long sourceSize, String renditionName, String message, boolean firstLevel)
+    protected void logBasicDetails(Frame frame, long sourceSize, Map<String, String> options, String renditionName,
+                                   String message, boolean firstLevel)
     {
         // Log the source URL, but there is no point if the parent has logged it
         if (frame.fromUrl != null && (firstLevel || frame.id != 1))
@@ -372,9 +354,10 @@ public class TransformerDebug
         log(getMimetypeExt(frame.sourceMimetype)+getMimetypeExt(frame.targetMimetype) +
                 ((fileName != null) ? fileName+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
-                (firstLevel && renditionName != null ? "-- "+renditionName+" -- " : "") + message);
+                (firstLevel ? getRenditionName(renditionName) : "") + message);
         if (firstLevel)
         {
+            log(options);
             String nodeRef = getNodeRef(frame.sourceNodeRef, firstLevel, sourceSize);
             if (!nodeRef.isEmpty())
             {
@@ -384,13 +367,37 @@ public class TransformerDebug
     }
 
     public void debug(String sourceMimetype, String targetMimetype, NodeRef sourceNodeRef, long sourceSize,
-                      String renditionName, String message)
+                      Map<String, String> options, String renditionName, String message)
     {
         String fileName = getFileName(sourceNodeRef, true, -1);
         log("              "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
                 ((fileName != null) ? fileName+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
-                (renditionName != null ? "-- "+renditionName+" -- " : "") + message);
+                (getRenditionName(renditionName)) + message);
+        log(options);
+    }
+
+    private void log(Map<String, String> options)
+    {
+        if (options != null)
+        {
+            for (Map.Entry<String, String> option : options.entrySet())
+            {
+                String key = option.getKey();
+                if (!TIMEOUT.equals(key))
+                {
+                    String value = option.getValue();
+                    value = value != null
+                            ? "=\"" + value.replaceAll("\"", "\\\"") + "\""
+                            : "=null"+
+                              (SOURCE_NODE_REF.equals(key) ||
+                               SOURCE_ENCODING.equals(key) ||
+                               TARGET_ENCODING.equals(key)
+                               ? " - set automatically" : "");
+                    log("  " + key + value);
+                }
+            }
+        }
     }
 
     /**
@@ -460,6 +467,7 @@ public class TransformerDebug
             String fileName = getFileName(frame.sourceNodeRef, firstLevel, frame.sourceSize);
             long sourceSize = frame.getSourceSize();
             String transformerName = frame.getTransformerName();
+            String renditionName = frame.getRenditionName();
             String level = null;
             boolean debug = false;
             if (NO_TRANSFORMERS.equals(failureReason))
@@ -498,13 +506,14 @@ public class TransformerDebug
 
             if (level != null)
             {
-                infoLog(getReference(debug, false), sourceExt, targetExt, level, fileName, sourceSize, transformerName, failureReason, ms, debug);
+                infoLog(getReference(debug, false), sourceExt, targetExt, level, fileName, sourceSize,
+                        transformerName, renditionName, failureReason, ms, debug);
             }
         }
     }
     
     private void infoLog(String reference, String sourceExt, String targetExt, String level, String fileName,
-            long sourceSize, String transformerName, String failureReason, String ms, boolean debug)
+            long sourceSize, String transformerName, String renditionName, String failureReason, String ms, boolean debug)
     {
         String message =
                 reference +
@@ -513,8 +522,9 @@ public class TransformerDebug
                 (level == null ? "" : level+' ') +
                 (fileName == null ? "" : fileName) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
-                ' '+ms +
+                (ms == null || ms.isEmpty() ? "" : ' '+ms)+
                 (transformerName == null ? "" : ' '+transformerName) +
+                (renditionName == null ? "" : ' '+getRenditionName(renditionName)) +
                 (failureReason == null ? "" : ' '+failureReason.trim());
         if (debug)
         {
@@ -851,16 +861,30 @@ public class TransformerDebug
      * Debugs a request to the Transform Service
      */
     public int debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
-                                             int contentHashcode, String fileName, String targetMimetype,
-                                            String renditionName)
+                                            int contentHashcode, String fileName, String targetMimetype,
+                                            Map<String, String> options, String renditionName)
     {
-        pushMisc();
-        debug(getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype) +
-              ((fileName != null) ? fileName+' ' : "")+
-              ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
-              (renditionName != null ? "-- "+renditionName+" -- " : "") + " TransformService");
-        debug(sourceNodeRef.toString() + ' ' +contentHashcode);
+        if (isEnabled())
+        {
+            pushMisc();
+            String sourceExt = getMimetypeExt(sourceMimetype);
+            String targetExt = getMimetypeExt(targetMimetype);
+            debug(sourceExt + targetExt +
+                    ((fileName != null) ? fileName + ' ' : "") +
+                    ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
+                    getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
+            log(options);
+            log(sourceNodeRef.toString() + ' ' + contentHashcode);
+            String reference = getReference(true, false);
+            infoLog(reference, sourceExt, targetExt, null, fileName, sourceSize, TRANSFORM_SERVICE_NAME,
+                    renditionName, null, "", true);
+        }
         return pop(Call.AVAILABLE, true, false);
+    }
+
+    private String getRenditionName(String renditionName)
+    {
+        return renditionName != null ? "-- "+renditionName+" -- " : "";
     }
 
     /**
@@ -880,5 +904,17 @@ public class TransformerDebug
         debug(msg);
         debug(sourceNodeRef.toString() + ' ' +contentHashcode);
         pop(Call.AVAILABLE, suppressFinish, true);
+    }
+
+    /**
+     * Obtains a String for log messages.
+     * @param options to be turned into a string.
+     * @return a string of options that may be included in debug messages.
+     */
+    public static String toString(Map<String, String> options)
+    {
+        StringJoiner sj = new StringJoiner(", ");
+        options.entrySet().forEach(option->sj.add(option.getKey()+"=\""+option.getValue().replaceAll("\"", "\\\"")+"\""));
+        return sj.toString();
     }
 }

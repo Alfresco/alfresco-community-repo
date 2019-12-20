@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.beans.BeansException;
@@ -64,6 +65,7 @@ import java.util.regex.Pattern;
  */
 public class AdminUiTransformerDebug extends TransformerDebug implements ApplicationContextAware
 {
+    protected TransformServiceRegistry remoteTransformServiceRegistry;
     protected LocalTransformServiceRegistry localTransformServiceRegistryImpl;
     private ApplicationContext applicationContext;
     private ContentService contentService;
@@ -74,6 +76,11 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     public void setLocalTransformServiceRegistryImpl(LocalTransformServiceRegistry localTransformServiceRegistryImpl)
     {
         this.localTransformServiceRegistryImpl = localTransformServiceRegistryImpl;
+    }
+
+    public void setRemoteTransformServiceRegistry(TransformServiceRegistry remoteTransformServiceRegistry)
+    {
+        this.remoteTransformServiceRegistry = remoteTransformServiceRegistry;
     }
 
     @Override
@@ -143,6 +150,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
     {
         super.afterPropertiesSet();
         PropertyCheck.mandatory(this, "localTransformServiceRegistryImpl", localTransformServiceRegistryImpl);
+        PropertyCheck.mandatory(this, "remoteTransformServiceRegistry", remoteTransformServiceRegistry);
     }
 
     /**
@@ -187,16 +195,28 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                 for (String targetMimetype: targetMimetypes)
                 {
                     // Log the transformers
+                    boolean supportedByTransformService = remoteTransformServiceRegistry == null ||
+                                    remoteTransformServiceRegistry instanceof DummyTransformServiceRegistry
+                            ? false
+                            : remoteTransformServiceRegistry.isSupported(sourceMimetype,
+                            -1, targetMimetype, Collections.emptyMap(), null);
                     LocalTransform localTransform = localTransformServiceRegistryImpl == null
                             ? null
                             : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
                             -1, targetMimetype, Collections.emptyMap(), null);
-                    if (localTransform != null)
+                    if (localTransform != null || supportedByTransformService)
                     {
                         try
                         {
                             pushMisc();
                             int transformerCount = 0;
+                            if (supportedByTransformService)
+                            {
+                                long maxSourceSizeKBytes = remoteTransformServiceRegistry.findMaxSize(sourceMimetype,
+                                        targetMimetype, Collections.emptyMap(), null);
+                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
+                                        TRANSFORM_SERVICE_NAME, maxSourceSizeKBytes, transformerCount++ == 0);
+                            }
                             if (localTransform != null)
                             {
                                 long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
@@ -204,7 +224,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                                 String transformName = localTransform instanceof AbstractLocalTransform
                                         ? "Local:" + ((AbstractLocalTransform) localTransform).getName()
                                         : "";
-                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
+                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
                                         transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
                         }

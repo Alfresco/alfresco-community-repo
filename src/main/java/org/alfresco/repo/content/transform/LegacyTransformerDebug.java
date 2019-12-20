@@ -86,8 +86,8 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
     {
         if (isEnabled())
         {
-            push(null, fromUrl, sourceMimetype, targetMimetype, -1, renditionName,
-                    sourceNodeRef, Call.AVAILABLE);
+            push(null, fromUrl, sourceMimetype, targetMimetype, -1,
+                    null, renditionName, sourceNodeRef, Call.AVAILABLE);
         }
     }
 
@@ -121,7 +121,7 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
         if (isEnabled())
         {
             push(getName(transformer), fromUrl, sourceMimetype, targetMimetype, sourceSize,
-                    renditionName, sourceNodeRef, Call.TRANSFORM);
+                    null, renditionName, sourceNodeRef, Call.TRANSFORM);
         }
     }
 
@@ -202,7 +202,7 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
             frame.setSourceSize(sourceSize);
 
             // Log the basic info about this transformation
-            logBasicDetails(frame, sourceSize, renditionName,
+            logBasicDetails(frame, sourceSize, null, renditionName,
                     calledFrom + ((transformers.size() == 0) ? " NO transformers" : ""), firstLevel);
 
             // Report available and unavailable transformers
@@ -491,16 +491,28 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
                             transformerConfig.getPriority(availableTransformer.get(1), sourceMimetype, targetMimetype)))
                     {
                         // Log the transformers
+                        boolean supportedByTransformService = remoteTransformServiceRegistry == null ||
+                                remoteTransformServiceRegistry instanceof DummyTransformServiceRegistry
+                                ? false
+                                : remoteTransformServiceRegistry.isSupported(sourceMimetype,
+                                -1, targetMimetype, Collections.emptyMap(), null);
                         LocalTransform localTransform = localTransformServiceRegistryImpl == null
                                 ? null
                                 : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
                                 -1, targetMimetype, Collections.emptyMap(), null);
-                        if (localTransform != null || size >= 1)
+                        if (localTransform != null || supportedByTransformService || size >= 1)
                         {
                             try
                             {
                                 pushMisc();
                                 int transformerCount = 0;
+                                if (supportedByTransformService)
+                                {
+                                    long maxSourceSizeKBytes = remoteTransformServiceRegistry.findMaxSize(sourceMimetype,
+                                            targetMimetype, Collections.emptyMap(), null);
+                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
+                                            TRANSFORM_SERVICE_NAME, maxSourceSizeKBytes, transformerCount++ == 0);
+                                }
                                 if (localTransform != null)
                                 {
                                     long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
@@ -508,7 +520,7 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
                                     String transformName = localTransform instanceof AbstractLocalTransform
                                             ? "Local:" + ((AbstractLocalTransform) localTransform).getName()
                                             : "";
-                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, "  [0]",
+                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
                                             transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                                 }
                                 for (ContentTransformer transformer: availableTransformer)

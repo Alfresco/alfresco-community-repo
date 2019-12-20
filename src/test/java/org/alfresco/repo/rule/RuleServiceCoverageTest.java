@@ -60,8 +60,6 @@ import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
@@ -91,7 +89,6 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
@@ -132,7 +129,6 @@ public class RuleServiceCoverageTest extends TestCase
 	private ServiceRegistry serviceRegistry;
     private DictionaryDAO dictionaryDAO;
     private ActionService actionService;
-    private ContentTransformerRegistry transformerRegistry;
     private CopyService copyService;
     private AuthenticationComponent authenticationComponent;
     private FileFolderService fileFolderService;
@@ -173,7 +169,6 @@ public class RuleServiceCoverageTest extends TestCase
         this.dictionaryDAO = (DictionaryDAO)applicationContext.getBean("dictionaryDAO");
         this.actionService = serviceRegistry.getActionService();
         this.transactionService = serviceRegistry.getTransactionService();
-        this.transformerRegistry = (ContentTransformerRegistry)applicationContext.getBean("contentTransformerRegistry");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         this.fileFolderService = serviceRegistry.getFileFolderService();
         

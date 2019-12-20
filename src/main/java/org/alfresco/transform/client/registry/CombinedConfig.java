@@ -28,6 +28,10 @@ package org.alfresco.transform.client.registry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.LocalPassThroughTransform;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
 import org.alfresco.transform.client.model.config.TransformConfig;
 import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.transform.client.model.config.TransformStep;
@@ -226,6 +230,18 @@ public class CombinedConfig
             }
         }
         return message;
+    }
+
+    /**
+     * Adds a PassThrough transform were the source and target mimetypes are identical, or transforms to "text/plain"
+     * from selected text based types.
+     * @param mimetypeService to find all the mimetypes
+     */
+    public void addPassThroughTransformer(MimetypeService mimetypeService)
+    {
+        List<String> mimetypes = mimetypeService.getMimetypes();
+        Transformer transformer = LocalPassThroughTransform.getConfig(mimetypes);
+        combinedTransformers.add(new TransformAndItsOrigin(transformer, null, "based on mimetype list"));
     }
 
     public void register(TransformServiceRegistryImpl registry)

@@ -32,7 +32,6 @@ import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
-import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.domain.dialect.Dialect;
@@ -41,6 +40,7 @@ import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.rendition2.TestSynchronousTransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -81,7 +81,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,6 +106,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_FAILING_MIME_TYPE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_MIME_TYPE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_PROPERTY_VALUE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_TRANSFORM_TIME;
+
 /**
  * Thumbnail service implementation unit test
  * 
@@ -119,7 +123,7 @@ import java.util.Map;
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 @ContextConfiguration({"classpath:alfresco/application-context.xml",
-        "classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml"})
+        "classpath:org/alfresco/repo/rendition2/test-transform-context.xml"})
 public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static Log logger = LogFactory.getLog(ThumbnailServiceImplTest.class);
@@ -141,10 +145,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private TransformationOptionsConverter converter;
 
     private NodeRef folder;
-    private static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
-    private static final String TEST_LONG_RUNNING_MIME_TYPE = "application/vnd.alfresco.test.longrunning";
-    private static final long TEST_LONG_RUNNING_TRANSFORM_TIME = 5000;
-    private static final String TEST_LONG_RUNNING_PROPERTY_VALUE = "NewValue";
 
     @Before
     public void before() throws Exception
@@ -537,7 +537,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the {@link ContentTransformer}
+     * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the ContentTransformer
      * cannot attempt to perform the transformation for some reason (e.g. process/service unavailable) and wishes
      * to decline the request. Such 'failures' should not lead to the addition of the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE}
      * aspect.
@@ -1436,8 +1436,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             {
                 Thread.sleep(500);  // Wait for transform(s) to get started
                 logger.debug("Updating description of a node: " + source);
-                secureNodeService.setProperty(source, 
-                        ContentModel.PROP_DESCRIPTION, TEST_LONG_RUNNING_PROPERTY_VALUE);
+                secureNodeService.setProperty(source,  ContentModel.PROP_DESCRIPTION,
+                        TEST_LONG_RUNNING_PROPERTY_VALUE);
             }
             
             @Override
@@ -1445,7 +1445,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             {
                 String description = (String) secureNodeService.getProperty(
                         source, ContentModel.PROP_DESCRIPTION);
-                assertEquals("The node's property was not updated.", TEST_LONG_RUNNING_PROPERTY_VALUE, description);
+                assertEquals("The node's property was not updated.",
+                        TEST_LONG_RUNNING_PROPERTY_VALUE, description);
             }
         };
 
@@ -1485,95 +1486,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 //        expectedAssocs.add(new ExpectedAssoc(ContentModel.ASSOC_FAILED_THUMBNAIL, null, 1));
 
         performLongRunningThumbnailTest(expectedThumbnails, expectedAssocs, new EmptyLongRunningConcurrentWork(), 1, 1);
-    }
-
-    public static class TestTransformServiceRegistry implements TransformServiceRegistry
-    {
-        private TransformServiceRegistry delegate;
-
-        public TestTransformServiceRegistry(TransformServiceRegistry delegate)
-        {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
-                                   Map<String, String> actualOptions, String transformName)
-        {
-            return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) || sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
-                    ? true
-                    : delegate.isSupported(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, transformName);
-        }
-
-        @Override
-        public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> actualOptions, String transformName)
-        {
-            return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) || sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
-                    ? -1
-                    : delegate.findMaxSize(sourceMimetype, targetMimetype, actualOptions, transformName);
-        }
-
-        @Override
-        public String findTransformerName(String sourceMimetype, long sourceSizeInBytes,
-                                          String targetMimetype, Map<String, String> actualOptions, String renditionName)
-        {
-            throw new UnsupportedOperationException("not implemented");
-        }
-    }
-
-    public static class TestSynchronousTransformClient<T> implements SynchronousTransformClient
-    {
-        private SynchronousTransformClient delegate;
-
-        public TestSynchronousTransformClient(SynchronousTransformClient delegate)
-        {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                                   Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-        {
-            boolean supported = true;
-            if (!sourceMimetype.equals(TEST_FAILING_MIME_TYPE) && !sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE))
-            {
-                supported = delegate.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
-                        transformName, sourceNodeRef);
-            }
-            return supported;
-        }
-
-        @Override
-        public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-        {
-            String sourceMimetype = reader.getMimetype();
-            if (sourceMimetype.equals(TEST_FAILING_MIME_TYPE))
-            {
-                throw new ContentServiceTransientException("Transformation intentionally failed for test purposes.");
-            }
-            else if (sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE))
-            {
-                try
-                {
-                    Thread.sleep(TEST_LONG_RUNNING_TRANSFORM_TIME);
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-                writer.putContent("SUCCESS");
-            }
-            else
-            {
-                delegate.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
-            }
-        }
-
-        @Override
-        public String getName()
-        {
-            return delegate.getName();
-        }
     }
 
     /**

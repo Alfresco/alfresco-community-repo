@@ -80,7 +80,8 @@ public class SwitchingSynchronousTransformClient implements SynchronousTransform
         if (transformerDebug.isEnabled())
         {
             String renditionName = TransformDefinition.convertToRenditionName(transformName);
-            transformerDebug.debug(sourceMimetype, targetMimetype, sourceNodeRef, sourceSizeInBytes, renditionName,
+            transformerDebug.debug(sourceMimetype, targetMimetype, sourceNodeRef, sourceSizeInBytes,
+                    actualOptions, renditionName,
                     "synchronous transform is "+
                             (client == null ? "NOT supported" : "supported by "+client.getName()));
         }

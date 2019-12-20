@@ -32,8 +32,6 @@ import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.executer.ExporterActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
@@ -83,6 +81,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,6 +99,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_MIME_TYPE;
+
 /**
  * @author Neil McErlean
  * @author Nick Smith
@@ -111,6 +112,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("deprecation")
 @Category({OwnJVMTestsCategory.class})
 @Transactional
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:org/alfresco/repo/rendition2/test-transform-context.xml"})
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String WHITE = "ffffff";
@@ -663,11 +666,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     protected void renderPdfDocumentLongRunningTest(AbstractNodeModifyingRunnable nodeModifyingRunnable, boolean joinNodeModifyingThread) throws Exception
     {
-        // Register our dummy transformer
-        ContentTransformerRegistry contentTransformerRegistry = 
-                (ContentTransformerRegistry) this.applicationContext.getBean("contentTransformerRegistry");
-        contentTransformerRegistry.addTransformer(new DummyLongRunningContentTransformer());
-        
         // Spawn a new thread that waits a bit then tries to modify the node
         Thread nodeModifyingThread = new Thread(nodeModifyingRunnable);
         nodeModifyingThread.start();
@@ -686,7 +684,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                                         nodeWithDocContent, RenditionModel.ASPECT_RENDITIONED));
 
                             RenditionDefinition action = makeReformatAction(
-                                    null, DummyLongRunningContentTransformer.SUPPORTED_TARGET_MIMETYPE);
+                                    null, TEST_LONG_RUNNING_MIME_TYPE);
                             
                             // Cancellation is only possible with tracking enabled
                             action.setTrackStatus(true);
@@ -2647,120 +2645,5 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
            contentWriter.setMimetype("text/plain");
            contentWriter.putContent( "Hello, world!" );
        }
-    }
-    
-    /**
-     * Mock content transformer which delays a specified amount then always writes the same
-     * result to the content writer.
-     */
-    private static class DummyLongRunningContentTransformer implements ContentTransformer
-    {
-        public static final String SUPPORTED_TARGET_MIMETYPE = "text/dummy";
-        public static final String TEST_TARGET_CONTENT = "transformed text";
-        public static final int DELAY = 10000;
-
-        @Override
-        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return -1;
-        }
-
-        @Override
-        public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype,
-                TransformationOptions options)
-        {
-            return false;
-        }
-
-        @Override
-        public long getTransformationTime()
-        {
-            return 0;
-        }
-
-        protected void delay()
-        {
-            try
-            {
-                for (int i = 0; i < DELAY / 1000; i++)
-                {
-                    // System.out.println(this.getClass().getSimpleName() + " delaying...");
-                    Thread.sleep(1000);
-                }
-            }
-            catch (InterruptedException e)
-            {
-                // we were asked to stop
-            }
-        }
-        
-        @Override
-        public void transform(ContentReader reader, ContentWriter writer) throws ContentIOException
-        {
-            delay();
-            writer.putContent(TEST_TARGET_CONTENT);
-        }
-
-        @Override
-        @Deprecated
-        public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
-                throws ContentIOException
-        {
-            delay();
-            writer.putContent(TEST_TARGET_CONTENT);
-        }
-
-        @Override
-        public void transform(ContentReader reader, ContentWriter contentWriter, TransformationOptions options)
-                throws ContentIOException
-        {
-            delay();
-            contentWriter.putContent(TEST_TARGET_CONTENT);
-        }
-
-        @Override
-        public String getComments(boolean available)
-        {
-            return "";
-        }
-
-        @Override
-        public long getTransformationTime(String sourceMimetype, String targetMimetype)
-        {
-            return 0;
-        }
-
-        @Override
-        public String getName()
-        {
-            return "DummyLongRunningContentTransformer";
-        }
     }
 }

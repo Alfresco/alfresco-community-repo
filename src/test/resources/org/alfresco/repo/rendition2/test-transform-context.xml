@@ -5,11 +5,11 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-   <bean id="synchronousTransformClient" class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.TestSynchronousTransformClient">
+   <bean id="synchronousTransformClient" class="org.alfresco.repo.rendition2.TestSynchronousTransformClient">
       <constructor-arg name="delegate" ref="switchingSynchronousTransformClient" />
    </bean>
 
-   <bean id="transformServiceRegistry" class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.TestTransformServiceRegistry">
+   <bean id="transformServiceRegistry" class="org.alfresco.repo.rendition2.TestTransformServiceRegistry">
       <constructor-arg name="delegate" ref="localTransformServiceRegistry" />
    </bean>
 

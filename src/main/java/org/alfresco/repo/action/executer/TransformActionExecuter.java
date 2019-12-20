@@ -32,6 +32,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
@@ -70,7 +71,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
 
-    private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
+    private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type with options '%s' was not found. Operation can't be performed";
     
     private static Log logger = LogFactory.getLog(TransformActionExecuter.class); 
     
@@ -215,7 +216,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         if (!synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes,
                 contentUrl, mimeType, options, null, actionedUponNodeRef))
         {
-            throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimetype, mimeType));
+            String optionsString = TransformerDebug.toString(options);
+            throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimetype,
+                    mimeType, optionsString));
         }
         
         // Get the details of the copy destination

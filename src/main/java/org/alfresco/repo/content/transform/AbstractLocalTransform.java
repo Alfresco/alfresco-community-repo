@@ -152,7 +152,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
             if (transformerDebug.isEnabled())
             {
                 transformerDebug.pushTransform("Local:"+name, reader.getContentUrl(), sourceMimetype,
-                        targetMimetype, reader.getSize(), renditionName, sourceNodeRef);
+                        targetMimetype, reader.getSize(), transformOptions, renditionName, sourceNodeRef);
             }
 
             strictMimetypeCheck(reader, sourceNodeRef, sourceMimetype);

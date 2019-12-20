@@ -129,6 +129,9 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
 
+    <!-- Replaced in the enterprise edition -->
+    <bean id="remoteTransformServiceRegistry" class="org.alfresco.repo.content.transform.DummyTransformServiceRegistry" />
+
     <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.SwitchingTransformServiceRegistry">
         <constructor-arg name="primary" ref="localTransformServiceRegistryImpl" />
         <constructor-arg name="secondary" ref="legacyTransformServiceRegistry" />

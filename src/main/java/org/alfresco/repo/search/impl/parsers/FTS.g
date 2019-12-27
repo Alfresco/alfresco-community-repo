@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
@@ -1375,7 +1375,7 @@ ID
                 ( '0'..'9' | '$' | '#' | F_ESC )*
         )?
         ( 'a'..'z' | 'A'..'Z' | '_' )
-        ( 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '$' | '#' | F_ESC )*
+        ( 'a'..'z' | 'A'..'Z' | '0'..'9' | '-' | '_' | '$' | '#' | F_ESC )*
         ;
 
 

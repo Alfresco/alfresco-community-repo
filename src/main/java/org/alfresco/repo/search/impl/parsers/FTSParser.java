@@ -1,29 +1,4 @@
-/*
- * #%L
- * Alfresco Data model classes
- * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
- * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
- * provided under the following open source license terms:
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
- */
-// $ANTLR 3.5.2 src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g 2019-11-22 15:06:19
+// $ANTLR null ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g 2019-12-18 09:26:10
 
 package org.alfresco.repo.search.impl.parsers;
 
@@ -31,9 +6,6 @@ package org.alfresco.repo.search.impl.parsers;
 import org.antlr.runtime.*;
 import java.util.Stack;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 import org.antlr.runtime.tree.*;
 
@@ -189,7 +161,7 @@ public class FTSParser extends Parser {
 		return adaptor;
 	}
 	@Override public String[] getTokenNames() { return FTSParser.tokenNames; }
-	@Override public String getGrammarFileName() { return "src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g"; }
+	@Override public String getGrammarFileName() { return "./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g"; }
 
 
 	    public enum Mode
@@ -358,7 +330,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsQuery"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:342:1: ftsQuery : ftsDisjunction EOF -> ftsDisjunction ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:342:1: ftsQuery : ftsDisjunction EOF -> ftsDisjunction ;
 	public final FTSParser.ftsQuery_return ftsQuery() throws RecognitionException {
 		FTSParser.ftsQuery_return retval = new FTSParser.ftsQuery_return();
 		retval.start = input.LT(1);
@@ -373,15 +345,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsDisjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsDisjunction");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:343:9: ( ftsDisjunction EOF -> ftsDisjunction )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:344:9: ftsDisjunction EOF
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:343:9: ( ftsDisjunction EOF -> ftsDisjunction )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:344:9: ftsDisjunction EOF
 			{
-			pushFollow(FOLLOW_ftsDisjunction_in_ftsQuery577);
+			pushFollow(FOLLOW_ftsDisjunction_in_ftsQuery578);
 			ftsDisjunction1=ftsDisjunction();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsDisjunction.add(ftsDisjunction1.getTree());
-			EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_ftsQuery579); if (state.failed) return retval; 
+			EOF2=(Token)match(input,EOF,FOLLOW_EOF_in_ftsQuery580); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_EOF.add(EOF2);
 
 			// AST REWRITE
@@ -436,7 +408,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:353:1: ftsDisjunction : ({...}? cmisExplicitDisjunction |{...}? ftsExplicitDisjunction |{...}? ftsImplicitDisjunction );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:353:1: ftsDisjunction : ({...}? cmisExplicitDisjunction |{...}? ftsExplicitDisjunction |{...}? ftsImplicitDisjunction );
 	public final FTSParser.ftsDisjunction_return ftsDisjunction() throws RecognitionException {
 		FTSParser.ftsDisjunction_return retval = new FTSParser.ftsDisjunction_return();
 		retval.start = input.LT(1);
@@ -449,7 +421,7 @@ public class FTSParser extends Parser {
 
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:354:9: ({...}? cmisExplicitDisjunction |{...}? ftsExplicitDisjunction |{...}? ftsImplicitDisjunction )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:354:9: ({...}? cmisExplicitDisjunction |{...}? ftsExplicitDisjunction |{...}? ftsImplicitDisjunction )
 			int alt1=3;
 			switch ( input.LA(1) ) {
 			case COMMA:
@@ -1186,7 +1158,7 @@ public class FTSParser extends Parser {
 			}
 			switch (alt1) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:355:11: {...}? cmisExplicitDisjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:355:11: {...}? cmisExplicitDisjunction
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -1195,7 +1167,7 @@ public class FTSParser extends Parser {
 						if (state.backtracking>0) {state.failed=true; return retval;}
 						throw new FailedPredicateException(input, "ftsDisjunction", "getMode() == Mode.CMIS");
 					}
-					pushFollow(FOLLOW_cmisExplicitDisjunction_in_ftsDisjunction639);
+					pushFollow(FOLLOW_cmisExplicitDisjunction_in_ftsDisjunction640);
 					cmisExplicitDisjunction3=cmisExplicitDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1204,7 +1176,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:356:11: {...}? ftsExplicitDisjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:356:11: {...}? ftsExplicitDisjunction
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -1213,7 +1185,7 @@ public class FTSParser extends Parser {
 						if (state.backtracking>0) {state.failed=true; return retval;}
 						throw new FailedPredicateException(input, "ftsDisjunction", "getMode() == Mode.DEFAULT_CONJUNCTION");
 					}
-					pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsDisjunction653);
+					pushFollow(FOLLOW_ftsExplicitDisjunction_in_ftsDisjunction654);
 					ftsExplicitDisjunction4=ftsExplicitDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1222,7 +1194,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:357:11: {...}? ftsImplicitDisjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:357:11: {...}? ftsImplicitDisjunction
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -1231,7 +1203,7 @@ public class FTSParser extends Parser {
 						if (state.backtracking>0) {state.failed=true; return retval;}
 						throw new FailedPredicateException(input, "ftsDisjunction", "getMode() == Mode.DEFAULT_DISJUNCTION");
 					}
-					pushFollow(FOLLOW_ftsImplicitDisjunction_in_ftsDisjunction667);
+					pushFollow(FOLLOW_ftsImplicitDisjunction_in_ftsDisjunction668);
 					ftsImplicitDisjunction5=ftsImplicitDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1270,7 +1242,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsExplicitDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:360:1: ftsExplicitDisjunction : ftsImplicitConjunction ( or ftsImplicitConjunction )* -> ^( DISJUNCTION ( ftsImplicitConjunction )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:360:1: ftsExplicitDisjunction : ftsImplicitConjunction ( or ftsImplicitConjunction )* -> ^( DISJUNCTION ( ftsImplicitConjunction )+ ) ;
 	public final FTSParser.ftsExplicitDisjunction_return ftsExplicitDisjunction() throws RecognitionException {
 		FTSParser.ftsExplicitDisjunction_return retval = new FTSParser.ftsExplicitDisjunction_return();
 		retval.start = input.LT(1);
@@ -1285,15 +1257,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsImplicitConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsImplicitConjunction");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:361:9: ( ftsImplicitConjunction ( or ftsImplicitConjunction )* -> ^( DISJUNCTION ( ftsImplicitConjunction )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:9: ftsImplicitConjunction ( or ftsImplicitConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:361:9: ( ftsImplicitConjunction ( or ftsImplicitConjunction )* -> ^( DISJUNCTION ( ftsImplicitConjunction )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:9: ftsImplicitConjunction ( or ftsImplicitConjunction )*
 			{
-			pushFollow(FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction700);
+			pushFollow(FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction701);
 			ftsImplicitConjunction6=ftsImplicitConjunction();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsImplicitConjunction.add(ftsImplicitConjunction6.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:32: ( or ftsImplicitConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:32: ( or ftsImplicitConjunction )*
 			loop2:
 			while (true) {
 				int alt2=2;
@@ -1304,14 +1276,14 @@ public class FTSParser extends Parser {
 
 				switch (alt2) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:33: or ftsImplicitConjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:362:33: or ftsImplicitConjunction
 					{
-					pushFollow(FOLLOW_or_in_ftsExplicitDisjunction703);
+					pushFollow(FOLLOW_or_in_ftsExplicitDisjunction704);
 					or7=or();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_or.add(or7.getTree());
-					pushFollow(FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction705);
+					pushFollow(FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction706);
 					ftsImplicitConjunction8=ftsImplicitConjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1338,7 +1310,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 363:17: -> ^( DISJUNCTION ( ftsImplicitConjunction )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:364:25: ^( DISJUNCTION ( ftsImplicitConjunction )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:364:25: ^( DISJUNCTION ( ftsImplicitConjunction )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -1390,7 +1362,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisExplicitDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:367:1: cmisExplicitDisjunction : cmisConjunction ( or cmisConjunction )* -> ^( DISJUNCTION ( cmisConjunction )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:367:1: cmisExplicitDisjunction : cmisConjunction ( or cmisConjunction )* -> ^( DISJUNCTION ( cmisConjunction )+ ) ;
 	public final FTSParser.cmisExplicitDisjunction_return cmisExplicitDisjunction() throws RecognitionException {
 		FTSParser.cmisExplicitDisjunction_return retval = new FTSParser.cmisExplicitDisjunction_return();
 		retval.start = input.LT(1);
@@ -1405,15 +1377,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_or=new RewriteRuleSubtreeStream(adaptor,"rule or");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:368:9: ( cmisConjunction ( or cmisConjunction )* -> ^( DISJUNCTION ( cmisConjunction )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:9: cmisConjunction ( or cmisConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:368:9: ( cmisConjunction ( or cmisConjunction )* -> ^( DISJUNCTION ( cmisConjunction )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:9: cmisConjunction ( or cmisConjunction )*
 			{
-			pushFollow(FOLLOW_cmisConjunction_in_cmisExplicitDisjunction789);
+			pushFollow(FOLLOW_cmisConjunction_in_cmisExplicitDisjunction790);
 			cmisConjunction9=cmisConjunction();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_cmisConjunction.add(cmisConjunction9.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:25: ( or cmisConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:25: ( or cmisConjunction )*
 			loop3:
 			while (true) {
 				int alt3=2;
@@ -1424,14 +1396,14 @@ public class FTSParser extends Parser {
 
 				switch (alt3) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:26: or cmisConjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:369:26: or cmisConjunction
 					{
-					pushFollow(FOLLOW_or_in_cmisExplicitDisjunction792);
+					pushFollow(FOLLOW_or_in_cmisExplicitDisjunction793);
 					or10=or();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_or.add(or10.getTree());
-					pushFollow(FOLLOW_cmisConjunction_in_cmisExplicitDisjunction794);
+					pushFollow(FOLLOW_cmisConjunction_in_cmisExplicitDisjunction795);
 					cmisConjunction11=cmisConjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1458,7 +1430,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 370:17: -> ^( DISJUNCTION ( cmisConjunction )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:371:25: ^( DISJUNCTION ( cmisConjunction )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:371:25: ^( DISJUNCTION ( cmisConjunction )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -1510,7 +1482,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsImplicitDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:374:1: ftsImplicitDisjunction : ( ( or )? ftsExplicitConjunction )+ -> ^( DISJUNCTION ( ftsExplicitConjunction )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:374:1: ftsImplicitDisjunction : ( ( or )? ftsExplicitConjunction )+ -> ^( DISJUNCTION ( ftsExplicitConjunction )+ ) ;
 	public final FTSParser.ftsImplicitDisjunction_return ftsImplicitDisjunction() throws RecognitionException {
 		FTSParser.ftsImplicitDisjunction_return retval = new FTSParser.ftsImplicitDisjunction_return();
 		retval.start = input.LT(1);
@@ -1524,10 +1496,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsExplicitConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsExplicitConjunction");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:375:9: ( ( ( or )? ftsExplicitConjunction )+ -> ^( DISJUNCTION ( ftsExplicitConjunction )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:9: ( ( or )? ftsExplicitConjunction )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:375:9: ( ( ( or )? ftsExplicitConjunction )+ -> ^( DISJUNCTION ( ftsExplicitConjunction )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:9: ( ( or )? ftsExplicitConjunction )+
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:9: ( ( or )? ftsExplicitConjunction )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:9: ( ( or )? ftsExplicitConjunction )+
 			int cnt5=0;
 			loop5:
 			while (true) {
@@ -1539,9 +1511,9 @@ public class FTSParser extends Parser {
 
 				switch (alt5) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: ( or )? ftsExplicitConjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: ( or )? ftsExplicitConjunction
 					{
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: ( or )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: ( or )?
 					int alt4=2;
 					int LA4_0 = input.LA(1);
 					if ( (LA4_0==OR) ) {
@@ -1558,9 +1530,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt4) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: or
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:376:10: or
 							{
-							pushFollow(FOLLOW_or_in_ftsImplicitDisjunction879);
+							pushFollow(FOLLOW_or_in_ftsImplicitDisjunction880);
 							or12=or();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -1570,7 +1542,7 @@ public class FTSParser extends Parser {
 
 					}
 
-					pushFollow(FOLLOW_ftsExplicitConjunction_in_ftsImplicitDisjunction882);
+					pushFollow(FOLLOW_ftsExplicitConjunction_in_ftsImplicitDisjunction883);
 					ftsExplicitConjunction13=ftsExplicitConjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1601,7 +1573,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 377:17: -> ^( DISJUNCTION ( ftsExplicitConjunction )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:378:25: ^( DISJUNCTION ( ftsExplicitConjunction )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:378:25: ^( DISJUNCTION ( ftsExplicitConjunction )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DISJUNCTION, "DISJUNCTION"), root_1);
@@ -1653,7 +1625,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsExplicitConjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:385:1: ftsExplicitConjunction : ftsPrefixed ( and ftsPrefixed )* -> ^( CONJUNCTION ( ftsPrefixed )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:385:1: ftsExplicitConjunction : ftsPrefixed ( and ftsPrefixed )* -> ^( CONJUNCTION ( ftsPrefixed )+ ) ;
 	public final FTSParser.ftsExplicitConjunction_return ftsExplicitConjunction() throws RecognitionException {
 		FTSParser.ftsExplicitConjunction_return retval = new FTSParser.ftsExplicitConjunction_return();
 		retval.start = input.LT(1);
@@ -1668,15 +1640,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:386:9: ( ftsPrefixed ( and ftsPrefixed )* -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:9: ftsPrefixed ( and ftsPrefixed )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:386:9: ( ftsPrefixed ( and ftsPrefixed )* -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:9: ftsPrefixed ( and ftsPrefixed )*
 			{
-			pushFollow(FOLLOW_ftsPrefixed_in_ftsExplicitConjunction969);
+			pushFollow(FOLLOW_ftsPrefixed_in_ftsExplicitConjunction970);
 			ftsPrefixed14=ftsPrefixed();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsPrefixed.add(ftsPrefixed14.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:21: ( and ftsPrefixed )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:21: ( and ftsPrefixed )*
 			loop6:
 			while (true) {
 				int alt6=2;
@@ -1694,14 +1666,14 @@ public class FTSParser extends Parser {
 
 				switch (alt6) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:22: and ftsPrefixed
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:387:22: and ftsPrefixed
 					{
-					pushFollow(FOLLOW_and_in_ftsExplicitConjunction972);
+					pushFollow(FOLLOW_and_in_ftsExplicitConjunction973);
 					and15=and();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_and.add(and15.getTree());
-					pushFollow(FOLLOW_ftsPrefixed_in_ftsExplicitConjunction974);
+					pushFollow(FOLLOW_ftsPrefixed_in_ftsExplicitConjunction975);
 					ftsPrefixed16=ftsPrefixed();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1728,7 +1700,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 388:17: -> ^( CONJUNCTION ( ftsPrefixed )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:389:25: ^( CONJUNCTION ( ftsPrefixed )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:389:25: ^( CONJUNCTION ( ftsPrefixed )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -1780,7 +1752,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsImplicitConjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:392:1: ftsImplicitConjunction : ( ( and )? ftsPrefixed )+ -> ^( CONJUNCTION ( ftsPrefixed )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:392:1: ftsImplicitConjunction : ( ( and )? ftsPrefixed )+ -> ^( CONJUNCTION ( ftsPrefixed )+ ) ;
 	public final FTSParser.ftsImplicitConjunction_return ftsImplicitConjunction() throws RecognitionException {
 		FTSParser.ftsImplicitConjunction_return retval = new FTSParser.ftsImplicitConjunction_return();
 		retval.start = input.LT(1);
@@ -1794,10 +1766,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule ftsPrefixed");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:393:9: ( ( ( and )? ftsPrefixed )+ -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:9: ( ( and )? ftsPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:393:9: ( ( ( and )? ftsPrefixed )+ -> ^( CONJUNCTION ( ftsPrefixed )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:9: ( ( and )? ftsPrefixed )+
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:9: ( ( and )? ftsPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:9: ( ( and )? ftsPrefixed )+
 			int cnt8=0;
 			loop8:
 			while (true) {
@@ -1855,9 +1827,9 @@ public class FTSParser extends Parser {
 				}
 				switch (alt8) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: ( and )? ftsPrefixed
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: ( and )? ftsPrefixed
 					{
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: ( and )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: ( and )?
 					int alt7=2;
 					int LA7_0 = input.LA(1);
 					if ( (LA7_0==AND) ) {
@@ -1871,9 +1843,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt7) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: and
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:394:10: and
 							{
-							pushFollow(FOLLOW_and_in_ftsImplicitConjunction1059);
+							pushFollow(FOLLOW_and_in_ftsImplicitConjunction1060);
 							and17=and();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -1883,7 +1855,7 @@ public class FTSParser extends Parser {
 
 					}
 
-					pushFollow(FOLLOW_ftsPrefixed_in_ftsImplicitConjunction1062);
+					pushFollow(FOLLOW_ftsPrefixed_in_ftsImplicitConjunction1063);
 					ftsPrefixed18=ftsPrefixed();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -1914,7 +1886,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 395:17: -> ^( CONJUNCTION ( ftsPrefixed )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:396:25: ^( CONJUNCTION ( ftsPrefixed )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:396:25: ^( CONJUNCTION ( ftsPrefixed )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -1966,7 +1938,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisConjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:399:1: cmisConjunction : ( cmisPrefixed )+ -> ^( CONJUNCTION ( cmisPrefixed )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:399:1: cmisConjunction : ( cmisPrefixed )+ -> ^( CONJUNCTION ( cmisPrefixed )+ ) ;
 	public final FTSParser.cmisConjunction_return cmisConjunction() throws RecognitionException {
 		FTSParser.cmisConjunction_return retval = new FTSParser.cmisConjunction_return();
 		retval.start = input.LT(1);
@@ -1978,10 +1950,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_cmisPrefixed=new RewriteRuleSubtreeStream(adaptor,"rule cmisPrefixed");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:400:9: ( ( cmisPrefixed )+ -> ^( CONJUNCTION ( cmisPrefixed )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: ( cmisPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:400:9: ( ( cmisPrefixed )+ -> ^( CONJUNCTION ( cmisPrefixed )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: ( cmisPrefixed )+
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: ( cmisPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: ( cmisPrefixed )+
 			int cnt9=0;
 			loop9:
 			while (true) {
@@ -1993,9 +1965,9 @@ public class FTSParser extends Parser {
 
 				switch (alt9) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: cmisPrefixed
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:401:9: cmisPrefixed
 					{
-					pushFollow(FOLLOW_cmisPrefixed_in_cmisConjunction1146);
+					pushFollow(FOLLOW_cmisPrefixed_in_cmisConjunction1147);
 					cmisPrefixed19=cmisPrefixed();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2026,7 +1998,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 402:17: -> ^( CONJUNCTION ( cmisPrefixed )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:403:25: ^( CONJUNCTION ( cmisPrefixed )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:403:25: ^( CONJUNCTION ( cmisPrefixed )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(CONJUNCTION, "CONJUNCTION"), root_1);
@@ -2078,7 +2050,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsPrefixed"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:413:1: ftsPrefixed : ( ( not )=> not ftsTest ( boost )? -> ^( NEGATION ftsTest ( boost )? ) | ftsTest ( boost )? -> ^( DEFAULT ftsTest ( boost )? ) | PLUS ftsTest ( boost )? -> ^( MANDATORY ftsTest ( boost )? ) | BAR ftsTest ( boost )? -> ^( OPTIONAL ftsTest ( boost )? ) | MINUS ftsTest ( boost )? -> ^( EXCLUDE ftsTest ( boost )? ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:413:1: ftsPrefixed : ( ( not )=> not ftsTest ( boost )? -> ^( NEGATION ftsTest ( boost )? ) | ftsTest ( boost )? -> ^( DEFAULT ftsTest ( boost )? ) | PLUS ftsTest ( boost )? -> ^( MANDATORY ftsTest ( boost )? ) | BAR ftsTest ( boost )? -> ^( OPTIONAL ftsTest ( boost )? ) | MINUS ftsTest ( boost )? -> ^( EXCLUDE ftsTest ( boost )? ) );
 	public final FTSParser.ftsPrefixed_return ftsPrefixed() throws RecognitionException {
 		FTSParser.ftsPrefixed_return retval = new FTSParser.ftsPrefixed_return();
 		retval.start = input.LT(1);
@@ -2111,7 +2083,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsTest=new RewriteRuleSubtreeStream(adaptor,"rule ftsTest");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:414:9: ( ( not )=> not ftsTest ( boost )? -> ^( NEGATION ftsTest ( boost )? ) | ftsTest ( boost )? -> ^( DEFAULT ftsTest ( boost )? ) | PLUS ftsTest ( boost )? -> ^( MANDATORY ftsTest ( boost )? ) | BAR ftsTest ( boost )? -> ^( OPTIONAL ftsTest ( boost )? ) | MINUS ftsTest ( boost )? -> ^( EXCLUDE ftsTest ( boost )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:414:9: ( ( not )=> not ftsTest ( boost )? -> ^( NEGATION ftsTest ( boost )? ) | ftsTest ( boost )? -> ^( DEFAULT ftsTest ( boost )? ) | PLUS ftsTest ( boost )? -> ^( MANDATORY ftsTest ( boost )? ) | BAR ftsTest ( boost )? -> ^( OPTIONAL ftsTest ( boost )? ) | MINUS ftsTest ( boost )? -> ^( EXCLUDE ftsTest ( boost )? ) )
 			int alt15=5;
 			int LA15_0 = input.LA(1);
 			if ( (LA15_0==NOT) ) {
@@ -2149,19 +2121,19 @@ public class FTSParser extends Parser {
 
 			switch (alt15) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:9: ( not )=> not ftsTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:9: ( not )=> not ftsTest ( boost )?
 					{
-					pushFollow(FOLLOW_not_in_ftsPrefixed1238);
+					pushFollow(FOLLOW_not_in_ftsPrefixed1239);
 					not20=not();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_not.add(not20.getTree());
-					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1240);
+					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1241);
 					ftsTest21=ftsTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsTest.add(ftsTest21.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:30: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:30: ( boost )?
 					int alt10=2;
 					int LA10_0 = input.LA(1);
 					if ( (LA10_0==CARAT) ) {
@@ -2169,9 +2141,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt10) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:30: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:30: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsPrefixed1242);
+							pushFollow(FOLLOW_boost_in_ftsPrefixed1243);
 							boost22=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -2182,7 +2154,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: boost, ftsTest
+					// elements: ftsTest, boost
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -2195,12 +2167,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 416:17: -> ^( NEGATION ftsTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:417:25: ^( NEGATION ftsTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:417:25: ^( NEGATION ftsTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NEGATION, "NEGATION"), root_1);
 						adaptor.addChild(root_1, stream_ftsTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:417:44: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:417:44: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -2218,14 +2190,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:11: ftsTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:11: ftsTest ( boost )?
 					{
-					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1306);
+					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1307);
 					ftsTest23=ftsTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsTest.add(ftsTest23.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:19: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:19: ( boost )?
 					int alt11=2;
 					int LA11_0 = input.LA(1);
 					if ( (LA11_0==CARAT) ) {
@@ -2233,9 +2205,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt11) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:19: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:418:19: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsPrefixed1308);
+							pushFollow(FOLLOW_boost_in_ftsPrefixed1309);
 							boost24=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -2246,7 +2218,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: boost, ftsTest
+					// elements: ftsTest, boost
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -2259,12 +2231,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 419:17: -> ^( DEFAULT ftsTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:420:25: ^( DEFAULT ftsTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:420:25: ^( DEFAULT ftsTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DEFAULT, "DEFAULT"), root_1);
 						adaptor.addChild(root_1, stream_ftsTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:420:43: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:420:43: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -2282,17 +2254,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:11: PLUS ftsTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:11: PLUS ftsTest ( boost )?
 					{
-					PLUS25=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsPrefixed1372); if (state.failed) return retval; 
+					PLUS25=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsPrefixed1373); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_PLUS.add(PLUS25);
 
-					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1374);
+					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1375);
 					ftsTest26=ftsTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsTest.add(ftsTest26.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:24: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:24: ( boost )?
 					int alt12=2;
 					int LA12_0 = input.LA(1);
 					if ( (LA12_0==CARAT) ) {
@@ -2300,9 +2272,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt12) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:24: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:421:24: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsPrefixed1376);
+							pushFollow(FOLLOW_boost_in_ftsPrefixed1377);
 							boost27=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -2326,12 +2298,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 422:17: -> ^( MANDATORY ftsTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:423:25: ^( MANDATORY ftsTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:423:25: ^( MANDATORY ftsTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(MANDATORY, "MANDATORY"), root_1);
 						adaptor.addChild(root_1, stream_ftsTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:423:45: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:423:45: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -2349,17 +2321,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:11: BAR ftsTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:11: BAR ftsTest ( boost )?
 					{
-					BAR28=(Token)match(input,BAR,FOLLOW_BAR_in_ftsPrefixed1440); if (state.failed) return retval; 
+					BAR28=(Token)match(input,BAR,FOLLOW_BAR_in_ftsPrefixed1441); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_BAR.add(BAR28);
 
-					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1442);
+					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1443);
 					ftsTest29=ftsTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsTest.add(ftsTest29.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:23: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:23: ( boost )?
 					int alt13=2;
 					int LA13_0 = input.LA(1);
 					if ( (LA13_0==CARAT) ) {
@@ -2367,9 +2339,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt13) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:23: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:424:23: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsPrefixed1444);
+							pushFollow(FOLLOW_boost_in_ftsPrefixed1445);
 							boost30=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -2393,12 +2365,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 425:17: -> ^( OPTIONAL ftsTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:426:25: ^( OPTIONAL ftsTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:426:25: ^( OPTIONAL ftsTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(OPTIONAL, "OPTIONAL"), root_1);
 						adaptor.addChild(root_1, stream_ftsTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:426:44: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:426:44: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -2416,17 +2388,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:11: MINUS ftsTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:11: MINUS ftsTest ( boost )?
 					{
-					MINUS31=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsPrefixed1508); if (state.failed) return retval; 
+					MINUS31=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsPrefixed1509); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_MINUS.add(MINUS31);
 
-					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1510);
+					pushFollow(FOLLOW_ftsTest_in_ftsPrefixed1511);
 					ftsTest32=ftsTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsTest.add(ftsTest32.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:25: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:25: ( boost )?
 					int alt14=2;
 					int LA14_0 = input.LA(1);
 					if ( (LA14_0==CARAT) ) {
@@ -2434,9 +2406,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt14) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:25: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:427:25: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsPrefixed1512);
+							pushFollow(FOLLOW_boost_in_ftsPrefixed1513);
 							boost33=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -2447,7 +2419,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsTest, boost
+					// elements: boost, ftsTest
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -2460,12 +2432,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 428:17: -> ^( EXCLUDE ftsTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:429:25: ^( EXCLUDE ftsTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:429:25: ^( EXCLUDE ftsTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXCLUDE, "EXCLUDE"), root_1);
 						adaptor.addChild(root_1, stream_ftsTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:429:43: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:429:43: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -2513,7 +2485,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisPrefixed"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:432:1: cmisPrefixed : ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:432:1: cmisPrefixed : ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) );
 	public final FTSParser.cmisPrefixed_return cmisPrefixed() throws RecognitionException {
 		FTSParser.cmisPrefixed_return retval = new FTSParser.cmisPrefixed_return();
 		retval.start = input.LT(1);
@@ -2529,7 +2501,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_cmisTest=new RewriteRuleSubtreeStream(adaptor,"rule cmisTest");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:433:9: ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:433:9: ( cmisTest -> ^( DEFAULT cmisTest ) | MINUS cmisTest -> ^( EXCLUDE cmisTest ) )
 			int alt16=2;
 			int LA16_0 = input.LA(1);
 			if ( (LA16_0==COMMA||LA16_0==DATETIME||LA16_0==DECIMAL_INTEGER_LITERAL||LA16_0==DOT||LA16_0==FLOATING_POINT_LITERAL||(LA16_0 >= FTSPHRASE && LA16_0 <= FTSWORD)||LA16_0==ID||LA16_0==NOT||LA16_0==QUESTION_MARK||LA16_0==STAR||LA16_0==TO||LA16_0==URI) ) {
@@ -2548,9 +2520,9 @@ public class FTSParser extends Parser {
 
 			switch (alt16) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:434:9: cmisTest
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:434:9: cmisTest
 					{
-					pushFollow(FOLLOW_cmisTest_in_cmisPrefixed1597);
+					pushFollow(FOLLOW_cmisTest_in_cmisPrefixed1598);
 					cmisTest34=cmisTest();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2569,7 +2541,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 435:17: -> ^( DEFAULT cmisTest )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:436:25: ^( DEFAULT cmisTest )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:436:25: ^( DEFAULT cmisTest )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(DEFAULT, "DEFAULT"), root_1);
@@ -2586,12 +2558,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:437:11: MINUS cmisTest
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:437:11: MINUS cmisTest
 					{
-					MINUS35=(Token)match(input,MINUS,FOLLOW_MINUS_in_cmisPrefixed1657); if (state.failed) return retval; 
+					MINUS35=(Token)match(input,MINUS,FOLLOW_MINUS_in_cmisPrefixed1658); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_MINUS.add(MINUS35);
 
-					pushFollow(FOLLOW_cmisTest_in_cmisPrefixed1659);
+					pushFollow(FOLLOW_cmisTest_in_cmisPrefixed1660);
 					cmisTest36=cmisTest();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2610,7 +2582,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 438:17: -> ^( EXCLUDE cmisTest )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:439:25: ^( EXCLUDE cmisTest )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:439:25: ^( EXCLUDE cmisTest )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXCLUDE, "EXCLUDE"), root_1);
@@ -2657,7 +2629,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsTest"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:445:1: ftsTest : ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( PROXIMITY ftsFieldGroupProximity ) | ( ftsRange )=> ftsRange -> ^( RANGE ftsRange ) | ( ftsFieldGroup )=> ftsFieldGroup -> ftsFieldGroup | ( ftsTermOrPhrase )=> ftsTermOrPhrase | ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase | ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase | LPAREN ftsDisjunction RPAREN -> ftsDisjunction | template -> template );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:445:1: ftsTest : ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( PROXIMITY ftsFieldGroupProximity ) | ( ftsRange )=> ftsRange -> ^( RANGE ftsRange ) | ( ftsFieldGroup )=> ftsFieldGroup -> ftsFieldGroup | ( ftsTermOrPhrase )=> ftsTermOrPhrase | ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase | ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase | LPAREN ftsDisjunction RPAREN -> ftsDisjunction | template -> template );
 	public final FTSParser.ftsTest_return ftsTest() throws RecognitionException {
 		FTSParser.ftsTest_return retval = new FTSParser.ftsTest_return();
 		retval.start = input.LT(1);
@@ -2686,14 +2658,14 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroup=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroup");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:446:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( PROXIMITY ftsFieldGroupProximity ) | ( ftsRange )=> ftsRange -> ^( RANGE ftsRange ) | ( ftsFieldGroup )=> ftsFieldGroup -> ftsFieldGroup | ( ftsTermOrPhrase )=> ftsTermOrPhrase | ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase | ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase | LPAREN ftsDisjunction RPAREN -> ftsDisjunction | template -> template )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:446:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( PROXIMITY ftsFieldGroupProximity ) | ( ftsRange )=> ftsRange -> ^( RANGE ftsRange ) | ( ftsFieldGroup )=> ftsFieldGroup -> ftsFieldGroup | ( ftsTermOrPhrase )=> ftsTermOrPhrase | ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase | ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase | LPAREN ftsDisjunction RPAREN -> ftsDisjunction | template -> template )
 			int alt17=8;
 			alt17 = dfa17.predict(input);
 			switch (alt17) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:12: ( ftsFieldGroupProximity )=> ftsFieldGroupProximity
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:12: ( ftsFieldGroupProximity )=> ftsFieldGroupProximity
 					{
-					pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsTest1751);
+					pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsTest1752);
 					ftsFieldGroupProximity37=ftsFieldGroupProximity();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2712,7 +2684,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 448:17: -> ^( PROXIMITY ftsFieldGroupProximity )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:449:25: ^( PROXIMITY ftsFieldGroupProximity )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:449:25: ^( PROXIMITY ftsFieldGroupProximity )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PROXIMITY, "PROXIMITY"), root_1);
@@ -2729,9 +2701,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:12: ( ftsRange )=> ftsRange
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:12: ( ftsRange )=> ftsRange
 					{
-					pushFollow(FOLLOW_ftsRange_in_ftsTest1828);
+					pushFollow(FOLLOW_ftsRange_in_ftsTest1829);
 					ftsRange38=ftsRange();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2750,7 +2722,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 452:17: -> ^( RANGE ftsRange )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:453:25: ^( RANGE ftsRange )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:453:25: ^( RANGE ftsRange )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(RANGE, "RANGE"), root_1);
@@ -2767,9 +2739,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:12: ( ftsFieldGroup )=> ftsFieldGroup
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:12: ( ftsFieldGroup )=> ftsFieldGroup
 					{
-					pushFollow(FOLLOW_ftsFieldGroup_in_ftsTest1907);
+					pushFollow(FOLLOW_ftsFieldGroup_in_ftsTest1908);
 					ftsFieldGroup39=ftsFieldGroup();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2798,12 +2770,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:12: ( ftsTermOrPhrase )=> ftsTermOrPhrase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:12: ( ftsTermOrPhrase )=> ftsTermOrPhrase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsTermOrPhrase_in_ftsTest1956);
+					pushFollow(FOLLOW_ftsTermOrPhrase_in_ftsTest1957);
 					ftsTermOrPhrase40=ftsTermOrPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2812,12 +2784,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:12: ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:12: ( ftsExactTermOrPhrase )=> ftsExactTermOrPhrase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsExactTermOrPhrase_in_ftsTest1985);
+					pushFollow(FOLLOW_ftsExactTermOrPhrase_in_ftsTest1986);
 					ftsExactTermOrPhrase41=ftsExactTermOrPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2826,12 +2798,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:12: ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:12: ( ftsTokenisedTermOrPhrase )=> ftsTokenisedTermOrPhrase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsTokenisedTermOrPhrase_in_ftsTest2015);
+					pushFollow(FOLLOW_ftsTokenisedTermOrPhrase_in_ftsTest2016);
 					ftsTokenisedTermOrPhrase42=ftsTokenisedTermOrPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2840,17 +2812,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:465:12: LPAREN ftsDisjunction RPAREN
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:465:12: LPAREN ftsDisjunction RPAREN
 					{
-					LPAREN43=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsTest2046); if (state.failed) return retval; 
+					LPAREN43=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsTest2047); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN43);
 
-					pushFollow(FOLLOW_ftsDisjunction_in_ftsTest2048);
+					pushFollow(FOLLOW_ftsDisjunction_in_ftsTest2049);
 					ftsDisjunction44=ftsDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsDisjunction.add(ftsDisjunction44.getTree());
-					RPAREN45=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsTest2050); if (state.failed) return retval; 
+					RPAREN45=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsTest2051); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN45);
 
 					// AST REWRITE
@@ -2877,9 +2849,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:467:12: template
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:467:12: template
 					{
-					pushFollow(FOLLOW_template_in_ftsTest2083);
+					pushFollow(FOLLOW_template_in_ftsTest2084);
 					template46=template();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2938,7 +2910,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisTest"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:471:1: cmisTest : ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:471:1: cmisTest : ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) );
 	public final FTSParser.cmisTest_return cmisTest() throws RecognitionException {
 		FTSParser.cmisTest_return retval = new FTSParser.cmisTest_return();
 		retval.start = input.LT(1);
@@ -2952,7 +2924,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_cmisPhrase=new RewriteRuleSubtreeStream(adaptor,"rule cmisPhrase");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:472:9: ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:472:9: ( cmisTerm -> ^( TERM cmisTerm ) | cmisPhrase -> ^( PHRASE cmisPhrase ) )
 			int alt18=2;
 			int LA18_0 = input.LA(1);
 			if ( (LA18_0==COMMA||LA18_0==DATETIME||LA18_0==DECIMAL_INTEGER_LITERAL||LA18_0==DOT||LA18_0==FLOATING_POINT_LITERAL||(LA18_0 >= FTSPRE && LA18_0 <= FTSWORD)||LA18_0==ID||LA18_0==NOT||LA18_0==QUESTION_MARK||LA18_0==STAR||LA18_0==TO||LA18_0==URI) ) {
@@ -2971,9 +2943,9 @@ public class FTSParser extends Parser {
 
 			switch (alt18) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:473:9: cmisTerm
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:473:9: cmisTerm
 					{
-					pushFollow(FOLLOW_cmisTerm_in_cmisTest2136);
+					pushFollow(FOLLOW_cmisTerm_in_cmisTest2137);
 					cmisTerm47=cmisTerm();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -2992,7 +2964,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 474:17: -> ^( TERM cmisTerm )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:475:25: ^( TERM cmisTerm )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:475:25: ^( TERM cmisTerm )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
@@ -3009,9 +2981,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:476:11: cmisPhrase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:476:11: cmisPhrase
 					{
-					pushFollow(FOLLOW_cmisPhrase_in_cmisTest2196);
+					pushFollow(FOLLOW_cmisPhrase_in_cmisTest2197);
 					cmisPhrase48=cmisPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -3030,7 +3002,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 477:17: -> ^( PHRASE cmisPhrase )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:478:25: ^( PHRASE cmisPhrase )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:478:25: ^( PHRASE cmisPhrase )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
@@ -3077,7 +3049,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "template"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:481:1: template : ( PERCENT tempReference -> ^( TEMPLATE tempReference ) | PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN -> ^( TEMPLATE ( tempReference )+ ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:481:1: template : ( PERCENT tempReference -> ^( TEMPLATE tempReference ) | PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN -> ^( TEMPLATE ( tempReference )+ ) );
 	public final FTSParser.template_return template() throws RecognitionException {
 		FTSParser.template_return retval = new FTSParser.template_return();
 		retval.start = input.LT(1);
@@ -3104,7 +3076,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_tempReference=new RewriteRuleSubtreeStream(adaptor,"rule tempReference");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:482:9: ( PERCENT tempReference -> ^( TEMPLATE tempReference ) | PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN -> ^( TEMPLATE ( tempReference )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:482:9: ( PERCENT tempReference -> ^( TEMPLATE tempReference ) | PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN -> ^( TEMPLATE ( tempReference )+ ) )
 			int alt21=2;
 			int LA21_0 = input.LA(1);
 			if ( (LA21_0==PERCENT) ) {
@@ -3140,12 +3112,12 @@ public class FTSParser extends Parser {
 
 			switch (alt21) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:483:9: PERCENT tempReference
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:483:9: PERCENT tempReference
 					{
-					PERCENT49=(Token)match(input,PERCENT,FOLLOW_PERCENT_in_template2277); if (state.failed) return retval; 
+					PERCENT49=(Token)match(input,PERCENT,FOLLOW_PERCENT_in_template2278); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_PERCENT.add(PERCENT49);
 
-					pushFollow(FOLLOW_tempReference_in_template2279);
+					pushFollow(FOLLOW_tempReference_in_template2280);
 					tempReference50=tempReference();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -3164,7 +3136,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 484:17: -> ^( TEMPLATE tempReference )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:485:25: ^( TEMPLATE tempReference )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:485:25: ^( TEMPLATE tempReference )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TEMPLATE, "TEMPLATE"), root_1);
@@ -3181,15 +3153,15 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:11: PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:11: PERCENT LPAREN ( tempReference ( COMMA )? )+ RPAREN
 					{
-					PERCENT51=(Token)match(input,PERCENT,FOLLOW_PERCENT_in_template2339); if (state.failed) return retval; 
+					PERCENT51=(Token)match(input,PERCENT,FOLLOW_PERCENT_in_template2340); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_PERCENT.add(PERCENT51);
 
-					LPAREN52=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_template2341); if (state.failed) return retval; 
+					LPAREN52=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_template2342); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN52);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:26: ( tempReference ( COMMA )? )+
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:26: ( tempReference ( COMMA )? )+
 					int cnt20=0;
 					loop20:
 					while (true) {
@@ -3201,14 +3173,14 @@ public class FTSParser extends Parser {
 
 						switch (alt20) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:27: tempReference ( COMMA )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:27: tempReference ( COMMA )?
 							{
-							pushFollow(FOLLOW_tempReference_in_template2344);
+							pushFollow(FOLLOW_tempReference_in_template2345);
 							tempReference53=tempReference();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_tempReference.add(tempReference53.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:41: ( COMMA )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:41: ( COMMA )?
 							int alt19=2;
 							int LA19_0 = input.LA(1);
 							if ( (LA19_0==COMMA) ) {
@@ -3216,9 +3188,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt19) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:41: COMMA
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:486:41: COMMA
 									{
-									COMMA54=(Token)match(input,COMMA,FOLLOW_COMMA_in_template2346); if (state.failed) return retval; 
+									COMMA54=(Token)match(input,COMMA,FOLLOW_COMMA_in_template2347); if (state.failed) return retval; 
 									if ( state.backtracking==0 ) stream_COMMA.add(COMMA54);
 
 									}
@@ -3238,7 +3210,7 @@ public class FTSParser extends Parser {
 						cnt20++;
 					}
 
-					RPAREN55=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_template2351); if (state.failed) return retval; 
+					RPAREN55=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_template2352); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN55);
 
 					// AST REWRITE
@@ -3255,7 +3227,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 487:17: -> ^( TEMPLATE ( tempReference )+ )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:488:25: ^( TEMPLATE ( tempReference )+ )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:488:25: ^( TEMPLATE ( tempReference )+ )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TEMPLATE, "TEMPLATE"), root_1);
@@ -3309,7 +3281,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "fuzzy"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:491:1: fuzzy : TILDA number -> ^( FUZZY number ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:491:1: fuzzy : TILDA number -> ^( FUZZY number ) ;
 	public final FTSParser.fuzzy_return fuzzy() throws RecognitionException {
 		FTSParser.fuzzy_return retval = new FTSParser.fuzzy_return();
 		retval.start = input.LT(1);
@@ -3324,13 +3296,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_number=new RewriteRuleSubtreeStream(adaptor,"rule number");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:492:9: ( TILDA number -> ^( FUZZY number ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:493:9: TILDA number
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:492:9: ( TILDA number -> ^( FUZZY number ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:493:9: TILDA number
 			{
-			TILDA56=(Token)match(input,TILDA,FOLLOW_TILDA_in_fuzzy2433); if (state.failed) return retval; 
+			TILDA56=(Token)match(input,TILDA,FOLLOW_TILDA_in_fuzzy2434); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_TILDA.add(TILDA56);
 
-			pushFollow(FOLLOW_number_in_fuzzy2435);
+			pushFollow(FOLLOW_number_in_fuzzy2436);
 			number57=number();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -3349,7 +3321,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 494:17: -> ^( FUZZY number )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:495:25: ^( FUZZY number )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:495:25: ^( FUZZY number )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FUZZY, "FUZZY"), root_1);
@@ -3394,7 +3366,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "slop"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:498:1: slop : TILDA DECIMAL_INTEGER_LITERAL -> ^( FUZZY DECIMAL_INTEGER_LITERAL ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:498:1: slop : TILDA DECIMAL_INTEGER_LITERAL -> ^( FUZZY DECIMAL_INTEGER_LITERAL ) ;
 	public final FTSParser.slop_return slop() throws RecognitionException {
 		FTSParser.slop_return retval = new FTSParser.slop_return();
 		retval.start = input.LT(1);
@@ -3410,13 +3382,13 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_TILDA=new RewriteRuleTokenStream(adaptor,"token TILDA");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:499:9: ( TILDA DECIMAL_INTEGER_LITERAL -> ^( FUZZY DECIMAL_INTEGER_LITERAL ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:500:9: TILDA DECIMAL_INTEGER_LITERAL
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:499:9: ( TILDA DECIMAL_INTEGER_LITERAL -> ^( FUZZY DECIMAL_INTEGER_LITERAL ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:500:9: TILDA DECIMAL_INTEGER_LITERAL
 			{
-			TILDA58=(Token)match(input,TILDA,FOLLOW_TILDA_in_slop2516); if (state.failed) return retval; 
+			TILDA58=(Token)match(input,TILDA,FOLLOW_TILDA_in_slop2517); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_TILDA.add(TILDA58);
 
-			DECIMAL_INTEGER_LITERAL59=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_slop2518); if (state.failed) return retval; 
+			DECIMAL_INTEGER_LITERAL59=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_slop2519); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_DECIMAL_INTEGER_LITERAL.add(DECIMAL_INTEGER_LITERAL59);
 
 			// AST REWRITE
@@ -3433,7 +3405,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 501:17: -> ^( FUZZY DECIMAL_INTEGER_LITERAL )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:502:25: ^( FUZZY DECIMAL_INTEGER_LITERAL )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:502:25: ^( FUZZY DECIMAL_INTEGER_LITERAL )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FUZZY, "FUZZY"), root_1);
@@ -3478,7 +3450,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "boost"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:505:1: boost : CARAT number -> ^( BOOST number ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:505:1: boost : CARAT number -> ^( BOOST number ) ;
 	public final FTSParser.boost_return boost() throws RecognitionException {
 		FTSParser.boost_return retval = new FTSParser.boost_return();
 		retval.start = input.LT(1);
@@ -3493,13 +3465,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_number=new RewriteRuleSubtreeStream(adaptor,"rule number");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:506:9: ( CARAT number -> ^( BOOST number ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:507:9: CARAT number
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:506:9: ( CARAT number -> ^( BOOST number ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:507:9: CARAT number
 			{
-			CARAT60=(Token)match(input,CARAT,FOLLOW_CARAT_in_boost2599); if (state.failed) return retval; 
+			CARAT60=(Token)match(input,CARAT,FOLLOW_CARAT_in_boost2600); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_CARAT.add(CARAT60);
 
-			pushFollow(FOLLOW_number_in_boost2601);
+			pushFollow(FOLLOW_number_in_boost2602);
 			number61=number();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -3518,7 +3490,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 508:17: -> ^( BOOST number )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:509:25: ^( BOOST number )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:509:25: ^( BOOST number )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(BOOST, "BOOST"), root_1);
@@ -3563,7 +3535,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsTermOrPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:512:1: ftsTermOrPhrase : ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:512:1: ftsTermOrPhrase : ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) );
 	public final FTSParser.ftsTermOrPhrase_return ftsTermOrPhrase() throws RecognitionException {
 		FTSParser.ftsTermOrPhrase_return retval = new FTSParser.ftsTermOrPhrase_return();
 		retval.start = input.LT(1);
@@ -3601,22 +3573,22 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:513:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:513:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
 			int alt30=4;
 			alt30 = dfa30.predict(input);
 			switch (alt30) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsTermOrPhrase2690);
+					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsTermOrPhrase2691);
 					fieldReferenceWithPrefix62=fieldReferenceWithPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithPrefix.add(fieldReferenceWithPrefix62.getTree());
-					COLON63=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTermOrPhrase2692); if (state.failed) return retval; 
+					COLON63=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTermOrPhrase2693); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON63);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:515:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:515:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					int alt24=2;
 					int LA24_0 = input.LA(1);
 					if ( (LA24_0==FTSPHRASE) ) {
@@ -3635,12 +3607,12 @@ public class FTSParser extends Parser {
 
 					switch (alt24) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE64=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2720); if (state.failed) return retval; 
+							FTSPHRASE64=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2721); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE64);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:27: ( ( slop )=> slop )?
 							int alt22=2;
 							int LA22_0 = input.LA(1);
 							if ( (LA22_0==TILDA) ) {
@@ -3654,9 +3626,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt22) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsTermOrPhrase2728);
+									pushFollow(FOLLOW_slop_in_ftsTermOrPhrase2729);
 									slop65=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -3667,7 +3639,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: FTSPHRASE, fieldReferenceWithPrefix, slop
+							// elements: fieldReferenceWithPrefix, slop, FTSPHRASE
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -3680,13 +3652,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 517:17: -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:517:20: ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:517:20: ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:517:64: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:517:64: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -3704,14 +3676,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase2795);
+							pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase2796);
 							ftsWord66=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord66.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:25: ( ( fuzzy )=> fuzzy )?
 							int alt23=2;
 							int LA23_0 = input.LA(1);
 							if ( (LA23_0==TILDA) ) {
@@ -3731,9 +3703,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt23) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase2804);
+									pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase2805);
 									fuzzy67=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -3744,7 +3716,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: ftsWord, fuzzy, fieldReferenceWithPrefix
+							// elements: fuzzy, ftsWord, fieldReferenceWithPrefix
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -3757,13 +3729,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 520:17: -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:520:20: ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:520:20: ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:520:60: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:520:60: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -3786,17 +3758,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsTermOrPhrase2873);
+					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsTermOrPhrase2874);
 					fieldReferenceWithoutPrefix68=fieldReferenceWithoutPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithoutPrefix.add(fieldReferenceWithoutPrefix68.getTree());
-					COLON69=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTermOrPhrase2875); if (state.failed) return retval; 
+					COLON69=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTermOrPhrase2876); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON69);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:524:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:524:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					int alt27=2;
 					int LA27_0 = input.LA(1);
 					if ( (LA27_0==FTSPHRASE) ) {
@@ -3815,12 +3787,12 @@ public class FTSParser extends Parser {
 
 					switch (alt27) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE70=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2903); if (state.failed) return retval; 
+							FTSPHRASE70=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2904); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE70);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:27: ( ( slop )=> slop )?
 							int alt25=2;
 							int LA25_0 = input.LA(1);
 							if ( (LA25_0==TILDA) ) {
@@ -3834,9 +3806,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt25) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsTermOrPhrase2911);
+									pushFollow(FOLLOW_slop_in_ftsTermOrPhrase2912);
 									slop71=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -3860,13 +3832,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 526:17: -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:526:20: ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:526:20: ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:526:67: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:526:67: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -3884,14 +3856,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase2978);
+							pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase2979);
 							ftsWord72=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord72.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:25: ( ( fuzzy )=> fuzzy )?
 							int alt26=2;
 							int LA26_0 = input.LA(1);
 							if ( (LA26_0==TILDA) ) {
@@ -3911,9 +3883,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt26) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase2987);
+									pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase2988);
 									fuzzy73=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -3924,7 +3896,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fuzzy, ftsWord, fieldReferenceWithoutPrefix
+							// elements: ftsWord, fuzzy, fieldReferenceWithoutPrefix
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -3937,13 +3909,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 529:17: -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:529:20: ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:529:20: ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:529:63: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:529:63: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -3966,12 +3938,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:9: FTSPHRASE ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:9: FTSPHRASE ( ( slop )=> slop )?
 					{
-					FTSPHRASE74=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase3048); if (state.failed) return retval; 
+					FTSPHRASE74=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTermOrPhrase3049); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE74);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:19: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:19: ( ( slop )=> slop )?
 					int alt28=2;
 					int LA28_0 = input.LA(1);
 					if ( (LA28_0==TILDA) ) {
@@ -3985,9 +3957,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt28) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:20: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:20: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsTermOrPhrase3056);
+							pushFollow(FOLLOW_slop_in_ftsTermOrPhrase3057);
 							slop75=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -4011,12 +3983,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 533:17: -> ^( PHRASE FTSPHRASE ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:533:20: ^( PHRASE FTSPHRASE ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:533:20: ^( PHRASE FTSPHRASE ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:533:39: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:533:39: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -4034,14 +4006,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:9: ftsWord ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:9: ftsWord ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase3106);
+					pushFollow(FOLLOW_ftsWord_in_ftsTermOrPhrase3107);
 					ftsWord76=ftsWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord76.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:17: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:17: ( ( fuzzy )=> fuzzy )?
 					int alt29=2;
 					int LA29_0 = input.LA(1);
 					if ( (LA29_0==TILDA) ) {
@@ -4061,9 +4033,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt29) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:18: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:18: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase3115);
+							pushFollow(FOLLOW_fuzzy_in_ftsTermOrPhrase3116);
 							fuzzy77=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -4087,12 +4059,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 536:17: -> ^( TERM ftsWord ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:536:20: ^( TERM ftsWord ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:536:20: ^( TERM ftsWord ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 						adaptor.addChild(root_1, stream_ftsWord.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:536:35: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:536:35: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -4140,7 +4112,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsExactTermOrPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:540:1: ftsExactTermOrPhrase : EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:540:1: ftsExactTermOrPhrase : EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) ) ;
 	public final FTSParser.ftsExactTermOrPhrase_return ftsExactTermOrPhrase() throws RecognitionException {
 		FTSParser.ftsExactTermOrPhrase_return retval = new FTSParser.ftsExactTermOrPhrase_return();
 		retval.start = input.LT(1);
@@ -4181,28 +4153,28 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:541:9: ( EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:542:9: EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:541:9: ( EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:542:9: EQUALS ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) )
 			{
-			EQUALS78=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsExactTermOrPhrase3194); if (state.failed) return retval; 
+			EQUALS78=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsExactTermOrPhrase3195); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_EQUALS.add(EQUALS78);
 
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:543:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:543:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord ( fuzzy )? ) )
 			int alt39=4;
 			alt39 = dfa39.predict(input);
 			switch (alt39) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsExactTermOrPhrase3222);
+					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsExactTermOrPhrase3223);
 					fieldReferenceWithPrefix79=fieldReferenceWithPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithPrefix.add(fieldReferenceWithPrefix79.getTree());
-					COLON80=(Token)match(input,COLON,FOLLOW_COLON_in_ftsExactTermOrPhrase3224); if (state.failed) return retval; 
+					COLON80=(Token)match(input,COLON,FOLLOW_COLON_in_ftsExactTermOrPhrase3225); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON80);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:545:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:545:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					int alt33=2;
 					int LA33_0 = input.LA(1);
 					if ( (LA33_0==FTSPHRASE) ) {
@@ -4221,12 +4193,12 @@ public class FTSParser extends Parser {
 
 					switch (alt33) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE81=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3252); if (state.failed) return retval; 
+							FTSPHRASE81=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3253); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE81);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:27: ( ( slop )=> slop )?
 							int alt31=2;
 							int LA31_0 = input.LA(1);
 							if ( (LA31_0==TILDA) ) {
@@ -4240,9 +4212,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt31) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3260);
+									pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3261);
 									slop82=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4253,7 +4225,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fieldReferenceWithPrefix, FTSPHRASE, slop
+							// elements: slop, fieldReferenceWithPrefix, FTSPHRASE
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4266,13 +4238,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 547:17: -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:547:20: ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:547:20: ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_PHRASE, "EXACT_PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:547:70: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:547:70: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -4290,14 +4262,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3327);
+							pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3328);
 							ftsWord83=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord83.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:25: ( ( fuzzy )=> fuzzy )?
 							int alt32=2;
 							int LA32_0 = input.LA(1);
 							if ( (LA32_0==TILDA) ) {
@@ -4317,9 +4289,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt32) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3336);
+									pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3337);
 									fuzzy84=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4330,7 +4302,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fuzzy, ftsWord, fieldReferenceWithPrefix
+							// elements: ftsWord, fieldReferenceWithPrefix, fuzzy
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4343,13 +4315,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 550:17: -> ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:550:20: ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:550:20: ^( EXACT_TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_TERM, "EXACT_TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:550:66: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:550:66: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -4372,17 +4344,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsExactTermOrPhrase3405);
+					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsExactTermOrPhrase3406);
 					fieldReferenceWithoutPrefix85=fieldReferenceWithoutPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithoutPrefix.add(fieldReferenceWithoutPrefix85.getTree());
-					COLON86=(Token)match(input,COLON,FOLLOW_COLON_in_ftsExactTermOrPhrase3407); if (state.failed) return retval; 
+					COLON86=(Token)match(input,COLON,FOLLOW_COLON_in_ftsExactTermOrPhrase3408); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON86);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:554:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:554:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					int alt36=2;
 					int LA36_0 = input.LA(1);
 					if ( (LA36_0==FTSPHRASE) ) {
@@ -4401,12 +4373,12 @@ public class FTSParser extends Parser {
 
 					switch (alt36) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE87=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3435); if (state.failed) return retval; 
+							FTSPHRASE87=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3436); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE87);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:27: ( ( slop )=> slop )?
 							int alt34=2;
 							int LA34_0 = input.LA(1);
 							if ( (LA34_0==TILDA) ) {
@@ -4420,9 +4392,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt34) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3443);
+									pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3444);
 									slop88=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4433,7 +4405,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: FTSPHRASE, slop, fieldReferenceWithoutPrefix
+							// elements: slop, fieldReferenceWithoutPrefix, FTSPHRASE
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4446,13 +4418,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 556:17: -> ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:556:20: ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:556:20: ^( EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_PHRASE, "EXACT_PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:556:73: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:556:73: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -4470,14 +4442,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3510);
+							pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3511);
 							ftsWord89=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord89.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:25: ( ( fuzzy )=> fuzzy )?
 							int alt35=2;
 							int LA35_0 = input.LA(1);
 							if ( (LA35_0==TILDA) ) {
@@ -4497,9 +4469,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt35) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3519);
+									pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3520);
 									fuzzy90=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4523,13 +4495,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 559:17: -> ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:559:20: ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:559:20: ^( EXACT_TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_TERM, "EXACT_TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:559:69: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:559:69: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -4552,12 +4524,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:9: FTSPHRASE ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:9: FTSPHRASE ( ( slop )=> slop )?
 					{
-					FTSPHRASE91=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3580); if (state.failed) return retval; 
+					FTSPHRASE91=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3581); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE91);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:19: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:19: ( ( slop )=> slop )?
 					int alt37=2;
 					int LA37_0 = input.LA(1);
 					if ( (LA37_0==TILDA) ) {
@@ -4571,9 +4543,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt37) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:20: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:20: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3588);
+							pushFollow(FOLLOW_slop_in_ftsExactTermOrPhrase3589);
 							slop92=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -4584,7 +4556,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: slop, FTSPHRASE
+					// elements: FTSPHRASE, slop
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -4597,12 +4569,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 563:17: -> ^( EXACT_PHRASE FTSPHRASE ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:563:20: ^( EXACT_PHRASE FTSPHRASE ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:563:20: ^( EXACT_PHRASE FTSPHRASE ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_PHRASE, "EXACT_PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:563:45: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:563:45: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -4620,14 +4592,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:9: ftsWord ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:9: ftsWord ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3638);
+					pushFollow(FOLLOW_ftsWord_in_ftsExactTermOrPhrase3639);
 					ftsWord93=ftsWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord93.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:17: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:17: ( ( fuzzy )=> fuzzy )?
 					int alt38=2;
 					int LA38_0 = input.LA(1);
 					if ( (LA38_0==TILDA) ) {
@@ -4647,9 +4619,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt38) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:18: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:18: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3647);
+							pushFollow(FOLLOW_fuzzy_in_ftsExactTermOrPhrase3648);
 							fuzzy94=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -4660,7 +4632,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: fuzzy, ftsWord
+					// elements: ftsWord, fuzzy
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -4673,12 +4645,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 566:17: -> ^( EXACT_TERM ftsWord ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:566:20: ^( EXACT_TERM ftsWord ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:566:20: ^( EXACT_TERM ftsWord ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(EXACT_TERM, "EXACT_TERM"), root_1);
 						adaptor.addChild(root_1, stream_ftsWord.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:566:41: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:566:41: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -4729,7 +4701,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsTokenisedTermOrPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:571:1: ftsTokenisedTermOrPhrase : TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:571:1: ftsTokenisedTermOrPhrase : TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) ) ;
 	public final FTSParser.ftsTokenisedTermOrPhrase_return ftsTokenisedTermOrPhrase() throws RecognitionException {
 		FTSParser.ftsTokenisedTermOrPhrase_return retval = new FTSParser.ftsTokenisedTermOrPhrase_return();
 		retval.start = input.LT(1);
@@ -4770,28 +4742,28 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:572:9: ( TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:573:9: TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:572:9: ( TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:573:9: TILDA ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
 			{
-			TILDA95=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsTokenisedTermOrPhrase3728); if (state.failed) return retval; 
+			TILDA95=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsTokenisedTermOrPhrase3729); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_TILDA.add(TILDA95);
 
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:574:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:574:9: ( ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) ) | ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) ) | FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord ( fuzzy )? ) )
 			int alt48=4;
 			alt48 = dfa48.predict(input);
 			switch (alt48) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:9: ( fieldReferenceWithPrefix COLON )=> fieldReferenceWithPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsTokenisedTermOrPhrase3756);
+					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_ftsTokenisedTermOrPhrase3757);
 					fieldReferenceWithPrefix96=fieldReferenceWithPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithPrefix.add(fieldReferenceWithPrefix96.getTree());
-					COLON97=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3758); if (state.failed) return retval; 
+					COLON97=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3759); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON97);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:576:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:576:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? ) )
 					int alt42=2;
 					int LA42_0 = input.LA(1);
 					if ( (LA42_0==FTSPHRASE) ) {
@@ -4810,12 +4782,12 @@ public class FTSParser extends Parser {
 
 					switch (alt42) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE98=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3786); if (state.failed) return retval; 
+							FTSPHRASE98=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3787); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE98);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:27: ( ( slop )=> slop )?
 							int alt40=2;
 							int LA40_0 = input.LA(1);
 							if ( (LA40_0==TILDA) ) {
@@ -4829,9 +4801,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt40) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase3794);
+									pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase3795);
 									slop99=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4855,13 +4827,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 578:17: -> ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:578:20: ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:578:20: ^( PHRASE FTSPHRASE fieldReferenceWithPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:578:64: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:578:64: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -4879,14 +4851,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase3861);
+							pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase3862);
 							ftsWord100=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord100.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:25: ( ( fuzzy )=> fuzzy )?
 							int alt41=2;
 							int LA41_0 = input.LA(1);
 							if ( (LA41_0==TILDA) ) {
@@ -4906,9 +4878,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt41) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase3870);
+									pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase3871);
 									fuzzy101=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -4919,7 +4891,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: ftsWord, fieldReferenceWithPrefix, fuzzy
+							// elements: fieldReferenceWithPrefix, fuzzy, ftsWord
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -4932,13 +4904,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 581:17: -> ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:581:20: ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:581:20: ^( TERM ftsWord fieldReferenceWithPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:581:60: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:581:60: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -4961,17 +4933,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:9: ( fieldReferenceWithoutPrefix COLON )=> fieldReferenceWithoutPrefix COLON ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					{
-					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsTokenisedTermOrPhrase3939);
+					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_ftsTokenisedTermOrPhrase3940);
 					fieldReferenceWithoutPrefix102=fieldReferenceWithoutPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReferenceWithoutPrefix.add(fieldReferenceWithoutPrefix102.getTree());
-					COLON103=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3941); if (state.failed) return retval; 
+					COLON103=(Token)match(input,COLON,FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3942); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON103);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:585:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:585:9: ( FTSPHRASE ( ( slop )=> slop )? -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? ) | ftsWord ( ( fuzzy )=> fuzzy )? -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? ) )
 					int alt45=2;
 					int LA45_0 = input.LA(1);
 					if ( (LA45_0==FTSPHRASE) ) {
@@ -4990,12 +4962,12 @@ public class FTSParser extends Parser {
 
 					switch (alt45) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:17: FTSPHRASE ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:17: FTSPHRASE ( ( slop )=> slop )?
 							{
-							FTSPHRASE104=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3969); if (state.failed) return retval; 
+							FTSPHRASE104=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3970); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE104);
 
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:27: ( ( slop )=> slop )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:27: ( ( slop )=> slop )?
 							int alt43=2;
 							int LA43_0 = input.LA(1);
 							if ( (LA43_0==TILDA) ) {
@@ -5009,9 +4981,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt43) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:28: ( slop )=> slop
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:28: ( slop )=> slop
 									{
-									pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase3977);
+									pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase3978);
 									slop105=slop();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -5022,7 +4994,7 @@ public class FTSParser extends Parser {
 							}
 
 							// AST REWRITE
-							// elements: fieldReferenceWithoutPrefix, FTSPHRASE, slop
+							// elements: slop, FTSPHRASE, fieldReferenceWithoutPrefix
 							// token labels: 
 							// rule labels: retval
 							// token list labels: 
@@ -5035,13 +5007,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 587:17: -> ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:587:20: ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:587:20: ^( PHRASE FTSPHRASE fieldReferenceWithoutPrefix ( slop )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 								adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:587:67: ( slop )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:587:67: ( slop )?
 								if ( stream_slop.hasNext() ) {
 									adaptor.addChild(root_1, stream_slop.nextTree());
 								}
@@ -5059,14 +5031,14 @@ public class FTSParser extends Parser {
 							}
 							break;
 						case 2 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:17: ftsWord ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:17: ftsWord ( ( fuzzy )=> fuzzy )?
 							{
-							pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4044);
+							pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4045);
 							ftsWord106=ftsWord();
 							state._fsp--;
 							if (state.failed) return retval;
 							if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord106.getTree());
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:25: ( ( fuzzy )=> fuzzy )?
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:25: ( ( fuzzy )=> fuzzy )?
 							int alt44=2;
 							int LA44_0 = input.LA(1);
 							if ( (LA44_0==TILDA) ) {
@@ -5086,9 +5058,9 @@ public class FTSParser extends Parser {
 							}
 							switch (alt44) {
 								case 1 :
-									// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:26: ( fuzzy )=> fuzzy
+									// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:26: ( fuzzy )=> fuzzy
 									{
-									pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4053);
+									pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4054);
 									fuzzy107=fuzzy();
 									state._fsp--;
 									if (state.failed) return retval;
@@ -5112,13 +5084,13 @@ public class FTSParser extends Parser {
 							root_0 = (Object)adaptor.nil();
 							// 590:17: -> ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 							{
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:590:20: ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:590:20: ^( TERM ftsWord fieldReferenceWithoutPrefix ( fuzzy )? )
 								{
 								Object root_1 = (Object)adaptor.nil();
 								root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 								adaptor.addChild(root_1, stream_ftsWord.nextTree());
 								adaptor.addChild(root_1, stream_fieldReferenceWithoutPrefix.nextTree());
-								// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:590:63: ( fuzzy )?
+								// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:590:63: ( fuzzy )?
 								if ( stream_fuzzy.hasNext() ) {
 									adaptor.addChild(root_1, stream_fuzzy.nextTree());
 								}
@@ -5141,12 +5113,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:9: FTSPHRASE ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:9: FTSPHRASE ( ( slop )=> slop )?
 					{
-					FTSPHRASE108=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase4114); if (state.failed) return retval; 
+					FTSPHRASE108=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase4115); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE108);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:19: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:19: ( ( slop )=> slop )?
 					int alt46=2;
 					int LA46_0 = input.LA(1);
 					if ( (LA46_0==TILDA) ) {
@@ -5160,9 +5132,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt46) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:20: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:20: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase4122);
+							pushFollow(FOLLOW_slop_in_ftsTokenisedTermOrPhrase4123);
 							slop109=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -5173,7 +5145,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: slop, FTSPHRASE
+					// elements: FTSPHRASE, slop
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -5186,12 +5158,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 594:17: -> ^( PHRASE FTSPHRASE ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:594:20: ^( PHRASE FTSPHRASE ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:594:20: ^( PHRASE FTSPHRASE ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PHRASE, "PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_FTSPHRASE.nextNode());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:594:39: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:594:39: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -5209,14 +5181,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:9: ftsWord ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:9: ftsWord ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4172);
+					pushFollow(FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4173);
 					ftsWord110=ftsWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsWord.add(ftsWord110.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:17: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:17: ( ( fuzzy )=> fuzzy )?
 					int alt47=2;
 					int LA47_0 = input.LA(1);
 					if ( (LA47_0==TILDA) ) {
@@ -5236,9 +5208,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt47) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:18: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:18: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4181);
+							pushFollow(FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4182);
 							fuzzy111=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -5249,7 +5221,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: fuzzy, ftsWord
+					// elements: ftsWord, fuzzy
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -5262,12 +5234,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 597:17: -> ^( TERM ftsWord ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:597:20: ^( TERM ftsWord ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:597:20: ^( TERM ftsWord ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(TERM, "TERM"), root_1);
 						adaptor.addChild(root_1, stream_ftsWord.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:597:35: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:597:35: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -5318,7 +5290,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisTerm"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:602:1: cmisTerm : ftsWord -> ftsWord ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:602:1: cmisTerm : ftsWord -> ftsWord ;
 	public final FTSParser.cmisTerm_return cmisTerm() throws RecognitionException {
 		FTSParser.cmisTerm_return retval = new FTSParser.cmisTerm_return();
 		retval.start = input.LT(1);
@@ -5330,10 +5302,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsWord=new RewriteRuleSubtreeStream(adaptor,"rule ftsWord");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:603:9: ( ftsWord -> ftsWord )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:604:9: ftsWord
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:603:9: ( ftsWord -> ftsWord )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:604:9: ftsWord
 			{
-			pushFollow(FOLLOW_ftsWord_in_cmisTerm4254);
+			pushFollow(FOLLOW_ftsWord_in_cmisTerm4255);
 			ftsWord112=ftsWord();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -5390,7 +5362,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "cmisPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:609:1: cmisPhrase : FTSPHRASE -> FTSPHRASE ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:609:1: cmisPhrase : FTSPHRASE -> FTSPHRASE ;
 	public final FTSParser.cmisPhrase_return cmisPhrase() throws RecognitionException {
 		FTSParser.cmisPhrase_return retval = new FTSParser.cmisPhrase_return();
 		retval.start = input.LT(1);
@@ -5403,10 +5375,10 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_FTSPHRASE=new RewriteRuleTokenStream(adaptor,"token FTSPHRASE");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:610:9: ( FTSPHRASE -> FTSPHRASE )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:611:9: FTSPHRASE
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:610:9: ( FTSPHRASE -> FTSPHRASE )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:611:9: FTSPHRASE
 			{
-			FTSPHRASE113=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_cmisPhrase4308); if (state.failed) return retval; 
+			FTSPHRASE113=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_cmisPhrase4309); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_FTSPHRASE.add(FTSPHRASE113);
 
 			// AST REWRITE
@@ -5461,7 +5433,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsRange"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:616:1: ftsRange : ( fieldReference COLON )? ftsFieldGroupRange -> ftsFieldGroupRange ( fieldReference )? ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:616:1: ftsRange : ( fieldReference COLON )? ftsFieldGroupRange -> ftsFieldGroupRange ( fieldReference )? ;
 	public final FTSParser.ftsRange_return ftsRange() throws RecognitionException {
 		FTSParser.ftsRange_return retval = new FTSParser.ftsRange_return();
 		retval.start = input.LT(1);
@@ -5478,10 +5450,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:617:9: ( ( fieldReference COLON )? ftsFieldGroupRange -> ftsFieldGroupRange ( fieldReference )? )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:9: ( fieldReference COLON )? ftsFieldGroupRange
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:617:9: ( ( fieldReference COLON )? ftsFieldGroupRange -> ftsFieldGroupRange ( fieldReference )? )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:9: ( fieldReference COLON )? ftsFieldGroupRange
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:9: ( fieldReference COLON )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:9: ( fieldReference COLON )?
 			int alt49=2;
 			switch ( input.LA(1) ) {
 				case AND:
@@ -5559,14 +5531,14 @@ public class FTSParser extends Parser {
 			}
 			switch (alt49) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:10: fieldReference COLON
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:618:10: fieldReference COLON
 					{
-					pushFollow(FOLLOW_fieldReference_in_ftsRange4363);
+					pushFollow(FOLLOW_fieldReference_in_ftsRange4364);
 					fieldReference114=fieldReference();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_fieldReference.add(fieldReference114.getTree());
-					COLON115=(Token)match(input,COLON,FOLLOW_COLON_in_ftsRange4365); if (state.failed) return retval; 
+					COLON115=(Token)match(input,COLON,FOLLOW_COLON_in_ftsRange4366); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_COLON.add(COLON115);
 
 					}
@@ -5574,7 +5546,7 @@ public class FTSParser extends Parser {
 
 			}
 
-			pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsRange4369);
+			pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsRange4370);
 			ftsFieldGroupRange116=ftsFieldGroupRange();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -5594,7 +5566,7 @@ public class FTSParser extends Parser {
 			// 619:17: -> ftsFieldGroupRange ( fieldReference )?
 			{
 				adaptor.addChild(root_0, stream_ftsFieldGroupRange.nextTree());
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:619:39: ( fieldReference )?
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:619:39: ( fieldReference )?
 				if ( stream_fieldReference.hasNext() ) {
 					adaptor.addChild(root_0, stream_fieldReference.nextTree());
 				}
@@ -5637,7 +5609,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroup"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:622:1: ftsFieldGroup : fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:622:1: ftsFieldGroup : fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction ) ;
 	public final FTSParser.ftsFieldGroup_return ftsFieldGroup() throws RecognitionException {
 		FTSParser.ftsFieldGroup_return retval = new FTSParser.ftsFieldGroup_return();
 		retval.start = input.LT(1);
@@ -5660,26 +5632,26 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_fieldReference=new RewriteRuleSubtreeStream(adaptor,"rule fieldReference");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:623:9: ( fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:624:9: fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:623:9: ( fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:624:9: fieldReference COLON LPAREN ftsFieldGroupDisjunction RPAREN
 			{
-			pushFollow(FOLLOW_fieldReference_in_ftsFieldGroup4425);
+			pushFollow(FOLLOW_fieldReference_in_ftsFieldGroup4426);
 			fieldReference117=fieldReference();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_fieldReference.add(fieldReference117.getTree());
-			COLON118=(Token)match(input,COLON,FOLLOW_COLON_in_ftsFieldGroup4427); if (state.failed) return retval; 
+			COLON118=(Token)match(input,COLON,FOLLOW_COLON_in_ftsFieldGroup4428); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_COLON.add(COLON118);
 
-			LPAREN119=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroup4429); if (state.failed) return retval; 
+			LPAREN119=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroup4430); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN119);
 
-			pushFollow(FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroup4431);
+			pushFollow(FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroup4432);
 			ftsFieldGroupDisjunction120=ftsFieldGroupDisjunction();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsFieldGroupDisjunction.add(ftsFieldGroupDisjunction120.getTree());
-			RPAREN121=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroup4433); if (state.failed) return retval; 
+			RPAREN121=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroup4434); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN121);
 
 			// AST REWRITE
@@ -5696,7 +5668,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 625:17: -> ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:626:25: ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:626:25: ^( FIELD_GROUP fieldReference ftsFieldGroupDisjunction )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_GROUP, "FIELD_GROUP"), root_1);
@@ -5742,7 +5714,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:629:1: ftsFieldGroupDisjunction : ({...}? ftsFieldGroupExplicitDisjunction |{...}? ftsFieldGroupImplicitDisjunction );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:629:1: ftsFieldGroupDisjunction : ({...}? ftsFieldGroupExplicitDisjunction |{...}? ftsFieldGroupImplicitDisjunction );
 	public final FTSParser.ftsFieldGroupDisjunction_return ftsFieldGroupDisjunction() throws RecognitionException {
 		FTSParser.ftsFieldGroupDisjunction_return retval = new FTSParser.ftsFieldGroupDisjunction_return();
 		retval.start = input.LT(1);
@@ -5754,7 +5726,7 @@ public class FTSParser extends Parser {
 
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:630:9: ({...}? ftsFieldGroupExplicitDisjunction |{...}? ftsFieldGroupImplicitDisjunction )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:630:9: ({...}? ftsFieldGroupExplicitDisjunction |{...}? ftsFieldGroupImplicitDisjunction )
 			int alt50=2;
 			switch ( input.LA(1) ) {
 			case AMP:
@@ -6352,7 +6324,7 @@ public class FTSParser extends Parser {
 			}
 			switch (alt50) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:631:9: {...}? ftsFieldGroupExplicitDisjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:631:9: {...}? ftsFieldGroupExplicitDisjunction
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -6361,7 +6333,7 @@ public class FTSParser extends Parser {
 						if (state.backtracking>0) {state.failed=true; return retval;}
 						throw new FailedPredicateException(input, "ftsFieldGroupDisjunction", "defaultFieldConjunction() == true");
 					}
-					pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupDisjunction4518);
+					pushFollow(FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupDisjunction4519);
 					ftsFieldGroupExplicitDisjunction122=ftsFieldGroupExplicitDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6370,7 +6342,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:632:11: {...}? ftsFieldGroupImplicitDisjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:632:11: {...}? ftsFieldGroupImplicitDisjunction
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -6379,7 +6351,7 @@ public class FTSParser extends Parser {
 						if (state.backtracking>0) {state.failed=true; return retval;}
 						throw new FailedPredicateException(input, "ftsFieldGroupDisjunction", "defaultFieldConjunction() == false");
 					}
-					pushFollow(FOLLOW_ftsFieldGroupImplicitDisjunction_in_ftsFieldGroupDisjunction4532);
+					pushFollow(FOLLOW_ftsFieldGroupImplicitDisjunction_in_ftsFieldGroupDisjunction4533);
 					ftsFieldGroupImplicitDisjunction123=ftsFieldGroupImplicitDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6418,7 +6390,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupExplicitDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:635:1: ftsFieldGroupExplicitDisjunction : ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:635:1: ftsFieldGroupExplicitDisjunction : ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ ) ;
 	public final FTSParser.ftsFieldGroupExplicitDisjunction_return ftsFieldGroupExplicitDisjunction() throws RecognitionException {
 		FTSParser.ftsFieldGroupExplicitDisjunction_return retval = new FTSParser.ftsFieldGroupExplicitDisjunction_return();
 		retval.start = input.LT(1);
@@ -6433,15 +6405,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_or=new RewriteRuleSubtreeStream(adaptor,"rule or");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:636:9: ( ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:9: ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:636:9: ( ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )* -> ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:9: ftsFieldGroupImplicitConjunction ( or ftsFieldGroupImplicitConjunction )*
 			{
-			pushFollow(FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4565);
+			pushFollow(FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4566);
 			ftsFieldGroupImplicitConjunction124=ftsFieldGroupImplicitConjunction();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsFieldGroupImplicitConjunction.add(ftsFieldGroupImplicitConjunction124.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:42: ( or ftsFieldGroupImplicitConjunction )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:42: ( or ftsFieldGroupImplicitConjunction )*
 			loop51:
 			while (true) {
 				int alt51=2;
@@ -6452,14 +6424,14 @@ public class FTSParser extends Parser {
 
 				switch (alt51) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:43: or ftsFieldGroupImplicitConjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:637:43: or ftsFieldGroupImplicitConjunction
 					{
-					pushFollow(FOLLOW_or_in_ftsFieldGroupExplicitDisjunction4568);
+					pushFollow(FOLLOW_or_in_ftsFieldGroupExplicitDisjunction4569);
 					or125=or();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_or.add(or125.getTree());
-					pushFollow(FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4570);
+					pushFollow(FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4571);
 					ftsFieldGroupImplicitConjunction126=ftsFieldGroupImplicitConjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6486,7 +6458,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 638:17: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:639:25: ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:639:25: ^( FIELD_DISJUNCTION ( ftsFieldGroupImplicitConjunction )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_DISJUNCTION, "FIELD_DISJUNCTION"), root_1);
@@ -6538,7 +6510,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupImplicitDisjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:642:1: ftsFieldGroupImplicitDisjunction : ( ( or )? ftsFieldGroupExplicitConjunction )+ -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:642:1: ftsFieldGroupImplicitDisjunction : ( ( or )? ftsFieldGroupExplicitConjunction )+ -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ ) ;
 	public final FTSParser.ftsFieldGroupImplicitDisjunction_return ftsFieldGroupImplicitDisjunction() throws RecognitionException {
 		FTSParser.ftsFieldGroupImplicitDisjunction_return retval = new FTSParser.ftsFieldGroupImplicitDisjunction_return();
 		retval.start = input.LT(1);
@@ -6552,10 +6524,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupExplicitConjunction=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExplicitConjunction");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:643:9: ( ( ( or )? ftsFieldGroupExplicitConjunction )+ -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:9: ( ( or )? ftsFieldGroupExplicitConjunction )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:643:9: ( ( ( or )? ftsFieldGroupExplicitConjunction )+ -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:9: ( ( or )? ftsFieldGroupExplicitConjunction )+
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:9: ( ( or )? ftsFieldGroupExplicitConjunction )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:9: ( ( or )? ftsFieldGroupExplicitConjunction )+
 			int cnt53=0;
 			loop53:
 			while (true) {
@@ -6567,9 +6539,9 @@ public class FTSParser extends Parser {
 
 				switch (alt53) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: ( or )? ftsFieldGroupExplicitConjunction
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: ( or )? ftsFieldGroupExplicitConjunction
 					{
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: ( or )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: ( or )?
 					int alt52=2;
 					int LA52_0 = input.LA(1);
 					if ( (LA52_0==OR) ) {
@@ -6583,9 +6555,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt52) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: or
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:644:10: or
 							{
-							pushFollow(FOLLOW_or_in_ftsFieldGroupImplicitDisjunction4655);
+							pushFollow(FOLLOW_or_in_ftsFieldGroupImplicitDisjunction4656);
 							or127=or();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -6595,7 +6567,7 @@ public class FTSParser extends Parser {
 
 					}
 
-					pushFollow(FOLLOW_ftsFieldGroupExplicitConjunction_in_ftsFieldGroupImplicitDisjunction4658);
+					pushFollow(FOLLOW_ftsFieldGroupExplicitConjunction_in_ftsFieldGroupImplicitDisjunction4659);
 					ftsFieldGroupExplicitConjunction128=ftsFieldGroupExplicitConjunction();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6626,7 +6598,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 645:17: -> ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:646:25: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:646:25: ^( FIELD_DISJUNCTION ( ftsFieldGroupExplicitConjunction )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_DISJUNCTION, "FIELD_DISJUNCTION"), root_1);
@@ -6678,7 +6650,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupExplicitConjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:653:1: ftsFieldGroupExplicitConjunction : ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:653:1: ftsFieldGroupExplicitConjunction : ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) ;
 	public final FTSParser.ftsFieldGroupExplicitConjunction_return ftsFieldGroupExplicitConjunction() throws RecognitionException {
 		FTSParser.ftsFieldGroupExplicitConjunction_return retval = new FTSParser.ftsFieldGroupExplicitConjunction_return();
 		retval.start = input.LT(1);
@@ -6693,15 +6665,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_and=new RewriteRuleSubtreeStream(adaptor,"rule and");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:654:9: ( ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:9: ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:654:9: ( ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )* -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:9: ftsFieldGroupPrefixed ( and ftsFieldGroupPrefixed )*
 			{
-			pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4745);
+			pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4746);
 			ftsFieldGroupPrefixed129=ftsFieldGroupPrefixed();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsFieldGroupPrefixed.add(ftsFieldGroupPrefixed129.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:31: ( and ftsFieldGroupPrefixed )*
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:31: ( and ftsFieldGroupPrefixed )*
 			loop54:
 			while (true) {
 				int alt54=2;
@@ -6712,14 +6684,14 @@ public class FTSParser extends Parser {
 
 				switch (alt54) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:32: and ftsFieldGroupPrefixed
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:655:32: and ftsFieldGroupPrefixed
 					{
-					pushFollow(FOLLOW_and_in_ftsFieldGroupExplicitConjunction4748);
+					pushFollow(FOLLOW_and_in_ftsFieldGroupExplicitConjunction4749);
 					and130=and();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_and.add(and130.getTree());
-					pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4750);
+					pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4751);
 					ftsFieldGroupPrefixed131=ftsFieldGroupPrefixed();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6746,7 +6718,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 656:17: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:657:25: ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:657:25: ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_CONJUNCTION, "FIELD_CONJUNCTION"), root_1);
@@ -6798,7 +6770,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupImplicitConjunction"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:660:1: ftsFieldGroupImplicitConjunction : ( ( and )? ftsFieldGroupPrefixed )+ -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:660:1: ftsFieldGroupImplicitConjunction : ( ( and )? ftsFieldGroupPrefixed )+ -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) ;
 	public final FTSParser.ftsFieldGroupImplicitConjunction_return ftsFieldGroupImplicitConjunction() throws RecognitionException {
 		FTSParser.ftsFieldGroupImplicitConjunction_return retval = new FTSParser.ftsFieldGroupImplicitConjunction_return();
 		retval.start = input.LT(1);
@@ -6812,10 +6784,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_and=new RewriteRuleSubtreeStream(adaptor,"rule and");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:661:9: ( ( ( and )? ftsFieldGroupPrefixed )+ -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:9: ( ( and )? ftsFieldGroupPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:661:9: ( ( ( and )? ftsFieldGroupPrefixed )+ -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:9: ( ( and )? ftsFieldGroupPrefixed )+
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:9: ( ( and )? ftsFieldGroupPrefixed )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:9: ( ( and )? ftsFieldGroupPrefixed )+
 			int cnt56=0;
 			loop56:
 			while (true) {
@@ -6834,9 +6806,9 @@ public class FTSParser extends Parser {
 
 				switch (alt56) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: ( and )? ftsFieldGroupPrefixed
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: ( and )? ftsFieldGroupPrefixed
 					{
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: ( and )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: ( and )?
 					int alt55=2;
 					int LA55_0 = input.LA(1);
 					if ( ((LA55_0 >= AMP && LA55_0 <= AND)) ) {
@@ -6844,9 +6816,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt55) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: and
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:662:10: and
 							{
-							pushFollow(FOLLOW_and_in_ftsFieldGroupImplicitConjunction4835);
+							pushFollow(FOLLOW_and_in_ftsFieldGroupImplicitConjunction4836);
 							and132=and();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -6856,7 +6828,7 @@ public class FTSParser extends Parser {
 
 					}
 
-					pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupImplicitConjunction4838);
+					pushFollow(FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupImplicitConjunction4839);
 					ftsFieldGroupPrefixed133=ftsFieldGroupPrefixed();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -6887,7 +6859,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 663:17: -> ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:664:25: ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:664:25: ^( FIELD_CONJUNCTION ( ftsFieldGroupPrefixed )+ )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_CONJUNCTION, "FIELD_CONJUNCTION"), root_1);
@@ -6939,7 +6911,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupPrefixed"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:667:1: ftsFieldGroupPrefixed : ( ( not )=> not ftsFieldGroupTest ( boost )? -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? ) | ftsFieldGroupTest ( boost )? -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? ) | PLUS ftsFieldGroupTest ( boost )? -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? ) | BAR ftsFieldGroupTest ( boost )? -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? ) | MINUS ftsFieldGroupTest ( boost )? -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? ) );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:667:1: ftsFieldGroupPrefixed : ( ( not )=> not ftsFieldGroupTest ( boost )? -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? ) | ftsFieldGroupTest ( boost )? -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? ) | PLUS ftsFieldGroupTest ( boost )? -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? ) | BAR ftsFieldGroupTest ( boost )? -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? ) | MINUS ftsFieldGroupTest ( boost )? -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? ) );
 	public final FTSParser.ftsFieldGroupPrefixed_return ftsFieldGroupPrefixed() throws RecognitionException {
 		FTSParser.ftsFieldGroupPrefixed_return retval = new FTSParser.ftsFieldGroupPrefixed_return();
 		retval.start = input.LT(1);
@@ -6972,7 +6944,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_boost=new RewriteRuleSubtreeStream(adaptor,"rule boost");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:668:9: ( ( not )=> not ftsFieldGroupTest ( boost )? -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? ) | ftsFieldGroupTest ( boost )? -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? ) | PLUS ftsFieldGroupTest ( boost )? -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? ) | BAR ftsFieldGroupTest ( boost )? -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? ) | MINUS ftsFieldGroupTest ( boost )? -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:668:9: ( ( not )=> not ftsFieldGroupTest ( boost )? -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? ) | ftsFieldGroupTest ( boost )? -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? ) | PLUS ftsFieldGroupTest ( boost )? -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? ) | BAR ftsFieldGroupTest ( boost )? -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? ) | MINUS ftsFieldGroupTest ( boost )? -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? ) )
 			int alt62=5;
 			int LA62_0 = input.LA(1);
 			if ( (LA62_0==NOT) ) {
@@ -7010,19 +6982,19 @@ public class FTSParser extends Parser {
 
 			switch (alt62) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:9: ( not )=> not ftsFieldGroupTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:9: ( not )=> not ftsFieldGroupTest ( boost )?
 					{
-					pushFollow(FOLLOW_not_in_ftsFieldGroupPrefixed4928);
+					pushFollow(FOLLOW_not_in_ftsFieldGroupPrefixed4929);
 					not134=not();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_not.add(not134.getTree());
-					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4930);
+					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4931);
 					ftsFieldGroupTest135=ftsFieldGroupTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTest.add(ftsFieldGroupTest135.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:40: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:40: ( boost )?
 					int alt57=2;
 					int LA57_0 = input.LA(1);
 					if ( (LA57_0==CARAT) ) {
@@ -7030,9 +7002,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt57) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:40: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:40: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed4932);
+							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed4933);
 							boost136=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7043,7 +7015,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: boost, ftsFieldGroupTest
+					// elements: ftsFieldGroupTest, boost
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7056,12 +7028,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 670:17: -> ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:671:25: ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:671:25: ^( FIELD_NEGATION ftsFieldGroupTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_NEGATION, "FIELD_NEGATION"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:671:60: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:671:60: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -7079,14 +7051,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:11: ftsFieldGroupTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:11: ftsFieldGroupTest ( boost )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4996);
+					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4997);
 					ftsFieldGroupTest137=ftsFieldGroupTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTest.add(ftsFieldGroupTest137.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:29: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:29: ( boost )?
 					int alt58=2;
 					int LA58_0 = input.LA(1);
 					if ( (LA58_0==CARAT) ) {
@@ -7094,9 +7066,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt58) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:29: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:672:29: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed4998);
+							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed4999);
 							boost138=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7107,7 +7079,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupTest, boost
+					// elements: boost, ftsFieldGroupTest
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7120,12 +7092,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 673:17: -> ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:674:25: ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:674:25: ^( FIELD_DEFAULT ftsFieldGroupTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_DEFAULT, "FIELD_DEFAULT"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:674:59: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:674:59: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -7143,17 +7115,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:11: PLUS ftsFieldGroupTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:11: PLUS ftsFieldGroupTest ( boost )?
 					{
-					PLUS139=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsFieldGroupPrefixed5062); if (state.failed) return retval; 
+					PLUS139=(Token)match(input,PLUS,FOLLOW_PLUS_in_ftsFieldGroupPrefixed5063); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_PLUS.add(PLUS139);
 
-					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5064);
+					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5065);
 					ftsFieldGroupTest140=ftsFieldGroupTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTest.add(ftsFieldGroupTest140.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:34: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:34: ( boost )?
 					int alt59=2;
 					int LA59_0 = input.LA(1);
 					if ( (LA59_0==CARAT) ) {
@@ -7161,9 +7133,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt59) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:34: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:675:34: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5066);
+							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5067);
 							boost141=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7174,7 +7146,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupTest, boost
+					// elements: boost, ftsFieldGroupTest
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7187,12 +7159,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 676:17: -> ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:677:25: ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:677:25: ^( FIELD_MANDATORY ftsFieldGroupTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_MANDATORY, "FIELD_MANDATORY"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:677:61: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:677:61: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -7210,17 +7182,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:11: BAR ftsFieldGroupTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:11: BAR ftsFieldGroupTest ( boost )?
 					{
-					BAR142=(Token)match(input,BAR,FOLLOW_BAR_in_ftsFieldGroupPrefixed5130); if (state.failed) return retval; 
+					BAR142=(Token)match(input,BAR,FOLLOW_BAR_in_ftsFieldGroupPrefixed5131); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_BAR.add(BAR142);
 
-					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5132);
+					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5133);
 					ftsFieldGroupTest143=ftsFieldGroupTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTest.add(ftsFieldGroupTest143.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:33: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:33: ( boost )?
 					int alt60=2;
 					int LA60_0 = input.LA(1);
 					if ( (LA60_0==CARAT) ) {
@@ -7228,9 +7200,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt60) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:33: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:678:33: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5134);
+							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5135);
 							boost144=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7254,12 +7226,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 679:17: -> ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:680:25: ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:680:25: ^( FIELD_OPTIONAL ftsFieldGroupTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_OPTIONAL, "FIELD_OPTIONAL"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:680:60: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:680:60: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -7277,17 +7249,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:11: MINUS ftsFieldGroupTest ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:11: MINUS ftsFieldGroupTest ( boost )?
 					{
-					MINUS145=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsFieldGroupPrefixed5198); if (state.failed) return retval; 
+					MINUS145=(Token)match(input,MINUS,FOLLOW_MINUS_in_ftsFieldGroupPrefixed5199); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_MINUS.add(MINUS145);
 
-					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5200);
+					pushFollow(FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5201);
 					ftsFieldGroupTest146=ftsFieldGroupTest();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTest.add(ftsFieldGroupTest146.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:35: ( boost )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:35: ( boost )?
 					int alt61=2;
 					int LA61_0 = input.LA(1);
 					if ( (LA61_0==CARAT) ) {
@@ -7295,9 +7267,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt61) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:35: boost
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:681:35: boost
 							{
-							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5202);
+							pushFollow(FOLLOW_boost_in_ftsFieldGroupPrefixed5203);
 							boost147=boost();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7308,7 +7280,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: boost, ftsFieldGroupTest
+					// elements: ftsFieldGroupTest, boost
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7321,12 +7293,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 682:17: -> ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:683:25: ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:683:25: ^( FIELD_EXCLUDE ftsFieldGroupTest ( boost )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_EXCLUDE, "FIELD_EXCLUDE"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTest.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:683:59: ( boost )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:683:59: ( boost )?
 						if ( stream_boost.hasNext() ) {
 							adaptor.addChild(root_1, stream_boost.nextTree());
 						}
@@ -7374,7 +7346,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupTest"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:686:1: ftsFieldGroupTest : ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? ) | ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? ) | ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? ) | ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )? -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? ) | ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? ) | ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )? -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? ) | ( ftsFieldGroupRange )=> ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupDisjunction RPAREN -> ftsFieldGroupDisjunction );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:686:1: ftsFieldGroupTest : ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? ) | ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? ) | ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? ) | ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )? -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? ) | ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? ) | ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )? -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? ) | ( ftsFieldGroupRange )=> ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupDisjunction RPAREN -> ftsFieldGroupDisjunction );
 	public final FTSParser.ftsFieldGroupTest_return ftsFieldGroupTest() throws RecognitionException {
 		FTSParser.ftsFieldGroupTest_return retval = new FTSParser.ftsFieldGroupTest_return();
 		retval.start = input.LT(1);
@@ -7416,14 +7388,14 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_slop=new RewriteRuleSubtreeStream(adaptor,"rule slop");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:687:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? ) | ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? ) | ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? ) | ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )? -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? ) | ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? ) | ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )? -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? ) | ( ftsFieldGroupRange )=> ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupDisjunction RPAREN -> ftsFieldGroupDisjunction )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:687:9: ( ( ftsFieldGroupProximity )=> ftsFieldGroupProximity -> ^( FG_PROXIMITY ftsFieldGroupProximity ) | ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? ) | ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )? -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? ) | ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? ) | ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )? -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? ) | ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )? -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? ) | ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )? -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? ) | ( ftsFieldGroupRange )=> ftsFieldGroupRange -> ^( FG_RANGE ftsFieldGroupRange ) | LPAREN ftsFieldGroupDisjunction RPAREN -> ftsFieldGroupDisjunction )
 			int alt69=9;
 			alt69 = dfa69.predict(input);
 			switch (alt69) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:9: ( ftsFieldGroupProximity )=> ftsFieldGroupProximity
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:9: ( ftsFieldGroupProximity )=> ftsFieldGroupProximity
 					{
-					pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest5293);
+					pushFollow(FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest5294);
 					ftsFieldGroupProximity148=ftsFieldGroupProximity();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -7442,7 +7414,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 689:17: -> ^( FG_PROXIMITY ftsFieldGroupProximity )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:690:25: ^( FG_PROXIMITY ftsFieldGroupProximity )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:690:25: ^( FG_PROXIMITY ftsFieldGroupProximity )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PROXIMITY, "FG_PROXIMITY"), root_1);
@@ -7459,14 +7431,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:11: ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:11: ( ftsFieldGroupTerm )=> ftsFieldGroupTerm ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest5359);
+					pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest5360);
 					ftsFieldGroupTerm149=ftsFieldGroupTerm();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTerm.add(ftsFieldGroupTerm149.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:52: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:52: ( ( fuzzy )=> fuzzy )?
 					int alt63=2;
 					int LA63_0 = input.LA(1);
 					if ( (LA63_0==TILDA) ) {
@@ -7486,9 +7458,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt63) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:54: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:54: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5369);
+							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5370);
 							fuzzy150=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7512,12 +7484,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 692:17: -> ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:693:25: ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:693:25: ^( FG_TERM ftsFieldGroupTerm ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_TERM, "FG_TERM"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTerm.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:693:53: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:693:53: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -7535,14 +7507,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:11: ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:11: ( ftsFieldGroupExactTerm )=> ftsFieldGroupExactTerm ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest5440);
+					pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest5441);
 					ftsFieldGroupExactTerm151=ftsFieldGroupExactTerm();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupExactTerm.add(ftsFieldGroupExactTerm151.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:62: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:62: ( ( fuzzy )=> fuzzy )?
 					int alt64=2;
 					int LA64_0 = input.LA(1);
 					if ( (LA64_0==TILDA) ) {
@@ -7562,9 +7534,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt64) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:64: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:64: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5450);
+							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5451);
 							fuzzy152=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7575,7 +7547,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: fuzzy, ftsFieldGroupExactTerm
+					// elements: ftsFieldGroupExactTerm, fuzzy
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7588,12 +7560,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 695:17: -> ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:696:25: ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:696:25: ^( FG_EXACT_TERM ftsFieldGroupExactTerm ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_EXACT_TERM, "FG_EXACT_TERM"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupExactTerm.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:696:64: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:696:64: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -7611,14 +7583,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:11: ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:11: ( ftsFieldGroupPhrase )=> ftsFieldGroupPhrase ( ( slop )=> slop )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest5521);
+					pushFollow(FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest5522);
 					ftsFieldGroupPhrase153=ftsFieldGroupPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupPhrase.add(ftsFieldGroupPhrase153.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:56: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:56: ( ( slop )=> slop )?
 					int alt65=2;
 					int LA65_0 = input.LA(1);
 					if ( (LA65_0==TILDA) ) {
@@ -7632,9 +7604,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt65) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:58: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:58: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5531);
+							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5532);
 							slop154=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7645,7 +7617,7 @@ public class FTSParser extends Parser {
 					}
 
 					// AST REWRITE
-					// elements: ftsFieldGroupPhrase, slop
+					// elements: slop, ftsFieldGroupPhrase
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -7658,12 +7630,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 698:17: -> ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:699:25: ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:699:25: ^( FG_PHRASE ftsFieldGroupPhrase ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PHRASE, "FG_PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupPhrase.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:699:57: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:699:57: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -7681,14 +7653,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:11: ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:11: ( ftsFieldGroupExactPhrase )=> ftsFieldGroupExactPhrase ( ( slop )=> slop )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTest5602);
+					pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTest5603);
 					ftsFieldGroupExactPhrase155=ftsFieldGroupExactPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupExactPhrase.add(ftsFieldGroupExactPhrase155.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:66: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:66: ( ( slop )=> slop )?
 					int alt66=2;
 					int LA66_0 = input.LA(1);
 					if ( (LA66_0==TILDA) ) {
@@ -7702,9 +7674,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt66) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:68: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:68: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5612);
+							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5613);
 							slop156=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7728,12 +7700,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 701:17: -> ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:702:25: ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:702:25: ^( FG_EXACT_PHRASE ftsFieldGroupExactPhrase ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_EXACT_PHRASE, "FG_EXACT_PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupExactPhrase.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:702:68: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:702:68: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -7751,14 +7723,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:11: ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:11: ( ftsFieldGroupTokenisedPhrase )=> ftsFieldGroupTokenisedPhrase ( ( slop )=> slop )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupTokenisedPhrase_in_ftsFieldGroupTest5683);
+					pushFollow(FOLLOW_ftsFieldGroupTokenisedPhrase_in_ftsFieldGroupTest5684);
 					ftsFieldGroupTokenisedPhrase157=ftsFieldGroupTokenisedPhrase();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupTokenisedPhrase.add(ftsFieldGroupTokenisedPhrase157.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:74: ( ( slop )=> slop )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:74: ( ( slop )=> slop )?
 					int alt67=2;
 					int LA67_0 = input.LA(1);
 					if ( (LA67_0==TILDA) ) {
@@ -7772,9 +7744,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt67) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:76: ( slop )=> slop
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:76: ( slop )=> slop
 							{
-							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5693);
+							pushFollow(FOLLOW_slop_in_ftsFieldGroupTest5694);
 							slop158=slop();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7798,12 +7770,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 704:17: -> ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:705:25: ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:705:25: ^( FG_PHRASE ftsFieldGroupTokenisedPhrase ( slop )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_PHRASE, "FG_PHRASE"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupTokenisedPhrase.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:705:66: ( slop )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:705:66: ( slop )?
 						if ( stream_slop.hasNext() ) {
 							adaptor.addChild(root_1, stream_slop.nextTree());
 						}
@@ -7821,14 +7793,14 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:11: ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:11: ( ftsFieldGroupSynonym )=> ftsFieldGroupSynonym ( ( fuzzy )=> fuzzy )?
 					{
-					pushFollow(FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest5764);
+					pushFollow(FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest5765);
 					ftsFieldGroupSynonym159=ftsFieldGroupSynonym();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupSynonym.add(ftsFieldGroupSynonym159.getTree());
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:58: ( ( fuzzy )=> fuzzy )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:58: ( ( fuzzy )=> fuzzy )?
 					int alt68=2;
 					int LA68_0 = input.LA(1);
 					if ( (LA68_0==TILDA) ) {
@@ -7848,9 +7820,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt68) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:60: ( fuzzy )=> fuzzy
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:60: ( fuzzy )=> fuzzy
 							{
-							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5774);
+							pushFollow(FOLLOW_fuzzy_in_ftsFieldGroupTest5775);
 							fuzzy160=fuzzy();
 							state._fsp--;
 							if (state.failed) return retval;
@@ -7874,12 +7846,12 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 707:17: -> ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:708:25: ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:708:25: ^( FG_SYNONYM ftsFieldGroupSynonym ( fuzzy )? )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_SYNONYM, "FG_SYNONYM"), root_1);
 						adaptor.addChild(root_1, stream_ftsFieldGroupSynonym.nextTree());
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:708:59: ( fuzzy )?
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:708:59: ( fuzzy )?
 						if ( stream_fuzzy.hasNext() ) {
 							adaptor.addChild(root_1, stream_fuzzy.nextTree());
 						}
@@ -7897,9 +7869,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:11: ( ftsFieldGroupRange )=> ftsFieldGroupRange
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:11: ( ftsFieldGroupRange )=> ftsFieldGroupRange
 					{
-					pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest5845);
+					pushFollow(FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest5846);
 					ftsFieldGroupRange161=ftsFieldGroupRange();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -7918,7 +7890,7 @@ public class FTSParser extends Parser {
 					root_0 = (Object)adaptor.nil();
 					// 710:17: -> ^( FG_RANGE ftsFieldGroupRange )
 					{
-						// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:711:25: ^( FG_RANGE ftsFieldGroupRange )
+						// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:711:25: ^( FG_RANGE ftsFieldGroupRange )
 						{
 						Object root_1 = (Object)adaptor.nil();
 						root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FG_RANGE, "FG_RANGE"), root_1);
@@ -7935,17 +7907,17 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 9 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:712:11: LPAREN ftsFieldGroupDisjunction RPAREN
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:712:11: LPAREN ftsFieldGroupDisjunction RPAREN
 					{
-					LPAREN162=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroupTest5905); if (state.failed) return retval; 
+					LPAREN162=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_ftsFieldGroupTest5906); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN162);
 
-					pushFollow(FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroupTest5907);
+					pushFollow(FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroupTest5908);
 					ftsFieldGroupDisjunction163=ftsFieldGroupDisjunction();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsFieldGroupDisjunction.add(ftsFieldGroupDisjunction163.getTree());
-					RPAREN164=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroupTest5909); if (state.failed) return retval; 
+					RPAREN164=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_ftsFieldGroupTest5910); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN164);
 
 					// AST REWRITE
@@ -8002,7 +7974,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupTerm"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:716:1: ftsFieldGroupTerm : ftsWord ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:716:1: ftsFieldGroupTerm : ftsWord ;
 	public final FTSParser.ftsFieldGroupTerm_return ftsFieldGroupTerm() throws RecognitionException {
 		FTSParser.ftsFieldGroupTerm_return retval = new FTSParser.ftsFieldGroupTerm_return();
 		retval.start = input.LT(1);
@@ -8013,13 +7985,13 @@ public class FTSParser extends Parser {
 
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:717:9: ( ftsWord )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:718:9: ftsWord
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:717:9: ( ftsWord )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:718:9: ftsWord
 			{
 			root_0 = (Object)adaptor.nil();
 
 
-			pushFollow(FOLLOW_ftsWord_in_ftsFieldGroupTerm5962);
+			pushFollow(FOLLOW_ftsWord_in_ftsFieldGroupTerm5963);
 			ftsWord165=ftsWord();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -8056,7 +8028,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupExactTerm"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:721:1: ftsFieldGroupExactTerm : EQUALS ftsFieldGroupTerm -> ftsFieldGroupTerm ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:721:1: ftsFieldGroupExactTerm : EQUALS ftsFieldGroupTerm -> ftsFieldGroupTerm ;
 	public final FTSParser.ftsFieldGroupExactTerm_return ftsFieldGroupExactTerm() throws RecognitionException {
 		FTSParser.ftsFieldGroupExactTerm_return retval = new FTSParser.ftsFieldGroupExactTerm_return();
 		retval.start = input.LT(1);
@@ -8071,13 +8043,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:722:9: ( EQUALS ftsFieldGroupTerm -> ftsFieldGroupTerm )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:723:9: EQUALS ftsFieldGroupTerm
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:722:9: ( EQUALS ftsFieldGroupTerm -> ftsFieldGroupTerm )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:723:9: EQUALS ftsFieldGroupTerm
 			{
-			EQUALS166=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsFieldGroupExactTerm5995); if (state.failed) return retval; 
+			EQUALS166=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsFieldGroupExactTerm5996); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_EQUALS.add(EQUALS166);
 
-			pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm5997);
+			pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm5998);
 			ftsFieldGroupTerm167=ftsFieldGroupTerm();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -8134,7 +8106,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:727:1: ftsFieldGroupPhrase : FTSPHRASE ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:727:1: ftsFieldGroupPhrase : FTSPHRASE ;
 	public final FTSParser.ftsFieldGroupPhrase_return ftsFieldGroupPhrase() throws RecognitionException {
 		FTSParser.ftsFieldGroupPhrase_return retval = new FTSParser.ftsFieldGroupPhrase_return();
 		retval.start = input.LT(1);
@@ -8146,13 +8118,13 @@ public class FTSParser extends Parser {
 		Object FTSPHRASE168_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:728:9: ( FTSPHRASE )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:729:9: FTSPHRASE
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:728:9: ( FTSPHRASE )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:729:9: FTSPHRASE
 			{
 			root_0 = (Object)adaptor.nil();
 
 
-			FTSPHRASE168=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase6050); if (state.failed) return retval;
+			FTSPHRASE168=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase6051); if (state.failed) return retval;
 			if ( state.backtracking==0 ) {
 			FTSPHRASE168_tree = (Object)adaptor.create(FTSPHRASE168);
 			adaptor.addChild(root_0, FTSPHRASE168_tree);
@@ -8189,7 +8161,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupExactPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:732:1: ftsFieldGroupExactPhrase : EQUALS ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:732:1: ftsFieldGroupExactPhrase : EQUALS ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase ;
 	public final FTSParser.ftsFieldGroupExactPhrase_return ftsFieldGroupExactPhrase() throws RecognitionException {
 		FTSParser.ftsFieldGroupExactPhrase_return retval = new FTSParser.ftsFieldGroupExactPhrase_return();
 		retval.start = input.LT(1);
@@ -8204,13 +8176,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupExactPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactPhrase");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:733:9: ( EQUALS ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:734:9: EQUALS ftsFieldGroupExactPhrase
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:733:9: ( EQUALS ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:734:9: EQUALS ftsFieldGroupExactPhrase
 			{
-			EQUALS169=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsFieldGroupExactPhrase6091); if (state.failed) return retval; 
+			EQUALS169=(Token)match(input,EQUALS,FOLLOW_EQUALS_in_ftsFieldGroupExactPhrase6092); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_EQUALS.add(EQUALS169);
 
-			pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupExactPhrase6093);
+			pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupExactPhrase6094);
 			ftsFieldGroupExactPhrase170=ftsFieldGroupExactPhrase();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -8267,7 +8239,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupTokenisedPhrase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:738:1: ftsFieldGroupTokenisedPhrase : TILDA ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:738:1: ftsFieldGroupTokenisedPhrase : TILDA ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase ;
 	public final FTSParser.ftsFieldGroupTokenisedPhrase_return ftsFieldGroupTokenisedPhrase() throws RecognitionException {
 		FTSParser.ftsFieldGroupTokenisedPhrase_return retval = new FTSParser.ftsFieldGroupTokenisedPhrase_return();
 		retval.start = input.LT(1);
@@ -8282,13 +8254,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupExactPhrase=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupExactPhrase");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:739:9: ( TILDA ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:740:9: TILDA ftsFieldGroupExactPhrase
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:739:9: ( TILDA ftsFieldGroupExactPhrase -> ftsFieldGroupExactPhrase )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:740:9: TILDA ftsFieldGroupExactPhrase
 			{
-			TILDA171=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupTokenisedPhrase6154); if (state.failed) return retval; 
+			TILDA171=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupTokenisedPhrase6155); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_TILDA.add(TILDA171);
 
-			pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTokenisedPhrase6156);
+			pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTokenisedPhrase6157);
 			ftsFieldGroupExactPhrase172=ftsFieldGroupExactPhrase();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -8345,7 +8317,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupSynonym"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:744:1: ftsFieldGroupSynonym : TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:744:1: ftsFieldGroupSynonym : TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm ;
 	public final FTSParser.ftsFieldGroupSynonym_return ftsFieldGroupSynonym() throws RecognitionException {
 		FTSParser.ftsFieldGroupSynonym_return retval = new FTSParser.ftsFieldGroupSynonym_return();
 		retval.start = input.LT(1);
@@ -8360,13 +8332,13 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupTerm");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:745:9: ( TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:746:9: TILDA ftsFieldGroupTerm
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:745:9: ( TILDA ftsFieldGroupTerm -> ftsFieldGroupTerm )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:746:9: TILDA ftsFieldGroupTerm
 			{
-			TILDA173=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupSynonym6209); if (state.failed) return retval; 
+			TILDA173=(Token)match(input,TILDA,FOLLOW_TILDA_in_ftsFieldGroupSynonym6210); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_TILDA.add(TILDA173);
 
-			pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym6211);
+			pushFollow(FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym6212);
 			ftsFieldGroupTerm174=ftsFieldGroupTerm();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -8423,7 +8395,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupProximity"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:750:1: ftsFieldGroupProximity : ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+ -> ftsFieldGroupProximityTerm ( proximityGroup ftsFieldGroupProximityTerm )+ ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:750:1: ftsFieldGroupProximity : ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+ -> ftsFieldGroupProximityTerm ( proximityGroup ftsFieldGroupProximityTerm )+ ;
 	public final FTSParser.ftsFieldGroupProximity_return ftsFieldGroupProximity() throws RecognitionException {
 		FTSParser.ftsFieldGroupProximity_return retval = new FTSParser.ftsFieldGroupProximity_return();
 		retval.start = input.LT(1);
@@ -8438,15 +8410,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_ftsFieldGroupProximityTerm=new RewriteRuleSubtreeStream(adaptor,"rule ftsFieldGroupProximityTerm");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:751:9: ( ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+ -> ftsFieldGroupProximityTerm ( proximityGroup ftsFieldGroupProximityTerm )+ )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:9: ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:751:9: ( ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+ -> ftsFieldGroupProximityTerm ( proximityGroup ftsFieldGroupProximityTerm )+ )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:9: ftsFieldGroupProximityTerm ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+
 			{
-			pushFollow(FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6264);
+			pushFollow(FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6265);
 			ftsFieldGroupProximityTerm175=ftsFieldGroupProximityTerm();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_ftsFieldGroupProximityTerm.add(ftsFieldGroupProximityTerm175.getTree());
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:36: ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:36: ( ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm )+
 			int cnt70=0;
 			loop70:
 			while (true) {
@@ -8758,14 +8730,14 @@ public class FTSParser extends Parser {
 
 				switch (alt70) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:38: ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:38: ( proximityGroup )=> proximityGroup ftsFieldGroupProximityTerm
 					{
-					pushFollow(FOLLOW_proximityGroup_in_ftsFieldGroupProximity6274);
+					pushFollow(FOLLOW_proximityGroup_in_ftsFieldGroupProximity6275);
 					proximityGroup176=proximityGroup();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_proximityGroup.add(proximityGroup176.getTree());
-					pushFollow(FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6276);
+					pushFollow(FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6277);
 					ftsFieldGroupProximityTerm177=ftsFieldGroupProximityTerm();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -8844,7 +8816,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupProximityTerm"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:756:1: ftsFieldGroupProximityTerm : ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:756:1: ftsFieldGroupProximityTerm : ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier );
 	public final FTSParser.ftsFieldGroupProximityTerm_return ftsFieldGroupProximityTerm() throws RecognitionException {
 		FTSParser.ftsFieldGroupProximityTerm_return retval = new FTSParser.ftsFieldGroupProximityTerm_return();
 		retval.start = input.LT(1);
@@ -8877,7 +8849,7 @@ public class FTSParser extends Parser {
 		Object URI188_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:757:9: ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:757:9: ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier )
 			int alt71=11;
 			switch ( input.LA(1) ) {
 			case ID:
@@ -8943,12 +8915,12 @@ public class FTSParser extends Parser {
 			}
 			switch (alt71) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:758:11: ID
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:758:11: ID
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					ID178=(Token)match(input,ID,FOLLOW_ID_in_ftsFieldGroupProximityTerm6340); if (state.failed) return retval;
+					ID178=(Token)match(input,ID,FOLLOW_ID_in_ftsFieldGroupProximityTerm6341); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					ID178_tree = (Object)adaptor.create(ID178);
 					adaptor.addChild(root_0, ID178_tree);
@@ -8957,12 +8929,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:759:11: FTSWORD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:759:11: FTSWORD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWORD179=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsFieldGroupProximityTerm6352); if (state.failed) return retval;
+					FTSWORD179=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsFieldGroupProximityTerm6353); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWORD179_tree = (Object)adaptor.create(FTSWORD179);
 					adaptor.addChild(root_0, FTSWORD179_tree);
@@ -8971,12 +8943,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:760:11: FTSPRE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:760:11: FTSPRE
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSPRE180=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsFieldGroupProximityTerm6364); if (state.failed) return retval;
+					FTSPRE180=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsFieldGroupProximityTerm6365); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSPRE180_tree = (Object)adaptor.create(FTSPRE180);
 					adaptor.addChild(root_0, FTSPRE180_tree);
@@ -8985,12 +8957,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:761:11: FTSWILD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:761:11: FTSWILD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWILD181=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsFieldGroupProximityTerm6376); if (state.failed) return retval;
+					FTSWILD181=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsFieldGroupProximityTerm6377); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWILD181_tree = (Object)adaptor.create(FTSWILD181);
 					adaptor.addChild(root_0, FTSWILD181_tree);
@@ -8999,12 +8971,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:762:11: NOT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:762:11: NOT
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					NOT182=(Token)match(input,NOT,FOLLOW_NOT_in_ftsFieldGroupProximityTerm6388); if (state.failed) return retval;
+					NOT182=(Token)match(input,NOT,FOLLOW_NOT_in_ftsFieldGroupProximityTerm6389); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					NOT182_tree = (Object)adaptor.create(NOT182);
 					adaptor.addChild(root_0, NOT182_tree);
@@ -9013,12 +8985,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:763:11: TO
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:763:11: TO
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					TO183=(Token)match(input,TO,FOLLOW_TO_in_ftsFieldGroupProximityTerm6400); if (state.failed) return retval;
+					TO183=(Token)match(input,TO,FOLLOW_TO_in_ftsFieldGroupProximityTerm6401); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					TO183_tree = (Object)adaptor.create(TO183);
 					adaptor.addChild(root_0, TO183_tree);
@@ -9027,12 +8999,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:764:11: DECIMAL_INTEGER_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:764:11: DECIMAL_INTEGER_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DECIMAL_INTEGER_LITERAL184=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsFieldGroupProximityTerm6412); if (state.failed) return retval;
+					DECIMAL_INTEGER_LITERAL184=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsFieldGroupProximityTerm6413); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DECIMAL_INTEGER_LITERAL184_tree = (Object)adaptor.create(DECIMAL_INTEGER_LITERAL184);
 					adaptor.addChild(root_0, DECIMAL_INTEGER_LITERAL184_tree);
@@ -9041,12 +9013,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:765:11: FLOATING_POINT_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:765:11: FLOATING_POINT_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FLOATING_POINT_LITERAL185=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsFieldGroupProximityTerm6424); if (state.failed) return retval;
+					FLOATING_POINT_LITERAL185=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsFieldGroupProximityTerm6425); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FLOATING_POINT_LITERAL185_tree = (Object)adaptor.create(FLOATING_POINT_LITERAL185);
 					adaptor.addChild(root_0, FLOATING_POINT_LITERAL185_tree);
@@ -9055,12 +9027,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 9 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:766:11: DATETIME
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:766:11: DATETIME
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DATETIME186=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsFieldGroupProximityTerm6436); if (state.failed) return retval;
+					DATETIME186=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsFieldGroupProximityTerm6437); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DATETIME186_tree = (Object)adaptor.create(DATETIME186);
 					adaptor.addChild(root_0, DATETIME186_tree);
@@ -9069,12 +9041,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 10 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:767:11: STAR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:767:11: STAR
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					STAR187=(Token)match(input,STAR,FOLLOW_STAR_in_ftsFieldGroupProximityTerm6448); if (state.failed) return retval;
+					STAR187=(Token)match(input,STAR,FOLLOW_STAR_in_ftsFieldGroupProximityTerm6449); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					STAR187_tree = (Object)adaptor.create(STAR187);
 					adaptor.addChild(root_0, STAR187_tree);
@@ -9083,18 +9055,18 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 11 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:768:11: URI identifier
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:768:11: URI identifier
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					URI188=(Token)match(input,URI,FOLLOW_URI_in_ftsFieldGroupProximityTerm6460); if (state.failed) return retval;
+					URI188=(Token)match(input,URI,FOLLOW_URI_in_ftsFieldGroupProximityTerm6461); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					URI188_tree = (Object)adaptor.create(URI188);
 					adaptor.addChild(root_0, URI188_tree);
 					}
 
-					pushFollow(FOLLOW_identifier_in_ftsFieldGroupProximityTerm6462);
+					pushFollow(FOLLOW_identifier_in_ftsFieldGroupProximityTerm6463);
 					identifier189=identifier();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -9133,7 +9105,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "proximityGroup"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:771:1: proximityGroup : STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )? -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:771:1: proximityGroup : STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )? -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? ) ;
 	public final FTSParser.proximityGroup_return proximityGroup() throws RecognitionException {
 		FTSParser.proximityGroup_return retval = new FTSParser.proximityGroup_return();
 		retval.start = input.LT(1);
@@ -9155,13 +9127,13 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_RPAREN=new RewriteRuleTokenStream(adaptor,"token RPAREN");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:772:9: ( STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )? -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:9: STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:772:9: ( STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )? -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:9: STAR ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )?
 			{
-			STAR190=(Token)match(input,STAR,FOLLOW_STAR_in_proximityGroup6495); if (state.failed) return retval; 
+			STAR190=(Token)match(input,STAR,FOLLOW_STAR_in_proximityGroup6496); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_STAR.add(STAR190);
 
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:14: ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:14: ( LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN )?
 			int alt73=2;
 			int LA73_0 = input.LA(1);
 			if ( (LA73_0==LPAREN) ) {
@@ -9169,12 +9141,12 @@ public class FTSParser extends Parser {
 			}
 			switch (alt73) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:15: LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:15: LPAREN ( DECIMAL_INTEGER_LITERAL )? RPAREN
 					{
-					LPAREN191=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_proximityGroup6498); if (state.failed) return retval; 
+					LPAREN191=(Token)match(input,LPAREN,FOLLOW_LPAREN_in_proximityGroup6499); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LPAREN.add(LPAREN191);
 
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:22: ( DECIMAL_INTEGER_LITERAL )?
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:22: ( DECIMAL_INTEGER_LITERAL )?
 					int alt72=2;
 					int LA72_0 = input.LA(1);
 					if ( (LA72_0==DECIMAL_INTEGER_LITERAL) ) {
@@ -9182,9 +9154,9 @@ public class FTSParser extends Parser {
 					}
 					switch (alt72) {
 						case 1 :
-							// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:22: DECIMAL_INTEGER_LITERAL
+							// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:773:22: DECIMAL_INTEGER_LITERAL
 							{
-							DECIMAL_INTEGER_LITERAL192=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_proximityGroup6500); if (state.failed) return retval; 
+							DECIMAL_INTEGER_LITERAL192=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_proximityGroup6501); if (state.failed) return retval; 
 							if ( state.backtracking==0 ) stream_DECIMAL_INTEGER_LITERAL.add(DECIMAL_INTEGER_LITERAL192);
 
 							}
@@ -9192,7 +9164,7 @@ public class FTSParser extends Parser {
 
 					}
 
-					RPAREN193=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_proximityGroup6503); if (state.failed) return retval; 
+					RPAREN193=(Token)match(input,RPAREN,FOLLOW_RPAREN_in_proximityGroup6504); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_RPAREN.add(RPAREN193);
 
 					}
@@ -9214,11 +9186,11 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 774:17: -> ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:775:25: ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:775:25: ^( PROXIMITY ( DECIMAL_INTEGER_LITERAL )? )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PROXIMITY, "PROXIMITY"), root_1);
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:775:37: ( DECIMAL_INTEGER_LITERAL )?
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:775:37: ( DECIMAL_INTEGER_LITERAL )?
 				if ( stream_DECIMAL_INTEGER_LITERAL.hasNext() ) {
 					adaptor.addChild(root_1, stream_DECIMAL_INTEGER_LITERAL.nextNode());
 				}
@@ -9264,7 +9236,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsFieldGroupRange"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:778:1: ftsFieldGroupRange : ( ftsRangeWord DOTDOT ftsRangeWord -> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE | range_left ftsRangeWord TO ftsRangeWord range_right -> range_left ftsRangeWord ftsRangeWord range_right );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:778:1: ftsFieldGroupRange : ( ftsRangeWord DOTDOT ftsRangeWord -> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE | range_left ftsRangeWord TO ftsRangeWord range_right -> range_left ftsRangeWord ftsRangeWord range_right );
 	public final FTSParser.ftsFieldGroupRange_return ftsFieldGroupRange() throws RecognitionException {
 		FTSParser.ftsFieldGroupRange_return retval = new FTSParser.ftsFieldGroupRange_return();
 		retval.start = input.LT(1);
@@ -9289,7 +9261,7 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_range_right=new RewriteRuleSubtreeStream(adaptor,"rule range_right");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:779:9: ( ftsRangeWord DOTDOT ftsRangeWord -> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE | range_left ftsRangeWord TO ftsRangeWord range_right -> range_left ftsRangeWord ftsRangeWord range_right )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:779:9: ( ftsRangeWord DOTDOT ftsRangeWord -> INCLUSIVE ftsRangeWord ftsRangeWord INCLUSIVE | range_left ftsRangeWord TO ftsRangeWord range_right -> range_left ftsRangeWord ftsRangeWord range_right )
 			int alt74=2;
 			int LA74_0 = input.LA(1);
 			if ( (LA74_0==DATETIME||LA74_0==DECIMAL_INTEGER_LITERAL||LA74_0==FLOATING_POINT_LITERAL||(LA74_0 >= FTSPHRASE && LA74_0 <= FTSWORD)||LA74_0==ID||LA74_0==STAR||LA74_0==URI) ) {
@@ -9308,17 +9280,17 @@ public class FTSParser extends Parser {
 
 			switch (alt74) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:780:9: ftsRangeWord DOTDOT ftsRangeWord
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:780:9: ftsRangeWord DOTDOT ftsRangeWord
 					{
-					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6587);
+					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6588);
 					ftsRangeWord194=ftsRangeWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsRangeWord.add(ftsRangeWord194.getTree());
-					DOTDOT195=(Token)match(input,DOTDOT,FOLLOW_DOTDOT_in_ftsFieldGroupRange6589); if (state.failed) return retval; 
+					DOTDOT195=(Token)match(input,DOTDOT,FOLLOW_DOTDOT_in_ftsFieldGroupRange6590); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_DOTDOT.add(DOTDOT195);
 
-					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6591);
+					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6592);
 					ftsRangeWord196=ftsRangeWord();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -9350,33 +9322,33 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:782:11: range_left ftsRangeWord TO ftsRangeWord range_right
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:782:11: range_left ftsRangeWord TO ftsRangeWord range_right
 					{
-					pushFollow(FOLLOW_range_left_in_ftsFieldGroupRange6629);
+					pushFollow(FOLLOW_range_left_in_ftsFieldGroupRange6630);
 					range_left197=range_left();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_range_left.add(range_left197.getTree());
-					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6631);
+					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6632);
 					ftsRangeWord198=ftsRangeWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsRangeWord.add(ftsRangeWord198.getTree());
-					TO199=(Token)match(input,TO,FOLLOW_TO_in_ftsFieldGroupRange6633); if (state.failed) return retval; 
+					TO199=(Token)match(input,TO,FOLLOW_TO_in_ftsFieldGroupRange6634); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_TO.add(TO199);
 
-					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6635);
+					pushFollow(FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6636);
 					ftsRangeWord200=ftsRangeWord();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_ftsRangeWord.add(ftsRangeWord200.getTree());
-					pushFollow(FOLLOW_range_right_in_ftsFieldGroupRange6637);
+					pushFollow(FOLLOW_range_right_in_ftsFieldGroupRange6638);
 					range_right201=range_right();
 					state._fsp--;
 					if (state.failed) return retval;
 					if ( state.backtracking==0 ) stream_range_right.add(range_right201.getTree());
 					// AST REWRITE
-					// elements: ftsRangeWord, ftsRangeWord, range_left, range_right
+					// elements: range_left, ftsRangeWord, ftsRangeWord, range_right
 					// token labels: 
 					// rule labels: retval
 					// token list labels: 
@@ -9432,7 +9404,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "range_left"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:786:1: range_left : ( LSQUARE -> INCLUSIVE | LT -> EXCLUSIVE );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:786:1: range_left : ( LSQUARE -> INCLUSIVE | LT -> EXCLUSIVE );
 	public final FTSParser.range_left_return range_left() throws RecognitionException {
 		FTSParser.range_left_return retval = new FTSParser.range_left_return();
 		retval.start = input.LT(1);
@@ -9448,7 +9420,7 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_LT=new RewriteRuleTokenStream(adaptor,"token LT");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:787:9: ( LSQUARE -> INCLUSIVE | LT -> EXCLUSIVE )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:787:9: ( LSQUARE -> INCLUSIVE | LT -> EXCLUSIVE )
 			int alt75=2;
 			int LA75_0 = input.LA(1);
 			if ( (LA75_0==LSQUARE) ) {
@@ -9467,9 +9439,9 @@ public class FTSParser extends Parser {
 
 			switch (alt75) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:788:9: LSQUARE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:788:9: LSQUARE
 					{
-					LSQUARE202=(Token)match(input,LSQUARE,FOLLOW_LSQUARE_in_range_left6696); if (state.failed) return retval; 
+					LSQUARE202=(Token)match(input,LSQUARE,FOLLOW_LSQUARE_in_range_left6697); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LSQUARE.add(LSQUARE202);
 
 					// AST REWRITE
@@ -9496,9 +9468,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:790:11: LT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:790:11: LT
 					{
-					LT203=(Token)match(input,LT,FOLLOW_LT_in_range_left6728); if (state.failed) return retval; 
+					LT203=(Token)match(input,LT,FOLLOW_LT_in_range_left6729); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_LT.add(LT203);
 
 					// AST REWRITE
@@ -9555,7 +9527,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "range_right"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:794:1: range_right : ( RSQUARE -> INCLUSIVE | GT -> EXCLUSIVE );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:794:1: range_right : ( RSQUARE -> INCLUSIVE | GT -> EXCLUSIVE );
 	public final FTSParser.range_right_return range_right() throws RecognitionException {
 		FTSParser.range_right_return retval = new FTSParser.range_right_return();
 		retval.start = input.LT(1);
@@ -9571,7 +9543,7 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_GT=new RewriteRuleTokenStream(adaptor,"token GT");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:795:9: ( RSQUARE -> INCLUSIVE | GT -> EXCLUSIVE )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:795:9: ( RSQUARE -> INCLUSIVE | GT -> EXCLUSIVE )
 			int alt76=2;
 			int LA76_0 = input.LA(1);
 			if ( (LA76_0==RSQUARE) ) {
@@ -9590,9 +9562,9 @@ public class FTSParser extends Parser {
 
 			switch (alt76) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:796:9: RSQUARE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:796:9: RSQUARE
 					{
-					RSQUARE204=(Token)match(input,RSQUARE,FOLLOW_RSQUARE_in_range_right6781); if (state.failed) return retval; 
+					RSQUARE204=(Token)match(input,RSQUARE,FOLLOW_RSQUARE_in_range_right6782); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_RSQUARE.add(RSQUARE204);
 
 					// AST REWRITE
@@ -9619,9 +9591,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:798:11: GT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:798:11: GT
 					{
-					GT205=(Token)match(input,GT,FOLLOW_GT_in_range_right6813); if (state.failed) return retval; 
+					GT205=(Token)match(input,GT,FOLLOW_GT_in_range_right6814); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_GT.add(GT205);
 
 					// AST REWRITE
@@ -9678,7 +9650,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "fieldReference"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:802:1: fieldReference : ( fieldReferenceWithPrefix | fieldReferenceWithoutPrefix );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:802:1: fieldReference : ( fieldReferenceWithPrefix | fieldReferenceWithoutPrefix );
 	public final FTSParser.fieldReference_return fieldReference() throws RecognitionException {
 		FTSParser.fieldReference_return retval = new FTSParser.fieldReference_return();
 		retval.start = input.LT(1);
@@ -9690,7 +9662,7 @@ public class FTSParser extends Parser {
 
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:803:9: ( fieldReferenceWithPrefix | fieldReferenceWithoutPrefix )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:803:9: ( fieldReferenceWithPrefix | fieldReferenceWithoutPrefix )
 			int alt77=2;
 			switch ( input.LA(1) ) {
 			case AT:
@@ -10820,12 +10792,12 @@ public class FTSParser extends Parser {
 			}
 			switch (alt77) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:804:9: fieldReferenceWithPrefix
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:804:9: fieldReferenceWithPrefix
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_fieldReference6866);
+					pushFollow(FOLLOW_fieldReferenceWithPrefix_in_fieldReference6867);
 					fieldReferenceWithPrefix206=fieldReferenceWithPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -10834,12 +10806,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:805:11: fieldReferenceWithoutPrefix
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:805:11: fieldReferenceWithoutPrefix
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_fieldReference6878);
+					pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_fieldReference6879);
 					fieldReferenceWithoutPrefix207=fieldReferenceWithoutPrefix();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -10878,7 +10850,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "fieldReferenceWithoutPrefix"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:807:1: fieldReferenceWithoutPrefix : ( AT )? ( uri )? identifier -> ^( FIELD_REF identifier ( uri )? ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:807:1: fieldReferenceWithoutPrefix : ( AT )? ( uri )? identifier -> ^( FIELD_REF identifier ( uri )? ) ;
 	public final FTSParser.fieldReferenceWithoutPrefix_return fieldReferenceWithoutPrefix() throws RecognitionException {
 		FTSParser.fieldReferenceWithoutPrefix_return retval = new FTSParser.fieldReferenceWithoutPrefix_return();
 		retval.start = input.LT(1);
@@ -10895,10 +10867,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_uri=new RewriteRuleSubtreeStream(adaptor,"rule uri");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:808:9: ( ( AT )? ( uri )? identifier -> ^( FIELD_REF identifier ( uri )? ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: ( AT )? ( uri )? identifier
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:808:9: ( ( AT )? ( uri )? identifier -> ^( FIELD_REF identifier ( uri )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: ( AT )? ( uri )? identifier
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: ( AT )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: ( AT )?
 			int alt78=2;
 			int LA78_0 = input.LA(1);
 			if ( (LA78_0==AT) ) {
@@ -10906,9 +10878,9 @@ public class FTSParser extends Parser {
 			}
 			switch (alt78) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: AT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:809:9: AT
 					{
-					AT208=(Token)match(input,AT,FOLLOW_AT_in_fieldReferenceWithoutPrefix6902); if (state.failed) return retval; 
+					AT208=(Token)match(input,AT,FOLLOW_AT_in_fieldReferenceWithoutPrefix6903); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_AT.add(AT208);
 
 					}
@@ -10916,7 +10888,7 @@ public class FTSParser extends Parser {
 
 			}
 
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:810:9: ( uri )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:810:9: ( uri )?
 			int alt79=2;
 			int LA79_0 = input.LA(1);
 			if ( (LA79_0==URI) ) {
@@ -10924,9 +10896,9 @@ public class FTSParser extends Parser {
 			}
 			switch (alt79) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:810:9: uri
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:810:9: uri
 					{
-					pushFollow(FOLLOW_uri_in_fieldReferenceWithoutPrefix6913);
+					pushFollow(FOLLOW_uri_in_fieldReferenceWithoutPrefix6914);
 					uri209=uri();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -10936,13 +10908,13 @@ public class FTSParser extends Parser {
 
 			}
 
-			pushFollow(FOLLOW_identifier_in_fieldReferenceWithoutPrefix6924);
+			pushFollow(FOLLOW_identifier_in_fieldReferenceWithoutPrefix6925);
 			identifier210=identifier();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_identifier.add(identifier210.getTree());
 			// AST REWRITE
-			// elements: identifier, uri
+			// elements: uri, identifier
 			// token labels: 
 			// rule labels: retval
 			// token list labels: 
@@ -10955,12 +10927,12 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 812:17: -> ^( FIELD_REF identifier ( uri )? )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:813:25: ^( FIELD_REF identifier ( uri )? )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:813:25: ^( FIELD_REF identifier ( uri )? )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_REF, "FIELD_REF"), root_1);
 				adaptor.addChild(root_1, stream_identifier.nextTree());
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:813:48: ( uri )?
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:813:48: ( uri )?
 				if ( stream_uri.hasNext() ) {
 					adaptor.addChild(root_1, stream_uri.nextTree());
 				}
@@ -11006,7 +10978,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "fieldReferenceWithPrefix"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:816:1: fieldReferenceWithPrefix : ( AT )? prefix identifier -> ^( FIELD_REF identifier prefix ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:816:1: fieldReferenceWithPrefix : ( AT )? prefix identifier -> ^( FIELD_REF identifier prefix ) ;
 	public final FTSParser.fieldReferenceWithPrefix_return fieldReferenceWithPrefix() throws RecognitionException {
 		FTSParser.fieldReferenceWithPrefix_return retval = new FTSParser.fieldReferenceWithPrefix_return();
 		retval.start = input.LT(1);
@@ -11023,10 +10995,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_prefix=new RewriteRuleSubtreeStream(adaptor,"rule prefix");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:817:9: ( ( AT )? prefix identifier -> ^( FIELD_REF identifier prefix ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: ( AT )? prefix identifier
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:817:9: ( ( AT )? prefix identifier -> ^( FIELD_REF identifier prefix ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: ( AT )? prefix identifier
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: ( AT )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: ( AT )?
 			int alt80=2;
 			int LA80_0 = input.LA(1);
 			if ( (LA80_0==AT) ) {
@@ -11034,9 +11006,9 @@ public class FTSParser extends Parser {
 			}
 			switch (alt80) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: AT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:818:9: AT
 					{
-					AT211=(Token)match(input,AT,FOLLOW_AT_in_fieldReferenceWithPrefix7008); if (state.failed) return retval; 
+					AT211=(Token)match(input,AT,FOLLOW_AT_in_fieldReferenceWithPrefix7009); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_AT.add(AT211);
 
 					}
@@ -11044,12 +11016,12 @@ public class FTSParser extends Parser {
 
 			}
 
-			pushFollow(FOLLOW_prefix_in_fieldReferenceWithPrefix7019);
+			pushFollow(FOLLOW_prefix_in_fieldReferenceWithPrefix7020);
 			prefix212=prefix();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_prefix.add(prefix212.getTree());
-			pushFollow(FOLLOW_identifier_in_fieldReferenceWithPrefix7021);
+			pushFollow(FOLLOW_identifier_in_fieldReferenceWithPrefix7022);
 			identifier213=identifier();
 			state._fsp--;
 			if (state.failed) return retval;
@@ -11068,7 +11040,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 820:17: -> ^( FIELD_REF identifier prefix )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:821:25: ^( FIELD_REF identifier prefix )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:821:25: ^( FIELD_REF identifier prefix )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_REF, "FIELD_REF"), root_1);
@@ -11114,7 +11086,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "tempReference"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:824:1: tempReference : ( AT )? ( prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:824:1: tempReference : ( AT )? ( prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) ;
 	public final FTSParser.tempReference_return tempReference() throws RecognitionException {
 		FTSParser.tempReference_return retval = new FTSParser.tempReference_return();
 		retval.start = input.LT(1);
@@ -11133,10 +11105,10 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_uri=new RewriteRuleSubtreeStream(adaptor,"rule uri");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:825:9: ( ( AT )? ( prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: ( AT )? ( prefix | uri )? identifier
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:825:9: ( ( AT )? ( prefix | uri )? identifier -> ^( FIELD_REF identifier ( prefix )? ( uri )? ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: ( AT )? ( prefix | uri )? identifier
 			{
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: ( AT )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: ( AT )?
 			int alt81=2;
 			int LA81_0 = input.LA(1);
 			if ( (LA81_0==AT) ) {
@@ -11144,9 +11116,9 @@ public class FTSParser extends Parser {
 			}
 			switch (alt81) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: AT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:826:9: AT
 					{
-					AT214=(Token)match(input,AT,FOLLOW_AT_in_tempReference7104); if (state.failed) return retval; 
+					AT214=(Token)match(input,AT,FOLLOW_AT_in_tempReference7105); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_AT.add(AT214);
 
 					}
@@ -11154,7 +11126,7 @@ public class FTSParser extends Parser {
 
 			}
 
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:827:9: ( prefix | uri )?
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:827:9: ( prefix | uri )?
 			int alt82=3;
 			switch ( input.LA(1) ) {
 				case ID:
@@ -11214,9 +11186,9 @@ public class FTSParser extends Parser {
 			}
 			switch (alt82) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:828:17: prefix
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:828:17: prefix
 					{
-					pushFollow(FOLLOW_prefix_in_tempReference7133);
+					pushFollow(FOLLOW_prefix_in_tempReference7134);
 					prefix215=prefix();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -11224,9 +11196,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:829:19: uri
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:829:19: uri
 					{
-					pushFollow(FOLLOW_uri_in_tempReference7153);
+					pushFollow(FOLLOW_uri_in_tempReference7154);
 					uri216=uri();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -11236,13 +11208,13 @@ public class FTSParser extends Parser {
 
 			}
 
-			pushFollow(FOLLOW_identifier_in_tempReference7174);
+			pushFollow(FOLLOW_identifier_in_tempReference7175);
 			identifier217=identifier();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_identifier.add(identifier217.getTree());
 			// AST REWRITE
-			// elements: identifier, prefix, uri
+			// elements: prefix, uri, identifier
 			// token labels: 
 			// rule labels: retval
 			// token list labels: 
@@ -11255,18 +11227,18 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 832:17: -> ^( FIELD_REF identifier ( prefix )? ( uri )? )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:25: ^( FIELD_REF identifier ( prefix )? ( uri )? )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:25: ^( FIELD_REF identifier ( prefix )? ( uri )? )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(FIELD_REF, "FIELD_REF"), root_1);
 				adaptor.addChild(root_1, stream_identifier.nextTree());
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:48: ( prefix )?
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:48: ( prefix )?
 				if ( stream_prefix.hasNext() ) {
 					adaptor.addChild(root_1, stream_prefix.nextTree());
 				}
 				stream_prefix.reset();
 
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:56: ( uri )?
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:833:56: ( uri )?
 				if ( stream_uri.hasNext() ) {
 					adaptor.addChild(root_1, stream_uri.nextTree());
 				}
@@ -11312,7 +11284,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "prefix"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:836:1: prefix : identifier COLON -> ^( PREFIX identifier ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:836:1: prefix : identifier COLON -> ^( PREFIX identifier ) ;
 	public final FTSParser.prefix_return prefix() throws RecognitionException {
 		FTSParser.prefix_return retval = new FTSParser.prefix_return();
 		retval.start = input.LT(1);
@@ -11327,15 +11299,15 @@ public class FTSParser extends Parser {
 		RewriteRuleSubtreeStream stream_identifier=new RewriteRuleSubtreeStream(adaptor,"rule identifier");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:837:9: ( identifier COLON -> ^( PREFIX identifier ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:838:9: identifier COLON
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:837:9: ( identifier COLON -> ^( PREFIX identifier ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:838:9: identifier COLON
 			{
-			pushFollow(FOLLOW_identifier_in_prefix7261);
+			pushFollow(FOLLOW_identifier_in_prefix7262);
 			identifier218=identifier();
 			state._fsp--;
 			if (state.failed) return retval;
 			if ( state.backtracking==0 ) stream_identifier.add(identifier218.getTree());
-			COLON219=(Token)match(input,COLON,FOLLOW_COLON_in_prefix7263); if (state.failed) return retval; 
+			COLON219=(Token)match(input,COLON,FOLLOW_COLON_in_prefix7264); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_COLON.add(COLON219);
 
 			// AST REWRITE
@@ -11352,7 +11324,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 839:17: -> ^( PREFIX identifier )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:840:25: ^( PREFIX identifier )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:840:25: ^( PREFIX identifier )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(PREFIX, "PREFIX"), root_1);
@@ -11397,7 +11369,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "uri"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:843:1: uri : URI -> ^( NAME_SPACE URI ) ;
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:843:1: uri : URI -> ^( NAME_SPACE URI ) ;
 	public final FTSParser.uri_return uri() throws RecognitionException {
 		FTSParser.uri_return retval = new FTSParser.uri_return();
 		retval.start = input.LT(1);
@@ -11410,10 +11382,10 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_URI=new RewriteRuleTokenStream(adaptor,"token URI");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:844:9: ( URI -> ^( NAME_SPACE URI ) )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:845:9: URI
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:844:9: ( URI -> ^( NAME_SPACE URI ) )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:845:9: URI
 			{
-			URI220=(Token)match(input,URI,FOLLOW_URI_in_uri7344); if (state.failed) return retval; 
+			URI220=(Token)match(input,URI,FOLLOW_URI_in_uri7345); if (state.failed) return retval; 
 			if ( state.backtracking==0 ) stream_URI.add(URI220);
 
 			// AST REWRITE
@@ -11430,7 +11402,7 @@ public class FTSParser extends Parser {
 			root_0 = (Object)adaptor.nil();
 			// 846:17: -> ^( NAME_SPACE URI )
 			{
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:847:25: ^( NAME_SPACE URI )
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:847:25: ^( NAME_SPACE URI )
 				{
 				Object root_1 = (Object)adaptor.nil();
 				root_1 = (Object)adaptor.becomeRoot((Object)adaptor.create(NAME_SPACE, "NAME_SPACE"), root_1);
@@ -11475,7 +11447,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "identifier"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:850:1: identifier : ( ( ID DOT ID )=>id1= ID DOT id2= ID ->| ID -> ID | TO -> TO | OR -> OR | AND -> AND | NOT -> NOT );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:850:1: identifier : ( ( ID DOT ID )=>id1= ID DOT id2= ID ->| ID -> ID | TO -> TO | OR -> OR | AND -> AND | NOT -> NOT );
 	public final FTSParser.identifier_return identifier() throws RecognitionException {
 		FTSParser.identifier_return retval = new FTSParser.identifier_return();
 		retval.start = input.LT(1);
@@ -11507,7 +11479,7 @@ public class FTSParser extends Parser {
 		RewriteRuleTokenStream stream_TO=new RewriteRuleTokenStream(adaptor,"token TO");
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:851:9: ( ( ID DOT ID )=>id1= ID DOT id2= ID ->| ID -> ID | TO -> TO | OR -> OR | AND -> AND | NOT -> NOT )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:851:9: ( ( ID DOT ID )=>id1= ID DOT id2= ID ->| ID -> ID | TO -> TO | OR -> OR | AND -> AND | NOT -> NOT )
 			int alt83=6;
 			switch ( input.LA(1) ) {
 			case ID:
@@ -11592,15 +11564,15 @@ public class FTSParser extends Parser {
 			}
 			switch (alt83) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:9: ( ID DOT ID )=>id1= ID DOT id2= ID
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:9: ( ID DOT ID )=>id1= ID DOT id2= ID
 					{
-					id1=(Token)match(input,ID,FOLLOW_ID_in_identifier7446); if (state.failed) return retval; 
+					id1=(Token)match(input,ID,FOLLOW_ID_in_identifier7447); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_ID.add(id1);
 
-					DOT221=(Token)match(input,DOT,FOLLOW_DOT_in_identifier7448); if (state.failed) return retval; 
+					DOT221=(Token)match(input,DOT,FOLLOW_DOT_in_identifier7449); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_DOT.add(DOT221);
 
-					id2=(Token)match(input,ID,FOLLOW_ID_in_identifier7452); if (state.failed) return retval; 
+					id2=(Token)match(input,ID,FOLLOW_ID_in_identifier7453); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_ID.add(id2);
 
 					// AST REWRITE
@@ -11627,9 +11599,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:856:12: ID
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:856:12: ID
 					{
-					ID222=(Token)match(input,ID,FOLLOW_ID_in_identifier7501); if (state.failed) return retval; 
+					ID222=(Token)match(input,ID,FOLLOW_ID_in_identifier7502); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_ID.add(ID222);
 
 					// AST REWRITE
@@ -11656,9 +11628,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:860:12: TO
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:860:12: TO
 					{
-					TO223=(Token)match(input,TO,FOLLOW_TO_in_identifier7568); if (state.failed) return retval; 
+					TO223=(Token)match(input,TO,FOLLOW_TO_in_identifier7569); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_TO.add(TO223);
 
 					// AST REWRITE
@@ -11685,9 +11657,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:862:12: OR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:862:12: OR
 					{
-					OR224=(Token)match(input,OR,FOLLOW_OR_in_identifier7606); if (state.failed) return retval; 
+					OR224=(Token)match(input,OR,FOLLOW_OR_in_identifier7607); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_OR.add(OR224);
 
 					// AST REWRITE
@@ -11714,9 +11686,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:864:12: AND
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:864:12: AND
 					{
-					AND225=(Token)match(input,AND,FOLLOW_AND_in_identifier7644); if (state.failed) return retval; 
+					AND225=(Token)match(input,AND,FOLLOW_AND_in_identifier7645); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_AND.add(AND225);
 
 					// AST REWRITE
@@ -11743,9 +11715,9 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:866:12: NOT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:866:12: NOT
 					{
-					NOT226=(Token)match(input,NOT,FOLLOW_NOT_in_identifier7683); if (state.failed) return retval; 
+					NOT226=(Token)match(input,NOT,FOLLOW_NOT_in_identifier7684); if (state.failed) return retval; 
 					if ( state.backtracking==0 ) stream_NOT.add(NOT226);
 
 					// AST REWRITE
@@ -11802,7 +11774,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsWord"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:870:1: ftsWord : ( ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) | ( DOT | COMMA ) ftsWordBase | ftsWordBase );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:870:1: ftsWord : ( ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) | ( DOT | COMMA ) ftsWordBase | ftsWordBase );
 	public final FTSParser.ftsWord_return ftsWord() throws RecognitionException {
 		FTSParser.ftsWord_return retval = new FTSParser.ftsWord_return();
 		retval.start = input.LT(1);
@@ -11960,12 +11932,12 @@ public class FTSParser extends Parser {
 		Object set323_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:871:9: ( ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) | ( DOT | COMMA ) ftsWordBase | ftsWordBase )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:871:9: ( ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase | ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) | ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) | ( DOT | COMMA ) ftsWordBase | ftsWordBase )
 			int alt84=18;
 			alt84 = dfa84.predict(input);
 			switch (alt84) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -11982,7 +11954,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7807);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7808);
 					ftsWordBase228=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12000,7 +11972,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7815);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7816);
 					ftsWordBase230=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12018,7 +11990,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7823);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7824);
 					ftsWordBase232=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12036,7 +12008,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7831);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7832);
 					ftsWordBase234=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12054,7 +12026,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7839);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7840);
 					ftsWordBase236=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12063,12 +12035,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7899);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7900);
 					ftsWordBase237=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12086,7 +12058,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7907);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7908);
 					ftsWordBase239=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12104,7 +12076,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7915);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7916);
 					ftsWordBase241=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12122,7 +12094,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7923);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7924);
 					ftsWordBase243=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12140,7 +12112,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7931);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord7932);
 					ftsWordBase245=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12149,7 +12121,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12166,7 +12138,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8004);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8005);
 					ftsWordBase247=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12184,7 +12156,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8012);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8013);
 					ftsWordBase249=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12202,7 +12174,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8020);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8021);
 					ftsWordBase251=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12220,7 +12192,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8028);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8029);
 					ftsWordBase253=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12241,12 +12213,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8094);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8095);
 					ftsWordBase255=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12264,7 +12236,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8102);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8103);
 					ftsWordBase257=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12282,7 +12254,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8110);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8111);
 					ftsWordBase259=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12300,7 +12272,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8118);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8119);
 					ftsWordBase261=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12321,7 +12293,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12338,7 +12310,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8191);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8192);
 					ftsWordBase264=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12356,7 +12328,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8199);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8200);
 					ftsWordBase266=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12374,7 +12346,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8207);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8208);
 					ftsWordBase268=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12392,7 +12364,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8215);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8216);
 					ftsWordBase270=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12401,12 +12373,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8269);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8270);
 					ftsWordBase271=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12424,7 +12396,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8277);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8278);
 					ftsWordBase273=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12442,7 +12414,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8285);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8286);
 					ftsWordBase275=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12460,7 +12432,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8293);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8294);
 					ftsWordBase277=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12469,7 +12441,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12486,7 +12458,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8357);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8358);
 					ftsWordBase279=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12504,7 +12476,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8365);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8366);
 					ftsWordBase281=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12522,7 +12494,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8373);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8374);
 					ftsWordBase283=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12543,12 +12515,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8431);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8432);
 					ftsWordBase285=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12566,7 +12538,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8439);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8440);
 					ftsWordBase287=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12584,7 +12556,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8447);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8448);
 					ftsWordBase289=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12605,7 +12577,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 9 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12622,7 +12594,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8511);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8512);
 					ftsWordBase292=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12640,7 +12612,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8519);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8520);
 					ftsWordBase294=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12658,7 +12630,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8527);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8528);
 					ftsWordBase296=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12667,12 +12639,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 10 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8573);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8574);
 					ftsWordBase297=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12690,7 +12662,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8581);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8582);
 					ftsWordBase299=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12708,7 +12680,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8589);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8590);
 					ftsWordBase301=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12717,7 +12689,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 11 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12734,7 +12706,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8646);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8647);
 					ftsWordBase303=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12752,7 +12724,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8654);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8655);
 					ftsWordBase305=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12773,12 +12745,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 12 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8705);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8706);
 					ftsWordBase307=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12796,7 +12768,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8713);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8714);
 					ftsWordBase309=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12817,7 +12789,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 13 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12834,7 +12806,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8770);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8771);
 					ftsWordBase312=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12852,7 +12824,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8778);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8779);
 					ftsWordBase314=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12861,12 +12833,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 14 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase )=> ftsWordBase ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8816);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8817);
 					ftsWordBase315=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12884,7 +12856,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8824);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8825);
 					ftsWordBase317=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12893,7 +12865,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 15 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )=> ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12910,7 +12882,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8872);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8873);
 					ftsWordBase319=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12931,12 +12903,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 16 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:11: ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA )
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:11: ( ftsWordBase ( DOT | COMMA ) )=> ftsWordBase ( DOT | COMMA )
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8914);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8915);
 					ftsWordBase321=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12957,7 +12929,7 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 17 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:904:11: ( DOT | COMMA ) ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:904:11: ( DOT | COMMA ) ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
@@ -12974,7 +12946,7 @@ public class FTSParser extends Parser {
 						MismatchedSetException mse = new MismatchedSetException(null,input);
 						throw mse;
 					}
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8938);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8939);
 					ftsWordBase324=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -12983,12 +12955,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 18 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:905:11: ftsWordBase
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:905:11: ftsWordBase
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8951);
+					pushFollow(FOLLOW_ftsWordBase_in_ftsWord8952);
 					ftsWordBase325=ftsWordBase();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -13027,7 +12999,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsWordBase"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:909:1: ftsWordBase : ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | STAR | QUESTION_MARK | DATETIME | URI identifier );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:909:1: ftsWordBase : ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | STAR | QUESTION_MARK | DATETIME | URI identifier );
 	public final FTSParser.ftsWordBase_return ftsWordBase() throws RecognitionException {
 		FTSParser.ftsWordBase_return retval = new FTSParser.ftsWordBase_return();
 		retval.start = input.LT(1);
@@ -13062,7 +13034,7 @@ public class FTSParser extends Parser {
 		Object URI337_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:910:9: ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | STAR | QUESTION_MARK | DATETIME | URI identifier )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:910:9: ( ID | FTSWORD | FTSPRE | FTSWILD | NOT | TO | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | STAR | QUESTION_MARK | DATETIME | URI identifier )
 			int alt85=12;
 			switch ( input.LA(1) ) {
 			case ID:
@@ -13133,12 +13105,12 @@ public class FTSParser extends Parser {
 			}
 			switch (alt85) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:911:11: ID
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:911:11: ID
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					ID326=(Token)match(input,ID,FOLLOW_ID_in_ftsWordBase8996); if (state.failed) return retval;
+					ID326=(Token)match(input,ID,FOLLOW_ID_in_ftsWordBase8997); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					ID326_tree = (Object)adaptor.create(ID326);
 					adaptor.addChild(root_0, ID326_tree);
@@ -13147,12 +13119,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:912:11: FTSWORD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:912:11: FTSWORD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWORD327=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsWordBase9008); if (state.failed) return retval;
+					FTSWORD327=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsWordBase9009); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWORD327_tree = (Object)adaptor.create(FTSWORD327);
 					adaptor.addChild(root_0, FTSWORD327_tree);
@@ -13161,12 +13133,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:913:11: FTSPRE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:913:11: FTSPRE
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSPRE328=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsWordBase9020); if (state.failed) return retval;
+					FTSPRE328=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsWordBase9021); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSPRE328_tree = (Object)adaptor.create(FTSPRE328);
 					adaptor.addChild(root_0, FTSPRE328_tree);
@@ -13175,12 +13147,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:914:11: FTSWILD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:914:11: FTSWILD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWILD329=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsWordBase9033); if (state.failed) return retval;
+					FTSWILD329=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsWordBase9034); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWILD329_tree = (Object)adaptor.create(FTSWILD329);
 					adaptor.addChild(root_0, FTSWILD329_tree);
@@ -13189,12 +13161,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:915:11: NOT
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:915:11: NOT
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					NOT330=(Token)match(input,NOT,FOLLOW_NOT_in_ftsWordBase9046); if (state.failed) return retval;
+					NOT330=(Token)match(input,NOT,FOLLOW_NOT_in_ftsWordBase9047); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					NOT330_tree = (Object)adaptor.create(NOT330);
 					adaptor.addChild(root_0, NOT330_tree);
@@ -13203,12 +13175,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:916:11: TO
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:916:11: TO
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					TO331=(Token)match(input,TO,FOLLOW_TO_in_ftsWordBase9058); if (state.failed) return retval;
+					TO331=(Token)match(input,TO,FOLLOW_TO_in_ftsWordBase9059); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					TO331_tree = (Object)adaptor.create(TO331);
 					adaptor.addChild(root_0, TO331_tree);
@@ -13217,12 +13189,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:917:11: DECIMAL_INTEGER_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:917:11: DECIMAL_INTEGER_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DECIMAL_INTEGER_LITERAL332=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsWordBase9070); if (state.failed) return retval;
+					DECIMAL_INTEGER_LITERAL332=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsWordBase9071); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DECIMAL_INTEGER_LITERAL332_tree = (Object)adaptor.create(DECIMAL_INTEGER_LITERAL332);
 					adaptor.addChild(root_0, DECIMAL_INTEGER_LITERAL332_tree);
@@ -13231,12 +13203,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:918:11: FLOATING_POINT_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:918:11: FLOATING_POINT_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FLOATING_POINT_LITERAL333=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsWordBase9082); if (state.failed) return retval;
+					FLOATING_POINT_LITERAL333=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsWordBase9083); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FLOATING_POINT_LITERAL333_tree = (Object)adaptor.create(FLOATING_POINT_LITERAL333);
 					adaptor.addChild(root_0, FLOATING_POINT_LITERAL333_tree);
@@ -13245,12 +13217,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 9 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:919:11: STAR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:919:11: STAR
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					STAR334=(Token)match(input,STAR,FOLLOW_STAR_in_ftsWordBase9094); if (state.failed) return retval;
+					STAR334=(Token)match(input,STAR,FOLLOW_STAR_in_ftsWordBase9095); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					STAR334_tree = (Object)adaptor.create(STAR334);
 					adaptor.addChild(root_0, STAR334_tree);
@@ -13259,12 +13231,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 10 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:920:11: QUESTION_MARK
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:920:11: QUESTION_MARK
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					QUESTION_MARK335=(Token)match(input,QUESTION_MARK,FOLLOW_QUESTION_MARK_in_ftsWordBase9106); if (state.failed) return retval;
+					QUESTION_MARK335=(Token)match(input,QUESTION_MARK,FOLLOW_QUESTION_MARK_in_ftsWordBase9107); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					QUESTION_MARK335_tree = (Object)adaptor.create(QUESTION_MARK335);
 					adaptor.addChild(root_0, QUESTION_MARK335_tree);
@@ -13273,12 +13245,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 11 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:921:11: DATETIME
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:921:11: DATETIME
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DATETIME336=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsWordBase9118); if (state.failed) return retval;
+					DATETIME336=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsWordBase9119); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DATETIME336_tree = (Object)adaptor.create(DATETIME336);
 					adaptor.addChild(root_0, DATETIME336_tree);
@@ -13287,18 +13259,18 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 12 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:922:11: URI identifier
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:922:11: URI identifier
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					URI337=(Token)match(input,URI,FOLLOW_URI_in_ftsWordBase9130); if (state.failed) return retval;
+					URI337=(Token)match(input,URI,FOLLOW_URI_in_ftsWordBase9131); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					URI337_tree = (Object)adaptor.create(URI337);
 					adaptor.addChild(root_0, URI337_tree);
 					}
 
-					pushFollow(FOLLOW_identifier_in_ftsWordBase9132);
+					pushFollow(FOLLOW_identifier_in_ftsWordBase9133);
 					identifier338=identifier();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -13337,7 +13309,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "number"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:925:1: number : ( DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:925:1: number : ( DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL );
 	public final FTSParser.number_return number() throws RecognitionException {
 		FTSParser.number_return retval = new FTSParser.number_return();
 		retval.start = input.LT(1);
@@ -13349,8 +13321,8 @@ public class FTSParser extends Parser {
 		Object set339_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:926:9: ( DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:926:9: ( DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
 			{
 			root_0 = (Object)adaptor.nil();
 
@@ -13398,7 +13370,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "ftsRangeWord"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:931:1: ftsRangeWord : ( ID | FTSWORD | FTSPRE | FTSWILD | FTSPHRASE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:931:1: ftsRangeWord : ( ID | FTSWORD | FTSPRE | FTSWILD | FTSPHRASE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier );
 	public final FTSParser.ftsRangeWord_return ftsRangeWord() throws RecognitionException {
 		FTSParser.ftsRangeWord_return retval = new FTSParser.ftsRangeWord_return();
 		retval.start = input.LT(1);
@@ -13429,7 +13401,7 @@ public class FTSParser extends Parser {
 		Object URI349_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:932:9: ( ID | FTSWORD | FTSPRE | FTSWILD | FTSPHRASE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:932:9: ( ID | FTSWORD | FTSPRE | FTSWILD | FTSPHRASE | DECIMAL_INTEGER_LITERAL | FLOATING_POINT_LITERAL | DATETIME | STAR | URI identifier )
 			int alt86=10;
 			switch ( input.LA(1) ) {
 			case ID:
@@ -13490,12 +13462,12 @@ public class FTSParser extends Parser {
 			}
 			switch (alt86) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:933:11: ID
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:933:11: ID
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					ID340=(Token)match(input,ID,FOLLOW_ID_in_ftsRangeWord9212); if (state.failed) return retval;
+					ID340=(Token)match(input,ID,FOLLOW_ID_in_ftsRangeWord9213); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					ID340_tree = (Object)adaptor.create(ID340);
 					adaptor.addChild(root_0, ID340_tree);
@@ -13504,12 +13476,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:934:11: FTSWORD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:934:11: FTSWORD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWORD341=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsRangeWord9224); if (state.failed) return retval;
+					FTSWORD341=(Token)match(input,FTSWORD,FOLLOW_FTSWORD_in_ftsRangeWord9225); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWORD341_tree = (Object)adaptor.create(FTSWORD341);
 					adaptor.addChild(root_0, FTSWORD341_tree);
@@ -13518,12 +13490,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 3 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:935:11: FTSPRE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:935:11: FTSPRE
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSPRE342=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsRangeWord9236); if (state.failed) return retval;
+					FTSPRE342=(Token)match(input,FTSPRE,FOLLOW_FTSPRE_in_ftsRangeWord9237); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSPRE342_tree = (Object)adaptor.create(FTSPRE342);
 					adaptor.addChild(root_0, FTSPRE342_tree);
@@ -13532,12 +13504,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 4 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:936:11: FTSWILD
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:936:11: FTSWILD
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSWILD343=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsRangeWord9248); if (state.failed) return retval;
+					FTSWILD343=(Token)match(input,FTSWILD,FOLLOW_FTSWILD_in_ftsRangeWord9249); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSWILD343_tree = (Object)adaptor.create(FTSWILD343);
 					adaptor.addChild(root_0, FTSWILD343_tree);
@@ -13546,12 +13518,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 5 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:937:11: FTSPHRASE
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:937:11: FTSPHRASE
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FTSPHRASE344=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsRangeWord9260); if (state.failed) return retval;
+					FTSPHRASE344=(Token)match(input,FTSPHRASE,FOLLOW_FTSPHRASE_in_ftsRangeWord9261); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FTSPHRASE344_tree = (Object)adaptor.create(FTSPHRASE344);
 					adaptor.addChild(root_0, FTSPHRASE344_tree);
@@ -13560,12 +13532,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 6 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:938:11: DECIMAL_INTEGER_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:938:11: DECIMAL_INTEGER_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DECIMAL_INTEGER_LITERAL345=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsRangeWord9272); if (state.failed) return retval;
+					DECIMAL_INTEGER_LITERAL345=(Token)match(input,DECIMAL_INTEGER_LITERAL,FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsRangeWord9273); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DECIMAL_INTEGER_LITERAL345_tree = (Object)adaptor.create(DECIMAL_INTEGER_LITERAL345);
 					adaptor.addChild(root_0, DECIMAL_INTEGER_LITERAL345_tree);
@@ -13574,12 +13546,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 7 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:939:11: FLOATING_POINT_LITERAL
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:939:11: FLOATING_POINT_LITERAL
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					FLOATING_POINT_LITERAL346=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsRangeWord9284); if (state.failed) return retval;
+					FLOATING_POINT_LITERAL346=(Token)match(input,FLOATING_POINT_LITERAL,FOLLOW_FLOATING_POINT_LITERAL_in_ftsRangeWord9285); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					FLOATING_POINT_LITERAL346_tree = (Object)adaptor.create(FLOATING_POINT_LITERAL346);
 					adaptor.addChild(root_0, FLOATING_POINT_LITERAL346_tree);
@@ -13588,12 +13560,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 8 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:940:11: DATETIME
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:940:11: DATETIME
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					DATETIME347=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsRangeWord9296); if (state.failed) return retval;
+					DATETIME347=(Token)match(input,DATETIME,FOLLOW_DATETIME_in_ftsRangeWord9297); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					DATETIME347_tree = (Object)adaptor.create(DATETIME347);
 					adaptor.addChild(root_0, DATETIME347_tree);
@@ -13602,12 +13574,12 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 9 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:941:11: STAR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:941:11: STAR
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					STAR348=(Token)match(input,STAR,FOLLOW_STAR_in_ftsRangeWord9308); if (state.failed) return retval;
+					STAR348=(Token)match(input,STAR,FOLLOW_STAR_in_ftsRangeWord9309); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					STAR348_tree = (Object)adaptor.create(STAR348);
 					adaptor.addChild(root_0, STAR348_tree);
@@ -13616,18 +13588,18 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 10 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:942:11: URI identifier
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:942:11: URI identifier
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					URI349=(Token)match(input,URI,FOLLOW_URI_in_ftsRangeWord9320); if (state.failed) return retval;
+					URI349=(Token)match(input,URI,FOLLOW_URI_in_ftsRangeWord9321); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					URI349_tree = (Object)adaptor.create(URI349);
 					adaptor.addChild(root_0, URI349_tree);
 					}
 
-					pushFollow(FOLLOW_identifier_in_ftsRangeWord9322);
+					pushFollow(FOLLOW_identifier_in_ftsRangeWord9323);
 					identifier350=identifier();
 					state._fsp--;
 					if (state.failed) return retval;
@@ -13666,7 +13638,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "or"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:947:1: or : ( OR | BAR BAR );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:947:1: or : ( OR | BAR BAR );
 	public final FTSParser.or_return or() throws RecognitionException {
 		FTSParser.or_return retval = new FTSParser.or_return();
 		retval.start = input.LT(1);
@@ -13682,7 +13654,7 @@ public class FTSParser extends Parser {
 		Object BAR353_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:948:9: ( OR | BAR BAR )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:948:9: ( OR | BAR BAR )
 			int alt87=2;
 			int LA87_0 = input.LA(1);
 			if ( (LA87_0==OR) ) {
@@ -13701,12 +13673,12 @@ public class FTSParser extends Parser {
 
 			switch (alt87) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:949:9: OR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:949:9: OR
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					OR351=(Token)match(input,OR,FOLLOW_OR_in_or9357); if (state.failed) return retval;
+					OR351=(Token)match(input,OR,FOLLOW_OR_in_or9358); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					OR351_tree = (Object)adaptor.create(OR351);
 					adaptor.addChild(root_0, OR351_tree);
@@ -13715,18 +13687,18 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:950:11: BAR BAR
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:950:11: BAR BAR
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					BAR352=(Token)match(input,BAR,FOLLOW_BAR_in_or9369); if (state.failed) return retval;
+					BAR352=(Token)match(input,BAR,FOLLOW_BAR_in_or9370); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					BAR352_tree = (Object)adaptor.create(BAR352);
 					adaptor.addChild(root_0, BAR352_tree);
 					}
 
-					BAR353=(Token)match(input,BAR,FOLLOW_BAR_in_or9371); if (state.failed) return retval;
+					BAR353=(Token)match(input,BAR,FOLLOW_BAR_in_or9372); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					BAR353_tree = (Object)adaptor.create(BAR353);
 					adaptor.addChild(root_0, BAR353_tree);
@@ -13765,7 +13737,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "and"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:953:1: and : ( AND | AMP AMP );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:953:1: and : ( AND | AMP AMP );
 	public final FTSParser.and_return and() throws RecognitionException {
 		FTSParser.and_return retval = new FTSParser.and_return();
 		retval.start = input.LT(1);
@@ -13781,7 +13753,7 @@ public class FTSParser extends Parser {
 		Object AMP356_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:954:9: ( AND | AMP AMP )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:954:9: ( AND | AMP AMP )
 			int alt88=2;
 			int LA88_0 = input.LA(1);
 			if ( (LA88_0==AND) ) {
@@ -13800,12 +13772,12 @@ public class FTSParser extends Parser {
 
 			switch (alt88) {
 				case 1 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:955:9: AND
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:955:9: AND
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					AND354=(Token)match(input,AND,FOLLOW_AND_in_and9404); if (state.failed) return retval;
+					AND354=(Token)match(input,AND,FOLLOW_AND_in_and9405); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					AND354_tree = (Object)adaptor.create(AND354);
 					adaptor.addChild(root_0, AND354_tree);
@@ -13814,18 +13786,18 @@ public class FTSParser extends Parser {
 					}
 					break;
 				case 2 :
-					// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:956:11: AMP AMP
+					// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:956:11: AMP AMP
 					{
 					root_0 = (Object)adaptor.nil();
 
 
-					AMP355=(Token)match(input,AMP,FOLLOW_AMP_in_and9416); if (state.failed) return retval;
+					AMP355=(Token)match(input,AMP,FOLLOW_AMP_in_and9417); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					AMP355_tree = (Object)adaptor.create(AMP355);
 					adaptor.addChild(root_0, AMP355_tree);
 					}
 
-					AMP356=(Token)match(input,AMP,FOLLOW_AMP_in_and9418); if (state.failed) return retval;
+					AMP356=(Token)match(input,AMP,FOLLOW_AMP_in_and9419); if (state.failed) return retval;
 					if ( state.backtracking==0 ) {
 					AMP356_tree = (Object)adaptor.create(AMP356);
 					adaptor.addChild(root_0, AMP356_tree);
@@ -13864,7 +13836,7 @@ public class FTSParser extends Parser {
 
 
 	// $ANTLR start "not"
-	// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:959:1: not : ( NOT | EXCLAMATION );
+	// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:959:1: not : ( NOT | EXCLAMATION );
 	public final FTSParser.not_return not() throws RecognitionException {
 		FTSParser.not_return retval = new FTSParser.not_return();
 		retval.start = input.LT(1);
@@ -13876,8 +13848,8 @@ public class FTSParser extends Parser {
 		Object set357_tree=null;
 
 		try {
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:960:9: ( NOT | EXCLAMATION )
-			// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:960:9: ( NOT | EXCLAMATION )
+			// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:
 			{
 			root_0 = (Object)adaptor.nil();
 
@@ -13918,10 +13890,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred1_FTS
 	public final void synpred1_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:9: ( not )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:10: not
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:9: ( not )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:415:10: not
 		{
-		pushFollow(FOLLOW_not_in_synpred1_FTS1233);
+		pushFollow(FOLLOW_not_in_synpred1_FTS1234);
 		not();
 		state._fsp--;
 		if (state.failed) return;
@@ -13933,10 +13905,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred2_FTS
 	public final void synpred2_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:12: ( ftsFieldGroupProximity )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:13: ftsFieldGroupProximity
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:12: ( ftsFieldGroupProximity )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:447:13: ftsFieldGroupProximity
 		{
-		pushFollow(FOLLOW_ftsFieldGroupProximity_in_synpred2_FTS1746);
+		pushFollow(FOLLOW_ftsFieldGroupProximity_in_synpred2_FTS1747);
 		ftsFieldGroupProximity();
 		state._fsp--;
 		if (state.failed) return;
@@ -13948,10 +13920,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred3_FTS
 	public final void synpred3_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:12: ( ftsRange )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:13: ftsRange
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:12: ( ftsRange )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:451:13: ftsRange
 		{
-		pushFollow(FOLLOW_ftsRange_in_synpred3_FTS1823);
+		pushFollow(FOLLOW_ftsRange_in_synpred3_FTS1824);
 		ftsRange();
 		state._fsp--;
 		if (state.failed) return;
@@ -13963,10 +13935,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred4_FTS
 	public final void synpred4_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:12: ( ftsFieldGroup )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:13: ftsFieldGroup
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:12: ( ftsFieldGroup )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:455:13: ftsFieldGroup
 		{
-		pushFollow(FOLLOW_ftsFieldGroup_in_synpred4_FTS1902);
+		pushFollow(FOLLOW_ftsFieldGroup_in_synpred4_FTS1903);
 		ftsFieldGroup();
 		state._fsp--;
 		if (state.failed) return;
@@ -13978,10 +13950,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred5_FTS
 	public final void synpred5_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:12: ( ftsTermOrPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:13: ftsTermOrPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:12: ( ftsTermOrPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:458:13: ftsTermOrPhrase
 		{
-		pushFollow(FOLLOW_ftsTermOrPhrase_in_synpred5_FTS1951);
+		pushFollow(FOLLOW_ftsTermOrPhrase_in_synpred5_FTS1952);
 		ftsTermOrPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -13993,10 +13965,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred6_FTS
 	public final void synpred6_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:12: ( ftsExactTermOrPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:13: ftsExactTermOrPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:12: ( ftsExactTermOrPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:460:13: ftsExactTermOrPhrase
 		{
-		pushFollow(FOLLOW_ftsExactTermOrPhrase_in_synpred6_FTS1980);
+		pushFollow(FOLLOW_ftsExactTermOrPhrase_in_synpred6_FTS1981);
 		ftsExactTermOrPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14008,10 +13980,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred7_FTS
 	public final void synpred7_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:12: ( ftsTokenisedTermOrPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:13: ftsTokenisedTermOrPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:12: ( ftsTokenisedTermOrPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:462:13: ftsTokenisedTermOrPhrase
 		{
-		pushFollow(FOLLOW_ftsTokenisedTermOrPhrase_in_synpred7_FTS2010);
+		pushFollow(FOLLOW_ftsTokenisedTermOrPhrase_in_synpred7_FTS2011);
 		ftsTokenisedTermOrPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14023,15 +13995,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred8_FTS
 	public final void synpred8_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:9: ( fieldReferenceWithPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:10: fieldReferenceWithPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:9: ( fieldReferenceWithPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:514:10: fieldReferenceWithPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred8_FTS2683);
+		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred8_FTS2684);
 		fieldReferenceWithPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred8_FTS2685); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred8_FTS2686); if (state.failed) return;
 
 		}
 
@@ -14040,10 +14012,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred9_FTS
 	public final void synpred9_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:516:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred9_FTS2724);
+		pushFollow(FOLLOW_slop_in_synpred9_FTS2725);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14055,10 +14027,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred10_FTS
 	public final void synpred10_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:519:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred10_FTS2799);
+		pushFollow(FOLLOW_fuzzy_in_synpred10_FTS2800);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14070,15 +14042,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred11_FTS
 	public final void synpred11_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:9: ( fieldReferenceWithoutPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:10: fieldReferenceWithoutPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:9: ( fieldReferenceWithoutPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:523:10: fieldReferenceWithoutPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred11_FTS2866);
+		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred11_FTS2867);
 		fieldReferenceWithoutPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred11_FTS2868); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred11_FTS2869); if (state.failed) return;
 
 		}
 
@@ -14087,10 +14059,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred12_FTS
 	public final void synpred12_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:525:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred12_FTS2907);
+		pushFollow(FOLLOW_slop_in_synpred12_FTS2908);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14102,10 +14074,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred13_FTS
 	public final void synpred13_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:528:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred13_FTS2982);
+		pushFollow(FOLLOW_fuzzy_in_synpred13_FTS2983);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14117,10 +14089,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred14_FTS
 	public final void synpred14_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:20: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:21: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:20: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:532:21: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred14_FTS3052);
+		pushFollow(FOLLOW_slop_in_synpred14_FTS3053);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14132,10 +14104,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred15_FTS
 	public final void synpred15_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:18: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:19: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:18: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:535:19: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred15_FTS3110);
+		pushFollow(FOLLOW_fuzzy_in_synpred15_FTS3111);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14147,15 +14119,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred16_FTS
 	public final void synpred16_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:9: ( fieldReferenceWithPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:10: fieldReferenceWithPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:9: ( fieldReferenceWithPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:544:10: fieldReferenceWithPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred16_FTS3215);
+		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred16_FTS3216);
 		fieldReferenceWithPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred16_FTS3217); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred16_FTS3218); if (state.failed) return;
 
 		}
 
@@ -14164,10 +14136,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred17_FTS
 	public final void synpred17_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:546:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred17_FTS3256);
+		pushFollow(FOLLOW_slop_in_synpred17_FTS3257);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14179,10 +14151,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred18_FTS
 	public final void synpred18_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:549:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred18_FTS3331);
+		pushFollow(FOLLOW_fuzzy_in_synpred18_FTS3332);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14194,15 +14166,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred19_FTS
 	public final void synpred19_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:9: ( fieldReferenceWithoutPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:10: fieldReferenceWithoutPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:9: ( fieldReferenceWithoutPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:553:10: fieldReferenceWithoutPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred19_FTS3398);
+		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred19_FTS3399);
 		fieldReferenceWithoutPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred19_FTS3400); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred19_FTS3401); if (state.failed) return;
 
 		}
 
@@ -14211,10 +14183,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred20_FTS
 	public final void synpred20_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:555:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred20_FTS3439);
+		pushFollow(FOLLOW_slop_in_synpred20_FTS3440);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14226,10 +14198,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred21_FTS
 	public final void synpred21_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:558:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred21_FTS3514);
+		pushFollow(FOLLOW_fuzzy_in_synpred21_FTS3515);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14241,10 +14213,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred22_FTS
 	public final void synpred22_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:20: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:21: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:20: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:562:21: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred22_FTS3584);
+		pushFollow(FOLLOW_slop_in_synpred22_FTS3585);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14256,10 +14228,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred23_FTS
 	public final void synpred23_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:18: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:19: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:18: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:565:19: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred23_FTS3642);
+		pushFollow(FOLLOW_fuzzy_in_synpred23_FTS3643);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14271,15 +14243,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred24_FTS
 	public final void synpred24_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:9: ( fieldReferenceWithPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:10: fieldReferenceWithPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:9: ( fieldReferenceWithPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:575:10: fieldReferenceWithPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred24_FTS3749);
+		pushFollow(FOLLOW_fieldReferenceWithPrefix_in_synpred24_FTS3750);
 		fieldReferenceWithPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred24_FTS3751); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred24_FTS3752); if (state.failed) return;
 
 		}
 
@@ -14288,10 +14260,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred25_FTS
 	public final void synpred25_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:577:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred25_FTS3790);
+		pushFollow(FOLLOW_slop_in_synpred25_FTS3791);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14303,10 +14275,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred26_FTS
 	public final void synpred26_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:580:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred26_FTS3865);
+		pushFollow(FOLLOW_fuzzy_in_synpred26_FTS3866);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14318,15 +14290,15 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred27_FTS
 	public final void synpred27_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:9: ( fieldReferenceWithoutPrefix COLON )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:10: fieldReferenceWithoutPrefix COLON
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:9: ( fieldReferenceWithoutPrefix COLON )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:584:10: fieldReferenceWithoutPrefix COLON
 		{
-		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred27_FTS3932);
+		pushFollow(FOLLOW_fieldReferenceWithoutPrefix_in_synpred27_FTS3933);
 		fieldReferenceWithoutPrefix();
 		state._fsp--;
 		if (state.failed) return;
 
-		match(input,COLON,FOLLOW_COLON_in_synpred27_FTS3934); if (state.failed) return;
+		match(input,COLON,FOLLOW_COLON_in_synpred27_FTS3935); if (state.failed) return;
 
 		}
 
@@ -14335,10 +14307,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred28_FTS
 	public final void synpred28_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:28: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:29: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:28: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:586:29: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred28_FTS3973);
+		pushFollow(FOLLOW_slop_in_synpred28_FTS3974);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14350,10 +14322,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred29_FTS
 	public final void synpred29_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:26: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:27: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:26: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:589:27: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred29_FTS4048);
+		pushFollow(FOLLOW_fuzzy_in_synpred29_FTS4049);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14365,10 +14337,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred30_FTS
 	public final void synpred30_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:20: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:21: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:20: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:593:21: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred30_FTS4118);
+		pushFollow(FOLLOW_slop_in_synpred30_FTS4119);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14380,10 +14352,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred31_FTS
 	public final void synpred31_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:18: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:19: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:18: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:596:19: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred31_FTS4176);
+		pushFollow(FOLLOW_fuzzy_in_synpred31_FTS4177);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14395,10 +14367,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred32_FTS
 	public final void synpred32_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:9: ( not )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:10: not
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:9: ( not )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:669:10: not
 		{
-		pushFollow(FOLLOW_not_in_synpred32_FTS4923);
+		pushFollow(FOLLOW_not_in_synpred32_FTS4924);
 		not();
 		state._fsp--;
 		if (state.failed) return;
@@ -14410,10 +14382,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred33_FTS
 	public final void synpred33_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:9: ( ftsFieldGroupProximity )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:10: ftsFieldGroupProximity
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:9: ( ftsFieldGroupProximity )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:688:10: ftsFieldGroupProximity
 		{
-		pushFollow(FOLLOW_ftsFieldGroupProximity_in_synpred33_FTS5288);
+		pushFollow(FOLLOW_ftsFieldGroupProximity_in_synpred33_FTS5289);
 		ftsFieldGroupProximity();
 		state._fsp--;
 		if (state.failed) return;
@@ -14425,10 +14397,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred34_FTS
 	public final void synpred34_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:11: ( ftsFieldGroupTerm )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:12: ftsFieldGroupTerm
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:11: ( ftsFieldGroupTerm )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:12: ftsFieldGroupTerm
 		{
-		pushFollow(FOLLOW_ftsFieldGroupTerm_in_synpred34_FTS5354);
+		pushFollow(FOLLOW_ftsFieldGroupTerm_in_synpred34_FTS5355);
 		ftsFieldGroupTerm();
 		state._fsp--;
 		if (state.failed) return;
@@ -14440,10 +14412,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred35_FTS
 	public final void synpred35_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:54: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:55: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:54: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:691:55: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred35_FTS5364);
+		pushFollow(FOLLOW_fuzzy_in_synpred35_FTS5365);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14455,10 +14427,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred36_FTS
 	public final void synpred36_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:11: ( ftsFieldGroupExactTerm )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:12: ftsFieldGroupExactTerm
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:11: ( ftsFieldGroupExactTerm )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:12: ftsFieldGroupExactTerm
 		{
-		pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_synpred36_FTS5435);
+		pushFollow(FOLLOW_ftsFieldGroupExactTerm_in_synpred36_FTS5436);
 		ftsFieldGroupExactTerm();
 		state._fsp--;
 		if (state.failed) return;
@@ -14470,10 +14442,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred37_FTS
 	public final void synpred37_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:64: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:65: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:64: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:694:65: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred37_FTS5445);
+		pushFollow(FOLLOW_fuzzy_in_synpred37_FTS5446);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14485,10 +14457,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred38_FTS
 	public final void synpred38_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:11: ( ftsFieldGroupPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:12: ftsFieldGroupPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:11: ( ftsFieldGroupPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:12: ftsFieldGroupPhrase
 		{
-		pushFollow(FOLLOW_ftsFieldGroupPhrase_in_synpred38_FTS5516);
+		pushFollow(FOLLOW_ftsFieldGroupPhrase_in_synpred38_FTS5517);
 		ftsFieldGroupPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14500,10 +14472,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred39_FTS
 	public final void synpred39_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:58: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:59: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:58: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:697:59: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred39_FTS5526);
+		pushFollow(FOLLOW_slop_in_synpred39_FTS5527);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14515,10 +14487,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred40_FTS
 	public final void synpred40_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:11: ( ftsFieldGroupExactPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:12: ftsFieldGroupExactPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:11: ( ftsFieldGroupExactPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:12: ftsFieldGroupExactPhrase
 		{
-		pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_synpred40_FTS5597);
+		pushFollow(FOLLOW_ftsFieldGroupExactPhrase_in_synpred40_FTS5598);
 		ftsFieldGroupExactPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14530,10 +14502,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred41_FTS
 	public final void synpred41_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:68: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:69: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:68: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:700:69: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred41_FTS5607);
+		pushFollow(FOLLOW_slop_in_synpred41_FTS5608);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14545,10 +14517,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred42_FTS
 	public final void synpred42_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:11: ( ftsFieldGroupTokenisedPhrase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:12: ftsFieldGroupTokenisedPhrase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:11: ( ftsFieldGroupTokenisedPhrase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:12: ftsFieldGroupTokenisedPhrase
 		{
-		pushFollow(FOLLOW_ftsFieldGroupTokenisedPhrase_in_synpred42_FTS5678);
+		pushFollow(FOLLOW_ftsFieldGroupTokenisedPhrase_in_synpred42_FTS5679);
 		ftsFieldGroupTokenisedPhrase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14560,10 +14532,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred43_FTS
 	public final void synpred43_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:76: ( slop )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:77: slop
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:76: ( slop )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:703:77: slop
 		{
-		pushFollow(FOLLOW_slop_in_synpred43_FTS5688);
+		pushFollow(FOLLOW_slop_in_synpred43_FTS5689);
 		slop();
 		state._fsp--;
 		if (state.failed) return;
@@ -14575,10 +14547,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred44_FTS
 	public final void synpred44_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:11: ( ftsFieldGroupSynonym )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:12: ftsFieldGroupSynonym
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:11: ( ftsFieldGroupSynonym )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:12: ftsFieldGroupSynonym
 		{
-		pushFollow(FOLLOW_ftsFieldGroupSynonym_in_synpred44_FTS5759);
+		pushFollow(FOLLOW_ftsFieldGroupSynonym_in_synpred44_FTS5760);
 		ftsFieldGroupSynonym();
 		state._fsp--;
 		if (state.failed) return;
@@ -14590,10 +14562,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred45_FTS
 	public final void synpred45_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:60: ( fuzzy )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:61: fuzzy
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:60: ( fuzzy )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:706:61: fuzzy
 		{
-		pushFollow(FOLLOW_fuzzy_in_synpred45_FTS5769);
+		pushFollow(FOLLOW_fuzzy_in_synpred45_FTS5770);
 		fuzzy();
 		state._fsp--;
 		if (state.failed) return;
@@ -14605,10 +14577,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred46_FTS
 	public final void synpred46_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:11: ( ftsFieldGroupRange )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:12: ftsFieldGroupRange
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:11: ( ftsFieldGroupRange )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:709:12: ftsFieldGroupRange
 		{
-		pushFollow(FOLLOW_ftsFieldGroupRange_in_synpred46_FTS5840);
+		pushFollow(FOLLOW_ftsFieldGroupRange_in_synpred46_FTS5841);
 		ftsFieldGroupRange();
 		state._fsp--;
 		if (state.failed) return;
@@ -14620,10 +14592,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred47_FTS
 	public final void synpred47_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:38: ( proximityGroup )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:39: proximityGroup
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:38: ( proximityGroup )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:752:39: proximityGroup
 		{
-		pushFollow(FOLLOW_proximityGroup_in_synpred47_FTS6269);
+		pushFollow(FOLLOW_proximityGroup_in_synpred47_FTS6270);
 		proximityGroup();
 		state._fsp--;
 		if (state.failed) return;
@@ -14635,14 +14607,14 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred48_FTS
 	public final void synpred48_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:9: ( ID DOT ID )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:10: ID DOT ID
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:9: ( ID DOT ID )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:852:10: ID DOT ID
 		{
-		match(input,ID,FOLLOW_ID_in_synpred48_FTS7426); if (state.failed) return;
+		match(input,ID,FOLLOW_ID_in_synpred48_FTS7427); if (state.failed) return;
 
-		match(input,DOT,FOLLOW_DOT_in_synpred48_FTS7428); if (state.failed) return;
+		match(input,DOT,FOLLOW_DOT_in_synpred48_FTS7429); if (state.failed) return;
 
-		match(input,ID,FOLLOW_ID_in_synpred48_FTS7430); if (state.failed) return;
+		match(input,ID,FOLLOW_ID_in_synpred48_FTS7431); if (state.failed) return;
 
 		}
 
@@ -14651,8 +14623,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred49_FTS
 	public final void synpred49_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:872:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -14664,7 +14636,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7752);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7753);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14679,7 +14651,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7760);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7761);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14694,7 +14666,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7768);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7769);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14709,7 +14681,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7776);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7777);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14724,7 +14696,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7784);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred49_FTS7785);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14736,7 +14708,7 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred50_FTS
 	public final void synpred50_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT | COMMA ftsWordBase )
 		int alt89=2;
 		int LA89_0 = input.LA(1);
 		if ( (LA89_0==DATETIME||LA89_0==DECIMAL_INTEGER_LITERAL||LA89_0==FLOATING_POINT_LITERAL||(LA89_0 >= FTSPRE && LA89_0 <= FTSWORD)||LA89_0==ID||LA89_0==NOT||LA89_0==QUESTION_MARK||LA89_0==STAR||LA89_0==TO||LA89_0==URI) ) {
@@ -14755,9 +14727,9 @@ public class FTSParser extends Parser {
 
 		switch (alt89) {
 			case 1 :
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase DOT
 				{
-				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7852);
+				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7853);
 				ftsWordBase();
 				state._fsp--;
 				if (state.failed) return;
@@ -14772,7 +14744,7 @@ public class FTSParser extends Parser {
 					MismatchedSetException mse = new MismatchedSetException(null,input);
 					throw mse;
 				}
-				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7860);
+				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7861);
 				ftsWordBase();
 				state._fsp--;
 				if (state.failed) return;
@@ -14787,7 +14759,7 @@ public class FTSParser extends Parser {
 					MismatchedSetException mse = new MismatchedSetException(null,input);
 					throw mse;
 				}
-				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7868);
+				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7869);
 				ftsWordBase();
 				state._fsp--;
 				if (state.failed) return;
@@ -14802,21 +14774,21 @@ public class FTSParser extends Parser {
 					MismatchedSetException mse = new MismatchedSetException(null,input);
 					throw mse;
 				}
-				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7876);
+				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7877);
 				ftsWordBase();
 				state._fsp--;
 				if (state.failed) return;
 
-				match(input,DOT,FOLLOW_DOT_in_synpred50_FTS7878); if (state.failed) return;
+				match(input,DOT,FOLLOW_DOT_in_synpred50_FTS7879); if (state.failed) return;
 
 				}
 				break;
 			case 2 :
-				// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:100: COMMA ftsWordBase
+				// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:874:100: COMMA ftsWordBase
 				{
-				match(input,COMMA,FOLLOW_COMMA_in_synpred50_FTS7880); if (state.failed) return;
+				match(input,COMMA,FOLLOW_COMMA_in_synpred50_FTS7881); if (state.failed) return;
 
-				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7882);
+				pushFollow(FOLLOW_ftsWordBase_in_synpred50_FTS7883);
 				ftsWordBase();
 				state._fsp--;
 				if (state.failed) return;
@@ -14830,8 +14802,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred51_FTS
 	public final void synpred51_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:876:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -14843,7 +14815,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7951);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7952);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14858,7 +14830,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7959);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7960);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14873,7 +14845,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7967);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7968);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14888,7 +14860,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7975);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred51_FTS7976);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14910,10 +14882,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred52_FTS
 	public final void synpred52_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:878:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8047);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8048);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14928,7 +14900,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8055);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8056);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14943,7 +14915,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8063);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8064);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14958,7 +14930,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8071);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred52_FTS8072);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -14980,8 +14952,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred53_FTS
 	public final void synpred53_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:12: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:880:13: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -14993,7 +14965,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8144);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8145);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15008,7 +14980,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8152);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8153);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15023,7 +14995,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8160);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8161);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15038,7 +15010,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8168);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred53_FTS8169);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15050,10 +15022,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred54_FTS
 	public final void synpred54_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:882:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8228);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8229);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15068,7 +15040,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8236);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8237);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15083,7 +15055,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8244);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8245);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15098,7 +15070,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8252);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred54_FTS8253);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15110,8 +15082,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred55_FTS
 	public final void synpred55_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:884:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -15123,7 +15095,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8312);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8313);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15138,7 +15110,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8320);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8321);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15153,7 +15125,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8328);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred55_FTS8329);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15175,10 +15147,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred56_FTS
 	public final void synpred56_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:886:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8392);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8393);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15193,7 +15165,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8400);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8401);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15208,7 +15180,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8408);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred56_FTS8409);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15230,8 +15202,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred57_FTS
 	public final void synpred57_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:888:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -15243,7 +15215,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8472);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8473);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15258,7 +15230,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8480);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8481);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15273,7 +15245,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8488);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred57_FTS8489);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15285,10 +15257,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred58_FTS
 	public final void synpred58_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:890:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8540);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8541);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15303,7 +15275,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8548);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8549);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15318,7 +15290,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8556);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred58_FTS8557);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15330,8 +15302,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred59_FTS
 	public final void synpred59_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:892:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -15343,7 +15315,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred59_FTS8609);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred59_FTS8610);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15358,7 +15330,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred59_FTS8617);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred59_FTS8618);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15380,10 +15352,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred60_FTS
 	public final void synpred60_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:894:12: ftsWordBase ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred60_FTS8673);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred60_FTS8674);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15398,7 +15370,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred60_FTS8681);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred60_FTS8682);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15420,8 +15392,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred61_FTS
 	public final void synpred61_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:896:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -15433,7 +15405,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred61_FTS8739);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred61_FTS8740);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15448,7 +15420,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred61_FTS8747);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred61_FTS8748);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15460,10 +15432,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred62_FTS
 	public final void synpred62_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:12: ftsWordBase ( DOT | COMMA ) ftsWordBase
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:11: ( ftsWordBase ( DOT | COMMA ) ftsWordBase )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:898:12: ftsWordBase ( DOT | COMMA ) ftsWordBase
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred62_FTS8791);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred62_FTS8792);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15478,7 +15450,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred62_FTS8799);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred62_FTS8800);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15490,8 +15462,8 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred63_FTS
 	public final void synpred63_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:11: ( ( DOT | COMMA ) ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:900:12: ( DOT | COMMA ) ftsWordBase ( DOT | COMMA )
 		{
 		if ( input.LA(1)==COMMA||input.LA(1)==DOT ) {
 			input.consume();
@@ -15503,7 +15475,7 @@ public class FTSParser extends Parser {
 			MismatchedSetException mse = new MismatchedSetException(null,input);
 			throw mse;
 		}
-		pushFollow(FOLLOW_ftsWordBase_in_synpred63_FTS8843);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred63_FTS8844);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -15525,10 +15497,10 @@ public class FTSParser extends Parser {
 
 	// $ANTLR start synpred64_FTS
 	public final void synpred64_FTS_fragment() throws RecognitionException {
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:11: ( ftsWordBase ( DOT | COMMA ) )
-		// src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:12: ftsWordBase ( DOT | COMMA )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:11: ( ftsWordBase ( DOT | COMMA ) )
+		// ./alfresco-data-model/src/main/java/org/alfresco/repo/search/impl/parsers/FTS.g:902:12: ftsWordBase ( DOT | COMMA )
 		{
-		pushFollow(FOLLOW_ftsWordBase_in_synpred64_FTS8891);
+		pushFollow(FOLLOW_ftsWordBase_in_synpred64_FTS8892);
 		ftsWordBase();
 		state._fsp--;
 		if (state.failed) return;
@@ -17015,6 +16987,7 @@ public class FTSParser extends Parser {
 						 
 						int index17_204 = input.index();
 						input.rewind();
+						s = -1;
                         s = specialStateTransition0(LA17_204);
 
                         input.seek(index17_204);
@@ -17039,7 +17012,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_203 = input.index();
 						input.rewind();
-                        s = specialStateTransition2(LA17_203);
+						s = -1;
+                        s = specialStateTransition1(LA17_203);
 
                         input.seek(index17_203);
 						if ( s>=0 ) return s;
@@ -17050,7 +17024,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_160 = input.index();
 						input.rewind();
-                        s = specialStateTransition3(LA17_160);
+						s = -1;
+                        s = specialStateTransition2(LA17_160);
 
                         input.seek(index17_160);
 						if ( s>=0 ) return s;
@@ -17061,7 +17036,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_6 = input.index();
 						input.rewind();
-                        s = specialStateTransition4(LA17_6);
+						s = -1;
+                        s = specialStateTransition3(LA17_6);
 
                         input.seek(index17_6);
 						if ( s>=0 ) return s;
@@ -17072,7 +17048,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_166 = input.index();
 						input.rewind();
-                        s = specialStateTransition5(LA17_166);
+						s = -1;
+                        s = specialStateTransition4(LA17_166);
 
                         input.seek(index17_166);
 						if ( s>=0 ) return s;
@@ -17083,7 +17060,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_206 = input.index();
 						input.rewind();
-                        s = specialStateTransition6(LA17_206);
+						s = -1;
+                        s = specialStateTransition5(LA17_206);
 
                         input.seek(index17_206);
 						if ( s>=0 ) return s;
@@ -17094,7 +17072,8 @@ public class FTSParser extends Parser {
 						 
 						int index17_165 = input.index();
 						input.rewind();
-                        s = specialStateTransition7(LA17_165);
+						s = -1;
+                        s = specialStateTransition6(LA17_165);
 
                         input.seek(index17_165);
 						if ( s>=0 ) return s;
@@ -17106,39 +17085,9 @@ public class FTSParser extends Parser {
 						int index17_24 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA17_24==ID) ) {s = 70;}
-						else if ( (LA17_24==FTSWORD) && (synpred5_FTS())) {s = 71;}
-						else if ( (LA17_24==FTSPRE) && (synpred5_FTS())) {s = 72;}
-						else if ( (LA17_24==FTSWILD) && (synpred5_FTS())) {s = 73;}
-						else if ( (LA17_24==NOT) && (synpred5_FTS())) {s = 74;}
-						else if ( (LA17_24==TO) && (synpred5_FTS())) {s = 75;}
-						else if ( (LA17_24==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
-						else if ( (LA17_24==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
-						else if ( (LA17_24==STAR) && (synpred5_FTS())) {s = 78;}
-						else if ( (LA17_24==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
-						else if ( (LA17_24==DATETIME) && (synpred5_FTS())) {s = 80;}
-						else if ( (LA17_24==URI) && (synpred5_FTS())) {s = 81;}
-						else if ( (LA17_24==TILDA) && (synpred5_FTS())) {s = 29;}
-						else if ( (LA17_24==CARAT) && (synpred5_FTS())) {s = 30;}
-						else if ( (LA17_24==AND) && (synpred5_FTS())) {s = 31;}
-						else if ( (LA17_24==AMP) && (synpred5_FTS())) {s = 32;}
-						else if ( (LA17_24==EOF) && (synpred5_FTS())) {s = 33;}
-						else if ( (LA17_24==RPAREN) && (synpred5_FTS())) {s = 34;}
-						else if ( (LA17_24==OR) && (synpred5_FTS())) {s = 35;}
-						else if ( (LA17_24==BAR) && (synpred5_FTS())) {s = 36;}
-						else if ( (LA17_24==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
-						else if ( (LA17_24==AT) && (synpred5_FTS())) {s = 48;}
-						else if ( (LA17_24==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
-						else if ( (LA17_24==LSQUARE) && (synpred5_FTS())) {s = 50;}
-						else if ( (LA17_24==LT) && (synpred5_FTS())) {s = 51;}
-						else if ( (LA17_24==COMMA||LA17_24==DOT) && (synpred5_FTS())) {s = 69;}
-						else if ( (LA17_24==EQUALS) && (synpred5_FTS())) {s = 53;}
-						else if ( (LA17_24==LPAREN) && (synpred5_FTS())) {s = 54;}
-						else if ( (LA17_24==PERCENT) && (synpred5_FTS())) {s = 55;}
-						else if ( (LA17_24==PLUS) && (synpred5_FTS())) {s = 56;}
-						else if ( (LA17_24==MINUS) && (synpred5_FTS())) {s = 57;}
-						 
-						input.seek(index17_24);
+                        s = specialStateTransition7(LA17_24);
+
+                        input.seek(index17_24);
 						if ( s>=0 ) return s;
 						break;
 
@@ -19615,10 +19564,10 @@ public class FTSParser extends Parser {
 			throw nvae;
 		}
 
+
         private int specialStateTransition0(int LA17_204)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_204==DOTDOT) && (synpred3_FTS())) {s = 27;}
             else if ( (LA17_204==COMMA||LA17_204==DOT) && (synpred5_FTS())) {s = 216;}
             else if ( (LA17_204==TILDA) && (synpred5_FTS())) {s = 217;}
@@ -19654,10 +19603,10 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition2(int LA17_203)
+
+        private int specialStateTransition1(int LA17_203)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_203==DOTDOT) && (synpred3_FTS())) {s = 27;}
             else if ( (LA17_203==COMMA||LA17_203==DOT) && (synpred5_FTS())) {s = 216;}
             else if ( (LA17_203==TILDA) && (synpred5_FTS())) {s = 217;}
@@ -19693,10 +19642,9 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition3(int LA17_160)
+        private int specialStateTransition2(int LA17_160)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_160==LPAREN) && (synpred4_FTS())) {s = 100;}
             else if ( (LA17_160==ID) ) {s = 198;}
             else if ( (LA17_160==FTSWORD) ) {s = 199;}
@@ -19717,10 +19665,9 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition4(int LA17_6)
+        private int specialStateTransition3(int LA17_6)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_6==STAR) ) {s = 25;}
             else if ( (LA17_6==COLON) ) {s = 26;}
             else if ( (LA17_6==COMMA||LA17_6==DOT) && (synpred5_FTS())) {s = 28;}
@@ -19756,10 +19703,9 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition5(int LA17_166)
+        private int specialStateTransition4(int LA17_166)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_166==DOTDOT) && (synpred3_FTS())) {s = 27;}
             else if ( (LA17_166==COMMA||LA17_166==DOT) && (synpred5_FTS())) {s = 161;}
             else if ( (LA17_166==TILDA) && (synpred5_FTS())) {s = 162;}
@@ -19795,10 +19741,9 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition6(int LA17_206)
+        private int specialStateTransition5(int LA17_206)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_206==DOTDOT) && (synpred3_FTS())) {s = 27;}
             else if ( (LA17_206==COMMA||LA17_206==DOT) && (synpred5_FTS())) {s = 216;}
             else if ( (LA17_206==TILDA) && (synpred5_FTS())) {s = 217;}
@@ -19834,10 +19779,9 @@ public class FTSParser extends Parser {
             return s;
         }
 
-        private int specialStateTransition7(int LA17_165)
+        private int specialStateTransition6(int LA17_165)
         {
-            int s;
-            s = -1;
+            int s = -1;
             if ( (LA17_165==DOTDOT) && (synpred3_FTS())) {s = 27;}
             else if ( (LA17_165==COMMA||LA17_165==DOT) && (synpred5_FTS())) {s = 161;}
             else if ( (LA17_165==TILDA) && (synpred5_FTS())) {s = 162;}
@@ -19870,6 +19814,43 @@ public class FTSParser extends Parser {
             else if ( (LA17_165==PERCENT) && (synpred5_FTS())) {s = 55;}
             else if ( (LA17_165==PLUS) && (synpred5_FTS())) {s = 56;}
             else if ( (LA17_165==MINUS) && (synpred5_FTS())) {s = 57;}
+            return s;
+        }
+
+        private int specialStateTransition7(int LA17_24)
+        {
+            int s = -1;
+            if ( (LA17_24==ID) ) {s = 70;}
+            else if ( (LA17_24==FTSWORD) && (synpred5_FTS())) {s = 71;}
+            else if ( (LA17_24==FTSPRE) && (synpred5_FTS())) {s = 72;}
+            else if ( (LA17_24==FTSWILD) && (synpred5_FTS())) {s = 73;}
+            else if ( (LA17_24==NOT) && (synpred5_FTS())) {s = 74;}
+            else if ( (LA17_24==TO) && (synpred5_FTS())) {s = 75;}
+            else if ( (LA17_24==DECIMAL_INTEGER_LITERAL) && (synpred5_FTS())) {s = 76;}
+            else if ( (LA17_24==FLOATING_POINT_LITERAL) && (synpred5_FTS())) {s = 77;}
+            else if ( (LA17_24==STAR) && (synpred5_FTS())) {s = 78;}
+            else if ( (LA17_24==QUESTION_MARK) && (synpred5_FTS())) {s = 79;}
+            else if ( (LA17_24==DATETIME) && (synpred5_FTS())) {s = 80;}
+            else if ( (LA17_24==URI) && (synpred5_FTS())) {s = 81;}
+            else if ( (LA17_24==TILDA) && (synpred5_FTS())) {s = 29;}
+            else if ( (LA17_24==CARAT) && (synpred5_FTS())) {s = 30;}
+            else if ( (LA17_24==AND) && (synpred5_FTS())) {s = 31;}
+            else if ( (LA17_24==AMP) && (synpred5_FTS())) {s = 32;}
+            else if ( (LA17_24==EOF) && (synpred5_FTS())) {s = 33;}
+            else if ( (LA17_24==RPAREN) && (synpred5_FTS())) {s = 34;}
+            else if ( (LA17_24==OR) && (synpred5_FTS())) {s = 35;}
+            else if ( (LA17_24==BAR) && (synpred5_FTS())) {s = 36;}
+            else if ( (LA17_24==EXCLAMATION) && (synpred5_FTS())) {s = 42;}
+            else if ( (LA17_24==AT) && (synpred5_FTS())) {s = 48;}
+            else if ( (LA17_24==FTSPHRASE) && (synpred5_FTS())) {s = 49;}
+            else if ( (LA17_24==LSQUARE) && (synpred5_FTS())) {s = 50;}
+            else if ( (LA17_24==LT) && (synpred5_FTS())) {s = 51;}
+            else if ( (LA17_24==COMMA||LA17_24==DOT) && (synpred5_FTS())) {s = 69;}
+            else if ( (LA17_24==EQUALS) && (synpred5_FTS())) {s = 53;}
+            else if ( (LA17_24==LPAREN) && (synpred5_FTS())) {s = 54;}
+            else if ( (LA17_24==PERCENT) && (synpred5_FTS())) {s = 55;}
+            else if ( (LA17_24==PLUS) && (synpred5_FTS())) {s = 56;}
+            else if ( (LA17_24==MINUS) && (synpred5_FTS())) {s = 57;}
             return s;
         }
     }
@@ -31659,514 +31640,514 @@ public class FTSParser extends Parser {
 		}
 	}
 
-	public static final BitSet FOLLOW_ftsDisjunction_in_ftsQuery577 = new BitSet(new long[]{0x0000000000000000L});
-	public static final BitSet FOLLOW_EOF_in_ftsQuery579 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cmisExplicitDisjunction_in_ftsDisjunction639 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsDisjunction653 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsImplicitDisjunction_in_ftsDisjunction667 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction700 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_or_in_ftsExplicitDisjunction703 = new BitSet(new long[]{0x803C80000920A8F0L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction705 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_cmisConjunction_in_cmisExplicitDisjunction789 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_or_in_cmisExplicitDisjunction792 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004100L});
-	public static final BitSet FOLLOW_cmisConjunction_in_cmisExplicitDisjunction794 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_or_in_ftsImplicitDisjunction879 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsExplicitConjunction_in_ftsImplicitDisjunction882 = new BitSet(new long[]{0x803C80000920A8E2L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsPrefixed_in_ftsExplicitConjunction969 = new BitSet(new long[]{0x0000000000000032L});
-	public static final BitSet FOLLOW_and_in_ftsExplicitConjunction972 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsPrefixed_in_ftsExplicitConjunction974 = new BitSet(new long[]{0x0000000000000032L});
-	public static final BitSet FOLLOW_and_in_ftsImplicitConjunction1059 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsPrefixed_in_ftsImplicitConjunction1062 = new BitSet(new long[]{0x803C80000920A8F2L,0x0000016101164138L});
-	public static final BitSet FOLLOW_cmisPrefixed_in_cmisConjunction1146 = new BitSet(new long[]{0x803C80000020A802L,0x0000014101004100L});
-	public static final BitSet FOLLOW_not_in_ftsPrefixed1238 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
-	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1240 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsPrefixed1242 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1306 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsPrefixed1308 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_PLUS_in_ftsPrefixed1372 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
-	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1374 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsPrefixed1376 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_BAR_in_ftsPrefixed1440 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
-	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1442 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsPrefixed1444 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_MINUS_in_ftsPrefixed1508 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
-	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1510 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsPrefixed1512 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cmisTest_in_cmisPrefixed1597 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_MINUS_in_cmisPrefixed1657 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_cmisTest_in_cmisPrefixed1659 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsTest1751 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsRange_in_ftsTest1828 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroup_in_ftsTest1907 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsTermOrPhrase_in_ftsTest1956 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsExactTermOrPhrase_in_ftsTest1985 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsTokenisedTermOrPhrase_in_ftsTest2015 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LPAREN_in_ftsTest2046 = new BitSet(new long[]{0x803C80000920A8F0L,0x0000016101164138L});
-	public static final BitSet FOLLOW_ftsDisjunction_in_ftsTest2048 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_RPAREN_in_ftsTest2050 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_template_in_ftsTest2083 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cmisTerm_in_cmisTest2136 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cmisPhrase_in_cmisTest2196 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_PERCENT_in_template2277 = new BitSet(new long[]{0x8000000000000060L,0x0000014000024000L});
-	public static final BitSet FOLLOW_tempReference_in_template2279 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_PERCENT_in_template2339 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000008L});
-	public static final BitSet FOLLOW_LPAREN_in_template2341 = new BitSet(new long[]{0x8000000000000060L,0x0000014000024000L});
-	public static final BitSet FOLLOW_tempReference_in_template2344 = new BitSet(new long[]{0x8000000000000860L,0x0000014008024000L});
-	public static final BitSet FOLLOW_COMMA_in_template2346 = new BitSet(new long[]{0x8000000000000060L,0x0000014008024000L});
-	public static final BitSet FOLLOW_RPAREN_in_template2351 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDA_in_fuzzy2433 = new BitSet(new long[]{0x0000800000008000L});
-	public static final BitSet FOLLOW_number_in_fuzzy2435 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDA_in_slop2516 = new BitSet(new long[]{0x0000000000008000L});
-	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_slop2518 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_CARAT_in_boost2599 = new BitSet(new long[]{0x0000800000008000L});
-	public static final BitSet FOLLOW_number_in_boost2601 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsTermOrPhrase2690 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsTermOrPhrase2692 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2720 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase2728 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase2795 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase2804 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsTermOrPhrase2873 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsTermOrPhrase2875 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2903 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase2911 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase2978 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase2987 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase3048 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase3056 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase3106 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase3115 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_EQUALS_in_ftsExactTermOrPhrase3194 = new BitSet(new long[]{0x803C80000020A860L,0x0000014101024000L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsExactTermOrPhrase3222 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsExactTermOrPhrase3224 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3252 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3260 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3327 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3336 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsExactTermOrPhrase3405 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsExactTermOrPhrase3407 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3435 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3443 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3510 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3519 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3580 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3588 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3638 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3647 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDA_in_ftsTokenisedTermOrPhrase3728 = new BitSet(new long[]{0x803C80000020A860L,0x0000014101024000L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsTokenisedTermOrPhrase3756 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3758 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3786 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase3794 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase3861 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase3870 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsTokenisedTermOrPhrase3939 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3941 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3969 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase3977 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4044 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4053 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase4114 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase4122 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4172 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4181 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_cmisTerm4254 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_cmisPhrase4308 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReference_in_ftsRange4363 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsRange4365 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000030L});
-	public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsRange4369 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReference_in_ftsFieldGroup4425 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_ftsFieldGroup4427 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000008L});
-	public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroup4429 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101124138L});
-	public static final BitSet FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroup4431 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroup4433 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupDisjunction4518 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupImplicitDisjunction_in_ftsFieldGroupDisjunction4532 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4565 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_or_in_ftsFieldGroupExplicitDisjunction4568 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101104138L});
-	public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4570 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
-	public static final BitSet FOLLOW_or_in_ftsFieldGroupImplicitDisjunction4655 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
-	public static final BitSet FOLLOW_ftsFieldGroupExplicitConjunction_in_ftsFieldGroupImplicitDisjunction4658 = new BitSet(new long[]{0x803C80000920A882L,0x0000016101124138L});
-	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4745 = new BitSet(new long[]{0x0000000000000032L});
-	public static final BitSet FOLLOW_and_in_ftsFieldGroupExplicitConjunction4748 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
-	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4750 = new BitSet(new long[]{0x0000000000000032L});
-	public static final BitSet FOLLOW_and_in_ftsFieldGroupImplicitConjunction4835 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
-	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupImplicitConjunction4838 = new BitSet(new long[]{0x803C80000920A8B2L,0x0000016101104138L});
-	public static final BitSet FOLLOW_not_in_ftsFieldGroupPrefixed4928 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
-	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4930 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed4932 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4996 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed4998 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_PLUS_in_ftsFieldGroupPrefixed5062 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
-	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5064 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5066 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_BAR_in_ftsFieldGroupPrefixed5130 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
-	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5132 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5134 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_MINUS_in_ftsFieldGroupPrefixed5198 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
-	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5200 = new BitSet(new long[]{0x0000000000000202L});
-	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5202 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest5293 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest5359 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5369 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest5440 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5450 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest5521 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5531 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTest5602 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5612 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupTokenisedPhrase_in_ftsFieldGroupTest5683 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5693 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest5764 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
-	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5774 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest5845 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroupTest5905 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101124138L});
-	public static final BitSet FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroupTest5907 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroupTest5909 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWord_in_ftsFieldGroupTerm5962 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_EQUALS_in_ftsFieldGroupExactTerm5995 = new BitSet(new long[]{0x803880000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm5997 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase6050 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_EQUALS_in_ftsFieldGroupExactPhrase6091 = new BitSet(new long[]{0x0000000001000000L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupExactPhrase6093 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupTokenisedPhrase6154 = new BitSet(new long[]{0x0000000001000000L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTokenisedPhrase6156 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupSynonym6209 = new BitSet(new long[]{0x803880000020A800L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym6211 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6264 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
-	public static final BitSet FOLLOW_proximityGroup_in_ftsFieldGroupProximity6274 = new BitSet(new long[]{0x803880000000A000L,0x0000014100004000L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6276 = new BitSet(new long[]{0x0000000000000002L,0x0000000100000000L});
-	public static final BitSet FOLLOW_ID_in_ftsFieldGroupProximityTerm6340 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWORD_in_ftsFieldGroupProximityTerm6352 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPRE_in_ftsFieldGroupProximityTerm6364 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWILD_in_ftsFieldGroupProximityTerm6376 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_NOT_in_ftsFieldGroupProximityTerm6388 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TO_in_ftsFieldGroupProximityTerm6400 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsFieldGroupProximityTerm6412 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsFieldGroupProximityTerm6424 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DATETIME_in_ftsFieldGroupProximityTerm6436 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_ftsFieldGroupProximityTerm6448 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_URI_in_ftsFieldGroupProximityTerm6460 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_ftsFieldGroupProximityTerm6462 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_proximityGroup6495 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000008L});
-	public static final BitSet FOLLOW_LPAREN_in_proximityGroup6498 = new BitSet(new long[]{0x0000000000008000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_proximityGroup6500 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_RPAREN_in_proximityGroup6503 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6587 = new BitSet(new long[]{0x0000000000400000L});
-	public static final BitSet FOLLOW_DOTDOT_in_ftsFieldGroupRange6589 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
-	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6591 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_range_left_in_ftsFieldGroupRange6629 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
-	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6631 = new BitSet(new long[]{0x0000000000000000L,0x0000004000000000L});
-	public static final BitSet FOLLOW_TO_in_ftsFieldGroupRange6633 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
-	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6635 = new BitSet(new long[]{0x2000000000000000L,0x0000000010000000L});
-	public static final BitSet FOLLOW_range_right_in_ftsFieldGroupRange6637 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LSQUARE_in_range_left6696 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LT_in_range_left6728 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_RSQUARE_in_range_right6781 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_GT_in_range_right6813 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_fieldReference6866 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_fieldReference6878 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AT_in_fieldReferenceWithoutPrefix6902 = new BitSet(new long[]{0x8000000000000020L,0x0000014000024000L});
-	public static final BitSet FOLLOW_uri_in_fieldReferenceWithoutPrefix6913 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_fieldReferenceWithoutPrefix6924 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AT_in_fieldReferenceWithPrefix7008 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_prefix_in_fieldReferenceWithPrefix7019 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_fieldReferenceWithPrefix7021 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AT_in_tempReference7104 = new BitSet(new long[]{0x8000000000000020L,0x0000014000024000L});
-	public static final BitSet FOLLOW_prefix_in_tempReference7133 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_uri_in_tempReference7153 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_tempReference7174 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_identifier_in_prefix7261 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_prefix7263 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_URI_in_uri7344 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ID_in_identifier7446 = new BitSet(new long[]{0x0000000000200000L});
-	public static final BitSet FOLLOW_DOT_in_identifier7448 = new BitSet(new long[]{0x8000000000000000L});
-	public static final BitSet FOLLOW_ID_in_identifier7452 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ID_in_identifier7501 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TO_in_identifier7568 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_OR_in_identifier7606 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AND_in_identifier7644 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_NOT_in_identifier7683 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord7801 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7807 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7809 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7815 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7817 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7823 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7825 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7831 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7833 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7839 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7899 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7901 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7907 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7909 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7915 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7917 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7923 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord7925 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7931 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord7998 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8004 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8006 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8012 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8014 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8020 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8022 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8028 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8030 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8094 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8096 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8102 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8104 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8110 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8112 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8118 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8120 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8185 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8191 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8193 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8199 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8201 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8207 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8209 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8215 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8269 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8271 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8277 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8279 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8285 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8287 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8293 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8351 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8357 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8359 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8365 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8367 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8373 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8375 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8431 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8433 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8439 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8441 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8447 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8449 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8505 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8511 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8513 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8519 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8521 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8527 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8573 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8575 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8581 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8583 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8589 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8640 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8646 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8648 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8654 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8656 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8705 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8707 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8713 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8715 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8764 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8770 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8772 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8778 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8816 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8818 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8824 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8866 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8872 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8874 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8914 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_ftsWord8916 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_ftsWord8932 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8938 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8951 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ID_in_ftsWordBase8996 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWORD_in_ftsWordBase9008 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPRE_in_ftsWordBase9020 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWILD_in_ftsWordBase9033 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_NOT_in_ftsWordBase9046 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TO_in_ftsWordBase9058 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsWordBase9070 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsWordBase9082 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_ftsWordBase9094 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_QUESTION_MARK_in_ftsWordBase9106 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DATETIME_in_ftsWordBase9118 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_URI_in_ftsWordBase9130 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_ftsWordBase9132 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ID_in_ftsRangeWord9212 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWORD_in_ftsRangeWord9224 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPRE_in_ftsRangeWord9236 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSWILD_in_ftsRangeWord9248 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FTSPHRASE_in_ftsRangeWord9260 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsRangeWord9272 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsRangeWord9284 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_DATETIME_in_ftsRangeWord9296 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_ftsRangeWord9308 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_URI_in_ftsRangeWord9320 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
-	public static final BitSet FOLLOW_identifier_in_ftsRangeWord9322 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_OR_in_or9357 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_BAR_in_or9369 = new BitSet(new long[]{0x0000000000000080L});
-	public static final BitSet FOLLOW_BAR_in_or9371 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AND_in_and9404 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AMP_in_and9416 = new BitSet(new long[]{0x0000000000000010L});
-	public static final BitSet FOLLOW_AMP_in_and9418 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_not_in_synpred1_FTS1233 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_synpred2_FTS1746 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsRange_in_synpred3_FTS1823 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroup_in_synpred4_FTS1902 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsTermOrPhrase_in_synpred5_FTS1951 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsExactTermOrPhrase_in_synpred6_FTS1980 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsTokenisedTermOrPhrase_in_synpred7_FTS2010 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred8_FTS2683 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred8_FTS2685 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred9_FTS2724 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred10_FTS2799 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred11_FTS2866 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred11_FTS2868 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred12_FTS2907 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred13_FTS2982 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred14_FTS3052 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred15_FTS3110 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred16_FTS3215 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred16_FTS3217 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred17_FTS3256 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred18_FTS3331 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred19_FTS3398 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred19_FTS3400 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred20_FTS3439 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred21_FTS3514 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred22_FTS3584 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred23_FTS3642 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred24_FTS3749 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred24_FTS3751 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred25_FTS3790 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred26_FTS3865 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred27_FTS3932 = new BitSet(new long[]{0x0000000000000400L});
-	public static final BitSet FOLLOW_COLON_in_synpred27_FTS3934 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred28_FTS3973 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred29_FTS4048 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred30_FTS4118 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred31_FTS4176 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_not_in_synpred32_FTS4923 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_synpred33_FTS5288 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_synpred34_FTS5354 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred35_FTS5364 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_synpred36_FTS5435 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred37_FTS5445 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_synpred38_FTS5516 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred39_FTS5526 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_synpred40_FTS5597 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred41_FTS5607 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupTokenisedPhrase_in_synpred42_FTS5678 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_slop_in_synpred43_FTS5688 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_synpred44_FTS5759 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fuzzy_in_synpred45_FTS5769 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsFieldGroupRange_in_synpred46_FTS5840 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_proximityGroup_in_synpred47_FTS6269 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ID_in_synpred48_FTS7426 = new BitSet(new long[]{0x0000000000200000L});
-	public static final BitSet FOLLOW_DOT_in_synpred48_FTS7428 = new BitSet(new long[]{0x8000000000000000L});
-	public static final BitSet FOLLOW_ID_in_synpred48_FTS7430 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred49_FTS7746 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7752 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred49_FTS7754 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7760 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred49_FTS7762 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7768 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred49_FTS7770 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7776 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred49_FTS7778 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7784 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7852 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred50_FTS7854 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7860 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred50_FTS7862 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7868 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred50_FTS7870 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7876 = new BitSet(new long[]{0x0000000000200000L});
-	public static final BitSet FOLLOW_DOT_in_synpred50_FTS7878 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_COMMA_in_synpred50_FTS7880 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7882 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred51_FTS7945 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7951 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred51_FTS7953 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7959 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred51_FTS7961 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7967 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred51_FTS7969 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7975 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred51_FTS7977 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8047 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred52_FTS8049 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8055 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred52_FTS8057 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8063 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred52_FTS8065 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8071 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred52_FTS8073 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred53_FTS8138 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8144 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred53_FTS8146 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8152 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred53_FTS8154 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8160 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred53_FTS8162 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8168 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8228 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred54_FTS8230 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8236 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred54_FTS8238 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8244 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred54_FTS8246 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8252 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred55_FTS8306 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8312 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred55_FTS8314 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8320 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred55_FTS8322 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8328 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred55_FTS8330 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8392 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred56_FTS8394 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8400 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred56_FTS8402 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8408 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred56_FTS8410 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred57_FTS8466 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8472 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred57_FTS8474 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8480 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred57_FTS8482 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8488 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8540 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred58_FTS8542 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8548 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred58_FTS8550 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8556 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred59_FTS8603 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred59_FTS8609 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred59_FTS8611 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred59_FTS8617 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred59_FTS8619 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred60_FTS8673 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred60_FTS8675 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred60_FTS8681 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred60_FTS8683 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred61_FTS8733 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred61_FTS8739 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred61_FTS8741 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred61_FTS8747 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred62_FTS8791 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred62_FTS8793 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred62_FTS8799 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_synpred63_FTS8837 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred63_FTS8843 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred63_FTS8845 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ftsWordBase_in_synpred64_FTS8891 = new BitSet(new long[]{0x0000000000200800L});
-	public static final BitSet FOLLOW_set_in_synpred64_FTS8893 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsDisjunction_in_ftsQuery578 = new BitSet(new long[]{0x0000000000000000L});
+	public static final BitSet FOLLOW_EOF_in_ftsQuery580 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cmisExplicitDisjunction_in_ftsDisjunction640 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsExplicitDisjunction_in_ftsDisjunction654 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsImplicitDisjunction_in_ftsDisjunction668 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction701 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_or_in_ftsExplicitDisjunction704 = new BitSet(new long[]{0x803C80000920A8F0L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsImplicitConjunction_in_ftsExplicitDisjunction706 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_cmisConjunction_in_cmisExplicitDisjunction790 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_or_in_cmisExplicitDisjunction793 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004100L});
+	public static final BitSet FOLLOW_cmisConjunction_in_cmisExplicitDisjunction795 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_or_in_ftsImplicitDisjunction880 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsExplicitConjunction_in_ftsImplicitDisjunction883 = new BitSet(new long[]{0x803C80000920A8E2L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsPrefixed_in_ftsExplicitConjunction970 = new BitSet(new long[]{0x0000000000000032L});
+	public static final BitSet FOLLOW_and_in_ftsExplicitConjunction973 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsPrefixed_in_ftsExplicitConjunction975 = new BitSet(new long[]{0x0000000000000032L});
+	public static final BitSet FOLLOW_and_in_ftsImplicitConjunction1060 = new BitSet(new long[]{0x803C80000920A8E0L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsPrefixed_in_ftsImplicitConjunction1063 = new BitSet(new long[]{0x803C80000920A8F2L,0x0000016101164138L});
+	public static final BitSet FOLLOW_cmisPrefixed_in_cmisConjunction1147 = new BitSet(new long[]{0x803C80000020A802L,0x0000014101004100L});
+	public static final BitSet FOLLOW_not_in_ftsPrefixed1239 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
+	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1241 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsPrefixed1243 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1307 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsPrefixed1309 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_PLUS_in_ftsPrefixed1373 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
+	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1375 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsPrefixed1377 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_BAR_in_ftsPrefixed1441 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
+	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1443 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsPrefixed1445 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_MINUS_in_ftsPrefixed1509 = new BitSet(new long[]{0x803C80000120A860L,0x0000016101064038L});
+	public static final BitSet FOLLOW_ftsTest_in_ftsPrefixed1511 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsPrefixed1513 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cmisTest_in_cmisPrefixed1598 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_MINUS_in_cmisPrefixed1658 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_cmisTest_in_cmisPrefixed1660 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsTest1752 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsRange_in_ftsTest1829 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroup_in_ftsTest1908 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsTermOrPhrase_in_ftsTest1957 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsExactTermOrPhrase_in_ftsTest1986 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsTokenisedTermOrPhrase_in_ftsTest2016 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_LPAREN_in_ftsTest2047 = new BitSet(new long[]{0x803C80000920A8F0L,0x0000016101164138L});
+	public static final BitSet FOLLOW_ftsDisjunction_in_ftsTest2049 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_RPAREN_in_ftsTest2051 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_template_in_ftsTest2084 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cmisTerm_in_cmisTest2137 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cmisPhrase_in_cmisTest2197 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_PERCENT_in_template2278 = new BitSet(new long[]{0x8000000000000060L,0x0000014000024000L});
+	public static final BitSet FOLLOW_tempReference_in_template2280 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_PERCENT_in_template2340 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000008L});
+	public static final BitSet FOLLOW_LPAREN_in_template2342 = new BitSet(new long[]{0x8000000000000060L,0x0000014000024000L});
+	public static final BitSet FOLLOW_tempReference_in_template2345 = new BitSet(new long[]{0x8000000000000860L,0x0000014008024000L});
+	public static final BitSet FOLLOW_COMMA_in_template2347 = new BitSet(new long[]{0x8000000000000060L,0x0000014008024000L});
+	public static final BitSet FOLLOW_RPAREN_in_template2352 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TILDA_in_fuzzy2434 = new BitSet(new long[]{0x0000800000008000L});
+	public static final BitSet FOLLOW_number_in_fuzzy2436 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TILDA_in_slop2517 = new BitSet(new long[]{0x0000000000008000L});
+	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_slop2519 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_CARAT_in_boost2600 = new BitSet(new long[]{0x0000800000008000L});
+	public static final BitSet FOLLOW_number_in_boost2602 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsTermOrPhrase2691 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsTermOrPhrase2693 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2721 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase2729 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase2796 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase2805 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsTermOrPhrase2874 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsTermOrPhrase2876 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase2904 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase2912 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase2979 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase2988 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTermOrPhrase3049 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTermOrPhrase3057 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTermOrPhrase3107 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTermOrPhrase3116 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_EQUALS_in_ftsExactTermOrPhrase3195 = new BitSet(new long[]{0x803C80000020A860L,0x0000014101024000L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsExactTermOrPhrase3223 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsExactTermOrPhrase3225 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3253 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3261 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3328 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3337 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsExactTermOrPhrase3406 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsExactTermOrPhrase3408 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3436 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3444 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3511 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3520 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsExactTermOrPhrase3581 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsExactTermOrPhrase3589 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsExactTermOrPhrase3639 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsExactTermOrPhrase3648 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TILDA_in_ftsTokenisedTermOrPhrase3729 = new BitSet(new long[]{0x803C80000020A860L,0x0000014101024000L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_ftsTokenisedTermOrPhrase3757 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3759 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3787 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase3795 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase3862 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase3871 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_ftsTokenisedTermOrPhrase3940 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsTokenisedTermOrPhrase3942 = new BitSet(new long[]{0x803C80000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase3970 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase3978 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4045 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4054 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsTokenisedTermOrPhrase4115 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsTokenisedTermOrPhrase4123 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsTokenisedTermOrPhrase4173 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsTokenisedTermOrPhrase4182 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_cmisTerm4255 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_cmisPhrase4309 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReference_in_ftsRange4364 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsRange4366 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000030L});
+	public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsRange4370 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReference_in_ftsFieldGroup4426 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_ftsFieldGroup4428 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000008L});
+	public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroup4430 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101124138L});
+	public static final BitSet FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroup4432 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroup4434 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupExplicitDisjunction_in_ftsFieldGroupDisjunction4519 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupImplicitDisjunction_in_ftsFieldGroupDisjunction4533 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4566 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_or_in_ftsFieldGroupExplicitDisjunction4569 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101104138L});
+	public static final BitSet FOLLOW_ftsFieldGroupImplicitConjunction_in_ftsFieldGroupExplicitDisjunction4571 = new BitSet(new long[]{0x0000000000000082L,0x0000000000020000L});
+	public static final BitSet FOLLOW_or_in_ftsFieldGroupImplicitDisjunction4656 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
+	public static final BitSet FOLLOW_ftsFieldGroupExplicitConjunction_in_ftsFieldGroupImplicitDisjunction4659 = new BitSet(new long[]{0x803C80000920A882L,0x0000016101124138L});
+	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4746 = new BitSet(new long[]{0x0000000000000032L});
+	public static final BitSet FOLLOW_and_in_ftsFieldGroupExplicitConjunction4749 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
+	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupExplicitConjunction4751 = new BitSet(new long[]{0x0000000000000032L});
+	public static final BitSet FOLLOW_and_in_ftsFieldGroupImplicitConjunction4836 = new BitSet(new long[]{0x803C80000920A880L,0x0000016101104138L});
+	public static final BitSet FOLLOW_ftsFieldGroupPrefixed_in_ftsFieldGroupImplicitConjunction4839 = new BitSet(new long[]{0x803C80000920A8B2L,0x0000016101104138L});
+	public static final BitSet FOLLOW_not_in_ftsFieldGroupPrefixed4929 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
+	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4931 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed4933 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed4997 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed4999 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_PLUS_in_ftsFieldGroupPrefixed5063 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
+	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5065 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5067 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_BAR_in_ftsFieldGroupPrefixed5131 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
+	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5133 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5135 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_MINUS_in_ftsFieldGroupPrefixed5199 = new BitSet(new long[]{0x803C80000120A800L,0x0000016101004038L});
+	public static final BitSet FOLLOW_ftsFieldGroupTest_in_ftsFieldGroupPrefixed5201 = new BitSet(new long[]{0x0000000000000202L});
+	public static final BitSet FOLLOW_boost_in_ftsFieldGroupPrefixed5203 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_ftsFieldGroupTest5294 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupTest5360 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5370 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_ftsFieldGroupTest5441 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5451 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_ftsFieldGroupTest5522 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5532 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTest5603 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5613 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupTokenisedPhrase_in_ftsFieldGroupTest5684 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_slop_in_ftsFieldGroupTest5694 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_ftsFieldGroupTest5765 = new BitSet(new long[]{0x0000000000000002L,0x0000002000000000L});
+	public static final BitSet FOLLOW_fuzzy_in_ftsFieldGroupTest5775 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupRange_in_ftsFieldGroupTest5846 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_LPAREN_in_ftsFieldGroupTest5906 = new BitSet(new long[]{0x803C80000920A8B0L,0x0000016101124138L});
+	public static final BitSet FOLLOW_ftsFieldGroupDisjunction_in_ftsFieldGroupTest5908 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_RPAREN_in_ftsFieldGroupTest5910 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWord_in_ftsFieldGroupTerm5963 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_EQUALS_in_ftsFieldGroupExactTerm5996 = new BitSet(new long[]{0x803880000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupExactTerm5998 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsFieldGroupPhrase6051 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_EQUALS_in_ftsFieldGroupExactPhrase6092 = new BitSet(new long[]{0x0000000001000000L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupExactPhrase6094 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupTokenisedPhrase6155 = new BitSet(new long[]{0x0000000001000000L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_ftsFieldGroupTokenisedPhrase6157 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TILDA_in_ftsFieldGroupSynonym6210 = new BitSet(new long[]{0x803880000020A800L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_ftsFieldGroupSynonym6212 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6265 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
+	public static final BitSet FOLLOW_proximityGroup_in_ftsFieldGroupProximity6275 = new BitSet(new long[]{0x803880000000A000L,0x0000014100004000L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximityTerm_in_ftsFieldGroupProximity6277 = new BitSet(new long[]{0x0000000000000002L,0x0000000100000000L});
+	public static final BitSet FOLLOW_ID_in_ftsFieldGroupProximityTerm6341 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWORD_in_ftsFieldGroupProximityTerm6353 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPRE_in_ftsFieldGroupProximityTerm6365 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWILD_in_ftsFieldGroupProximityTerm6377 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_NOT_in_ftsFieldGroupProximityTerm6389 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TO_in_ftsFieldGroupProximityTerm6401 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsFieldGroupProximityTerm6413 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsFieldGroupProximityTerm6425 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DATETIME_in_ftsFieldGroupProximityTerm6437 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_STAR_in_ftsFieldGroupProximityTerm6449 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_URI_in_ftsFieldGroupProximityTerm6461 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_ftsFieldGroupProximityTerm6463 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_STAR_in_proximityGroup6496 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000008L});
+	public static final BitSet FOLLOW_LPAREN_in_proximityGroup6499 = new BitSet(new long[]{0x0000000000008000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_proximityGroup6501 = new BitSet(new long[]{0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_RPAREN_in_proximityGroup6504 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6588 = new BitSet(new long[]{0x0000000000400000L});
+	public static final BitSet FOLLOW_DOTDOT_in_ftsFieldGroupRange6590 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
+	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6592 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_range_left_in_ftsFieldGroupRange6630 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
+	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6632 = new BitSet(new long[]{0x0000000000000000L,0x0000004000000000L});
+	public static final BitSet FOLLOW_TO_in_ftsFieldGroupRange6634 = new BitSet(new long[]{0x803C80000000A000L,0x0000010100000000L});
+	public static final BitSet FOLLOW_ftsRangeWord_in_ftsFieldGroupRange6636 = new BitSet(new long[]{0x2000000000000000L,0x0000000010000000L});
+	public static final BitSet FOLLOW_range_right_in_ftsFieldGroupRange6638 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_LSQUARE_in_range_left6697 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_LT_in_range_left6729 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_RSQUARE_in_range_right6782 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_GT_in_range_right6814 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_fieldReference6867 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_fieldReference6879 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AT_in_fieldReferenceWithoutPrefix6903 = new BitSet(new long[]{0x8000000000000020L,0x0000014000024000L});
+	public static final BitSet FOLLOW_uri_in_fieldReferenceWithoutPrefix6914 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_fieldReferenceWithoutPrefix6925 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AT_in_fieldReferenceWithPrefix7009 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_prefix_in_fieldReferenceWithPrefix7020 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_fieldReferenceWithPrefix7022 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AT_in_tempReference7105 = new BitSet(new long[]{0x8000000000000020L,0x0000014000024000L});
+	public static final BitSet FOLLOW_prefix_in_tempReference7134 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_uri_in_tempReference7154 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_tempReference7175 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_identifier_in_prefix7262 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_prefix7264 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_URI_in_uri7345 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ID_in_identifier7447 = new BitSet(new long[]{0x0000000000200000L});
+	public static final BitSet FOLLOW_DOT_in_identifier7449 = new BitSet(new long[]{0x8000000000000000L});
+	public static final BitSet FOLLOW_ID_in_identifier7453 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ID_in_identifier7502 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TO_in_identifier7569 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_OR_in_identifier7607 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AND_in_identifier7645 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_NOT_in_identifier7684 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord7802 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7808 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7810 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7816 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7818 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7824 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7826 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7832 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7834 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7840 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7900 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7902 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7908 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7910 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7916 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7918 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7924 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord7926 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord7932 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord7999 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8005 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8007 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8013 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8015 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8021 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8023 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8029 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8031 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8095 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8097 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8103 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8105 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8111 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8113 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8119 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8121 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8186 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8192 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8194 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8200 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8202 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8208 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8210 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8216 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8270 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8272 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8278 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8280 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8286 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8288 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8294 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8352 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8358 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8360 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8366 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8368 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8374 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8376 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8432 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8434 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8440 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8442 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8448 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8450 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8506 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8512 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8514 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8520 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8522 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8528 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8574 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8576 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8582 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8584 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8590 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8641 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8647 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8649 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8655 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8657 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8706 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8708 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8714 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8716 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8765 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8771 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8773 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8779 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8817 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8819 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8825 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8867 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8873 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8875 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8915 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_ftsWord8917 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_ftsWord8933 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8939 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_ftsWord8952 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ID_in_ftsWordBase8997 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWORD_in_ftsWordBase9009 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPRE_in_ftsWordBase9021 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWILD_in_ftsWordBase9034 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_NOT_in_ftsWordBase9047 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_TO_in_ftsWordBase9059 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsWordBase9071 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsWordBase9083 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_STAR_in_ftsWordBase9095 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_QUESTION_MARK_in_ftsWordBase9107 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DATETIME_in_ftsWordBase9119 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_URI_in_ftsWordBase9131 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_ftsWordBase9133 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ID_in_ftsRangeWord9213 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWORD_in_ftsRangeWord9225 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPRE_in_ftsRangeWord9237 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSWILD_in_ftsRangeWord9249 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FTSPHRASE_in_ftsRangeWord9261 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DECIMAL_INTEGER_LITERAL_in_ftsRangeWord9273 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_FLOATING_POINT_LITERAL_in_ftsRangeWord9285 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_DATETIME_in_ftsRangeWord9297 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_STAR_in_ftsRangeWord9309 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_URI_in_ftsRangeWord9321 = new BitSet(new long[]{0x8000000000000020L,0x0000004000024000L});
+	public static final BitSet FOLLOW_identifier_in_ftsRangeWord9323 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_OR_in_or9358 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_BAR_in_or9370 = new BitSet(new long[]{0x0000000000000080L});
+	public static final BitSet FOLLOW_BAR_in_or9372 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AND_in_and9405 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_AMP_in_and9417 = new BitSet(new long[]{0x0000000000000010L});
+	public static final BitSet FOLLOW_AMP_in_and9419 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_not_in_synpred1_FTS1234 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_synpred2_FTS1747 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsRange_in_synpred3_FTS1824 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroup_in_synpred4_FTS1903 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsTermOrPhrase_in_synpred5_FTS1952 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsExactTermOrPhrase_in_synpred6_FTS1981 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsTokenisedTermOrPhrase_in_synpred7_FTS2011 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred8_FTS2684 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred8_FTS2686 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred9_FTS2725 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred10_FTS2800 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred11_FTS2867 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred11_FTS2869 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred12_FTS2908 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred13_FTS2983 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred14_FTS3053 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred15_FTS3111 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred16_FTS3216 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred16_FTS3218 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred17_FTS3257 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred18_FTS3332 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred19_FTS3399 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred19_FTS3401 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred20_FTS3440 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred21_FTS3515 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred22_FTS3585 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred23_FTS3643 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithPrefix_in_synpred24_FTS3750 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred24_FTS3752 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred25_FTS3791 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred26_FTS3866 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fieldReferenceWithoutPrefix_in_synpred27_FTS3933 = new BitSet(new long[]{0x0000000000000400L});
+	public static final BitSet FOLLOW_COLON_in_synpred27_FTS3935 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred28_FTS3974 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred29_FTS4049 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred30_FTS4119 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred31_FTS4177 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_not_in_synpred32_FTS4924 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupProximity_in_synpred33_FTS5289 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupTerm_in_synpred34_FTS5355 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred35_FTS5365 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactTerm_in_synpred36_FTS5436 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred37_FTS5446 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupPhrase_in_synpred38_FTS5517 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred39_FTS5527 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupExactPhrase_in_synpred40_FTS5598 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred41_FTS5608 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupTokenisedPhrase_in_synpred42_FTS5679 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_slop_in_synpred43_FTS5689 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupSynonym_in_synpred44_FTS5760 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_fuzzy_in_synpred45_FTS5770 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsFieldGroupRange_in_synpred46_FTS5841 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_proximityGroup_in_synpred47_FTS6270 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ID_in_synpred48_FTS7427 = new BitSet(new long[]{0x0000000000200000L});
+	public static final BitSet FOLLOW_DOT_in_synpred48_FTS7429 = new BitSet(new long[]{0x8000000000000000L});
+	public static final BitSet FOLLOW_ID_in_synpred48_FTS7431 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred49_FTS7747 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7753 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred49_FTS7755 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7761 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred49_FTS7763 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7769 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred49_FTS7771 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7777 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred49_FTS7779 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred49_FTS7785 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7853 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred50_FTS7855 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7861 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred50_FTS7863 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7869 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred50_FTS7871 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7877 = new BitSet(new long[]{0x0000000000200000L});
+	public static final BitSet FOLLOW_DOT_in_synpred50_FTS7879 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_COMMA_in_synpred50_FTS7881 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred50_FTS7883 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred51_FTS7946 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7952 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred51_FTS7954 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7960 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred51_FTS7962 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7968 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred51_FTS7970 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred51_FTS7976 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred51_FTS7978 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8048 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred52_FTS8050 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8056 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred52_FTS8058 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8064 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred52_FTS8066 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred52_FTS8072 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred52_FTS8074 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred53_FTS8139 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8145 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred53_FTS8147 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8153 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred53_FTS8155 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8161 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred53_FTS8163 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred53_FTS8169 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8229 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred54_FTS8231 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8237 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred54_FTS8239 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8245 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred54_FTS8247 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred54_FTS8253 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred55_FTS8307 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8313 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred55_FTS8315 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8321 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred55_FTS8323 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred55_FTS8329 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred55_FTS8331 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8393 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred56_FTS8395 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8401 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred56_FTS8403 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred56_FTS8409 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred56_FTS8411 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred57_FTS8467 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8473 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred57_FTS8475 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8481 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred57_FTS8483 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred57_FTS8489 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8541 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred58_FTS8543 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8549 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred58_FTS8551 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred58_FTS8557 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred59_FTS8604 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred59_FTS8610 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred59_FTS8612 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred59_FTS8618 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred59_FTS8620 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred60_FTS8674 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred60_FTS8676 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred60_FTS8682 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred60_FTS8684 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred61_FTS8734 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred61_FTS8740 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred61_FTS8742 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred61_FTS8748 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred62_FTS8792 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred62_FTS8794 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred62_FTS8800 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_synpred63_FTS8838 = new BitSet(new long[]{0x803880000000A000L,0x0000014101004000L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred63_FTS8844 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred63_FTS8846 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ftsWordBase_in_synpred64_FTS8892 = new BitSet(new long[]{0x0000000000200800L});
+	public static final BitSet FOLLOW_set_in_synpred64_FTS8894 = new BitSet(new long[]{0x0000000000000002L});
 }

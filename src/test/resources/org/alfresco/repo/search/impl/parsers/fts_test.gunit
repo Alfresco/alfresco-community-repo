@@ -21,6 +21,8 @@ ftsQuery:
 "test_txt_woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test_txt_woof))))"
 "test,txt,woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test , txt , woof))))"
 "test\:txt\:woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test\\:txt\\:woof))))"
+"name-dash:file" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM file (FIELD_REF name-dash)))))"
+"name-dash:file.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM file . txt (FIELD_REF name-dash)))))"
 "+\++" -> "(DISJUNCTION (CONJUNCTION (MANDATORY (TERM \\++))))"
 ".txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . txt))))"
 "*.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM * . txt))))"

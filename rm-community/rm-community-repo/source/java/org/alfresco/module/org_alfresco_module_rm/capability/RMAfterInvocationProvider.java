@@ -450,11 +450,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             @Override
             public boolean hasMore()
             {
-                return getNumberFound() >= (returnedObject.getResultSetMetaData()
+                return getUnFilteredResultSet().length() >= getResultSetMetaData()
                     .getSearchParameters()
-                    .getSkipCount() + returnedObject.getResultSetMetaData()
-                    .getSearchParameters()
-                    .getMaxItems());
+                    .getMaxItems();
             }
         }
 
@@ -495,7 +493,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                                 returnedObject.getResultSetMetaData().getLimitedBy(),
                                 PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
-                filteringResultSet.setNumberFound(returnedObject.getNumberFound());
                 return filteringResultSet;
             }
             else
@@ -509,7 +506,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                                 returnedObject.getResultSetMetaData().getLimitedBy(),
                                 PermissionEvaluationMode.EAGER,
                                 returnedObject.getResultSetMetaData().getSearchParameters()));
-                filteringResultSet.setNumberFound(returnedObject.getNumberFound());
                 return filteringResultSet;
             }
         }

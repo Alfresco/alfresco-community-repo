@@ -36,8 +36,8 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.74</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>8.11</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.75</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>8.12</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
@@ -65,8 +65,8 @@
         <dependency.activemq.version>5.15.11</dependency.activemq.version>
         <dependency.pdfbox.version>2.0.18</dependency.pdfbox.version>
         <dependency.cxf.version>3.3.4</dependency.cxf.version>
-        <dependency.jackson.version>2.10.1</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
+        <dependency.jackson.version>2.10.2</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
     </properties>
 
     <dependencyManagement>

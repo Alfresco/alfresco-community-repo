@@ -4030,4 +4030,115 @@ public class CMISTest
         assertEquals(versions.get(0).getProperties().getProperties().get("cmis:versionLabel").getFirstValue(), "pwc");
         assertEquals(versions.get(1).getProperties().getProperties().get("cmis:versionLabel").getFirstValue(), "0.1");
     }
+
+    /**
+     *  Related to REPO-4613.
+     *  This test makes sure that once a copy is checked out, the private copy contains the aspect P:cm:workingcopy
+     */
+    @Test
+    public void aPrivateCopyMustContainTheWorkingCopyAspect_CMIS_1_1_Version()
+    {
+
+        // get repository id
+        final String repositoryId = withCmisService(new CmisServiceCallback<String>()
+        {
+            @Override
+            public String execute(CmisService cmisService)
+            {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                RepositoryInfo repo = repositories.get(0);
+                final String repositoryId = repo.getId();
+                return repositoryId;
+            }
+        }, CmisVersion.CMIS_1_1);
+
+        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>()
+        {
+            @Override
+            public Properties execute(CmisService cmisService)
+            {
+                PropertiesImpl properties = new PropertiesImpl();
+                String objectTypeId = "cmis:document";
+                properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+                String fileName = "textFile" + GUID.generate();
+                properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+                final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+                String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
+
+                final Holder<String> objectIdHolder = new Holder<String>(objectId);
+                cmisService.checkOut(repositoryId, objectIdHolder, null, null);
+                ObjectData pwc = cmisService.getObject(repositoryId, objectIdHolder.getValue(), null, null, null, null, null, null, null);
+                pwc.getProperties();
+
+                Properties propertiesValues = pwc.getProperties();
+                return propertiesValues;
+            }
+        }, CmisVersion.CMIS_1_1);
+
+        List<String> secondaryTypeIds = (List<String>) currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        assertTrue(secondaryTypeIds.contains("P:cm:workingcopy"));
+    }
+
+    /**
+     *  Related to REPO-4613.
+     *  This test makes sure that once a copy is checked out, updateProperties method can be called
+     *  and properly adds the new properties.
+     */
+    @Test
+    public void aPrivateCopyMustAllowTheAdditionOfAspects_CMIS_1_1_Version()
+    {
+        final String aspectName = "P:cm:summarizable";
+        final String propertyName = "cm:summary";
+        final String propertyValue = "My summary";
+
+        // get repository id
+        final String repositoryId = withCmisService(new CmisServiceCallback<String>()
+        {
+            @Override
+            public String execute(CmisService cmisService)
+            {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                RepositoryInfo repo = repositories.get(0);
+                final String repositoryId = repo.getId();
+                return repositoryId;
+            }
+        }, CmisVersion.CMIS_1_1);
+
+        final Properties currentProperties = withCmisService(new CmisServiceCallback<Properties>()
+        {
+            @Override
+            public Properties execute(CmisService cmisService)
+            {
+                PropertiesImpl properties = new PropertiesImpl();
+                String objectTypeId = "cmis:document";
+                properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+                String fileName = "textFile" + GUID.generate();
+                properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+                final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+                String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
+
+                final Holder<String> objectIdHolder = new Holder<String>(objectId);
+                cmisService.checkOut(repositoryId, objectIdHolder, null, null);
+                cmisService.getObject(repositoryId, objectIdHolder.getValue(), null, null, null, null, null, null, null);
+
+                properties = new PropertiesImpl();
+                properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, Arrays.asList(aspectName)));
+                properties.addProperty(new PropertyStringImpl(propertyName, propertyValue));
+
+                cmisService.updateProperties(repositoryId, objectIdHolder, null, properties, null);
+
+                cmisService.checkIn(repositoryId, objectIdHolder, false, null, null, "checkin", null, null, null, null);
+
+                Properties propertiesValues = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
+                return propertiesValues;
+            }
+        }, CmisVersion.CMIS_1_1);
+
+        List<String> secondaryTypeIds = (List<String>) currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        assertTrue(secondaryTypeIds.contains(aspectName));
+        assertEquals(currentProperties.getProperties().get(propertyName).getValues().get(0),  propertyValue);
+    }
+
 }

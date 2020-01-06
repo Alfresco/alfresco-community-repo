@@ -113,7 +113,7 @@
         <dependency.tas-restapi.version>1.26</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.12</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.7</dependency.tas-email.version>
-        <dependency.tas-webdav.version>1.4</dependency.tas-webdav.version>
+        <dependency.tas-webdav.version>1.5</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.4</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
     </properties>

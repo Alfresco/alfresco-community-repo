@@ -37,13 +37,13 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>8.59</dependency.alfresco-repository.version>
-        <dependency.alfresco-data-model.version>8.74</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>8.11</dependency.alfresco-core.version>
+        <dependency.alfresco-repository.version>8.60</dependency.alfresco-repository.version>
+        <dependency.alfresco-data-model.version>8.75</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>8.12</dependency.alfresco-core.version>
 
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
-        <dependency.jackson.version>2.10.1</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
+        <dependency.jackson.version>2.10.2</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
 
         <dependency.webscripts.version>8.1</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>

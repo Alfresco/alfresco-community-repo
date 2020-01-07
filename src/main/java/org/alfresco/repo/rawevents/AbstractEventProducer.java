@@ -27,7 +27,6 @@ package org.alfresco.repo.rawevents;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.activemq.transport.amqp.message.AmqpMessageSupport;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +51,11 @@ import java.util.Map;
 public abstract class AbstractEventProducer
 {
     protected static final String ERROR_SENDING = "Could not send event";
+    public static final String JMS_AMQP_PREFIX = "JMS_AMQP_";
+
+    public static final String MESSAGE_FORMAT = "MESSAGE_FORMAT";
+    public static final String JMS_AMQP_MESSAGE_FORMAT = JMS_AMQP_PREFIX + MESSAGE_FORMAT;
+    public static final short AMQP_UNKNOWN = 0;
 
     protected ProducerTemplate producer;
     protected String endpoint;
@@ -79,7 +83,7 @@ public abstract class AbstractEventProducer
             origHeaders = new HashMap<>();
         }
 
-        origHeaders.put(AmqpMessageSupport.JMS_AMQP_MESSAGE_FORMAT, AmqpMessageSupport.AMQP_UNKNOWN);
+        origHeaders.put(JMS_AMQP_MESSAGE_FORMAT, AMQP_UNKNOWN);
         return origHeaders;
     }
 

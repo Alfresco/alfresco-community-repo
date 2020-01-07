@@ -352,11 +352,6 @@
             <version>0.9.1-patched</version>
         </dependency>
         <dependency>
-            <groupId>com.benfante</groupId>
-            <artifactId>JSlideShare</artifactId>
-            <version>0.6</version>
-        </dependency>
-        <dependency>
             <groupId>bsf</groupId>
             <artifactId>bsf</artifactId>
             <version>2.4.0</version>

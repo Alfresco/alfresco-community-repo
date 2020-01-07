@@ -122,7 +122,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** Transaction service */
     private TransactionService transactionService;
 
-
     /** Disposition properties */
     private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
 
@@ -198,6 +197,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void setFreezeService(FreezeService freezeService)
     {
         this.freezeService = freezeService;
+    }
+
+    /**
+     * @param transactionService transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**

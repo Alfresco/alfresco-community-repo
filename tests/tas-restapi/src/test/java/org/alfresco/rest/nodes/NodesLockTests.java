@@ -321,7 +321,8 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+//  TODO: uncomment this:  @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+    @Bug(id = "REPO-4790")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by another user is expired")
@@ -555,7 +556,8 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
     }
 
-    @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+//  TODO: uncomment this:    @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
+    @Bug(id = "REPO-4809")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator can lock PERSISTENT after EPHEMERAL lock made by same user is expired")
@@ -728,7 +730,7 @@ public class NodesLockTests extends RestTest
         query.setIncludeRequest(false);
 
         // Allow indexing to complete.
-        Utility.sleep(1000, 60000, () ->
+        Utility.sleep(500, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -745,7 +747,7 @@ public class NodesLockTests extends RestTest
 
         STEP("7. Verify that childNode1 and childNode2 are not found in the query results.");
         // Allow indexing to complete.
-        Utility.sleep(1000, 60000, () ->
+        Utility.sleep(500, 60000, () ->
         {
         SearchResponse response = query(query);
         restClient.assertStatusCodeIs(HttpStatus.OK);

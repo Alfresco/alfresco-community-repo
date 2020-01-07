@@ -145,7 +145,7 @@ public class GetRenditionTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         STEP("2. Make GET rendition content using content-range header");
-        Utility.sleep(1000, 30000, () -> {
+        Utility.sleep(500, 30000, () -> {
             restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
             restClient.authenticateUser(user).withCoreAPI().usingNode(file1).getNodeRenditionContent("pdf");
             restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);

@@ -9,6 +9,7 @@ import org.apache.chemistry.opencmis.commons.data.AclCapabilities;
 import org.apache.chemistry.opencmis.commons.data.RepositoryCapabilities;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
 import org.testng.Assert;
@@ -89,7 +90,7 @@ public class RepositoryInfoTests extends CmisTest
         cmisApi.authenticateUser(invalidUser).getRepositoryInfo();
     }
     
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {NoSuchMethodError.class}, expectedExceptionsMessageRegExp = "^org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException.*")
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = {CmisConnectionException.class})
     @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, description = "Verify that invalid user cannot get repositories")
     public void userCannotGetRepositoriesUsingWrongBrowserUrl() throws Exception
     {

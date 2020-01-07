@@ -10,6 +10,7 @@ services:
     image: alfresco/alfresco-content-repository-community:latest
     environment:
       CATALINA_OPTS : "-agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n"
+      # Some properties are built in Dockerfile because of cron expressions
       JAVA_OPTS :
         "
         -Ddb.driver=org.postgresql.Driver

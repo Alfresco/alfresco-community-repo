@@ -1,5 +1,6 @@
 package org.alfresco.rest.tags;
 
+import java.util.Date;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
@@ -13,6 +14,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
@@ -28,18 +30,9 @@ public class TagsDataPrep extends RestTest
     protected static String documentTagValue, documentTagValue2, folderTagValue;
     protected static RestTagModel documentTag, documentTag2, folderTag, returnedModel;
     protected static RestTagModelsCollection returnedCollection;
-    private static boolean isInitialized = false;
 
+    @BeforeClass
     public void init() throws Exception
-    {
-        if(!isInitialized)
-        {
-            isInitialized = true;
-            initialization();
-        }
-    }
-
-    public void initialization() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
         //Create public site
@@ -58,7 +51,7 @@ public class TagsDataPrep extends RestTest
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
 
         // Allow indexing to complete.
-        Utility.sleep(1000, 60000, () ->
+        Utility.sleep(500, 60000, () ->
             {
                 returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
                 returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())

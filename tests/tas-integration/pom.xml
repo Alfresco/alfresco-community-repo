@@ -25,8 +25,8 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/integration-suite.xml</suiteXmlFile>
-        <dependency.groovy.version>2.5.5</dependency.groovy.version>
-        <dependency.javax.mail.version>1.5.1</dependency.javax.mail.version>
+        <dependency.groovy.version>2.5.8</dependency.groovy.version>
+        <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
     </properties>
 
     <dependencies>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0</version>
         </dependency>
     </dependencies>
 

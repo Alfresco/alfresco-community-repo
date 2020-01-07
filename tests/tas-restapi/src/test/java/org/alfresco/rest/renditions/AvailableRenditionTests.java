@@ -126,7 +126,6 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
         toTest.add(new Object[]{"quick/quick.png", renditionId});
         toTest.add(new Object[]{"quick/quick.gif", renditionId});
         toTest.add(new Object[]{"quick/quick.jpg", renditionId});
-        toTest.add(new Object[]{"quick/quick.pdf", renditionId});
 
         return toTest.iterator();
     }

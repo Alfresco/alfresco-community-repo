@@ -14,6 +14,7 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
+import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
@@ -389,6 +390,7 @@ public class IntegrationSanityTests extends IntegrationTest
      * 15. U1 deletes non empty folder1 using CMIS
      * 16. U1 gets tags and verify all tags are listed
      */
+    @Bug(id = "REPO-4789")
     @Test(groups = { TestGroup.INTEGRATION, TestGroup.SANITY  })
     @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to manage tags.")
@@ -437,12 +439,11 @@ public class IntegrationSanityTests extends IntegrationTest
                 .assertThat().field("tag").is("integration_tag3");
 
         STEP("* 8. U1 gets tags and verify all tags are listed");
-        Utility.waitToLoopTime(30);
-        restAPI.withParams("maxItems=10000").withCoreAPI().getTags()
-                .assertThat().entriesListContains("tag", "integration_tag1")
-                .and().entriesListContains("tag", "integration_tag2")
-                .and().entriesListContains("tag", "integration_tag3");
-
+        Utility.sleep(500, 30000, () ->
+                restAPI.withParams("maxItems=10000").withCoreAPI().getTags()
+                        .assertThat().entriesListContains("tag", "integration_tag1")
+                        .and().entriesListContains("tag", "integration_tag2")
+                        .and().entriesListContains("tag", "integration_tag3"));
         STEP("* 9. U1 gets file1 tags and verify only tag1 and tag2 are listed");
         restAPI.withCoreAPI()
                 .usingResource(testFile1).getNodeTags()

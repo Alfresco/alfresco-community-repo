@@ -38,7 +38,7 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         unauthenticatedUser.setPassword("newpassword");
         
         // only once the activity list is checked with retry in order not to wait the entire list in each test
-        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(5);
+        restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
@@ -49,9 +49,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         UserModel managerUser = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         dataContent.usingUser(managerUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restActivityModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI().usingAuthUser().getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(managerUser).withCoreAPI()
+                .usingAuthUser().getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty()
+                .and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
@@ -61,9 +63,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         UserModel collaboratorUser = usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator);
         dataContent.usingUser(collaboratorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restActivityModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI().usingAuthUser().getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(collaboratorUser).withCoreAPI()
+                .usingAuthUser().getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty()
+                .and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
@@ -73,9 +77,11 @@ public class GetPeopleActivitiesSanityTests extends RestTest
         UserModel contributorUser = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         dataContent.usingUser(contributorUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
 
-        restActivityModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI().usingAuthUser().getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(contributorUser).withCoreAPI()
+                .usingAuthUser().getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty()
+                .and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
@@ -84,18 +90,22 @@ public class GetPeopleActivitiesSanityTests extends RestTest
     {
         UserModel consumerUser = usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer);
 
-        restActivityModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI().usingAuthUser().getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(consumerUser).withCoreAPI()
+                .usingAuthUser().getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty()
+                .and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user activities with Rest API and response is successful")
     public void adminUserShouldGetPeopleActivitiesList() throws Exception
     {
-        restActivityModelsCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingUser(userModel).getPersonActivities();
+        restActivityModelsCollection = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI()
+                .usingUser(userModel).getPersonActivitiesUntilEntriesCountIs(6);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restActivityModelsCollection.assertThat().entriesListIsNotEmpty().and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
+        restActivityModelsCollection.assertThat().entriesListIsNotEmpty()
+                .and().entriesListContains("siteId", siteModel.getId()).and().paginationExist();
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.SANITY })

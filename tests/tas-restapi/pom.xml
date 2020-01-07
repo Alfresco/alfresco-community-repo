@@ -27,6 +27,27 @@
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>run-restapi-part1</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part1-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>run-restapi-part2</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part2-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+        <profile>
+            <id>run-restapi-part3</id>
+            <properties>
+                <suiteXmlFile>${project.basedir}/src/test/resources/test-suites/part3-suite.xml</suiteXmlFile>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.alfresco.tas</groupId>

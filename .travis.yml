@@ -18,12 +18,13 @@ env:
 branches:
   only:
     - master
+    - develop
 
 matrix:
   include:
     - name: "WhiteSource scan"
-      # only on master and if it is not a PR
-      if: fork = false AND branch = master AND type != pull_request
+      # only on develop and if it is not a PR
+      if: fork = false AND branch = develop AND type != pull_request
       install:
         - travis_retry travis_wait 30 mvn -q install "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
       script:
@@ -31,14 +32,30 @@ matrix:
         - curl -LJO https://github.com/whitesource/unified-agent-distribution/raw/master/standAlone/wss-unified-agent.jar
         # Run WhiteSource Unified Agent
         - java -jar wss-unified-agent.jar -apiKey ${WHITESOURCE_API_KEY} -c .wss-unified-agent.config -d ./war
-    - name: "REST API TAS tests"
+    - name: "REST API TAS tests part1"
       jdk: openjdk11
       install:
         - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
         - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal+transforms.yml
         - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
-        - travis_wait 60 mvn install -q -f tests/tas-restapi/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+        - travis_wait 60 mvn install -f tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+    - name: "REST API TAS tests part2"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal+transforms.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 60 mvn install -f tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
+    - name: "REST API TAS tests part3"
+      jdk: openjdk11
+      install:
+        - travis_retry travis_wait 40 mvn install -q "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -PcommunityDocker
+        - ./tests/scripts/start-compose.sh ./tests/environment/docker-compose-minimal+transforms.yml
+        - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      script:
+        - travis_wait 60 mvn install -f tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
     - name: "CMIS TAS tests"
       jdk: openjdk11
       install:

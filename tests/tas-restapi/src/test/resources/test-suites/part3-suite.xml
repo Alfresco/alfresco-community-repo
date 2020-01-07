@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="REST API tests part3" preserve-order="true">
+	<listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+	</listeners>
+
+    <test name="Part3">
+        <packages>
+            <package name="org.alfresco.rest.renditions.*"/>
+            <package name="org.alfresco.rest.sharedLinks.*"/>
+            <package name="org.alfresco.rest.sites.*"/>
+            <package name="org.alfresco.rest.tags.*"/>
+            <package name="org.alfresco.rest.trashcan.*"/>
+            <package name="org.alfresco.rest.workflow.*"/>
+        </packages>
+    </test>
+</suite>

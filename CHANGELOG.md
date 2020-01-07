@@ -1,3 +1,18 @@
+<h1>        Release Notes - Alfresco - Version Community Edition 201911 GA
+</h1>
+<h2>        Bug
+</h2>
+<ul>
+<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20436'>MNT-20436</a>] -         “POST /nodes/{nodeId}/children” RestAPI does not create a node without having a mandatory value object, but it outputs the 201 successful response.
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20714'>MNT-20714</a>] -         [HotFix] /nodes/{nodeId}/content REST API fails for content created by a deleted user
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20770'>MNT-20770</a>] -         Share non responsive during direct download from S3 if content store selector is also configured
+</li>
+<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20863'>MNT-20863</a>] -         Changing cm:name with REST API /nodes/{nodeId} does not update Primary Path
+</li>
+</ul>
+
 <h1>        Release Notes - Alfresco - Version Community Edition 201910 EA
 </h1>
 <h2>
@@ -57,8 +72,6 @@
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-21988'>ALF-21988</a>] -         Tab order for number ranges not ok
 </li>
 <li>[<a href='https://issues.alfresco.com/jira/browse/ALF-22097'>ALF-22097</a>] -         T Engine - add source nodeId parameter
-</li>
-<li>[<a href='https://issues.alfresco.com/jira/browse/MNT-20714'>MNT-20714</a>] -         REST API /nodes/{nodeId}/content endpoint fails for content created by a deleted user
 </li>
 </ul>
 <h2>        Improvement

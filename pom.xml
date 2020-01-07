@@ -179,11 +179,6 @@
             <artifactId>jaxrpc-api</artifactId>
             <version>1.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.rometools</groupId>
-            <artifactId>rome</artifactId>
-            <version>1.12.2</version>
-        </dependency>
 
         <!-- This is needed at runtime by Web Client, so not really a test dependency -->
         <dependency>

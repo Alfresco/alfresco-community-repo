@@ -175,11 +175,6 @@
             <version>1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.ws.xmlschema</groupId>
-            <artifactId>xmlschema-core</artifactId>
-             <version>2.2.4</version>
-        </dependency>
-        <dependency>
             <groupId>javax.xml</groupId>
             <artifactId>jaxrpc-api</artifactId>
             <version>1.1</version>

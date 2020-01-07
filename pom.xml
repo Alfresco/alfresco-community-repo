@@ -486,11 +486,6 @@
             <version>3.0.1.1</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.javamusictag</groupId>
-            <artifactId>jid3lib</artifactId>
-            <version>0.5.4</version>
-        </dependency>
-        <dependency>
             <groupId>jmagick</groupId>
             <artifactId>jmagick</artifactId>
             <version>6.6.9</version>

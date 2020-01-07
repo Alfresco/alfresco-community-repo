@@ -620,11 +620,6 @@
             <version>1.47.1</version>
         </dependency>
         <dependency>
-            <groupId>com.google.gdata</groupId>
-            <artifactId>gdata-youtube-2.0</artifactId>
-            <version>1.47.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>28.2-jre</version>

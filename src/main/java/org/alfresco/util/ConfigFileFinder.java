@@ -25,7 +25,6 @@
  */
 package org.alfresco.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
@@ -204,7 +203,7 @@ public abstract class ConfigFileFinder
         boolean successReadingConfig = true;
         try
         {
-            JsonNode jsonNode = jsonObjectMapper.readValue(reader, new TypeReference<JsonNode>() {});
+            JsonNode jsonNode = jsonObjectMapper.readValue(reader, JsonNode.class);
             String readFromMessage = readFrom + ' ' + path;
             if (log.isTraceEnabled())
             {

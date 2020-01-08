@@ -310,11 +310,6 @@
             <artifactId>xercesImpl</artifactId>
             <version>2.12.0-alfresco-patched-20191004</version>
         </dependency>
-        <dependency>
-            <groupId>xpp3</groupId>
-            <artifactId>xpp3</artifactId>
-            <version>1.1.4c</version>
-        </dependency>
         <!-- Tika -->
         <dependency>
             <groupId>org.apache.tika</groupId>

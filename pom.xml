@@ -307,11 +307,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.gagravarr</groupId>
-            <artifactId>vorbis-java-tika</artifactId>
-            <version>0.8</version>
-        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

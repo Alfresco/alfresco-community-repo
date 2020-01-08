@@ -160,11 +160,6 @@
          <artifactId>joda-time</artifactId>
          <version>2.10.5</version>
       </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpclient</artifactId>
-         <version>4.5.10</version>
-      </dependency>
 
       <!-- provided dependencies -->
       <dependency>

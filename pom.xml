@@ -957,7 +957,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
-            <version>${dependency.alfresco-data-model.version}</version>
+            <version>${dependency.alfresco-data-model.version}</version>         
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

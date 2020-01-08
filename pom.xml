@@ -251,17 +251,6 @@
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>1.0.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>1.0.0</version>
             <exclusions>

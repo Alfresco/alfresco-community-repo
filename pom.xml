@@ -151,11 +151,6 @@
             <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.alfresco.cmis.client</groupId>
-            <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
             <groupId>javax.xml</groupId>
             <artifactId>jaxrpc-api</artifactId>
             <version>1.1</version>
@@ -241,12 +236,7 @@
             <version>8.2.0.v20160908</version>
             <scope>test</scope> 
         </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>${dependency.opencmis.version}</version>
-            <scope>test</scope>             
-        </dependency>        
+
     </dependencies>
     <profiles>
          <!-- Profiles to extract the alfresco-pdf-renderer -->

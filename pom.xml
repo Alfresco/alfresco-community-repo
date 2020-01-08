@@ -907,12 +907,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>xpp3</groupId>
-            <artifactId>xpp3</artifactId>
-            <version>1.1.4c</version>
-        </dependency>
-        
         <!-- Transform dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>

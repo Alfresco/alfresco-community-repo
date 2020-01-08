@@ -737,6 +737,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
 
         DispositionAction da;
+        // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE one
         if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
         {
             da =
@@ -747,7 +748,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             return createDispositionAction(nodeRef, props);
                         }
                     }, false, true);
-        } else
+        }
+        else
         {
             da = createDispositionAction(nodeRef, props);
         }
@@ -770,14 +772,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      */
     private DispositionAction createDispositionAction(final NodeRef nodeRef, Map<QName, Serializable> props)
     {
-        NodeRef result = nodeService.createNode(
+        NodeRef dispositionActionNodeRef = nodeService.createNode(
                 nodeRef,
                 ASSOC_NEXT_DISPOSITION_ACTION,
                 ASSOC_NEXT_DISPOSITION_ACTION,
                 TYPE_DISPOSITION_ACTION,
                 props).getChildRef();
 
-        return new DispositionActionImpl(serviceRegistry, result);
+        return new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
     }
 
     /**

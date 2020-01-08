@@ -175,11 +175,7 @@
             </exclusions>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>${dependency.opencmis.version}</version>
-        </dependency>
+
 
         <!-- Test dependencies -->
         <dependency>
@@ -245,6 +241,12 @@
             <version>8.2.0.v20160908</version>
             <scope>test</scope> 
         </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-client-impl</artifactId>
+            <version>${dependency.opencmis.version}</version>
+            <scope>test</scope>             
+        </dependency>        
     </dependencies>
     <profiles>
          <!-- Profiles to extract the alfresco-pdf-renderer -->

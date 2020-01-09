@@ -36,8 +36,8 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.75</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>8.12</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.83</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>8.18</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
@@ -604,6 +604,18 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
         <!-- Activiti -->
         <!-- Updated commons-email to 1.5 -->
         <!-- see dependencyManagement section -->
@@ -1021,6 +1033,12 @@
             <classifier>indy</classifier>
             <scope>test</scope>            
         </dependency>      
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-client-impl</artifactId>
+            <version>${dependency.opencmis.version}</version>
+            <scope>test</scope>             
+        </dependency>        
     </dependencies>
 
     <profiles>

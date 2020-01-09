@@ -58,7 +58,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
      * <p>
      * relates to https://issues.alfresco.com/jira/browse/RM-7065
      */
-    public void testRetentionScheduleInheritance_RM3060()
+    public void testRetentionScheduleInheritance_RM7065()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
@@ -82,7 +82,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
                 NodeRef category2 = filePlanService.createRecordCategory(filePlan, generate());
 
                 // create subcategory2 under category2
-                NodeRef subcategory2 = filePlanService.createRecordCategory(category2, generate());
+                subcategory2 = filePlanService.createRecordCategory(category2, generate());
 
                 // create folder under subcategory2
                 folder = recordFolderService.createRecordFolder(subcategory2, generate());
@@ -102,6 +102,8 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
             @Override
             public void then() throws Exception
             {
+                dispositionService.getDispositionSchedule(record);
+                // check for the lifecycle aspect
                 assertTrue("Record " + record + " doesn't have the disposition lifecycle aspect.", nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
             }
         });

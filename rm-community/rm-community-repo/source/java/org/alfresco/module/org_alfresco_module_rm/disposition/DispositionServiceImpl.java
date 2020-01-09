@@ -737,7 +737,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
 
         DispositionAction da;
-        // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE one
+        // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE transaction
         if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
         {
             da =

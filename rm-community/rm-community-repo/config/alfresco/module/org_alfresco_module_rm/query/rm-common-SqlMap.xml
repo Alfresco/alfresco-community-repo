@@ -83,5 +83,28 @@
       and alfn.id between ? and ?
     </select>
 
+   <!--  Get a property string value entity -->
+   <select id="select_PropertyStringValue"
+           parameterType="org.alfresco.repo.domain.propval.PropertyStringValueEntity"
+           resultType="org.alfresco.repo.domain.propval.PropertyStringValueEntity">
+      select id,
+             string_value as stringValue,
+             string_end_lower as stringEndLower,
+             string_crc as stringCrc
+      from alf_prop_string_value
+      where string_value = #{stringValue}
+      and   string_end_lower = #{stringEndLower}
+      and   string_crc = #{stringCrc}
+    </select>
+
+   <!-- Update a property string value entity  -->
+   <update id="update_PropertyStringValue"
+           parameterType="org.alfresco.repo.domain.propval.PropertyStringValueEntity">
+      update alf_prop_string_value
+      set string_value = #{stringValue},
+         string_end_lower = #{stringEndLower},
+         string_crc = #{stringCrc}
+      where id = #{id}
+    </update>
 
 </mapper>

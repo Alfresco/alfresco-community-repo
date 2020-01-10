@@ -29,9 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.query;
 
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +39,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.version.Version2Model;
@@ -73,6 +73,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     private static final String SELECT_NODE_IDS_WHICH_REFERENCE_CONTENT_URL = "select_NodeIdsWhichReferenceContentUrl";
     private static final String SCHEDULED_FOLDERS = "alfresco.query.rm.select_RecordFoldersWithSchedules";
     private static final String SCHEDULED_FOLDERS_COUNT = "alfresco.query.rm.select_RecordFoldersWithSchedulesCount";
+    private static final String GET_PROP_STRING_VALUE = "alfresco.query.rm.select_PropertyStringValue";
+    private static final String UPDATE_PROP_STRING_VALUE = "alfresco.query.rm.update_PropertyStringValue";
 
     /**
      * SQL session template
@@ -284,4 +286,22 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         return results;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getPropertyStringValueEntity(String stringValue)
+     */
+    public PropertyStringValueEntity getPropertyStringValueEntity(String stringValue){
+
+        PropertyStringValueEntity propertyStringValueEntity = new PropertyStringValueEntity();
+        propertyStringValueEntity.setValue(stringValue);
+
+        return template.selectOne(GET_PROP_STRING_VALUE, propertyStringValueEntity);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#updatePropertyStringValueEntity(PropertyStringValueEntity propertyStringValueEntity)
+     */
+    public int updatePropertyStringValueEntity(PropertyStringValueEntity propertyStringValueEntity)
+    {
+        return template.update(UPDATE_PROP_STRING_VALUE, propertyStringValueEntity);
+    }
 }

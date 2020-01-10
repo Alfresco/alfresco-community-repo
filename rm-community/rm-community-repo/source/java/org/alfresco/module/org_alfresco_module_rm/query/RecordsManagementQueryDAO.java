@@ -30,8 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.query;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.service.cmr.repository.NodeRef;
-import java.util.Collection;
 import org.alfresco.service.namespace.QName;
 
 
@@ -80,4 +80,16 @@ public interface RecordsManagementQueryDAO
      * @return Set<NodeRef>  a set of nodes that reference the given content url
      */
     Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl);
+
+    /**
+     * Get the property string value entity with the specified string value
+     * @return PropertyStringValueEntity    the property string value entity with the specified string value
+     */
+    PropertyStringValueEntity getPropertyStringValueEntity(String stringValue);
+
+    /**
+     * Update the property string value entity
+     * @return int      the number of rows updated
+     */
+    int updatePropertyStringValueEntity(PropertyStringValueEntity propertyStringValueEntity);
 }

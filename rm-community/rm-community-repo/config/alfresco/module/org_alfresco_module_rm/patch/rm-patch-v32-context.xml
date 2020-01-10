@@ -19,7 +19,7 @@
       <property name="nodeService" ref="nodeService" />
    </bean>
 
-    <bean id="rm.holdHoldReportUpdatePatch"
+    <bean id="rm.holdReportUpdatePatch"
           parent="rm.parentModulePatch"
           class="org.alfresco.module.org_alfresco_module_rm.patch.v32.RMv32HoldReportUpdatePatch">
         <property name="description" value="Update template for generating hold report"/>

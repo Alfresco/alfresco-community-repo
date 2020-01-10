@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- RM v3.3 Patches -->
+
+   <bean id="rm.holdAuditValuesUpdatedPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v33.RMv33HoldAuditEntryValuesPatch">
+      <property name="description"
+                value="Change values for addToHold and removeFromHold audit entries to match updated values for these entries" />
+      <property name="fixesFromSchema" value="2400" />
+      <property name="fixesToSchema" value="3201" />
+      <property name="targetSchema" value="3300" />
+      <property name="recordsManagementQueryDAO" ref="recordsManagementQueryDAO" />
+   </bean>
+</beans>

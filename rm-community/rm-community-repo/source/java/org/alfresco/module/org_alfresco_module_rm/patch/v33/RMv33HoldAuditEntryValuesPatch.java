@@ -54,21 +54,21 @@ public class RMv33HoldAuditEntryValuesPatch extends AbstractModulePatch
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      *
-     * Updates the property string value entities for addToHold and removeFromHold audit event types
+     * Updates the property string value entities for addToHold, removeFromHold and deleteHold audit event types
      */
     @Override
     public void applyInternal()
     {
         updatePropertyStringValueEntity("addToHold", "Add To Hold");
         updatePropertyStringValueEntity("removeFromHold", "Remove From Hold");
-
+        updatePropertyStringValueEntity("deleteHold", "Delete Hold");
     }
 
     private void updatePropertyStringValueEntity(String fromStringValue, String toStringValue)
     {
-        PropertyStringValueEntity addToAuditPropertyStringValueEntity = recordsManagementQueryDAO.getPropertyStringValueEntity(fromStringValue);
-        addToAuditPropertyStringValueEntity.setValue(toStringValue);
-        recordsManagementQueryDAO.updatePropertyStringValueEntity(addToAuditPropertyStringValueEntity);
+        PropertyStringValueEntity propertyStringValueEntity = recordsManagementQueryDAO.getPropertyStringValueEntity(fromStringValue);
+        propertyStringValueEntity.setValue(toStringValue);
+        recordsManagementQueryDAO.updatePropertyStringValueEntity(propertyStringValueEntity);
     }
 
 }

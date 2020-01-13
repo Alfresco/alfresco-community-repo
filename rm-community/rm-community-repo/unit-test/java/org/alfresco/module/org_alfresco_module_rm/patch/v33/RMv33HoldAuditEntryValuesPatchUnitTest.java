@@ -62,7 +62,7 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
     }
 
     /**
-     * addtohold and removeFromHold audit entries values are updated after the patch is executed
+     * addtohold, removeFromHold and deleteHold audit entries values are updated after the patch is executed
      */
     @Test
     public void holdAuditEntriesAreUpdatedAfterUpgrade()
@@ -77,12 +77,19 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("removeFromHold")).thenReturn(removeFromHoldPropertyStringValueEntity);
         when(mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity)).thenReturn(1);
 
+        PropertyStringValueEntity deleteHoldPropertyStringValueEntity = new PropertyStringValueEntity();
+        deleteHoldPropertyStringValueEntity.setValue("deleteHold");
+        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")).thenReturn(deleteHoldPropertyStringValueEntity);
+        when(mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity)).thenReturn(1);
+
         patch.applyInternal();
 
         verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("addToHold");
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(addToHoldPropertyStringValueEntity);
         verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("removeFromHold");
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity);
+        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("deleteHold");
+        verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
 
         assertEquals("Add To Hold", addToHoldPropertyStringValueEntity.getStringValue());
         assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringEndLower());
@@ -91,6 +98,10 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStringValue());
         assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(2_967_613_012L), removeFromHoldPropertyStringValueEntity.getStringCrc());
+
+        assertEquals("Delete Hold", deleteHoldPropertyStringValueEntity.getStringValue());
+        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringEndLower());
+        assertEquals(Long.valueOf(132_640_810L), deleteHoldPropertyStringValueEntity.getStringCrc());
     }
 
 }

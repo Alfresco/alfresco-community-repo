@@ -25,7 +25,7 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/integration-suite.xml</suiteXmlFile>
-        <dependency.groovy.version>2.5.8</dependency.groovy.version>
+        <dependency.groovy.version>2.5.9</dependency.groovy.version>
         <dependency.javax.mail.version>1.6.2</dependency.javax.mail.version>
     </properties>
 

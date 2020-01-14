@@ -49,7 +49,7 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.spring.version>5.2.2.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>42.2.9</dependency.postgresql.version>
-        <dependency.cxf.version>3.3.4</dependency.cxf.version>
+        <dependency.cxf.version>3.3.5</dependency.cxf.version>
     </properties>
 
     <dependencyManagement>

@@ -84,7 +84,7 @@
         <dependency.alfresco-api-explorer.version>6.3.0</dependency.alfresco-api-explorer.version>
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
 
-        <dependency.spring.version>5.2.2.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.2.3.RELEASE</dependency.spring.version>
         <dependency.fabric8.version>4.3.1</dependency.fabric8.version>
         <dependency.jackson.version>2.10.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>

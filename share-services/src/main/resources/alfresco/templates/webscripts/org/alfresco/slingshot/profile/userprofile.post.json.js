@@ -40,7 +40,8 @@ function main()
       status.redirect = true;
       return;
    }
-   
+
+   var immutableProperties = people.getImmutableProperties(username);
    if (json.has("properties"))
    {
       var props = json.get("properties");
@@ -53,8 +54,10 @@ function main()
             var propval = props.get(propname);
             
             // set simple text properties
-            user.properties[propname] = propval;
-            
+            if(!immutableProperties.hasOwnProperty(String(propname)))
+            {
+               user.properties[propname] = propval;
+            }
             // update userStatusTime if updating userStatus
             if (propname.toLowerCase() == "cm:userstatus")
             {

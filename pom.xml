@@ -68,7 +68,7 @@
         <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
 
-        <dependency.alfresco-remote-api.version>8.84</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-remote-api.version>8.85</dependency.alfresco-remote-api.version>
         <dependency.alfresco-repository.version>8.85</dependency.alfresco-repository.version>
         <dependency.alfresco-data-model.version>8.84</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>8.19</dependency.alfresco-core.version>

@@ -1460,4 +1460,40 @@
             <if test="minCommitTime != null"><![CDATA[and txn.commit_time_ms >= #{minCommitTime}]]></if>
     </select>
     
+   <select id="select_TxnMinTxIdInNodeIdRange" resultType="java.lang.Long">
+        select
+            commit_time_ms 
+        from 
+            alf_transaction
+        where 
+            id = 
+                (
+			        select 
+			            min(transaction_id) 
+			        from 
+			            alf_node 
+			        where 
+			            id &gt;= #{fromNodeId} 
+			            and id &lt;= #{toNodeId}
+		        )
+    </select>
+    
+    <select id="select_TxnMaxTxIdInNodeIdRange" resultType="java.lang.Long">
+        select
+            commit_time_ms 
+        from 
+            alf_transaction
+        where 
+            id = 
+                (
+			        select 
+			            max(transaction_id) 
+			        from 
+			            alf_node 
+			        where 
+			            id &gt;= #{fromNodeId} 
+			            and id &lt;= #{toNodeId}
+		        )
+    </select>
+    
 </mapper>

@@ -50,6 +50,7 @@ import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
 import org.alfresco.repo.domain.node.NodePropertyKey;
 import org.alfresco.repo.domain.node.NodePropertyValue;
+import org.alfresco.repo.domain.node.NodeRangeEntity;
 import org.alfresco.repo.domain.node.NodeUpdateEntity;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity;
@@ -162,6 +163,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MAX_ID = "alfresco.node.select_TxnMaxId";
     private static final String SELECT_TXN_UNUSED_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinUnusedCommitTime";
     private static final String SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC = "alfresco.node.select_OneTxnsByCommitTimeDescending";
+    private static final String SELECT_TXN_MIN_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMinTxIdInNodeIdRange";
+    private static final String SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMaxTxIdInNodeIdRange";
     
     protected QNameDAO qnameDAO;
     protected DictionaryService dictionaryService;
@@ -1712,6 +1715,42 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         childAssoc.setParentNode(parentNode);
         childAssoc.setPrimary(Boolean.valueOf(isPrimary));
         return template.selectOne(COUNT_CHILD_ASSOC_BY_PARENT_ID, childAssoc);
+    }
+    
+    /**
+     * Gets the minimum commit time from transactions including a node id 
+     * in the range [fromNodeId:toNodeId]
+     * 
+     * @param fromNodeId Initial node id
+     * @param toNodeId Final node id
+     * @return minimum commit time
+     */
+    @Override
+    protected Long selectMinTxInNodeIdRange(Long fromNodeId, Long toNodeId)
+    {
+        NodeRangeEntity nodeRangeEntity = new NodeRangeEntity();
+        nodeRangeEntity.setFromNodeId(fromNodeId);
+        nodeRangeEntity.setToNodeId(toNodeId);
+        
+        return template.selectOne(SELECT_TXN_MIN_TX_ID_IN_NODE_IDRANGE, nodeRangeEntity);
+    }
+
+    /**
+     * Gets the maximum commit time from transactions including a node id 
+     * in the range [fromNodeId:toNodeId]
+     * 
+     * @param fromNodeId Initial node id
+     * @param toNodeId Final node id
+     * @return maximum commit time
+     */
+    @Override
+    protected Long selectMaxTxInNodeIdRange(Long fromNodeId, Long toNodeId)
+    {
+        NodeRangeEntity nodeRangeEntity = new NodeRangeEntity();
+        nodeRangeEntity.setFromNodeId(fromNodeId);
+        nodeRangeEntity.setToNodeId(toNodeId);
+        
+        return template.selectOne(SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE, nodeRangeEntity);
     }
     
     /*

@@ -1,0 +1,14 @@
+<webscript>
+	<shortname>Get the minimum and the maximum commit times for transactions in a range of node ids</shortname>
+	<description>
+	    Get the minimum and the maximum commit times for transactions in a range of node ids: [fromNodeId TO toNodeId]
+	    If the nodes don't exist in the repository, -1 is returned in both fields.
+	</description>
+	<url>/api/solr/transactionInterval?fromNodeId={fromNodeId}&amp;toNodeId={toNodeId}</url>
+	<format default="json">argument</format>
+	<!-- Solr api is protected by a solr-specific authentication mechanism -->
+	<authentication>none</authentication>
+	<transaction allow="readonly">required</transaction>
+	<lifecycle>internal</lifecycle>
+	<family>SOLR</family>
+</webscript>

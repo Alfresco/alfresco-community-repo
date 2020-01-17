@@ -1260,6 +1260,13 @@
       <property name="solrTrackingComponent" ref="solrTrackingComponent"/>
    </bean>
    
+	<!-- /api/solr webscript returning the min txId and the max TxId in a nodeId range -->
+	<bean id="webscript.org.alfresco.repository.solr.transactionInterval.get"
+		class="org.alfresco.repo.web.scripts.solr.TransactionIntervalGet"
+		parent="webscript">
+		<property name="nodeDAO" ref="nodeDAO" />
+	</bean>
+   
    <!--                                                                                                       -->
    <!-- Node Locator                                                                                          -->
    <!--                                                                                                       -->

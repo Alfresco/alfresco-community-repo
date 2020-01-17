@@ -936,4 +936,23 @@ public interface NodeDAO extends NodeBulkLoader
             Long toTimeExclusive,
             boolean remoteOnly);
 
+    /**
+     * Gets the minimum commit time from transactions including a node id 
+     * in the range [fromNodeId:toNodeId]
+     * 
+     * @param fromNodeId Initial node id
+     * @param toNodeId Final node id
+     * @return minimum commit time
+     */
+    public Long getMinTxInNodeIdRange(Long fromNodeId, Long toNodeId);
+    
+    /**
+     * Gets the maximum commit time from transactions including a node id 
+     * in the range [fromNodeId:toNodeId]
+     * 
+     * @param fromNodeId Initial node id
+     * @param toNodeId Final node id
+     * @return maximum commit time
+     */
+    public Long getMaxTxInNodeIdRange(Long fromNodeId, Long toNodeId);
 }

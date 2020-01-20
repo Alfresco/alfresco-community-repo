@@ -955,4 +955,13 @@ public interface NodeDAO extends NodeBulkLoader
      * @return maximum commit time
      */
     public Long getMaxTxInNodeIdRange(Long fromNodeId, Long toNodeId);
+    
+    /**
+     * Gets the next commit time from [fromCommitTime]
+     * 
+     * @param fromCommitTime Initial commit time
+     * @return next commit time
+     */
+    public Long getNextTxCommitTime(Long fromCommitTime);
+
 }

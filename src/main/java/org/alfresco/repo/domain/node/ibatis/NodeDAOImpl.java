@@ -168,6 +168,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC = "alfresco.node.select_OneTxnsByCommitTimeDescending";
     private static final String SELECT_TXN_MIN_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMinTxIdInNodeIdRange";
     private static final String SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMaxTxIdInNodeIdRange";
+    private static final String SELECT_TXN_NEXT_TXN_COMMIT_TIME = "select_TxnNextTxnCommitTime";
     
     protected QNameDAO qnameDAO;
     protected DictionaryService dictionaryService;
@@ -1789,6 +1790,23 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         return template.selectOne(SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE, nodeRangeEntity);
     }
+    
+    /**
+     * Gets the next commit time from [fromCommitTime]
+     * 
+     * @param fromCommitTime Initial commit time
+     * @return next commit time
+     */
+    @Override
+    public Long selectNextTxCommitTime(Long fromCommitTime)
+    {
+        
+        TransactionQueryEntity fromCommitTimeEntity = new TransactionQueryEntity();
+        fromCommitTimeEntity.setMinCommitTime(fromCommitTime);
+        
+        return template.selectOne(SELECT_TXN_NEXT_TXN_COMMIT_TIME, fromCommitTimeEntity);
+    }
+    
     
     /*
      * DAO OVERRIDES

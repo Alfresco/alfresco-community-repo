@@ -1,0 +1,14 @@
+<webscript>
+	<shortname>Get the next transaction commit time from a given transaction commit time</shortname>
+	<description>
+	    Get the next transaction commit time from a given transaction commit time [fromCommitTime]
+	    If no new transaction exists, -1 is returned.
+	</description>
+	<url>/api/solr/nextTransaction?fromCommitTime={fromCommitTime}</url>
+	<format default="json">argument</format>
+	<!-- Solr api is protected by a solr-specific authentication mechanism -->
+	<authentication>none</authentication>
+	<transaction allow="readonly">required</transaction>
+	<lifecycle>internal</lifecycle>
+	<family>SOLR</family>
+</webscript>

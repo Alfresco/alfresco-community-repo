@@ -21,6 +21,8 @@ package org.alfresco.util.shard;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
  * Common ACL based index sharding behaviour for SOLR and the repository
  * 
@@ -67,6 +69,13 @@ public class ExplicitShardingPolicy
             {
                 if (test % numNodes == nodeInstance - 1)
                 {
+                    // This algorithm fails for some sets of parameters. (See SEARCH-1785)
+                    if (shardIds.contains(shard % numShards))
+                    {
+                        throw new AlfrescoRuntimeException("Sharding configuration not supported - unable to create shard list for node " + nodeInstance
+                                + " (shards:" + numShards + ", replication:" + replicationFactor + ", nodes:" + numNodes + ")."
+                                + " Please set up the shards manually or use a different sharding configuration.");
+                    }
                     shardIds.add(shard % numShards);
                 }
                 test++;

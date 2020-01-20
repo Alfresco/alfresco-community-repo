@@ -1496,4 +1496,13 @@
 		        )
     </select>
     
+    <select id="select_TxnNextTxnCommitTime" resultType="java.lang.Long">
+        select
+            min(commit_time_ms) 
+        from 
+            alf_transaction
+        where 
+            commit_time_ms > #{minCommitTime} 
+    </select>
+        
 </mapper>

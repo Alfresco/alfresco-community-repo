@@ -4870,6 +4870,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         return selectMaxTxInNodeIdRange(fromNodeId, toNodeId);
     }
     
+    @Override
+    public Long getNextTxCommitTime(Long fromCommitTime)
+    {
+        return selectNextTxCommitTime(fromCommitTime);
+    }
+    
     /*
      * Abstract methods for underlying CRUD
      */
@@ -5038,4 +5044,5 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract Long selectMinUnusedTxnCommitTime();
     protected abstract Long selectMinTxInNodeIdRange(Long fromNodeId, Long toNodeId);
     protected abstract Long selectMaxTxInNodeIdRange(Long fromNodeId, Long toNodeId);
+    protected abstract Long selectNextTxCommitTime(Long fromCommitTime);
 }

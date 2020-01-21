@@ -162,12 +162,6 @@
             <artifactId>chemistry-opencmis-test-tck</artifactId>
             <version>${dependency.opencmis.version}</version>
             <!-- <scope>test</scope> -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.chemistry.opencmis</groupId>
-                    <artifactId>chemistry-opencmis-client-impl</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
 
@@ -239,7 +233,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>1.1</version>
+            <version>2.0</version>
             <scope>test</scope> 
         </dependency>   
     </dependencies>

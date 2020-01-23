@@ -261,9 +261,16 @@ public class BufferedResponse implements WrappingWebScriptResponse
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Writing Transactional response: size=" + outputStream.getLength());
-                
-                outputStream.flush();
-                FileCopyUtils.copy(outputStream.getInputStream(), res.getOutputStream());
+
+                try
+                {
+                    outputStream.flush();
+                    FileCopyUtils.copy(outputStream.getInputStream(), res.getOutputStream());
+                }
+                finally
+                {
+                    outputStream.destroy();
+                }
             }
         }
         catch (IOException e)

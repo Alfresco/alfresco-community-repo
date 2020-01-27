@@ -440,21 +440,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 this.numberFound = numberFound;
             }
-
-            @Override
-            public boolean hasMore()
-            {
-                /*
-                Overriding for MNT-20822
-                Changing code to correct the hasMore field in the search api response.
-                Basing off the implementation in SolrJSONResultSet with changes due to
-                numberFound being equal to skip + count rather than an accurate number 
-                of possible results
-                 */
-                return getUnFilteredResultSet().length() >= getResultSetMetaData()
-                    .getSearchParameters()
-                    .getMaxItems();
-            }
         }
 
         BitSet inclusionMask = new BitSet(returnedObject.length());

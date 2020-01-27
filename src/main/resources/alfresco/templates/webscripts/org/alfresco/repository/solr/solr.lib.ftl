@@ -1,6 +1,3 @@
-<#macro json_string string>${string?js_string?replace("\\'", "\'")?replace("\\>", ">")}</#macro>
-
-
 <#macro aclChangeSetJSON aclChangeSet>
       {
          "id": ${aclChangeSet.id?c},
@@ -24,14 +21,14 @@
          "readers" :
          [
             <#list aclReaders.readers as reader>
-               "${reader?string}"
+               "${reader?json_string}"
                <#if reader_has_next>,</#if>
             </#list>
          ],
          "denied" :
          [
             <#list aclReaders.denied as denied>
-               "${denied?string}"
+               "${denied?json_string}"
                <#if denied_has_next>,</#if>
             </#list>
          ]
@@ -54,7 +51,7 @@
          "txnId": ${node.txnId?c},
          "status": "<#if node.deleted>d<#else>u</#if>",
          <#if node.aclId??>"aclId": ${node.aclId?c},</#if>
-         <#if node.shardPropertyValue??>"shardPropertyValue": "${node.shardPropertyValue?string}",</#if>
+         <#if node.shardPropertyValue??>"shardPropertyValue": "${node.shardPropertyValue?json_string}",</#if>
          <#if node.explicitShardId??>"explicitShardId": "${node.explicitShardId?c}",</#if>
          "tenant": "${node.tenant}"
       }
@@ -151,7 +148,7 @@
          </#if>
          <#if filter.includeOwner??>
          <#if nodeMetaData.owner??>
-         , "owner": "${nodeMetaData.owner}"
+         , "owner": "${nodeMetaData.owner?json_string}"
          </#if>
          </#if>
       }

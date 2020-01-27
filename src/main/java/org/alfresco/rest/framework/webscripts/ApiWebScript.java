@@ -57,7 +57,6 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
     protected long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
     protected TempOutputStreamFactory streamFactory = null;
-    protected TempOutputStreamFactory responseStreamFactory = null;
     protected TransactionService transactionService;
 
     public void setTransactionService(TransactionService transactionService)
@@ -98,7 +97,6 @@ public abstract class ApiWebScript extends AbstractWebScript
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
         this.streamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, false, false);
-        this.responseStreamFactory = new TempOutputStreamFactory(tempDirectory, memoryThreshold, maxContentSize, false, true);
     }
 
     @Override

@@ -254,8 +254,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private final Set<QName> aspects;
         private final List<String> paths;
         private final List<String> namePaths;
-        private final List<ChildAssociationRef> childAssocs;
-        private final List<ChildAssociationRef> parentAssocs;
+        private final List<String> childAssocs;
+        private final List<String> parentAssocs;
         private final Long parentAssocsCrc;
         private final List<Long> childIds;
         private final String owner;
@@ -272,7 +272,9 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             this.nodeRef = nodeMetaData.getNodeRef();
             this.nodeType = nodeMetaData.getNodeType();
             this.txnId = nodeMetaData.getTxnId();
-            
+            this.parentAssocs = new ArrayList<>();
+            this.childAssocs = new ArrayList<>();
+
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
             List<String> ancestorPaths = new ArrayList<String>();
@@ -299,7 +301,7 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             }
             this.ancestors = ancestors;
             this.paths = paths;
-            
+
             
             // convert name Paths to Strings
             List<String> namePaths = new ArrayList<String>();
@@ -320,11 +322,26 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             this.namePaths = namePaths;
 
             this.owner = nodeMetaData.getOwner();
-            this.childAssocs = nodeMetaData.getChildAssocs();
             this.childIds = nodeMetaData.getChildIds();
-            this.parentAssocs = nodeMetaData.getParentAssocs();
             this.parentAssocsCrc = nodeMetaData.getParentAssocsCrc();
             this.aspects = nodeMetaData.getAspects();
+
+
+            if (nodeMetaData.getParentAssocs() != null)
+            {
+                for( ChildAssociationRef assRef : nodeMetaData.getParentAssocs())
+                {
+                    parentAssocs.add("\"" + solrSerializer.serializeToJSONString(assRef) + "\"");
+                }
+            }
+
+            if (nodeMetaData.getChildAssocs() != null)
+            {
+                for( ChildAssociationRef assRef : nodeMetaData.getChildAssocs() )
+                {
+                    childAssocs.add("\"" + solrSerializer.serializeToJSONString(assRef) + "\"");
+                }
+            }
 
             final Map<QName, Serializable> props = nodeMetaData.getProperties();
             if (props != null)
@@ -386,11 +403,11 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         {
             return aspects;
         }
-        public List<ChildAssociationRef> getChildAssocs()
+        public List<String> getChildAssocs()
         {
             return childAssocs;
         }
-        public List<ChildAssociationRef> getParentAssocs()
+        public List<String> getParentAssocs()
         {
             return parentAssocs;
         }

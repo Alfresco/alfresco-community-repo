@@ -116,7 +116,7 @@
          <#if (nodeMetaData.parentAssocs?size > 0)>
          , "parentAssocs": [
            <#list nodeMetaData.parentAssocs as pa>
-           "<@json_string "${pa}"/>"<#if pa_has_next>,</#if>
+           ${pa}<#if pa_has_next>,</#if>
            </#list>
          ]
          ,"parentAssocsCrc": <#if nodeMetaData.parentAssocsCrc??>${nodeMetaData.parentAssocsCrc?c}<#else>null</#if>
@@ -128,7 +128,7 @@
          <#if (nodeMetaData.childAssocs?size > 0)>
          , "childAssocs": [
            <#list nodeMetaData.childAssocs as ca>
-           "<@json_string "${ca}"/>"<#if ca_has_next>,</#if>
+           ${ca}<#if ca_has_next>,</#if>
            </#list>
          ]
          </#if>

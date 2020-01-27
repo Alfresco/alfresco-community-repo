@@ -35,6 +35,7 @@ import org.alfresco.repo.security.authentication.ResetPasswordService;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowInvalidUserException;
+import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Renditions;
@@ -62,7 +63,12 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.*;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
@@ -118,7 +124,9 @@ public class PeopleImpl implements People
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
     protected ResetPasswordService resetPasswordService;
+    protected UserRegistrySynchronizer userRegistrySynchronizer;
     protected Renditions renditions;
+
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -190,6 +198,10 @@ public class PeopleImpl implements People
         this.renditions = renditions;
     }
 
+    public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
+    {
+        this.userRegistrySynchronizer = userRegistrySynchronizer;
+    }
 
     /**
      * Validate, perform -me- substitution and canonicalize the person ID.
@@ -739,16 +751,28 @@ public class PeopleImpl implements People
 			properties.putAll(nodes.mapToNodeProperties(customProps));
 		}
 
-        // The person service only allows admin users to set the properties by default.
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
+        // MNT-21150 LDAP synced attributes can be changed using REST API
+        Set<QName> immutableProperties = userRegistrySynchronizer.getPersonMappedProperties(personIdToUpdate);
+
+        immutableProperties.forEach(immutableProperty -> {
+            if (properties.containsKey(immutableProperty))
             {
-                personService.setPersonProperties(personIdToUpdate, properties, false);
-                return null;
+                properties.remove(immutableProperty);
             }
         });
+
+        // The person service only allows admin users to set the properties by default.
+        if(!properties.isEmpty())
+        {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override public Void doWork() throws Exception
+                {
+                    personService.setPersonProperties(personIdToUpdate, properties, false);
+                    return null;
+                }
+            });
+        }
 		
         return getPerson(personId);
     }

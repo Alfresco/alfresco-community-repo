@@ -8,84 +8,30 @@ function main()
       status.setCode(status.STATUS_NOT_FOUND, "Person " + userName + " does not exist");
       return;
    }
-   
+
+   // MNT-21150 LDAP synced attributes can be changed using REST API
+   var qname = "{http://www.alfresco.org/model/content/1.0}";
+   var immutableProperties = people.getImmutableProperties(userName);
+
+   var personProperties = ["firstName", "lastName", "email", "title", "jobtitle", "location", "telephone",
+       "mobile", "companyaddress1", "companyaddress2", "companyaddress3", "companypostcode", "companytelephone", "companyfax",
+       "companyemail", "skype", "instantmsg", "persondescription"]
+
    // assign new values to the person's properties
-   if (!json.isNull("firstName"))
+   for (var index=0; index<personProperties.length; index++)
    {
-      person.properties["firstName"] = json.get("firstName");
+     if ((!json.isNull(personProperties[index])) && (!immutableProperties.hasOwnProperty((qname + personProperties[index]).toString())))
+     {
+       person.properties[personProperties[index]] = json.get(personProperties[index]);
+     }
    }
-   if (!json.isNull("lastName"))
+   // Special case for organisation vs organization
+   // Expected organisation in Json but property saved in person model as organization
+   if ((!json.isNull("organisation")) && (!immutableProperties.hasOwnProperty((qname + "organization").toString())))
    {
-      person.properties["lastName"] = json.get("lastName");
+     person.properties["organization"] = json.get("organisation");
    }
-   if (!json.isNull("email"))
-   {
-      person.properties["email"] = json.get("email");
-   }
-   if (!json.isNull("title"))
-   {
-      person.properties["title"] = json.get("title");
-   }
-   if (!json.isNull("organisation"))
-   {
-      person.properties["organization"] = json.get("organisation");
-   }
-   if (!json.isNull("jobtitle"))
-   {
-      person.properties["jobtitle"] = json.get("jobtitle");
-   }
-   if (!json.isNull("location")) 
-   { 
-      person.properties["location"] = json.get("location"); 
-   } 
-   if (!json.isNull("telephone")) 
-   { 
-      person.properties["telephone"] = json.get("telephone"); 
-   } 
-   if (!json.isNull("mobile")) 
-   { 
-      person.properties["mobile"] = json.get("mobile"); 
-   } 
-   if (!json.isNull("companyaddress1")) 
-   { 
-      person.properties["companyaddress1"] = json.get("companyaddress1"); 
-   } 
-   if (!json.isNull("companyaddress2")) 
-   { 
-      person.properties["companyaddress2"] = json.get("companyaddress2"); 
-   } 
-   if (!json.isNull("companyaddress3")) 
-   { 
-      person.properties["companyaddress3"] = json.get("companyaddress3"); 
-   } 
-   if (!json.isNull("companypostcode")) 
-   { 
-      person.properties["companypostcode"] = json.get("companypostcode"); 
-   } 
-   if (!json.isNull("companytelephone")) 
-   { 
-      person.properties["companytelephone"] = json.get("companytelephone"); 
-   } 
-   if (!json.isNull("companyfax")) 
-   { 
-      person.properties["companyfax"] = json.get("companyfax"); 
-   } 
-   if (!json.isNull("companyemail")) 
-   { 
-      person.properties["companyemail"] = json.get("companyemail"); 
-   } 
-   if (!json.isNull("skype")) 
-   { 
-      person.properties["skype"] = json.get("skype"); 
-   } 
-   if (!json.isNull("instantmsg")) 
-   { 
-      person.properties["instantmsg"] = json.get("instantmsg"); 
-   } 
-   if (!json.isNull("persondescription")) 
-   { 
-      person.properties["persondescription"] = json.get("persondescription"); 
-   } 
+
    // Update the person node with the modified details
    person.save();
    

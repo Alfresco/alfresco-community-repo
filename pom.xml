@@ -144,6 +144,11 @@
             <artifactId>commons-csv</artifactId>
             <version>1.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+            <version>1.5.8</version>
+        </dependency>
         <!-- newer version, see REPO-3133 -->
         <dependency>
             <groupId>org.alfresco.surf</groupId>

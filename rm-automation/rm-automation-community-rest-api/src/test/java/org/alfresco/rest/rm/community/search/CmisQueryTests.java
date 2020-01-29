@@ -98,19 +98,19 @@ public class CmisQueryTests extends BaseRMRestTest
         STEP("Create 10 documents ending with SEARCH_TERM");
         for (int i = 0; ++i <= 10; )
         {
-            FileModel fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM,
+            FileModel fileModel = new FileModel(String.format("%s%s%s.%s", "Doc", i, SEARCH_TERM,
                     FileType.TEXT_PLAIN.extension));
             dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
         }
 
         STEP("Create a collaborator user for the collaboration site");
         nonRMUser = getDataUser().createRandomTestUser();
-        getDataUser().addUserToSite(nonRMUser, collaborationSite, UserRole.SiteManager);
+        getDataUser().addUserToSite(nonRMUser, collaborationSite, UserRole.SiteCollaborator);
 
         STEP("Create 10 documents and declare as records");
         for (int i = 0; ++i <= 10; )
         {
-            FileModel fileModel = new FileModel(String.format("%s.%s", "InPlace " + SEARCH_TERM + i,
+            FileModel fileModel = new FileModel(String.format("%s%s%s.%s", "InPlace ", SEARCH_TERM, i,
                     FileType.TEXT_PLAIN.extension));
             fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
             getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(fileModel.getNodeRefWithoutVersion());
@@ -120,7 +120,8 @@ public class CmisQueryTests extends BaseRMRestTest
         recordFolder = createCategoryFolderInFilePlan();
         for (int i = 0; ++i <= 10; )
         {
-            createElectronicRecord(recordFolder.getId(), "Record " + SEARCH_TERM + i);
+            createElectronicRecord(recordFolder.getId(), String.format("%s%s%s.%s", "Record ", SEARCH_TERM, i,
+                    FileType.TEXT_PLAIN.extension));
         }
         STEP("Create an rm user with read permission over the category created and contributor role within the " +
                 "collaboration site");
@@ -205,7 +206,7 @@ public class CmisQueryTests extends BaseRMRestTest
 
         // check the total number of items and has more items is true
         assertTrue("Has more items not true. ", results.getHasMoreItems());
-        assertEquals("Total number of items is not 30 " + results.getTotalNumItems(), 30,
+        assertEquals("Total number of items is not 30, got " + results.getTotalNumItems(), 30,
                 results.getTotalNumItems());
         assertEquals("Expected 10 items per page and got " + results.getPageNumItems() + " per page.",
                 10, results.getPageNumItems());

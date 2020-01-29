@@ -128,12 +128,12 @@ public class CmisQueryTests extends BaseRMRestTest
                 recordFolder.getParentId(), ROLE_RM_MANAGER, UserPermissions.PERMISSION_READ_RECORDS);
 
         //do a cmis query to wait for solr indexing
-        Utility.sleep(5000, 30000, () ->
+        Utility.sleep(5000, 60000, () ->
         {
             ItemIterable<QueryResult> results =
                     contentActions.getCMISSession(getAdminUser().getUsername(), getAdminUser().getPassword()).query(sqlWithName,
                             false);
-            assertEquals("Total number of items is not 30, got  " + results.getTotalNumItems() + "total items",
+            assertEquals("Total number of items is not 30, got  " + results.getTotalNumItems() + " total items",
                     30, results.getTotalNumItems());
         });
     }

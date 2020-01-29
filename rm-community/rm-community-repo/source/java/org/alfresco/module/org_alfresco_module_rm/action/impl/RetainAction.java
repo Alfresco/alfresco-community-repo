@@ -38,6 +38,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RetainAction extends RMDispositionActionExecuterAbstractBase
 {
+    /**
+     * Action name
+     */
+    public static final String NAME = "retain";
+
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {

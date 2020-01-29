@@ -104,6 +104,7 @@
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
         <property name="freezeService" ref="FreezeService"/>
+        <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">

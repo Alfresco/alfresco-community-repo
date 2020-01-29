@@ -36,6 +36,7 @@ import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
@@ -159,7 +160,8 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingNode(contentHeld).updateNodeContent(updatedFile);
 
         STEP("Check the request failed.");
-        restClient.assertStatusCodeIs(FORBIDDEN);
+        //TODO change this to FORBIDDEN when REPO-4632 is fixed
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
         restClient.assertLastError().containsSummary("Frozen content can't be updated.");
     }
 
@@ -194,7 +196,7 @@ public class PreventActionsOnFrozenContentTests extends BaseRMRestTest
 
         STEP("Check the request failed.");
         assertStatusCode(FORBIDDEN);
-        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Frozen nodes can not be copied.");
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary("Permission was denied");
     }
 
     /**

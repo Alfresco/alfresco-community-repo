@@ -57,6 +57,9 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -65,6 +68,7 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +118,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
     /** Freeze Service */
     private FreezeService freezeService;
+
+    /** Transaction service */
+    private TransactionService transactionService;
 
     /** Disposition properties */
     private Map<QName, DispositionProperty> dispositionProperties = new HashMap<>(4);
@@ -190,6 +197,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void setFreezeService(FreezeService freezeService)
     {
         this.freezeService = freezeService;
+    }
+
+    /**
+     * @param transactionService transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     /**
@@ -408,7 +423,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             NodeRef dsNodeRef = getAssociatedDispositionScheduleImpl(nodeRef);
             if (dsNodeRef != null)
             {
-                // Cerate disposition schedule object
+                // Create disposition schedule object
                 ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
             }
         }
@@ -697,7 +712,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *  @param nodeRef node reference
      *  @param dispositionActionDefinition disposition action definition
      */
-    private DispositionAction initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
+    private DispositionAction initialiseDispositionAction(final NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
     {
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
         if (childAssocs != null && !childAssocs.isEmpty())
@@ -706,7 +721,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
 
         // Create the properties
-        Map<QName, Serializable> props = new HashMap<>(10);
+        final Map<QName, Serializable> props = new HashMap<>(10);
 
         Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition);
 
@@ -718,14 +733,23 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             props.put(PROP_DISPOSITION_AS_OF, asOfDate);
         }
 
-        // Create a new disposition action object
-        NodeRef dispositionActionNodeRef = this.nodeService.createNode(
-                nodeRef,
-                ASSOC_NEXT_DISPOSITION_ACTION,
-                ASSOC_NEXT_DISPOSITION_ACTION,
-                TYPE_DISPOSITION_ACTION,
-                props).getChildRef();
-        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
+        DispositionAction da;
+        // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE transaction
+        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
+        {
+            da =
+                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
+                    {
+                        public DispositionAction execute() throws Throwable
+                        {
+                            return createDispositionAction(nodeRef, props);
+                        }
+                    }, false, true);
+        }
+        else
+        {
+            da = createDispositionAction(nodeRef, props);
+        }
 
         // Create the events
         List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
@@ -735,6 +759,24 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             da.addEventCompletionDetails(event);
         }
         return da;
+    }
+
+    /** Creates a new disposition action object
+     *
+     * @param nodeRef node reference
+     * @param props properties of the disposition action to be created
+     * @return the disposition action object
+     */
+    private DispositionAction createDispositionAction(final NodeRef nodeRef, Map<QName, Serializable> props)
+    {
+        NodeRef dispositionActionNodeRef = nodeService.createNode(
+                nodeRef,
+                ASSOC_NEXT_DISPOSITION_ACTION,
+                ASSOC_NEXT_DISPOSITION_ACTION,
+                TYPE_DISPOSITION_ACTION,
+                props).getChildRef();
+
+        return new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
     }
 
     /**

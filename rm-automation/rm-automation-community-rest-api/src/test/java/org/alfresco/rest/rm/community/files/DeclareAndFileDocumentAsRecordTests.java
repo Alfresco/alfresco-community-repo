@@ -463,6 +463,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
     public void declareAndFileDocumentAsRecordCleanup()
     {
         //delete rm items
+        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME);
         deleteRecordCategory(recordCategory.getId());
         getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledContainerFolder.getId());
 

@@ -202,7 +202,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     @Before
     public void setUp() throws Exception
     {
-        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);;
         
         virtualizationConfigTestBootstrap = ctx.getBean(VIRTUALIZATION_CONFIG_TEST_BOOTSTRAP_BEAN_ID,
                                                         VirtualizationConfigTestBootstrap.class);

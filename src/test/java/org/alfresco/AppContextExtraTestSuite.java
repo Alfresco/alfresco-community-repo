@@ -139,6 +139,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.virtual.config.NodeRefPathExpressionTest.class,
     org.alfresco.repo.virtual.template.TemplateFilingRuleTest.class,
     org.alfresco.repo.virtual.bundle.FileInfoPropsComparatorTest.class,
+    org.alfresco.repo.virtual.bundle.VirtualBehaviourFilterExtensionTest.class,
 
     // ----------------------------------------------------------------------
     // testSubscriptionsContext  [classpath:alfresco/application-context.xml, classpath:test/alfresco/test-subscriptions-context.xml]

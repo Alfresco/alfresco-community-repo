@@ -234,6 +234,11 @@
       <property name="extensionPoint" ref="defaultCopyBehaviourCallbackExtensionPoint" />
    </bean>
 
+   <bean id="behaviourFilterExtension" class="org.alfresco.repo.virtual.bundle.VirtualBehaviourFilterExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="behaviourFilterExtensionPoint" />
+   </bean>
+
    <!-- BUNDLE -->
 
    <bean id="smartFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
@@ -252,6 +257,7 @@
             <ref bean="lockableAspectInterceptorExtension" />
             <ref bean="workflowPackageExtension" />
             <ref bean="defaultCopyBehaviourCallbackExtension" />
+            <ref bean="behaviourFilterExtension" />
          </list>
       </property>
    </bean>
@@ -311,6 +317,11 @@
    <bean id="defaultCopyBehaviourCallbackExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
       <property name="extension" value="org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackExtension" />
       <property name="trait" value="org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackTrait" />
+   </bean>
+
+   <bean id="behaviourFilterExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.policy.traitextender.BehaviourFilterExtension" />
+      <property name="trait" value="org.alfresco.repo.policy.traitextender.BehaviourFilterTrait" />
    </bean>
 
 </beans>

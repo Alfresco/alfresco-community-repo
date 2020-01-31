@@ -28,6 +28,8 @@ package org.alfresco.repo.policy;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.policy.traitextender.BehaviourFilterExtension;
+import org.alfresco.repo.policy.traitextender.BehaviourFilterTrait;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
@@ -35,6 +37,11 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.AJProxyTrait;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,7 +57,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Derek Hulley
  */
-public class BehaviourFilterImpl implements BehaviourFilter
+public class BehaviourFilterImpl implements BehaviourFilter, Extensible
 {
     private static final String KEY_FILTER_COUNT = "BehaviourFilterImpl.filterCount";
     private static final String KEY_GLOBAL_FILTERS = "BehaviourFilterImpl.globalFilters";
@@ -62,7 +69,15 @@ public class BehaviourFilterImpl implements BehaviourFilter
     
     private DictionaryService dictionaryService;
     private TenantService tenantService;
-    
+
+    private final ExtendedTrait<BehaviourFilterTrait> behaviourFilterTrait;
+
+    public BehaviourFilterImpl()
+    {
+        super();
+        this.behaviourFilterTrait = new ExtendedTrait<>(AJProxyTrait.create(this, BehaviourFilterTrait.class));
+    }
+
     /**
      * @param dictionaryService  dictionary service
      */    
@@ -82,6 +97,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     @Deprecated
     @Override
     // TODO
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviours(NodeRef nodeRef)
     {
         enableBehaviour(nodeRef);
@@ -90,6 +106,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     @Deprecated
     @Override
     // TODO
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableAllBehaviours()
     {
         disableBehaviour();
@@ -98,12 +115,14 @@ public class BehaviourFilterImpl implements BehaviourFilter
     @Deprecated
     @Override
     // TODO
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableAllBehaviours()
     {
         enableBehaviour();
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour()
     {
         if (logger.isDebugEnabled())
@@ -122,12 +141,14 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(QName className)
     {
         disableBehaviour(className, false);
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(QName className, boolean includeSubClasses)
     {
         if (logger.isDebugEnabled())
@@ -155,6 +176,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(NodeRef nodeRef, QName className)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -191,6 +213,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -219,6 +242,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour()
     {
         if (logger.isDebugEnabled())
@@ -237,6 +261,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour(QName className)
     {
         ParameterCheck.mandatory("className", className);
@@ -284,6 +309,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour(NodeRef nodeRef, QName className)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -332,6 +358,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -373,6 +400,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled()
     {
         return TransactionalResourceHelper.getCount(KEY_GLOBAL_FILTERS) <= 0;
@@ -395,6 +423,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled(QName className)
     {
         ParameterCheck.mandatory("className", className);
@@ -475,6 +504,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled(NodeRef nodeRef, QName className)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -518,6 +548,7 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef",  nodeRef);
@@ -546,8 +577,15 @@ public class BehaviourFilterImpl implements BehaviourFilter
     }
 
     @Override
+    @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isActivated()
     {
         return TransactionalResourceHelper.getCount(KEY_FILTER_COUNT) > 0;
+    }
+
+    @Override
+    public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
+    {
+        return (ExtendedTrait<M>) behaviourFilterTrait;
     }
 }

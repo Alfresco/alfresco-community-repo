@@ -137,8 +137,10 @@ public class RecordFolderTests extends BaseRMRestTest
      * Then the operation fails
      * </pre>
      */
+    //TODO enable this test when REPO-2454 is fixed
     @Test
     (
+        enabled = false,
         description = "Create invalid types as children for a record folder",
         dataProvider = "childrenNotAllowedForFolder"
     )

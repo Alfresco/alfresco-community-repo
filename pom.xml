@@ -534,7 +534,7 @@
       <alfresco-spring-webscripts.version>7.9</alfresco-spring-webscripts.version>
       <api.explorer.version>6.2.0</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
-      <alfresco.version>0.0</alfresco.version>
+      <alfresco.min.version>0.0</alfresco.min.version>
 
       <skip.integrationtests>true</skip.integrationtests>
       <postgres.version>9.4.12</postgres.version>
@@ -694,7 +694,7 @@
                      <regexPropertySettings>
                         <regexPropertySetting>
                            <name>ags.module.repo.version.min</name>
-                           <value>${alfresco.version}</value>
+                           <value>${alfresco.min.version}</value>
                            <regex>(\d+)\.(\d+).*</regex>
                            <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>

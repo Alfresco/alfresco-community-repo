@@ -67,8 +67,11 @@ public class RMv33HoldAuditEntryValuesPatch extends AbstractModulePatch
     private void updatePropertyStringValueEntity(String fromStringValue, String toStringValue)
     {
         PropertyStringValueEntity propertyStringValueEntity = recordsManagementQueryDAO.getPropertyStringValueEntity(fromStringValue);
-        propertyStringValueEntity.setValue(toStringValue);
-        recordsManagementQueryDAO.updatePropertyStringValueEntity(propertyStringValueEntity);
+        if (propertyStringValueEntity != null)
+        {
+            propertyStringValueEntity.setValue(toStringValue);
+            recordsManagementQueryDAO.updatePropertyStringValueEntity(propertyStringValueEntity);
+        }
     }
 
 }

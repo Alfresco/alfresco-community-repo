@@ -419,11 +419,6 @@
             <version>1.64</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.mp4parser</groupId>
-            <artifactId>isoparser</artifactId>
-            <version>1.1.22</version>
-        </dependency>
-        <dependency>
             <groupId>net.sf</groupId>
             <artifactId>bliki</artifactId>
             <version>3.0.2</version>

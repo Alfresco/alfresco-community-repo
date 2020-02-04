@@ -57,6 +57,9 @@ public class RestInstanceModel
 
     /** Transactions remaining */
     private Long transactionsRemaining;
+    
+    /** Sharding Parameters */
+    private String shardParams;
 
     /**
      * @return the baseUrl
@@ -233,4 +236,21 @@ public class RestInstanceModel
     {
         this.transactionsRemaining = transactionsRemaining;
     }
+    
+    /**
+     * @return the shardParams
+     */
+    public String getShardParams()
+    {
+        return this.shardParams;
+    }
+
+    /**
+     * @param shardParams the shardParams to set
+     */
+    public void setShardParams(String shardParams)
+    {
+        this.shardParams = shardParams;
+    }
+
 }

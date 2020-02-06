@@ -42,6 +42,7 @@ import org.alfresco.rest.requests.search.SearchSQLAPI;
 import org.alfresco.rest.requests.search.SearchSQLJDBC;
 import org.alfresco.rest.requests.search.ShardInfoAPI;
 import org.alfresco.rest.requests.search.SolrAPI;
+import org.alfresco.rest.requests.search.SolrAdminAPI;
 import org.alfresco.rest.requests.workflowAPI.RestWorkflowAPI;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.Utility;
@@ -954,6 +955,11 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     public SolrAPI withSolrAPI()
     {
         return new SolrAPI(this);
+    }
+    
+    public SolrAdminAPI withSolrAdminAPI()
+    {
+        return new SolrAdminAPI(this);
     }
 
     /**

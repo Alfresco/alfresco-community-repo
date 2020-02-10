@@ -16,7 +16,24 @@
             <artifactId>alfresco-remote-api</artifactId>
             <version>7.34.16</version>
             <scope>provided</scope>
+            <exclusions>
+            	<exclusion>
+		            <groupId>org.alfresco</groupId>
+		            <artifactId>alfresco-core</artifactId>
+	        	</exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>dom4j</groupId>
+                    <artifactId>dom4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency> 
 
         <!-- Events dependencies -->
         <dependency>
@@ -44,6 +61,10 @@
                     <groupId>dom4j</groupId>
                     <artifactId>dom4j</artifactId>
                 </exclusion>
+            	<exclusion>
+		            <groupId>org.alfresco</groupId>
+		            <artifactId>alfresco-core</artifactId>
+	        	</exclusion>
             </exclusions>
         </dependency>
         <dependency>

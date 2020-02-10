@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.patch.v33;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -104,6 +105,23 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         assertEquals(Long.valueOf(132_640_810L), deleteHoldPropertyStringValueEntity.getStringCrc());
     }
 
+    /**
+     * if there are no hold audit entries, the patch is executed with success; no entries are updated
+     */
+    @Test
+    public void patchRunWithSuccessWhenNoHoldEntries()
+    {
+        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("addToHold")).thenReturn(null);
+        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("removeFromHold")).thenReturn(null);
+        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")).thenReturn(null);
+
+        patch.applyInternal();
+
+        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("addToHold");
+        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("removeFromHold");
+        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("deleteHold");
+        verify(mockedRecordsManagementQueryDAO, times(0)).updatePropertyStringValueEntity(any());
+    }
 }
 
 

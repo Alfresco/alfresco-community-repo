@@ -193,6 +193,38 @@ public class Site extends ModelRequest<Site>
   }
 
   /**
+   * Update a site: Site title, description, visibility can be updated
+   * Body:
+   * {
+   *   "title": "string",
+   *   "description": "string",
+   *   "visibility": "PRIVATE"
+   * }
+   * 
+   * Response:
+   * {
+   *   "entry": {
+   *     "id": "string",
+   *     "guid": "string",
+   *     "title": "string",
+   *     "description": "string",
+   *     "visibility": "PRIVATE",
+   *     "preset": "string",
+   *     "role": "SiteConsumer"
+   *   }
+   * }
+   * 
+   * @return the properties of an updated site
+   * @throws Exception
+   */
+  public RestSiteModel updateSite(SiteModel site) throws Exception
+  {     
+      String siteBody = JsonBodyGenerator.updateSiteRequest(site);
+      RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, siteBody, "sites/{siteId}", site.getId());
+      return restWrapper.processModel(RestSiteModel.class, request);
+  }
+
+  /**
    * Get site membership requests by using GET /site-membership-requests
    * 
    * @return site memberships

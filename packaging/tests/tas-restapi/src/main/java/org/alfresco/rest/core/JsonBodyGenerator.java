@@ -166,6 +166,19 @@ public class JsonBodyGenerator
                 .add("title", title).build();
         return value.toString();
     }
+    /**
+     * Method to create a Json object for SiteBody with site title, description, visibility
+     * @param siteModel
+     * @return String
+     */
+    public static String updateSiteRequest(SiteModel siteModel)
+    {
+        JsonObject value = defineJSON()
+                .add("title", siteModel.getTitle())
+                .add("description", siteModel.getDescription())
+                .add("visibility", siteModel.getVisibility().toString()).build();
+        return value.toString();
+    }
 
     public static String process(String processDefinitionKey, UserModel assignee, boolean sendEmailNotifications, Priority priority)
     {

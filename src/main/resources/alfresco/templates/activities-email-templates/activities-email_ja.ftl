@@ -48,9 +48,9 @@
                                              <#if activities?exists && activities?size &gt; 0>
                                              <#list activities as activity>
                                                 <#if activity.siteNetwork??>
-                                                <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.postUserId?html}/profile\">${activity.activitySummary.firstName?html!\"\"} ${activity.activitySummary.lastName?html!\"\"}</a>">
+                                                <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.postUserId?html}/profile\">${activity.activitySummary.firstName!\"\"?html} ${activity.activitySummary.lastName!\"\"?html}</a>">
                                                 <#assign secondUserLink="">
-                                                <#assign itemLink="<a href=\"${shareUrl}/page/site/${activity.siteNetwork?html}/${activity.activitySummary.page?html!\"\"}\">${activity.activitySummary.title?html!\"\"}</a>">
+                                                <#assign itemLink="<a href=\"${shareUrl}/page/site/${activity.siteNetwork?html}/${activity.activitySummary.page!\"\"?html}\">${activity.activitySummary.title!\"\"?html}</a>">
                                                 <#assign siteLink="<a href=\"${shareUrl}/page/site/${activity.siteNetwork?html}/dashboard\">${(siteTitles[activity.siteNetwork]?html)!activity.siteNetwork?html}</a>">
                                                 
                                                 <#assign suppressSite=false>
@@ -61,7 +61,7 @@
                                                       <#assign suppressSite=true>
                                                    <#case "org.alfresco.site.user-role-changed">
                                                       <#assign custom0=message("role."+activity.activitySummary.role)!"">
-                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.memberUserName?html}/profile\">${activity.activitySummary.memberFirstName?html!\"\"} ${activity.activitySummary.memberLastName?html!\"\"}</a>">
+                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.memberUserName?html}/profile\">${activity.activitySummary.memberFirstName!\"\"?html} ${activity.activitySummary.memberLastName!\"\"?html}</a>">
                                                       <#break>
                                                    <#case "org.alfresco.site.group-added">
                                                    <#case "org.alfresco.site.group-removed">
@@ -71,12 +71,12 @@
                                                       <#assign userLink=activity.activitySummary.groupName?replace("GROUP_", "")>
                                                       <#break>
                                                    <#case "org.alfresco.subscriptions.followed">
-                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.followerUserName?html}/profile\">${activity.activitySummary.followerFirstName?html!\"\"} ${activity.activitySummary.followerLastName?html!\"\"}</a>">
-                                                      <#assign secondUserLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.userUserName?html}/profile\">${activity.activitySummary.userFirstName?html!\"\"} ${activity.activitySummary.userLastName?html!\"\"}</a>">                                                   
+                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.followerUserName?html}/profile\">${activity.activitySummary.followerFirstName!\"\"?html} ${activity.activitySummary.followerLastName!\"\"?html}</a>">
+                                                      <#assign secondUserLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.userUserName?html}/profile\">${activity.activitySummary.userFirstName!\"\"?html} ${activity.activitySummary.userLastName!\"\"?html}</a>">                                                   
                                                       <#assign suppressSite=true>
                                                       <#break>
                                                    <#case "org.alfresco.subscriptions.subscribed">
-                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.subscriberUserName?html}/profile\">${activity.activitySummary.subscriberFirstName?html!\"\"} ${activity.activitySummary.subscriberLastName?html!\"\"}</a>">
+                                                      <#assign userLink="<a href=\"${shareUrl}/page/user/${activity.activitySummary.subscriberUserName?html}/profile\">${activity.activitySummary.subscriberFirstName!\"\"?html} ${activity.activitySummary.subscriberLastName!\"\"?html}</a>">
                                                       <#assign custom0=(activity.activitySummary.node!"")?html>
                                                       <#assign suppressSite=true>
                                                       <#break>                                                   

@@ -27,8 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 
 public class AssocPolicy extends AbstractBasePolicy
@@ -40,8 +44,45 @@ public class AssocPolicy extends AbstractBasePolicy
             Class[] params,
             ConfigAttributeDefinition cad)
     {
-        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(testNodeRef);
+        NodeRef source = null;
+        if (cad.getParameters().get(0) > -1)
+        {
+            source = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        }
+
+        NodeRef target = null;
+        if (cad.getParameters().get(1) > -1)
+        {
+            target = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
+        }
+
+        if ((source != null) && (target != null))
+        {
+            // check that we aren't trying to create an association from DM  to RM
+            if (nodeService.hasAspect(source, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+            {
+                return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(source);
+            }
+            else
+            {
+                if (nodeService.hasAspect(target, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) &&
+                        getCapabilityService().hasCapability(target, ViewRecordsCapability.NAME) &&
+                        permissionService.hasPermission(source, PermissionService.WRITE_PROPERTIES).equals(AccessStatus.ALLOWED)
+                )
+                {
+                    return AccessDecisionVoter.ACCESS_GRANTED;
+                }
+                else
+                {
+                    return AccessDecisionVoter.ACCESS_DENIED;
+                }
+            }
+        }
+        else
+        {
+            return AccessDecisionVoter.ACCESS_DENIED;
+        }
     }
 
 }
+

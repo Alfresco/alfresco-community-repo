@@ -63,6 +63,8 @@ public class RestSyncServiceConfigModel extends TestModel
     @JsonProperty(required = true)
     private RestSyncServiceRepoInfoModel repoInfo;
     
+    private RestIdentityServiceConfigurationModel identityServiceConfig;
+    
     public String getDsyncClientVersionMin()
     {
         return dsyncClientVersionMin;
@@ -77,5 +79,8 @@ public class RestSyncServiceConfigModel extends TestModel
     {
         return repoInfo;
     }
-    
+
+	public RestIdentityServiceConfigurationModel getIdentityServiceConfig() {
+		return identityServiceConfig;
+	}
 }

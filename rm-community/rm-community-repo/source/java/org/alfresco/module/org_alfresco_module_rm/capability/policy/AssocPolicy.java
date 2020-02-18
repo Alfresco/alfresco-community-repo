@@ -56,19 +56,22 @@ public class AssocPolicy extends AbstractBasePolicy
             target = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
         }
 
-        if ((source != null) && (target != null))
+        if (source != null && target != null)
         {
-            // check that we aren't trying to create an association from DM  to RM
+            // check the source node ref is a file plan component
             if (nodeService.hasAspect(source, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
             {
                 return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(source);
             }
             else
             {
-                if (nodeService.hasAspect(target, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) &&
-                        getCapabilityService().hasCapability(target, ViewRecordsCapability.NAME) &&
-                        permissionService.hasPermission(source, PermissionService.WRITE_PROPERTIES).equals(AccessStatus.ALLOWED)
-                )
+                final boolean isFilePlanComponent = nodeService.hasAspect(target, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+                final boolean hasViewRecordCapability = getCapabilityService().hasCapability(target, ViewRecordsCapability.NAME);
+                // allow association between a source non rm node and an rm node if the user
+                // has ViewRecordsCapability on the RM target node and  write properties on the dm node
+                if ( isFilePlanComponent &&
+                        hasViewRecordCapability &&
+                        permissionService.hasPermission(source, PermissionService.WRITE_PROPERTIES).equals(AccessStatus.ALLOWED))
                 {
                     return AccessDecisionVoter.ACCESS_GRANTED;
                 }

@@ -14,7 +14,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>7.34.16</version>
+            <version>8.107</version>
             <scope>provided</scope>
             <exclusions>
             	<exclusion>
@@ -38,7 +38,11 @@
                     <artifactId>dom4j</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> 
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
 
         <!-- Events dependencies -->
         <dependency>
@@ -80,7 +84,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>7.34.16</version>
+            <version>8.107</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

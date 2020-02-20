@@ -460,13 +460,12 @@
       <profile>
          <id>use-postgres</id>
          <properties>
-            <alfresco.db.name>${alfresco.test.db.name}</alfresco.db.name>
-            <alfresco.db.port>${database.port}</alfresco.db.port>
+            <alfresco.db.name>${my.db.name}</alfresco.db.name>
+            <alfresco.db.port>${my.db.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
-            <alfresco.db.master.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</alfresco.db.master.url>
-            <alfresco.db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</alfresco.db.url>
-            <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
+            <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
+            <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
             <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>
          </properties>
       </profile>

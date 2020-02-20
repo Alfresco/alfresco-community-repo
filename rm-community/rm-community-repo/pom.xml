@@ -25,9 +25,9 @@
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
       <!-- 6.1.2-ga changes -->
-      <dependency.alfresco-core.version>7.5.1</dependency.alfresco-core.version>
-      <dependency.alfresco-repository.version>7.33.12</dependency.alfresco-repository.version>
-      <dependency.alfresco-remote-api.version>7.34.1</dependency.alfresco-remote-api.version>
+      <dependency.alfresco-core.version>7.5.7.0</dependency.alfresco-core.version>
+      <dependency.alfresco-repository.version>7.33.42.0</dependency.alfresco-repository.version>
+      <dependency.alfresco-remote-api.version>7.34.25.0</dependency.alfresco-remote-api.version>
       <alfresco.alfresco-share-services.version>6.1.0</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
@@ -460,12 +460,13 @@
       <profile>
          <id>use-postgres</id>
          <properties>
-            <alfresco.db.name>${my.db.name}</alfresco.db.name>
-            <alfresco.db.port>${my.db.port}</alfresco.db.port>
+            <alfresco.db.name>${alfresco.test.db.name}</alfresco.db.name>
+            <alfresco.db.port>${database.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.alfresco.repo.domain.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params />
-            <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
-            <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
+            <alfresco.db.master.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</alfresco.db.master.url>
+            <alfresco.db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</alfresco.db.url>
+            <db.url>jdbc:postgresql://localhost:${database.port}/${alfresco.test.db.name}</db.url>
             <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>
          </properties>
       </profile>

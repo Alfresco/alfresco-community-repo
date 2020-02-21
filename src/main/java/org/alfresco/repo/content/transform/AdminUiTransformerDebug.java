@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.transform.client.registry.SupportedTransform;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
@@ -162,7 +163,6 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
      * @param format42 ignored
      * @param onlyNonDeterministic ignored
      * @param renditionName ignored
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
     public String transformationsByExtension(String sourceExtension, String targetExtension, boolean toString,
                                              boolean format42, boolean onlyNonDeterministic, String renditionName)
@@ -200,11 +200,11 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                             ? false
                             : remoteTransformServiceRegistry.isSupported(sourceMimetype,
                             -1, targetMimetype, Collections.emptyMap(), null);
-                    LocalTransform localTransform = localTransformServiceRegistryImpl == null
-                            ? null
-                            : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
-                            -1, targetMimetype, Collections.emptyMap(), null);
-                    if (localTransform != null || supportedByTransformService)
+                    List<SupportedTransform> localTransformers = localTransformServiceRegistryImpl == null
+                            ? Collections.emptyList()
+                            : localTransformServiceRegistryImpl.findTransformers(sourceMimetype,
+                                    targetMimetype, Collections.emptyMap(), null);
+                    if (!localTransformers.isEmpty() || supportedByTransformService)
                     {
                         try
                         {
@@ -217,14 +217,13 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                                 activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
                                         TRANSFORM_SERVICE_NAME, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
-                            if (localTransform != null)
+                            for (SupportedTransform localTransformer : localTransformers)
                             {
-                                long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
-                                        targetMimetype, Collections.emptyMap(), null);
-                                String transformName = localTransform instanceof AbstractLocalTransform
-                                        ? "Local:" + ((AbstractLocalTransform) localTransform).getName()
-                                        : "";
-                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
+                                long maxSourceSizeKBytes = localTransformer.getMaxSourceSizeBytes();
+                                String transformName = "Local:" + localTransformer.getName();
+                                String transformerPriority = "[" + localTransformer.getPriority() + ']';
+                                transformerPriority = spaces(5-transformerPriority.length())+transformerPriority;
+                                activeTransformer(sourceMimetype, targetMimetype, transformerCount, transformerPriority,
                                         transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                             }
                         }

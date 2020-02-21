@@ -191,8 +191,20 @@ public class LocalTransformServiceRegistryConfigTest extends TransformServiceReg
     @Override
     protected int getExpectedTransformsForTestJsonPipeline()
     {
-        // Need to have at least one supportedSourceAndTargetList element per transformer and there are 3.
-        return 4+3;
+// imagemagick
+//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
+//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
+//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+// pdfrendere
+//        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
+// libreoffice
+//         {"sourceMediaType": "application/vnd.ms-outlook", "targetMediaType": "application/pdf"}
+// officeToImageViaPdf
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
+        return 3 + 1 + 1 + 4;   // 9
     }
 
     /**

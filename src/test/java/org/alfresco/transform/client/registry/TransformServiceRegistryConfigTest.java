@@ -174,7 +174,6 @@ public class TransformServiceRegistryConfigTest extends TransformRegistryTest
         SupportedTransform supportedTransform = supportedTransforms.get(0);
 
         Set<TransformOption> transformOptionsSet = supportedTransform.getTransformOptions().getTransformOptions();
-        System.out.println("Nothing");
 
         Iterator<TransformOption> iterator = transformOptionsSet.iterator();
         assertTrue("Expected transform values", iterator.hasNext());
@@ -272,6 +271,10 @@ public class TransformServiceRegistryConfigTest extends TransformRegistryTest
 
     protected int getExpectedTransformsForTestJsonPipeline()
     {
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
+//        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
         return 4;
     }
 

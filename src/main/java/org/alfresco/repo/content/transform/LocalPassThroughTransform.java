@@ -76,10 +76,10 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
         Set<SupportedSourceAndTarget> supportedSourceAndTargetList = new HashSet();
         for (String mimetype: mimetypes)
         {
-            supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, mimetype, -1));
+            supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, mimetype, -1, 20));
             if (isToText(mimetype, mimetype))
             {
-                supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, -1));
+                supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, 20));
             }
         }
         return Transformer.builder().withTransformerName(LocalPassThroughTransform.NAME).

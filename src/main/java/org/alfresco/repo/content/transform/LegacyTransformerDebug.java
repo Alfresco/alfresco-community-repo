@@ -27,6 +27,7 @@ package org.alfresco.repo.content.transform;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.transform.client.registry.SupportedTransform;
 import org.alfresco.util.PropertyCheck;
 
 import java.util.ArrayList;
@@ -496,11 +497,11 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
                                 ? false
                                 : remoteTransformServiceRegistry.isSupported(sourceMimetype,
                                 -1, targetMimetype, Collections.emptyMap(), null);
-                        LocalTransform localTransform = localTransformServiceRegistryImpl == null
-                                ? null
-                                : localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
-                                -1, targetMimetype, Collections.emptyMap(), null);
-                        if (localTransform != null || supportedByTransformService || size >= 1)
+                        List<SupportedTransform> localTransformers = localTransformServiceRegistryImpl == null
+                                ? Collections.emptyList()
+                                : localTransformServiceRegistryImpl.findTransformers(sourceMimetype,
+                                targetMimetype, Collections.emptyMap(), null);
+                        if (!localTransformers.isEmpty() || supportedByTransformService || size >= 1)
                         {
                             try
                             {
@@ -513,14 +514,13 @@ public class LegacyTransformerDebug extends AdminUiTransformerDebug
                                     activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
                                             TRANSFORM_SERVICE_NAME, maxSourceSizeKBytes, transformerCount++ == 0);
                                 }
-                                if (localTransform != null)
+                                for (SupportedTransform localTransformer : localTransformers)
                                 {
-                                    long maxSourceSizeKBytes = localTransformServiceRegistryImpl.findMaxSize(sourceMimetype,
-                                            targetMimetype, Collections.emptyMap(), null);
-                                    String transformName = localTransform instanceof AbstractLocalTransform
-                                            ? "Local:" + ((AbstractLocalTransform) localTransform).getName()
-                                            : "";
-                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, "     ",
+                                    long maxSourceSizeKBytes = localTransformer.getMaxSourceSizeBytes();
+                                    String transformName = "Local:" + localTransformer.getName();
+                                    String transformerPriority = "[" + localTransformer.getPriority() + ']';
+                                    transformerPriority = spaces(5-transformerPriority.length())+transformerPriority;
+                                    activeTransformer(sourceMimetype, targetMimetype, transformerCount, transformerPriority,
                                             transformName, maxSourceSizeKBytes, transformerCount++ == 0);
                                 }
                                 for (ContentTransformer transformer: availableTransformer)

@@ -36,6 +36,10 @@ import org.quartz.CronExpression;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static org.alfresco.transform.client.registry.TransformRegistryHelper.retrieveTransformListBySize;
 
 /**
  * Used by clients to work out if a transformation is supported by the Transform Service.
@@ -165,5 +169,26 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
     protected void logError(String msg)
     {
         getLog().error(msg);
+    }
+
+    /**
+     * Works out an ordered list of transformer that will be used to transform content of a given source mimetype
+     * into a target mimetype given a list of actual transform option names and values (Strings) plus the data contained
+     * in the Transform objects registered with this class. These are ordered by size and priority.
+     *
+     * @param sourceMimetype    the mimetype of the source content
+     * @param targetMimetype    the mimetype of the target
+     * @param actualOptions     the actual name value pairs available that could be passed to the Transform Service.
+     * @param renditionName     (optional) name for the set of options and target mimetype. If supplied is used to cache
+     *                          results to avoid having to work out if a given transformation is supported a second time.
+     *                          The sourceMimetype and sourceSizeInBytes may still change. In the case of ACS this is the
+     *                          rendition name.
+     */
+    public List<SupportedTransform> findTransformers(final String sourceMimetype, final String targetMimetype,
+                                                     final Map<String, String> actualOptions,
+                                                     final String renditionName)
+    {
+        return retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions,
+                renditionName);
     }
 }

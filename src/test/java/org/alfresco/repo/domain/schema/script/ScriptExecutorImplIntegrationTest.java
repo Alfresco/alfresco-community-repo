@@ -238,4 +238,19 @@ public class ScriptExecutorImplIntegrationTest
         assertEquals("custom delimter success again", res.get(1));
         
     }
+
+    @Test()
+    public void deleteNonExists() throws Exception
+    {
+        scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/delete-not-exists.sql");
+        String select = "select id from temp_tst_tbl_1 order by id ASC";
+        List<String> res = jdbcTmpl.queryForList(select, String.class);
+        assertEquals(5, res.size());
+
+        assertEquals("1", res.get(0));
+        assertEquals("2", res.get(1));
+        assertEquals("4", res.get(2));
+        assertEquals("10", res.get(3));
+        assertEquals("11", res.get(4));
+    }
 }

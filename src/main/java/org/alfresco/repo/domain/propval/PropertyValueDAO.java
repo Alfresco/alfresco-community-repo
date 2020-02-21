@@ -375,4 +375,6 @@ public interface PropertyValueDAO
      * Remove orphaned properties.
      */
     void cleanupUnusedValues();
+
+    void cleanupUnusedValuesV2();
 }

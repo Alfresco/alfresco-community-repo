@@ -35,6 +35,8 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Properties;
+
 /**
  * Cleaner of unused values from the alf_prop_xxx tables.
  *
@@ -42,8 +44,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PropTablesCleaner
 {
+    private static final String PROPERTY_PROP_TABLE_CLEANER_ALG = "system.prop_table_cleaner.algorithm";
+    private static final String PROP_TABLE_CLEANER_ALG_V2 = "V2";
+
     private PropertyValueDAO propertyValueDAO;
     private JobLockService jobLockService;
+    private Properties globalProperties;
 
     /* 1 minute */
     private static final long LOCK_TTL = 360000L;
@@ -61,10 +67,16 @@ public class PropTablesCleaner
         this.jobLockService = jobLockService;
     }
 
+    public void setGlobalProperties(Properties globalProperties)
+    {
+        this.globalProperties = globalProperties;
+    }
+
     public void checkProperties()
     {
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         PropertyCheck.mandatory(this, "propertyValueDAO", propertyValueDAO);
+        PropertyCheck.mandatory(this, "globalProperties", globalProperties);
     }
 
     /**
@@ -74,7 +86,7 @@ public class PropTablesCleaner
     public void execute()
     {
         checkProperties();
-        
+
         String propCleanUplockToken = null;
         String ldapSyncLockTocken = null;
         try
@@ -83,7 +95,15 @@ public class PropTablesCleaner
             propCleanUplockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
             // Get a lock for LDAP sync as well, see REPO-4556
             ldapSyncLockTocken = jobLockService.getLock(ChainingUserRegistrySynchronizer.LOCK_QNAME, LOCK_TTL);
-            propertyValueDAO.cleanupUnusedValues();
+
+            if (PROP_TABLE_CLEANER_ALG_V2.equalsIgnoreCase(getAlgorithm()))
+            {
+                propertyValueDAO.cleanupUnusedValuesV2();
+            }
+            else
+            {
+                propertyValueDAO.cleanupUnusedValues();
+            }
         }
         catch (LockAcquisitionException e)
         {
@@ -117,5 +137,10 @@ public class PropTablesCleaner
                 }
             }
         }
+    }
+
+    private String getAlgorithm()
+    {
+        return globalProperties.getProperty(PROPERTY_PROP_TABLE_CLEANER_ALG);
     }
 }

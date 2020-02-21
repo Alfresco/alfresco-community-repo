@@ -75,6 +75,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.site.SiteServiceImplTest.class,
 
     // [classpath:alfresco/application-context.xml, classpath:scriptexec/script-exec-test.xml]
+    org.alfresco.repo.domain.schema.script.DeleteNotExistsExecutorTest.class,
     org.alfresco.repo.domain.schema.script.ScriptExecutorImplIntegrationTest.class,
     org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImplIntegrationTest.class,
 

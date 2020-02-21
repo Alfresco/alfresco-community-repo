@@ -739,4 +739,23 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             clearCaches();
         }
     }
+
+    @Override
+    public void cleanupUnusedValuesV2()
+    {
+        // Run the main script
+        try
+        {
+            scriptExecutor.exec(false, "alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesV2.sql");
+        }
+        catch (RuntimeException e)
+        {
+            logger.error("The cleanup script failed: ", e);
+            throw e;
+        }
+        finally
+        {
+            clearCaches();
+        }
+    }
 }

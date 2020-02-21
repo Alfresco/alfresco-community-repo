@@ -36,5 +36,6 @@
     <bean id="propTablesCleaner" class="org.alfresco.repo.attributes.PropTablesCleaner">
         <property name="jobLockService" ref="JobLockService"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
+        <property name="globalProperties" ref="global-properties"/>
     </bean>
 </beans>

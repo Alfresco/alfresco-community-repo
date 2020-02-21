@@ -145,8 +145,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     {
         this.globalProperties = globalProperties;
     }
-    
-    
+
     @Override
     public void executeScriptUrl(String scriptUrl) throws Exception
     {
@@ -161,7 +160,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
             connection.close();
         }
     }
-    
+
     private void executeScriptUrl(Connection connection, String scriptUrl) throws Exception
     {
         Dialect dialect = this.dialect;
@@ -189,7 +188,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
         // Replace the script placeholders
         executeScriptFile(connection, tempFile, dialectScriptUrl);
     }
-    
+
     /**
      * Replaces the dialect placeholder in the script URL and attempts to find a file for
      * it.  If not found, the dialect hierarchy will be walked until a compatible script is
@@ -347,6 +346,23 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             batchSize = batchSizeString == null ? 10000 : Integer.parseInt(batchSizeString);
                         }
                     }
+                    continue;
+                }
+                else if (sql.startsWith("--DELETE_NOT_EXISTS"))
+                {
+                    DeleteNotExistsExecutor deleteNotExists = new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties);
+                    deleteNotExists.execute();
+
+                    // Reset
+                    sb.setLength(0);
+                    fetchVarName = null;
+                    fetchColumnName = null;
+                    defaultFetchValue = null;
+                    batchTableName = null;
+                    doBatch = false;
+                    batchUpperLimit = 0;
+                    batchSize = 1;
+
                     continue;
                 }
                 // Allow transaction delineation

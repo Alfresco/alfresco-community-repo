@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
@@ -89,11 +90,15 @@ public abstract class ConfigFileFinder
             else
             {
                 // Try reading resources from disk
-                URL url = getClass().getClassLoader().getResource(path);
-                if (url != null)
+                Iterator<URL> pathUrls = getClass().getClassLoader().getResources(path).asIterator();
+                while(pathUrls.hasNext())
                 {
-                    String urlPath = url.getPath();
-                    readFromDisk(urlPath, log, successReadingConfig, somethingRead);
+                    URL url = pathUrls.next();
+                    if (url != null)
+                    {
+                        String urlPath = url.getPath();
+                        readFromDisk(urlPath, log, successReadingConfig, somethingRead);
+                    }
                 }
             }
 

@@ -48,6 +48,7 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -369,6 +370,7 @@ public class CombinedConfig
                     boolean first = true;
                     String sourceMediaType = null;
                     Set<SupportedSourceAndTarget> sourceMediaTypesAndMaxSizes = null;
+                    Set<String> firstTransformOptions = null;
                     for (TransformStep step : pipeline)
                     {
                         String name = step.getTransformerName();
@@ -386,6 +388,7 @@ public class CombinedConfig
                                     filter(s -> stepTrg.equals(s.getTargetMediaType())).
                                     collect(Collectors.toSet());
                             sourceMediaType = stepTrg;
+                            firstTransformOptions = stepTransformer.getTransformOptions();
                         }
                         else
                         {
@@ -405,8 +408,13 @@ public class CombinedConfig
                                                         withTargetMediaType(trg).build())).
                                         collect(Collectors.toSet());
 
-                                // Exclude duplicates with the first transformer, as there is no point doing more work.
-                                supportedSourceAndTargets.removeAll(sourceMediaTypesAndMaxSizes);
+                                // Exclude duplicates with the first transformer, if it has the same options.
+                                // There is no point doing more work.
+                                Set<String> transformOptions = transformer.getTransformOptions();
+                                if (sameOptions(transformOptions, firstTransformOptions))
+                                {
+                                    supportedSourceAndTargets.removeAll(sourceMediaTypesAndMaxSizes);
+                                }
 
                                 transformer.setSupportedSourceAndTargetList(supportedSourceAndTargets);
                             }
@@ -427,5 +435,26 @@ public class CombinedConfig
                 }
             }
         });
+    }
+
+    private boolean sameOptions(Set<String> transformOptionNames1, Set<String> transformOptionNames2)
+    {
+        // They have the same names
+        if (transformOptionNames1.equals(transformOptionNames2))
+        {
+            return true;
+        }
+
+        // Check the actual options.
+        Set<TransformOption> transformOptions1 = getTransformOptions(transformOptionNames1);
+        Set<TransformOption> transformOptions2 = getTransformOptions(transformOptionNames2);
+        return transformOptions1.equals(transformOptions2);
+    }
+
+    private Set<TransformOption> getTransformOptions(Set<String> transformOptionNames)
+    {
+        Set<TransformOption> transformOptions = new HashSet<>();
+        transformOptionNames.forEach(name->transformOptions.addAll(combinedTransformOptions.get(name)));
+        return transformOptions;
     }
 }

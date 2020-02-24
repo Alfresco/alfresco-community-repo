@@ -64,6 +64,7 @@
             <value>alfresco.module.org_alfresco_module_rm.messages.admin-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.records-management-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.action-service</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.actions</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.audit-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.rm-events</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.capability-service</value>

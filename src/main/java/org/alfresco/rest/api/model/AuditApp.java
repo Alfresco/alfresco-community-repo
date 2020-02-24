@@ -38,6 +38,28 @@ public class AuditApp
 	private String id;
     private String name;
     private Boolean isEnabled;
+    private Long maxEntryId;
+    private Long minEntryId;
+
+    public Long getMaxEntryId()
+    {
+        return maxEntryId;
+    }
+
+    public void setMaxEntryId(Long maxEntryId)
+    {
+        this.maxEntryId = maxEntryId;
+    }
+
+    public Long getMinEntryId()
+    {
+        return minEntryId;
+    }
+
+    public void setMinEntryId(Long minEntryId)
+    {
+        this.minEntryId = minEntryId;
+    }
 
     public AuditApp()
     {

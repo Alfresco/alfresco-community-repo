@@ -82,11 +82,15 @@ public class AuditApp extends org.alfresco.rest.api.model.AuditApp implements Se
         String id = (String) jsonObject.get("id");
         String name = (String) jsonObject.get("name");
         Boolean isEnabled = (Boolean) jsonObject.get("isEnabled");
+        Long maxEntryId = (Long) jsonObject.get("maxEntryId");
+        Long minEntryId = (Long) jsonObject.get("minEntryId");
 
         AuditApp auditApp = new AuditApp();
         auditApp.setId(id);
         auditApp.setName(name);
         auditApp.setIsEnabled(isEnabled);
+        auditApp.setMaxEntryId(maxEntryId);
+        auditApp.setMinEntryId(minEntryId);
 
         return auditApp;
     }

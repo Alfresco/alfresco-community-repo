@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -153,7 +154,26 @@ public class AuditImpl implements Audit
 
         AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
 
-        return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApplication.isEnabled());
+        AuditApp auditApp = new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApplication.isEnabled());
+
+        if (!parameters.getInclude().isEmpty())
+        {
+            List<String> filteredParams = parameters.getInclude().stream().filter(p -> (p.contains(PARAM_INCLUDE_MAX) || p.contains(PARAM_INCLUDE_MIN)))
+                    .collect(Collectors.toList());
+
+            if (!filteredParams.isEmpty())
+            {
+                HashMap<String, Long> result = auditService.getAuditMinMaxByApp(auditApp.getName(), filteredParams);
+
+                if (!result.isEmpty())
+                {
+                    // Set the max/min results to audit application
+                    auditApp.setMaxEntryId(result.get("max"));
+                    auditApp.setMinEntryId(result.get("min"));
+                }
+            }
+        }
+        return auditApp;
     }
 
     private AuditService.AuditApplication findAuditAppByIdOr404(String auditAppId)

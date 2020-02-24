@@ -44,6 +44,8 @@ public interface Audit
     String CREATED_AT = "createdAt";
     String ID = "id";
     String PARAM_INCLUDE_VALUES = "values";
+    String PARAM_INCLUDE_MAX = "max";
+    String PARAM_INCLUDE_MIN = "min";
 
     /**
      * Gets a single audit application by id

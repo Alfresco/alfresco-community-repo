@@ -36,6 +36,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
@@ -103,6 +106,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -4029,5 +4033,109 @@ public class CMISTest
         assertEquals(2, versions.size());
         assertEquals(versions.get(0).getProperties().getProperties().get("cmis:versionLabel").getFirstValue(), "pwc");
         assertEquals(versions.get(1).getProperties().getProperties().get("cmis:versionLabel").getFirstValue(), "0.1");
+    }
+
+    @Test
+    public void testSearchPreviousDelete()
+    {
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            final NodeRef companyHome = repositoryHelper.getCompanyHome();
+            // create parentFolder
+            RetryingTransactionCallback<Object> testCallbackFolder = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable
+                {
+                    NodeRef parentFolder = createFolder(companyHome, "testCreateParent" + GUID.generate(), ContentModel.TYPE_FOLDER);
+                    return parentFolder;
+                }
+            };
+            final NodeRef parentFolder = (NodeRef) transactionService.getRetryingTransactionHelper().doInTransaction(testCallbackFolder, false, true);
+
+            // create children Folders
+            final List<NodeRef> folders = new ArrayList<NodeRef>();
+            RetryingTransactionCallback<Object> testCallbackChilds = new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Throwable
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        folders.add(createFolder(parentFolder, "testCreateList-" + GUID.generate() + i, ContentModel.TYPE_FOLDER));
+                    }
+                    return folders;
+                }
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(testCallbackChilds, false, true);
+
+            // remove children nodes
+            executorService.submit(new Runnable()
+            {
+                public void run()
+                {
+                    for (final NodeRef node : folders)
+                    {
+                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+                        {
+                            public Void doWork() throws Exception
+                            {
+                                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                                {
+                                    public Void execute() throws Throwable
+                                    {
+                                        nodeService.deleteNode(node);
+                                        return null;
+                                    }
+                                }, false, true);
+                                return null;
+                            }
+                        }, AuthenticationUtil.getAdminUserName());
+                    }
+                }
+            });
+
+            // select children nodes removed
+            withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+
+                    // prepare cmis query
+                    String queryString = "SELECT cmis:name, cmis:objectId FROM cmis:folder WHERE IN_FOLDER('" + parentFolder + "')";
+                    cmisService.query(repositoryId, queryString, Boolean.FALSE, Boolean.TRUE, IncludeRelationships.NONE, "", BigInteger.TEN,
+                            BigInteger.ZERO, null);
+                    return "";
+                };
+            }, CmisVersion.CMIS_1_1);
+        }
+        catch (Exception e)
+        {
+            fail(e.toString());
+        }
+        finally
+        {
+            executorService.shutdownNow();
+        }
+    }
+
+    private NodeRef createFolder(NodeRef parentNodeRef, String folderName, QName folderType) throws IOException
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_NAME, folderName);
+        NodeRef nodeRef = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, folderName);
+        if (nodeRef != null)
+        {
+            nodeService.deleteNode(nodeRef);
+        }
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(folderName));
+        nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, folderType, properties)
+                .getChildRef();
+        return nodeRef;
     }
 }

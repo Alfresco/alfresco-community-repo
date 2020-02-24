@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 /**
  * @author Andy
@@ -199,9 +200,10 @@ public class DBResultSet extends AbstractResultSet
         }
         // Start at 'n' and process the the next bulk set
         int bulkFetchSize = getBulkFetchSize();
-        if(bulkFetchSize < 1)
+        if (bulkFetchSize < 1)
         {
-            NodeRef nodeRef = nodeDao.getNodePair(dbids.get(n)).getSecond();
+            Pair<Long, NodeRef> nodePair = nodeDao.getNodePair(dbids.get(n));
+            NodeRef nodeRef = nodePair == null ? null : nodePair.getSecond();
             nodeRefs[n] = nodeRef == null ? null : tenantService.getBaseName(nodeRef);
             return;
         }

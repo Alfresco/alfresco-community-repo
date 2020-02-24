@@ -63,7 +63,7 @@
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.2</dependency.camel.version>
         <dependency.activemq.version>5.15.11</dependency.activemq.version>
-        <dependency.pdfbox.version>2.0.18</dependency.pdfbox.version>
+        <dependency.pdfbox.version>2.0.19</dependency.pdfbox.version>
         <dependency.cxf.version>3.3.5</dependency.cxf.version>
         <dependency.jackson.version>2.10.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>

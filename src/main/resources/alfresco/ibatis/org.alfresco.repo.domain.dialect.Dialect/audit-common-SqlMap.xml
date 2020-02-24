@@ -41,13 +41,23 @@
                type="AuditQueryResult">
         <association property="auditValueRows" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
     </resultMap>
-  
+    <resultMap id="result_minMaxMap" type="java.util.HashMap">
+        <result property="min" column="min" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="max" column="max" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
 
     <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
+    <parameterMap id="parameter_IdMinMaxMap" type="map">
+        <parameter property="auditAppId" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="min" jdbcType="VARCHAR" javaType="String"/>
+        <parameter property="max" jdbcType="VARCHAR" javaType="String"/>
     </parameterMap>
   
     <!--                -->
@@ -266,5 +276,23 @@
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>
     </sql>
+
+    <!-- Get the maximum/minimum audit entry id for application -->
+    <select id="select_MinMaxAuditEntryId" parameterMap="parameter_IdMinMaxMap" resultMap="result_minMaxMap">
+        select
+        <if test="max != null">
+            max(alf_audit_entry.id)
+        </if>
+        <if test="max != null and min != null">
+            ,
+        </if>
+        <if test="min != null">
+            min(alf_audit_entry.id)
+        </if>
+        from
+        alf_audit_entry
+        where
+        alf_audit_entry.audit_app_id = #{auditAppId}
+    </select>
 
 </mapper>

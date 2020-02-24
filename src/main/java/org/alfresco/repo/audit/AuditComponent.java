@@ -26,6 +26,7 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -251,4 +252,13 @@ public interface AuditComponent
      * @since 3.2
      */
     void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults);
+
+    /**
+     * Issue an audit query to retrieve min / max audit record id for a given application.
+     *
+     * @param applicationName               the name of the application
+     * @param extremes                      a list containing min/max or both
+     * @return                              a map containing min/max and the associated value
+     */
+    HashMap<String, Long> getAuditMinMaxByApp(String applicationName, List<String> extremes);
 }

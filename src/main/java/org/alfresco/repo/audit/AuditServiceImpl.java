@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.audit;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -167,5 +168,13 @@ public class AuditServiceImpl implements AuditService
     public void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
     {
         auditComponent.auditQuery(callback, parameters, maxResults);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HashMap<String, Long> getAuditMinMaxByApp(String applicationName, List<String> extremes)
+    {
+        return auditComponent.getAuditMinMaxByApp(applicationName, extremes);
     }
 }

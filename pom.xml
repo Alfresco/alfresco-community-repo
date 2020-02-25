@@ -67,7 +67,7 @@
         <dependency.cxf.version>3.3.5</dependency.cxf.version>
         <dependency.jackson.version>2.10.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
-        <dependency.apache.taglibs.version>1.2.3</dependency.apache.taglibs.version>
+        <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
     </properties>
 
     <dependencyManagement>

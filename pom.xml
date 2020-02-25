@@ -67,6 +67,7 @@
         <dependency.cxf.version>3.3.5</dependency.cxf.version>
         <dependency.jackson.version>2.10.2</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
+        <dependency.apache.taglibs.version>1.2.3</dependency.apache.taglibs.version>
     </properties>
 
     <dependencyManagement>
@@ -494,11 +495,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
             <version>${dependency.poi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -1034,6 +1030,21 @@
             <version>${dependency.opencmis.version}</version>
             <scope>test</scope>             
         </dependency>        
+        <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <version>${dependency.apache.taglibs.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.taglibs</groupId>
+           <artifactId>taglibs-standard-impl</artifactId>
+           <version>${dependency.apache.taglibs.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.taglibs</groupId>
+           <artifactId>taglibs-standard-jstlel</artifactId>
+           <version>${dependency.apache.taglibs.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>

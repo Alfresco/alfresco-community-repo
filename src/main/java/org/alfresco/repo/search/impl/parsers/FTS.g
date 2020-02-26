@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
@@ -511,13 +511,22 @@ boost
 
 ftsTermOrPhrase
         :
-        (fieldReference COLON) => fieldReference COLON
+        (fieldReferenceWithPrefix COLON) => fieldReferenceWithPrefix COLON
         (
                 FTSPHRASE ((slop)=> slop)?
-                -> ^(PHRASE FTSPHRASE fieldReference slop?)
+                -> ^(PHRASE FTSPHRASE fieldReferenceWithPrefix slop?)
                 |
                 ftsWord ((fuzzy) => fuzzy)?
-                -> ^(TERM ftsWord fieldReference fuzzy?)
+                -> ^(TERM ftsWord fieldReferenceWithPrefix fuzzy?)
+        )
+        |
+        (fieldReferenceWithoutPrefix COLON) => fieldReferenceWithoutPrefix COLON
+        (
+                FTSPHRASE ((slop)=> slop)?
+                -> ^(PHRASE FTSPHRASE fieldReferenceWithoutPrefix slop?)
+                |
+                ftsWord ((fuzzy) => fuzzy)?
+                -> ^(TERM ftsWord fieldReferenceWithoutPrefix fuzzy?)
         )
         |
         FTSPHRASE ((slop)=> slop)?
@@ -532,13 +541,22 @@ ftsExactTermOrPhrase
         :
         EQUALS
         (
-        (fieldReference COLON) => fieldReference COLON
+        (fieldReferenceWithPrefix COLON) => fieldReferenceWithPrefix COLON
         (
                 FTSPHRASE ((slop)=> slop)?
-                -> ^(EXACT_PHRASE FTSPHRASE fieldReference slop?)
+                -> ^(EXACT_PHRASE FTSPHRASE fieldReferenceWithPrefix slop?)
                 |
                 ftsWord ((fuzzy) => fuzzy)?
-                -> ^(EXACT_TERM ftsWord fieldReference fuzzy?)
+                -> ^(EXACT_TERM ftsWord fieldReferenceWithPrefix fuzzy?)
+        )
+        |
+        (fieldReferenceWithoutPrefix COLON) => fieldReferenceWithoutPrefix COLON
+        (
+                FTSPHRASE ((slop)=> slop)?
+                -> ^(EXACT_PHRASE FTSPHRASE fieldReferenceWithoutPrefix slop?)
+                |
+                ftsWord ((fuzzy) => fuzzy)?
+                -> ^(EXACT_TERM ftsWord fieldReferenceWithoutPrefix fuzzy?)
         )
         |
         FTSPHRASE ((slop)=> slop)?
@@ -554,13 +572,22 @@ ftsTokenisedTermOrPhrase
         :
         TILDA
         (
-        (fieldReference COLON) => fieldReference COLON
+        (fieldReferenceWithPrefix COLON) => fieldReferenceWithPrefix COLON
         (
                 FTSPHRASE ((slop)=> slop)?
-                -> ^(PHRASE FTSPHRASE fieldReference slop?)
+                -> ^(PHRASE FTSPHRASE fieldReferenceWithPrefix slop?)
                 |
                 ftsWord ((fuzzy) => fuzzy)?
-                -> ^(TERM ftsWord fieldReference fuzzy?)
+                -> ^(TERM ftsWord fieldReferenceWithPrefix fuzzy?)
+        )
+        |
+        (fieldReferenceWithoutPrefix COLON) => fieldReferenceWithoutPrefix COLON
+        (
+                FTSPHRASE ((slop)=> slop)?
+                -> ^(PHRASE FTSPHRASE fieldReferenceWithoutPrefix slop?)
+                |
+                ftsWord ((fuzzy) => fuzzy)?
+                -> ^(TERM ftsWord fieldReferenceWithoutPrefix fuzzy?)
         )
         |
         FTSPHRASE ((slop)=> slop)?
@@ -772,18 +799,26 @@ range_right
                 -> EXCLUSIVE
         ;
 
-/* Need to fix the generated parser for extra COLON check ??*/
-
 fieldReference
         :
+        fieldReferenceWithPrefix
+        | fieldReferenceWithoutPrefix;
+
+fieldReferenceWithoutPrefix
+        :
         AT?
-        (
-                  (prefix) => prefix
-                | uri
-        )?
+        uri?
         identifier
                 ->
-                        ^(FIELD_REF identifier prefix? uri?)
+                        ^(FIELD_REF identifier uri?)
+        ;
+
+fieldReferenceWithPrefix
+        :
+        AT?
+        prefix identifier
+                ->
+                        ^(FIELD_REF identifier prefix)
         ;
 
 tempReference
@@ -1340,7 +1375,7 @@ ID
                 ( '0'..'9' | '$' | '#' | F_ESC )*
         )?
         ( 'a'..'z' | 'A'..'Z' | '_' )
-        ( 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' | '$' | '#' | F_ESC )*
+        ( 'a'..'z' | 'A'..'Z' | '0'..'9' | '-' | '_' | '$' | '#' | F_ESC )*
         ;
 
 

@@ -21,6 +21,8 @@ ftsQuery:
 "test_txt_woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test_txt_woof))))"
 "test,txt,woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test , txt , woof))))"
 "test\:txt\:woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test\\:txt\\:woof))))"
+"name-dash:file" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM file (FIELD_REF name-dash)))))"
+"name-dash:file.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM file . txt (FIELD_REF name-dash)))))"
 "+\++" -> "(DISJUNCTION (CONJUNCTION (MANDATORY (TERM \\++))))"
 ".txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . txt))))"
 "*.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM * . txt))))"
@@ -60,6 +62,7 @@ ftsQuery:
 "10" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 10))))"
 "-10" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM -10))))"
 "cm_content.mimetype:\"text/plain\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"text/plain\" (FIELD_REF cm_content.mimetype)))))"
+"name:file.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM file . txt (FIELD_REF name)))))"
 "10.10.pdf" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 10 . 10 . pdf))))"
 "TYPE:cm:content" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM content (FIELD_REF cm (PREFIX TYPE))))))"
 "TYPE:content" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM content (FIELD_REF TYPE)))))"
@@ -190,8 +193,10 @@ ftsTest:
 
 ftsTermOrPhrase:
 "name:woof" -> "(TERM woof (FIELD_REF name))"
+"name:woof.txt" -> "(TERM woof . txt (FIELD_REF name))"
 "cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
 "cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"content.mimetype:woof.txt" -> "(TERM woof . txt (FIELD_REF content.mimetype))"
 "{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
 "\"zebra\"" -> "(PHRASE \"zebra\")"
 "'zebra'" -> "(PHRASE 'zebra')"
@@ -204,8 +209,10 @@ ftsTermOrPhrase:
 
 ftsExactTermOrPhrase:
 "=name:woof" -> "(EXACT_TERM woof (FIELD_REF name))"
+"=name:woof.txt" -> "(EXACT_TERM woof . txt (FIELD_REF name))"
 "=cm_name:woof" -> "(EXACT_TERM woof (FIELD_REF cm_name))"
 "=cm:name:woof" -> "(EXACT_TERM woof (FIELD_REF name (PREFIX cm)))"
+"=content.mimetype:woof.txt" -> "(EXACT_TERM woof . txt (FIELD_REF content.mimetype))"
 "={http://www.alfresco.org/model/content/1.0}name:woof"  -> "(EXACT_TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
 
 
@@ -213,8 +220,10 @@ ftsExactTermOrPhrase:
 ftsTokenisedTermOrPhrase:
 "~woof" -> "(TERM woof)"
 "~name:woof" -> "(TERM woof (FIELD_REF name))"
+"~name:woof.txt" -> "(TERM woof . txt (FIELD_REF name))"
 "~cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
 "~cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"~content.mimetype:woof.txt" -> "(TERM woof . txt (FIELD_REF content.mimetype))"
 "~{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
 
 

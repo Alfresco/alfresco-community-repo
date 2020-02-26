@@ -25,7 +25,6 @@
  */
 package org.alfresco.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
@@ -37,11 +36,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
@@ -81,7 +82,7 @@ public abstract class ConfigFileFinder
             AtomicBoolean somethingRead = new AtomicBoolean(false);
 
             // Try reading resources in a jar
-            final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+            final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
             if (jarFile.isFile())
             {
                 readFromJar(jarFile, path, log, successReadingConfig, somethingRead);
@@ -89,11 +90,15 @@ public abstract class ConfigFileFinder
             else
             {
                 // Try reading resources from disk
-                URL url = getClass().getClassLoader().getResource(path);
-                if (url != null)
+                Iterator<URL> pathUrls = getClass().getClassLoader().getResources(path).asIterator();
+                while(pathUrls.hasNext())
                 {
-                    String urlPath = url.getPath();
-                    readFromDisk(urlPath, log, successReadingConfig, somethingRead);
+                    URL url = pathUrls.next();
+                    if (url != null)
+                    {
+                        String urlPath = url.getPath();
+                        readFromDisk(urlPath, log, successReadingConfig, somethingRead);
+                    }
                 }
             }
 
@@ -108,7 +113,7 @@ public abstract class ConfigFileFinder
                 log.debug("No config read from "+path);
             }
         }
-        catch (IOException e)
+        catch (IOException | URISyntaxException e)
         {
             log.error("Error reading from "+path, e);
             successReadingConfig.set(false);
@@ -203,7 +208,7 @@ public abstract class ConfigFileFinder
         boolean successReadingConfig = true;
         try
         {
-            JsonNode jsonNode = jsonObjectMapper.readValue(reader, new TypeReference<JsonNode>() {});
+            JsonNode jsonNode = jsonObjectMapper.readValue(reader, JsonNode.class);
             String readFromMessage = readFrom + ' ' + path;
             if (log.isTraceEnabled())
             {

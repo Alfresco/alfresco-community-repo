@@ -27,8 +27,8 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-core.version>7.26</dependency.alfresco-core.version>
-        <dependency.cxf.version>3.3.2</dependency.cxf.version>
+        <dependency.alfresco-core.version>7.27</dependency.alfresco-core.version>
+        <dependency.cxf.version>3.3.5</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
@@ -83,7 +83,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -171,7 +171,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcmail-jdk15on</artifactId>
-                <version>1.62</version>
+                <version>1.64</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -189,7 +189,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>28.0-jre</version>
+                <version>28.2-jre</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -201,7 +201,7 @@
             <dependency>
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
-                <version>2.0.15</version>
+                <version>2.0.17</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -228,19 +228,12 @@
         <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
-            <version>1.3.1</version>
+            <version>1.3.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId> 
-            <artifactId>jackson-core</artifactId> 
-            <version>2.9.9</version> 
-        </dependency>
-        
         <dependency> 
             <groupId>com.fasterxml.jackson.core</groupId> 
             <artifactId>jackson-annotations</artifactId> 
-            <version>2.9.9</version> 
+            <version>2.10.2</version> 
         </dependency> 
 
         <dependency>
@@ -249,17 +242,6 @@
             <version>3.5.2</version>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-impl</artifactId>
-            <version>1.0.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
@@ -282,16 +264,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>woodstox-core-asl</artifactId>
-            <version>4.4.1</version>
-        </dependency>
         <!-- This is now deployed at:
             | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/
             -->
@@ -308,12 +280,7 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.11.0-alfresco-patched-20180402</version>
-        </dependency>
-        <dependency>
-            <groupId>xpp3</groupId>
-            <artifactId>xpp3</artifactId>
-            <version>1.1.3_8</version>
+            <version>2.12.0-alfresco-patched-20191004</version>
         </dependency>
         <!-- Tika -->
         <dependency>
@@ -340,27 +307,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.gagravarr</groupId>
-            <artifactId>vorbis-java-core</artifactId>
-            <version>0.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gagravarr</groupId>
-            <artifactId>vorbis-java-tika</artifactId>
-            <version>0.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.juniversalchardet</groupId>
-            <artifactId>juniversalchardet</artifactId>
-            <version>1.0.3</version>
-        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -371,8 +323,8 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <artifactId>mockito-core</artifactId>
+            <version>3.2.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

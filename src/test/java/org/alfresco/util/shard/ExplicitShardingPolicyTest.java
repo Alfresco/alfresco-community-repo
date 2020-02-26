@@ -20,8 +20,11 @@ package org.alfresco.util.shard;
 
 import static org.junit.Assert.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Test;
 
 /**
@@ -116,6 +119,20 @@ public class ExplicitShardingPolicyTest
     {
         buildAndTest(10, 2, 4);
     }
+
+    /** ExplicitShardingPolicy algorithm fails for 2 shards, 3 replicas, 3 nodes. (See SEARCH-1785) */
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void search1785_233()
+    {
+        buildAndTest(2, 3, 3);
+    }
+
+    /** ExplicitShardingPolicy algorithm fails for 4 shards, 3 replicas, 6 nodes. (See SEARCH-1785) */
+    @Test (expected = AlfrescoRuntimeException.class)
+    public void search1785_436()
+    {
+        buildAndTest(4, 3, 6);
+    }
     
     @Test
     public void check_10_2()
@@ -163,7 +180,8 @@ public class ExplicitShardingPolicyTest
         int[] found = new int[numShards];
         for (int i = 0; i < numNodes; i++)
         {
-            List<Integer> shardIds = policy.getShardIdsForNode(i + 1);
+            // Convert to a set to remove any duplicates.
+            Set<Integer> shardIds = new HashSet<>(policy.getShardIdsForNode(i + 1));
             assertEquals(numShards * replicationFactor / numNodes, shardIds.size());
             for (Integer shardId : shardIds)
             {

@@ -910,6 +910,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>4.1.42.Final</version>
+        </dependency>        
         <!-- Transform dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>

@@ -132,6 +132,11 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>${dependency.jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.11</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

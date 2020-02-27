@@ -27,7 +27,7 @@
 package org.alfresco.repo.forms.processor.workflow;
 
 import static org.alfresco.repo.workflow.WorkflowModel.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
@@ -651,7 +651,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
     private WorkflowService makeWorkflowService()
     {
         WorkflowService service = mock(WorkflowService.class);
-        when(service.getTaskById(anyString())).thenAnswer(new Answer<WorkflowTask>()
+        when(service.getTaskById(any())).thenAnswer(new Answer<WorkflowTask>()
         {
             public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
             {
@@ -668,7 +668,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         
         this.newTask = new WorkflowTask(TASK_ID, null, null, null, null, null, null, null);
 
-        when(service.updateTask(anyString(), anyMap(), anyMap(), anyMap()))
+        when(service.updateTask(any(), anyMap(), anyMap(), anyMap()))
         .thenAnswer(new Answer<WorkflowTask>()
         {
             public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
@@ -684,10 +684,10 @@ public class TaskFormProcessorTest extends FormProcessorTest
             }
         });
         
-        when(service.endTask(eq(TASK_ID), anyString()))
+        when(service.endTask(eq(TASK_ID), any()))
             .thenReturn(newTask);
         
-        when(service.isTaskEditable((WorkflowTask)any(), anyString())).thenReturn(true);
+        when(service.isTaskEditable((WorkflowTask)any(), any())).thenReturn(true);
         
         return service;
     }

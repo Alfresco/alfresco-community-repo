@@ -9,12 +9,7 @@
     <!--                -->
     <!-- Result Maps    -->
     <!--                -->
-    
-    <resultMap id="result_Server" type="Server">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="ipAddress" column="ip_address" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
+
     <resultMap id="result_Transaction" type="Transaction">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -222,23 +217,14 @@
     <!--                -->
     <!-- SQL Snippets   -->
     <!--                -->
-    
-    <sql id="insert_Server_AutoIncrement">
-        insert into alf_server (version, ip_address)
-        values (#{version}, #{ipAddress})
-    </sql>
-    <sql id="insert_Server_Sequence">
-        insert into alf_server (id, version, ip_address)
-        values (#{id}, #{version}, #{ipAddress})
-    </sql>
-    
+
     <sql id="insert_Transaction_AutoIncrement">
-        insert into alf_transaction (version, server_id, change_txn_id, commit_time_ms)
-        values (#{version}, #{server.id}, #{changeTxnId}, #{commitTimeMs})
+        insert into alf_transaction (version, change_txn_id, commit_time_ms)
+        values (#{version}, #{changeTxnId}, #{commitTimeMs})
     </sql>
     <sql id="insert_Transaction_Sequence">
-        insert into alf_transaction (id, version, server_id, change_txn_id, commit_time_ms)
-        values (#{id}, #{version}, #{server.id}, #{changeTxnId}, #{commitTimeMs})
+        insert into alf_transaction (id, version, change_txn_id, commit_time_ms)
+        values (#{id}, #{version}, #{changeTxnId}, #{commitTimeMs})
     </sql>
     
     <sql id="insert_Store_AutoIncrement">
@@ -586,17 +572,6 @@
     <!--                -->
     <!-- Statements     -->
     <!--                -->
-    
-    <select id="select_ServerByIpAddress" parameterType="Server" resultMap="result_Server">
-        select
-            id,
-            version,
-            ip_address
-        from
-            alf_server
-        where
-            ip_address = #{ipAddress}
-    </select>
     
     <select id="select_StoreAll" resultMap="result_StoreRef">
         select
@@ -1251,7 +1226,6 @@
             <if test="id != null">txn.id = #{id}</if>
             <if test="typeQNameId != null"> and node.type_qname_id = #{typeQNameId}</if>
             <if test="storeId != null"> and store.id = #{storeId}</if>
-            <if test="excludeServerId != null"><![CDATA[ and server_id <> #{excludeServerId}]]></if>
             <if test="minCommitTime != null"><![CDATA[ and txn.commit_time_ms >= #{minCommitTime}]]></if>
             <if test="maxCommitTime != null"><![CDATA[ and txn.commit_time_ms < #{maxCommitTime}]]></if>
             <if test="includeTxnIds != null">
@@ -1391,7 +1365,6 @@
                     WHERE 1=1
                     <if test="minCommitTime != null"><![CDATA[ and txn.commit_time_ms >= #{minCommitTime}]]></if>
                     <if test="maxCommitTime != null"><![CDATA[ and txn.commit_time_ms < #{maxCommitTime}]]></if>
-                    <if test="excludeServerId != null"><![CDATA[ and server_id <> #{excludeServerId}]]></if>
                 )
         )
     </select>

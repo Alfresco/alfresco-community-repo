@@ -162,26 +162,14 @@ CREATE TABLE alf_authority_alias
     CONSTRAINT fk_alf_autha_ali FOREIGN KEY (alias_id) REFERENCES alf_authority (id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE alf_server
-(
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    version BIGINT NOT NULL,
-    ip_address VARCHAR(39) NOT NULL,
-    PRIMARY KEY (id),
-    UNIQUE KEY ip_address (ip_address)
-) ENGINE=InnoDB;
-
 CREATE TABLE alf_transaction
 (
     id BIGINT NOT NULL AUTO_INCREMENT,
     version BIGINT NOT NULL,
-    server_id BIGINT,
     change_txn_id VARCHAR(56) NOT NULL,
     commit_time_ms BIGINT,
     PRIMARY KEY (id),
-    KEY idx_alf_txn_ctms (commit_time_ms),
-    KEY fk_alf_txn_svr (server_id),
-    CONSTRAINT fk_alf_txn_svr FOREIGN KEY (server_id) REFERENCES alf_server (id)
+    KEY idx_alf_txn_ctms (commit_time_ms)
 ) ENGINE=InnoDB;
 
 CREATE TABLE alf_store

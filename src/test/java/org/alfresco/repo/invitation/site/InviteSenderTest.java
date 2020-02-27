@@ -35,9 +35,9 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -138,7 +138,7 @@ public class InviteSenderTest extends TestCase
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_SUBJECT_PARAMS), argThat(new ArgumentMatcher<Object[]>(){
 
             @Override
-            public boolean matches(Object arg)
+            public boolean matches(Object[] arg)
             {
                 if ((arg instanceof Object[]) == false) return false;
                 Object[] params = (Object[])arg;
@@ -465,8 +465,8 @@ public class InviteSenderTest extends TestCase
         List<NodeRef> nodeRefs = Arrays.asList(template);
         when(results.getNodeRefs()).thenReturn(nodeRefs);
         when(searchService.query((SearchParameters) any())).thenReturn(results);
-        when(searchService.selectNodes(any(NodeRef.class), any(String.class),
-                    any(QueryParameterDefinition[].class), any(NamespacePrefixResolver.class), eq(false)))
+        when(searchService.selectNodes(any(), any(String.class),
+                    any(), any(), eq(false)))
                     .thenReturn(nodeRefs);
         return searchService;
     }

@@ -43,6 +43,7 @@ import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.Transaction;
+import org.alfresco.repo.domain.node.ibatis.NodeDAOImpl;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
@@ -196,7 +197,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         }
         public long getTxnCommitTime(String txnId, long fromTime)
         {
-            List<Transaction> startTxns = nodeDAO.getTxnsByCommitTimeAscending(fromTime, null, Integer.MAX_VALUE, null, false);
+            List<Transaction> startTxns = ((NodeDAOImpl) nodeDAO).selectTxns(fromTime, null, Integer.MAX_VALUE, null, null, true);
             long time = 0L;
             for (Transaction txn : startTxns)
             {

@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.security.authority;
 
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.mock;

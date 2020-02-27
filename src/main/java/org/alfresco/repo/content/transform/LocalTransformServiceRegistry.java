@@ -35,10 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.client.model.config.TransformOptionGroup;
 import org.alfresco.transform.client.registry.CombinedConfig;
 import org.alfresco.transform.client.model.config.TransformOption;
@@ -55,8 +52,8 @@ import static java.util.Collections.emptySet;
 
 /**
  * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a local transformation
- * (based on {@link LocalTransform} request is supported. It also extends this interface to provide a
- * {@link #transform} method.
+ * (based on {@link LocalTransform} request is supported.
+ *
  * @author adavis
  */
 public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl implements InitializingBean
@@ -144,6 +141,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         {
             successReadingConfig &= combinedConfig.addLocalConfig(pipelineConfigDir);
         }
+        combinedConfig.addPassThroughTransformer(mimetypeService);
         combinedConfig.register(this);
         return successReadingConfig;
     }
@@ -183,12 +181,18 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             List<String> failover = transformer.getTransformerFailover();
             boolean isPipeline = pipeline != null && !pipeline.isEmpty();
             boolean isFailover = failover != null && !failover.isEmpty();
-            if (isPipeline && isFailover)
+            if (name.equals(LocalPassThroughTransform.NAME))
+            {
+                localTransform = new LocalPassThroughTransform(name, transformerDebug, mimetypeService,
+                        strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
+                        transformsTransformOptions, this);
+            }
+            else if (isPipeline && isFailover)
             {
                 throw new IllegalArgumentException("Local transformer " + name +
                         " cannot have pipeline and failover sections. Read from "+readFrom);
             }
-            if (!isPipeline && !isFailover)
+            else if (!isPipeline && !isFailover)
             {
                 baseUrl = getBaseUrlIfTesting(name, baseUrl);
                 if (baseUrl == null)
@@ -297,8 +301,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
      * @param transformOptions a map keyed on transform option name of all the TransformOptions
      * @param readFrom used in debug messages to indicate where the transformer config was read from.
      * @param logError used to log an error message if a transformOptionName is invalid.
-     *
-     * For more information how this is used see {@link AbstractLocalTransform#addOptionNames(Set, Set)}.
      */
     private static Set<TransformOption> lookupTransformOptions(final Set<String> transformOptionNames,
                                                        final Map<String, Set<TransformOption>> transformOptions,
@@ -485,17 +487,6 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         return enabled
                 ? super.findMaxSize(sourceMimetype, targetMimetype, options, renditionName)
                 : 0;
-    }
-
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String renditionName, NodeRef sourceNodeRef) throws Exception
-    {
-
-        String sourceMimetype = reader.getMimetype();
-        String targetMimetype = writer.getMimetype();
-        long sourceSizeInBytes = reader.getSize();
-        LocalTransform localTransform = getLocalTransform(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
     }
 
     public LocalTransform getLocalTransform(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)

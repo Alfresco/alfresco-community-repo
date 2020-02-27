@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -118,6 +118,7 @@ public class RenditionDefinitionTest extends BaseSpringTest
             RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
             Map<String, String> options = definition2.getTransformOptions();
             TransformationOptions transformationOptions2 = transformationOptionsConverter.getTransformationOptions(renditionName, options);
+            Map<String, String> options2 = transformationOptionsConverter.getOptions(transformationOptions2);
             transformationOptions2.setUse(null); // The use is not set in the original until much later
 
             // The original pdf and webpreview thumbnails are wrong, as they don't include the 'limits' and in the
@@ -127,6 +128,8 @@ public class RenditionDefinitionTest extends BaseSpringTest
             {
                 assertEquals("The TransformationOptions used in transforms for " + renditionName + " should be the same",
                         transformationOptions.toStringAll(), transformationOptions2.toStringAll());
+                assertEquals("The transformationOptionsConverter back to the newer format was not the same for " +
+                                renditionName, options, options2);
             }
             else
             {

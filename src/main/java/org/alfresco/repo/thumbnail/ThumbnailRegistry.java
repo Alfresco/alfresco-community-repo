@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,12 @@
  */
 package org.alfresco.repo.thumbnail;
 
-import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
+import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -38,7 +38,6 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailException;
@@ -78,9 +77,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /** Logger */
     private static Log logger = LogFactory.getLog(ThumbnailRegistry.class);
     
-    /** Content service */
-    private ContentService contentService;
-    
     /** Transaction service */
     protected TransactionService transactionService;
     
@@ -92,6 +88,10 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     private JobLockService jobLockService;
 
     private TransformServiceRegistry transformServiceRegistry;
+
+    private TransformServiceRegistry localTransformServiceRegistry;
+
+    private TransformationOptionsConverter converter;
 
     private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
 
@@ -116,16 +116,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     public ThumbnailRenditionConvertor getThumbnailRenditionConvertor()
     {
         return thumbnailRenditionConvertor;
-    }
-    
-    /**
-     * Content service
-     * 
-     * @param contentService    content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
     }
     
     /**
@@ -167,6 +157,16 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     {
         this.transformServiceRegistry = transformServiceRegistry;
         mimetypeMap.clear();
+    }
+
+    public void setLocalTransformServiceRegistry(TransformServiceRegistry localTransformServiceRegistry)
+    {
+        this.localTransformServiceRegistry = localTransformServiceRegistry;
+    }
+
+    public void setConverter(TransformationOptionsConverter converter)
+    {
+        this.converter = converter;
     }
 
     public void setRenditionDefinitionRegistry2(RenditionDefinitionRegistry2 renditionDefinitionRegistry2)
@@ -319,58 +319,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         return result;
     }
     
-    public List<ThumbnailDefinition> getThumbnailDefinitions(String sourceUrl, String mimetype, long sourceSize)
-    {
-        List<ThumbnailDefinitionLimits> thumbnailDefinitionsLimitsForMimetype = this.mimetypeMap.get(mimetype);
-        
-        if (thumbnailDefinitionsLimitsForMimetype == null)
-        {
-            boolean foundAtLeastOneTransformer = false;
-            thumbnailDefinitionsLimitsForMimetype = new ArrayList<ThumbnailDefinitionLimits>(7);
-            
-            for (ThumbnailDefinition thumbnailDefinition : this.thumbnailDefinitions.values())
-            {
-                if (isThumbnailDefinitionAvailable(sourceUrl, mimetype, sourceSize, thumbnailDefinition))
-                {
-                    long maxSourceSizeBytes = getMaxSourceSizeBytes(mimetype, thumbnailDefinition);
-                    if (maxSourceSizeBytes != 0)
-                    {
-                        thumbnailDefinitionsLimitsForMimetype.add(new ThumbnailDefinitionLimits(thumbnailDefinition, maxSourceSizeBytes));
-                        foundAtLeastOneTransformer = true;
-                    }
-                }
-            }
-            
-            // If we have found no transformers for the given MIME type then we do
-            // not cache the empty list. We prevent this because we want to allow for
-            // transformers only coming online *during* system operation - as opposed
-            // to coming online during startup.
-            //
-            // An example of such a transient transformer would be those that use OpenOffice.org.
-            // It is possible that the system might start without OOo-based transformers
-            // being available. Therefore we must not cache an empty list for the relevant
-            // MIME types - otherwise this class would hide the fact that OOo (soffice) has
-            // been launched and that new transformers are available.
-            if (foundAtLeastOneTransformer)
-            {
-                this.mimetypeMap.put(mimetype, thumbnailDefinitionsLimitsForMimetype);
-            }
-        }
-        
-        // Only return ThumbnailDefinition for this specific source - may be limited on size.
-        List<ThumbnailDefinition> result = new ArrayList<ThumbnailDefinition>(thumbnailDefinitionsLimitsForMimetype.size());
-        for (ThumbnailDefinitionLimits thumbnailDefinitionLimits: thumbnailDefinitionsLimitsForMimetype)
-        {
-            long maxSourceSizeBytes = thumbnailDefinitionLimits.getMaxSourceSizeBytes();
-            if (sourceSize <= 0 || maxSourceSizeBytes < 0 || maxSourceSizeBytes >= sourceSize)
-            {
-                result.add(thumbnailDefinitionLimits.getThumbnailDefinition());
-            }
-        }
-        
-        return result;
-    }
-    
     /**
      * 
      * @param mimetype String
@@ -395,8 +343,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      */
     public boolean isThumbnailDefinitionAvailable(String sourceUrl, String sourceMimetype, long sourceSize, NodeRef sourceNodeRef, ThumbnailDefinition thumbnailDefinition)
     {
-        // Use RenditionService2 if it knows about the definition, otherwise use contentService as before. Needed as
-        // disabling local transforms should not disable thumbnails if they can be done remotely.
+        // Use RenditionService2 if it knows about the definition, otherwise use localTransformServiceRegistry.
+        // Needed as disabling local transforms should not disable thumbnails if they can be done remotely.
         boolean supported = false;
         String targetMimetype = thumbnailDefinition.getMimetype();
         RenditionDefinition2 renditionDefinition = getEquivalentRenditionDefinition2(thumbnailDefinition);
@@ -404,18 +352,19 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
         {
             Map<String, String> options = renditionDefinition.getTransformOptions();
             String renditionName = renditionDefinition.getRenditionName();
-            supported = transformServiceRegistry.isSupported(sourceMimetype, sourceSize, targetMimetype, options, renditionName);
+            supported = transformServiceRegistry.isSupported(sourceMimetype, sourceSize, targetMimetype,
+                    options, renditionName);
         }
         else
         {
             boolean orig = TransformerDebug.setDebugOutput(false);
             try
             {
-                // Copy the thumbnail's TransformationOptions and set the sourceNodeRef, for use by debug.
-                TransformationOptions options = thumbnailDefinition.getTransformationOptions().deepCopy();
-                options.setSourceNodeRef(sourceNodeRef);
-                supported = contentService.getTransformer(sourceUrl, sourceMimetype, sourceSize,
-                        targetMimetype, options) != null;
+                TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
+                String renditionName = thumbnailDefinition.getName();
+                Map<String, String> options = converter.getOptions(transformationOptions);
+                supported = localTransformServiceRegistry.isSupported(sourceMimetype, sourceSize, targetMimetype,
+                        options, renditionName);
             }
             finally
             {
@@ -448,8 +397,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
      */
     public long getMaxSourceSizeBytes(String sourceMimetype, ThumbnailDefinition thumbnailDefinition)
     {
-        // Use RenditionService2 if it knows about the definition, otherwise use contentService as before. Needed as
-        // disabling local transforms should not disable thumbnails if they can be done remotely.
+        // Use RenditionService2 if it knows about the definition, otherwise use localTransformServiceRegistry.
+        // Needed as disabling local transforms should not disable thumbnails if they can be done remotely.
         long maxSize = 0;
         String targetMimetype = thumbnailDefinition.getMimetype();
         RenditionDefinition2 renditionDefinition = getEquivalentRenditionDefinition2(thumbnailDefinition);
@@ -464,8 +413,10 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             boolean orig = TransformerDebug.setDebugOutput(false);
             try
             {
-                TransformationOptions options = thumbnailDefinition.getTransformationOptions();
-                maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, options);
+                TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
+                String renditionName = thumbnailDefinition.getName();
+                Map<String, String> options = converter.getOptions(transformationOptions);
+                maxSize = localTransformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
             }
             finally
             {

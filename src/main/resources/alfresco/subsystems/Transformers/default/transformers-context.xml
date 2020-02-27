@@ -7,8 +7,8 @@
       <property name="mimetypeService">
          <ref bean="mimetypeService"/>
       </property>
-      <property name="contentService">
-         <ref bean="contentService" />
+      <property name="legacySynchronousTransformClient">
+         <ref bean="legacySynchronousTransformClient" />
       </property>
       <property name="contentTransformerRegistry">
          <ref bean="contentTransformerRegistry" />

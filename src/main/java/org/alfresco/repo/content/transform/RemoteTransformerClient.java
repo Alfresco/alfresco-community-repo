@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -86,11 +86,11 @@ public class RemoteTransformerClient
     }
 
     public void request(ContentReader reader, ContentWriter writer, String sourceMimetype, String sourceExtension,
-                        String targetExtension, long timeoutMs, Log logger, String... args) throws IllegalAccessException
+                        String targetExtension, long timeoutMs, Log logger, String... args)
     {
         if (args.length % 2 != 0)
         {
-            throw new IllegalAccessException("There should be a value for each request property");
+            throw new IllegalArgumentException("There should be a value for each request property");
         }
 
         StringJoiner sj = new StringJoiner(" ");

@@ -38,7 +38,6 @@ public class TransactionEntity implements Transaction, Serializable
     private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
-    private ServerEntity server;
     private String changeTxnId;
     private Long commitTimeMs;
     
@@ -55,7 +54,6 @@ public class TransactionEntity implements Transaction, Serializable
         StringBuilder sb = new StringBuilder(512);
         sb.append("TransactionEntity")
           .append("[ ID=").append(id)
-          .append(", server=").append(server)
           .append(", changeTxnId=").append(changeTxnId)
           .append(", commitTimeMs=").append(commitTimeMs)
           .append("]");
@@ -80,16 +78,6 @@ public class TransactionEntity implements Transaction, Serializable
     public void setVersion(Long version)
     {
         this.version = version;
-    }
-
-    public ServerEntity getServer()
-    {
-        return server;
-    }
-
-    public void setServer(ServerEntity server)
-    {
-        this.server = server;
     }
 
     public String getChangeTxnId()

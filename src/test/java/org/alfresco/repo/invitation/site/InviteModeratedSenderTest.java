@@ -27,8 +27,8 @@
 package org.alfresco.repo.invitation.site;
 
 import static org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -218,8 +218,8 @@ public class InviteModeratedSenderTest extends TestCase
         List<NodeRef> nodeRefs = Arrays.asList(emailTemplateNodeRef);
         when(results.getNodeRefs()).thenReturn(nodeRefs);
         when(searchService.query((SearchParameters) any())).thenReturn(results);
-        when(searchService.selectNodes(any(NodeRef.class), any(String.class),
-                    any(QueryParameterDefinition[].class), any(NamespacePrefixResolver.class), eq(false)))
+        when(searchService.selectNodes(any(), any(String.class),
+                    any(), any(), eq(false)))
                     .thenReturn(nodeRefs);
         return searchService;
     }

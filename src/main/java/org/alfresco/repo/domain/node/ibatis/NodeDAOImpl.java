@@ -54,7 +54,6 @@ import org.alfresco.repo.domain.node.NodeRangeEntity;
 import org.alfresco.repo.domain.node.NodeUpdateEntity;
 import org.alfresco.repo.domain.node.NodeVersionKey;
 import org.alfresco.repo.domain.node.PrimaryChildrenAclUpdateEntity;
-import org.alfresco.repo.domain.node.ServerEntity;
 import org.alfresco.repo.domain.node.StoreEntity;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.domain.node.TransactionEntity;
@@ -82,8 +81,6 @@ import org.springframework.util.Assert;
  */
 public class NodeDAOImpl extends AbstractNodeDAOImpl
 {
-    private static final String SELECT_SERVER_BY_IPADDRESS = "alfresco.node.select_ServerByIpAddress";
-    private static final String INSERT_SERVER = "alfresco.node.insert.insert_Server";
     private static final String INSERT_TRANSACTION = "alfresco.node.insert.insert_Transaction";
     private static final String UPDATE_TRANSACTION_COMMIT_TIME = "alfresco.node.update_TransactionCommitTime";
     private static final String DELETE_TRANSACTION_BY_ID = "alfresco.node.delete_TransactionById";
@@ -225,41 +222,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected ServerEntity selectServer(String ipAddress)
+    protected Long insertTransaction(String changeTxnId, Long commitTimeMs)
     {
-        ServerEntity entity = new ServerEntity();
-        entity.setIpAddress(ipAddress);
-        // Potentially more results if there is a case issue (unlikely)
-        List<ServerEntity> results = template.selectList(SELECT_SERVER_BY_IPADDRESS, entity);
-        for (ServerEntity serverEntity : results)
-        {
-            // Take the first one that matches regardless of case
-            if (serverEntity.getIpAddress().equalsIgnoreCase(ipAddress))
-            {
-                return serverEntity;
-            }
-        }
-        // There was no match
-        return null;
-    }
-
-    @Override
-    protected Long insertServer(String ipAddress)
-    {
-        ServerEntity entity = new ServerEntity();
-        entity.setVersion(1L);
-        entity.setIpAddress(ipAddress);
-        template.insert(INSERT_SERVER, entity);
-        return entity.getId();
-    }
-
-    @Override
-    protected Long insertTransaction(Long serverId, String changeTxnId, Long commitTimeMs)
-    {
-        ServerEntity server = new ServerEntity();
-        server.setId(serverId);
         TransactionEntity transaction = new TransactionEntity();
-        transaction.setServer(server);
         transaction.setVersion(1L);
         transaction.setChangeTxnId(changeTxnId);
         transaction.setCommitTimeMs(commitTimeMs);
@@ -1638,13 +1603,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
-    protected List<Transaction> selectTxns(
+    public List<Transaction> selectTxns(
             Long fromTimeInclusive,
             Long toTimeExclusive,
             Integer count,
             List<Long> includeTxnIds,
             List<Long> excludeTxnIds,
-            Long excludeServerId,
             Boolean ascending)
     {
         TransactionQueryEntity query = new TransactionQueryEntity();
@@ -1661,7 +1625,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             query.setExcludeTxnIds(excludeTxnIds);
         }
         
-        query.setExcludeServerId(excludeServerId);
         query.setAscending(ascending);
         
         if (count == null)
@@ -1948,22 +1911,4 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
                                 assocQName);
         }
     }
-
-    /**
-     * Get most recent transaction made in a given commit time range
-     */
-    @SuppressWarnings("unchecked")
-    public List<Transaction> getOneTxnsByCommitTimeDescending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            boolean remoteOnly)
-    {
-        Long serverId = remoteOnly ? getServerId() : null;
-        TransactionQueryEntity query = new TransactionQueryEntity();
-        query.setMinCommitTime(fromTimeInclusive);
-        query.setMaxCommitTime(toTimeExclusive);
-        query.setExcludeServerId(serverId);
-        return template.selectList(SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC, query);
-    }
-
 }

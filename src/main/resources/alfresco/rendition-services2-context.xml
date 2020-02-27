@@ -59,13 +59,17 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="ruleService" ref="ruleService" />
+        <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
+        <property name="transformReplyProvider" ref="transformReplyProvider" />
         <property name="enabled" value="${renditionService2.enabled}" />
         <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
-        <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
     </bean>
 
     <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">
         <property name="transactionService" ref="TransactionService" />
+    </bean>
+
+    <bean id="transformReplyProvider" class="org.alfresco.repo.rendition2.StubTransformReplyProvider">
     </bean>
 
     <!-- Replaced in the enterprise edition -->
@@ -85,8 +89,31 @@
 
     <bean id="legacyTransformClient" class="org.alfresco.repo.rendition2.LegacyTransformClient">
         <property name="transactionService" ref="transactionService" />
-        <property name="contentService" ref="ContentService" />
+        <property name="contentService" ref="contentService" />
         <property name="renditionService2" ref="renditionService2" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="synchronousTransformClient" parent="switchingSynchronousTransformClient" />
+
+    <bean id="switchingSynchronousTransformClient" class="org.alfresco.repo.rendition2.SwitchingSynchronousTransformClient">
+        <constructor-arg name="primary" ref="localSynchronousTransformClient" />
+        <constructor-arg name="secondary" ref="legacySynchronousTransformClient" />
+        <property name="transformerDebug" ref="transformerDebug" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="localSynchronousTransformClient" class="org.alfresco.repo.rendition2.LocalSynchronousTransformClient">
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistryImpl" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="legacySynchronousTransformClient" class="org.alfresco.repo.rendition2.LegacySynchronousTransformClient">
+        <property name="mimetypeService" ref="mimetypeService" />
+        <property name="transformerRegistry" ref="contentTransformerRegistry" />
+        <property name="transformerDebug" ref="transformerDebug" />
         <property name="converter" ref="transformOptionsConverter" />
     </bean>
 
@@ -101,6 +128,9 @@
 
     <!-- Replaced in the enterprise edition -->
     <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="remoteTransformServiceRegistry" class="org.alfresco.repo.content.transform.DummyTransformServiceRegistry" />
 
     <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.SwitchingTransformServiceRegistry">
         <constructor-arg name="primary" ref="localTransformServiceRegistryImpl" />
@@ -123,7 +153,7 @@
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
 
     <bean id="legacyTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyTransformServiceRegistry" >
-        <property name="contentService" ref="contentService" />
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
         <property name="converter" ref="transformOptionsConverter" />
         <property name="enabled" value="${legacy.transform.service.enabled}" />
         <property name="transformerDebug" ref="transformerDebug" />
@@ -159,6 +189,13 @@
 
     <!-- Process raw content update events -->
     <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
+        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <!-- Process transform request events. -->
+    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor">
         <property name="renditionService2" ref="renditionService2" />
         <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
         <property name="transactionService" ref="transactionService" />

@@ -29,6 +29,7 @@ import static org.alfresco.repo.content.transform.TransformerPropertyNameExtract
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockProperties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -165,6 +166,8 @@ public class TransformerConfigImplTest
     {
         when(transformerLog.getPropertyName()).thenReturn("transformer.log.entries");
         when(transformerDebugLog.getPropertyName()).thenReturn("transformer.debug.entries");
+        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("transformer.log.entries=0  # default=50");
+        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
         
         String actual = config.getProperties(false);
         assertEquals("# LOG and DEBUG history sizes\n" +

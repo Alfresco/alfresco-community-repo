@@ -33,8 +33,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.rendition2.LegacySynchronousTransformClient;
 import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MalformedNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,7 +60,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
 
     private MimetypeService mimetypeService;
     
-    private ContentService contentService;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
 
     private ContentTransformerRegistry transformerRegistry;
     
@@ -131,9 +131,9 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         this.mimetypeService = mimetypeService;
     }
 
-    public void setContentService(ContentService contentService)
+    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
     {
-        this.contentService = contentService;
+        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
     }
 
     public void setContentTransformerRegistry(ContentTransformerRegistry transformerRegistry)
@@ -180,7 +180,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         transformerProperties = new TransformerProperties(subsystem, globalProperties);
         
         dynamicTransformers = new TransformerConfigDynamicTransformers(this, transformerProperties, mimetypeService,
-                contentService, transformerRegistry, transformerDebug, moduleService, descriptorService, globalProperties);
+                legacySynchronousTransformClient, transformerRegistry, transformerDebug, moduleService, descriptorService, globalProperties);
         statistics= new TransformerConfigStatistics(this, mimetypeService);
         limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
         supported = new TransformerConfigSupported(transformerProperties, mimetypeService);

@@ -1,6 +1,6 @@
 {
   "transformOptions": {
-    "imagemagickOptions": [
+    "imageMagickOptions": [
       {"value": {"name": "alphaRemove"}},
       {"value": {"name": "autoOrient"}},
       {"value": {"name": "startPage"}},
@@ -63,7 +63,7 @@
         {"sourceMediaType": "source", "priority": "55","targetMediaType": "target3" }
       ],
       "transformOptions": [
-        "imagemagickOptions"
+        "imageMagickOptions"
       ]
     },
     {
@@ -119,44 +119,10 @@
         {"transformerName": "imagemagick"}
       ],
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.ms-excel",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.ms-excel",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.ms-excel",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.ms-excel",  "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.ms-powerpoint",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.ms-powerpoint",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.ms-powerpoint",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.ms-powerpoint",  "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.openxmlformats-officedocument.presentationml.presentation", "targetMediaType": "image/tiff"},
-
-        {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "image/gif" },
-        {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "image/png" },
-        {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
         "pdfRendererOptions",
-        "imagemagickOptions"
+        "imageMagickOptions"
       ]
     }
   ]

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.repo.template;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -35,10 +36,12 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -601,6 +604,7 @@ public abstract class BaseContentNode implements TemplateContent
             {
                 // get the content reader
                 ContentService contentService = services.getContentService();
+                SynchronousTransformClient synchronousTransformClient = services.getSynchronousTransformClient();
                 NodeRef nodeRef = getNodeRef();
                 ContentReader reader = contentService.getReader(nodeRef, property);
                 if (reader == null)
@@ -619,22 +623,28 @@ public abstract class BaseContentNode implements TemplateContent
                 // try and transform the content
                 try
                 {
-                    contentService.transform(reader, writer, options);
-                    
-                    ContentReader resultReader = writer.getReader();
-                    if (resultReader != null && reader.exists())
+                    try
                     {
-                       if (length != -1)
-                       {
-                           result = resultReader.getContentString(length);
-                       }
-                       else
-                       {
-                           result = resultReader.getContentString();
-                       }
+                        synchronousTransformClient.transform(reader, writer, Collections.emptyMap(), null, nodeRef);
+
+                        ContentReader resultReader = writer.getReader();
+                        if (resultReader != null && reader.exists())
+                        {
+                            if (length != -1)
+                            {
+                                result = resultReader.getContentString(length);
+                            }
+                            else
+                            {
+                                result = resultReader.getContentString();
+                            }
+                        }
+                    }
+                    catch (UnsupportedTransformationException ignore)
+                    {
                     }
                 }
-                catch (NoTransformerException|UnsupportedTransformationException e)
+                catch (NoTransformerException|UnsupportedTransformationException| ContentIOException e)
                 {
                     // ignore
                 }

@@ -28,9 +28,9 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class TransformerConfigMBeanImplTest
     private ContentTransformerRegistry transformerRegistry;
 
     @Mock
-    private TransformerDebug transformerDebug;
+    private LegacyTransformerDebug transformerDebug;
 
     @Mock
     private TransformerConfig transformerConfig;
@@ -113,23 +113,6 @@ public class TransformerConfigMBeanImplTest
     }
 
     @Test
-    // Just testing that the transformer names have the "transformer." prefix stripped.
-    public void getTransformerNamesTest()
-    {
-        when(transformerDebug.sortTransformersByName(null)).thenReturn(
-                Arrays.asList(new ContentTransformer[]
-                {
-                            (ContentTransformer) new DummyContentTransformer("transformer.transformer1"),
-                            (ContentTransformer) new DummyContentTransformer("transformer2"),
-                            (ContentTransformer) new DummyContentTransformer("transformer.transformer3")
-                }));
-        
-        String[] actual = mbean.getTransformerNames();
-        String[] expected = new String[] { "transformer1", "transformer2", "transformer3" };
-        assertArrayEquals(expected, actual);
-    }
-
-    @Test
     public void getExtensionsAndMimetypesTest()
     {
         when(mimetypeService.getMimetypes(null)).thenReturn(Arrays.asList(new String[] { "application/pdf", "image/png" }));
@@ -139,52 +122,6 @@ public class TransformerConfigMBeanImplTest
         String[] actual = mbean.getExtensionsAndMimetypes();
         String[] expected = new String[] { "pdf - application/pdf", "png - image/png" };
         assertArrayEquals(expected, actual);
-    }
-    
-    @Test
-    public void getTransformationsByTransformerTest()
-    {
-        setupForGetTransformationsBtTransformer();
-        assertEquals("One result", mbean.getTransformationsByTransformer("transformer1", null));
-    }
-    
-    @Test
-    public void getTransformationsByTransformerBadNameTest()
-    {
-        setupForGetTransformationsBtTransformer();
-        assertEquals("unknown transformer", mbean.getTransformationsByTransformer("TRANSFORMER1", null));
-    }
-    
-    @Test
-    public void getTransformationsByTransformerNullTest()
-    {
-        setupForGetTransformationsBtTransformer();
-        assertEquals("Lots of results", mbean.getTransformationsByTransformer(null, null));
-    }
-
-    @Test
-    public void getTransformationsByTransformerJConsoleStringTest()
-    {
-        // "String" (the default JConsole value) is mapped to null
-        setupForGetTransformationsBtTransformer();
-        assertEquals("Lots of results", mbean.getTransformationsByTransformer("String", null));
-    }
-
-    @Test
-    public void getTransformationsByTransformerJConsoleBlankTest()
-    {
-        // "" is mapped to null - Can't set a null in JConsole
-        setupForGetTransformationsBtTransformer();
-        assertEquals("Lots of results", mbean.getTransformationsByTransformer("", null));
-    }
-
-    private void setupForGetTransformationsBtTransformer()
-    {
-        when(transformerDebug.transformationsByTransformer("transformer.transformer1", true, true, null)).thenReturn("One result");
-        when(transformerDebug.transformationsByTransformer(null, true, true, null)).thenReturn("Lots of results");
-        when(transformerRegistry.getTransformer("transformer.transformer1")).thenReturn(new DummyContentTransformer("transformer.transformer1"));
-        when(transformerRegistry.getTransformer(null)).thenReturn(null);
-        when(transformerRegistry.getTransformer("transformer.TRANSFORMER1")).thenThrow(new IllegalArgumentException("unknown transformer"));
     }
     
     @Test
@@ -298,20 +235,22 @@ public class TransformerConfigMBeanImplTest
         ContentTransformer transformer1 = (ContentTransformer) new DummyContentTransformer("transformer.transformer1");
         ContentTransformer transformer2 = (ContentTransformer) new DummyContentTransformer("transformer.transformer2");
 
+        Collection<ContentTransformer> transformerList1=Arrays.asList(new ContentTransformer[] {transformer1});
         when(transformerDebug.sortTransformersByName("transformer.transformer1")).thenReturn(
-                Arrays.asList(new ContentTransformer[] {transformer1}));
+                    transformerList1);
+        Collection<ContentTransformer> transformerList2=Arrays.asList(new ContentTransformer[] {transformer1, transformer2});
         when(transformerDebug.sortTransformersByName(null)).thenReturn(
-                Arrays.asList(new ContentTransformer[] {transformer1, transformer2}));
+                    transformerList2);
 
         when(transformerDebug.getSourceMimetypes("pdf")).thenReturn(Collections.singletonList("application/pdf"));
         when(transformerDebug.getSourceMimetypes("png")).thenReturn(Collections.singletonList("image/png"));
         when(transformerDebug.getSourceMimetypes("txt")).thenReturn(Collections.singletonList("text/plain"));
         when(transformerDebug.getSourceMimetypes(null)).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
 
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("pdf"), (Collection<String>) any())).thenReturn(Collections.singletonList("application/pdf"));
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("png"), (Collection<String>) any())).thenReturn(Collections.singletonList("image/png"));
-        when(transformerDebug.getTargetMimetypes(anyString(), eq("txt"), (Collection<String>) any())).thenReturn(Collections.singletonList("text/plain"));
-        when(transformerDebug.getTargetMimetypes(anyString(), (String)eq(null), (Collection<String>) any())).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
+        when(transformerDebug.getTargetMimetypes(any(), eq("pdf"), (Collection<String>) any())).thenReturn(Collections.singletonList("application/pdf"));
+        when(transformerDebug.getTargetMimetypes(any(), eq("png"), (Collection<String>) any())).thenReturn(Collections.singletonList("image/png"));
+        when(transformerDebug.getTargetMimetypes(any(), eq("txt"), (Collection<String>) any())).thenReturn(Collections.singletonList("text/plain"));
+        when(transformerDebug.getTargetMimetypes(any(), (String)eq(null), (Collection<String>) any())).thenReturn(Arrays.asList(new String[] {"application/pdf", "image/png", "text/plain"}));
         
         when(transformerConfig.getStatistics(null, null, null, false)).thenReturn(
                 new TransformerStatisticsImpl(mimetypeService, "*", "*", null, null, 130000, 222, 34));
@@ -412,19 +351,5 @@ public class TransformerConfigMBeanImplTest
     {
         when(transformerDebug.testTransform("bad", "png", null)).thenThrow(new IllegalArgumentException("Unknown source extension: bad"));
         assertEquals("Unknown source extension: bad", mbean.testTransform(null, "bad", "png", null));
-    }
-    
-    @Test
-    public void testTransformTest()
-    {
-        when(transformerDebug.testTransform("transformer.transformer1", "pdf", "png", null)).thenReturn("debug output");
-        assertEquals("debug output", mbean.testTransform("transformer1", "pdf", "png", null));
-    }
-    
-    @Test
-    public void testTransformBadExtensionTest()
-    {
-        when(transformerDebug.testTransform("transformer.transformer1", "bad", "png", null)).thenThrow(new IllegalArgumentException("Unknown source extension: bad"));
-        assertEquals("Unknown source extension: bad", mbean.testTransform("transformer1", "bad", "png", null));
     }
 }

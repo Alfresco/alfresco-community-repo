@@ -144,7 +144,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
             sizeOkay = maxSourceSizeKBytes < 0 || (maxSourceSizeKBytes > 0 && sourceSize <= maxSourceSizeKBytes*1024);
             if (!sizeOkay && transformerDebug.isEnabled())
             {
-                transformerDebug.unavailableTransformer(this, sourceMimetype, targetMimetype, maxSourceSizeKBytes);
+                ((LegacyTransformerDebug)transformerDebug).unavailableTransformer(this, sourceMimetype, targetMimetype, maxSourceSizeKBytes);
             }
         }
         return sizeOkay;

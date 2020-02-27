@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
 import org.alfresco.repo.domain.audit.AuditApplicationEntity;
@@ -63,6 +64,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String DELETE_ENTRIES = "alfresco.audit.delete_AuditEntries";
     private static final String DELETE_ENTRIES_BY_ID = "alfresco.audit.delete_AuditEntriesById";
     private static final String INSERT_ENTRY = "alfresco.audit.insert.insert_AuditEntry";
+    private static final String SELECT_MINMAX_ENTRY_FOR_APP = "alfresco.audit.select_MinMaxAuditEntryId";
     
     @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
@@ -208,6 +210,17 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         entity.setAuditValuesId(valuesId);
         template.insert(INSERT_ENTRY, entity);
         return entity;
+    }
+
+    public HashMap<String, Long> getAuditMinMaxByApp(long appId, List<String> extremes)
+    {
+        // Build parameters to be used in the query. Filter the duplicates when inserting into map
+        Map<String, Object> params = extremes.stream().collect(Collectors.toMap(s -> s, s -> Boolean.TRUE, (s1, s2) -> s1));
+        params.put("auditAppId", appId);
+
+        HashMap<String, Long> result = template.selectOne(SELECT_MINMAX_ENTRY_FOR_APP, params);
+
+        return result;
     }
 
     @SuppressWarnings("unchecked")

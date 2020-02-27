@@ -1398,4 +1398,14 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V6.3-remove-alf_server-table" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V6.3-remove-alf_server-table</value></property>
+        <property name="description"><value>patch.db-V6.3-remove-alf_server-table.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>14000</value></property>
+        <property name="targetSchema"><value>14001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/6.3/${db.script.dialect}/remove-alf_server-table.sql</value>
+        </property>
+    </bean>
 </beans>

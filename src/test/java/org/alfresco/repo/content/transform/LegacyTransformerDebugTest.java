@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.rendition2.TransformClient;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
@@ -46,11 +46,12 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.when;
 
 /**
- * Test class for TransformerDebug.
+ * Test class for LegacyTransformerDebugTest.
  *
  * @author Alan Davis
  */
-public class TransformerDebugTest
+@Deprecated
+public class LegacyTransformerDebugTest
 {
     @Mock
     private NodeService nodeService;
@@ -65,7 +66,7 @@ public class TransformerDebugTest
     private TransformerConfig transformerConfig;
 
     @Mock
-    private TransformClient transformClient;
+    private SynchronousTransformClient synchronousTransformClient;
 
     @Mock
     private AbstractContentTransformerLimits transformer1;
@@ -79,7 +80,7 @@ public class TransformerDebugTest
     @Mock
     private AbstractContentTransformerLimits transformer4;
 
-    private TransformerDebug transformerDebug;
+    private LegacyTransformerDebug transformerDebug;
 
     private TransformerLog log;
 
@@ -105,14 +106,14 @@ public class TransformerDebugTest
         when(transformer3.getName()).thenReturn("transformer3");
         when(transformer4.getName()).thenReturn("transformer4");
 
-        transformerDebug = new TransformerDebug();
+        transformerDebug = new LegacyTransformerDebug();
         transformerDebug.setNodeService(nodeService);
         transformerDebug.setMimetypeService(mimetypeService);
         transformerDebug.setTransformerRegistry(transformerRegistry);
         transformerDebug.setTransformerConfig(transformerConfig);
         transformerDebug.setTransformerLog(log);
         transformerDebug.setTransformerDebugLog(debug);
-        transformerDebug.setTransformClient(transformClient);
+        transformerDebug.setSynchronousTransformClient(synchronousTransformClient);
 
         log.setTransformerDebug(transformerDebug);
         log.setTransformerConfig(transformerConfig);
@@ -170,9 +171,9 @@ public class TransformerDebugTest
 
         assertDebugEntriesEquals(new String[] {
         "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
-        "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
-        "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
-        "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
+        "0             --a) [---] Legacy:transformer1<<Component>> > 50 KB\n"+
+        "0             --b) [---] Legacy:transformer3<<Component>> > 50 KB\n"+
+        "0             --c) [---] Legacy:transformer4<<Component>> > 50 KB\n"+
         "0             Finished in NN ms Just checking if a transformer is available"}, unnumbered(untimed(debug.getEntries(10))));
         assertArrayEquals(new String[] {
         "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(stripDateStamp(log.getEntries(10)))));

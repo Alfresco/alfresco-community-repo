@@ -34,13 +34,17 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Test;
 
 /**
  * Unit tests for {@link RMMethodSecurityPostProcessor}.
+ *
+ * See RM-7119.
  */
 public class RMMethodSecurityPostProcessorUnitTest
 {
+    /** The class under test. */
     private RMMethodSecurityPostProcessor rmMethodSecurityPostProcessor = new RMMethodSecurityPostProcessor();
 
     @Test
@@ -76,5 +80,12 @@ public class RMMethodSecurityPostProcessorUnitTest
     {
         Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("a=b=c\nd=e=f");
         assertEquals("Issue with handling of = symbol in value.", ImmutableMap.of("a", "b=c", "d", "e=f"), actual);
+    }
+
+    /** Check that if a line is missing an equals sign then we get an exception. */
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void testConvertToMap_missingEquals()
+    {
+        rmMethodSecurityPostProcessor.convertToMap("a=b\ncd");
     }
 }

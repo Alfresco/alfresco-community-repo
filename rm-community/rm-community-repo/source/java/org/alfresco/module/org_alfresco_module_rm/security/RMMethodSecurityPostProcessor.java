@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
@@ -170,8 +171,11 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     }
 
     /**
-     * @param stringValue
-     * @return
+     * Convert the lines of a string to a map, separating keys from values by the first "=" sign.
+     *
+     * @param stringValue The multi-line string.
+     * @return The resulting map.
+     * @throws AlfrescoRuntimeException If a non-blank line does not contain an "=" sign.
      */
     protected Map<String, String> convertToMap(String stringValue)
     {
@@ -180,14 +184,14 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         for (String value : values)
         {
             String trimmed = value.trim();
-            if (trimmed.equals(""))
+            if (trimmed.isEmpty())
             {
                 continue;
             }
             String[] pair = trimmed.split("=", 2);
             if (pair.length != 2)
             {
-                LOGGER.error("Error converting string to map: {}", trimmed);
+                throw new AlfrescoRuntimeException("Could not convert string to map " + trimmed);
             }
             map.put(pair[0], pair[1]);
         }

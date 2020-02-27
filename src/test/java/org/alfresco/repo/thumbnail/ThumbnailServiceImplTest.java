@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,24 +26,12 @@
 
 package org.alfresco.repo.thumbnail;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.AbstractContentTransformer2;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
-import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.domain.dialect.Dialect;
@@ -51,6 +39,9 @@ import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.rendition2.TestSynchronousTransformClient;
+import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -64,7 +55,6 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -88,6 +78,7 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -105,6 +96,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_FAILING_MIME_TYPE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_MIME_TYPE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_PROPERTY_VALUE;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_TRANSFORM_TIME;
+
 /**
  * Thumbnail service implementation unit test
  * 
@@ -117,7 +123,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 @ContextConfiguration({"classpath:alfresco/application-context.xml",
-        "classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml"})
+        "classpath:org/alfresco/repo/rendition2/test-transform-context.xml"})
 public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static Log logger = LogFactory.getLog(ThumbnailServiceImplTest.class);
@@ -135,12 +141,10 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private PermissionService permissionService;
     private LockService lockService;
     private CopyService copyService;
+    private SynchronousTransformClient synchronousTransformClient;
+    private TransformationOptionsConverter converter;
 
     private NodeRef folder;
-    private static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
-    private static final String TEST_LONG_RUNNING_MIME_TYPE = "application/vnd.alfresco.test.longrunning";
-    private static final long TEST_LONG_RUNNING_TRANSFORM_TIME = 5000;
-    private static final String TEST_LONG_RUNNING_PROPERTY_VALUE = "NewValue";
 
     @Before
     public void before() throws Exception
@@ -161,6 +165,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.permissionService = (PermissionService) applicationContext.getBean("PermissionService");
         this.lockService = (LockService) applicationContext.getBean("lockService");
         this.copyService = (CopyService) applicationContext.getBean("CopyService");
+        synchronousTransformClient = (SynchronousTransformClient) applicationContext.getBean("synchronousTransformClient");
+        converter = (TransformationOptionsConverter) applicationContext.getBean("transformOptionsConverter");
 
         // Create a folder and some content
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -172,13 +178,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     
     private void checkTransformer()
     {
-        ContentTransformer transformer = this.contentService.getImageTransformer();
-        assertNotNull("No transformer returned for 'getImageTransformer'", transformer);
-
-        // Check that it is working
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                    imageTransformationOptions))
+        if (!synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, null,
+                MimetypeMap.MIMETYPE_IMAGE_JPEG, Collections.emptyMap(), null, null))
         {
             fail("Image transformer is not working.  Please check your image conversion command setup.");
         }
@@ -536,7 +537,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the {@link ContentTransformer}
+     * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the ContentTransformer
      * cannot attempt to perform the transformation for some reason (e.g. process/service unavailable) and wishes
      * to decline the request. Such 'failures' should not lead to the addition of the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE}
      * aspect.
@@ -551,10 +552,17 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         final NodeRef testNode = this.secureNodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "transientThumbnail.transientThumbnail"),
                 ContentModel.TYPE_CONTENT, props).getChildRef();
-        
+
+        // Modified test to add content. Having no content was failing to find a transformer with Legacy, but now
+        // does not with both Legacy and Local transforms. As a result the test was passing for the wrong reason.
         secureNodeService.setProperty(testNode, ContentModel.PROP_CONTENT,
                 new ContentData(null, TEST_FAILING_MIME_TYPE, 0L, null));
-        // We don't need to write any content into this node, as our test transformer will fail immediately.
+        File testFile = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.pdf");
+        assertNotNull("Failed to load required test file.", testFile);
+        ContentWriter writer = contentService.getWriter(testNode, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(TEST_FAILING_MIME_TYPE);
+        writer.setEncoding("UTF-8");
+        writer.putContent(testFile);
 
         logger.debug("Running failing thumbnail on " + testNode);
         
@@ -1118,10 +1126,12 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
         NodeRef nodeRef = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_HTML);
         ThumbnailDefinition def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("medium");
-
-        ContentTransformer transformer = this.contentService.getTransformer(null, MimetypeMap.MIMETYPE_HTML, -1, def
-                                .getMimetype(), def.getTransformationOptions());
-        if (transformer != null)
+        TransformationOptions transformationOptions = def.getTransformationOptions();
+        Map<String, String> options = converter.getOptions(transformationOptions);
+        String targetMimetype = def.getMimetype();
+        boolean supported = synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_HTML, -1, null,
+                targetMimetype, options, null, null);
+        if (supported)
         {
             NodeRef thumb = this.thumbnailService.createThumbnail(nodeRef, ContentModel.PROP_CONTENT,
                         def.getMimetype(), def.getTransformationOptions(), def.getName());
@@ -1133,7 +1143,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         }
 
         def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("webpreview");
-        if (transformer != null)
+        if (supported)
         {
             NodeRef thumb = this.thumbnailService.createThumbnail(nodeRef, ContentModel.PROP_CONTENT,
                         def.getMimetype(), def.getTransformationOptions(), def.getName());
@@ -1183,27 +1193,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         checkRendition("smallPng", thumbnail1);
         outputThumbnailTempContentLocation(thumbnail1, "png", "smallPng - 64x64, marked as thumbnail");
         
-        // Create thumbnail - different content property
-        // TODO
-        
-        // Create thumbnail - different command options
-        // We'll pass illegal command options to ImageMagick in order to trigger an exception
-        Exception x = null;
-        try
-        {
-            imageTransformationOptions.setCommandOptions("-noSuchOption");
-            thumbnail1 = this.thumbnailService.createThumbnail(jpgOrig, ContentModel.PROP_CONTENT,
-                    MimetypeMap.MIMETYPE_IMAGE_PNG, imageTransformationOptions, "smallCO");
-        } catch (ContentIOException ciox)
-        {
-            x = ciox;
-            ciox.printStackTrace();
-        }
-        assertNotNull("Expected exception from ImageMagick due to invalid option", x);
-        // Reset the command options
-        imageTransformationOptions.setCommandOptions("");
-        
-        
+//      Removd code: We now automatically discard all extra command options for security reasons.
+
         // Create thumbnail - different target assoc details
         ThumbnailParentAssociationDetails tpad
             = new ThumbnailParentAssociationDetails(otherFolder,
@@ -1224,7 +1215,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 MimetypeMap.MIMETYPE_IMAGE_PNG, imageTransformationOptions, null);
         assertNotNull(thumbnail1);
         checkRenditioned(jpgOrig, 
-        		Collections.singletonList(new ExpectedAssoc(RegexQNamePattern.MATCH_ALL, null, 5)));
+        		Collections.singletonList(new ExpectedAssoc(RegexQNamePattern.MATCH_ALL, null, 4)));
         checkRendition(null, thumbnail1);
         outputThumbnailTempContentLocation(thumbnail1, "png", "'null' - 64x64, marked as thumbnail");
     }
@@ -1304,11 +1295,6 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         try
         {
-            // Reset our transformer count for each test
-            LongRunningTransformer transformer = (LongRunningTransformer) contentService
-                    .getTransformer(TEST_LONG_RUNNING_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-            transformer.setTransformCount(0);
-
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
             props.put(ContentModel.PROP_NAME, "original.test");
             final NodeRef source = secureNodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
@@ -1450,8 +1436,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             {
                 Thread.sleep(500);  // Wait for transform(s) to get started
                 logger.debug("Updating description of a node: " + source);
-                secureNodeService.setProperty(source, 
-                        ContentModel.PROP_DESCRIPTION, TEST_LONG_RUNNING_PROPERTY_VALUE);
+                secureNodeService.setProperty(source,  ContentModel.PROP_DESCRIPTION,
+                        TEST_LONG_RUNNING_PROPERTY_VALUE);
             }
             
             @Override
@@ -1459,7 +1445,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             {
                 String description = (String) secureNodeService.getProperty(
                         source, ContentModel.PROP_DESCRIPTION);
-                assertEquals("The node's property was not updated.", TEST_LONG_RUNNING_PROPERTY_VALUE, description);
+                assertEquals("The node's property was not updated.",
+                        TEST_LONG_RUNNING_PROPERTY_VALUE, description);
             }
         };
 
@@ -1500,68 +1487,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         performLongRunningThumbnailTest(expectedThumbnails, expectedAssocs, new EmptyLongRunningConcurrentWork(), 1, 1);
     }
-    
-    /**
-     * Test transformer.
-     * 
-     * @since 4.0.1
-     */
-    private static class TransientFailTransformer extends AbstractContentTransformer2
-    {
-        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return sourceMimetype.equals(MimetypeMap.MIMETYPE_PDF) && targetMimetype.equals(TEST_FAILING_MIME_TYPE);
-        }
-        
-        protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
-        {
-            // fail every time.
-            throw new ContentServiceTransientException("Transformation intentionally failed for test purposes.");
-        }
-    }
-    
-    /**
-     * Bogus transformer that simulates a somewhat longer running transformation
-     */
-    private static class LongRunningTransformer extends AbstractContentTransformer2
-    {
-        private int transformCount = 0;
 
-        @Override
-        public void register()
-        {
-            super.register();
-            setStrictMimeTypeCheck(false);
-        }
-
-        public void setTransformCount(int transformCount)
-        {
-            this.transformCount = transformCount;
-        }
-
-        public int getTransformCount()
-        {
-            return transformCount;
-        }
-        
-        @Override
-        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) && 
-                    (targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_JPEG) ||
-                            targetMimetype.equals(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        }
-
-        @Override
-        protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options)
-                throws Exception
-        {
-            Thread.sleep(TEST_LONG_RUNNING_TRANSFORM_TIME);
-            writer.putContent("SUCCESS");
-            transformCount++;
-        }
-    }
-    
     /**
      * Defines the work to be done while long running transformations are being performed
      * and the means to verify that work completed successfully.

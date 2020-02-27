@@ -1,6 +1,6 @@
 {
   "transformOptions": {
-    "imagemagickOptions": [
+    "imageMagickOptions": [
       {"value": {"name": "alphaRemove"}},
       {"value": {"name": "autoOrient"}},
       {"value": {"name": "startPage"}},
@@ -22,7 +22,7 @@
         {"value": {"name": "maintainAspectRatio"}}
       ]}}
     ],
-    "pdfrendererOptions": [
+    "pdfRendererOptions": [
       {"value": {"name": "page"}},
       {"value": {"name": "width"}},
       {"value": {"name": "height"}},
@@ -39,8 +39,8 @@
         {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
-        "pdfrendererOptions",
-        "imagemagickOptions"
+        "pdfRendererOptions",
+        "imageMagickOptions"
       ]
     }
   ]

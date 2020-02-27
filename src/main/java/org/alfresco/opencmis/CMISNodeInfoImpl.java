@@ -1125,6 +1125,13 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         {
             nodeAspects = connector.getNodeService().getAspects(nodeRef);
         }
+        // REPO-4613: gets the right aspects for the working copy
+        // calls once again the aspects but only if a private copy is treated not ordinary versions
+        else if (versionLabel != null && versionLabel.equals(CMISConnector.PWC_VERSION_LABEL)
+                && nodeRef != null && !nodeRef.getId().equals(currentNodeId))
+        {
+            nodeAspects = connector.getNodeService().getAspects(nodeRef);
+        }
         return nodeAspects;
     }
 }

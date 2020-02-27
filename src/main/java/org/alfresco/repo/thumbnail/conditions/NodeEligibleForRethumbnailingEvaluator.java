@@ -33,13 +33,11 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
-import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.thumbnail.FailureHandlingOptions;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
@@ -63,7 +61,7 @@ import org.apache.commons.logging.LogFactory;
  *     {@link FailureHandlingOptions#getRetryCount() system.thumbnail.retryCount} times.</li>
  * <li>These initial retries to produce a thumbnail will occur not more often than every
  *     {@link FailureHandlingOptions#getRetryPeriod() system.thumbnail.retryPeriod} seconds
- *     and will use which ever content transformers the {@link ContentService#getTransformer(String, String) content service} gives.</li>
+ *     and will use which ever content transformers the ContentService#getTransformer(String, String content service gives.</li>
  * <li>If a thumbnail is not successfully produced for a node after these attempts then it is considered to be
  *     a 'difficult' piece of content with respect to thumbnailing and the assumption is that a thumbnail may
  *     never be available for it. However, in order to allow for the possibility of software upgrades or similiar, which may

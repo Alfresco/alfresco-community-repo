@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -55,17 +55,17 @@ import java.util.concurrent.Executors;
 @Deprecated
 public class LegacyTransformClient implements TransformClient, InitializingBean
 {
+    private static final String TRANSFORM = "Legacy transform ";
     private static Log logger = LogFactory.getLog(LegacyTransformClient.class);
 
     private TransactionService transactionService;
-
     private ContentService contentService;
-
     private RenditionService2Impl renditionService2;
-
     private TransformationOptionsConverter converter;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
 
     private ExecutorService executorService;
+    private ThreadLocal<ContentTransformer> transform = new ThreadLocal<>();
 
     public void setTransactionService(TransactionService transactionService)
     {
@@ -87,6 +87,11 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         this.converter = converter;
     }
 
+    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
+    {
+        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
+    }
+
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -99,6 +104,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "converter", converter);
+        PropertyCheck.mandatory(this, "legacySynchronousTransformClient", legacySynchronousTransformClient);
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
@@ -106,7 +112,7 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
     }
 
     @Override
-    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long size, String contentUrl)
+    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl)
     {
         String targetMimetype = renditionDefinition.getTargetMimetype();
         String renditionName = renditionDefinition.getRenditionName();
@@ -115,22 +121,28 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
         TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
         transformationOptions.setSourceNodeRef(sourceNodeRef);
 
-        ContentTransformer transformer = contentService.getTransformer(contentUrl, sourceMimetype, size, targetMimetype, transformationOptions);
-        if (transformer == null)
+        ContentTransformer legacyTransform = legacySynchronousTransformClient.getTransformer(contentUrl, sourceMimetype, sourceSizeInBytes, targetMimetype, transformationOptions);
+        transform.set(legacyTransform);
+
+        String message = TRANSFORM + renditionName + " from " + sourceMimetype +
+                (legacyTransform == null ? " is unsupported" : " is supported");
+        logger.debug(message);
+        if (legacyTransform == null)
         {
-            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size + " using legacy transform";
-            logger.debug(message);
             throw new UnsupportedOperationException(message);
-        }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use legacy transform " + transformer.getName());
         }
     }
 
     @Override
     public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
     {
+        String targetMimetype = renditionDefinition.getTargetMimetype();
+        String renditionName = renditionDefinition.getRenditionName();
+        Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
+        TransformationOptions options = converter.getTransformationOptions(renditionName, actualOptions);
+        options.setSourceNodeRef(sourceNodeRef);
+        ContentTransformer legacyTransform = transform.get();
+
         executorService.submit(() ->
         {
             AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
@@ -138,32 +150,50 @@ public class LegacyTransformClient implements TransformClient, InitializingBean
                 {
                     try
                     {
-                        String targetMimetype = renditionDefinition.getTargetMimetype();
-                        String renditionName = renditionDefinition.getRenditionName();
-                        Map<String, String> options = renditionDefinition.getTransformOptions();
-
-                        TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-                        transformationOptions.setSourceNodeRef(sourceNodeRef);
-
-                        ContentReader reader = LegacyTransformClient.this.contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-                        if (null == reader || !reader.exists())
+                        if (legacyTransform == null)
                         {
-                            throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");
+                            throw new IllegalStateException("isSupported was not called prior to an asynchronous transform.");
                         }
 
+                        ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                        if (null == reader || !reader.exists())
+                        {
+                            throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
+                        }
+
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(TRANSFORM + "requested " + renditionName);
+                        }
+
+                        // Note: we don't call legacyTransform.transform(reader, writer, options) as the Legacy
+                        // transforms (unlike Local and Transform Service) automatically fail over to the next
+                        // highest priority. This was not done for the newer transforms, as a fail over can always be
+                        // defined and that makes it simpler to understand what is going on.
                         ContentWriter writer = contentService.getTempWriter();
                         writer.setMimetype(targetMimetype);
-                        contentService.transform(reader, writer, transformationOptions);
+                        legacySynchronousTransformClient.transform(reader, writer, options);
 
                         InputStream inputStream = writer.getReader().getContentInputStream();
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(TRANSFORM + "to be consumed " + renditionName);
+                        }
                         renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug(TRANSFORM + "consumed " + renditionName);
+                        }
                     }
                     catch (Exception e)
                     {
                         if (logger.isDebugEnabled())
                         {
-                            String renditionName = renditionDefinition.getRenditionName();
-                            logger.debug("Rendition of "+renditionName+" failed", e);
+                            logger.debug(TRANSFORM + "failed " + renditionName, e);
+                        }
+                        if (renditionDefinition instanceof TransformDefinition)
+                        {
+                            ((TransformDefinition) renditionDefinition).setErrorMessage(e.getMessage());
                         }
                         renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
                         throw e;

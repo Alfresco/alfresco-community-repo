@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.transfer;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;

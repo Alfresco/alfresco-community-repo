@@ -46,8 +46,8 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -168,7 +168,7 @@ public class RemoteTransformerClientTest
 
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
-        assertEquals("Remote TRANSFORMER check returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/version",
+        assertEquals("TRANSFORMER check returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/version",
                 getMessage(available.getSecond()));
     }
 
@@ -178,7 +178,7 @@ public class RemoteTransformerClientTest
         when(mockStatusLine.getStatusCode()).thenReturn(1234);
         doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":").when(remoteTransformerClient).getContent(any());
 
-        assertRequestTransformError("Remote TRANSFORMER returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/transform");
+        assertRequestTransformError("TRANSFORMER returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/transform");
     }
 
     @Test
@@ -190,7 +190,7 @@ public class RemoteTransformerClientTest
 
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
         assertFalse("Any failure should result in false", available.getFirst());
-        assertEquals("Remote TRANSFORMER check failed to connect or to read the response",
+        assertEquals("TRANSFORMER check failed to connect or to read the response",
                 getMessage(available.getSecond()));
 
         assertTransformerBecomesAvailableAgainAfterFailure();
@@ -204,7 +204,7 @@ public class RemoteTransformerClientTest
 
         // Mock a connection failure, check the error and reset the mock
         doThrow(IOException.class).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
-        assertRequestTransformError("Remote TRANSFORMER failed to connect or to read the response");
+        assertRequestTransformError("TRANSFORMER failed to connect or to read the response");
         assertFalse(remoteTransformerClient.isAvailable());
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
 

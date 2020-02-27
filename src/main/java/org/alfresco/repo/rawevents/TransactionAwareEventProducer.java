@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.rawevents;
 
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+import org.apache.camel.ExchangePattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in
@@ -49,10 +50,15 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
 
     public void send(String endpointUri, Object event)
     {
-        send(endpointUri, event, null);
+        send(endpointUri, null, event, null);
     }
 
     public void send(String endpointUri, Object event, Map<String, Object> headers)
+    {
+        send(endpointUri, null, event, headers);
+    }
+
+    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
     {
         String currentTxn = AlfrescoTransactionSupport.getTransactionId();
         TransactionListener transactionListener = new TransactionListener("TxEvPr" + currentTxn);
@@ -66,7 +72,7 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
             AlfrescoTransactionSupport.bindResource(POST_TRANSACTION_PENDING_REQUESTS, pendingRequests);
         }
 
-        PendingRequest pendingRequest = new PendingRequest(endpointUri, event, headers);
+        PendingRequest pendingRequest = new PendingRequest(endpointUri, exchangePattern, event, headers);
         pendingRequests.add(pendingRequest);
     }
 
@@ -75,17 +81,19 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
         private String endpointUri;
         private Object event;
         private Map<String, Object> headers;
+        private ExchangePattern exchangePattern;
 
-        private PendingRequest(String endpointUri, Object event, Map<String, Object> headers)
+        private PendingRequest(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
         {
             this.endpointUri = endpointUri;
             this.event = event;
             this.headers = headers;
+            this.exchangePattern = exchangePattern;
         }
 
         void send()
         {
-            TransactionAwareEventProducer.super.send(endpointUri, event, headers);
+            TransactionAwareEventProducer.super.send(endpointUri, exchangePattern, event, headers);
         }
 
         @Override

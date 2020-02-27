@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -44,26 +44,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+
+import org.mockito.junit.MockitoJUnitRunner;
 import org.quartz.CronExpression;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests the RenditionService2 in a Community context where we only have local transformers.
@@ -90,16 +88,31 @@ public class RenditionService2Test
     @Mock private BehaviourFilter behaviourFilter;
     @Mock private RuleService ruleService;
     @Mock private TransformServiceRegistryImpl transformServiceRegistry;
+    @Mock private TransformReplyProvider transformReplyProvider;
 
     private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
+    private NodeRef nodeRefMissing = new NodeRef("workspace://spacesStore/bad-test-id");
     private static final String TEST_RENDITION = "testRendition";
     private static final String JPEG = "image/jpeg";
     private String contentUrl = "test-content-url";
 
+    private static final String CLIENT_DATA = "some_clientData";
+    private static final String REPLY_QUEUE = "some_replyQueue";
+    private static final String REQUEST_ID = "some_requestId";
+    private static final TransformDefinition TEST_TRANSFORM = new TransformDefinition(JPEG, Collections.singletonMap("a", "A"), CLIENT_DATA, REPLY_QUEUE, REQUEST_ID);
+    private boolean failureCalled;
+
     @Before
     public void setup() throws Exception
     {
-        renditionService2 = new RenditionService2Impl();
+        renditionService2 = new RenditionService2Impl()
+        {
+            @Override
+            public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
+            {
+                failureCalled = true;
+            }
+        };
         renditionDefinitionRegistry2 = new RenditionDefinitionRegistry2Impl();
         renditionDefinitionRegistry2.setTransformServiceRegistry(transformServiceRegistry);
         renditionDefinitionRegistry2.setRenditionConfigDir("");
@@ -108,9 +121,24 @@ public class RenditionService2Test
         renditionDefinitionRegistry2.setCronExpression(null); // just read it once
 
         when(nodeService.exists(nodeRef)).thenReturn(true);
+        when(nodeService.exists(nodeRefMissing)).thenReturn(false);
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED)).thenReturn(new Date());
         when(contentData.getContentUrl()).thenReturn(contentUrl);
+
+        doAnswer(invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            NodeRef sourceNodeRef = (NodeRef) args[0];
+            RenditionDefinition2 renditionDefinition = (RenditionDefinition2) args[1];
+            int sourceContentHashCode = (int) args[3];
+            if (!(renditionDefinition instanceof TransformDefinition))
+            {
+                sourceContentHashCode += 1;  // Change the hashcode so that we don't actually try to create a rendition.
+            }
+            renditionService2.consume(sourceNodeRef, null, renditionDefinition, sourceContentHashCode);
+            return null;
+        }).when(transformClient).transform(any(), any(), nullable(String.class), anyInt());
 
         renditionService2.setTransactionService(transactionService);
         renditionService2.setNodeService(nodeService);
@@ -122,9 +150,10 @@ public class RenditionService2Test
         renditionService2.setBehaviourFilter(behaviourFilter);
         renditionService2.setRuleService(ruleService);
         renditionService2.setTransactionService(transactionService);
+        renditionService2.setRenditionRequestSheduler(new RenditionRequestSchedulerMock());
+        renditionService2.setTransformReplyProvider(transformReplyProvider);
         renditionService2.setEnabled(true);
         renditionService2.setThumbnailsEnabled(true);
-        renditionService2.setRenditionRequestSheduler(new RenditionRequestSchedulerMock());
 
         renditionDefinitionRegistry2.afterPropertiesSet();
         renditionService2.afterPropertiesSet();
@@ -146,54 +175,95 @@ public class RenditionService2Test
             }
             catch (Throwable throwable)
             {
+                throwable.printStackTrace();
                 fail("The rendition callback failed: " + throwable);
             }
         }
     }
 
     @Test(expected = RenditionService2Exception.class)
-    public void disabled()
+    public void disabledForRenditions()
     {
         renditionService2.setEnabled(false);
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test(expected = RenditionService2Exception.class)
-    public void thumbnailsDisabled()
+    public void disabledForTransforms()
+    {
+        renditionService2.setEnabled(false);
+        renditionService2.transform(nodeRef, TEST_TRANSFORM);
+    }
+
+    @Test(expected = RenditionService2Exception.class)
+    public void thumbnailsDisabledForRenditions()
     {
         renditionService2.setThumbnailsEnabled(false);
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void nodeRefDoesNotExistForRenditions()
+    {
+        renditionService2.render(nodeRefMissing, TEST_RENDITION);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nodeRefDoesNotExistForTransforms()
+    {
+        renditionService2.transform(nodeRefMissing, TEST_TRANSFORM);
+    }
+
     @Test
-    public void useLocalTransform()
+    public void useLocalTransformForRenditions()
     {
         renditionService2.render(nodeRef, TEST_RENDITION);
-        verify(transformClient, times(1)).transform(any(), any(), anyString(), anyInt());
+
+        verify(transformClient, times(1)).transform(any(), any(), any(), anyInt());
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
+        verify(transformReplyProvider, times(0)).produceTransformEvent(any(), any(), any(), anyInt());
+    }
+
+    @Test
+    public void useLocalTransformForTransforms()
+    {
+        renditionService2.transform(nodeRef, TEST_TRANSFORM);
+        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
+        verify(transformReplyProvider, times(1)).produceTransformEvent(any(), any(), any(), anyInt());
+
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void noTransform()
+    public void noTransformForRenditions()
     {
         doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
+    @Test
+    public void noTransformForTransforms()
+    {
+        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
+        renditionService2.transform(nodeRef, TEST_TRANSFORM);
+        assertTrue("failure() should be called with transform(...) if an unsupported transform rather than " +
+                "having UnsupportedOperationException thrown", failureCalled);
+    }
+
     @Test(expected = RenditionService2PreventedException.class)
-    public void checkSourceNodeForPreventionClass()
+    public void checkSourceNodeForRenditionPreventionClass()
     {
         when(renditionPreventionRegistry.isContentClassRegistered((QName)any())).thenReturn(true);
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void noDefinition()
+    public void noDefinitionRenditions()
     {
         renditionService2.render(nodeRef, "doesNotExist");
     }
 
     @Test
-    public void definitionExists() throws IOException
+    public void renditionDefinitionsExist() throws IOException
     {
         renditionDefinitionRegistry2.readConfig();
 

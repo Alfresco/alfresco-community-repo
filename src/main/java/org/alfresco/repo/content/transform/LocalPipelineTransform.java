@@ -91,7 +91,7 @@ public class LocalPipelineTransform extends AbstractLocalTransform
                                  ContentWriter writer, Map<String, String> transformOptions,
                                  String sourceMimetype, String targetMimetype,
                                  String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef) throws Exception
+                                 String renditionName, NodeRef sourceNodeRef)
     {
         ContentReader currentReader = reader;
         int lastI = transformers.size() - 1;

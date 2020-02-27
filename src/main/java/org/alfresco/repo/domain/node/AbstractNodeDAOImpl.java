@@ -129,7 +129,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     
     protected final boolean isDebugEnabled = logger.isDebugEnabled();
     private NodePropertyHelper nodePropertyHelper;
-    private ServerIdCallback serverIdCallback = new ServerIdCallback();
     private UpdateTransactionListener updateTransactionListener = new UpdateTransactionListener();
     private RetryingCallbackHelper childAssocRetryingHelper;
 
@@ -423,71 +422,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /*
-     * Server
-     */
-    
-    /**
-     * Wrapper to get the server ID within the context of a lock
-     */
-    private class ServerIdCallback extends ReadWriteLockExecuter<Long>
-    {
-        private TransactionAwareSingleton<Long> serverIdStorage = new TransactionAwareSingleton<Long>();
-        public Long getWithReadLock() throws Throwable
-        {
-            return serverIdStorage.get();
-        }
-        public Long getWithWriteLock() throws Throwable
-        {
-            if (serverIdStorage.get() != null)
-            {
-                return serverIdStorage.get();
-            }
-            // Avoid write operations in read-only transactions
-            //    ALF-5456: IP address change can cause read-write errors on startup
-            if (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY)
-            {
-                return null;
-            }
-
-            // Server IP address
-            String ipAddress = null;
-            try
-            {
-                ipAddress = InetAddress.getLocalHost().getHostAddress();
-            }
-            catch (UnknownHostException e)
-            {
-                throw new AlfrescoRuntimeException("Failed to get server IP address", e);
-            }
-            // Get the server instance
-            ServerEntity serverEntity = selectServer(ipAddress);
-            if (serverEntity != null)
-            {
-                serverIdStorage.put(serverEntity.getId());
-                return serverEntity.getId();
-            }
-            // Doesn't exist, so create it
-            Long serverId = insertServer(ipAddress);
-            serverIdStorage.put(serverId);
-            if (isDebugEnabled)
-            {
-                logger.debug("Created server entity: " + serverEntity);
-            }
-            return serverId;
-        }
-    }
-    
-    /**
-     * Get the ID of the current server, or <tt>null</tt> if there is no ID for the current
-     * server and one can't be created.
-     * 
-     */
-    protected Long getServerId()
-    {
-        return serverIdCallback.execute();
-    }
-    
-    /*
      * Cache helpers
      */
     
@@ -650,10 +584,9 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             throw new ReadOnlyServerException();
         }
         // Have to create a new transaction entry
-        Long serverId = getServerId();
         Long now = System.currentTimeMillis();
         String changeTxnId = AlfrescoTransactionSupport.getTransactionId();
-        Long txnId = insertTransaction(serverId, changeTxnId, now);
+        Long txnId = insertTransaction(changeTxnId, now);
         // Store it for later
         if (isDebugEnabled)
         {
@@ -663,10 +596,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         txn.setId(txnId);
         txn.setChangeTxnId(changeTxnId);
         txn.setCommitTimeMs(now);
-        ServerEntity server = new ServerEntity();
-        server.setId(serverId);
-        txn.setServer(server);
-        
+
         AlfrescoTransactionSupport.bindResource(KEY_TRANSACTION, txn);
         // Listen for the end of the transaction
         AlfrescoTransactionSupport.bindDaoService(updateTransactionListener);
@@ -4873,38 +4803,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
-    public List<Transaction> getTxnsByCommitTimeAscending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            int count,
-            List<Long> excludeTxnIds,
-            boolean remoteOnly)
-    {
-        // Pass the current server ID if it is to be excluded
-        Long serverId = remoteOnly ? serverId = getServerId() : null;
-        return selectTxns(fromTimeInclusive, toTimeExclusive, count, null, excludeTxnIds, serverId, Boolean.TRUE);
-    }
-
-    @Override
-    public List<Transaction> getTxnsByCommitTimeDescending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            int count,
-            List<Long> excludeTxnIds,
-            boolean remoteOnly)
-    {
-        // Pass the current server ID if it is to be excluded
-        Long serverId = remoteOnly ? serverId = getServerId() : null;
-        return selectTxns(fromTimeInclusive, toTimeExclusive, count, null, excludeTxnIds, serverId, Boolean.FALSE);
-    }
-
-    @Override
-    public List<Transaction> getTxnsByCommitTimeAscending(List<Long> includeTxnIds)
-    {
-        return selectTxns(null, null, null, includeTxnIds, null, null, Boolean.TRUE);
-    }
-
-    @Override
     public List<Long> getTxnsUnused(Long minTxnId, long maxCommitTime, int count)
     {
         return selectTxnsUnused(minTxnId, maxCommitTime, count);
@@ -4982,9 +4880,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Abstract methods for underlying CRUD
      */
     
-    protected abstract ServerEntity selectServer(String ipAddress);
-    protected abstract Long insertServer(String ipAddress);
-    protected abstract Long insertTransaction(Long serverId, String changeTxnId, Long commit_time_ms);
+    protected abstract Long insertTransaction(String changeTxnId, Long commit_time_ms);
     protected abstract int updateTransaction(Long txnId, Long commit_time_ms);
     protected abstract int deleteTransaction(Long txnId);
     protected abstract List<StoreEntity> selectAllStores();
@@ -5131,13 +5027,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int selectTransactionCount();
     protected abstract Transaction selectTxnById(Long txnId);
     protected abstract List<NodeEntity> selectTxnChanges(Long txnId, Long storeId);
-    protected abstract List<Transaction> selectTxns(
+    // public for testing
+    public abstract List<Transaction> selectTxns(
             Long fromTimeInclusive,
             Long toTimeExclusive,
             Integer count,
             List<Long> includeTxnIds,
             List<Long> excludeTxnIds,
-            Long excludeServerId,
             Boolean ascending);
     protected abstract List<Long> selectTxnsUnused(Long minTxnId, Long maxCommitTime, Integer count);
     protected abstract Long selectMinTxnCommitTime();

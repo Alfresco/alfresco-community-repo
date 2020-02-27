@@ -62,7 +62,6 @@ Inbound settings from iBatis
         
         <!-- Node -->
         
-        <typeAlias alias="Server" type="org.alfresco.repo.domain.node.ServerEntity"/>
         <typeAlias alias="Transaction" type="org.alfresco.repo.domain.node.TransactionEntity"/>
         <typeAlias alias="TransactionQuery" type="org.alfresco.repo.domain.node.TransactionQueryEntity"/>
         <typeAlias alias="Store" type="org.alfresco.repo.domain.node.StoreEntity"/>

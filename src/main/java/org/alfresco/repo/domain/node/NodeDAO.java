@@ -785,39 +785,6 @@ public interface NodeDAO extends NodeBulkLoader
      * @return                      the requested transaction or <tt>null</tt>
      */
     public Transaction getTxnById(Long txnId);
-    /**
-     * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
-     * for any given millisecond, a list of optional exclusions may be provided.
-     * 
-     * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
-     * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
-     */
-    public List<Transaction> getTxnsByCommitTimeAscending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            int count,
-            List<Long> excludeTxnIds,
-            boolean remoteOnly);
-    /**
-     * Get all transactions in a given time range.  Since time-based retrieval doesn't guarantee uniqueness
-     * for any given millisecond, a list of optional exclusions may be provided.
-     * 
-     * @param excludeTxnIds         a list of txn IDs to ignore.  <tt>null</tt> is allowed.
-     * @param remoteOnly            <tt>true</tt> if locally-written transactions must be ignored
-     */
-    public List<Transaction> getTxnsByCommitTimeDescending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            int count,
-            List<Long> excludeTxnIds,
-            boolean remoteOnly);
-    /**
-     * Get a specific list of transactions ordered by commit time.
-     * 
-     * @param includeTxnIds     a list of transaction IDs to search for
-     * @return                  Returns the transactions by commit time for the given IDs
-     */
-    public List<Transaction> getTxnsByCommitTimeAscending(List<Long> includeTxnIds);
     
     public int getTransactionCount();
     
@@ -927,15 +894,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param isPrimary     count just primary associations?
      */
     public int countChildAssocsByParent(Long parentNodeId, boolean isPrimary);
-
-    /**
-     * Get one last transaction in a given time range.
-     */
-    public List<Transaction> getOneTxnsByCommitTimeDescending(
-            Long fromTimeInclusive,
-            Long toTimeExclusive,
-            boolean remoteOnly);
-
+    
     /**
      * Gets the minimum commit time from transactions including a node id 
      * in the range [fromNodeId:toNodeId]
@@ -955,7 +914,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @return maximum commit time
      */
     public Long getMaxTxInNodeIdRange(Long fromNodeId, Long toNodeId);
-
+    
     /**
      * Gets the next commit time from [fromCommitTime]
      * 

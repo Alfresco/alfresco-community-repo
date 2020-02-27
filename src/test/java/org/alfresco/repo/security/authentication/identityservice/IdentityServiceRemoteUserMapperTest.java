@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

@@ -115,6 +115,9 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     @Autowired
     protected LegacyTransformServiceRegistry legacyTransformServiceRegistry;
 
+    @Autowired
+    protected TransformationOptionsConverter converter;
+
     static String PASSWORD = "password";
 
     protected static final String ADMIN = "admin";
@@ -207,6 +210,8 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         renditionDefinitionRegistry2.afterPropertiesSet();
 
         thumbnailRegistry.setTransformServiceRegistry(transformServiceRegistry);
+        thumbnailRegistry.setLocalTransformServiceRegistry(localTransformServiceRegistry);
+        thumbnailRegistry.setConverter(converter);
     }
 
     @After

@@ -26,13 +26,13 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.util.Map;
+
 
 /**
  * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a legacy transformation
@@ -41,17 +41,17 @@ import java.util.Map;
  * @author adavis
  */
 @Deprecated
-public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegistry implements InitializingBean
+public class LegacyTransformServiceRegistry implements InitializingBean, TransformServiceRegistry
 {
-    private ContentService contentService;
+    private LegacySynchronousTransformClient legacySynchronousTransformClient;
     private TransformationOptionsConverter converter;
     private boolean enabled = true;
     private boolean firstTime = true;
     private TransformerDebug transformerDebug;
 
-    public void setContentService(ContentService contentService)
+    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
     {
-        this.contentService = contentService;
+        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
     }
 
     public void setConverter(TransformationOptionsConverter converter)
@@ -78,7 +78,7 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
     @Override
     public void afterPropertiesSet()
     {
-        PropertyCheck.mandatory(this, "contentService", contentService);
+        PropertyCheck.mandatory(this, "legacySynchronousTransformClient", legacySynchronousTransformClient);
         PropertyCheck.mandatory(this, "converter", converter);
         PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
     }
@@ -99,7 +99,7 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
             try
             {
                 TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, options);
-                maxSize = contentService.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
+                maxSize = legacySynchronousTransformClient.getMaxSourceSizeBytes(sourceMimetype, targetMimetype, transformationOptions);
             }
             catch (IllegalArgumentException ignore)
             {
@@ -107,5 +107,11 @@ public class LegacyTransformServiceRegistry extends AbstractTransformServiceRegi
             }
         }
         return maxSize;
+    }
+
+    @Override
+    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
+    {
+        throw new UnsupportedOperationException("Unsupported operation LegacyTransformServiceRegistry.findTransformerName");
     }
 }

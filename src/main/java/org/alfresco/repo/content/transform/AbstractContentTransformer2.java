@@ -216,7 +216,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     /**
      * @see org.alfresco.repo.content.transform.ContentTransformer#transform(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
      */
-    public final void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
+    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options)
         throws ContentIOException
     {
         try
@@ -239,7 +239,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             {
                 if (transformerDebug.isEnabled())
                 {
-                    transformerDebug.pushTransform(this, reader.getContentUrl(), sourceMimetype,
+                    ((LegacyTransformerDebug)transformerDebug).pushTransform(this, reader.getContentUrl(), sourceMimetype,
                             targetMimetype, reader.getSize(), options);
                 }
                 
@@ -441,7 +441,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
 
             if (!transformerConfig.strictMimetypeCheck(sourceMimetype, differentType))
             {
-                String fileName = transformerDebug.getFileName(options, true, 0);
+                String fileName = ((LegacyTransformerDebug)transformerDebug).getFileName(options, true, 0);
                 String readerSourceMimetype = reader.getMimetype();
                 String message = "Transformation of ("+fileName+
                     ") has not taken place because the declared mimetype ("+
@@ -536,7 +536,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     /**
      * Gets the <code>ExecutorService</code> to be used for timeout-aware extraction.
      * <p>
-     * If no <code>ExecutorService</code> has been defined a default of <code>Executors.newCachedThreadPool()</code> is used during {@link AbstractMappingMetadataExtracter#init()}.
+     * If no <code>ExecutorService</code> has been defined a default of <code>Executors.newCachedThreadPool()</code> is used during {@link AbstractMappingMetadataExtracter}.
      * 
      * @return the defined or default <code>ExecutorService</code>
      */

@@ -26,14 +26,11 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,7 +43,6 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
-import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -55,7 +51,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
-import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
@@ -929,5 +924,21 @@ public class AuditComponentImpl implements AuditComponent
         }
         
         auditDAO.findAuditEntries(callback, parameters, maxResults);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HashMap<String, Long> getAuditMinMaxByApp(String applicationName, List<String> extremes)
+    {
+        // Get the id for the application
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(applicationName);
+        Long applicationId = app.getApplicationId();
+        if (applicationId == null)
+        {
+            throw new AuditException("No persisted instance exists for audit application: " + app);
+        }
+
+        return auditDAO.getAuditMinMaxByApp(applicationId, extremes);
     }
 }

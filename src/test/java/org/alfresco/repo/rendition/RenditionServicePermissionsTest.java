@@ -33,8 +33,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
@@ -76,7 +74,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
+import org.springframework.test.context.ContextConfiguration;
 
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.EXPECTED_USER;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_USER_MIME_TYPE;
 import static org.junit.Assert.*;
 
 /**
@@ -87,6 +88,8 @@ import static org.junit.Assert.*;
  */
 @Deprecated
 @Category(OwnJVMTestsCategory.class)
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:org/alfresco/repo/rendition2/test-transform-context.xml"})
 public class RenditionServicePermissionsTest
 {
     /** Logger */
@@ -94,10 +97,11 @@ public class RenditionServicePermissionsTest
     
     // JUnit Rule to initialise the default Alfresco spring configuration
     public static ApplicationContextInit APP_CONTEXT_INIT = 
-            ApplicationContextInit.createStandardContextWithOverrides("classpath:/test/alfresco/test-renditions-context.xml");
+            ApplicationContextInit.createStandardContextWithOverrides("classpath:/test/alfresco/test-renditions-context.xml",
+                    "classpath:org/alfresco/repo/rendition2/test-transform-context.xml");
     
     // JUnit Rules to create test users.
-    public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, "UserOne");
+    public static AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, EXPECTED_USER);
     
     // Tie them together in a static Rule Chain
     @ClassRule public static RuleChain staticRuleChain = RuleChain.outerRule(APP_CONTEXT_INIT)
@@ -252,13 +256,6 @@ public class RenditionServicePermissionsTest
     {
         final String normalUser = TEST_USER1.getUsername();
         
-        // Register our dummy transformer
-        ContentTransformerRegistry contentTransformerRegistry = 
-                (ContentTransformerRegistry) APP_CONTEXT_INIT.getApplicationContext().getBean("contentTransformerRegistry");
-        MockUserCheckingContentTransformer transformer = new MockUserCheckingContentTransformer();
-        transformer.setExpectedUsername(normalUser);
-        contentTransformerRegistry.addTransformer(transformer);
-        
         // As admin, create a user who has coordinator access to the testFolder
         transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
@@ -289,8 +286,7 @@ public class RenditionServicePermissionsTest
                 
                 RenditionDefinition action = renditionService.createRenditionDefinition(renditionName, MockRenderingEngine.NAME);
                 action.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, path);
-                action.setParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE, 
-                        MockUserCheckingContentTransformer.SUPPORTED_TARGET_MIMETYPE);
+                action.setParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE, TEST_USER_MIME_TYPE);
 
                 // Perform the action with an explicit destination folder
                 logger.debug("Creating rendition of: " + nodeWithImageContent);
@@ -483,118 +479,5 @@ public class RenditionServicePermissionsTest
         {
             // Everything looks fantastic
         }
-    }
-    
-    /**
-     * Mock content transformer which checks an expected authenticated user against the actual
-     * authenticated user.
-     */
-    private static class MockUserCheckingContentTransformer implements ContentTransformer
-    {
-        public static final String SUPPORTED_TARGET_MIMETYPE = "image/dummy";
-        public static final String TEST_TARGET_CONTENT = "transformed text";
-        
-        private String expectedUsername;
-
-        public void setExpectedUsername(String expectedUsername)
-        {
-            this.expectedUsername = expectedUsername;
-        }
-
-        @Override
-        public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public boolean isTransformableSize(String sourceMimetype, long sourceSize, String targetMimetype,
-                TransformationOptions options)
-        {
-            return SUPPORTED_TARGET_MIMETYPE.equals(targetMimetype);
-        }
-
-        @Override
-        public long getMaxSourceSizeKBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
-        {
-            return -1;
-        }
-
-        @Override
-        public boolean isExplicitTransformation(String sourceMimetype, String targetMimetype,
-                TransformationOptions options)
-        {
-            return false;
-        }
-
-        @Override
-        public long getTransformationTime()
-        {
-            return 0;
-        }
-
-        protected void checkUser() throws ContentIOException
-        {
-            String username = AuthenticationUtil.getFullyAuthenticatedUser();
-            if (!expectedUsername.equals(username))
-            {
-                throw new ContentIOException(
-                        "Expected username '" + expectedUsername + "' but found '" + username + "'");
-            }
-        }
-        
-        @Override
-        public void transform(ContentReader reader, ContentWriter writer) throws ContentIOException
-        {
-            checkUser();
-            writer.putContent(TEST_TARGET_CONTENT);
-        }
-
-        @Override
-        @Deprecated
-        public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
-                throws ContentIOException
-        {
-            checkUser();
-            writer.putContent(TEST_TARGET_CONTENT);
-        }
-
-        @Override
-        public void transform(ContentReader reader, ContentWriter contentWriter, TransformationOptions options)
-                throws ContentIOException
-        {
-            checkUser();
-            contentWriter.putContent(TEST_TARGET_CONTENT);
-        }
-
-		@Override
-		public String getComments(boolean available) {
-	        return "";
-		}
-
-		@Override
-		public long getTransformationTime(String sourceMimetype,
-				String targetMimetype) {
-			return 0;
-		}
-
-		@Override
-		public String getName() {
-			return "MockUserCheckingContentTransformerFor"+expectedUsername;
-		}
     }
 }

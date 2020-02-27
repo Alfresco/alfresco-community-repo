@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,22 +26,21 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
+import org.alfresco.transform.client.registry.SupportedTransform;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
-import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING;
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
+import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IMAGE_JPEG;
+import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IWORK_PAGES;
 
 /**
  * Integration tests for {@link LocalTransformServiceRegistry}
@@ -49,6 +48,7 @@ import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
 public class LocalTransformServiceRegistryIntegrationTest extends AbstractRenditionIntegrationTest
 {
     private static final String RENDITION_NAME = "pdf";
+    protected String targetMimetype = "rubbish";
 
     @Autowired
     private LocalTransformServiceRegistry localTransformServiceRegistry;
@@ -95,22 +95,26 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
     @Test
     public void testIsSupported()
     {
+        // Need to make sure we don't fall back to a transformer without limits.
+        List<SupportedTransform> transformers = localTransformServiceRegistry.findTransformers(MIMETYPE_IWORK_PAGES, targetMimetype, options, RENDITION_NAME);
+        assertEquals(1, transformers.size());
+
         // +ve
         // No props
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
         // -ve
         // Bad Source
-        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, targetMimetype, options, RENDITION_NAME));
         // Bad Target
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, "pdfBad", options, "pdfBad"));
+        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, "pdfBad", options, "pdfBad"));
 
         // Good MaxSize docx max size is 768K
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 768L*1024, MIMETYPE_PDF, options, RENDITION_NAME));
+        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024, targetMimetype, options, RENDITION_NAME));
 
         // -ve
         // Bad MaxSize docx max size is 768K
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 768L*1024+1, MIMETYPE_PDF, options, RENDITION_NAME));
+        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024+1, targetMimetype, options, RENDITION_NAME));
     }
 
     @Test
@@ -118,7 +122,7 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
     {
         // The options for "pdf" are empty once "timeout" has been removed. As a result the converter just creates a
         // basic TransformationOption object for a custom transformer and rendition without any options.
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, "custom"));
+        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, MIMETYPE_IMAGE_JPEG, options, "custom"));
     }
 
     @Test
@@ -128,7 +132,7 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
         Map<String, String> options = new HashMap<>();
         options.put("timeout", "true");
         options.put("unknown", "optionValue");
-        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_PDF, options, ""));
+        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_IMAGE_JPEG, options, ""));
     }
 
     @Test
@@ -137,13 +141,13 @@ public class LocalTransformServiceRegistryIntegrationTest extends AbstractRendit
         boolean origEnabled = isEnabled(); // should be true
         try
         {
-            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
             setEnabled(false);
-            Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+            Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
             setEnabled(true);
-            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_OPENXML_WORDPROCESSING, 1234, MIMETYPE_PDF, options, RENDITION_NAME));
+            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
         }
         finally
         {

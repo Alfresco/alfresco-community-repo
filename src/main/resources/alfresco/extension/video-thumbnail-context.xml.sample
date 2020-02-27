@@ -111,6 +111,7 @@ content.transformer.ffmpeg.thumbnail.extensions.wmv.jpg.supported=true
         <value>image/jpeg</value>
       </list>
     </property>
+      <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
   </bean>
 
  

@@ -137,6 +137,12 @@
        <property name="namespaceService" ref="namespaceService" />
    </bean>
 
+   <bean id="baseTransformationRenderingEngine" abstract="true" parent="baseRenderingAction"
+         class="org.alfresco.repo.rendition.executer.AbstractTransformationRenderingEngine">
+       <property name="synchronousTransformClient" ref="synchronousTransformClient" />
+       <property name="converter" ref="transformOptionsConverter" />
+   </bean>
+
    <bean id="baseTemplateRenderingAction" abstract="true" parent="baseRenderingAction"
       class="org.alfresco.repo.rendition.executer.AbstractRenderingEngine">
       <property name="templateService" ref="templateService" />
@@ -146,12 +152,12 @@
    <!--  Rendering Engines -->
    <bean id="reformat"
       class="org.alfresco.repo.rendition.executer.ReformatRenderingEngine"
-      parent="baseRenderingAction">
+      parent="baseTransformationRenderingEngine">
    </bean>
 
    <bean id="imageRenderingEngine"
       class="org.alfresco.repo.rendition.executer.ImageRenderingEngine"
-      parent="baseRenderingAction">
+      parent="baseTransformationRenderingEngine">
       <property name="sourceOptionsSerializers">
         <list>
             <bean class="org.alfresco.service.cmr.repository.PagedSourceOptions" factory-method="createSerializerInstance" />

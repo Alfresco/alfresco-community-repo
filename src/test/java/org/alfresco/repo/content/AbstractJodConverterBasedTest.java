@@ -27,6 +27,7 @@ package org.alfresco.repo.content;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,6 +39,7 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -128,17 +130,9 @@ public abstract class AbstractJodConverterBasedTest
      */
     protected boolean isOpenOfficeAvailable()
     {
-    	ContentTransformer transformer = contentService.getTransformer(null, MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions());
-
-    	// A transformer may not be returned here if it is unavailable.
-    	if (transformer == null)
-    	{
-    		return false;
-    	}
-    	
-    	// Maybe it's non-null, but not available.
-    	boolean isTransformable = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF, null);
-    	return isTransformable;
+        SynchronousTransformClient synchronousTransformClient = serviceRegistry.getSynchronousTransformClient();
+        return synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_WORD, -1, null,
+                MimetypeMap.MIMETYPE_PDF, Collections.emptyMap(), null, null);
     }
 
     @Before

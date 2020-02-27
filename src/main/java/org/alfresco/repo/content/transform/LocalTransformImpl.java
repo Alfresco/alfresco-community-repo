@@ -144,7 +144,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
                                  ContentWriter writer, Map<String, String> transformOptions,
                                  String sourceMimetype, String targetMimetype,
                                  String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef) throws Exception
+                                 String renditionName, NodeRef sourceNodeRef)
     {
         // Only pass the sourceEncoding and other dynamic values like it if they were supplied in the rendition
         // definition without a value. The sourceEncoding value is also supplied in the RenditionEventProducer in

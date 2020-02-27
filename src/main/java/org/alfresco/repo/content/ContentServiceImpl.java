@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
@@ -41,12 +32,6 @@ import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.repo.content.transform.UnimportantTransformException;
-import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -63,10 +48,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -77,6 +60,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service implementation acting as a level of indirection between the client
@@ -89,7 +78,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  * @since 3.2
  */
-public class ContentServiceImpl implements ContentService, ApplicationContextAware
+public class ContentServiceImpl extends ContentTransformServiceAdaptor implements ContentService, ApplicationContextAware
 {
     private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
@@ -98,25 +87,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
-    @Deprecated
-    protected TransformerDebug transformerDebug;
 
-
-    /** a registry of all available content transformers */
-    @Deprecated
-    private ContentTransformerRegistry transformerRegistry;
     /** The cleaner that will ensure that rollbacks clean up after themselves */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
     /** the store to use.  Any multi-store support is provided by the store implementation. */
     private ContentStore store;
     /** the store for all temporarily created content */
     private ContentStore tempStore;
-    @Deprecated
-    private ContentTransformer imageMagickContentTransformer;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
-    private boolean transformerFailover = true;
-    
+
     /**
      * The policy component
      */
@@ -149,15 +129,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         this.mimetypeService = mimetypeService;
     }
 
-    /**
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void setTransformerRegistry(ContentTransformerRegistry transformerRegistry)
-    {
-        this.transformerRegistry = transformerRegistry;
-    }
-    
     public void setEagerContentStoreCleaner(EagerContentStoreCleaner eagerContentStoreCleaner)
     {
         this.eagerContentStoreCleaner = eagerContentStoreCleaner;
@@ -174,33 +145,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     }
 
     /**
-     *
      * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
-    @Deprecated
-    public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer) 
-    {
-        this.imageMagickContentTransformer = imageMagickContentTransformer;
-    }
-
     public void setIgnoreEmptyContent(boolean ignoreEmptyContent)
     {
         this.ignoreEmptyContent = ignoreEmptyContent;
-    }
-
-    /**
-     * Allows fail over form one transformer to another when there is
-     * more than one transformer available. The cost is that the output
-     * of the transformer must go to a temporary file in case it fails.
-     * @param transformerFailover {@code true} (the default) indicate
-     *        that fail over should take place.
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the
-     * new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void setTransformerFailover(boolean transformerFailover)
-    {
-        this.transformerFailover = transformerFailover;
     }
 
     /* (non-Javadoc)
@@ -209,17 +158,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
-    }
-
-    /**
-     * Helper setter of the transformer debug. 
-     * @param transformerDebug TransformerDebug
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void setTransformerDebug(TransformerDebug transformerDebug)
-    {
-        this.transformerDebug = transformerDebug;
     }
 
     /**
@@ -562,407 +500,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         // there is no existing content and we don't specify the location of the new content
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
-    }
-
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
-     * @see org.alfresco.repo.content.transform.ContentTransformer
-     * @see org.alfresco.service.cmr.repository.ContentService#transform(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter)
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void transform(ContentReader reader, ContentWriter writer)
-    {
-        // Call transform with no options
-        TransformationOptions options = new TransformationOptions();
-        this.transform(reader, writer, options);
-    }
-    
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
-     * @see org.alfresco.repo.content.transform.ContentTransformer
-     * @deprecated
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, Object> options)
-            throws NoTransformerException, ContentIOException
-    {
-        transform(reader, writer, new TransformationOptions(options));
-    }
-    
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
-     * @see org.alfresco.repo.content.transform.ContentTransformer
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public void transform(ContentReader reader, ContentWriter writer, TransformationOptions options) 
-        throws NoTransformerException, ContentIOException
-    {
-        // check that source and target mimetypes are available
-        if (reader == null)
-        {
-            throw new AlfrescoRuntimeException("The content reader must be set");
-        }
-        String sourceMimetype = reader.getMimetype();
-        if (sourceMimetype == null)
-        {
-            throw new AlfrescoRuntimeException("The content reader mimetype must be set: " + reader);
-        }
-        String targetMimetype = writer.getMimetype();
-        if (targetMimetype == null)
-        {
-            throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
-        }
-
-        long sourceSize = reader.getSize();
-        try
-        {
-            // look for a transformer
-            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
-            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.transform(...)");
-            
-            int count = transformers.size(); 
-            if (count == 0)
-            {
-                throw new NoTransformerException(sourceMimetype, targetMimetype);
-            }
-            
-            if (count == 1 || !transformerFailover)
-            {
-                ContentTransformer transformer = transformers.size() == 0 ? null : transformers.get(0);
-                transformer.transform(reader, writer, options);
-            }
-            else
-            {
-                failoverTransformers(reader, writer, options, targetMimetype, transformers);
-            }
-        }
-        finally
-        {
-            if (transformerDebug.isEnabled())
-            {
-                transformerDebug.popAvailable();
-                debugTransformations(sourceMimetype, targetMimetype, sourceSize, options);
-            }
-        }
-    }
-
-    /**
-     *
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    private void failoverTransformers(ContentReader reader, ContentWriter writer,
-            TransformationOptions options, String targetMimetype,
-            List<ContentTransformer> transformers)
-    {
-        List<AlfrescoRuntimeException> exceptions = null;
-        boolean done = false;
-        try
-        {
-            // Try the best transformer and then the next if it fails
-            // and so on down the list
-            char c = 'a';
-            String outputFileExt = mimetypeService.getExtension(targetMimetype);
-            for (ContentTransformer transformer : transformers)
-            {
-                ContentWriter currentWriter = writer;
-                File tempFile = null;
-                try
-                {
-                    // We can't know in advance which of the
-                    // available transformer will work - if any.
-                    // We can't write into the ContentWriter stream.
-                    // So make a temporary file writer with the
-                    // current transformer name.
-                    tempFile = TempFileProvider.createTempFile(
-                            "FailoverTransformer_intermediate_"
-                                    + transformer.getClass().getSimpleName() + "_", "."
-                                    + outputFileExt);
-                    currentWriter = new FileContentWriter(tempFile);
-                    currentWriter.setMimetype(targetMimetype);
-                    currentWriter.setEncoding(writer.getEncoding());
-
-                    if (c != 'a' && transformerDebug.isEnabled())
-                    {
-                        transformerDebug.debug("");
-                        transformerDebug.debug("Try " + c + ")");
-                    }
-                    c++;
-
-                    transformer.transform(reader, currentWriter, options);
-
-                    if (tempFile != null)
-                    {
-                        writer.putContent(tempFile);
-                    }
-
-                    // No need to close input or output streams
-                    // (according
-                    // to comment in FailoverContentTransformer)
-                    done = true;
-                    return;
-                }
-                catch (Exception e)
-                {
-                    if (exceptions == null)
-                    {
-                        exceptions = new ArrayList<AlfrescoRuntimeException>();
-                    }
-                    if (!(e instanceof AlfrescoRuntimeException))
-                    {
-                        e = new AlfrescoRuntimeException(e.getMessage(), e);
-                    }
-                    exceptions.add((AlfrescoRuntimeException)e);
-
-                    // Set a new reader to refresh the input stream.
-                    reader = reader.getReader();
-                }
-            }
-            // Throw the exception from the first transformer. The
-            // others are consumed.
-            if (exceptions != null)
-            {
-                throw exceptions.get(0);
-            }
-        }
-        finally
-        {
-            // Log exceptions that we have consumed. We may have thrown the first one if
-            // none of the transformers worked.
-            if (exceptions != null)
-            {
-                boolean first = true;
-                for (Exception e : exceptions)
-                {
-                    Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException)e).getRootCause() : null;
-                    String message = (rootCause == null ? null : rootCause.getMessage());
-                    if (done)
-                    {
-                        message = "Transformer succeeded after previous transformer failed"+ (message == null ? "" : ": "+message);
-                        if (rootCause instanceof UnsupportedTransformationException ||
-                            rootCause instanceof UnimportantTransformException)
-                        {
-                            logger.debug(message);
-                        }
-                        else
-                        {
-                            logger.warn(message, e);
-                        }
-                    }
-                    else if (!first) // The first exception is logged later
-                    {
-                        message = "Transformer exception"+ (message == null ? "" : ": "+message);
-                        if (rootCause instanceof UnsupportedTransformationException ||
-                            rootCause instanceof UnimportantTransformException)
-                        {
-                            logger.debug(message);
-                        }
-                        else
-                        {
-                            logger.error(message, e);
-                        }
-                        first = false;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
-     * @see org.alfresco.repo.content.transform.ContentTransformer
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype)
-    {
-        return getTransformer(null, sourceMimetype, -1, targetMimetype, new TransformationOptions());
-    }
-
-    /**
-     *
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public ContentTransformer getTransformer(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        return getTransformer(null, sourceMimetype, -1, targetMimetype, options);
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.repository.ContentService#getTransformer(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public ContentTransformer getTransformer(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        List<ContentTransformer> transformers = getTransformers(sourceUrl, sourceMimetype, sourceSize, targetMimetype, options);
-        return (transformers == null) ? null : transformers.get(0);
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.repository.ContentService#getTransformers(String, java.lang.String, long, java.lang.String, org.alfresco.service.cmr.repository.TransformationOptions)
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public List<ContentTransformer> getTransformers(String sourceUrl, String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        try
-        {
-            // look for a transformer
-            transformerDebug.pushAvailable(sourceUrl, sourceMimetype, targetMimetype, options);
-            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.getTransformer(...)");
-            return transformers.isEmpty() ? null : transformers;
-        }
-        finally
-        {
-            transformerDebug.popAvailable();
-        }
-    }
-
-    /**
-     * Checks if the file just uploaded into Share is a special "debugTransformers.txt" file and
-     * if it is creates TransformerDebug that lists all the supported mimetype transformation for
-     * each transformer.
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    private void debugTransformations(String sourceMimetype, String targetMimetype,
-            long sourceSize, TransformationOptions transformOptions)
-    {
-        // check the file name
-        if (MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
-            MimetypeMap.MIMETYPE_IMAGE_PNG.equals(targetMimetype))
-        {
-            String fileName = transformerDebug.getFileName(transformOptions, true, 0);
-            if (fileName != null && fileName.contains("debugTransformers.txt"))
-            {
-                transformerDebug.transformationsByTransformer(null, false, false, null);
-                transformerDebug.transformationsByExtension(null, null, false, false, false, null);
-            }
-        }
-    }
-    
-    /**
-     * {@inheritDoc}
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        try
-        {
-            long maxSourceSize = 0;
-            transformerDebug.pushAvailable(null, sourceMimetype, targetMimetype, options);
-            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, -1, targetMimetype, options);
-            for (ContentTransformer transformer: transformers)
-            {
-                long maxSourceSizeKBytes = transformer.getMaxSourceSizeKBytes(sourceMimetype, targetMimetype, options);
-                if (maxSourceSize >= 0)
-                {
-                    if (maxSourceSizeKBytes < 0)
-                    {
-                        maxSourceSize = -1;
-                    }
-                    else if (maxSourceSizeKBytes > 0 && maxSourceSize < maxSourceSizeKBytes)
-                    {
-                        maxSourceSize = maxSourceSizeKBytes;
-                    }
-                }
-                // if maxSourceSizeKBytes == 0 this implies the transformation is disabled
-            }
-            if (transformerDebug.isEnabled())
-            {
-                transformerDebug.availableTransformers(transformers, -1, options,
-                    "ContentService.getMaxSourceSizeBytes() = "+transformerDebug.fileSize(maxSourceSize*1024));
-            }
-            return (maxSourceSize > 0) ? maxSourceSize * 1024 : maxSourceSize;
-        }
-        finally
-        {
-            transformerDebug.popAvailable();
-        }
-    }
-
-    /**
-     *
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options)
-    {
-        return getActiveTransformers(sourceMimetype, -1, targetMimetype, options);
-    }
-
-    /**
-     *
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options)
-    {
-        return transformerRegistry.getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.repository.ContentService#getImageTransformer()
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public ContentTransformer getImageTransformer()
-    {
-        return imageMagickContentTransformer;
-    }
-
-    /**
-     * @see org.alfresco.repo.content.transform.ContentTransformerRegistry
-     * @see org.alfresco.repo.content.transform.ContentTransformer
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public boolean isTransformable(ContentReader reader, ContentWriter writer)
-    {
-       return isTransformable(reader, writer, new TransformationOptions());
-    }
-    
-    /**
-     * @see org.alfresco.service.cmr.repository.ContentService#isTransformable(org.alfresco.service.cmr.repository.ContentReader, org.alfresco.service.cmr.repository.ContentWriter, org.alfresco.service.cmr.repository.TransformationOptions)
-     * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
-     */
-    @Deprecated
-    public boolean isTransformable(ContentReader reader, ContentWriter writer, TransformationOptions options)
-    {
-     // check that source and target mimetypes are available
-        String sourceMimetype = reader.getMimetype();
-        if (sourceMimetype == null)
-        {
-            throw new AlfrescoRuntimeException("The content reader mimetype must be set: " + reader);
-        }
-        String targetMimetype = writer.getMimetype();
-        if (targetMimetype == null)
-        {
-            throw new AlfrescoRuntimeException("The content writer mimetype must be set: " + writer);
-        }
-        
-        long sourceSize = reader.getSize();
-        try
-        {
-            // look for a transformer
-            transformerDebug.pushAvailable(reader.getContentUrl(), sourceMimetype, targetMimetype, options);
-            List<ContentTransformer> transformers = getActiveTransformers(sourceMimetype, sourceSize, targetMimetype, options);
-            transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.isTransformable(...)");
-            
-            return transformers.size() > 0; 
-        }
-        finally
-        {
-            transformerDebug.popAvailable();
-        }
     }
 
     /**

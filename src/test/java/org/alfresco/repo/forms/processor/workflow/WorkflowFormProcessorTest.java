@@ -31,9 +31,9 @@ import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_WORKFLOW_PRIORITY;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

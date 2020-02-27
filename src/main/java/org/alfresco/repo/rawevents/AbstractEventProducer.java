@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.rawevents;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.camel.ExchangePattern;
+import org.apache.activemq.transport.amqp.message.AmqpMessageSupport;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Abstract helper to send events to an endpoint. The
@@ -51,11 +52,6 @@ import java.util.Map;
 public abstract class AbstractEventProducer
 {
     protected static final String ERROR_SENDING = "Could not send event";
-    public static final String JMS_AMQP_PREFIX = "JMS_AMQP_";
-
-    public static final String MESSAGE_FORMAT = "MESSAGE_FORMAT";
-    public static final String JMS_AMQP_MESSAGE_FORMAT = JMS_AMQP_PREFIX + MESSAGE_FORMAT;
-    public static final short AMQP_UNKNOWN = 0;
 
     protected ProducerTemplate producer;
     protected String endpoint;
@@ -83,7 +79,7 @@ public abstract class AbstractEventProducer
             origHeaders = new HashMap<>();
         }
 
-        origHeaders.put(JMS_AMQP_MESSAGE_FORMAT, AMQP_UNKNOWN);
+        origHeaders.put(AmqpMessageSupport.JMS_AMQP_MESSAGE_FORMAT, AmqpMessageSupport.AMQP_UNKNOWN);
         return origHeaders;
     }
 
@@ -93,11 +89,6 @@ public abstract class AbstractEventProducer
     }
 
     public void send(String endpointUri, Object event, Map<String, Object> headers)
-    {
-        send(endpointUri, null, event, headers);
-    }
-
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
     {
         try
         {
@@ -111,16 +102,12 @@ public abstract class AbstractEventProducer
                 event = this.objectMapper.writeValueAsString(event);
             }
 
-            if (exchangePattern == null)
-            {
-                exchangePattern = ExchangePattern.InOnly;
-            }
-
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
+            this.producer.sendBodyAndHeaders(endpointUri, event, this.addHeaders(headers));
         }
         catch (Exception e)
         {
             throw new AlfrescoRuntimeException(ERROR_SENDING, e);
         }
     }
+
 }

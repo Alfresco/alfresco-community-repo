@@ -1,6 +1,6 @@
 {
   "transformOptions": {
-    "imageMagickOptions": [
+    "imagemagickOptions": [
       {"value": {"name": "alphaRemove"}},
       {"value": {"name": "autoOrient"}},
       {"value": {"name": "startPage"}},
@@ -29,7 +29,7 @@
       {"value": {"name": "targetMimetype"}},
       {"value": {"name": "targetEncoding"}}
     ],
-    "pdfRendererOptions": [
+    "pdfrendererOptions": [
       {"value": {"name": "page"}},
       {"value": {"name": "width"}},
       {"value": {"name": "height"}},
@@ -59,7 +59,7 @@
         {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
-        "imageMagickOptions"
+        "imagemagickOptions"
       ]
     },
     {
@@ -82,7 +82,7 @@
         {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
       ],
       "transformOptions": [
-        "pdfRendererOptions"
+        "pdfrendererOptions"
       ]
     },
     {
@@ -136,8 +136,8 @@
         {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
-        "pdfRendererOptions",
-        "imageMagickOptions"
+        "pdfrendererOptions",
+        "imagemagickOptions"
       ]
     }
   ]

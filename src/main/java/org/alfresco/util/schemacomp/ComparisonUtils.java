@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.alfresco.util.schemacomp.model.DbObject;
 
+import com.google.gdata.data.extensions.Where;
 
 /**
  * Utilities for comparing data structures in the context of comparing two database schemas.

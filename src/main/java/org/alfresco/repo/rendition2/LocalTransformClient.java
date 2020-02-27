@@ -54,7 +54,6 @@ import java.util.concurrent.Executors;
  */
 public class LocalTransformClient implements TransformClient, InitializingBean
 {
-    private static final String TRANSFORM = "Local transform ";
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
@@ -63,7 +62,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private RenditionService2Impl renditionService2;
 
     private ExecutorService executorService;
-    private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
 
     public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
@@ -104,87 +102,76 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     }
 
     @Override
-    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition,
-                               String sourceMimetype, long sourceSizeInBytes, String contentUrl)
+    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long size, String contentUrl)
     {
         String targetMimetype = renditionDefinition.getTargetMimetype();
         String renditionName = renditionDefinition.getRenditionName();
 
-        Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
-        LocalTransform localTransform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
-                sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        transform.set(localTransform);
-
-        String message = TRANSFORM + renditionName + " from " + sourceMimetype +
-                (localTransform == null ? " is unsupported" : " is supported");
-        logger.debug(message);
-        if (localTransform == null)
+        Map<String, String> options = renditionDefinition.getTransformOptions();
+        if (!localTransformServiceRegistry.isSupported(sourceMimetype, size, targetMimetype, options, renditionName))
         {
+            String message = "Unsupported rendition " + renditionName + " from " + sourceMimetype + " size: " + size + " using local transforms";
+            logger.debug(message);
             throw new UnsupportedOperationException(message);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Rendition of " + renditionName + " from " + sourceMimetype + " will use local transforms");
         }
     }
 
     @Override
-    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
-                          int sourceContentHashCode)
+    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
     {
-        String renditionName = renditionDefinition.getRenditionName();
-        String targetMimetype = renditionDefinition.getTargetMimetype();
-        Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
-        LocalTransform localTransform = transform.get();
-
         executorService.submit(() ->
         {
             AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    try
+                    transactionService.getRetryingTransactionHelper().doInTransaction(() ->
                     {
-                        if (localTransform == null)
+                        try
                         {
-                            throw new IllegalStateException("isSupported was not called prior to an asynchronous transform.");
-                        }
+                            String targetMimetype = renditionDefinition.getTargetMimetype();
+                            String renditionName = renditionDefinition.getRenditionName();
+                            Map<String, String> options = renditionDefinition.getTransformOptions();
 
-                        ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
-                        if (null == reader || !reader.exists())
-                        {
-                            throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
-                        }
+                            ContentReader reader = contentService.getReader(sourceNodeRef, ContentModel.PROP_CONTENT);
+                            if (null == reader || !reader.exists())
+                            {
+                                throw new IllegalArgumentException("The supplied sourceNodeRef "+sourceNodeRef+" has no content.");
+                            }
 
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug(TRANSFORM + "requested " + renditionName);
-                        }
-                        ContentWriter writer = contentService.getTempWriter();
-                        writer.setMimetype(targetMimetype);
-                        localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
+                            ContentWriter writer = contentService.getTempWriter();
+                            writer.setMimetype(targetMimetype);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform requested for rendition of " + renditionDefinition.getRenditionName());
+                            }
+                            localTransformServiceRegistry.transform(reader, writer, options, renditionName, sourceNodeRef);
 
-                        InputStream inputStream = writer.getReader().getContentInputStream();
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug(TRANSFORM + "to be consumed " + renditionName);
+                            InputStream inputStream = writer.getReader().getContentInputStream();
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform to be consumed for rendition of " + renditionDefinition.getRenditionName());
+                            }
+                            renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Local transform consumed for rendition of " + renditionDefinition.getRenditionName());
+                            }
                         }
-                        renditionService2.consume(sourceNodeRef, inputStream, renditionDefinition, sourceContentHashCode);
-                        if (logger.isDebugEnabled())
+                        catch (Exception e)
                         {
-                            logger.debug(TRANSFORM + "consumed " + renditionName);
+                            if (logger.isDebugEnabled())
+                            {
+                                String renditionName = renditionDefinition.getRenditionName();
+                                logger.error("Rendition of "+renditionName+" failed", e);
+                            }
+                            renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
+                            throw e;
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug(TRANSFORM + "failed " + renditionName, e);
-                        }
-                        if (renditionDefinition instanceof TransformDefinition)
-                        {
-                            ((TransformDefinition) renditionDefinition).setErrorMessage(e.getMessage());
-                        }
-                        renditionService2.failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
-                        throw e;
-                    }
-                    return null;
-                }), user);
+                        return null;
+                    }), user);
         });
     }
 }

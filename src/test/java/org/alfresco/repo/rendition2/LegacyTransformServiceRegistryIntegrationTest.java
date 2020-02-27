@@ -28,10 +28,7 @@ package org.alfresco.repo.rendition2;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IMAGE_JPEG;
 
 /**
  * Integration tests for {@link LegacyTransformServiceRegistry}
@@ -47,7 +44,6 @@ public class LegacyTransformServiceRegistryIntegrationTest extends LocalTransfor
     {
         super.setUp();
         transformServiceRegistry = legacyTransformServiceRegistry;
-        targetMimetype = MIMETYPE_IMAGE_JPEG;
     }
 
     @BeforeClass
@@ -74,13 +70,5 @@ public class LegacyTransformServiceRegistryIntegrationTest extends LocalTransfor
     protected boolean isEnabled()
     {
         return legacyTransformServiceRegistry.isEnabled();
-    }
-
-    @Test
-    @Override
-    public void testIsSupported()
-    {
-        // There are no longer any standard transforms with a size limit without a lower priority fallback,
-        // so this test cannot be codded.
     }
 }

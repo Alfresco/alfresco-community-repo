@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <bean id="test.transformer.TransientFail"
+         class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$TransientFailTransformer"
+         parent="baseContentTransformer" >
+   </bean>
+   <bean id="test.transformer.LongRunning"
+         class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$LongRunningTransformer"
+         parent="baseContentTransformer" >
+   </bean>
+</beans>

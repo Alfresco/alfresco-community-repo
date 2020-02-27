@@ -52,7 +52,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TransformerLoggerTest.class,
     TransformerLogTest.class,
     TransformerDebugLogTest.class,
-    LegacyTransformerDebugTest.class,
+    TransformerDebugTest.class,
     
     TransformerConfigImplTest.class,
     TransformerConfigMBeanImplTest.class,

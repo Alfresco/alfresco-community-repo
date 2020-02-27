@@ -28,7 +28,6 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockProperties;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -127,9 +126,6 @@ public class TransformerPropertyGetterTest
     @Test
     public void logEntriesTest()
     {
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
-
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
         
@@ -152,9 +148,6 @@ public class TransformerPropertyGetterTest
         mockProperties(transformerProperties,
             "transformer.strict.mimetype.check.whitelist.mimetypes", "application/eps;application/postscript;application/illustrator;application/pdf", // same value
             "transformer.another", "aNewValue"); // changed value
-
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -180,9 +173,6 @@ public class TransformerPropertyGetterTest
                 "content.transformer.default.priority",          "100",
                 "content.transformer.default.count",               "0",
                 "content.transformer.default.maxPages.use.XXX",   "88");
-
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -239,8 +229,6 @@ public class TransformerPropertyGetterTest
                 "content.transformer.default.priority",          "100",
                 "content.transformer.default.count",               "0",
                 "content.transformer.default.maxPages.use.XXX",   "88");
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(onlyChanges, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -273,8 +261,6 @@ public class TransformerPropertyGetterTest
         when(transformerRegistry.getTransformer("transformer.transformer1")).thenReturn(transformer1);
         when(transformerRegistry.getTransformer("transformer.transformer2")).thenReturn(transformer2);
         when(transformerRegistry.getTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {transformer1, transformer2}));
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
         
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -340,8 +326,6 @@ public class TransformerPropertyGetterTest
         {
             when(transformerRegistry.getTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {(ContentTransformer)simple}));
         }
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -390,9 +374,6 @@ public class TransformerPropertyGetterTest
             when(transformerRegistry.getTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {transformer1, transformer2, transformer3}));
         }
         when(transformerRegistry.getAllTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {complex, transformer1, transformer2, transformer3}));
-
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
@@ -449,9 +430,6 @@ public class TransformerPropertyGetterTest
             when(transformerRegistry.getTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {transformer1, transformer2}));
         }
         when(transformerRegistry.getAllTransformers()).thenReturn(Arrays.asList(new ContentTransformer[] {failover, transformer1, transformer2}));
-
-        when(transformerLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.log.entries=0");
-        when(transformerDebugLog.getPropertyAndValue(any(Properties.class))).thenReturn("# transformer.debug.entries=0");
 
         String actual = new TransformerPropertyGetter(false, transformerProperties,
                 mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();

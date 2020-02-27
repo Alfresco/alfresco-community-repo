@@ -25,37 +25,20 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
+
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 /**
- * Integration tests for {@link LegacyTransformClient}
+ * Contains common code used in TransformServiceRegistries.
+ *
+ * @author adavis
  */
-@Deprecated
-public class LegacySynchronousTransformClientIntegrationTest extends LocalSynchronousTransformClientIntegrationTest
+public abstract class AbstractTransformServiceRegistry implements TransformServiceRegistry
 {
-    @Autowired
-    protected SynchronousTransformClient legacySynchronousTransformClient;
-
-    @BeforeClass
-    public static void before()
+    @Override
+    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
     {
-        AbstractRenditionIntegrationTest.before();
-        legacy();
-    }
-
-    @AfterClass
-    public static void after()
-    {
-        AbstractRenditionIntegrationTest.after();
-    }
-
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
-        synchronousTransformClient = legacySynchronousTransformClient;
+        throw new UnsupportedOperationException("AbstractTransformServiceRegistry.findTransformerName(...) is not supported. Only supported in ");
     }
 }

@@ -41,7 +41,6 @@ import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.rendition2.LegacySynchronousTransformClient;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -64,16 +63,16 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
     private final List<ContentTransformer> dynamicTransformers = new ArrayList<ContentTransformer>();
 
     public TransformerConfigDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
-            MimetypeService mimetypeService, LegacySynchronousTransformClient legacySynchronousTransformClient, ContentTransformerRegistry transformerRegistry,
+            MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
             TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService,
             Properties globalProperties)
     {
-        createDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, legacySynchronousTransformClient,
+        createDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
                 transformerRegistry, transformerDebug, moduleService, descriptorService, globalProperties);
     }
 
     private void createDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
-            MimetypeService mimetypeService,  LegacySynchronousTransformClient legacySynchronousTransformClient, ContentTransformerRegistry transformerRegistry,
+            MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
             TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService,
             Properties globalProperties)
     {
@@ -125,10 +124,10 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
                             
                             AbstractContentTransformer2 transformer = property.suffix.equals(PIPELINE)
                                     ? createComplexTransformer(property, transformerConfig, mimetypeService,
-                                            legacySynchronousTransformClient, transformerRegistry, transformerDebug, available,
+                                            contentService, transformerRegistry, transformerDebug, available,
                                             globalProperties)
                                     : createFailoverTransformer(property, transformerConfig, mimetypeService,
-                                            transformerRegistry, transformerDebug, available,
+                                            contentService, transformerRegistry, transformerDebug, available,
                                             globalProperties);
                             transformer.register();
                             processed.add(property);
@@ -175,7 +174,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
 
     private AbstractContentTransformer2 createComplexTransformer(TransformerSourceTargetSuffixValue property,
             TransformerConfig transformerConfig,
-            MimetypeService mimetypeService, LegacySynchronousTransformClient legacySynchronousTransformClient,
+            MimetypeService mimetypeService, ContentService contentService,
             ContentTransformerRegistry transformerRegistry, TransformerDebug transformerDebug,
             boolean available, Properties globalProperties)
     {
@@ -193,11 +192,11 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
                 return getCommentNameAndAvailable(true); // suppress the ...available=false line as it is reported anyway if set
             }
         };
-        setupContentTransformer2(property, transformerConfig, mimetypeService,
+        setupContentTransformer2(property, transformerConfig, mimetypeService, contentService,
                 transformerRegistry, transformerDebug, available, transformer, transformers, globalProperties);
         
         // baseComplexContentTransformer
-        transformer.setLegacySynchronousTransformClient(legacySynchronousTransformClient);
+        transformer.setContentService(contentService);
         
         // ComplexContentTransformer
         transformer.setTransformers(transformers);
@@ -208,7 +207,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
 
     private AbstractContentTransformer2 createFailoverTransformer(TransformerSourceTargetSuffixValue property,
             TransformerConfig transformerConfig,
-            MimetypeService mimetypeService,
+            MimetypeService mimetypeService, ContentService contentService,
             ContentTransformerRegistry transformerRegistry, TransformerDebug transformerDebug,
             boolean available, Properties globalProperties)
     {
@@ -225,7 +224,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
                 return getCommentNameAndAvailable(true); // suppress the ...available=false line as it is reported anyway if set
             }
         };
-        setupContentTransformer2(property, transformerConfig, mimetypeService,
+        setupContentTransformer2(property, transformerConfig, mimetypeService, contentService,
                 transformerRegistry, transformerDebug, available, transformer, transformers, globalProperties);
         
         // FailoverContentTransformer
@@ -293,7 +292,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
     // Set properties common to ComplexContentTransformer and FailoverContentTransformer.
     private void setupContentTransformer2(TransformerSourceTargetSuffixValue property,
             TransformerConfig transformerConfig, MimetypeService mimetypeService,
-            ContentTransformerRegistry transformerRegistry,
+            ContentService contentService, ContentTransformerRegistry transformerRegistry,
             TransformerDebug transformerDebug, boolean available,
             AbstractContentTransformer2 transformer, List<ContentTransformer> transformers,
             Properties globalProperties)
@@ -312,7 +311,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
         
         // unregisteredBaseContentTransformer
         transformer.setMimetypeService(mimetypeService);
-        transformer.setTransformerDebug((LegacyTransformerDebug)transformerDebug);
+        transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
         transformer.setRegistry(transformerRegistry);
 

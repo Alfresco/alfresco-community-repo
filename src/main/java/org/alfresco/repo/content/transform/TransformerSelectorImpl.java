@@ -56,7 +56,7 @@ public class TransformerSelectorImpl implements TransformerSelector
 {
     private TransformerConfig transformerConfig;
     private ContentTransformerRegistry contentTransformerRegistry;
-    private LegacyTransformerDebug transformerDebug;
+    private TransformerDebug transformerDebug;
 
     public void setTransformerConfig(TransformerConfig transformerConfig)
     {
@@ -68,7 +68,7 @@ public class TransformerSelectorImpl implements TransformerSelector
         this.contentTransformerRegistry = contentTransformerRegistry;
     }
 
-    public void setTransformerDebug(LegacyTransformerDebug transformerDebug)
+    public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
     }

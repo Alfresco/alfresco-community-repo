@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * Tests for the {@link LockUtils} class.

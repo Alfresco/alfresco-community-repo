@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -66,7 +66,6 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
-import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -93,7 +92,6 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -102,6 +100,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -209,7 +208,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     private FileFolderService fileFolderService = null;
     private RenditionService2 renditionService2;
     private RenditionDefinitionRegistry2 renditionDefinitionRegistry2;
-    private SynchronousTransformClient synchronousTransformClient;
     private RetryingTransactionHelper retryingTransactionHelper = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
@@ -281,7 +279,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         this.scope = scope;
         renditionService2 = services.getRenditionService2();
         renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
-        synchronousTransformClient = services.getSynchronousTransformClient();
     }
     
     @Override
@@ -2745,31 +2742,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         // the delegate definition for transforming a document
         Transformer transformer = new AbstractTransformer()
         {
-            protected void doTransform(SynchronousTransformClient synchronousTransformClient, ContentReader reader, ContentWriter writer)
+            protected void doTransform(ContentService contentService,
+                ContentReader reader, ContentWriter writer)
             {
-                transformNodeRef(synchronousTransformClient, reader, writer, Collections.emptyMap(), sourceNodeRef);
+                TransformationOptions options = new TransformationOptions();
+                options.setSourceNodeRef(sourceNodeRef);
+                contentService.transform(reader, writer, options);
             }
         };
         
         return transformNode(transformer, mimetype, destination);
     }
-
-    private void transformNodeRef(SynchronousTransformClient synchronousTransformClient,
-                                  ContentReader reader, ContentWriter writer,
-                                  Map<String, String> actualOptions, NodeRef sourceNodeRef)
-    {
-        try
-        {
-            synchronousTransformClient.transform(reader, writer, actualOptions, null, sourceNodeRef);
-        }
-        catch (Exception e)
-        {
-            throw new ContentIOException("Content conversion failed: \n" +
-                    "   reader: " + reader + "\n" +
-                    "   writer: " + writer + "\n", e);
-        }
-    }
-
+    
     /**
      * Generic method to transform Node content from one mimetype to another.
      * 
@@ -2807,7 +2791,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.setEncoding(reader.getEncoding()); // original encoding
             
             // Try and transform the content using the supplied delegate
-            transformedNode = transformer.transform(synchronousTransformClient, copyNodeRef, reader, writer);
+            transformedNode = transformer.transform(contentService, copyNodeRef, reader, writer);
         }
         
         return transformedNode;
@@ -2880,16 +2864,17 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         // the delegate definition for transforming an image
         Transformer transformer = new AbstractTransformer()
         {
-            protected void doTransform(SynchronousTransformClient synchronousTransformClient, ContentReader reader, ContentWriter writer)
+            protected void doTransform(ContentService contentService,
+                ContentReader reader, ContentWriter writer)
             {
-                Map<String, String> actualOptions = Collections.emptyMap();
-                if (options != null || !options.trim().isEmpty())
+                ImageTransformationOptions imageOptions = new ImageTransformationOptions();
+                imageOptions.setSourceNodeRef(sourceNodeRef);
+
+                if (options != null)
                 {
-                    // TODO it might be possible to extract some of the 'known ones' into actualOptions.
-                    throw new IllegalArgumentException("ImageMagick commandOptions '"+options+
-                            "' may no longer be passed blindly to the transformer for security reasons.");
+                    imageOptions.setCommandOptions(options);
                 }
-                transformNodeRef(synchronousTransformClient, reader, writer, actualOptions, sourceNodeRef);
+                contentService.getImageTransformer().transform(reader, writer, imageOptions);
             }
         };
         
@@ -4170,27 +4155,27 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         /**
          * Transform the reader to the specified writer
          * 
-         * @param synchronousTransformClient
+         * @param contentService   ContentService
          * @param noderef          NodeRef of the destination for the transform
          * @param reader           Source reader
          * @param writer           Destination writer
-         *
+         * 
          * @return Node representing the transformed entity
          */
-        ScriptNode transform(SynchronousTransformClient synchronousTransformClient, NodeRef noderef,
+        ScriptNode transform(ContentService contentService, NodeRef noderef,
             ContentReader reader, ContentWriter writer);
     }
 
     private abstract class AbstractTransformer implements Transformer
     {
-        public ScriptNode transform(SynchronousTransformClient synchronousTransformClient, NodeRef nodeRef,
+        public ScriptNode transform(ContentService contentService, NodeRef nodeRef,
             ContentReader reader, ContentWriter writer)
         {
             ScriptNode transformedNode = null;
 
             try
             {
-                doTransform(synchronousTransformClient, reader, writer);
+                doTransform(contentService, reader, writer);
                 transformedNode = newInstance(nodeRef, services, scope);
             }
             catch (NoTransformerException e)
@@ -4220,7 +4205,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             return transformedNode;
         }
 
-        protected abstract void doTransform(SynchronousTransformClient synchronousTransformClient,
+        protected abstract void doTransform(ContentService contentService,
             ContentReader reader, ContentWriter writer);
     };
 

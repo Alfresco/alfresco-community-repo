@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,19 +26,17 @@
 
 package org.alfresco.repo.content.transform;
 
+import java.io.File;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
-
-import java.io.File;
-import java.util.Collections;
 
 /**
  * @see org.alfresco.repo.content.transform.EMLTransformer
@@ -67,7 +65,6 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     private EMLTransformer transformer;
 
     private ContentTransformerRegistry registry;
-    private SynchronousTransformClient synchronousTransformClient;
 
     @Override
     public void setUp() throws Exception
@@ -80,7 +77,6 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         transformer.setTransformerConfig(transformerConfig);
         
         registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
-        synchronousTransformClient = (SynchronousTransformClient) ctx.getBean("synchronousTransformClient");
     }
 
     @Override
@@ -140,7 +136,8 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         }
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-        assertTrue(synchronousTransformClient.isSupported(sourceMimetype, -1, null, targetMimetype, Collections.emptyMap(), null, null));
+        ContentTransformer transformer = serviceRegistry.getContentService().getTransformer(sourceMimetype, targetMimetype);
+        assertNotNull(transformer);
 
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
@@ -156,7 +153,7 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         // do the transformation
         sourceReader.setMimetype(sourceMimetype);
         targetWriter.setMimetype(targetMimetype);
-        synchronousTransformClient.transform(sourceReader, targetWriter, Collections.emptyMap(), null, null);
+        transformer.transform(sourceReader.getReader(), targetWriter);
 
         ContentReader targetReader = new FileContentReader(targetFile);
         assertTrue(targetReader.getSize() > 0);

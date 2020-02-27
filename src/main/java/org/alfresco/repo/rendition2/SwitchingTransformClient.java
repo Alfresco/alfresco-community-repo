@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.repo.rendition2.RenditionDefinition2;
+import org.alfresco.repo.rendition2.TransformClient;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -36,7 +38,7 @@ public class SwitchingTransformClient implements TransformClient
 {
     private final TransformClient primary;
     private final TransformClient secondary;
-    private ThreadLocal<TransformClient> transformClient = new ThreadLocal<>();
+    private ThreadLocal<Boolean> usePrimary = ThreadLocal.withInitial(()->Boolean.FALSE);
 
     public SwitchingTransformClient(TransformClient primary, TransformClient secondary)
     {
@@ -45,31 +47,30 @@ public class SwitchingTransformClient implements TransformClient
     }
 
     @Override
-    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl)
+    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long size, String contentUrl)
     {
         try
         {
-            primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
-            transformClient.set(primary);
+            usePrimary.set(true);
+            primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl);
         }
         catch (UnsupportedOperationException e)
         {
-            try
-            {
-                secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
-                transformClient.set(secondary);
-            }
-            catch (UnsupportedOperationException e2)
-            {
-                transformClient.set(null);
-                throw e2;
-            }
+            usePrimary.set(false);
+            secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, size, contentUrl);
         }
     }
 
     @Override
     public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
     {
-        transformClient.get().transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+        if (usePrimary.get())
+        {
+            primary.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+        }
+        else
+        {
+            secondary.transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+        }
     }
 }

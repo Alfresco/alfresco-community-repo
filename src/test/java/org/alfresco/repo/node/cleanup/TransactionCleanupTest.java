@@ -42,7 +42,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
-import org.alfresco.repo.domain.node.ibatis.NodeDAOImpl;
 import org.alfresco.repo.node.db.DeletedNodeCleanupWorker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -267,7 +266,7 @@ public class TransactionCleanupTest
             @Override
             public List<Transaction> execute() throws Throwable
             {
-                return ((NodeDAOImpl) nodeDAO).selectTxns(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, null, true);
+                return nodeDAO.getTxnsByCommitTimeAscending(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, false);
             }
         };
     	List<Transaction> txns = transactionService.getRetryingTransactionHelper().doInTransaction(getTxnsCallback, true, false);

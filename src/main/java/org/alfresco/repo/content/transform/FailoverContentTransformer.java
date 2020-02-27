@@ -137,7 +137,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
                 {
                     try
                     {
-                        ((LegacyTransformerDebug)transformerDebug).pushIsTransformableSize(this);
+                        transformerDebug.pushIsTransformableSize(this);
                         if (ct.isTransformableSize(sourceMimetype, sourceSize, targetMimetype, options))
                         {
                             result = true;
@@ -146,7 +146,7 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
                     }
                     finally
                     {
-                        ((LegacyTransformerDebug)transformerDebug).popIsTransformableSize();
+                        transformerDebug.popIsTransformableSize();
                     }
                 }
             }

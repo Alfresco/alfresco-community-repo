@@ -99,6 +99,5 @@
         <value>application/pdf</value>
       </list>
     </property>
-    <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
   </bean>
 </beans>

@@ -1,6 +1,6 @@
 {
   "transformOptions": {
-    "imageMagickOptions": [
+    "imagemagickOptions": [
       {"value": {"name": "alphaRemove"}},
       {"value": {"name": "autoOrient"}},
       {"value": {"name": "startPage"}},
@@ -34,12 +34,10 @@
     {
       "transformerName": "imagemagick",
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+        {"sourceMediaType": "image/tiff", "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
-        "imageMagickOptions"
+        "imagemagickOptions"
       ]
     },
     {
@@ -72,7 +70,7 @@
       ],
       "transformOptions": [
         "pdfRendererOptions",
-        "imageMagickOptions"
+        "imagemagickOptions"
       ]
     }
   ]

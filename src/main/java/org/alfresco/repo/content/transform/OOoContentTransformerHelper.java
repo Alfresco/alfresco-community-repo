@@ -57,7 +57,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
 {
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
-    protected LegacyTransformerDebug transformerDebug;
+    protected TransformerDebug transformerDebug;
     private static final int JODCONVERTER_TRANSFORMATION_ERROR_CODE = 3088;
 
     protected RemoteTransformerClient remoteTransformerClient;
@@ -86,7 +86,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
      * Helper setter of the transformer debug. 
      * @param transformerDebug TransformerDebug
      */
-    public void setTransformerDebug(LegacyTransformerDebug transformerDebug)
+    public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
     }

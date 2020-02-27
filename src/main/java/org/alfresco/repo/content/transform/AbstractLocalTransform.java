@@ -84,7 +84,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
                                           String sourceMimetype, String targetMimetype,
                                           String sourceExtension, String targetExtension,
                                           String renditionName, NodeRef sourceNodeRef)
-            throws UnsupportedTransformationException, ContentIOException;
+                                          throws Exception;
 
     public String getName()
     {
@@ -99,6 +99,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
     @Override
     public void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
                           String renditionName, NodeRef sourceNodeRef)
+            throws Exception
     {
         if (isAvailable())
         {
@@ -143,16 +144,17 @@ public abstract class AbstractLocalTransform implements LocalTransform
 
     private void transformWithDebug(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
                                     String renditionName, NodeRef sourceNodeRef, String sourceMimetype, String targetMimetype,
-                                    String sourceExtension, String targetExtension)
+                                    String sourceExtension, String targetExtension) throws Exception
     {
+
         try
         {
             depth.set(depth.get()+1);
 
             if (transformerDebug.isEnabled())
             {
-                transformerDebug.pushTransform("Local:"+name, reader.getContentUrl(), sourceMimetype,
-                        targetMimetype, reader.getSize(), transformOptions, renditionName, sourceNodeRef);
+                transformerDebug.pushTransform(name, reader.getContentUrl(), sourceMimetype,
+                        targetMimetype, reader.getSize(), renditionName, sourceNodeRef);
             }
 
             strictMimetypeCheck(reader, sourceNodeRef, sourceMimetype);
@@ -171,6 +173,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
     }
 
     private void strictMimetypeCheck(ContentReader reader, NodeRef sourceNodeRef, String declaredMimetype)
+            throws UnsupportedTransformationException
     {
         if (mimetypeService != null && strictMimeTypeCheck && depth.get() == 1)
         {
@@ -219,7 +222,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
 
     private void retryWithDifferentMimetype(ContentReader reader, ContentWriter writer, String targetMimetype,
                                             Map<String, String> transformOptions, String renditionName,
-                                            NodeRef sourceNodeRef, Throwable e)
+                                            NodeRef sourceNodeRef, Throwable e) throws Exception
     {
         if (mimetypeService != null && localTransformServiceRegistry != null)
         {
@@ -235,7 +238,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
             }
             else
             {
-                transformerDebug.debug("          Failed: Mimetype was '" + differentType + "'", e);
+                transformerDebug.debug("          Failed: Mime type was '" + differentType + "'", e);
                 String claimedMimetype = reader.getMimetype();
 
                 if (retryTransformOnDifferentMimeType)

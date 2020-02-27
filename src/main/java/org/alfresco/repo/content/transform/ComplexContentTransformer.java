@@ -39,8 +39,8 @@ import java.util.Map;
 import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.rendition2.LegacySynchronousTransformClient;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
@@ -84,7 +84,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     private List<ContentTransformer> transformers;
     private List<String> intermediateMimetypes;
     private Map<String,Serializable> transformationOptionOverrides;
-    private LegacySynchronousTransformClient legacySynchronousTransformClient;
+    private ContentService contentService;
 
     public ComplexContentTransformer()
     {
@@ -93,11 +93,13 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
     /**
      * The list of transformers to use. If any element is null
      * all possible transformers will be considered. If any element
-     * is null, the legacySynchronousTransformClient property must be set.
+     * is null, the contentService property must be set.
      * <p>
      * If a single transformer is supplied, then it will still be used.
      * 
      * @param transformers list of <b>at least one</b> transformer
+     * 
+     * @see #setContentService(ContentService)
      */
     public void setTransformers(List<ContentTransformer> transformers)
     {
@@ -133,9 +135,14 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         this.transformationOptionOverrides = transformationOptionOverrides;
     }
 
-    public void setLegacySynchronousTransformClient(LegacySynchronousTransformClient legacySynchronousTransformClient)
+    /**
+     * Sets the ContentService. Only required if {@code null} transformers
+     * are provided to {@link #setTransformers(List)}.
+     * @param contentService
+     */
+    public void setContentService(ContentService contentService)
     {
-        this.legacySynchronousTransformClient = legacySynchronousTransformClient;
+        this.contentService = contentService;
     }
 
    /**
@@ -160,9 +167,9 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
         {
             if (transformer == null)
             {
-                if (legacySynchronousTransformClient == null)
+                if (contentService == null)
                 {
-                    throw new AlfrescoRuntimeException("'legacySynchronousTransformClient' is a required property if " +
+                    throw new AlfrescoRuntimeException("'contentService' is a required property if " +
                                 "there are any null (dynamic) transformers");
                 }
                 break;
@@ -290,7 +297,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                 {
                     parentTransformers.get().push(this);
                     @SuppressWarnings("deprecation")
-                    List<ContentTransformer> firstTansformers = legacySynchronousTransformClient.getActiveTransformers(
+                    List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
                             currentSourceMimetype, -1, currentTargetMimetype, options);
                     if (firstTansformers.isEmpty())
                     {
@@ -337,7 +344,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                 {
                     parentTransformers.get().push(this);
                     @SuppressWarnings("deprecation")
-                    List<ContentTransformer> firstTansformers = legacySynchronousTransformClient.getActiveTransformers(
+                    List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
                             sourceMimetype, -1, firstTargetMimetype, options);
                     pageLimitSupported = !firstTansformers.isEmpty();
                     if (pageLimitSupported)
@@ -390,7 +397,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
             {
                 parentTransformers.get().push(this);
                 @SuppressWarnings("deprecation")
-                List<ContentTransformer> firstTansformers = legacySynchronousTransformClient.getActiveTransformers(
+                List<ContentTransformer> firstTansformers = contentService.getActiveTransformers(
                         sourceMimetype, -1, firstTargetMimetype, options);
                 if (!firstTansformers.isEmpty())
                 {
@@ -473,7 +480,7 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
                     try
                     {
                         parentTransformers.get().push(this);
-                        legacySynchronousTransformClient.transform(currentReader, currentWriter, options);
+                        contentService.transform(currentReader, currentWriter, options);
                     }
                     finally
                     {

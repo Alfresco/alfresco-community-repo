@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -76,8 +76,9 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     }
 
     @Test
-    public void testRenderPagesToJpeg() throws Exception
+    public void testLocalRenderPagesToJpeg() throws Exception
     {
+        legacyTransformServiceRegistry.setEnabled(false);
         new RenditionDefinition2Impl("pagesToJpeg", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
         try
         {
@@ -91,8 +92,9 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     }
 
     @Test
-    public void testReloadOfStaticDefinitions()
+    public void testReloadOfStaticDefinitions() throws Exception
     {
+        legacyTransformServiceRegistry.setEnabled(false);
         new RenditionDefinition2Impl("dynamic1", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
         new RenditionDefinition2Impl("dynamic2", "image/jpeg", new HashMap<>(), true, renditionDefinitionRegistry2 );
         new RenditionDefinition2Impl("static1", "image/jpeg", new HashMap<>(), false, renditionDefinitionRegistry2 );
@@ -120,43 +122,43 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     }
 
     @Test
-    public void testRenderDocxJpegMedium() throws Exception
+    public void testLocalRenderDocxJpegMedium() throws Exception
     {
         checkClientRendition("quick.docx", "medium", true);
     }
 
     @Test
-    public void testRenderDocxDoclib() throws Exception
+    public void testLocalRenderDocxDoclib() throws Exception
     {
         checkClientRendition("quick.docx", "doclib", true);
     }
 
     @Test
-    public void testRenderDocxJpegImgpreview() throws Exception
+    public void testLocalRenderDocxJpegImgpreview() throws Exception
     {
         checkClientRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
-    public void testRenderDocxPngAvatar() throws Exception
+    public void testLocalRenderDocxPngAvatar() throws Exception
     {
         checkClientRendition("quick.docx", "avatar", true);
     }
 
     @Test
-    public void testRenderDocxPngAvatar32() throws Exception
+    public void testLocalRenderDocxPngAvatar32() throws Exception
     {
         checkClientRendition("quick.docx", "avatar32", true);
     }
 
     @Test
-    public void testRenderDocxFlashWebpreview() throws Exception
+    public void testLocalRenderDocxFlashWebpreview() throws Exception
     {
         checkClientRendition("quick.docx", "webpreview", false);
     }
 
     @Test
-    public void testRenderDocxPdf() throws Exception
+    public void testLocalRenderDocxPdf() throws Exception
     {
         checkClientRendition("quick.docx", "pdf", false);
     }
@@ -164,7 +166,9 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     @Test
     public void testRetryOnDifferentMimetype() throws Exception
     {
-        boolean expectedToPass = transformClient.getClass().isInstance(LocalTransformClient.class);
+        boolean expectedToPass = true;
+        if(!transformClient.getClass().isInstance(LocalTransformClient.class))
+                expectedToPass = false;
 
         // File is actually an image masked as docx
         checkClientRendition("quick-differentMimetype.docx", "pdf", expectedToPass);
@@ -176,7 +180,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
         checkClientRendition("quickMaskedHtml.jpeg", "avatar32", false);
     }
 
-    private void checkClientRendition(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws InterruptedException
+    protected void checkClientRendition(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws InterruptedException
     {
         if (expectedToPass)
         {

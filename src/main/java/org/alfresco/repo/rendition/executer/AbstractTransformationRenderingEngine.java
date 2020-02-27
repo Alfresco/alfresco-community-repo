@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,7 +29,6 @@ package org.alfresco.repo.rendition.executer;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -37,12 +36,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.transform.ContentTransformer;
+import org.alfresco.repo.content.transform.TransformerConfig;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 
 import org.alfresco.repo.rendition2.RenditionService2Impl;
-import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -55,7 +54,6 @@ import org.alfresco.service.cmr.rendition.RenditionServiceException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NoTransformerException;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
@@ -118,10 +116,11 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     /**
      * This optional {@link String} parameter specifies the type (or use) of the rendition.
      */
-    public static final String PARAM_USE = ".use.".replaceAll("\\.", "");
+    public static final String PARAM_USE = TransformerConfig.USE.replaceAll("\\.", "");
 
     /* Error messages */
-    private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = "Content not transformable for '%s' source mime type and '%s' target mime type with options: '%s'. Operation can't be performed";
+    private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type was not found. Operation can't be performed";
+    private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = "Content not transformable for '%s' source mime type and '%s' target mime type. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = RenditionService2Impl.TRANSFORMING_ERROR_MESSAGE;
     
     private Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers;
@@ -141,10 +140,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
      * transforms.
      */
     private ExecutorService executorService;
-
-    private SynchronousTransformClient synchronousTransformClient;
-    private TransformationOptionsConverter converter;
-
+    
     /**
      * Gets the <code>ExecutorService</code> to be used for cancel-aware
      * transforms.
@@ -159,17 +155,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     {
         return executorService;
     }
-
-    public void setSynchronousTransformClient(SynchronousTransformClient synchronousTransformClient)
-    {
-        this.synchronousTransformClient = synchronousTransformClient;
-    }
-
-    public void setConverter(TransformationOptionsConverter converter)
-    {
-        this.converter = converter;
-    }
-
+    
     public void init()
     {
         super.init();
@@ -188,24 +174,37 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     {
         ContentReader contentReader = context.makeContentReader();
         // There will have been an exception if there is no content data so contentReader is not null.
-        String contentUrl = contentReader.getContentUrl();
+        String sourceUrl = contentReader.getContentUrl();
         String sourceMimeType = contentReader.getMimetype();
         String targetMimeType = getTargetMimeType(context);
 
         // The child NodeRef gets created here
-        TransformationOptions transformationOptions = getTransformOptions(context);
+        TransformationOptions options = getTransformOptions(context);
 
-        long sourceSizeInBytes = contentReader.getSize();
-        Map<String, String> options = converter.getOptions(transformationOptions);
-        NodeRef sourceNodeRef = transformationOptions.getSourceNodeRef();
-        if (!synchronousTransformClient.isSupported(sourceMimeType, sourceSizeInBytes, contentUrl, targetMimeType,
-                options, null, sourceNodeRef))
+        // Log the following getTransform() as trace so we can see the wood for the trees
+        ContentTransformer transformer;
+        boolean orig = TransformerDebug.setDebugOutput(false);
+        try
         {
-            String optionsString = TransformerDebug.toString(options);
-            throw new RenditionServiceException(String.format(NOT_TRANSFORMABLE_MESSAGE_PATTERN, sourceMimeType,
-                    targetMimeType, optionsString));
+            transformer = this.contentService.getTransformer(sourceUrl, sourceMimeType, contentReader.getSize(), targetMimeType, options);
+        }
+        finally
+        {
+            TransformerDebug.setDebugOutput(orig);
+        }
+        
+        if (null == transformer)
+        {
+            // There's no transformer available for the requested rendition!
+            throw new RenditionServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimeType,
+                        targetMimeType));
         }
 
+        if (!transformer.isTransformable(sourceMimeType, contentReader.getSize(), targetMimeType, options))
+        {
+            throw new RenditionServiceException(String.format(NOT_TRANSFORMABLE_MESSAGE_PATTERN, sourceMimeType, targetMimeType));
+        }
+        
         long startTime = new Date().getTime();
         boolean actionCancelled = false;
         boolean actionCompleted = false;
@@ -227,7 +226,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
 
         // Call the transform in a different thread so we can move on if cancelled
         FutureTask<ContentWriter> transformTask = new FutureTask<ContentWriter>(
-                new TransformationCallable(contentReader, targetMimeType, transformationOptions, context,
+                new TransformationCallable(contentReader, targetMimeType, options, context, 
                         AuthenticationUtil.getFullyAuthenticatedUser()));
         getExecutorService().execute(transformTask);
         
@@ -243,8 +242,8 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                     break;
                 }
                 // Check timeout in case transformer doesn't obey it
-                if (transformationOptions.getTimeoutMs() > 0 &&
-                        new Date().getTime() - startTime > (transformationOptions.getTimeoutMs() + CANCELLED_ACTION_POLLING_INTERVAL))
+                if (options.getTimeoutMs() > 0 && 
+                        new Date().getTime() - startTime > (options.getTimeoutMs() + CANCELLED_ACTION_POLLING_INTERVAL))
                 {
                     // We hit a timeout, let the transform thread continue but results will be ignored
                     if (logger.isDebugEnabled())
@@ -419,16 +418,16 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     {
         private ContentReader contentReader;
         private String targetMimeType;
-        private Map<String, String> options;
+        private TransformationOptions options;
         private RenderingContext context;
         private String initiatingUsername;
-
+        
         public TransformationCallable(ContentReader contentReader, String targetMimeType,
-                                      TransformationOptions transformationOptions, RenderingContext context, String initiatingUsername)
+                TransformationOptions options, RenderingContext context, String initiatingUsername)
         {
             this.contentReader = contentReader;
             this.targetMimeType = targetMimeType;
-            this.options = converter.getOptions(transformationOptions);
+            this.options = options;
             this.context = context;
             this.initiatingUsername = initiatingUsername;
         }
@@ -447,12 +446,10 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 {
                     // ALF-15715: Use temporary write to avoid operating on the real node for fear of row locking while long transforms are in progress
                     ContentWriter tempContentWriter = contentService.getTempWriter();
-                    NodeRef sourceNode = context.getSourceNode();
                     tempContentWriter.setMimetype(targetMimeType);
                     try
                     {
-                        synchronousTransformClient.transform(contentReader, tempContentWriter, options,
-                                null, sourceNode);
+                        contentService.transform(contentReader, tempContentWriter, options);
                         return tempContentWriter;
                     }
                     catch (NoTransformerException|UnsupportedTransformationException ntx)

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.security.sync;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
@@ -59,8 +58,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
@@ -125,8 +122,6 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     
     /** The value given to the person service. */
     private boolean homeFolderCreationEager;
-
-    private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizerTest.class);
 
     /*
      * (non-Javadoc)
@@ -876,7 +871,6 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         try
         {
-            logger.info("testSyncDeletedProperty executing..");
             // Execute an LDAP sync where the AD server returns the attributes of a person, including the 'mail' property.
             executeMockedLDAPSyncWithActiveDirectoryEmailProp();
 
@@ -893,10 +887,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
         finally
         {
-            logger.info("testSyncDeletedProperty executing finally");
-
             tearDownTestUsersAndGroups();
-            logger.info("testSyncDeletedProperty finished finally");
         }
     }
     
@@ -953,7 +944,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         when(mockedNamingEnumeration.next()).thenReturn(mockedSearchResult);
 
         InitialDirContext mockedInitialDirContext = mock(InitialDirContext.class);
-        when(mockedInitialDirContext.search((String)any(), anyString(), any(SearchControls.class))).thenReturn(mockedNamingEnumeration);
+        when(mockedInitialDirContext.search(any(String.class), any(String.class), any(SearchControls.class))).thenReturn(mockedNamingEnumeration);
 
         LDAPInitialDirContextFactoryImpl mockedLdapInitialDirContextFactory = mock(LDAPInitialDirContextFactoryImpl.class);
         when(mockedLdapInitialDirContextFactory.getDefaultIntialDirContext(0)).thenReturn(mockedInitialDirContext);

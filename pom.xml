@@ -240,7 +240,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20160212</version>
+            <version>20090211</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.icu</groupId>

@@ -135,8 +135,11 @@ public class QuickShareContentGet extends ContentGet implements ServletContextAw
                     {
                         throw new InvalidNodeRefException(nodeRef);
                     }
-                    
-                    executeImpl(nodeRef, params, req, res, null);
+
+                    // MNT-21118 (XSS prevention)
+                    // Force the attachment in case of asking for the content file only
+                    // (will be overridden for thumbnails)
+                    executeImpl(nodeRef, params, req, res, null, true);
                     
                     return null;
                 }
@@ -160,7 +163,7 @@ public class QuickShareContentGet extends ContentGet implements ServletContextAw
         }
     }
 	
-	protected void executeImpl(NodeRef nodeRef, Map<String, String> templateVars, WebScriptRequest req, WebScriptResponse res, Map<String, Object> model) throws IOException
+	protected void executeImpl(NodeRef nodeRef, Map<String, String> templateVars, WebScriptRequest req, WebScriptResponse res, Map<String, Object> model, boolean attach) throws IOException
 	{
 	    // render content
         QName propertyQName = ContentModel.PROP_CONTENT;
@@ -177,10 +180,7 @@ public class QuickShareContentGet extends ContentGet implements ServletContextAw
                 propertyQName = QName.createQName(propertyName, namespaceService);
             }
         }
-        
-        // determine attachment
-        boolean attach = Boolean.valueOf(req.getParameter("a"));
-        
+
         // Stream the content
         streamContentLocal(req, res, nodeRef, attach, propertyQName, model);
 	}

@@ -108,7 +108,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private final static String TEST_MIMETYPE_JPEG = MimetypeMap.MIMETYPE_IMAGE_JPEG;
     private final static String TEST_MIMETYPE_PNG = MimetypeMap.MIMETYPE_IMAGE_PNG;
     private static File quickFile = null;
-    
+
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private NodeService nodeService;
@@ -356,6 +356,28 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         NodeRef copyNodeRef = copyFileInfo.getNodeRef();
         
         assertFalse(nodeService.hasAspect(copyNodeRef, QuickShareModel.ASPECT_QSHARE));
+    }
+
+    public void testContentDispositionInResponseHeader() throws IOException, JSONException
+    {
+        checkTransformer();
+
+        String testNodeRef_3 = testNode.toString().replace("://", "/");
+
+        // Thumbnail creation by user one to genuinely create the thumbnail and allow the sharedId to get it
+        sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), 200, USER_ONE);
+
+        Response rsp = sendRequest(new PostRequest(SHARE_URL.replace("{node_ref_3}", testNodeRef_3), "", APPLICATION_JSON), 200, USER_ONE);
+        JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        String sharedId = jsonRsp.getString("sharedId");
+
+        // In case of requesting the content only, Content-Disposition should be present to force browsers to download the file
+        rsp = sendRequest(new GetRequest(SHARE_CONTENT_URL.replace("{shared_id}", sharedId)), 200, USER_TWO);
+        assertNotNull("The response should contain a Content-Disposition entry in the header", rsp.getHeader("Content-Disposition"));
+
+        // In case of requesting the thumbnail, Content-Disposition should not be present
+        rsp = sendRequest(new GetRequest(SHARE_CONTENT_THUMBNAIL_URL.replace("{shared_id}", sharedId).replace("{thumbnailname}", "doclib")), 200, USER_TWO);
+        assertNull("The response should not contain a Content-Disposition entry in the header", rsp.getHeader("Content-Disposition"));
     }
     
     private void createUser(String userName)

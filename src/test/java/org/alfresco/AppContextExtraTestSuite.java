@@ -73,6 +73,7 @@ import org.junit.runners.Suite;
     // [classpath:alfresco/application-context.xml]
     org.alfresco.repo.webdav.GetMethodRegressionTest.class,
     org.alfresco.repo.webdav.WebDAVHelperIntegrationTest.class,
+    org.alfresco.repo.web.scripts.person.UserCSVUploadTest.class,
 
     // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context.xml,
     // classpath:alfresco/web-scripts-application-context-test.xml,

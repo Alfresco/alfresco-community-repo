@@ -155,6 +155,33 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
             AuditApp auditApp = auditAppsProxy.getAuditApp(appId);
             validateAuditApplicationFields(auditApp);
         }
+
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
+            HashMap <String, String> params = new HashMap<>();
+
+            // Get only minimum record id
+            params.put("include", "min");
+            auditApp = auditAppsProxy.getAuditApp(auditApp.getId(), params, HttpServletResponse.SC_OK);
+            validateAuditApplicationFields(auditApp, params);
+
+            // Get minimum and maximum record id
+            params.put("include", "max,min");
+            auditApp = auditAppsProxy.getAuditApp(auditApp.getId(), params, HttpServletResponse.SC_OK);
+            validateAuditApplicationFields(auditApp, params);
+
+            // Get with invalid include parameters
+            params.put("include", "test,test1,test2");
+            auditApp = auditAppsProxy.getAuditApp(auditApp.getId(), params, HttpServletResponse.SC_OK);
+            validateAuditApplicationFields(auditApp, params);
+
+            // Get with duplicate params
+            params.put("include", "max,max");
+            auditApp = auditAppsProxy.getAuditApp(auditApp.getId(), params, HttpServletResponse.SC_OK);
+            validateAuditApplicationFields(auditApp, params);
+        }
     }
 
     private void testGetAuditAppsSkipPaging() throws Exception 
@@ -227,6 +254,21 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         assertFalse(auditApp.getId().isEmpty());
         assertFalse(auditApp.getName().isEmpty());
         assertTrue(auditApp.getIsEnabled());
+    }
+
+    private void validateAuditApplicationFields(AuditApp auditApp, HashMap<String, String> params)
+    {
+        validateAuditApplicationFields(auditApp);
+
+        if (params.get("include").contains("max"))
+        {
+            assertNotNull(auditApp.getMaxEntryId());
+        }
+
+        if (params.get("include").contains("min"))
+        {
+            assertNotNull(auditApp.getMinEntryId());
+        }
     }
 
     private void validateAuditEntryFields(AuditEntry auditEntry, AuditApp auditApp) 

@@ -194,7 +194,7 @@ public class FavouritesImpl implements Favourites
 
     private Map<String, Object> filterProps(Map<String, Object> properties, List<QName> toRemove)
     {
-        Map<String, Object> filteredProps = new HashMap<>(properties);
+        Map<String, Object> filteredProps = properties == null ? new HashMap<>() : new HashMap<>(properties);
         List<String> propsToRemove = toRemove.stream().map(e -> e.toPrefixString(namespaceService)).collect(Collectors.toList());
         filteredProps.keySet().removeAll(propsToRemove);
         return filteredProps;

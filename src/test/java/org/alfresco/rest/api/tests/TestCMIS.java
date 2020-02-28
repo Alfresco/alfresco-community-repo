@@ -3217,4 +3217,88 @@ public class TestCMIS extends EnterpriseTestApi
             fail("The following property names were repeated: "+sj);
         }
     }
+
+    /**
+     * <p>Related to REPO-4613.</p>
+     * <p>A checkout should not lock the private working copy.</p>
+     * <p>Adding aspects or properties to a pwc should remain possible after a checkout.</p>
+     * @throws Exception
+     */
+    @Test
+    public void aPrivateCopyShouldAllowTheAdditionOfAspects_CMIS_1_1_Version() throws Exception
+    {
+        final String aspectName = "P:cm:summarizable";
+        final String propertyName = "cm:summary";
+        final String propertyValue = "My summary";
+
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
+                return folderNodeRef;
+            }
+        }, person1Id, network1.getId());
+
+        // Create a document...
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
+        Folder folder = (Folder) cmisSession.getObjectByPath(String.format(DOCUMENT_LIBRARY_PATH_PATTERN, siteName));
+        String fileName = String.format(TEST_DOCUMENT_NAME_PATTERN, GUID.generate());
+
+        // Create a document...
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
+        HashMap<String, Object> props = new HashMap<>();
+        props.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+        props.put(PropertyIds.NAME, fileName);
+
+        final ContentStream cs = new ContentStreamImpl(fileName, "text/plain",
+                "This is just a test");
+
+        final Document document = folder.createDocument(props, cs, VersioningState.MAJOR);
+
+        ObjectId pwcObjectId = document.checkOut();
+
+        CmisObject cmisObject = cmisSession.getObject(pwcObjectId.getId());
+        final Document pwc = (Document) cmisObject;
+
+        List<Object> aspects = pwc.getProperty(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+
+        // asserts that we have the right aspect for the private working copy
+        assertTrue(aspects.contains("P:cm:workingcopy"));
+
+        aspects.add(aspectName);
+
+        props = new HashMap<>();
+        props.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, aspects);
+        props.put(propertyName, propertyValue);
+
+
+        pwc.updateProperties(props);
+
+        final ObjectId id = pwc.checkIn(true, null, null, "CheckIn comment");
+        Document checkedInDocument = (Document) cmisSession.getObject(id.getId());
+
+        List<String> secondaryTypeIds = checkedInDocument.getPropertyValue(PropertyIds.SECONDARY_OBJECT_TYPE_IDS);
+
+        // asserts the new aspect has been added to the original copy, via the check in from the private copy
+        assertTrue(secondaryTypeIds.contains(aspectName));
+        assertEquals(checkedInDocument.getPropertyValue(propertyName),  propertyValue);
+    }
 }

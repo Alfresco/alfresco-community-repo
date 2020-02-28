@@ -1,0 +1,3 @@
+User Name,First Name,Last Name,E-mail Address,,Password,Company,Job Title,Location,Telephone,Mobile,Skype,IM,Google User Name,Address,Address Line 2,Address Line 3,Post Code,Telephone,Fax,Email
+MNT-171990-user-with-no-password,user1,user1,user1171990@alfresco.com,,
+MNT-171990-user-with-password,user2,user2,user2171990@alfresco.com,,user2

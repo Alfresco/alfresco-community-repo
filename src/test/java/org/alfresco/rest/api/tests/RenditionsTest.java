@@ -35,8 +35,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Ordering;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
+import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -54,7 +54,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
@@ -98,11 +97,13 @@ public class RenditionsTest extends AbstractBaseApiTest
     private final static long DELAY_IN_MS = 500;
 
     protected static ContentService contentService;
+    private static SynchronousTransformClient synchronousTransformClient;
 
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
+        synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -967,17 +968,7 @@ public class RenditionsTest extends AbstractBaseApiTest
      */
     protected boolean isOpenOfficeAvailable()
     {
-        ContentTransformer transformer = contentService.getTransformer(null, MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF,
-                new TransformationOptions());
-
-        // A transformer may not be returned here if it is unavailable.
-        if (transformer == null)
-        {
-            return false;
-        }
-
-        // Maybe it's non-null, but not available.
-        boolean isTransformable = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_PDF, null);
-        return isTransformable;
+        return synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_WORD, -1, null,
+                MimetypeMap.MIMETYPE_PDF, Collections.emptyMap(), null, null);
     }
 }

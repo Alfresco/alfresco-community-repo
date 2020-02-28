@@ -25,26 +25,18 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
-import org.alfresco.repo.content.transform.ComplexContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformer;
-import org.alfresco.repo.content.transform.ContentTransformerRegistry;
-import org.alfresco.repo.content.transform.ContentTransformerWorker;
-import org.alfresco.repo.content.transform.ProxyContentTransformer;
+import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -52,66 +44,20 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 
 /**
- * Lists mimetypes, and optionally their associated content transformers
- *  and metadata extractors.
+ * Lists mimetypes.
  * 
  * @author Nick Burch
  * @since 3.4.b
  */
-public class MimetypesGet extends DeclarativeWebScript implements ApplicationContextAware, InitializingBean
+public class MimetypesGet extends DeclarativeWebScript
 {
     public static final String MODEL_MIMETYPES = "mimetypes";
     public static final String MODEL_EXTENSIONS = "extensions";
     public static final String MODEL_MIMETYPE_DETAILS = "details";
    
-    private ApplicationContext applicationContext;
     private MimetypeService mimetypeService;
-    private ContentTransformerRegistry contentTransformerRegistry;
+    private TransformServiceRegistry localTransformServiceRegistry;
     private MetadataExtracterRegistry metadataExtracterRegistry;
-    
-    private Map<String, String> knownWorkerBeanLabels;
-    private Map<ContentTransformerWorker, String> knownWorkers;
-
-    protected static final String JOD_WORKER_BEAN = "transformer.worker.JodConverter";
-    protected static final String RTS_WORKER_BEAN = "transformer.worker.remoteServer";
-    
-    protected static final String PROXY_LABEL_DEFAULT_MESSAGE = "Proxy via: {0} ({1})";
-    
-    /**
-     * Uses the context to find OpenOffice related beans.
-     * Allows us to work more cleanly on Community and Enterprise
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-         throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        // If no override has been supplied use the default known list
-        if (knownWorkerBeanLabels == null)
-        {
-            knownWorkerBeanLabels = new HashMap<String, String>();
-            knownWorkerBeanLabels.put(JOD_WORKER_BEAN, "Using JOD Converter / Open Office");
-            knownWorkerBeanLabels.put(RTS_WORKER_BEAN, "Using the Remote Transformation Server v{1}");
-        }
-        
-        // Build the map of known worker bean instances to bean names
-        knownWorkers = new HashMap<ContentTransformerWorker, String>();
-        for (String workerName : knownWorkerBeanLabels.keySet())
-        {
-            if(applicationContext.containsBean(workerName))
-            {
-                Object bean = applicationContext.getBean(workerName);
-                if(bean instanceof ContentTransformerWorker)
-                {
-                    knownWorkers.put((ContentTransformerWorker) bean, workerName);
-                }
-            }
-        }
-    }
 
     /**
      * Sets the Mimetype Service to be used to get the
@@ -121,13 +67,9 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        this.mimetypeService = mimetypeService;
     }
 
-    /**
-     * Sets the Content Transformer Registry to be used to
-     *  decide what transformations exist
-     */
-    public void setContentTransformerRegistry(
-         ContentTransformerRegistry contentTransformerRegistry) {
-       this.contentTransformerRegistry = contentTransformerRegistry;
+    public void setLocalTransformServiceRegistry(TransformServiceRegistry localTransformServiceRegistry)
+    {
+        this.localTransformServiceRegistry = localTransformServiceRegistry;
     }
 
     /**
@@ -139,16 +81,6 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        this.metadataExtracterRegistry = metadataExtracterRegistry;
     }
     
-    /**
-     * Sets the map of content transformer worker bean names to
-     * message formatting labels
-     * 
-     */
-    public void setKnownWorkerBeanLabels(Map<String, String> knownWorkerBeanLabels)
-    {
-        this.knownWorkerBeanLabels = knownWorkerBeanLabels;
-    }
-
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -200,6 +132,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        }
        return exts;
     }
+
     protected List<String> getTransformersFrom(String mimetype, long sourceSize, List<String> allMimetypes)
     {
        List<String> transforms = new ArrayList<String>();
@@ -214,6 +147,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        }
        return transforms;
     }
+
     protected List<String> getTransformersTo(String mimetype, long sourceSize, List<String> allMimetypes)
     {
        List<String> transforms = new ArrayList<String>();
@@ -228,78 +162,10 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
        }
        return transforms;
     }
+
     /** Note - for now, only does the best one, not all */
     protected String getTransformer(String from, long sourceSize, String to)
     {
-       ContentTransformer ct = contentTransformerRegistry.getTransformer(
-             from, sourceSize, to, new TransformationOptions()
-       );
-       if(ct == null)
-          return null;
-       
-       if(ct instanceof ComplexContentTransformer)
-       {
-          return getComplexTransformerLabel((ComplexContentTransformer)ct);
-       }
-       
-       if(ct instanceof ProxyContentTransformer)
-       {
-          String proxyLabel = getProxyTransformerLabel((ProxyContentTransformer)ct);
-          if (proxyLabel != null)
-          {
-              return proxyLabel;
-          }
-       }
-       
-       return ct.getClass().getName();
+        return localTransformServiceRegistry.findTransformerName(from, sourceSize, to, Collections.emptyMap(), null);
     }
-    
-    /**
-     * Gets the display label for complex transformers
-     *
-     * @param cct ComplexContentTransformer
-     * @return the transformer display label
-     */
-    protected String getComplexTransformerLabel(ComplexContentTransformer cct)
-    {
-        String text = "Complex via: ";
-        for(String imt : cct.getIntermediateMimetypes()) {
-           text += imt + " ";
-        }
-        return text;
-    }
-    
-    /**
-     * Gets the display label for proxy content transformers
-     * 
-     * @param pct ProxyContentTransformer
-     * @return the transformer display label
-     */
-    protected String getProxyTransformerLabel(ProxyContentTransformer pct)
-    {
-        ContentTransformerWorker ctw = pct.getWorker();
-        
-        String message = PROXY_LABEL_DEFAULT_MESSAGE;
-        
-        String beanName = getWorkerBeanName(ctw);
-        if (beanName != null)
-        {
-            message = knownWorkerBeanLabels.get(beanName);
-        }
-        return MessageFormat.format(message, ctw.getClass().getName(), ctw.getVersionString());
-    }
-    
-    /**
-     * Gets the given ContentTransformerWorker's bean name from the cache of known workers
-     * <p>
-     * In the future ContentTransformerWorker may be made bean name aware.
-     * 
-     * @param ctw ContentTransformerWorker
-     * @return the bean name
-     */
-    protected String getWorkerBeanName(ContentTransformerWorker ctw)
-    {
-        return knownWorkers.get(ctw);
-    }
-
 }

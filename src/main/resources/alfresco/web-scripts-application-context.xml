@@ -362,7 +362,7 @@
    <bean id="webscript.org.alfresco.repository.content.mimetypes.get" class="org.alfresco.repo.web.scripts.content.MimetypesGet" parent="webscript">
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="metadataExtracterRegistry" ref="metadataExtracterRegistry" />
-      <property name="contentTransformerRegistry" ref="contentTransformerRegistry" />
+      <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
    </bean>
    
    <!-- Patch webscript for RenditionService -->
@@ -1241,9 +1241,9 @@
          class="org.alfresco.repo.web.scripts.solr.NodeContentGet"
          parent="webscript">
       <property name="contentService" ref="contentService"/>
+      <property name="synchronousTransformClient" ref="synchronousTransformClient" />
       <property name="nodeService" ref="nodeService"/>
       <property name="nodeDAO" ref="nodeDAO"/>
-      <property name="transformerDebug" ref="transformerDebug" />
       <property name="delegate" ref="webscript.content.streamer" />
    </bean>
 
@@ -1266,7 +1266,7 @@
 		parent="webscript">
 		<property name="nodeDAO" ref="nodeDAO" />
 	</bean>
-   
+
 	<!-- /api/solr webscript returning the min txId in a nodeId range -->
 	<bean id="webscript.org.alfresco.repository.solr.nextTransactionCommitTime.get"
 		class="org.alfresco.repo.web.scripts.solr.NextTransactionGet"

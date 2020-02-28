@@ -56,7 +56,8 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.any;
 import static org.springframework.extensions.webscripts.Status.STATUS_OK;
 
 /**
@@ -196,7 +197,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
             try
             {
                 repoContainerMock.executeScript(null, null, null);
@@ -214,7 +215,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException());
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
             try
             {
                 repoContainerMock.executeScript(null, null, null);
@@ -232,7 +233,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new RuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
             try
             {
                 repoContainerMock.executeScript(null, null, null);
@@ -250,7 +251,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new FormException(messageFormException);
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
             try
             {
                 repoContainerMock.executeScript(null, null, null);
@@ -269,7 +270,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, messageAuthenticationException);
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
             try
             {
                 repoContainerMock.executeScript(null, null, null);
@@ -314,7 +315,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new ContentIOException(commandExecutionResult.toString());
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {
@@ -334,7 +335,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
 
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString()));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {
@@ -353,7 +354,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException("NullPointerException"));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {
@@ -376,7 +377,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                 {
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException("NullPointerException"));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {
@@ -398,7 +399,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString(), new NullPointerException(
                             "NullPointerException")));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {
@@ -423,7 +424,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
                     throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString(), new NullPointerException(
                             "NullPointerException")));
                 }
-            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            }).when(repoContainerMock).executeScriptInternal(nullable(WebScriptRequest.class), nullable(WebScriptResponse.class), nullable(Authenticator.class));
 
             try
             {

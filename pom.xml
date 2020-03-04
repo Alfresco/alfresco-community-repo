@@ -132,6 +132,13 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
             <version>${dependency.alfresco-data-model.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -181,6 +188,13 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-test-tck</artifactId>
             <version>${dependency.opencmis.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
             <!-- <scope>test</scope> -->
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->

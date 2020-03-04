@@ -181,6 +181,13 @@
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -312,6 +319,11 @@
                 <exclusion>
                     <groupId>javax.mail</groupId>
                     <artifactId>mail</artifactId>
+                </exclusion>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>javax.activation</groupId>
+                    <artifactId>activation</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -857,6 +869,13 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
             <version>${dependency.camel.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.activemq</groupId>
@@ -976,6 +995,13 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
             <version>${dependency.alfresco-data-model.version}</version>         
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -1059,6 +1085,12 @@
            <groupId>org.apache.taglibs</groupId>
            <artifactId>taglibs-standard-jstlel</artifactId>
            <version>${dependency.apache.taglibs.version}</version>
+        </dependency>
+        <!-- Added to replace transitive dependencies com.sun.activation:javax.activation and javax.activation:activation -->
+        <dependency>
+           <groupId>com.sun.activation</groupId>
+           <artifactId>jakarta.activation</artifactId>
+           <version>1.2.1</version>
         </dependency>
     </dependencies>
 

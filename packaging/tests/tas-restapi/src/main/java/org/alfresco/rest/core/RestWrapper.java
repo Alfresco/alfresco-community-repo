@@ -1140,4 +1140,15 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         configureRequestSpec().setBaseUri(this.serverURI);
         configureRequestSpec().setPort(this.serverPort);
     }
+
+    /** 
+     * Adding new method to configure Alfresco Endpoint.
+     * Reconfiguration is required when restClient is used to executed apis on different <host>:<port> e.g. solr api followed by search api
+     */
+    public void configureAlfrescoEndpoint()
+    {        
+        this.serverURI = restProperties.envProperty().getTestServerUrl();
+        this.serverPort = restProperties.envProperty().getPort();
+        configureServerEndpoint();
+    }
 }

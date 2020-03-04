@@ -35,6 +35,7 @@ public class SearchAPI extends ModelRequest<SearchAPI>
     public SearchAPI(RestWrapper restWrapper)
     {
         super(restWrapper);
+        restWrapper.configureAlfrescoEndpoint();
         RestAssured.basePath = "alfresco/api/-default-/public/search/versions/1";
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }

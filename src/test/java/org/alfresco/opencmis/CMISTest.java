@@ -59,8 +59,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
-import org.alfresco.opencmis.search.CMISQueryOptions;
-import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.audit.AuditComponent;
@@ -97,7 +95,6 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -106,7 +103,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -163,13 +159,10 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl;
-import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -186,8 +179,6 @@ import org.springframework.extensions.webscripts.GUID;
 @Category(LuceneTests.class)
 public class CMISTest
 {
-    private static Log logger = LogFactory.getLog(CMISTest.class);
-
     private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
     private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
     
@@ -226,60 +217,6 @@ public class CMISTest
     private CMISConnector cmisConnector;
     
     private NodeDAO nodeDAO;
-    
-    /**
-     * Test class to provide the service factory
-     * 
-     * @author Derek Hulley
-     * @since 4.0
-     */
-    public static class TestCmisServiceFactory extends AbstractServiceFactory
-    {
-        private static AlfrescoCmisServiceFactory serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory");
-        @Override
-        public void init(Map<String, String> parameters)
-        {
-        	serviceFactory.init(parameters);
-        }
-
-        @Override
-        public void destroy()
-        {
-        }
-
-        @Override
-        public CmisService getService(CallContext context)
-        {
-            return serviceFactory.getService(context);
-        }
-    }
-    
-    /**
-     * Test class to provide the service factory
-     * 
-     * @author Derek Hulley
-     * @since 4.0
-     */
-    public static class TestCmisServiceFactory11 extends AbstractServiceFactory
-    {
-        private static AlfrescoCmisServiceFactory serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory1.1");
-        @Override
-        public void init(Map<String, String> parameters)
-        {
-            serviceFactory.init(parameters);
-        }
-
-        @Override
-        public void destroy()
-        {
-        }
-
-        @Override
-        public CmisService getService(CallContext context)
-        {
-            return serviceFactory.getService(context);
-        }
-    }
 
     public static class SimpleCallContext implements CallContext
     {
@@ -2470,80 +2407,6 @@ public class CMISTest
             assertTrue(o.getClass() + " found but String expected", o instanceof String);
         }
     }
-    
-    /**
-     * MNT-8804 related test :
-     * Check CMISConnector.query for search nodes in environment with corrupted indexes
-     */
-    @Test
-    public void testQueryNodesWithCorruptedIndexes()
-    {
-        AuthenticationUtil.pushAuthentication();
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
-        final String TEST_NAME = "mnt8804test-";
-        final String docName = TEST_NAME + GUID.generate();
-        
-        /* Create node */
-        final FileInfo document = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<FileInfo>()
-                {
-                    @Override
-                    public FileInfo execute() throws Throwable
-                    {
-                        NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-                        
-                        /* Create folder within companyHome */
-                        String folderName = TEST_NAME + GUID.generate();
-                        FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-                        nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-                        assertNotNull(folderInfo);
-                        
-                        /* Create document to query */
-                        FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-                        assertNotNull(document);
-                        nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
-                        
-                        return document;
-                    }
-                });
-        
-        final Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(document.getNodeRef());
-        
-        /* delete node's metadata directly */
-        transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Void>()
-                {
-                    @Override
-                    public Void execute() throws Throwable
-                    {
-                        Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.getPrimaryParentAssoc(nodePair.getFirst());
-                        nodeDAO.deleteChildAssoc(childAssocPair.getFirst());
-                        nodeDAO.deleteNode(nodePair.getFirst());
-                        return null;
-                    }
-                });
-        
-        /* ensure the node does not exist */
-        assertTrue(!nodeService.exists(nodePair.getSecond()));
-        
-        String queryString = "SELECT * FROM cmis:document WHERE cmis:name='" + docName + "'";
-        
-        ObjectList resultList = cmisConnector.query(queryString, Boolean.FALSE, IncludeRelationships.NONE, "cmis:none", BigInteger.ONE, BigInteger.ZERO);
-        assertEquals(resultList.getNumItems(), BigInteger.ZERO);
-        
-        // prepare cmis query
-        CMISQueryOptions options = new CMISQueryOptions(queryString, cmisConnector.getRootStoreRef());
-        CmisVersion cmisVersion = cmisConnector.getRequestCmisVersion();
-        options.setCmisVersion(cmisVersion);
-        options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
-        options.setSkipCount(0);
-        options.setMaxItems(100);
-        
-        /* make query bypassing CMISConnector */
-        org.alfresco.opencmis.search.CMISResultSet rs = cmisConnector.getOpenCMISQueryService().query(options);
-        assertEquals(rs.getNumberFound(), 0);
-   }
 
     /**
      * CMIS 1.0 aspect properties should provide the following CMIS attributes:

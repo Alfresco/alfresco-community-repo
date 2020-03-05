@@ -561,6 +561,20 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
+            <exclusions>
+              <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
+              <exclusion>
+                <groupId>org.codehaus.woodstox</groupId>
+                <artifactId>woodstox-core-asl</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- REPO-4998 - Added to replace transitive dependency org.codehaus.woodstox:woodstox-core-asl -->
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
         </dependency>
 
         <!-- GData -->
@@ -927,7 +941,7 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-codec-http</artifactId>
             <version>4.1.45.Final</version>
-        </dependency>        
+        </dependency>
         <!-- Transform dependencies -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -978,7 +992,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
-            <version>${dependency.alfresco-data-model.version}</version>         
+            <version>${dependency.alfresco-data-model.version}</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
                 <exclusion>
@@ -1052,14 +1066,14 @@
             <artifactId>groovy-all</artifactId>
             <version>2.4.18</version>
             <classifier>indy</classifier>
-            <scope>test</scope>            
-        </dependency>      
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <scope>test</scope>             
-        </dependency>        
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-spec</artifactId>
@@ -1441,5 +1455,5 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
 </project>

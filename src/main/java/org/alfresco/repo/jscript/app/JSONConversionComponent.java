@@ -234,7 +234,38 @@ public class JSONConversionComponent
         
         return json;
     }
-    
+
+    /**
+     * MNT-18497
+     * Convert a linkedNode reference to a JSON object.  Selects the correct converter based on selection
+     * implementation. Skips adding properties and aspects of targetNodeRef
+     */
+    @SuppressWarnings("unchecked")
+    public JSONObject linkedNodeToJSONObject(final NodeRef nodeRef, final boolean useShortQNames)
+    {
+        final JSONObject json = new JSONObject();
+
+        if (this.nodeService.exists(nodeRef))
+        {
+            if (publicServiceAccessService.hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "getProperties", nodeRef) == AccessStatus.ALLOWED)
+            {
+                // init namespace prefix cache
+                namespacePrefixCache.get().clear();
+
+                // Get node info
+                FileInfo nodeInfo = this.fileFolderService.getFileInfo(nodeRef);
+
+                // Set root values
+                setRootValues(nodeInfo, json, useShortQNames);
+
+                // add permissions
+                json.put("permissions", permissionsToJSON(nodeRef));
+            }
+        }
+
+        return json;
+    }
+
     /**
      * 
      * @param nodeInfo FileInfo
@@ -257,7 +288,7 @@ public class JSONConversionComponent
             NodeRef targetNodeRef = nodeInfo.getLinkNodeRef();
             if (targetNodeRef != null)
             {
-                rootJSONObject.put("linkedNode", toJSONObject(targetNodeRef, useShortQNames));
+                rootJSONObject.put("linkedNode", linkedNodeToJSONObject(targetNodeRef, useShortQNames));
             }
         }    
         

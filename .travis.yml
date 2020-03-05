@@ -18,6 +18,7 @@ branches:
   only:
     - master
     - /support\/.*/
+    - fix/MNT-18497_Rendering-folder-with-links-is-slow-in-share
 
 stages:
   - test

@@ -138,6 +138,11 @@
                     <groupId>com.sun.activation</groupId>
                     <artifactId>javax.activation</artifactId>
                 </exclusion>
+                <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

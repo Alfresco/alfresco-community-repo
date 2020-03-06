@@ -37,6 +37,8 @@ import org.alfresco.util.Pair;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -121,6 +123,9 @@ public class SolrStoreMappingWrapperTest
     @Mock
     HostConfiguration hostConfiguration9;
 
+    @Mock
+    Protocol protocol;
+
     private SolrStoreMapping unsharded;
     
     private ExplicitSolrStoreMappingWrapper unshardedWrapper;
@@ -128,42 +133,52 @@ public class SolrStoreMappingWrapperTest
     @Mock
     private BeanFactory beanFactory;
     
-   
-    
-    
     @Before
     public void init()
     {
+        doReturn("https").when(protocol).getScheme();
+
         doReturn("common").when(hostConfigurationCommon).getHost();
         doReturn(999).when(hostConfigurationCommon).getPort();
-        
+        doReturn(protocol).when(hostConfigurationCommon).getProtocol();
+
+
         doReturn("host").when(hostConfiguration1).getHost();
         doReturn(999).when(hostConfiguration1).getPort();
-        
+        // getProtocol() is not called for hostConfiguration1
+
         doReturn("common").when(hostConfiguration2).getHost();
         doReturn(123).when(hostConfiguration2).getPort();
-        
+        doReturn(protocol).when(hostConfiguration2).getProtocol();
+
         doReturn("port").when(hostConfiguration3).getHost();
         doReturn(234).when(hostConfiguration3).getPort();
-        
+        doReturn(protocol).when(hostConfiguration3).getProtocol();
+
         doReturn("full").when(hostConfiguration4).getHost();
         doReturn(345).when(hostConfiguration4).getPort();
-        
+        doReturn(protocol).when(hostConfiguration4).getProtocol();
+
         doReturn("common").when(hostConfiguration5).getHost();
         doReturn(456).when(hostConfiguration5).getPort();
-        
+        doReturn(protocol).when(hostConfiguration5).getProtocol();
+
         doReturn("base").when(hostConfiguration6).getHost();
         doReturn(999).when(hostConfiguration6).getPort();
-        
+        doReturn(protocol).when(hostConfiguration6).getProtocol();
+
         doReturn("common").when(hostConfiguration7).getHost();
         doReturn(567).when(hostConfiguration7).getPort();
-        
+        doReturn(protocol).when(hostConfiguration7).getProtocol();
+
         doReturn("common").when(hostConfiguration8).getHost();
         doReturn(678).when(hostConfiguration8).getPort();
-        
+        doReturn(protocol).when(hostConfiguration8).getProtocol();
+
         doReturn("common").when(hostConfiguration9).getHost();
         doReturn(789).when(hostConfiguration9).getPort();
-        
+        doReturn(protocol).when(hostConfiguration9).getProtocol();
+
         doReturn(hostConfigurationCommon).when(httpClientCommon).getHostConfiguration();
         doReturn(hostConfiguration1).when(httpClient1).getHostConfiguration();
         doReturn(hostConfiguration2).when(httpClient2).getHostConfiguration();
@@ -242,7 +257,8 @@ public class SolrStoreMappingWrapperTest
         URLCodec encoder = new URLCodec();
         String shards = unshardedWrapper.getShards();
         assertNotNull(shards);
-        assertEquals("common:999"+encoder.encode("/solr4", "UTF-8"), shards);
+        assertEquals(encoder.encode("https://", "UTF-8")
+                + "common:999" + encoder.encode("/solr4", "UTF-8"), shards);
     }
 
     @Test

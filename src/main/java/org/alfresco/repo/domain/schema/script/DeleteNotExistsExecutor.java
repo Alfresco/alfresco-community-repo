@@ -61,7 +61,6 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 {
     private static Log logger = LogFactory.getLog(DeleteNotExistsExecutor.class);
 
-    private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String ERR_STATEMENT_FAILED = "schema.update.err.statement_failed";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
 
@@ -108,10 +107,10 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
 
         // --DELETE_NOT_EXISTS primaryTable.key,secondaryTable1.key1,... batch.size.property
-        String[] args = sql.split("[ \\t]+");
+        String[] args = sql.split("[ \\t]+(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         if (args.length == 3 && (args[1].indexOf('.')) != -1)
         {
-            String[] tableColumnArgs = args[1].split(",");
+            String[] tableColumnArgs = args[1].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
             if (tableColumnArgs.length >= 2)
             {
                 // Read the batch size from the named property
@@ -137,11 +136,19 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 // Compute upper limits
                 Long[] tableUpperLimits = new Long[tableColumnArgs.length];
                 Pair<String, String>[] tableColumn = new Pair[tableColumnArgs.length];
+                String[] optionalWhereClauses = new String[tableColumnArgs.length];
+                String[] tableDetails;
                 for (int i = 0; i < tableColumnArgs.length; i++)
                 {
-                    int index = tableColumnArgs[i].indexOf('.');
-                    String tableName = tableColumnArgs[i].substring(0, index);
-                    String columnName = tableColumnArgs[i].substring(index + 1);
+                    tableDetails = tableColumnArgs[i].split("\\.");
+
+                    String tableName = tableDetails[0];
+                    String columnName = tableDetails[1];
+
+                    if (tableDetails.length == 3)
+                    {
+                        optionalWhereClauses[i] = removeDoubleQuotes(tableDetails[2]);
+                    }
 
                     tableColumn[i] = new Pair<>(tableName, columnName);
                     tableUpperLimits[i] = getBatchUpperLimit(connection, tableName, columnName, line, scriptFile);
@@ -152,12 +159,12 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                     }
                 }
 
-                process(tableColumn, tableUpperLimits);
+                process(tableColumn, tableUpperLimits, optionalWhereClauses);
             }
         }
     }
 
-    private void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits) throws SQLException
+    private void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses) throws SQLException
     {
         // The approach is to fetch ordered row ids from all referencer/secondary (e.g.
         // alf_audit_app, alf_audit_entry, alf_prop_unique_ctx) tables and
@@ -170,6 +177,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
         String primaryTableName = tableColumn[0].getFirst();
         String primaryColumnName = tableColumn[0].getSecond();
+        String primaryWhereClause = optionalWhereClauses[0];
 
         Long primaryId = 0L;
         PreparedStatement primaryPrepStmt = null;
@@ -182,7 +190,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         try
         {
             connection.setAutoCommit(false);
-            primaryPrepStmt = connection.prepareStatement(createPreparedSelectStatement(primaryTableName, primaryColumnName));
+            primaryPrepStmt = connection.prepareStatement(createPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
             primaryPrepStmt.setFetchSize(batchSize);
             primaryPrepStmt.setLong(1, primaryId);
             primaryPrepStmt.setLong(2, tableUpperLimits[0]);
@@ -195,7 +203,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 secondaryPrepStmts = new PreparedStatement[tableColumn.length];
                 for (int i = 1; i < tableColumn.length; i++)
                 {
-                    PreparedStatement secStmt = connection.prepareStatement(createPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond()));
+                    PreparedStatement secStmt = connection.prepareStatement(createPreparedSelectStatement(tableColumn[i].getFirst(), tableColumn[i].getSecond(), optionalWhereClauses[i]));
                     secStmt.setFetchSize(batchSize);
                     secStmt.setLong(1, primaryId);
                     secStmt.setLong(2, tableUpperLimits[i]);
@@ -203,7 +211,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                     secondaryPrepStmts[i] = secStmt;
                 }
 
-                deletePrepStmt = connection.prepareStatement(createPreparedDeleteStatement(primaryTableName, primaryColumnName, deleteBatchSize));
+                deletePrepStmt = connection.prepareStatement(createPreparedDeleteStatement(primaryTableName, primaryColumnName, deleteBatchSize, primaryWhereClause));
 
                 // Timeout is only checked at each bach start.
                 // It can be further refined by being verified at each primary row processing.
@@ -341,6 +349,8 @@ public class DeleteNotExistsExecutor implements StatementExecutor
             deletedBatchCount = executeDeleteStatement(deletePrepStmt, deleteIds, deleteBatchSize, line, scriptFile);
         }
 
+        deletedCount += deletedBatchCount;
+
         if (logger.isTraceEnabled())
         {
             String msg = ((readOnly) ? "Script would have" : "Script") + " deleted a batch of " + deletedBatchCount + " items from table " + primaryTableName + ".";
@@ -363,9 +373,9 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         try
         {
             stmt = connection.createStatement();
-            if (logger.isDebugEnabled())
+            if (logger.isTraceEnabled())
             {
-                LogUtil.debug(logger, MSG_EXECUTING_STATEMENT, sql);
+                logger.trace("Executing statement: " + sql);
             }
             boolean haveResults = stmt.execute(sql);
             if (haveResults && fetchColumnName != null)
@@ -428,14 +438,38 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return true;
     }
 
-    private String createPreparedSelectStatement(String tableName, String columnName)
+    private String removeDoubleQuotes(String quotedString)
     {
-        return "SELECT " + columnName + " FROM " + tableName + " WHERE " + columnName + " > ? AND " + columnName + " <= ? ORDER BY " + columnName + " ASC";
+        if (quotedString == null || quotedString.isEmpty())
+        {
+            return quotedString;
+        }
+
+        return quotedString.replace("\"", "");
+    }
+    
+    private String createPreparedSelectStatement(String tableName, String columnName, String whereClause)
+    {
+        StringBuilder sqlBuilder = new StringBuilder("SELECT " + columnName + " FROM " + tableName + " WHERE ");
+
+        if (whereClause != null && !whereClause.isEmpty())
+        {
+            sqlBuilder.append(whereClause + " AND ");
+        }
+
+        sqlBuilder.append(columnName + " > ? AND " + columnName + " <= ? ORDER BY " + columnName + " ASC");
+        return sqlBuilder.toString();
     }
 
-    private String createPreparedDeleteStatement(String tableName, String idColumnName, int deleteBatchSize)
+    private String createPreparedDeleteStatement(String tableName, String idColumnName, int deleteBatchSize, String whereClause)
     {
-        StringBuilder stmtBuilder = new StringBuilder("DELETE FROM " + tableName + " WHERE " + idColumnName + " IN ");
+        StringBuilder stmtBuilder = new StringBuilder("DELETE FROM " + tableName + " WHERE ");
+
+        if (whereClause != null && !whereClause.isEmpty())
+        {
+            stmtBuilder.append(whereClause + " AND ");
+        }
+        stmtBuilder.append(idColumnName + " IN ");
         stmtBuilder.append("(");
 
         for (int i = 1; i <= deleteBatchSize; i++)
@@ -471,13 +505,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 stmt.setObject(j, 0);
             }
 
-            if (logger.isDebugEnabled())
-            {
-                LogUtil.debug(logger, MSG_EXECUTING_STATEMENT, sql);
-            }
-
             int deletedItems = stmt.executeUpdate();
-            deletedCount += deletedItems;
             return deletedItems;
         }
         catch (SQLException e)

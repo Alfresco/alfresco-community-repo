@@ -223,6 +223,7 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
                     builder.append(',');
                 }
                 HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[nodeId-1];
+                builder.append(encoder.encode(httpClientAndBaseUrl.getProtocol() +  "://", "UTF-8"));
                 builder.append(encoder.encode(httpClientAndBaseUrl.getHost(), "UTF-8"));
                 builder.append(':');
                 builder.append(encoder.encode("" + httpClientAndBaseUrl.getPort(), "UTF-8"));
@@ -281,6 +282,12 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
         {
             return httpClient.getHostConfiguration().getPort();
         }
+
+        public String getProtocol()
+        {
+            return httpClient.getHostConfiguration().getProtocol().getScheme();
+        }
+
 
         /*
          * (non-Javadoc)

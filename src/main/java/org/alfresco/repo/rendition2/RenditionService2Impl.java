@@ -789,26 +789,33 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     {
         if (isEnabled())
         {
-            logger.debug("onContentUpdate on " + sourceNodeRef);
-            List<ChildAssociationRef> childAssocs = getRenditionChildAssociations(sourceNodeRef);
-            for (ChildAssociationRef childAssoc : childAssocs)
+            if (nodeService.exists(sourceNodeRef))
             {
-                NodeRef renditionNodeRef = childAssoc.getChildRef();
-                // TODO: This check will not be needed once the original RenditionService is removed.
-                if (nodeService.hasAspect(renditionNodeRef, RenditionModel.ASPECT_RENDITION2))
+                logger.debug("onContentUpdate on " + sourceNodeRef);
+                List<ChildAssociationRef> childAssocs = getRenditionChildAssociations(sourceNodeRef);
+                for (ChildAssociationRef childAssoc : childAssocs)
                 {
-                    QName childAssocQName = childAssoc.getQName();
-                    String renditionName = childAssocQName.getLocalName();
-                    RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
-                    if (renditionDefinition != null)
+                    NodeRef renditionNodeRef = childAssoc.getChildRef();
+                    // TODO: This check will not be needed once the original RenditionService is removed.
+                    if (nodeService.hasAspect(renditionNodeRef, RenditionModel.ASPECT_RENDITION2))
                     {
-                        render(sourceNodeRef, renditionName);
-                    }
-                    else
-                    {
-                        logger.debug("onContentUpdate rendition " + renditionName + " only exists in the original rendition service.");
+                        QName childAssocQName = childAssoc.getQName();
+                        String renditionName = childAssocQName.getLocalName();
+                        RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+                        if (renditionDefinition != null)
+                        {
+                            render(sourceNodeRef, renditionName);
+                        }
+                        else
+                        {
+                            logger.debug("onContentUpdate rendition " + renditionName + " only exists in the original rendition service.");
+                        }
                     }
                 }
+            }
+            else
+            {
+                logger.debug("onContentUpdate rendition " + sourceNodeRef + " does not exist.");
             }
         }
     }

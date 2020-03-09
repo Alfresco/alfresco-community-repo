@@ -305,6 +305,11 @@
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
                 </exclusion>
+                <!-- Duplicate classes from com.sun.xml.bind:jaxb-core-->
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>txw2</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

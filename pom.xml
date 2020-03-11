@@ -443,11 +443,11 @@
             <version>1.1</version>
         </dependency>
 
-        <!-- REPO-5003 Added javax.jws-api as direct dependency and removed jsr181-api to avoid duplicated classes -->
+        <!-- REPO-5031 Added jakarta.jws:jakarta.jws-api instead of javax.jws:javax.jws-api - since javax.* has moved to jakarta -->
         <dependency>
-            <groupId>javax.jws</groupId>
-            <artifactId>javax.jws-api</artifactId>
-            <version>1.1</version>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+            <version>1.1.1</version>
         </dependency>
 
         <dependency>
@@ -650,6 +650,11 @@
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang3</artifactId>
                 </exclusion>
+                <!-- REPO-5031 Excluding javax.jws:javax.jws-api, jakarta.jws:jakarta.jws-api will be used instead -->
+                <exclusion>
+                    <groupId>javax.jws</groupId>
+                    <artifactId>javax.jws-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -672,6 +677,11 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+                <!-- REPO-5031 Excluding javax.jws:javax.jws-api, jakarta.jws:jakarta.jws-api will be used instead -->
+                <exclusion>
+                    <groupId>javax.jws</groupId>
+                    <artifactId>javax.jws-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1033,7 +1043,7 @@
             <classifier>tests</classifier>
             <scope>test</scope>
             <exclusions>
-              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031) -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
@@ -1055,7 +1065,7 @@
                     <groupId>javax.annotation</groupId>
                     <artifactId>javax.annotation-api</artifactId>
                 </exclusion>
-                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031)-->
                 <exclusion>
                   <groupId>org.apache.geronimo.specs</groupId>
                   <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
@@ -1130,7 +1140,7 @@
             <version>${dependency.opencmis.version}</version>
             <scope>test</scope>
             <exclusions>
-              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031) -->
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>

@@ -148,6 +148,11 @@
                   <groupId>org.apache.geronimo.specs</groupId>
                   <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
                 </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -209,6 +214,11 @@
                   <groupId>org.apache.geronimo.specs</groupId>
                   <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
                 </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
             </exclusions>
             <!-- <scope>test</scope> -->
         </dependency>
@@ -247,6 +257,13 @@
             <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
+            <exclusions>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>javax.transaction</groupId>
+                    <artifactId>jta</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>

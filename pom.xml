@@ -679,6 +679,11 @@
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
                 </exclusion>
+                <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
+                <exclusion>
+                    <groupId>org.glassfish.corba</groupId>
+                    <artifactId>glassfish-corba-omgapi</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -711,6 +716,11 @@
                 <exclusion>
                     <groupId>javax.xml.bind</groupId>
                     <artifactId>jaxb-api</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from org.jboss.spec.javax.rmi:jboss-rmi-api and org.jacorb:jacorb-omgapi -->
+                <exclusion>
+                    <groupId>org.glassfish.corba</groupId>
+                    <artifactId>glassfish-corba-omgapi</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

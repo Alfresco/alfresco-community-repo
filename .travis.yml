@@ -1,5 +1,5 @@
 dist: xenial
-sudo: required
+os: linux
 language: java
 jdk:
   - openjdk11
@@ -10,19 +10,33 @@ services:
 cache:
   directories:
     - $HOME/.m2
-
+# the cache can grow constantly
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/alfresco/acs-community-packaging
 env:
   global:
     - VERSION_EDITION=Community
-
+    # Must be in the format <alfresco-version>-<additional_versioning> ie. 6.3.0-repo-xxxx-x or 6.3.0-A-x
+    - RELEASE_VERSION=
+    - DEVELOPMENT_VERSION=
+    - COMM_RELEASE_VERSION=
 branches:
   only:
     - master
     - develop
 
-matrix:
+stages:
+  - name: test
+    if: commit_message !~ /\[skip tests\]/
+  - release
+  - publish
+
+before_install: "cp .travis.settings.xml $HOME/.m2/settings.xml"
+
+jobs:
   include:
-    - name: "WhiteSource scan"
+    - stage: test
+      name: "WhiteSource scan"
       # only on develop and if it is not a PR
       if: fork = false AND branch = develop AND type != pull_request
       install:
@@ -90,3 +104,43 @@ matrix:
         - ./tests/scripts/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script:
         - travis_wait 30 mvn install -q -f tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+    - stage: Release
+      name: "Maven release"
+      if: commit_message ~= /\[release\]/ AND fork = false AND branch =~ ^(master|develop)$ AND type != pull_request 
+      install: travis_retry travis_wait 40 mvn clean install -DskipTests=true "-Dversion.edition=${VERSION_EDITION}" -Dmaven.javadoc.skip=true -B -V
+      # Fail the job if there is a docker image tag that matches the RELEASE_VERSION (or project version in the POM if not set)
+      before_script: ./scripts/travis/verify_release_tag.sh 
+      script: travis_wait 40 ./scripts/travis/maven_release.sh ${RELEASE_VERSION} ${DEVELOPMENT_VERSION}
+      # Copy alfresco.war and the distribution zip to deploy_dir
+      before_deploy: 
+         # Move the final artifacts to a single folder (deploy_dir) to be copied to S3
+        - mkdir -p deploy_dir
+        - cp war/target/alfresco.war deploy_dir
+        - cp distribution/target/*-distribution*.zip deploy_dir
+      deploy:
+      - provider: s3
+        access_key_id: ${AWS_STAGING_ACCESS_KEY}
+        secret_access_key: ${AWS_STAGING_SECRET_KEY}
+        bucket: "alfresco-artefacts-staging"
+        region: "eu-west-1"
+        skip_cleanup: true
+        acl: private
+        local_dir: deploy_dir
+        upload_dir: "alfresco-content-services-community/release/${TRAVIS_BRANCH}/${TRAVIS_BUILD_NUMBER}"
+        on: 
+          all_branches: true
+          condition: $TRAVIS_BRANCH =~ ^(master|develop)$
+    - stage: "Publish"
+      name: "Copy to S3 Release"
+      if: commit_message ~= /\[publish\]/ AND fork = false AND branch = master AND type != pull_request 
+      # Nothing to build/install as we are just copying from S3 buckets
+      install: skip 
+      script: skip
+      before_deploy: pip install awscli
+      delpoy:
+        - provider: script
+          script:  ./scripts/travis/copy_to_release_bucket.sh ${TRAVIS_BUILD_NUMBER} ${TRAVIS_BRANCH}
+          on:
+            branch: master
+            
+      

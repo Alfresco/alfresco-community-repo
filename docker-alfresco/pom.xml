@@ -340,6 +340,7 @@
                         <configuration>
                             <images>
                                 <image>
+                                    <alias>quay.io</alias>
                                     <name>${image.name}:${project.version}</name>
                                     <registry>${image.registry}</registry>
                                     <build>
@@ -347,6 +348,7 @@
                                     </build>
                                 </image>
                                 <image>
+                                    <alias>dockerhub</alias>
                                     <name>${image.name}:${project.version}</name>
                                     <build>
                                         <dockerFileDir>${project.basedir}/</dockerFileDir>
@@ -369,6 +371,4 @@
             </build>
         </profile>
     </profiles>
-
-
 </project>

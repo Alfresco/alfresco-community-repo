@@ -46,8 +46,8 @@
     </profiles>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</developerConnection>
+        <connection>scm:git:https://github.com/Alfresco/acs-community-packaging.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/acs-community-packaging.git</developerConnection>
         <url>https://github.com/Alfresco/acs-community-packaging</url>
         <tag>HEAD</tag>
     </scm>
@@ -116,6 +116,8 @@
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.5</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.3</dependency.tas-dataprep.version>
+        
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
     </properties>
 
     <dependencyManagement>

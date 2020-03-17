@@ -119,6 +119,12 @@
                 <artifactId>httpcore</artifactId>
                 <version>4.4.13</version>
             </dependency>
+            <!-- REPO-4986, REPO-4987 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

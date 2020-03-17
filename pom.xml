@@ -149,6 +149,12 @@
                 <artifactId>commons-csv</artifactId>
                 <version>1.8</version>
             </dependency>
+            <!-- REPO-4986, REPO-4987 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

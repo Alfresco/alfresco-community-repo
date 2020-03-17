@@ -374,6 +374,12 @@
             <artifactId>truezip-file</artifactId>
             <version>${dependency.truezip.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sun.pdfview</groupId>

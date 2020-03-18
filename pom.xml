@@ -144,6 +144,11 @@
                     <groupId>com.sun.activation</groupId>
                     <artifactId>javax.activation</artifactId>
                 </exclusion>
+                <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
+                <exclusion>
+                  <groupId>org.codehaus.woodstox</groupId>
+                  <artifactId>woodstox-core-asl</artifactId>
+                </exclusion>
                 <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
                 <exclusion>
                     <groupId>javax.annotation</groupId>

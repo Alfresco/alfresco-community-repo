@@ -235,11 +235,40 @@
             <artifactId>jackson-annotations</artifactId> 
             <version>2.10.2</version> 
         </dependency> 
-
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr</artifactId>
             <version>3.5.2</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.codehaus.woodstox:woodstox-core-asl -->
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
+        <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>
@@ -251,6 +280,11 @@
                     <groupId>com.sun.xml.messaging.saaj</groupId>
                     <artifactId>saaj-impl</artifactId>
                 </exclusion>
+                <!-- Duplicates classes from com.fasterxml.woodstox:woodstox-core -->
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>woodstox-core-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -261,6 +295,26 @@
                 <exclusion>
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang3</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -313,7 +367,27 @@
                 <exclusion>
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-runtime</artifactId>
-                </exclusion>                
+                </exclusion>
+                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

@@ -15,10 +15,10 @@
    </organization>
 
    <scm>
-      <connection>scm:git:https://git.alfresco.com/records-management/records-management.git</connection>
-      <developerConnection>scm:git:https://git.alfresco.com/records-management/records-management.git</developerConnection>
-      <url>https://git.alfresco.com/records-management/records-management</url>
-     <tag>V3.0.0</tag>
+      <connection>scm:git:https://github.com/Alfresco/governance-services.git</connection>
+      <developerConnection>scm:git:https://github.com/Alfresco/governance-services.git</developerConnection>
+      <url>https://github.com/Alfresco/governance-services</url>
+     <tag>HEAD</tag>
   </scm>
 
    <issueManagement>

@@ -17,7 +17,7 @@ RM is split into two main parts - a repository integration and a Share integrati
 ### Artifacts and Guidance
 
 * [Community Source Code](https://github.com/Alfresco/records-management)
-* [Enterprise Source Code](https://gitlab.alfresco.com/records-management/records-management) (for partners and customers)
+* [Enterprise Source Code](https://github.com/Alfresco/governance-services) (for partners and customers)
 * [Community License](../LICENSE.txt)
 * [Enterprise License](../../rm-enterprise/LICENSE.txt) (this file will only be present in clones of the Enterprise repository)
 * [Issue Tracker Link](https://issues.alfresco.com/jira/projects/RM)

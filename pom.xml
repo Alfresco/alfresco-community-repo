@@ -46,7 +46,7 @@
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.transform.model.version>1.0.2.8</dependency.transform.model.version>
 
-        <dependency.spring.version>5.2.4.RELEASE</dependency.spring.version>
+        <dependency.spring.version>5.2.5.RELEASE</dependency.spring.version>
         <dependency.spring-security.version>5.2.1.RELEASE</dependency.spring-security.version>
         <dependency.httpcomponents.version>4.5.10</dependency.httpcomponents.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>

@@ -38,6 +38,10 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * @deprecated as it is no longer used in the core repository code.
+ */
+@Deprecated
 public class BitlyUrlShortenerImpl implements UrlShortener
 {
     private static final Log log = LogFactory.getLog(BitlyUrlShortenerImpl.class);

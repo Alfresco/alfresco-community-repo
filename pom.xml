@@ -26,7 +26,7 @@
    </distributionManagement>
    
    <properties>
-      <dependency.spring.version>5.2.4.RELEASE</dependency.spring.version>
+      <dependency.spring.version>5.2.5.RELEASE</dependency.spring.version>
       <dependency.surf.version>8.2</dependency.surf.version>
       <maven.build.sourceVersion>11</maven.build.sourceVersion>
    </properties>

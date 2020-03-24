@@ -38,7 +38,7 @@ public class BitlyUrlShortenerTest extends TestCase
         assertNotNull(shortUrl);
         assertFalse(shortUrl.isEmpty());
         assertFalse(url.equals(shortUrl));
-        assertTrue(shortUrl.length()<=20);
+        assertTrue(shortUrl.length() <= url.length());
     }
     
     /**

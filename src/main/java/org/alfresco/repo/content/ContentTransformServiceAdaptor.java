@@ -107,7 +107,7 @@ public class ContentTransformServiceAdaptor implements ContentTransformService
             throws NoTransformerException, ContentIOException
     {
         TransformationOptions transformationOptions = new TransformationOptions(legacyOptionsMap);
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, null, null);
         synchronousTransformClient.transform(reader, writer, options, null, null);
     }
 
@@ -118,7 +118,7 @@ public class ContentTransformServiceAdaptor implements ContentTransformService
     {
         try
         {
-            Map<String, String> options = converter.getOptions(transformationOptions);
+            Map<String, String> options = converter.getOptions(transformationOptions, null, null);
             synchronousTransformClient.transform(reader, writer, options, null, null);
         }
         catch (UnsupportedTransformationException ute)
@@ -204,7 +204,7 @@ public class ContentTransformServiceAdaptor implements ContentTransformService
                                                     String targetMimetype, TransformationOptions transformationOptions)
     {
         AbstractContentTransformer2 transformer = null;
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, null, null);
         LocalTransform localTransform = localTransformServiceRegistryImpl.getLocalTransform(sourceMimetype,
                 sourceSize, targetMimetype, options, null);
         if (localTransform != null)
@@ -277,7 +277,7 @@ public class ContentTransformServiceAdaptor implements ContentTransformService
     public long getMaxSourceSizeBytes(String sourceMimetype,
                                       String targetMimetype, TransformationOptions transformationOptions)
     {
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, null, null);
         return localTransformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, null);
     }
 
@@ -304,7 +304,7 @@ public class ContentTransformServiceAdaptor implements ContentTransformService
         String contentUrl = reader.getContentUrl();
         String targetMimetype = writer.getMimetype();
         NodeRef sourceNodeRef = transformationOptions.getSourceNodeRef();
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, null, null);
         return synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype,
                 options, null, sourceNodeRef);
     }

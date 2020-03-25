@@ -63,6 +63,8 @@ import org.alfresco.service.cmr.repository.TransformationSourceOptions.Transform
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import static org.alfresco.repo.action.executer.TransformActionExecuter.TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN;
+
 /**
  * @author Nick Smith
  *
@@ -120,8 +122,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
      */
     public static final String PARAM_USE = ".use.".replaceAll("\\.", "");
 
-    /* Error messages */
-    private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = "Content not transformable for '%s' source mime type and '%s' target mime type with options: '%s'. Operation can't be performed";
+    private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN;
     private static final String TRANSFORMING_ERROR_MESSAGE = RenditionService2Impl.TRANSFORMING_ERROR_MESSAGE;
     
     private Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers;
@@ -196,7 +197,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         TransformationOptions transformationOptions = getTransformOptions(context);
 
         long sourceSizeInBytes = contentReader.getSize();
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, sourceMimeType, targetMimeType);
         NodeRef sourceNodeRef = transformationOptions.getSourceNodeRef();
         if (!synchronousTransformClient.isSupported(sourceMimeType, sourceSizeInBytes, contentUrl, targetMimeType,
                 options, null, sourceNodeRef))
@@ -428,7 +429,8 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         {
             this.contentReader = contentReader;
             this.targetMimeType = targetMimeType;
-            this.options = converter.getOptions(transformationOptions);
+            String sourceMimetype = contentReader.getMimetype();
+            this.options = converter.getOptions(transformationOptions, sourceMimetype, targetMimeType);
             this.context = context;
             this.initiatingUsername = initiatingUsername;
         }

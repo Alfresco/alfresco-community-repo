@@ -71,7 +71,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
 
-    private static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' source mime type and '%s' target mime type with options '%s' was not found. Operation can't be performed";
+    public static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' -> '%s' with options '%s' was not found.";
     
     private static Log logger = LogFactory.getLog(TransformActionExecuter.class); 
     
@@ -212,7 +212,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         String sourceMimetype = contentReader.getMimetype();
         long sourceSizeInBytes = contentReader.getSize();
         String contentUrl = contentReader.getContentUrl();
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, mimeType);
         if (!synchronousTransformClient.isSupported(sourceMimetype, sourceSizeInBytes,
                 contentUrl, mimeType, options, null, actionedUponNodeRef))
         {
@@ -351,7 +351,8 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         // transform - will throw NoTransformerException if there are no transformers
         TransformationOptions transformationOptions = newTransformationOptions(ruleAction, sourceNodeRef);
         transformationOptions.setTargetNodeRef(destinationNodeRef);
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        String sourceMimetype = contentReader.getMimetype();
+        Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, contentWriter.getMimetype());
         synchronousTransformClient.transform(contentReader, contentWriter, options, null, sourceNodeRef);
     }
     

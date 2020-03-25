@@ -40,7 +40,6 @@ import org.alfresco.repo.domain.dialect.SQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.rendition2.TestSynchronousTransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -56,7 +55,6 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -78,7 +76,6 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -258,11 +255,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         ContentReader reader = this.contentService.getReader(thumbnail0, ContentModel.PROP_CONTENT);
         
         long size = reader.getSize();
-        System.out.println("size=" + size);
-        assertTrue("Page 2 should be blank and less than 4500 bytes", size < 4500);
-        
         reader.getContent(tempFile);
-        System.out.println("doclib_2 test: " + tempFile.getPath());
+        assertTrue("Page 2 should be blank and less than 4500 bytes. It was "+size+" bytes. tempFile="+tempFile.getPath(), size < 4500);
     }
 
     @Test
@@ -1127,7 +1121,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         NodeRef nodeRef = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_HTML);
         ThumbnailDefinition def = this.thumbnailService.getThumbnailRegistry().getThumbnailDefinition("medium");
         TransformationOptions transformationOptions = def.getTransformationOptions();
-        Map<String, String> options = converter.getOptions(transformationOptions);
+        Map<String, String> options = converter.getOptions(transformationOptions, MimetypeMap.MIMETYPE_HTML, def.getMimetype());
         String targetMimetype = def.getMimetype();
         boolean supported = synchronousTransformClient.isSupported(MimetypeMap.MIMETYPE_HTML, -1, null,
                 targetMimetype, options, null, null);

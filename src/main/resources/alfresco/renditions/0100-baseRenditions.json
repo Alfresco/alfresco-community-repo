@@ -6,7 +6,9 @@
       "options": [
         {"name": "resizeWidth", "value": 100},
         {"name": "resizeHeight", "value": 100},
+        {"name": "allowEnlargement", "value": true},
         {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
         {"name": "thumbnail", "value": true}
       ]
     },
@@ -18,6 +20,7 @@
         {"name": "resizeHeight", "value": 100},
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
         {"name": "thumbnail", "value": true}
       ]
     },
@@ -29,6 +32,7 @@
         {"name": "resizeHeight", "value": 960},
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
         {"name": "thumbnail", "value": true}
       ]
     },
@@ -40,6 +44,7 @@
         {"name": "resizeHeight", "value": 64},
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
         {"name": "thumbnail", "value": true}
       ]
     },
@@ -51,6 +56,7 @@
         {"name": "resizeHeight", "value": 32},
         {"name": "allowEnlargement", "value": false},
         {"name": "maintainAspectRatio", "value": true},
+        {"name": "autoOrient", "value": true},
         {"name": "thumbnail", "value": true}
       ]
     },

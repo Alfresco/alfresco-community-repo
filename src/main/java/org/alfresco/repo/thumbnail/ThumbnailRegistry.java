@@ -362,7 +362,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             {
                 TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
                 String renditionName = thumbnailDefinition.getName();
-                Map<String, String> options = converter.getOptions(transformationOptions);
+                Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, targetMimetype);
                 supported = localTransformServiceRegistry.isSupported(sourceMimetype, sourceSize, targetMimetype,
                         options, renditionName);
             }
@@ -415,7 +415,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
             {
                 TransformationOptions transformationOptions = thumbnailDefinition.getTransformationOptions();
                 String renditionName = thumbnailDefinition.getName();
-                Map<String, String> options = converter.getOptions(transformationOptions);
+                Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, targetMimetype);
                 maxSize = localTransformServiceRegistry.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
             }
             finally

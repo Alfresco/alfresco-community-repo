@@ -207,4 +207,10 @@ public class PagedSourceOptions extends AbstractTransformationSourceOptions
             parameters.put(PARAM_SOURCE_END_PAGE, pagedSourceOptions.getEndPageNumber());
         }
     }
+
+    @Override
+    public String toString()
+    {
+        return "PagedSourceOptions {"+startPageNumber+", "+endPageNumber+"}";
+    }
 }

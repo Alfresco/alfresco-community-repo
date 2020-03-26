@@ -42,6 +42,7 @@ public class ShardInfoAPI extends ModelRequest<ShardInfoAPI>
     public ShardInfoAPI(RestWrapper restWrapper)
     {
         super(restWrapper);
+        restWrapper.configureAlfrescoEndpoint();
         RestAssured.basePath = "alfresco/api/-default-/private/search/versions/1";
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }

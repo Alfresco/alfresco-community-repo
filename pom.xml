@@ -70,7 +70,7 @@
 
         <dependency.alfresco-remote-api.version>8.131</dependency.alfresco-remote-api.version>
         <dependency.alfresco-repository.version>8.142</dependency.alfresco-repository.version>
-        <dependency.alfresco-data-model.version>8.96</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.97</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>8.27</dependency.alfresco-core.version>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>

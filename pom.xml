@@ -89,7 +89,7 @@
         <dependency.jackson.version>2.10.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
 
-        <dependency.cxf.version>3.3.5</dependency.cxf.version>
+        <dependency.cxf.version>3.3.6</dependency.cxf.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>6.2.0</alfresco.share.version>

@@ -57,7 +57,7 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.postgresql.version>42.2.10</dependency.postgresql.version>
         <dependency.mysql.version>5.1.48</dependency.mysql.version>
-        <dependency.mariadb.version>2.2.5</dependency.mariadb.version>
+        <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <!-- REPO-4964 -->
         <dependency.keycloak.version>7.0.0</dependency.keycloak.version>

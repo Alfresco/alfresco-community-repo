@@ -124,7 +124,7 @@ public class DialectFactory
     static {
         // detectors...
         MAPPERS.put( "PostgreSQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.PostgreSQLDialect" ) );
-
+        MAPPERS.put( "MariaDB", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" ) );
         MAPPERS.put( "MySQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" ) );
         MAPPERS.put( "Microsoft SQL Server Database", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
         MAPPERS.put( "Microsoft SQL Server", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );

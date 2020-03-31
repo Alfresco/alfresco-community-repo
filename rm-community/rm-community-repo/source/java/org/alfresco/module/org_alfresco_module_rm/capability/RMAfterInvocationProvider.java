@@ -563,6 +563,13 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             }
         }
 
+        if (maxSize != null)
+        {
+            LimitBy limitBy = returnedObject.length() > maxSize ? LimitBy.FINAL_SIZE : LimitBy.UNLIMITED;
+            filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(limitBy,
+                    PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
+        }
+
         filteringResultSet.setNumberFound(returnedObject.getNumberFound());
 
         return filteringResultSet;

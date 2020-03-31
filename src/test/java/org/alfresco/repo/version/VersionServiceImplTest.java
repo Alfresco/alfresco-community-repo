@@ -680,6 +680,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
        // Create a versionable node
        NodeRef versionableNode = createNewVersionableNode();
+       // Add marker aspect on node
+       this.dbNodeService.addAspect(versionableNode, TEST_MARKER_ASPECT_QNAME, null);
 
        // Store the node details for later
        Set<QName> origAspects = this.dbNodeService.getAspects(versionableNode);
@@ -754,7 +756,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
        // Check that the aspects have been reverted correctly
        Set<QName> aspects1 = this.dbNodeService.getAspects(versionableNode);
        assertEquals(aspects1.size(), origAspects2.size());
-       
+       // Verify marker aspect still exists on node after revert (MNT-19773)
+       assertTrue(aspects1.contains(TEST_MARKER_ASPECT_QNAME));
+
        // Check that the history is back how it was
        history = versionService.getVersionHistory(versionableNode);
        assertEquals(version2.getVersionLabel(), history.getHeadVersion().getVersionLabel());
@@ -787,6 +791,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
        // Check that the aspects have been reverted correctly
        Set<QName> aspects2 = this.dbNodeService.getAspects(versionableNode);
        assertEquals(aspects2.size(), origAspects.size());
+       // Verify marker aspect still exists on node after revert (MNT-19773)
+       assertTrue(aspects2.contains(TEST_MARKER_ASPECT_QNAME));
 
        // Check that the version label is still the same
        assertEquals(versionLabel, this.dbNodeService.getProperty(versionableNode, ContentModel.PROP_VERSION_LABEL));

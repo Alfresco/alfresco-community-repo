@@ -173,6 +173,11 @@
           </properties>
        </aspect>
 
+       <aspect name="test:markerAspect">
+          <title>Marker Aspect</title>
+          <description>Test aspect with no properties</description>
+       </aspect>
+
     </aspects>
    
 </model>

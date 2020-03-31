@@ -1370,12 +1370,17 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
             boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
             try
             {
-                // Copy the properties
+                // Copy the properties (along with their aspect)
                 Map<QName,PropertyDefinition> propertyDefinitions = classDefinition.getProperties();
                 for (QName propertyName : propertyDefinitions.keySet()) 
                 {
                     Serializable propValue = this.nodeService.getProperty(nodeRef, propertyName);
                     nodeDetails.addProperty(classRef, propertyName, propValue);
+                }
+                // Also copy the aspect with no properties in its definition
+                if (classDefinition.isAspect() && !nodeDetails.getAspects().contains(classRef))
+                {
+                    nodeDetails.addAspect(classRef);
                 }
             }
             finally

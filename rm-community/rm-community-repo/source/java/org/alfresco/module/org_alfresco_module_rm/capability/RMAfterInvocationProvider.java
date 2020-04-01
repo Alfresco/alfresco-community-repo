@@ -130,6 +130,16 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
 
+    /**
+     * Sets the authentication util
+     *
+     * @param authenticationUtil The authentication util to set
+     */
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
+
     @SuppressWarnings("rawtypes")
     public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject)
     {

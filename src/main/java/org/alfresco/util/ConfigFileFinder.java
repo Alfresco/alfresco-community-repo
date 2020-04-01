@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,9 +91,10 @@ public abstract class ConfigFileFinder
             {
                 // Try reading resources from disk
                 URL url = getClass().getClassLoader().getResource(path);
+
                 if (url != null)
                 {
-                    String urlPath = url.getPath();
+                    String urlPath = URLDecoder.decode(url.getPath(), "UTF-8");
                     readFromDisk(urlPath, log, successReadingConfig, somethingRead);
                 }
             }

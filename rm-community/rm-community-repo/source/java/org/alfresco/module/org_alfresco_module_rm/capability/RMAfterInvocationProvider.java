@@ -39,10 +39,10 @@ import java.util.StringTokenizer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
@@ -80,8 +80,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     private static final String AFTER_RM = "AFTER_RM";
 
+    private AuthenticationUtil authenticationUtil;
     private int maxPermissionChecks;
-
     private long maxPermissionCheckTimeMillis;
 
     public boolean supports(ConfigAttribute configAttribute)
@@ -147,7 +147,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
         try
         {
-            if (AuthenticationUtil.isRunAsUserTheSystemUser())
+            if (authenticationUtil.isRunAsUserTheSystemUser())
             {
                 if (logger.isDebugEnabled())
                 {

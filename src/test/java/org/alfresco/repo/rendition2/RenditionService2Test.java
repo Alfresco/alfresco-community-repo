@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -123,7 +124,6 @@ public class RenditionService2Test
         when(nodeService.exists(nodeRef)).thenReturn(true);
         when(nodeService.exists(nodeRefMissing)).thenReturn(false);
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
-        when(nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED)).thenReturn(new Date());
         when(contentData.getContentUrl()).thenReturn(contentUrl);
 
         doAnswer(invocation ->
@@ -155,6 +155,7 @@ public class RenditionService2Test
         renditionService2.setEnabled(true);
         renditionService2.setThumbnailsEnabled(true);
 
+        renditionDefinitionRegistry2.setRenditionConfigDir("alfresco/renditions/test");
         renditionDefinitionRegistry2.afterPropertiesSet();
         renditionService2.afterPropertiesSet();
 
@@ -272,5 +273,14 @@ public class RenditionService2Test
         {
             assertTrue("Expected rendition "+name, renditionNames.contains(name));
         }
+    }
+
+    @Test()
+    public void overriddenRendition()
+    {
+        // Check the standard rendition doclib has been overridden by one in alfresco/renditions/test/overrideRendition.json
+        RenditionDefinition2 doclib = renditionDefinitionRegistry2.getRenditionDefinition("doclib");
+        String resizeWidth = doclib.getTransformOptions().get("resizeWidth");
+        assertEquals("doclib has not been overridden", "180", resizeWidth);
     }
 }

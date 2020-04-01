@@ -252,8 +252,13 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
                             {
                                 map.put(RenditionDefinition2.TIMEOUT, timeoutDefault);
                             }
+                            RenditionDefinition2 original = getRenditionDefinition(def.renditionName);
                             new RenditionDefinition2Impl(def.renditionName, def.targetMediaType, map, true,
                                     RenditionDefinitionRegistry2Impl.this);
+                            if (original != null)
+                            {
+                                log.debug(readFromMessage+" replaced the rendition "+def.renditionName);
+                            }
                         }
                     }
                 }
@@ -314,15 +319,13 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     public void register(RenditionDefinition2 renditionDefinition)
     {
         String renditionName = renditionDefinition.getRenditionName();
-        RenditionDefinition2 original = getDefinition(renditionName);
-        if (original != null)
-        {
-            throw new IllegalArgumentException("RenditionDefinition "+renditionName+" was already registered.");
-        }
         Data data = getData();
+        // There may already be a rendition defined, but an extension may replace it.
+        // This is logged in a caller of this method were the file name is known.
         data.renditionDefinitions.put(renditionName, renditionDefinition);
+
         if (renditionDefinition instanceof RenditionDefinition2Impl &&
-                !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
+            !((RenditionDefinition2Impl)renditionDefinition).isDynamicallyLoaded())
         {
             log.debug("Adding static rendition "+renditionName+" into the registry");
             data.staticCount++;

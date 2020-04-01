@@ -86,11 +86,15 @@ public class RestAPIFactory
         return getRmRestWrapper().withCoreAPI();
     }
     
-    private SearchAPI getSearchAPI(UserModel userModel)
+    public SearchAPI getSearchAPI(UserModel userModel)
     {
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withSearchAPI();
-    }   
+    }
+    public SearchAPI getSearchAPI()
+    {
+        return getSearchAPI(null);
+    }
 
     public Node getNodeAPI(RepoTestModel model) throws RuntimeException
     {

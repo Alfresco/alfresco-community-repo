@@ -38,6 +38,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,7 +97,7 @@ public abstract class ConfigFileFinder
                     URL url = pathUrls.next();
                     if (url != null)
                     {
-                        String urlPath = url.getPath();
+                        String urlPath = URLDecoder.decode(url.getPath(), "UTF-8");
                         readFromDisk(urlPath, log, successReadingConfig, somethingRead);
                     }
                 }

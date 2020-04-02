@@ -33,11 +33,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -54,7 +51,7 @@ import org.springframework.beans.factory.config.TypedStringValue;
  */
 public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RMMethodSecurityPostProcessor.class);
+    private static Log logger = LogFactory.getLog(RMMethodSecurityPostProcessor.class);
 
     public static final String PROP_OBJECT_DEFINITION_SOURCE = "objectDefinitionSource";
     public static final String PROPERTY_PREFIX = "rm.methodsecurity.";
@@ -97,7 +94,10 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
         {
             if (beanFactory.containsBeanDefinition(bean))
             {
-                LOGGER.debug("Adding RM method security definitions for {}", bean);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Adding RM method security definitions for " + bean);
+                }
 
                 BeanDefinition beanDef = beanFactory.getBeanDefinition(bean);
                 PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);
@@ -134,7 +134,10 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
                 String securityBeanName = split[index] + SECURITY_BEAN_POSTFIX;
                 if (!securityBeanNameCache.contains(securityBeanName) && beanFactory.containsBean(securityBeanName))
                 {
-                    LOGGER.debug("Adding {} to list from properties.", securityBeanName);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Adding " + securityBeanName + " to list from properties.");
+                    }
 
                     securityBeanNameCache.add(securityBeanName);
                 }
@@ -163,7 +166,10 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
             }
             else
             {
-                LOGGER.warn("Missing RM security definition for method {}", key);
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Missing RM security definition for method " + key);
+                }
             }
         }
 
@@ -171,28 +177,16 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
     }
 
     /**
-     * Convert the lines of a string to a map, separating keys from values by the first "=" sign.
-     *
-     * @param stringValue The multi-line string.
-     * @return The resulting map.
-     * @throws AlfrescoRuntimeException If a non-blank line does not contain an "=" sign.
+     * @param stringValue
+     * @return
      */
-    protected Map<String, String> convertToMap(String stringValue)
+    private Map<String, String> convertToMap(String stringValue)
     {
         String[] values = stringValue.trim().split("\n");
         Map<String, String> map = new HashMap<String, String>(values.length);
         for (String value : values)
         {
-            String trimmed = value.trim();
-            if (trimmed.isEmpty())
-            {
-                continue;
-            }
-            String[] pair = trimmed.split("=", 2);
-            if (pair.length != 2)
-            {
-                throw new AlfrescoRuntimeException("Could not convert string to map " + trimmed);
-            }
+            String[] pair = value.trim().split("=");
             map.put(pair[0], pair[1]);
         }
         return map;

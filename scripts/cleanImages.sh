@@ -14,7 +14,6 @@ else
         echo "Deleting images was successful."
     else
         echo "Deleting specified images failed, so falling back to delete ALL images on system."
-        docker_images_list=$(docker images | awk '{print $3}' | uniq)
-        docker rmi -f $docker_images_list
+        docker rmi -f $(docker images -aq)
     fi
 fi

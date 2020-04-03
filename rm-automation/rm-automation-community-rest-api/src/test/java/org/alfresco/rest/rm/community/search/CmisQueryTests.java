@@ -119,7 +119,7 @@ public class CmisQueryTests extends BaseRMRestTest
         STEP("Create an rm user with read permission over the category created and contributor role within the " +
                 "collaboration site");
         rmUser = getDataUser().createRandomTestUser();
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_MANAGER);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_MANAGER.roleId);
         getRestAPIFactory().getRMUserAPI().addUserPermission(recordFolder.getParentId(), rmUser, UserPermissions.PERMISSION_READ_RECORDS);
         getDataUser().addUserToSite(rmUser, collaborationSite, UserRole.SiteContributor);
 

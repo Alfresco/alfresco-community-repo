@@ -63,7 +63,7 @@ import org.testng.annotations.Test;
 public class CmisQueryTests extends BaseRMRestTest
 {
     private static final String SEARCH_TERM = generateTestPrefix(CmisQueryTests.class);
-    private static final String sqlWithName =
+    private static final String SQL_WITH_NAME =
             "SELECT cmis:name FROM cmis:document where CONTAINS('cmis:name:*" + SEARCH_TERM + "*')";
 
     private SiteModel collaborationSite;
@@ -133,7 +133,7 @@ public class CmisQueryTests extends BaseRMRestTest
             {
                 endTime = System.currentTimeMillis();
                 ItemIterable<QueryResult> results = contentActions.getCMISSession(getAdminUser().getUsername(),
-                        getAdminUser().getPassword()).query(sqlWithName, false);
+                        getAdminUser().getPassword()).query(SQL_WITH_NAME, false);
                 assertEquals("Total number of items is not 30, got  " + results.getTotalNumItems() + "total items",
                         30, results.getTotalNumItems());
                 break;
@@ -187,7 +187,7 @@ public class CmisQueryTests extends BaseRMRestTest
     {
         // execute the cmis query
         ItemIterable<QueryResult> results =
-                contentActions.getCMISSession(nonRMUser.getUsername(), nonRMUser.getPassword()).query(sqlWithName,
+                contentActions.getCMISSession(nonRMUser.getUsername(), nonRMUser.getPassword()).query(SQL_WITH_NAME,
                         false);
         assertEquals("Total number of items is not 20, got  " + results.getTotalNumItems() + " total items",
                 20, results.getTotalNumItems());
@@ -211,7 +211,7 @@ public class CmisQueryTests extends BaseRMRestTest
         OperationContext oc = new OperationContextImpl();
         oc.setMaxItemsPerPage(10);
         ItemIterable<QueryResult> results =
-                contentActions.getCMISSession(rmUser.getUsername(), rmUser.getPassword()).query(sqlWithName,
+                contentActions.getCMISSession(rmUser.getUsername(), rmUser.getPassword()).query(SQL_WITH_NAME,
                         false, oc);
 
         // check the total number of items and has more items is true

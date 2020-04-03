@@ -46,10 +46,10 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
@@ -80,8 +80,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     private static final String AFTER_RM = "AFTER_RM";
 
+    private AuthenticationUtil authenticationUtil;
     private int maxPermissionChecks;
-
     private long maxPermissionCheckTimeMillis;
 
     public boolean supports(ConfigAttribute configAttribute)
@@ -130,6 +130,16 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         this.maxPermissionCheckTimeMillis = maxPermissionCheckTimeMillis;
     }
 
+    /**
+     * Sets the authentication util
+     *
+     * @param authenticationUtil The authentication util to set
+     */
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
+
     @SuppressWarnings("rawtypes")
     public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject)
     {
@@ -147,7 +157,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         }
         try
         {
-            if (AuthenticationUtil.isRunAsUserTheSystemUser())
+            if (authenticationUtil.isRunAsUserTheSystemUser())
             {
                 if (logger.isDebugEnabled())
                 {
@@ -555,6 +565,13 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                         .getSearchParameters()));
                 break;
             }
+        }
+
+        if (maxSize != null)
+        {
+            LimitBy limitBy = returnedObject.length() > maxSize ? LimitBy.FINAL_SIZE : LimitBy.UNLIMITED;
+            filteringResultSet.setResultSetMetaData(new SimpleResultSetMetaData(limitBy,
+                    PermissionEvaluationMode.EAGER, returnedObject.getResultSetMetaData().getSearchParameters()));
         }
 
         filteringResultSet.setNumberFound(returnedObject.getNumberFound());

@@ -31,10 +31,8 @@ import org.apache.http.client.HttpClient;
 import org.keycloak.adapters.HttpClientBuilder;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
-import org.keycloak.common.util.KeycloakUriBuilder;
 import org.springframework.beans.factory.FactoryBean;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,11 +55,6 @@ public class IdentityServiceDeploymentFactoryBean implements FactoryBean<Keycloa
     public KeycloakDeployment getObject() throws Exception
     {
         KeycloakDeployment deployment = KeycloakDeploymentBuilder.build(this.identityServiceConfig);
-
-        Class myClass = deployment.getClass();
-        Field realmField = myClass.getDeclaredField("realmInfoUrl");
-        realmField.setAccessible(true);
-        realmField.set(deployment,this.identityServiceConfig.getAuthServerUrl() + "/realms/" + this.identityServiceConfig.getRealm());
 
         // Set client with custom timeout values if client was created by the KeycloakDeploymentBuilder.
         // This can be removed if the future versions of Keycloak accept timeout values through the config.

@@ -27,6 +27,10 @@ package org.alfresco.repo.urlshortening;
 
 import junit.framework.TestCase;
 
+/**
+ * @deprecated as BitlyUrlShortenerImpl is no longer used in the core repository code.
+ */
+@Deprecated
 public class BitlyUrlShortenerTest extends TestCase
 {
     private BitlyUrlShortenerImpl shortener;
@@ -38,7 +42,7 @@ public class BitlyUrlShortenerTest extends TestCase
         assertNotNull(shortUrl);
         assertFalse(shortUrl.isEmpty());
         assertFalse(url.equals(shortUrl));
-        assertTrue(shortUrl.length()<=20);
+        assertTrue(shortUrl.length() <= url.length());
     }
     
     /**

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-super-pom</artifactId>
-        <version>10</version>
+        <version>102/version>
     </parent>
 
     <scm>
@@ -36,8 +36,8 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.50.5</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>7.28</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.50.7</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>7.29</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>

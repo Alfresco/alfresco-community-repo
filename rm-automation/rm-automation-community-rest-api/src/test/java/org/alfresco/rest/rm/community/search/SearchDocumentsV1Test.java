@@ -38,53 +38,83 @@ import org.alfresco.rest.core.search.SearchRequestBuilder;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.rest.v0.UserTrashcanAPI;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * This class contains the tests for v1 Search API with documents with CMIS query
- *
- * @author Rodica Sutu
- * @since 2.6.0.2
+ * This class contains the tests for v1 Search API with documents with CMIS and AFTS queries
  */
-public class SearchDocumentsV1CmisTest extends BaseRMRestTest
+public class SearchDocumentsV1Test extends BaseRMRestTest
 {
-    private static final String SEARCH_TERM = generateTestPrefix(SearchDocumentsV1CmisTest.class);
+    private static final String SEARCH_TERM = generateTestPrefix(SearchDocumentsV1Test.class);
     private SiteModel collaborationSite;
     private FileModel fileModel;
-    private RestRequestQueryModel queryModel;
+
+    @Autowired
+    private UserTrashcanAPI userTrashcanAPI;
+
+    /**
+     * Data Provider with: queries using CMIS and AFTS languages
+     */
+    @DataProvider
+    public static Object[][] queryTypes()
+    {
+        RestRequestQueryModel cmisQueryModel = new RestRequestQueryModel();
+        cmisQueryModel.setQuery("select * from cmis:document WHERE cmis:name LIKE '%" + SEARCH_TERM + ".txt'");
+        cmisQueryModel.setLanguage("cmis");
+
+        RestRequestQueryModel aftsQueryModel = new RestRequestQueryModel();
+        aftsQueryModel.setQuery("cm:name:*" + SEARCH_TERM);
+        aftsQueryModel.setLanguage("afts");
+
+        return new RestRequestQueryModel[][] {
+            { cmisQueryModel },
+            { aftsQueryModel }
+        };
+    }
+
     /**
      * Create a collaboration site and some documents.
      */
     @BeforeClass (alwaysRun = true)
-    public void setupSearchAPIWithCMIS() throws Exception
+    public void beforeClass() throws Exception
     {
         STEP("Create a collaboration site");
         collaborationSite = dataSite.usingAdmin().createPrivateRandomSite();
 
         STEP("Create 10 documents ending with SEARCH_TERM");
-        for (int i=0;++i<=10;)
+        for (int i = 0; ++i <= 10; )
         {
             fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM, FileType.TEXT_PLAIN.extention));
             dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
         }
-        queryModel = new RestRequestQueryModel();
-        queryModel.setQuery("select * from cmis:document WHERE cmis:name LIKE '%" + SEARCH_TERM + ".txt'");
-        queryModel.setLanguage("cmis");
+    }
 
-        //do a cmis query to wait for solr indexing
-        Utility.sleep(5000, 80000, () ->
+    /**
+     * Do the query to wait for solr indexing
+     *
+     * @param queryType the query being executed
+     * @throws Exception when maximum retry period is reached
+     */
+    private void waitIndexing(RestRequestQueryModel queryType) throws Exception
+    {
+        Utility.sleep(1000, 80000, () ->
         {
-            SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
+            SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                         .setPagingBuilder(new SearchRequestBuilder().setPagination(100, 0))
                                                                         .setFieldsBuilder(asList("id", "name"));
             SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(null).search(sqlRequest);
             assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 10,
-                "Total number of items is not 10, got  " + searchResponse.getPagination().getTotalItems() + " total items");
+                "Total number of items is not retrieved yet");
         });
     }
 
@@ -95,18 +125,19 @@ public class SearchDocumentsV1CmisTest extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenMaxItemReach () throws Exception
+        (dataProvider = "queryTypes")
+    public void searchWhenMaxItemsReach(RestRequestQueryModel queryType) throws Exception
     {
-
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
+        waitIndexing(queryType);
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI().search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 5);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 5);
+        assertEquals(searchResponse.getPagination().getCount(), 5, "Expected maxItems to be five");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
     /**
@@ -116,18 +147,19 @@ public class SearchDocumentsV1CmisTest extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenTotalItemsExceed () throws Exception
+        (dataProvider = "queryTypes")
+    public void searchWhenTotalItemsExceed(RestRequestQueryModel queryType) throws Exception
     {
-
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
+        waitIndexing(queryType);
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI().search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 6);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 6, "Expected skip count to be six");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
     /**
@@ -137,18 +169,27 @@ public class SearchDocumentsV1CmisTest extends BaseRMRestTest
      * Then hasMoreItems will be set to true
      */
     @Test
-    public void searchResultsUnderTotalItems() throws Exception
+        (dataProvider = "queryTypes")
+    public void searchResultsUnderTotalItems(RestRequestQueryModel queryType) throws Exception
     {
-
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
+        waitIndexing(queryType);
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI().search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5);
-        assertTrue(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
+        assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+    }
+
+    @AfterTest
+    @AfterClass (alwaysRun = true)
+    public void tearDown()
+    {
+        dataSite.usingAdmin().deleteSite(collaborationSite);
+        userTrashcanAPI.emptyTrashcan(getAdminUser().getUsername(), getAdminUser().getPassword());
     }
 
 }

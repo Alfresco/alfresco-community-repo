@@ -46,8 +46,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -66,7 +64,6 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     private RestRequestQueryModel queryModel;
 
 
-
     /**
      * Create a collaboration site and some in place records.
      */
@@ -76,7 +73,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         STEP("Create a collaboration site");
         collaborationSite = dataSite.usingAdmin().createPrivateRandomSite();
 
-        STEP("Create a collaborator user for the collaboration site");
+        STEP("Create a site manager user for the collaboration site");
         nonRMUser = getDataUser().createRandomTestUser();
         getDataUser().addUserToSite(nonRMUser, collaborationSite, UserRole.SiteManager);
 
@@ -84,7 +81,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         rmUser = getDataUser().createRandomTestUser();
 
         STEP("Create 10 documents and declare as records");
-        for (int i=0;++i<=10;)
+        for (int i = 0; ++i <= 10; )
         {
             fileModel = new FileModel(String.format("%s.%s", "Record" + SEARCH_TERM + i, FileType.TEXT_PLAIN.extention));
             fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
@@ -93,24 +90,25 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         STEP("Create record folder and some records ");
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         assignFillingPermissionsOnCategory(rmUser, recordFolder.getId(), UserPermissions.PERMISSION_READ_RECORDS,
-                ROLE_RM_MANAGER);
-        for (int i=0;++i<=10;)
+            ROLE_RM_MANAGER);
+        for (int i = 0; ++i <= 10; )
         {
-            createElectronicRecord(recordFolder.getId(),"Record" + SEARCH_TERM + i );
+            createElectronicRecord(recordFolder.getId(), "Record" + SEARCH_TERM + i);
         }
 
         queryModel = new RestRequestQueryModel();
         queryModel.setQuery("select * from cmis:document WHERE cmis:name LIKE 'Record" + SEARCH_TERM + "%'");
         queryModel.setLanguage("cmis");
     }
+
     /**
      * Given some documents with names starting with a particular test
-     * When executing the search query  with paging
+     * When executing the search query with paging
      * And setting the skipCount and maxItems to reach the number of total items
      * Then hasMoreItems will be set to false
      */
     @Test
-    private void searchWhenTotalItemsReach () throws Exception
+    public void searchWhenTotalItemsReach() throws Exception
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 15))
@@ -124,10 +122,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     }
 
     @Test
-    private void searchWhenTotalItemsReachWithNonRM () throws Exception
+    public void searchWhenTotalItemsReachWithNonRM() throws Exception
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
+                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 0))
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
@@ -136,16 +134,16 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertFalse(searchResponse.getPagination().isHasMoreItems());
         assertEquals(searchResponse.getEntries().size(), 5);
     }
+
     /**
      * Given some documents with names starting with a particular text
-     * When executing the search query  with paging
+     * When executing the search query with paging
      * And setting skipCount and maxItems to exceed the number of total items
      * Then hasMoreItems will be set to false
      */
     @Test
-    private void searchWhenTotalItemsExceedRMUser () throws Exception
+    public void searchWhenTotalItemsExceedRMUser() throws Exception
     {
-
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 16))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -158,9 +156,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     }
 
     @Test
-    private void searchWhenTotalItemsExceedNonRMUser () throws Exception
+    public void searchWhenTotalItemsExceedNonRMUser() throws Exception
     {
-
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -174,14 +171,13 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
 
     /**
      * Given some documents ending with a particular text
-     * When executing the search query  with paging
+     * When executing the search query with paging
      * And setting skipCount and maxItems under the number of total items
-     * Then hasMoreItems will be set to false
+     * Then hasMoreItems will be set to true
      */
     @Test
-    private void searchResultsUnderTotalItemsRMUser() throws Exception
+    public void searchResultsUnderTotalItemsRMUser() throws Exception
     {
-
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 15))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -192,10 +188,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         assertTrue(searchResponse.getPagination().isHasMoreItems());
         assertEquals(searchResponse.getEntries().size(), 4);
     }
-    @Test
-    private void searchResultsUnderTotalItemsNonRMUser() throws Exception
-    {
 
+    @Test
+    public void searchResultsUnderTotalItemsNonRMUser() throws Exception
+    {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));

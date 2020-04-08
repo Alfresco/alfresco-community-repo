@@ -39,6 +39,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -49,6 +50,7 @@ import org.apache.chemistry.opencmis.client.api.OperationContext;
 import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -125,28 +127,13 @@ public class CmisQueryTests extends BaseRMRestTest
 
 
         //do a cmis query to wait for solr indexing
-        long currentTime = System.currentTimeMillis();
-        long endTime = 0;
-        do
+        Utility.sleep(5000, 80000, () ->
         {
-            try
-            {
-                endTime = System.currentTimeMillis();
-                ItemIterable<QueryResult> results = contentActions.getCMISSession(getAdminUser().getUsername(),
-                        getAdminUser().getPassword()).query(SQL_WITH_NAME, false);
-                assertEquals("Total number of items is not 30, got  " + results.getTotalNumItems() + "total items",
-                        30, results.getTotalNumItems());
-                break;
-            }
-            catch (AssertionError | Exception e)
-            {
-                if (endTime - currentTime > 30000)
-                {
-                    throw new AssertionError("Maximum retry period reached, test failed.", e);
-                }
-                Thread.sleep(5000);
-            }
-        } while (true);
+            ItemIterable<QueryResult> results = contentActions.getCMISSession(getAdminUser().getUsername(),
+                getAdminUser().getPassword()).query(SQL_WITH_NAME, false);
+            Assert.assertEquals(results.getTotalNumItems(), 30,
+                "Total number of items is not 10, got  " + results.getTotalNumItems() + " total items");
+        });
     }
 
     /**
@@ -183,7 +170,7 @@ public class CmisQueryTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsWithSpecificNamesCmisQuery() throws Exception
+    public void getDocumentsWithSpecificNamesCmisQuery()
     {
         // execute the cmis query
         ItemIterable<QueryResult> results =
@@ -206,7 +193,7 @@ public class CmisQueryTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsCmisQueryWithPagination() throws Exception
+    public void getDocumentsCmisQueryWithPagination()
     {
         OperationContext oc = new OperationContextImpl();
         oc.setMaxItemsPerPage(10);

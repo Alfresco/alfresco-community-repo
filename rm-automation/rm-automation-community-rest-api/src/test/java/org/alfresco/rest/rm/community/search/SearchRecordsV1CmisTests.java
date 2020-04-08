@@ -92,7 +92,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         STEP("Create record folder and some records ");
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
         assignFillingPermissionsOnCategory(rmUser, recordFolder.getId(), UserPermissions.PERMISSION_READ_RECORDS,
-            ROLE_RM_MANAGER);
+            ROLE_RM_MANAGER.roleId);
         for (int i = 0; ++i <= 10; )
         {
             createElectronicRecord(recordFolder.getId(), "Record" + SEARCH_TERM + i);

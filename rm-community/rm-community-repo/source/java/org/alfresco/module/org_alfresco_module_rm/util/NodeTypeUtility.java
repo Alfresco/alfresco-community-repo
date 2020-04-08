@@ -26,8 +26,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
@@ -41,10 +40,11 @@ import org.alfresco.util.ParameterCheck;
  */
 public class NodeTypeUtility
 {
+    /** Static cache for results of types that are instances of other Alfresco types. */
+    private static ConcurrentHashMap<String, Boolean> instanceOfCache = new ConcurrentHashMap<>();
+
     /** Dictionary service */
     private DictionaryService dictionaryService;
-
-    private static Map<String, Boolean> instanceOfCache = new WeakHashMap<>();
 
     /**
      * @param dictionaryService dictionary service
@@ -66,24 +66,8 @@ public class NodeTypeUtility
         ParameterCheck.mandatory("className", className);
         ParameterCheck.mandatory("ofClassName", ofClassName);
 
-        boolean result = false;
-
         String key = className.toString() + "|" + ofClassName.toString();
-        if (instanceOfCache.containsKey(key))
-        {
-            result = instanceOfCache.get(key);
-        }
-        else
-        {
-            if (ofClassName.equals(className) ||
-                dictionaryService.isSubClass(className, ofClassName))
-            {
-                result = true;
-            }
-
-            instanceOfCache.put(key, result);
-        }
-
-        return result;
+        return instanceOfCache.computeIfAbsent(key, k ->
+                (ofClassName.equals(className) || dictionaryService.isSubClass(className, ofClassName)));
     }
 }

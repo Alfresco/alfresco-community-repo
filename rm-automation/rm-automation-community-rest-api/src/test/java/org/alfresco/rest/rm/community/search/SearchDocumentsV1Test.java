@@ -97,16 +97,19 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
             fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM, FileType.TEXT_PLAIN.extention));
             dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
         }
+        waitIndexing();
     }
 
     /**
      * Do the query to wait for solr indexing
      *
-     * @param queryType the query being executed
      * @throws Exception when maximum retry period is reached
      */
-    private void waitIndexing(RestRequestQueryModel queryType) throws Exception
+    private void waitIndexing() throws Exception
     {
+        RestRequestQueryModel queryType = new RestRequestQueryModel();
+        queryType.setQuery("cm:name:*" + SEARCH_TERM);
+        queryType.setLanguage("afts");
         Utility.sleep(1000, 80000, () ->
         {
             SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
@@ -124,11 +127,9 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * And setting the skipCount and maxItems to reach the number of total items
      * Then hasMoreItems will be set to false
      */
-    @Test
-        (dataProvider = "queryTypes")
+    @Test(dataProvider = "queryTypes")
     public void searchWhenMaxItemsReach(RestRequestQueryModel queryType) throws Exception
     {
-        waitIndexing(queryType);
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -146,11 +147,9 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * And setting skipCount and maxItems to exceed the number of total items
      * Then hasMoreItems will be set to false
      */
-    @Test
-        (dataProvider = "queryTypes")
+    @Test(dataProvider = "queryTypes")
     public void searchWhenTotalItemsExceed(RestRequestQueryModel queryType) throws Exception
     {
-        waitIndexing(queryType);
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -168,11 +167,9 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * And setting skipCount and maxItems under the number of total items
      * Then hasMoreItems will be set to true
      */
-    @Test
-        (dataProvider = "queryTypes")
+    @Test(dataProvider = "queryTypes")
     public void searchResultsUnderTotalItems(RestRequestQueryModel queryType) throws Exception
     {
-        waitIndexing(queryType);
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))
                                                                           .setFieldsBuilder(asList("id", "name"));
@@ -184,7 +181,6 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
         assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
-    @AfterTest
     @AfterClass (alwaysRun = true)
     public void tearDown()
     {

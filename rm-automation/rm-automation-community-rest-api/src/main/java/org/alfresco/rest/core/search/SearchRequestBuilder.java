@@ -34,8 +34,6 @@ import org.alfresco.rest.search.SearchRequest;
 
 /**
  * Builder class for creating a search api request
- * @author Rodica Sutu
- * @since  2.6.0.2
  */
 public class SearchRequestBuilder extends SearchRequest
 {
@@ -49,7 +47,7 @@ public class SearchRequestBuilder extends SearchRequest
     /**
      * Set the sql statement for the SearchRequest
      *
-     * @param query
+     * @param query sql statement
      * @return search  request
      */
     public SearchRequestBuilder setQueryBuilder(RestRequestQueryModel query)
@@ -61,7 +59,7 @@ public class SearchRequestBuilder extends SearchRequest
     /**
      * Set the paging statement for the SearchRequest
      *
-     * @param paging
+     * @param paging pagination requested
      * @return search request
      */
     public SearchRequestBuilder setPagingBuilder(Pagination paging)
@@ -82,9 +80,9 @@ public class SearchRequestBuilder extends SearchRequest
     }
 
     /**
-     * Set the paging statement for the SearchRequest
+     * Set the requested fields for the SearchRequest
      *
-     * @param fields
+     * @param fields requested fields
      * @return search request
      */
     public SearchRequestBuilder setFieldsBuilder(List<String> fields)

@@ -41,19 +41,19 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
+import org.alfresco.rest.v0.UserTrashcanAPI;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
  * This class contains the tests for v1 Search API  with records with CMIS query
- *
- * @author Rodica Sutu
- * @since 2.6.0.2
  */
 public class SearchRecordsV1CmisTests extends BaseRMRestTest
 {
@@ -63,6 +63,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     private FileModel fileModel;
     private RestRequestQueryModel queryModel;
 
+    @Autowired
+    private UserTrashcanAPI userTrashcanAPI;
 
     /**
      * Create a collaboration site and some in place records.
@@ -115,10 +117,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 5);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 15);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 5);
+        assertEquals(searchResponse.getPagination().getCount(), 5, "Expected maxItems to be five");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
     @Test
@@ -129,10 +131,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 5);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 5);
+        assertEquals(searchResponse.getPagination().getCount(), 5, "Expected maxItems to be five");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
     }
 
     /**
@@ -149,10 +151,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 16);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 16, "Expected skip count to be sixteen");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
     @Test
@@ -163,10 +165,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 6);
-        assertFalse(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 6, "Expected skip count to be six");
+        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
     /**
@@ -183,10 +185,10 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 15);
-        assertTrue(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
+        assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
     }
 
     @Test
@@ -197,9 +199,16 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
                                                                           .setFieldsBuilder(asList("id", "name"));
 
         SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4);
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5);
-        assertTrue(searchResponse.getPagination().isHasMoreItems());
-        assertEquals(searchResponse.getEntries().size(), 4);
+        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
+        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
+        assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
+        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+    }
+
+    @AfterClass (alwaysRun = true)
+    public void tearDown()
+    {
+        dataSite.usingAdmin().deleteSite(collaborationSite);
+        userTrashcanAPI.emptyTrashcan(getAdminUser().getUsername(), getAdminUser().getPassword());
     }
 }

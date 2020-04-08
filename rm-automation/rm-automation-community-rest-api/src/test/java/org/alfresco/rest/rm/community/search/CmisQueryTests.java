@@ -156,7 +156,7 @@ public class CmisQueryTests extends BaseRMRestTest
      * Then I get all documents names 100 per page
      * </pre>
      */
-    @Test
+    @Test (enabled = false, description = "Disabling test because there's no version of ACS that supports this yet")
     @AlfrescoTest (jira = "MNT-19442")
     public void getAllDocumentsNamesCmisQuery()
     {

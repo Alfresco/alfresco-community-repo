@@ -49,7 +49,6 @@
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi-test</artifactId>
          <version>${tas.restapi.version}</version>
-         <scope>compile</scope>
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>

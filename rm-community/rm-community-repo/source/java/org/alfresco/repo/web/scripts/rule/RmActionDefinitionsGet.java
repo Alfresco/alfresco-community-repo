@@ -36,6 +36,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -50,10 +51,18 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class RmActionDefinitionsGet extends DeclarativeWebScript
 {
     private RecordsManagementActionService recordsManagementActionService;
+    private ActionService extendedActionService;
+
+    private List<String> whitelistedActions = WhitelistedDMActions.getActionsList();
 
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
+    }
+
+    public void setExtendedActionService(ActionService extendedActionService)
+    {
+        this.extendedActionService = extendedActionService;
     }
 
     /**
@@ -62,13 +71,20 @@ public class RmActionDefinitionsGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        List<RecordsManagementAction> actions = recordsManagementActionService.getRecordsManagementActions();
-        Set<ActionDefinition> defs = new HashSet<>(actions.size());
-        for (RecordsManagementAction action : actions)
+        List<RecordsManagementAction> rmActions = recordsManagementActionService.getRecordsManagementActions();
+        List<ActionDefinition> actions = extendedActionService.getActionDefinitions();
+        Set<ActionDefinition> defs = new HashSet<>(rmActions.size());
+        for (RecordsManagementAction action : rmActions)
         {
             if (action.isPublicAction())
             {
                 defs.add(action.getRecordsManagementActionDefinition());
+            }
+        }
+        // If there are any DM whitelisted actions for RM add them in the rule actions
+        for (ActionDefinition actionDefinition: actions) {
+            if (whitelistedActions.contains(actionDefinition.getName())){
+                defs.add(actionDefinition);
             }
         }
 

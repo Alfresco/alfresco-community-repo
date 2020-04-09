@@ -527,6 +527,7 @@
          class="org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet"
            parent="webscript">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
+      <property name="extendedActionService" ref="actionService"/>
    </bean>
 
     <!-- REST impl for GET Action Condition Defitions for RM -->

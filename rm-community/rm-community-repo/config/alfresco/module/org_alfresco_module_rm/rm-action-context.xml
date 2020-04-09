@@ -1153,42 +1153,5 @@
        <property name="publicAction" value="false"/>
        <property name="auditable" value="false"/>
    </bean>
-
-   <!-- Glacier Archive action   -->
-   <bean id="archiveAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean"
-         parent="rmProxyAction" lazy-init="true">
-      <property name="target">
-         <ref bean="archiveAction" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="allow_security" />
-         </list>
-      </property>
-   </bean>
-   <bean id="archiveAction" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction"
-         parent="rmAction" lazy-init="true">
-      <property name="publicAction" value="true" />
-      <property name="delegateAction" ref="archive" />
-   </bean>
-
-
-   <!-- Glacier Restore action   -->
-   <bean id="restoreAction_proxy" class="org.alfresco.module.org_alfresco_module_rm.capability.RMActionProxyFactoryBean"
-         parent="rmProxyAction" lazy-init="true">
-      <property name="target">
-         <ref bean="restoreAction" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="allow_security" />
-         </list>
-      </property>
-   </bean>
-   <bean id="restoreAction" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DelegateAction"
-         parent="rmAction" lazy-init="true">
-      <property name="publicAction" value="true" />
-      <property name="delegateAction" ref="restore" />
-   </bean>
 </beans>
 

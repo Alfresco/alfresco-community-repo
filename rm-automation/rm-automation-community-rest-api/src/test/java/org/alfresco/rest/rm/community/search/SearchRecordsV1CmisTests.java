@@ -90,7 +90,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         STEP("Create 10 documents and declare as records");
         for (int i = 0; ++i <= 10; )
         {
-            fileModel = new FileModel(String.format("%s.%s", "Record" + SEARCH_TERM + i, FileType.TEXT_PLAIN.extention));
+            fileModel = new FileModel(String.format("%s.%s", "Record" + SEARCH_TERM + i, FileType.TEXT_PLAIN.extension));
             fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
             getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(fileModel.getNodeRefWithoutVersion());
         }
@@ -126,7 +126,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenTotalItemsReach() throws Exception
+    public void searchWhenTotalItemsReach()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 15))
@@ -140,7 +140,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     }
 
     @Test
-    public void searchWhenTotalItemsReachWithNonRM() throws Exception
+    public void searchWhenTotalItemsReachWithNonRM()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 0))
@@ -160,7 +160,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenTotalItemsExceedRMUser() throws Exception
+    public void searchWhenTotalItemsExceedRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 16))
@@ -174,7 +174,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     }
 
     @Test
-    public void searchWhenTotalItemsExceedNonRMUser() throws Exception
+    public void searchWhenTotalItemsExceedNonRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
@@ -194,7 +194,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to true
      */
     @Test
-    public void searchResultsUnderTotalItemsRMUser() throws Exception
+    public void searchResultsUnderTotalItemsRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 15))
@@ -208,7 +208,7 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     }
 
     @Test
-    public void searchResultsUnderTotalItemsNonRMUser() throws Exception
+    public void searchResultsUnderTotalItemsNonRMUser()
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))

@@ -85,12 +85,20 @@ public class RestAPIFactory
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withCoreAPI();
     }
-    
-    private SearchAPI getSearchAPI(UserModel userModel)
+
+    public SearchAPI getSearchAPI(UserModel userModel)
     {
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withSearchAPI();
-    }   
+    }
+
+    /**
+     * When no user is given the default is set to admin
+     */
+    public SearchAPI getSearchAPI()
+    {
+        return getSearchAPI(null);
+    }
 
     public Node getNodeAPI(RepoTestModel model) throws RuntimeException
     {

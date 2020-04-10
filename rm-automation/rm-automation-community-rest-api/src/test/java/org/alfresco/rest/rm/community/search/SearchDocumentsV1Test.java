@@ -86,7 +86,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * Create a collaboration site and some documents.
      */
     @BeforeClass (alwaysRun = true)
-    public void beforeClass() throws Exception
+    public void setupSearchDocumentsV1Test() throws Exception
     {
         STEP("Create a collaboration site");
         collaborationSite = dataSite.usingAdmin().createPrivateRandomSite();

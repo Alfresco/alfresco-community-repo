@@ -43,6 +43,7 @@ import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.rest.v0.UserTrashcanAPI;
 import org.alfresco.rest.v0.service.RoleService;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -105,6 +106,17 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         queryModel = new RestRequestQueryModel();
         queryModel.setQuery("select * from cmis:document WHERE cmis:name LIKE 'Record" + SEARCH_TERM + "%'");
         queryModel.setLanguage("cmis");
+
+        //wait for solr indexing
+        Utility.sleep(1000, 80000, () ->
+        {
+            SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
+                                                                        .setPagingBuilder(new SearchRequestBuilder().setPagination(100, 0))
+                                                                        .setFieldsBuilder(asList("id", "name"));
+            SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(null).search(sqlRequest);
+            assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 20,
+                    "Total number of items is not retrieved yet");
+        });
     }
 
     /**

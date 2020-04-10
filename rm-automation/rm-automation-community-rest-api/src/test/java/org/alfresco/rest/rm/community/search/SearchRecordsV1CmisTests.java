@@ -42,6 +42,7 @@ import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchResponse;
 import org.alfresco.rest.v0.UserTrashcanAPI;
+import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -65,6 +66,9 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
 
     @Autowired
     private UserTrashcanAPI userTrashcanAPI;
+
+    @Autowired
+    private RoleService roleService;
 
     /**
      * Create a collaboration site and some in place records.
@@ -91,8 +95,8 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
         }
         STEP("Create record folder and some records ");
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
-        assignUserPermissionsOnCategoryAndRMRole(rmUser, recordFolder.getId(), UserPermissions.PERMISSION_READ_RECORDS,
-            ROLE_RM_MANAGER.roleId);
+        roleService.assignUserPermissionsOnCategoryAndRMRole(rmUser, recordFolder.getId(),
+                UserPermissions.PERMISSION_READ_RECORDS, ROLE_RM_MANAGER.roleId);
         for (int i = 0; ++i <= 10; )
         {
             createElectronicRecord(recordFolder.getId(), "Record" + SEARCH_TERM + i);

@@ -95,7 +95,7 @@ public class CmisQueryTests extends BaseRMRestTest
         for (int i = 0; ++i <= 10; )
         {
             FileModel fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM,
-                    FileType.TEXT_PLAIN.extention));
+                    FileType.TEXT_PLAIN.extension));
             dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
         }
 
@@ -107,7 +107,7 @@ public class CmisQueryTests extends BaseRMRestTest
         for (int i = 0; ++i <= 10; )
         {
             FileModel fileModel = new FileModel(String.format("%s.%s", "InPlace " + SEARCH_TERM + i,
-                    FileType.TEXT_PLAIN.extention));
+                    FileType.TEXT_PLAIN.extension));
             fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
             getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(fileModel.getNodeRefWithoutVersion());
         }

@@ -159,6 +159,7 @@
         <property name="maxPermissionChecks">
             <value>${system.acl.maxPermissionChecks}</value>
         </property>
+        <property name="authenticationUtil" ref="rm.authenticationUtil" />
     </bean>
 
     <!-- Link up after method call security -->

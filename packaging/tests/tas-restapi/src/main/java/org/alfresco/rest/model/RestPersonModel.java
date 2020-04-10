@@ -71,6 +71,8 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
     private String userStatus;
     private String password;
     private Object properties;
+    private String quotaUsed;
+    private String quota;
     private Map<String, Boolean> capabilities;
 
     public RestPersonModel()
@@ -319,7 +321,25 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
         this.displayName = displayName;
     }
 
-    /**
+    public String getQuotaUsed() {
+		return quotaUsed;
+	}
+
+
+	public void setQuotaUsed(String quotaUsed) {
+		this.quotaUsed = quotaUsed;
+	}
+
+	public String getQuota() {
+		return quota;
+	}
+
+	public void setQuota(String quota) {
+		this.quota = quota;
+	}
+
+
+	/**
      * Generate a PersonModel with random values for all existing fields excluding fields specified as ingnoredFields
      * 
      * @param ignoredFields field to be excluded when generating a random model

@@ -94,7 +94,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
         STEP("Create 10 documents ending with SEARCH_TERM");
         for (int i = 0; ++i <= 10; )
         {
-            fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM, FileType.TEXT_PLAIN.extention));
+            fileModel = new FileModel(String.format("%s.%s", "Doc" + i + SEARCH_TERM, FileType.TEXT_PLAIN.extension));
             dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
         }
         waitIndexing();
@@ -128,7 +128,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test(dataProvider = "queryTypes")
-    public void searchWhenMaxItemsReach(RestRequestQueryModel queryType) throws Exception
+    public void searchWhenMaxItemsReach(RestRequestQueryModel queryType)
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
@@ -148,7 +148,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test(dataProvider = "queryTypes")
-    public void searchWhenTotalItemsExceed(RestRequestQueryModel queryType) throws Exception
+    public void searchWhenTotalItemsExceed(RestRequestQueryModel queryType)
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
@@ -169,7 +169,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      */
     @Test (dataProvider = "queryTypes",
         enabled = false, description = "Disabling test because there's no version of ACS that supports this yet")
-    public void searchResultsUnderTotalItems(RestRequestQueryModel queryType) throws Exception
+    public void searchResultsUnderTotalItems(RestRequestQueryModel queryType)
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)
                                                                           .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))

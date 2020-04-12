@@ -85,7 +85,7 @@ public abstract class ConfigScheduler<Data>
 
     public ConfigScheduler(Object client)
     {
-        jobName = client.getClass().getName()+"Job";
+        jobName = client.getClass().getName()+"Job@"+Integer.toHexString(System.identityHashCode(client));
     }
 
     public abstract boolean readConfig() throws IOException;

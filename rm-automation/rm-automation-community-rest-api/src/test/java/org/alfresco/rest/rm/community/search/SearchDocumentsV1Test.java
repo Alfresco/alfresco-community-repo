@@ -167,8 +167,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
      * And setting skipCount and maxItems under the number of total items
      * Then hasMoreItems will be set to true
      */
-    @Test (dataProvider = "queryTypes",
-        enabled = false, description = "Disabling test because there's no version of ACS that supports this yet")
+    @Test(dataProvider = "queryTypes")
     public void searchResultsUnderTotalItems(RestRequestQueryModel queryType)
     {
         final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryType)

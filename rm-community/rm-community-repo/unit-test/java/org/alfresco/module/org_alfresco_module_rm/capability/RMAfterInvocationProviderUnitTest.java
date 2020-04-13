@@ -110,6 +110,7 @@ public class RMAfterInvocationProviderUnitTest
 		SearchParameters searchParameters = mock(SearchParameters.class);
 		when(searchParameters.getMaxItems()).thenReturn(1);
 		when(searchParameters.getSkipCount()).thenReturn(0);
+		when(searchParameters.getLanguage()).thenReturn("afts");
 		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
 		// Call the method under test.
@@ -137,6 +138,7 @@ public class RMAfterInvocationProviderUnitTest
 		SearchParameters searchParameters = mock(SearchParameters.class);
 		when(searchParameters.getMaxItems()).thenReturn(1);
 		when(searchParameters.getSkipCount()).thenReturn(1);
+		when(searchParameters.getLanguage()).thenReturn("afts");
 		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
 		// Call the method under test.
@@ -166,6 +168,7 @@ public class RMAfterInvocationProviderUnitTest
 		SearchParameters searchParameters = mock(SearchParameters.class);
 		when(searchParameters.getMaxItems()).thenReturn(0);
 		when(searchParameters.getSkipCount()).thenReturn(0);
+		when(searchParameters.getLanguage()).thenReturn("afts");
 		when(resultSetMetaData.getSearchParameters()).thenReturn(searchParameters);
 
 		// Call the method under test.

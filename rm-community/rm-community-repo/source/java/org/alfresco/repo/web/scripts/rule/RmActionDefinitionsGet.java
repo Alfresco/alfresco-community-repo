@@ -82,8 +82,10 @@ public class RmActionDefinitionsGet extends DeclarativeWebScript
             }
         }
         // If there are any DM whitelisted actions for RM add them in the rule actions
-        for (ActionDefinition actionDefinition: actions) {
-            if (whitelistedActions.contains(actionDefinition.getName())){
+        for (ActionDefinition actionDefinition : actions)
+        {
+            if (whitelistedActions.contains(actionDefinition.getName()))
+            {
                 defs.add(actionDefinition);
             }
         }

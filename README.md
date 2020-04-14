@@ -4,7 +4,7 @@
 Please refer to our [How to contribute](/CONTRIBUTING.md) guide and our [Contributor Covenant Code of Conduct](/CODE_OF_CONDUCT.md).
 
 ## Configuring and starting Alfresco/Share
-* Clone the project (e.g. `git clone git@gitlab.alfresco.com:records-management/records-management.git`)
+* Clone the project (e.g. `git clone git@github.com:Alfresco/governance-services.git`)
 * Import the project as a maven project
 * Start the Alfresco/Share instances with the following commands:
 

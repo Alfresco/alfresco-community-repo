@@ -19,7 +19,7 @@ Recorded content can be explicitly destroyed whilst maintaining the original nod
 
 ### Artifacts and Guidance
 
-* Source Code Link: [GitLab](https://gitlab.alfresco.com/records-management/records-management/tree/master)
+* Source Code Link: [GitHub](https://github.com/Alfresco/records-management)
 * License: Alfresco Community
 * Issue Tracker Link: [JIRA RM](https://issues.alfresco.com/jira/projects/RM/summary)
 * Contribution Model: Alfresco Closed Source

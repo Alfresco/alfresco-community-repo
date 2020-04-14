@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm</artifactId>
    <packaging>pom</packaging>
-   <version>2.6.3-SNAPSHOT</version>
+   <version>2.6.3</version>
    <name>Alfresco Records Management</name>
 
    <parent>
@@ -24,7 +24,7 @@
       <connection>scm:git:ssh://git@github.com/Alfresco/governance-services.git</connection>
       <developerConnection>scm:git:ssh://git@github.com/Alfresco/governance-services.git</developerConnection>
       <url>scm:git:ssh://git@github.com/Alfresco/governance-services.git</url>
-     <tag>HEAD</tag>
+     <tag>V2.6.3</tag>
   </scm>
 
    <issueManagement>

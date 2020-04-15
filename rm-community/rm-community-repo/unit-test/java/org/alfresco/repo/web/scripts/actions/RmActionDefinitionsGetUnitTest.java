@@ -55,6 +55,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 
+
+/**
+ * Unit test for {@link RmActionDefinitionsGet}.
+ */
 public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest implements RecordsManagementModel
 {
     @Mock

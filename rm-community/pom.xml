@@ -73,9 +73,9 @@
    </dependencyManagement>
 
    <properties>
-      <spring.version>5.1.8.RELEASE</spring.version>
-
-      <alfresco.version>6.2.0-ga</alfresco.version>
+      <spring.version>5.2.2.RELEASE</spring.version>
+      <alfresco.min.version>6.2.0</alfresco.min.version>
+      <alfresco.version>6.3.0-A5</alfresco.version>
       <alfresco.min.version>6.1</alfresco.min.version>
       <share.version>6.2.0</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->

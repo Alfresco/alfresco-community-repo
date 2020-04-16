@@ -57,10 +57,7 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 
 
 /**
- * Unit test for {@link RmActionDefinitionsGet} that checks if the whitelitsed actions for rm are available.
- *
- * @author Elena Hardon
- * @since 3.4
+ * Unit test for {@link RmActionDefinitionsGet} that checks if the whitelisted actions for rm are available.
  */
 public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
 {

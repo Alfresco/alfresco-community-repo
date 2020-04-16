@@ -1153,5 +1153,5 @@
        <property name="publicAction" value="false"/>
        <property name="auditable" value="false"/>
    </bean>
-
 </beans>
+

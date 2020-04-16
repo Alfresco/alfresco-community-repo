@@ -27,11 +27,13 @@
 package org.alfresco.repo.web.scripts.actions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,14 +42,12 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet;
 import org.alfresco.repo.web.scripts.rule.WhitelistedDMActions;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -57,9 +57,12 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 
 
 /**
- * Unit test for {@link RmActionDefinitionsGet}.
+ * Unit test for {@link RmActionDefinitionsGet} that checks if the whitelitsed actions for rm are available.
+ *
+ * @author Elena Hardon
+ * @since 3.4
  */
-public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest implements RecordsManagementModel
+public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
 {
     @Mock
     private RecordsManagementActionService recordsManagementActionService;
@@ -104,25 +107,50 @@ public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest implem
     {
         List<ActionDefinition> dmActionDefinitions = new ArrayList<>();
 
-        for (String action: whitelistedActions) {
+        for (String action : whitelistedActions)
+        {
             dmActionDefinitions.add(new ActionDefinitionImpl(action));
         }
 
         when(mockedRecordsManagementActionService.getRecordsManagementActions()).thenReturn(Collections.emptyList());
         when(mockedExtendedActionService.getActionDefinitions()).thenReturn(dmActionDefinitions);
 
-        JSONObject jsonResponse = executeJSONWebScript(Collections.emptyMap());
+        String jsonResponse = executeWebScript(Collections.emptyMap());
         assertNotNull(jsonResponse);
-        String responseJSONString = jsonResponse.toString();
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, ArrayList<LinkedHashMap<String, Object>>> responseMap = mapper.readValue(responseJSONString, Map.class);
-        ArrayList<LinkedHashMap<String, Object>> actionDefinitions =  responseMap.get("data");
+        Map<String, ArrayList<LinkedHashMap<String, Object>>> responseMap = mapper.readValue(jsonResponse, Map.class);
+        ArrayList<LinkedHashMap<String, Object>> actionDefinitions = responseMap.get("data");
 
         assertEquals(WhitelistedDMActions.getActionsList().size(), actionDefinitions.size());
 
-        for (LinkedHashMap<String, Object> actionDefinition: actionDefinitions) {
+        for (LinkedHashMap<String, Object> actionDefinition : actionDefinitions)
+        {
             assertTrue(whitelistedActions.contains(actionDefinition.get("name")));
         }
+    }
+
+    /**
+     * Given the extendedActionService only contains non whitelisted actions
+     * When retrieving RM Action Definitions
+     * Then the response does not contain the non whitelisted actions
+     */
+    @Test
+    public void getRmActionDefinitionsWithNonWhitelistedDMActions() throws Exception
+    {
+        String dmAction = "notWhitelisted";
+        List<ActionDefinition> dmActionDefinitions = Arrays.asList(new ActionDefinitionImpl(dmAction));
+        when(mockedRecordsManagementActionService.getRecordsManagementActions()).thenReturn(Collections.emptyList());
+        when(mockedExtendedActionService.getActionDefinitions()).thenReturn(dmActionDefinitions);
+
+        String jsonResponse = executeWebScript(Collections.emptyMap());
+        assertNotNull(jsonResponse);
+
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, ArrayList<LinkedHashMap<String, Object>>> responseMap = mapper.readValue(jsonResponse, Map.class);
+        ArrayList<LinkedHashMap<String, Object>> actionDefinitions = responseMap.get("data");
+
+        // Action definitions should only contain whitelisted DM actions and rm actions
+        assertFalse(actionDefinitions.contains(dmAction));
     }
 }

@@ -65,7 +65,7 @@ import org.springframework.extensions.webscripts.AbstractWebScript;
 public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
 {
     @Mock
-    private RecordsManagementActionService recordsManagementActionService;
+    private RecordsManagementActionService mockedRecordsManagementActionService;
     @Mock
     private ActionService mockedExtendedActionService;
 
@@ -93,7 +93,7 @@ public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
     public void before()
     {
         MockitoAnnotations.initMocks(this);
-        webScript.setRecordsManagementActionService(recordsManagementActionService);
+        webScript.setRecordsManagementActionService(mockedRecordsManagementActionService);
         webScript.setExtendedActionService(mockedExtendedActionService);
     }
 

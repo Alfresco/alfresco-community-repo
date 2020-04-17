@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.admin;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -106,14 +107,16 @@ public class Log4JHierarchyInit implements ApplicationContextAware
     {
         try
         {
+            Properties mainProperties=new Properties();
             // Get the PropertyConfigurator
             Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
-            Method method = clazz.getMethod("configure", URL.class);
+            Method method = clazz.getMethod("configure", Properties.class);
             // Import using this method
             for (String url : extraLog4jUrls)
             {
-                importLogSettings(method, url);
+                importLogSettings(url, mainProperties);
             }
+            method.invoke(null, mainProperties);
         }
         catch (ClassNotFoundException e)
         {
@@ -124,10 +127,17 @@ public class Log4JHierarchyInit implements ApplicationContextAware
         {
             throw new RuntimeException("Unable to find method 'configure' on class 'org.apache.log4j.PropertyConfigurator'");
         }
+        catch(Throwable t)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Failed to add extra Logger configuration: \n" + "   Error: " + t.getMessage(), t);
+            }
+        }
         
     }
 
-    private void importLogSettings(Method method, String springUrl)
+    private void importLogSettings(String springUrl, Properties mainProperties)
     {
         Resource[] resources = null;
 
@@ -145,14 +155,17 @@ public class Log4JHierarchyInit implements ApplicationContextAware
         {
             try
             {
-                URL url = resource.getURL();
-                method.invoke(null, url);
+                InputStream inputStream = resource.getInputStream();
+                Properties properties = new Properties();
+                properties.load(inputStream);
+                mainProperties.putAll(properties);
             }
             catch (Throwable e)
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Failed to add extra Logger configuration: \n" + "   URL:   " + springUrl + "\n" + "   Error: " + e.getMessage(), e);
+                    logger.debug("Failed to add extra Logger configuration: \n" + "   URL:   " + springUrl + "\n"
+                                + "   Error: " + e.getMessage(), e);
                 }
             }
         }

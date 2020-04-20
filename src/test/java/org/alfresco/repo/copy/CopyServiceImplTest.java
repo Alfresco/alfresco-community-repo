@@ -173,8 +173,8 @@ public class CopyServiceImplTest extends TestCase
     
     private static final QName TYPE_CUSTOM_CMIS_DOCUMENT = QName.createQName("{http://www.alfresco.org/model/cmis/custom}document");
     private static final QName PROP_CUSTOM_STRING = QName.createQName("{http://www.alfresco.org/model/cmis/custom}docprop_string");
-    
-    
+
+
     /**
      * Test content
      */
@@ -1193,7 +1193,7 @@ public class CopyServiceImplTest extends TestCase
           assertEquals("German description is wrong", GERMAN_DESCRIPTION, nodeService.getProperty(copy, ContentModel.PROP_DESCRIPTION));   
         }
    }
-    
+
    /**
     * Creates some content as one user, then as another checks:
     *  * If you don't have read permissions to the source you can't copy

@@ -49,6 +49,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.cache.DefaultSimpleCacheTest.class,
     org.alfresco.repo.cache.lookup.EntityLookupCacheTest.class,
     org.alfresco.repo.calendar.CalendarHelpersTest.class,
+    org.alfresco.repo.copy.CopyServiceImplUnitTest.class,
     org.alfresco.repo.dictionary.RepoDictionaryDAOTest.class,
     org.alfresco.repo.forms.processor.node.FieldProcessorTest.class,
     org.alfresco.repo.forms.processor.workflow.TaskFormProcessorTest.class,

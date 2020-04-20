@@ -70,6 +70,7 @@ public class PoiContentTransformer extends TikaPoweredContentTransformer
     
     public PoiContentTransformer() {
        super(SUPPORTED_MIMETYPES);
+        setTransformerName("Office");
     }
 
     @Override

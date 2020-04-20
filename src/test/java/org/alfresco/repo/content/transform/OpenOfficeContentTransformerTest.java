@@ -59,6 +59,8 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         super.setUp();
         
         this.worker = (ContentTransformerWorker) ctx.getBean("transformer.worker.JodConverter");
+        RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("miscRemoteTransformerClient", "http://localhost:8090/");
+        worker.setRemoteTransformerClient(remoteTransformerClient);
         transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
@@ -99,7 +101,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         reliability = transformer.isTransformable(MimetypeMap.MIMETYPE_WORD, -1, MimetypeMap.MIMETYPE_TEXT_PLAIN, new TransformationOptions());
         assertEquals("Mimetype should be supported", true, reliability);
     }
-    
+
     /**
      * Test what is up with HTML to PDF
      */
@@ -117,10 +119,10 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
         reader.setMimetype(MimetypeMap.MIMETYPE_HTML);
         ContentWriter writer = new FileContentWriter(pdfTargetFile);
         writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-        
+
         transformer.transform(reader, writer);
     }
-    
+
     /**
      * ALF-219. Transforamtion from .html to .pdf for empty file.
      * @throws Exception

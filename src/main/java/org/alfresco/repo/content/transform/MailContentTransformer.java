@@ -45,6 +45,7 @@ public class MailContentTransformer extends TikaPoweredContentTransformer
        super(new String[] {
              MimetypeMap.MIMETYPE_OUTLOOK_MSG
        });
+        setTransformerName("OutlookMsg");
     }
 
     @Override

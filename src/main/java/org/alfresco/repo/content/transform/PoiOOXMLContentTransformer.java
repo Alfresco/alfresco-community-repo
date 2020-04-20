@@ -59,6 +59,7 @@ public class PoiOOXMLContentTransformer extends TikaPoweredContentTransformer
     public PoiOOXMLContentTransformer() {
        super(SUPPORTED_MIMETYPES);
        setUseTimeoutThread(true);
+       setTransformerName("OOXML");
     }
 
     @Override

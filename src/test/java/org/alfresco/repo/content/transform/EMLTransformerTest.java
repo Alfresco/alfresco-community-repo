@@ -78,7 +78,9 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
-        
+        RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("miscRemoteTransformerClient", "http://localhost:8090/");
+        transformer.setRemoteTransformerClient(remoteTransformerClient);
+
         registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
         synchronousTransformClient = (SynchronousTransformClient) ctx.getBean("synchronousTransformClient");
     }

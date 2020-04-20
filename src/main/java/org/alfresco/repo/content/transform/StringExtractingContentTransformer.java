@@ -185,8 +185,10 @@ public class StringExtractingContentTransformer extends AbstractRemoteContentTra
 
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger,
+                "transformName", "string",
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
+                "targetExtension", targetExtension,
                 SOURCE_ENCODING, sourceEncoding,
                 TARGET_ENCODING, targetEncoding);
 

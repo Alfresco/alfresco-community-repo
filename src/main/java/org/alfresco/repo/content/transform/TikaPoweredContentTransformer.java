@@ -88,6 +88,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
                                                 "    Time Spent: %d ms";
 
     protected List<String> sourceMimeTypes;
+    private String transformerName;
     protected DocumentSelector documentSelector;
     
     /**
@@ -104,6 +105,11 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
     protected TikaPoweredContentTransformer(String[] sourceMimeTypes)
     {
        this(Arrays.asList(sourceMimeTypes));
+    }
+
+    public void setTransformerName(String transformerName)
+    {
+        this.transformerName = transformerName;
     }
 
     @Override
@@ -298,8 +304,10 @@ public abstract class TikaPoweredContentTransformer extends AbstractRemoteConten
 
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger,
+                "transformName", transformerName,
                 "sourceMimetype", sourceMimetype,
                 "targetMimetype", targetMimetype,
+                "targetExtension", targetExtension,
                 TARGET_ENCODING, targetEncoding);
     }
 

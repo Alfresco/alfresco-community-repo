@@ -119,6 +119,7 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
     {
        super( buildMimeTypes(tikaConfig) );
        setUseTimeoutThread(true);
+        setTransformerName("TikaAuto");
     }
     
     /**

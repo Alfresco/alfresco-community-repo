@@ -889,10 +889,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             nodeMetaData.setAspects(aspects);
 
             boolean ignoreLargeMetadata = (typeIndexFilter.shouldBeIgnored(getNodeType(nodeId)) || aspectIndexFilter.shouldBeIgnored(getNodeAspects(nodeId)));
-            if (!ignoreLargeMetadata && (typeIndexFilter.isIgnorePathsForSpecificTypes() || aspectIndexFilter.isIgnorePathsForSpecificAspects()))
+
+            CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
+            if(!ignoreLargeMetadata && (includePaths || includeParentAssociations))
+            {
+                if(props == null)
+                {
+                    props = getProperties(nodeId);
+                }
+                categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
+            }
+
+            if (!ignoreLargeMetadata && (typeIndexFilter.isIgnorePathsForSpecificTypes() || aspectIndexFilter.isIgnorePathsForSpecificAspects() || includeParentAssociations))
             {
                 // check if parent should be ignored
                 final List<Long> parentIds = new LinkedList<Long>();
+                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
                 nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback()
                 {
                     @Override
@@ -911,6 +923,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
                     {
                         parentIds.add(parentNodePair.getFirst());
+                        parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
                         return false;
                     }
 
@@ -933,28 +946,105 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                         ignoreLargeMetadata = aspectIndexFilter.shouldBeIgnored(getNodeAspects(parentId));
                     }
                 }
+
+                if (includeParentAssociations)
+                {
+                    for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
+                    {
+                        parentAssocs.add(tenantService.getBaseName(ref, true));
+                    }
+
+                    CRC32 crc = new CRC32();
+                    for(ChildAssociationRef car : parentAssocs)
+                    {
+                        try
+                        {
+                            crc.update(car.toString().getBytes("UTF-8"));
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                            throw new RuntimeException("UTF-8 encoding is not supported");
+                        }
+                    }
+                    nodeMetaData.setParentAssocs(parentAssocs, crc.getValue());
+                }
             }
 
-            CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
-            if(!ignoreLargeMetadata && (includePaths || includeParentAssociations))
+            nodeMetaData.setTenantDomain(tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()));
+            
+            if(includeChildAssociations || includeChildIds)
             {
-                if(props == null)
+                final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
+                final List<Long> childIds = new ArrayList<Long>(100);
+                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
                 {
-                    props = getProperties(nodeId);
-                }
-                categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
+                    @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+                    
+                    @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+                            Pair<Long, NodeRef> childNodePair)
+                    {
+                        QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
+                        if (includeChildAssociations)
+                        {
+                            boolean addCurrentChildAssoc = true;
+                            if (typeIndexFilter.isIgnorePathsForSpecificTypes())
+                            {
+                                addCurrentChildAssoc = !typeIndexFilter.shouldBeIgnored(nodeType);
+                            }
+                            if (!addCurrentChildAssoc && aspectIndexFilter.isIgnorePathsForSpecificAspects())
+                            {
+                                addCurrentChildAssoc = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
+                            }
+                            if (addCurrentChildAssoc)
+                            {
+                                childAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
+                            }
+                        }
+
+                        if (includeChildIds)
+                        {
+                            boolean addCurrentId = true;
+                            if (typeIndexFilter.isIgnorePathsForSpecificTypes())
+                            {
+                                addCurrentId = !typeIndexFilter.shouldBeIgnored(nodeType);
+                            }
+                            if (!addCurrentId)
+                            {
+                                addCurrentId = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
+                            }
+                            if (addCurrentId)
+                            {
+                                childIds.add(childNodePair.getFirst());
+                            }
+                        }
+                        return true;
+                    }
+                    
+                    @Override
+                    public void done()
+                    {
+                    }
+                });
+                nodeMetaData.setChildAssocs(childAssocs);
+                nodeMetaData.setChildIds(childIds);
             }
 
             if (includePaths && !ignoreLargeMetadata)
             {
-                if (props == null)
-                {
-                    props = getProperties(nodeId);
-                }
-
                 List<Path> directPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(nodeId, status.getNodeRef()), false);
                 Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.getPaths().size());
-               
+
                 for (Path path : directPaths)
                 {
                     paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
@@ -965,22 +1055,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
                 if(unversionedStatus !=  null)
                 {
-                	 List<Path>  unversionedPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(unversionedStatus.getDbId(), unversionedStatus.getNodeRef()), false);
-                	 for (Path path : unversionedPaths)
-                     {
-                         paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
-                     }
+                    List<Path>  unversionedPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(unversionedStatus.getDbId(), unversionedStatus.getNodeRef()), false);
+                    for (Path path : unversionedPaths)
+                    {
+                        paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
+                    }
                 }
 
                 nodeMetaData.setPaths(paths);
-                
+
                 // Calculate name path
                 Collection<Collection<String>> namePaths = new ArrayList<Collection<String>>(2);
                 nodeMetaData.setNamePaths(namePaths);
                 for (Pair<Path, QName>  catPair : paths)
                 {
                     Path path = catPair.getFirst();
-                    
+
                     boolean added = false;
                     List<String> namePath = new ArrayList<String>(path.size());
                     NEXT_ELEMENT: for (Path.Element pathElement : path)
@@ -1018,159 +1108,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                         }
                     }
                 }
-                
             }
-         
-            nodeMetaData.setTenantDomain(tenantService.getDomain(nodeRef.getStoreRef().getIdentifier()));
-            
-            if(includeChildAssociations)
-            {
-                final List<ChildAssociationRef> childAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
-                {
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-                    
-                    @Override
-                    public boolean orderResults()
-                    {
-                        return false;
-                    }
 
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
-                            Pair<Long, NodeRef> childNodePair)
-                    {
-                        boolean addCurrentChildAssoc = true;
-                        if (typeIndexFilter.isIgnorePathsForSpecificTypes())
-                        {
-                            QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentChildAssoc = !typeIndexFilter.shouldBeIgnored(nodeType);
-                        }
-                        if (!addCurrentChildAssoc && aspectIndexFilter.isIgnorePathsForSpecificAspects())
-                        {
-                            addCurrentChildAssoc = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
-                        }
-                        if (addCurrentChildAssoc)
-                        {
-                            childAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
-                        }
-                        return true;
-                    }
-                    
-                    @Override
-                    public void done()
-                    {
-                    }
-                });
-                nodeMetaData.setChildAssocs(childAssocs);
-            }
-            
-            if(includeChildIds)
-            {
-                final List<Long> childIds = new ArrayList<Long>(100);
-                nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, new ChildAssocRefQueryCallback()
-                {
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-                    
-                    @Override
-                    public boolean orderResults()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
-                            Pair<Long, NodeRef> childNodePair)
-                    {
-                        boolean addCurrentId = true;
-                        if (typeIndexFilter.isIgnorePathsForSpecificTypes())
-                        {
-                            QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentId = !typeIndexFilter.shouldBeIgnored(nodeType);
-                        }
-                        if (!addCurrentId)
-                        {
-                            addCurrentId = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
-                        }
-                        if (addCurrentId)
-                        {
-                            childIds.add(childNodePair.getFirst());
-                        }
-                        return true;
-                    }
-                    
-                    @Override
-                    public void done()
-                    {
-                    }
-                });
-                nodeMetaData.setChildIds(childIds);
-            }
-            
-            if(includeParentAssociations && !ignoreLargeMetadata)
-            {
-                final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
-                nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
-                {
-                    @Override
-                    public boolean preLoadNodes()
-                    {
-                        return false;
-                    }
-                    
-                    @Override
-                    public boolean orderResults()
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
-                            Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
-                    {
-                        parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
-                        return true;
-                    }
-
-                    @Override
-                    public void done()
-                    {
-                    }
-                });
-                for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
-                {
-                    parentAssocs.add(tenantService.getBaseName(ref, true));
-                }
-                
-                CRC32 crc = new CRC32();
-                for(ChildAssociationRef car : parentAssocs)
-                {
-                    try
-                    {
-                        crc.update(car.toString().getBytes("UTF-8"));
-                    }
-                    catch (UnsupportedEncodingException e)
-                    {
-                        throw new RuntimeException("UTF-8 encoding is not supported");
-                    }
-                }
-                nodeMetaData.setParentAssocs(parentAssocs, crc.getValue());
-                        
-                // TODO non-child associations
-//                Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId);
-//                Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId);
-//                
-//                nodeMetaData.setAssocs();
-            }
-            
             if(includeOwner)
             {
                 // cached in OwnableService

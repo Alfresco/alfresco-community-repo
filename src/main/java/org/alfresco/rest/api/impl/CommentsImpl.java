@@ -35,6 +35,7 @@ import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -49,7 +50,6 @@ import org.alfresco.util.TypeConstraint;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class CommentsImpl implements Comments
 {
 	private static final List<String> INCLUDE_FULL_PERSON = Arrays.asList(
 			PARAM_INCLUDE_ASPECTNAMES,
-			PARAM_INCLUDE_PROPERTIES);;
+			PARAM_INCLUDE_PROPERTIES);
 	private Nodes nodes;
     private NodeService nodeService;
     private CommentService commentService;
@@ -123,13 +123,26 @@ public class CommentsImpl implements Comments
         boolean canEdit = map.get(CommentService.CAN_EDIT);
         boolean canDelete =  map.get(CommentService.CAN_DELETE);
 
-		Person createdBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_CREATOR), include);
+		Person createdBy;
+        try {
+			createdBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_CREATOR), include);
+		} catch (EntityNotFoundException enfe){
+        	createdBy = new Person();
+        	createdBy.setUserName((String) nodeProps.get(ContentModel.PROP_CREATOR));
+		}
 		nodeProps.put(Comment.PROP_COMMENT_CREATED_BY, createdBy);
-		
-		Person modifiedBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_MODIFIER), include);
+
+		Person modifiedBy;
+		try {
+			modifiedBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_MODIFIER), include);
+		} catch (EntityNotFoundException enfe)
+		{
+			modifiedBy = new Person();
+			modifiedBy.setUserName((String) nodeProps.get(ContentModel.PROP_MODIFIER));
+		}
 		nodeProps.put(Comment.PROP_COMMENT_MODIFIED_BY, modifiedBy);
-		
-        Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
+
+		Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
         return comment;
     }
     
@@ -184,7 +197,7 @@ public class CommentsImpl implements Comments
         
         /* MNT-10536 : fix */
         final Set<QName> contentAndFolders = 
-                new HashSet<QName>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
+                new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
         if (!nodes.nodeMatches(nodeRef, contentAndFolders, null))
         {
             throw new InvalidArgumentException("NodeId of folder or content is expected");
@@ -194,7 +207,7 @@ public class CommentsImpl implements Comments
         final PagingResults<NodeRef> pagingResults = commentService.listComments(nodeRef, pagingRequest);
         
 		final List<NodeRef> page = pagingResults.getPage();
-		List<Comment> comments = new AbstractList<Comment>()
+		List<Comment> comments = new AbstractList<>()
 		{
 			@Override
 			public Comment get(int index)

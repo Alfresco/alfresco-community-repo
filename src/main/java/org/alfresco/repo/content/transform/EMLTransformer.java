@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,24 +26,26 @@
 
 package org.alfresco.repo.content.transform;
 
-import java.io.File;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
 
 
 /**
@@ -57,9 +59,9 @@ import org.alfresco.util.TempFileProvider;
  * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 @Deprecated
-public class EMLTransformer extends AbstractContentTransformer2
-
+public class EMLTransformer extends AbstractRemoteContentTransformer
 {
+    private static final Log logger = LogFactory.getLog(EMLTransformer.class);
     private static final String CHARSET = "charset";
     private static final String DEFAULT_ENCODING = "UTF-8";
 
@@ -85,7 +87,13 @@ public class EMLTransformer extends AbstractContentTransformer2
     }
 
     @Override
-    protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
+    protected Log getLogger()
+    {
+        return logger;
+    }
+
+    @Override
+    protected void transformLocal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
     {
         InputStream contentInputStream = null;
         try{
@@ -245,4 +253,20 @@ public class EMLTransformer extends AbstractContentTransformer2
         return encoding;
     }
 
+    @Override
+    protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
+                                   ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype, String targetMimetype,
+                                   String sourceExtension, String targetExtension,
+                                   String targetEncoding) throws Exception
+    {
+        long timeoutMs = options.getTimeoutMs();
+
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger,
+                "transformName", "rfc822",
+                "sourceMimetype", sourceMimetype,
+                "targetMimetype", targetMimetype,
+                "targetExtension", targetExtension);
+    }
 }

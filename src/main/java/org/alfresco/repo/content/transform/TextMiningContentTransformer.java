@@ -45,6 +45,7 @@ public class TextMiningContentTransformer extends TikaPoweredContentTransformer
         super(new String[] {
             MimetypeMap.MIMETYPE_WORD
         });
+        setTransformerName("TextMining");
     }
 
     @Override

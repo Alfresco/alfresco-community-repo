@@ -1033,11 +1033,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, imageNewXSize);
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, imageNewYSize);
 
-        // PARAM_MAINTAIN_ASPECT_RATIO needs to be set to true in ACS 6.2.1 as ImageRenderingEngine sets it to false by
-        // default and having corrected errors in TransformationOptionsConverter, this is now being picked up, resulting
-        // a test failure. In 5.2 the the check had been for false rather than true.
-        parameterValues.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, true);
-
         final NodeRef newRenditionNode = performImageRendition(parameterValues, nodeWithImageContent);
 
         // Assert that the rendition is of the correct size and has reasonable
@@ -2497,10 +2492,6 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         rescaleImageDefinition.setParameterValue(ImageRenderingEngine.PARAM_RESIZE_WIDTH, newX);
         rescaleImageDefinition.setParameterValue(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, newY);
 
-        // PARAM_MAINTAIN_ASPECT_RATIO needs to be set to true in ACS 6.2.1 as ImageRenderingEngine sets it to false by
-        // default and having corrected errors in TransformationOptionsConverter, this is now being picked up, resulting
-        // a test failure. In 5.2 the the check had been for false rather than true.
-        rescaleImageDefinition.setParameterValue(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, true);
         compositeDefinition.addAction(reformatDefinition);
         compositeDefinition.addAction(rescaleImageDefinition);
         return compositeDefinition;

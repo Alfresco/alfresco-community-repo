@@ -649,7 +649,12 @@
          
    <bean id="transformer.RFC822"
          class="org.alfresco.repo.content.transform.EMLTransformer"
-         parent="baseContentTransformer" />
+         parent="baseContentTransformer">
+       <property name="enabled" value="${legacy.transform.service.enabled}" />
+       <property name="remoteTransformerClient">
+           <ref bean="miscRemoteTransformerClient" />
+       </property>
+   </bean>
 
    <!-- Import the ImageMagick transformer from the third party subsystem -->
    <bean id="transformer.worker.ImageMagick" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

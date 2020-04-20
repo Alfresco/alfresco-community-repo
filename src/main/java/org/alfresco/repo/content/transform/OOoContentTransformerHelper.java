@@ -370,7 +370,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         {
             if (remoteTransformerClientConfigured())
             {
-                transformRemote(reader, writer, options, sourceMimetype, sourceExtension, targetExtension);
+                transformRemote(reader, writer, options, sourceMimetype, sourceExtension, targetMimetype, targetExtension);
             }
             else
             {
@@ -434,13 +434,17 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     }
 
     protected void transformRemote(ContentReader reader, ContentWriter writer, TransformationOptions options,
-                                   String sourceMimetype,
-                                   String sourceExtension, String targetExtension) throws IllegalAccessException
+                                   String sourceMimetype, String sourceExtension,
+                                   String targetMimetype, String targetExtension) throws IllegalAccessException
     {
         long timeoutMs = options.getTimeoutMs();
         Log logger = getLogger();
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
-                timeoutMs, logger);
+                timeoutMs, logger,
+                "transformName", "libreoffice",
+                "sourceMimetype", sourceMimetype,
+                "sourceExtension", sourceExtension,
+                "targetMimetype", targetMimetype);
     }
 
     private boolean temporaryMsFile(TransformationOptions options)

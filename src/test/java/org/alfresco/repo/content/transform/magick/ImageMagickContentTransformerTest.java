@@ -36,12 +36,15 @@ import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ProxyContentTransformer;
+import org.alfresco.repo.content.transform.RemoteTransformerClient;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.util.TempFileProvider;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 
 /**
  * @see org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerWorker
@@ -54,7 +57,28 @@ import org.alfresco.util.TempFileProvider;
 public class ImageMagickContentTransformerTest extends AbstractContentTransformerTest
 {
     private ProxyContentTransformer transformer;
-    
+
+    @BeforeClass
+    public static void before()
+    {
+        // Use the docker images for transforms (legacy)
+        System.setProperty("alfresco-pdf-renderer.url", "http://localhost:8090/");
+        System.setProperty("img.url", "http://localhost:8090/");
+        System.setProperty("jodconverter.url", "http://localhost:8090/");
+        System.setProperty("tika.url", "http://localhost:8090/");
+        System.setProperty("transform.misc.url", "http://localhost:8090/");
+    }
+
+    @AfterClass
+    public static void after()
+    {
+        System.clearProperty("alfresco-pdf-renderer.url");
+        System.clearProperty("img.url");
+        System.clearProperty("jodconverter.url");
+        System.clearProperty("tika.url");
+        System.clearProperty("transform.misc.url");
+    }
+
     @Override
     public void setUp() throws Exception
     {
@@ -68,6 +92,8 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         this.mimetypeService = testMimetypeService;
         
         transformer = (ProxyContentTransformer) ctx.getBean("transformer.ImageMagick");
+        RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("miscRemoteTransformerClient", "http://localhost:8090/");
+        transformer.getWorker().setRemoteTransformerClient(remoteTransformerClient);
     }
     
     /**

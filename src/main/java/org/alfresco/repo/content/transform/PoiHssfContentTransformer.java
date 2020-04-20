@@ -69,6 +69,7 @@ public class PoiHssfContentTransformer extends TikaPoweredContentTransformer
              MimetypeMap.MIMETYPE_EXCEL,
              MimetypeMap.MIMETYPE_OPENXML_SPREADSHEET
        });
+        setTransformerName("Poi");
     }
     
     @Override

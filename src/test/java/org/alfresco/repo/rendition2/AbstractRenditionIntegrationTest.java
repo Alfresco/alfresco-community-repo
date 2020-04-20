@@ -131,17 +131,13 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
     {
         // Use the docker images for transforms (legacy)
         System.setProperty("alfresco-pdf-renderer.url", "http://localhost:8090/");
-        System.setProperty("img.url", "http://localhost:8091/");
-        System.setProperty("jodconverter.url", "http://localhost:8092/");
-        System.setProperty("tika.url", "http://localhost:8093/");
-        System.setProperty("transform.misc.url", "http://localhost:8094/");
+        System.setProperty("img.url", "http://localhost:8090/");
+        System.setProperty("jodconverter.url", "http://localhost:8090/");
+        System.setProperty("tika.url", "http://localhost:8090/");
+        System.setProperty("transform.misc.url", "http://localhost:8090/");
 
         // Use the docker images for transforms (local)
-        System.setProperty("localTransform.pdfrenderer.url", "http://localhost:8090/");
-        System.setProperty("localTransform.imagemagick.url", "http://localhost:8091/");
-        System.setProperty("localTransform.libreoffice.url", "http://localhost:8092/");
-        System.setProperty("localTransform.tika.url", "http://localhost:8093/");
-        System.setProperty("localTransform.misc.url", "http://localhost:8094/");
+        System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
     }
 
     protected static void none()
@@ -232,11 +228,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         System.clearProperty("tika.url");
         System.clearProperty("transform.misc.url");
 
-        System.clearProperty("localTransform.pdfrenderer.url");
-        System.clearProperty("localTransform.imagemagick.url");
-        System.clearProperty("localTransform.libreoffice.url");
-        System.clearProperty("localTransform.tika.url");
-        System.clearProperty("localTransform.misc.url");
+        System.clearProperty("localTransform.core-aio.url");
 
         System.clearProperty("transform.service.enabled");
         System.clearProperty("local.transform.service.enabled");

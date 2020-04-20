@@ -270,15 +270,15 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
                                    String sourceMimetype, String targetMimetype,
                                    String sourceExtension, String targetExtension) throws IllegalAccessException
     {
-        String[] args = getTEngineArgs(options, sourceMimetype, targetMimetype, versionString);
+        String[] args = getTEngineArgs(options, sourceMimetype, sourceExtension, targetMimetype, versionString);
         long timeoutMs = options.getTimeoutMs();
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, logger, args);
     }
 
     // Not to be called directly. Refactored to make it easier to test TransformationOptionsConverter.
-    public static String[] getTEngineArgs(TransformationOptions options, String sourceMimetype, String targetMimetype,
-                                          String versionString)
+    public static String[] getTEngineArgs(TransformationOptions options, String sourceMimetype, String sourceExtension,
+                                          String targetMimetype, String versionString)
     {
         String startPage = null;
         String endPage = null;
@@ -301,7 +301,6 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         String maintainAspectRatio = null;
 
         String commandOptions = null;
-
 
         if (options instanceof ImageTransformationOptions)
         {
@@ -360,13 +359,13 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
                 {
                     resizePercentage = Boolean.TRUE.toString();
                 }
-                if (resizeOptions.getAllowEnlargement())
+                if (!resizeOptions.getAllowEnlargement())
                 {
-                    allowEnlargement = Boolean.TRUE.toString();
+                    allowEnlargement = Boolean.FALSE.toString();
                 }
-                if (resizeOptions.isMaintainAspectRatio())
+                if (!resizeOptions.isMaintainAspectRatio())
                 {
-                    maintainAspectRatio = Boolean.TRUE.toString();
+                    maintainAspectRatio = Boolean.FALSE.toString();
                 }
             }
         }
@@ -397,6 +396,11 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         }
 
         return new String[] {
+                "transformName", "imagemagick",
+                "sourceMimetype", sourceMimetype,
+                "sourceExtension", sourceExtension,
+                "targetMimetype", targetMimetype,
+
                 START_PAGE, startPage,
                 END_PAGE, endPage,
 

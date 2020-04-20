@@ -75,6 +75,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.custommodel.CustomModelImportTest.class,
     org.alfresco.repo.web.scripts.site.SurfConfigTest.class,
     org.alfresco.repo.web.scripts.node.NodeWebScripTest.class,
+    org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
 })
 public class AppContext04TestSuite
 {

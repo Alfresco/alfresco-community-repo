@@ -250,6 +250,18 @@ public class HttpClientFactory
     }
 
     /**
+     * Sets the default socket timeout (<tt>SO_TIMEOUT</tt>) in milliseconds which is the
+     * timeout for waiting for data. A timeout value of zero is interpreted as an infinite
+     * timeout.
+     *
+     * @param socketTimeout Timeout in milliseconds
+     */
+    public void setSocketTimeout(Integer socketTimeout)
+    {
+        this.socketTimeout = socketTimeout;
+    }
+
+    /**
      * Attempts to connect to a server will timeout after this period (millis).
      * Default is zero (the timeout is not used).
      * 

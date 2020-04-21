@@ -166,6 +166,8 @@
         <property name="sslPort" value="${solr.port.ssl}"/>
         <property name="maxTotalConnections" value="${solr.max.total.connections}"/>
         <property name="maxHostConnections" value="${solr.max.host.connections}"/>
+        <property name="socketTimeout" value="${solr.http.socket.timeout}"/>
+        <property name="connectionTimeout" value="${solr.http.connection.timeout}"/>
     </bean>
 
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">

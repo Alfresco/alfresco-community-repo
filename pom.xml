@@ -36,8 +36,8 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.50.7</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>7.29</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>8.50.10</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>7.31</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
@@ -970,7 +970,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
-            <version>${dependency.alfresco-data-model.version}</version>         
+            <version>${dependency.alfresco-data-model.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -1032,14 +1032,14 @@
             <artifactId>groovy-all</artifactId>
             <version>2.4.18</version>
             <classifier>indy</classifier>
-            <scope>test</scope>            
-        </dependency>      
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <scope>test</scope>             
-        </dependency>        
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.taglibs</groupId>
             <artifactId>taglibs-standard-spec</artifactId>
@@ -1415,5 +1415,5 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
 </project>

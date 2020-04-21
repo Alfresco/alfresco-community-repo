@@ -212,8 +212,11 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
+    /**
+     * ATS does not support text -> img (doclib)
+     */
     @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for GET /renditions, GET /renditions/{renditionId} and GET /renditions/{renditionId}/content endpoints")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS })
+    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS, TestGroup.NOT_SUPPORTED_BY_ATS })
     public void testGetSharedLinkRendition() throws Exception
     {
         sharedLink7 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file7);

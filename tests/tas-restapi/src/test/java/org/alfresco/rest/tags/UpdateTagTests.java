@@ -142,10 +142,12 @@ public class UpdateTagTests extends TagsDataPrep
     {
         String invalidTagBody = "|.\"/<>*";
         RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
-        Utility.waitToLoopTime(20);
-        restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
+        Utility.sleep(500, 20000, () ->
+        {
+            restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
+            restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                    .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
+        });
     }
 
     @Bug(id="ACE-5629")
@@ -156,10 +158,12 @@ public class UpdateTagTests extends TagsDataPrep
     {
         String invalidTagBody = ".\"/<>*";
         RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
-        Utility.waitToLoopTime(20);
-        restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
+            Utility.sleep(500, 20000, () ->
+            {
+            restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
+            restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                    .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
+        });
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,

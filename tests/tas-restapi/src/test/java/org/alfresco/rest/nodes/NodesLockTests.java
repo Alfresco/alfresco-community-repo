@@ -199,11 +199,13 @@ public class NodesLockTests extends RestTest
                 .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
 
         STEP("6. Verify that the file is locked PERSISTENT only after EPHEMERAL lock has expired");
-        try{Thread.sleep(2500);}finally{}
-        RestNodeModel file1Model4 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
-        file1Model4.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
-                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model4 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").getNode();
+            file1Model4.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                    .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -313,12 +315,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
-                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+                    .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        });
     }
 
 //  TODO: uncomment this:  @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
@@ -354,12 +358,15 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
-                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                    .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -393,12 +400,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
-                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+                    .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -432,12 +441,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
-                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user2).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                    .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -471,12 +482,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
-                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+                    .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -509,12 +522,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
-                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                    .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
@@ -548,12 +563,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("EPHEMERAL");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("FULL");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
-                .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=EPHEMERAL")
+                    .assertThat().field("properties").contains("lockType=READ_ONLY_LOCK");
+        });
     }
 
 //  TODO: uncomment this:    @Bug(id = "MNT-17612", status = Status.FIXED, description = "AccessDeniedException in AOS Edit Offline Upload New Version")
@@ -590,12 +607,14 @@ public class NodesLockTests extends RestTest
         lockBodyModel2.setLifetime("PERSISTENT");
         lockBodyModel2.setTimeToExpire(20);
         lockBodyModel2.setType("ALLOW_OWNER_CHANGES");
-        try{Thread.sleep(1500);}finally{}
-        RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        file1Model3.assertThat().field("isLocked").is(true)
-                .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
-                .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        Utility.sleep(500, 5000, () ->
+        {
+            RestNodeModel file1Model3 = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=isLocked").lockNode(lockBodyModel2);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            file1Model3.assertThat().field("isLocked").is(true)
+                    .assertThat().field("properties").contains("lockLifetime=PERSISTENT")
+                    .assertThat().field("properties").contains("lockType=WRITE_LOCK");
+        });
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })

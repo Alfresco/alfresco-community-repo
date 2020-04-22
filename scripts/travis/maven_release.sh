@@ -15,6 +15,7 @@ if [ -z ${releaseVersion} ] || [ -z ${developmentVersion} ];
          exit -1
 else   
     mvn --batch-mode \
+    -PfullBuild,all-tas-tests \
     -Dusername="${GIT_USERNAME}" \
     -Dpassword="${GIT_PASSWORD}" \
     -DreleaseVersion=${releaseVersion} \
@@ -24,7 +25,7 @@ else
     -Dscm-path=${scm_path} \
     -DscmCommentPrefix="[maven-release-plugin][skip ci]" \
     -DskipTests \
-    "-Darguments=-DskipTests -Dbuild-number=${TRAVIS_BUILD_NUMBER} '-Dbuild-name=${TRAVIS_BUILD_STAGE_NAME}' -Dscm-path=${scm_path} " \
+    "-Darguments=-DskipTests -Dbuild-number=${TRAVIS_BUILD_NUMBER} '-Dbuild-name=${TRAVIS_BUILD_STAGE_NAME}' -Dscm-path=${scm_path} -PfullBuild,all-tas-tests" \
     release:clean release:prepare release:perform \
     -Prelease
 fi

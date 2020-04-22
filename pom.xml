@@ -434,7 +434,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.20-alfresco-patched</version>
+            <version>2.3.20-alfresco-patched-20200421</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>

@@ -135,7 +135,7 @@ jobs:
       install: skip 
       script: skip
       before_deploy: pip install awscli
-      delpoy:
+      deploy:
         - provider: script
           script:  ./scripts/travis/copy_to_release_bucket.sh ${TRAVIS_BUILD_NUMBER} ${TRAVIS_BRANCH}
           on:

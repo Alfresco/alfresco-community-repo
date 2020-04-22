@@ -4,13 +4,13 @@
     <groupId>org.alfresco.tas</groupId>
     <artifactId>content-repository-community-email-test</artifactId>
     <name>content-repository-community-email-test</name>
-    <version>6.3.0-SNAPSHOT</version>
+    <version>6.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>content-repository-community-tas-tests-parent</artifactId>
-        <version>6.3.0-SNAPSHOT</version>
+        <version>6.2.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

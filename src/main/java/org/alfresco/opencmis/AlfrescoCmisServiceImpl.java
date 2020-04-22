@@ -44,8 +44,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.acegisecurity.Authentication;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
@@ -136,12 +134,15 @@ import org.apache.chemistry.opencmis.commons.impl.server.AbstractCmisService;
 import org.apache.chemistry.opencmis.commons.impl.server.ObjectInfoImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.RenditionInfoImpl;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
+import org.apache.chemistry.opencmis.commons.server.MutableCallContext;
 import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.server.RenditionInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.apache.chemistry.opencmis.server.shared.QueryStringHttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import net.sf.acegisecurity.Authentication;
 
 /**
  * OpenCMIS service implementation
@@ -176,7 +177,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public void open(CallContext context)
     {
-        AlfrescoCmisServiceCall.set(context);
+        if (context instanceof MutableCallContext)
+        {
+            MutableCallContext mutableCallContext = (MutableCallContext) context;
+            if (mutableCallContext.getUsername() == null && AuthenticationUtil.getFullyAuthenticatedUser() != null)
+            {
+                mutableCallContext.put(CallContext.USERNAME, AuthenticationUtil.getFullyAuthenticatedUser());
+            }
+            AlfrescoCmisServiceCall.set(mutableCallContext);
+        }
+        else
+        {
+            AlfrescoCmisServiceCall.set(context);
+        }
     }
     
     protected CallContext getContext()

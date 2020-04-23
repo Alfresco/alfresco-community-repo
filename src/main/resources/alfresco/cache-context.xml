@@ -280,6 +280,10 @@
    <bean name="ticketsCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.ticketsCache"/>
    </bean>
+
+    <bean name="usernameKeyCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.usernameKeyCache"/>
+    </bean>
       
    <!-- ===================================== -->
    <!-- WebServices Query Session Cache       -->

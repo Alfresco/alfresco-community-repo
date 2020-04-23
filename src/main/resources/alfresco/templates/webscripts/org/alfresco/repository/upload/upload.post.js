@@ -309,11 +309,11 @@ function main()
             return;
          }
 
+         var newFilename = filename;
          if (updateNameAndMimetype)
          {
              //check to see if name is already used in folder
-             var existingFile = updateNode.getParent().childByNamePath(filename),
-                 newFilename = filename;
+             var existingFile = updateNode.getParent().childByNamePath(filename);
              var existingFileNodeRef = (existingFile !== null) ? String(existingFile.nodeRef) : '',
             	 updateFileNodeRef = String(updateNodeRef);
              if (existingFile !== null && existingFileNodeRef !== updateFileNodeRef)
@@ -354,7 +354,7 @@ function main()
          }
 
          // Update the working copy content
-         updateNode.properties.content.write(content, updateNameAndMimetype, true);
+         updateNode.properties.content.write(content, updateNameAndMimetype, true, newFilename);
          // check it in again, with supplied version history note
          
          // Extract the metadata

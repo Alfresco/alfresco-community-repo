@@ -3950,6 +3950,20 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             // update cached variables after putContent()
             updateContentData(true);
         }
+
+        /**
+         * Set the content stream from another content object.
+         *
+         * @param content       ScriptContent to set
+         * @param applyMimetype If true, apply the mimetype from the Content object, else leave the original mimetype
+         * @param guessEncoding If true, guess the encoding from the underlying input stream, else use encoding set in
+         *                      the Content object as supplied.
+         */
+        @Deprecated
+        public void write(Content content, boolean applyMimetype, boolean guessEncoding)
+        {
+            write(content, applyMimetype, guessEncoding, null);
+        }
         
         /**
          * Set the content stream from another content object.
@@ -3958,15 +3972,23 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
          * @param applyMimetype If true, apply the mimetype from the Content object, else leave the original mimetype
          * @param guessEncoding If true, guess the encoding from the underlying input stream, else use encoding set in
          *                      the Content object as supplied.
+         * @param fileName      The filename for the attachment.
          */
-        public void write(Content content, boolean applyMimetype, boolean guessEncoding)
+        public void write(Content content, boolean applyMimetype, boolean guessEncoding, String fileName)
         {
             ContentService contentService = services.getContentService();
             ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
             InputStream is = null;
             if (applyMimetype)
             {
-                writer.setMimetype(content.getMimetype().toLowerCase());
+                if (fileName != null && !fileName.isEmpty())
+                {
+                    writer.setMimetype(services.getMimetypeService().guessMimetype(fileName));
+                } 
+                else 
+                {
+                    writer.setMimetype(content.getMimetype().toLowerCase());
+                }
             }
             if (guessEncoding)
             {

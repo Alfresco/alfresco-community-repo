@@ -95,6 +95,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestName;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
+import org.springframework.extensions.surf.util.InputStreamContent;
 
 
 /**
@@ -847,5 +848,45 @@ public class ScriptNodeTest
         {
             fail("Converting multiple property for Activiti script fails with " + e);
         }
+    }
+
+    /**
+     *  https://issues.alfresco.com/jira/browse/MNT-19682
+     *  Test that mimetype is correctly set according to the content
+     */
+    @Test
+    public void testWriteContentWithMimetypeAndWithoutFilename()
+    {
+        createTestContent(true);
+        ScriptNode scriptNode = new ScriptNode(testNode, SERVICE_REGISTRY);
+        scriptNode.setScope(getScope());
+
+        ScriptContentData scd = scriptNode.new ScriptContentData(null, ContentModel.PROP_CONTENT);
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
+        InputStreamContent inputStreamContent = new InputStreamContent(inputStream, MimetypeMap.MIMETYPE_APPLICATION_PS, "UTF-8");
+
+        scd.write(inputStreamContent, true, false);
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_PS, scriptNode.getMimetype());
+    }
+
+    /**
+     *  https://issues.alfresco.com/jira/browse/MNT-19682
+     *  Test that mimetype is correctly set according to the filename
+     */
+    @Test
+    public void testWriteContentWithMimetypeAndFilename()
+    {
+        createTestContent(true);
+        ScriptNode scriptNode = new ScriptNode(testNode, SERVICE_REGISTRY);
+        scriptNode.setScope(getScope());
+
+        ScriptContentData scd = scriptNode.new ScriptContentData(null, ContentModel.PROP_CONTENT);
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(TEST_CONTENT_MODEL);
+        InputStreamContent inputStreamContent = new InputStreamContent(inputStream, MimetypeMap.MIMETYPE_APPLICATION_PS, "UTF-8");
+
+        scd.write(inputStreamContent, true, false, "test.ai");
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR, scriptNode.getMimetype());
     }
 }

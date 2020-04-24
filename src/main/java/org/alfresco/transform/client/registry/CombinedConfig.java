@@ -160,10 +160,6 @@ public class CombinedConfig
                             try
                             {
                                 String content = getContent(resEntity);
-                                if (log.isTraceEnabled())
-                                {
-                                    log.trace(remoteType+" config on "+baseUrl+" "+content);
-                                }
                                 try (StringReader reader = new StringReader(content))
                                 {
                                     int transformCount = combinedTransformers.size();

@@ -37,7 +37,7 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
         super.dataPreparation();
 
         // Upload files and get available renditions for each file
-        List<String> toTest = Arrays.asList("doc", "xls", "ppt", "docx", "pptx", "msg", "pdf", "png", "gif", "jpg");
+        List<String> toTest = Arrays.asList("doc", "xls", "ppt", "docx", "xlsx", "pptx", "msg", "pdf", "png", "gif", "jpg");
         List<Object[]> renditionsForFiles = new LinkedList<>();
         for (String extensions : toTest)
         {

@@ -531,7 +531,7 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>7.9</alfresco-spring-webscripts.version>
+      <alfresco-spring-webscripts.version>8.2</alfresco-spring-webscripts.version>
       <api.explorer.version>6.3.0</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
@@ -591,7 +591,9 @@
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>
 
-      <javax-jaxb.version>2.3.0</javax-jaxb.version>
+      <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
+      <javax-jaxb-impl.version>3.0.0-M1</javax-jaxb-impl.version>
+      <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
    </properties>
 
@@ -644,7 +646,7 @@
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
          <artifactId>jaxb-impl</artifactId>
-         <version>${javax-jaxb.version}</version>
+         <version>${javax-jaxb-impl.version}</version>
          <scope>provided</scope>
       </dependency>
 

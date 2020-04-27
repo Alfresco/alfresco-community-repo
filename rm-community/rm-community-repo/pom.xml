@@ -24,7 +24,7 @@
       <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <ags.artifactId>alfresco-governance-services-community-repo</ags.artifactId>
-      <!-- 6.2.1-A2 changes -->
+      <!-- 6.2.1-RC1 changes -->
       <dependency.alfresco-core.version>7.31</dependency.alfresco-core.version>
       <dependency.alfresco-repository.version>7.171</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>7.125</dependency.alfresco-remote-api.version>

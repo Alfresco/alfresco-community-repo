@@ -531,8 +531,8 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.groupId>org.alfresco</alfresco.groupId>
       <alfresco.share.artifactId>share</alfresco.share.artifactId>
-      <alfresco-spring-webscripts.version>7.9</alfresco-spring-webscripts.version>
-      <api.explorer.version>6.2.0</api.explorer.version>
+      <alfresco-spring-webscripts.version>8.2</alfresco-spring-webscripts.version>
+      <api.explorer.version>6.3.0</api.explorer.version>
       <!-- Set this here and override it in the community and enterprise modules. -->
       <alfresco.min.version>0.0</alfresco.min.version>
 
@@ -558,11 +558,11 @@
       <maven.resources.version>3.1.0</maven.resources.version>
       <maven.tomcat.port>8080</maven.tomcat.port>
 
-      <jackson.version>2.9.9</jackson.version>
-      <jackson-databind.version>2.9.10.1</jackson-databind.version>
+      <jackson.version>2.10.3</jackson.version>
+      <jackson-databind.version>2.10.1</jackson-databind.version>
       <fabric8.docker.version>0.31.0</fabric8.docker.version>
       <mockito.version>1.10.19</mockito.version>
-      <postgresql.version>42.2.6</postgresql.version>
+      <postgresql.version>42.2.12</postgresql.version>
       <postgresql.port>5432</postgresql.port>
       <mysql.version>5.1.40</mysql.version>
       <mysql.port>3306</mysql.port>
@@ -591,7 +591,9 @@
       <image.tag>latest</image.tag>
       <image.registry>quay.io</image.registry>
 
-      <javax-jaxb.version>2.3.0</javax-jaxb.version>
+      <javax-jaxb.version>2.4.0-b180830.0359</javax-jaxb.version>
+      <javax-jaxb-impl.version>3.0.0-M1</javax-jaxb-impl.version>
+      <javax.servlet-api.version>4.0.1</javax.servlet-api.version>
       <apache-compress.version>1.19</apache-compress.version>
    </properties>
 
@@ -644,7 +646,7 @@
       <dependency>
          <groupId>com.sun.xml.bind</groupId>
          <artifactId>jaxb-impl</artifactId>
-         <version>${javax-jaxb.version}</version>
+         <version>${javax-jaxb-impl.version}</version>
          <scope>provided</scope>
       </dependency>
 

@@ -36,7 +36,6 @@ import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttribute;
@@ -411,15 +410,8 @@ public class SpringAwareUserTransaction
         // begin a transaction
         try
         {
-            TransactionManager tm = getTransactionManager();
-
-            if (tm != null && !(tm instanceof PlatformTransactionManager))
-            {
-                throw new IllegalStateException("Specified transaction manager is not a PlatformTransactionManager: " + tm);
-            }
-
             internalTxnInfo = createTransactionIfNecessary(
-                (PlatformTransactionManager) tm, getTransactionAttribute(null, null), getName());
+                    getTransactionManager(), getTransactionAttribute(null, null), getName());
         }
         catch (CannotCreateTransactionException e)
         {

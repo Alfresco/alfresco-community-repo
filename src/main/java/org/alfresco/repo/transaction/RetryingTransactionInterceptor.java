@@ -34,7 +34,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 
@@ -63,15 +62,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
             final Method method = invocation.getMethod();
             final TransactionAttribute txnAttr = getTransactionAttributeSource().getTransactionAttribute(
                     method, invocation.getThis().getClass());
-
-            final TransactionManager tm = determineTransactionManager(txnAttr);
-
-            if (tm != null && !(tm instanceof PlatformTransactionManager))
-            {
-                throw new IllegalStateException("Specified transaction manager is not a PlatformTransactionManager: " + tm);
-            }
-
-            final PlatformTransactionManager ptm = (PlatformTransactionManager) tm;
+            final PlatformTransactionManager tm = determineTransactionManager(txnAttr);
             @SuppressWarnings("deprecation")
             final String joinpointIdentification = methodIdentification(invocation.getMethod(), invocation.getThis().getClass());
             final int propagationBehaviour = txnAttr.getPropagationBehavior();
@@ -87,7 +78,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                             {
                                 public Object execute()
                                 {
-                                    TransactionInfo txInfo = createTransactionIfNecessary(ptm, TransactionAttribute.PROPAGATION_REQUIRES_NEW == txnAttr
+                                    TransactionInfo txInfo = createTransactionIfNecessary(tm, TransactionAttribute.PROPAGATION_REQUIRES_NEW == txnAttr
                                             .getPropagationBehavior() ? null : txnAttr,
                                             joinpointIdentification);
                                     try

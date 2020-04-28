@@ -28,24 +28,22 @@ package org.alfresco.repo.domain.node;
 import java.io.Serializable;
 
 /**
- * Bean to represent <tt>alf_transaction</tt> data.
+ * Bean to represent <tt>alf_server</tt> data.
  * 
  * @author Derek Hulley
  * @since 3.4
  */
-public class TransactionEntity implements Transaction, Serializable
+public class ServerEntity implements Serializable
 {
     private static final long serialVersionUID = 1L;
     private Long id;
     private Long version;
-    private ServerEntity server;
-    private String changeTxnId;
-    private Long commitTimeMs;
+    private String ipAddress;
     
     /**
      * Required default constructor
      */
-    public TransactionEntity()
+    public ServerEntity()
     {
     }
         
@@ -53,11 +51,9 @@ public class TransactionEntity implements Transaction, Serializable
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
-        sb.append("TransactionEntity")
+        sb.append("ServerEntity")
           .append("[ ID=").append(id)
-          .append(", server=").append(server)
-          .append(", changeTxnId=").append(changeTxnId)
-          .append(", commitTimeMs=").append(commitTimeMs)
+          .append(", ipAddress=").append(ipAddress)
           .append("]");
         return sb.toString();
     }
@@ -82,33 +78,13 @@ public class TransactionEntity implements Transaction, Serializable
         this.version = version;
     }
 
-    public ServerEntity getServer()
+    public String getIpAddress()
     {
-        return server;
+        return ipAddress;
     }
 
-    public void setServer(ServerEntity server)
+    public void setIpAddress(String ipAddress)
     {
-        this.server = server;
-    }
-
-    public String getChangeTxnId()
-    {
-        return changeTxnId;
-    }
-
-    public void setChangeTxnId(String changeTxnId)
-    {
-        this.changeTxnId = changeTxnId;
-    }
-
-    public Long getCommitTimeMs()
-    {
-        return commitTimeMs;
-    }
-
-    public void setCommitTimeMs(Long commitTimeMs)
-    {
-        this.commitTimeMs = commitTimeMs;
+        this.ipAddress = ipAddress;
     }
 }

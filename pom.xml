@@ -60,7 +60,7 @@
         <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <!-- REPO-4964 -->
-        <dependency.keycloak.version>7.0.0</dependency.keycloak.version>
+        <dependency.keycloak.version>9.0.3</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.1.Final</dependency.jboss.logging.version>
         <dependency.camel.version>2.24.2</dependency.camel.version>
         <dependency.activemq.version>5.15.12</dependency.activemq.version>

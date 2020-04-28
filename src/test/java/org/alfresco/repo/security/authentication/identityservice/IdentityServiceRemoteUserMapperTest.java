@@ -30,11 +30,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -123,21 +128,44 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
 
     public void testKeycloakConfig() throws Exception
     {
+        //Get the host of the IDS test server
+        String ip = "localhost";
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+                // filters out 127.0.0.1 and inactive interfaces
+                if (iface.isLoopback() || !iface.isUp())
+                    continue;
+
+                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while(addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if(Pattern.matches("([0-9]{1,3}\\.){3}[0-9]{1,3}", addr.getHostAddress())){
+                        ip = addr.getHostAddress();
+                        break;
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+
         // check string overrides
-        assertEquals("identity-service.auth-server-url", "http://192.168.0.1:8180/auth", 
+        assertEquals("identity-service.auth-server-url", "http://"+ip+":8999/auth",
                     this.identityServiceConfig.getAuthServerUrl());
         
-        assertEquals("identity-service.realm", "test", 
+        assertEquals("identity-service.realm", "alfresco",
                     this.identityServiceConfig.getRealm());
-        
-        assertEquals("identity-service.realm-public-key", 
+
+        assertEquals("identity-service.realm-public-key",
                     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvWLQxipXNe6cLnVPGy7l" +
                     "BgyR51bDiK7Jso8Rmh2TB+bmO4fNaMY1ETsxECSM0f6NTV0QHks9+gBe+pB6JNeM" +
                     "uPmaE/M/MsE9KUif9L2ChFq3zor6s2foFv2DTiTkij+1aQF9fuIjDNH4FC6L252W" +
                     "ydZzh+f73Xuy5evdPj+wrPYqWyP7sKd+4Q9EIILWAuTDvKEjwyZmIyfM/nUn6ltD" +
                     "P6W8xMP0PoEJNAAp79anz2jk2HP2PvC2qdjVsphdTk3JG5qQMB0WJUh4Kjgabd4j" +
                     "QJ77U8gTRswKgNHRRPWhruiIcmmkP+zI0ozNW6rxH3PF4L7M9rXmfcmUcBcKf+Yx" +
-                    "jwIDAQAB", 
+                    "jwIDAQAB",
                     this.identityServiceConfig.getRealmKey());
         
         assertEquals("identity-service.ssl-required", "external", 

@@ -6,5 +6,10 @@
             <username>${env.MAVEN_USERNAME}</username>
             <password>${env.MAVEN_PASSWORD}</password>
         </server>
+        <server>
+            <id>quay.io</id>
+            <username>${env.QUAY_USERNAME}</username>
+            <password>${env.QUAY_PASSWORD}</password>
+        </server>
     </servers>
 </settings>

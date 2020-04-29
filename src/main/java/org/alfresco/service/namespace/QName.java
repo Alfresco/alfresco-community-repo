@@ -46,6 +46,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     public static final String EMPTY_URI_SUBSTITUTE = ".empty";
     
     private static final long serialVersionUID = 3977016258204348976L;
+    private static final char[] illegalCharacters = {'/', '\\', '\r', '\n', '"'};
 
     private final String namespaceURI;                // never null
     private final String localName;                   // never null
@@ -69,10 +70,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     public static QName createQName(String namespaceURI, String localName)
         throws InvalidQNameException
     {
-        if (localName == null || localName.length() == 0)
-        {
-            throw new InvalidQNameException("A QName must consist of a local name");
-        }
+        checkLocalName(localName);
         return new QName(namespaceURI, localName, null);
     }
 
@@ -89,10 +87,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         throws InvalidQNameException, NamespaceException
     {
         // Validate Arguments
-        if (localName == null || localName.length() == 0)
-        {
-            throw new InvalidQNameException("A QName must consist of a local name");
-        }
+        checkLocalName(localName);
         if (prefixResolver == null)
         {
             throw new IllegalArgumentException("A Prefix Resolver must be specified"); 
@@ -174,10 +169,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
 
         // Parse name
         localName = qname.substring(namespaceEnd + 1);
-        if (localName == null || localName.length() == 0)
-        {
-            throw new InvalidQNameException("QName '" + qname + "' must consist of a local name");
-        }
+        checkLocalName(localName);
 
         // Construct QName
         return new QName(namespaceURI, localName, null);
@@ -203,11 +195,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
      */
     public static String createValidLocalName(String name)
     {
-        // Validate length
-        if (name == null || name.length() == 0)
-        {
-            throw new IllegalArgumentException("Local name cannot be null or empty.");
-        }
+        checkLocalName(name);
         if (name.length() > MAX_LENGTH)
         {
             name = name.substring(0, MAX_LENGTH);
@@ -215,7 +203,34 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
 
         return name;
     }
-    
+
+    /**
+     * Condition to check string name provided for QName
+     *
+     * @param name  name to create valid local name from
+     * @throws InvalidQNameException
+     */
+    private static void checkLocalName(String name)
+        throws InvalidQNameException
+    {
+        if (name == null || name.length() == 0)
+        {
+            throw new InvalidQNameException("A QName must consist of a local name and cannot be null or empty");
+        }
+
+        if (name != null)
+        {
+            for (char illegalCharacter : illegalCharacters)
+            {
+                if (name.indexOf(illegalCharacter) != -1)
+                {
+                    throw new InvalidQNameException("Local name contains characters that are not permitted: "+name.charAt(name.indexOf(illegalCharacter)));
+                }
+            }
+        }
+
+    }
+
     /**
      * Create a QName
      * 
@@ -445,11 +460,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     public static QName resolveToQName(NamespacePrefixResolver prefixResolver, String str)
     {
         QName qname = null;
-
-        if (str == null || str.length() == 0)
-        {
-            throw new IllegalArgumentException("str parameter is mandatory");
-        }
+        checkLocalName(str);
 
         if (str.charAt(0) == (NAMESPACE_BEGIN))
         {

@@ -28,65 +28,50 @@ package org.alfresco.service.namespace;
 import java.util.Collection;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
-
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * @see org.alfresco.service.namespace.QName
  * 
  * @author David Caruana
  */
-public class QNameTest extends TestCase
+public class QNameTest
 {
+    private final NamespacePrefixResolver mockResolver = new MockNamespacePrefixResolver();
 
-    public QNameTest(String name)
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameFromInternalStringRepresentationWithEmptyString()
     {
-        super(name);
+        QName.createQName("");
     }
 
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameFromInternalStringRepresentationWithInvalidNameCase1()
+    {
+        QName.createQName("invalid{}name");
+    }
 
-    public void testInvalidQName() throws Exception
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameFromInternalStringRepresentationWithInvalidNameCase2()
+    {
+        QName.createQName("{name");
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameFromInternalStringRepresentationWithInvalidNameCase3()
+    {
+        QName.createQName("{}");
+    }
+
+    @Test
+    public void testCreateQNameFromInternalStringRepresentationWithInvalidNameCase4()
     {
         try
         {
-            QName qname = QName.createQName("");
-            fail("Missing local name was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-
-        try
-        {
-            QName qname = QName.createQName("invalid{}name");
-            fail("Namespace not at start was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-
-        try
-        {
-            QName qname = QName.createQName("{name");
-            fail("Missing closing namespace token was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-
-        try
-        {
-            QName qname = QName.createQName("{}");
-            fail("Missing local name after namespace was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-
-        try
-        {
-            QName qname = QName.createQName("{}name");
+            QName.createQName("{}name");
         }
         catch (InvalidQNameException e)
         {
@@ -103,28 +88,152 @@ public class QNameTest extends TestCase
         {
             fail("Valid namespace has been thrown out");
         }
-
-        try
-        {
-            QName qname = QName.createQName((String) null, (String) null);
-            fail("Null name was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-
-        try
-        {
-            QName qname = QName.createQName((String) null, "");
-            fail("Empty name was not caught");
-        }
-        catch (InvalidQNameException e)
-        {
-        }
-        
     }
 
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameWithNoPrefixWithNullString()
+    {
+        QName.createQName(NamespaceService.ALFRESCO_PREFIX, (String) null);
+    }
 
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameWithNoPrefixWithEmptyString()
+    {
+        QName.createQName(NamespaceService.ALFRESCO_PREFIX, "");
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameWithPrefixWithNullString()
+    {
+        QName.createQName(NamespaceService.ALFRESCO_PREFIX, null, mockResolver);
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameWithPrefixWithEmptyString()
+    {
+        QName.createQName(NamespaceService.ALFRESCO_PREFIX, "", mockResolver);
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameWithPrefixFormatWithEmptyString()
+    {
+        QName.createQName("", mockResolver);
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateValidLocalNameWithNullString()
+    {
+        QName.createValidLocalName(null);
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateValidLocalNameWithEmptyString()
+    {
+        QName.createValidLocalName("");
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameResolveToNameWithNullString()
+    {
+        QName.resolveToQName(mockResolver, null);
+    }
+
+    @Test(expected = InvalidQNameException.class)
+    public void testCreateQNameResolveToNameWithEmptyString()
+    {
+        QName.resolveToQName(mockResolver, "");
+    }
+
+    @Test
+    public void testCreateQnameWithNoPrefixWithIllegalCharactersThrowsInvalidQNameException()
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            try
+            {
+                String localName = "testLocalNameWith" + illegalCharacter;
+                QName.createQName(NamespaceService.ALFRESCO_PREFIX, localName);
+                fail("InvalidQNameException not caught for illegalCharacter: " +localName.charAt(localName.indexOf(illegalCharacter)));
+            }
+            catch (InvalidQNameException ignored)
+            {
+            }
+        }
+    }
+
+    @Test
+    public void testCreateQnameWithPrefixWithIllegalCharactersThrowsInvalidQNameException()
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            try
+            {
+                String localName = "testLocalNameWith" + illegalCharacter;
+                QName.createQName(NamespaceService.ALFRESCO_PREFIX, localName, mockResolver);
+                fail("InvalidQNameException not caught for illegalCharacter: " +localName.charAt(localName.indexOf(illegalCharacter)));
+            }
+            catch (InvalidQNameException ignored)
+            {
+            }
+        }
+    }
+
+    @Test
+    public void testCreateQnameWithPrefixFormatWithIllegalCharactersThrowsInvalidQNameException()
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            try
+            {
+                String localName = "testPrefix:testLocalNameWith" + illegalCharacter;
+                QName.createQName(localName, mockResolver);
+                fail("InvalidQNameException not caught for illegalCharacter: " +localName.charAt(localName.indexOf(illegalCharacter)));
+            }
+            catch (InvalidQNameException ignored)
+            {
+            }
+        }
+    }
+
+    @Test
+    public void testCreateValidLocalNameWithIllegalCharactersThrowsInvalidQNameException()
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            try
+            {
+                String localName = "testNameWith" + illegalCharacter;
+                QName.createValidLocalName(localName);
+                fail("InvalidQNameException not caught for illegalCharacter: " +localName.charAt(localName.indexOf(illegalCharacter)));
+            }
+            catch (InvalidQNameException ignored)
+            {
+            }
+        }
+    }
+
+    @Test
+    public void testResolveToQNameWithIllegalCharactersThrowsInvalidQNameException() {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            try
+            {
+                String localName = "testNameWith" + illegalCharacter;
+                QName.resolveToQName(mockResolver, localName);
+                fail("InvalidQNameException not caught for illegalCharacter: " +localName.charAt(localName.indexOf(illegalCharacter)));
+            }
+            catch (InvalidQNameException ignored)
+            {
+            }
+        }
+    }
+
+    @Test
     public void testConstruction()
     {
         QName qname1 = QName.createQName("namespace1", "name1");
@@ -148,7 +257,7 @@ public class QNameTest extends TestCase
         assertEquals("", qname6.getNamespaceURI());
     }
 
-
+    @Test
     public void testStringRepresentation()
     {
         QName qname1 = QName.createQName("namespace", "name1");
@@ -167,6 +276,7 @@ public class QNameTest extends TestCase
         assertEquals("{}name5", qname5.toString());
     }
 
+    @Test
     public void testCommonTypes()
     {
         QName qname3 = QName.createQName("{http://www.alfresco.org/model/content/1.0}created");
@@ -179,6 +289,7 @@ public class QNameTest extends TestCase
         assertEquals("{http://www.alfresco.org/model/content/1.0}content.mimetype", qname5.toString());
     }
 
+    @Test
     public void testEquality()
     {
         QName qname1 = QName.createQName("namespace", "name");
@@ -208,7 +319,7 @@ public class QNameTest extends TestCase
         assertFalse(qname9.hashCode() == qname10.hashCode());
     }
 
-
+    @Test
     public void testPrefix()
     {
         try
@@ -238,7 +349,6 @@ public class QNameTest extends TestCase
         }
     }
 
-    
     public static class MockNamespacePrefixResolver
         implements NamespacePrefixResolver
     {
@@ -268,7 +378,7 @@ public class QNameTest extends TestCase
             prefixes.add(NamespaceService.ALFRESCO_PREFIX);
             return prefixes;
         }
-        
+
         public Collection<String> getURIs()
         {
             HashSet<String> uris = new HashSet<String>();
@@ -276,7 +386,7 @@ public class QNameTest extends TestCase
             uris.add(NamespaceService.ALFRESCO_URI);
             return uris;
         }
-        
+
     }
     
 }

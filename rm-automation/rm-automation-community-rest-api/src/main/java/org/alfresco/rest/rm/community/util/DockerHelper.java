@@ -30,7 +30,7 @@ package org.alfresco.rest.rm.community.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
@@ -80,13 +80,12 @@ public class DockerHelper
      * Method for returning logs of docker container
      *
      * @param containerId - ID of the container
+     * @param timeStamp - get the logs since a specific timestamp
      * @return list of strings, where every string is log line
      */
-    private List<String> getDockerLogs(String containerId)
+    private List<String> getDockerLogs(String containerId, int timeStamp)
     {
         final List<String> logs = new ArrayList<>();
-        // get the logs since current time - 10 seconds
-        final int timeStamp = (int) (System.currentTimeMillis() / 1000) - 10;
 
         final LogContainerCmd logContainerCmd = getDockerClient().logContainerCmd(containerId);
         logContainerCmd.withStdOut(true)
@@ -121,22 +120,33 @@ public class DockerHelper
      */
     public List<String> getAlfrescoLogs()
     {
-        final Optional<Container> alfrescoContainer = findContainerByImageName(REPO_IMAGE_NAME);
-        return (alfrescoContainer.isPresent()) ? getDockerLogs(alfrescoContainer.get().getId()) : Collections.emptyList();
+        final List<Container> alfrescoContainers = findContainersByImageName(REPO_IMAGE_NAME);
+        if (alfrescoContainers.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        else
+        {
+            List<String> alfrescoLogs = new ArrayList<>();
+            // get the logs since current time - 10 seconds
+            final int timeStamp = (int) (System.currentTimeMillis() / 1000) - 10;
+            alfrescoContainers.forEach(alfrescoContainer -> alfrescoLogs.addAll(getDockerLogs(alfrescoContainer.getId(), timeStamp)));
+            return alfrescoLogs;
+        }
     }
 
     /**
-     * Method for finding a docker container after the image name
+     * Method for finding docker containers after the image name
      *
      * @param imageName - the name of the image used by container
-     * @return the container
+     * @return the containers
      */
-    private Optional<Container> findContainerByImageName(String imageName)
+    private List<Container> findContainersByImageName(String imageName)
     {
         final List<Container> containers = getDockerClient().listContainersCmd().withShowAll(true).exec();
 
         return containers.stream()
                          .filter(container -> container.getImage().contains(imageName))
-                         .findFirst();
+                         .collect(Collectors.toList());
     }
 }

@@ -47,6 +47,7 @@ import org.junit.runners.Suite;
     // Requires a running ActiveMQ
     org.alfresco.repo.rawevents.EventBehaviourTest.class,
     org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
+    org.alfresco.repo.event2.RepoEvent2ITSuite.class,
 
     // Requires running transformers
     org.alfresco.transform.client.registry.LocalTransformServiceRegistryConfigTest.class,

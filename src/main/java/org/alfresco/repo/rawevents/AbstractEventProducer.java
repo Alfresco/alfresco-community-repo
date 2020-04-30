@@ -76,7 +76,7 @@ public abstract class AbstractEventProducer
         this.objectMapper = objectMapper;
     }
 
-    private Map<String, Object> addHeaders(Map<String, Object> origHeaders)
+    protected Map<String, Object> addHeaders(Map<String, Object> origHeaders)
     {
         if (origHeaders == null)
         {

@@ -7,7 +7,7 @@
             <value>${messaging.subsystem.autoStart}</value>
         </property>
     </bean>
-    
+
     <!-- Import the Camel context from the subsystem -->
     <bean id="alfrescoCamelContext"
         class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
@@ -49,5 +49,14 @@
         <property name="producer" ref="camelProducerTemplate" />
         <property name="endpoint" value="direct-vm:alfresco.raw.events" />
         <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
+    </bean>
+
+    <!-- Event2 beans -->
+    <bean id="event2ObjectMapper" class="org.alfresco.repo.event.databind.ObjectMapperFactory" factory-method="createInstance"/>
+
+    <bean id="event2MessageProducer" class="org.alfresco.repo.event2.Event2MessageProducer">
+        <property name="producer" ref="camelProducerTemplate"/>
+        <property name="endpoint" value="${repo.event2.topic.endpoint}"/>
+        <property name="objectMapper" ref="event2ObjectMapper"/>
     </bean>
 </beans>

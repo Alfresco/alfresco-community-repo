@@ -26,8 +26,14 @@
 
 package org.alfresco.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 
 /**
  * Alfresco path-related utility functions.
@@ -75,5 +81,37 @@ public class PathUtil
         }
 
         return buf.toString();
+    }
+
+    /**
+     * Return the node ids from the specified node Path, so that
+     * the first element is the immediate parent.
+     *
+     * @param path     the node's path object
+     * @param showLeaf whether to process the final leaf element of the path
+     * @return list of node ids
+     */
+    public static List<String> getNodeIdsInReverse(Path path, boolean showLeaf)
+    {
+        int count = path.size() - (showLeaf ? 1 : 2);
+        if (count < 0)
+        {
+            return Collections.emptyList();
+        }
+
+        List<String> nodeIds = new ArrayList<>(count);
+        // Add in reverse order (so the first element is the immediate parent)
+        for (int i = count; i >= 0; i--)
+        {
+            Path.Element element = path.get(i);
+            if (element instanceof ChildAssocElement)
+            {
+                ChildAssocElement childAssocElem = (ChildAssocElement) element;
+                NodeRef childNodeRef = childAssocElem.getRef().getChildRef();
+                nodeIds.add(childNodeRef.getId());
+            }
+        }
+
+        return nodeIds;
     }
 }

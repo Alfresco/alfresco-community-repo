@@ -82,7 +82,7 @@ public class EventBehaviourTest extends BaseSpringTest
     @Autowired
     private CamelContext camelContext;
     @Autowired
-    private AbstractEventProducer eventProducer;
+    private TransactionAwareEventProducer eventProducer;
 
     private boolean policyFired = false;
     private boolean newContent = true;

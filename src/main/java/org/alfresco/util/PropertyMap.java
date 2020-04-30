@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.alfresco.service.namespace.QName;
 
@@ -97,16 +96,20 @@ public class PropertyMap extends HashMap<QName, Serializable>
         {
             after = Collections.emptyMap();
         }
-        
+        if (before.isEmpty() && after.isEmpty())
+        {
+            return new Pair<>(before, after);
+        }
+
         // Get after values that changed
-        Map<QName, Serializable> afterDelta = new HashMap<QName, Serializable>(after);
+        Map<QName, Serializable> afterDelta = new HashMap<>(after);
         afterDelta.entrySet().removeAll(before.entrySet());
         // Get before values that changed
-        Map<QName, Serializable> beforeDelta = new HashMap<QName, Serializable>(before);
+        Map<QName, Serializable> beforeDelta = new HashMap<>(before);
         beforeDelta.entrySet().removeAll(after.entrySet());
         
         // Done
-        return new Pair<Map<QName, Serializable>, Map<QName, Serializable>>(beforeDelta, afterDelta);
+        return new Pair<>(beforeDelta, afterDelta);
     }
     
     /**

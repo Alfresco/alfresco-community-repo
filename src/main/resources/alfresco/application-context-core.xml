@@ -54,4 +54,5 @@
     <import resource="classpath*:alfresco/enterprise/authorization-context.xml" />
     <import resource="classpath*:alfresco/enterprise/enterprise-usage-services-context.xml" />
     <import resource="classpath:alfresco/heartbeat/heartbeat-context.xml"/>
+    <import resource="classpath*:alfresco/events2-context.xml"/>
 </beans>

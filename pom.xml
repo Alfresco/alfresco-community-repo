@@ -37,7 +37,7 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>8.171</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>8.174</dependency.alfresco-repository.version>
         <dependency.alfresco-data-model.version>8.106</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>8.32</dependency.alfresco-core.version>
 

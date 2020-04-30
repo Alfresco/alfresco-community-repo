@@ -134,7 +134,6 @@ import org.apache.chemistry.opencmis.commons.impl.server.AbstractCmisService;
 import org.apache.chemistry.opencmis.commons.impl.server.ObjectInfoImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.RenditionInfoImpl;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
-import org.apache.chemistry.opencmis.commons.server.MutableCallContext;
 import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.server.RenditionInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
@@ -177,19 +176,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public void open(CallContext context)
     {
-        if (context instanceof MutableCallContext)
-        {
-            MutableCallContext mutableCallContext = (MutableCallContext) context;
-            if (mutableCallContext.getUsername() == null && AuthenticationUtil.getFullyAuthenticatedUser() != null)
-            {
-                mutableCallContext.put(CallContext.USERNAME, AuthenticationUtil.getFullyAuthenticatedUser());
-            }
-            AlfrescoCmisServiceCall.set(mutableCallContext);
-        }
-        else
-        {
-            AlfrescoCmisServiceCall.set(context);
-        }
+        AlfrescoCmisServiceCall.set(context);
     }
     
     protected CallContext getContext()

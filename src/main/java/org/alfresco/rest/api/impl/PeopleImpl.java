@@ -111,7 +111,6 @@ public class PeopleImpl implements People
             PermissionService.GROUP_PREFIX,
             PermissionService.ROLE_PREFIX
     };
-    private static final char[] illegalCharacters = {'/', '\\', '\r', '\n'};
 
     protected Nodes nodes;
 	protected Sites sites;
@@ -668,14 +667,6 @@ public class PeopleImpl implements People
         if (username.length() > 100)
         {
             throw new InvalidArgumentException("Username exceeds max length of " + USERNAME_MAXLENGTH + " characters.");
-        }
-
-        for (char illegalCharacter : illegalCharacters)
-        {
-            if (username.indexOf(illegalCharacter) != -1)
-            {
-                throw new IllegalArgumentException("Username contains characters that are not permitted: "+username.charAt(username.indexOf(illegalCharacter)));
-            }
         }
 
         for (String prefix : RESERVED_AUTHORITY_PREFIXES)

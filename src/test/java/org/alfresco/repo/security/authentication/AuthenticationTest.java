@@ -432,7 +432,7 @@ public class AuthenticationTest extends TestCase
             authenticationService.authenticate("Andy_Woof/Domain", DONT_CARE_PASSWORD);
             fail("Tenant domain ~,./<>?\\\\| is not valid format\"");
         }
-        catch (AlfrescoRuntimeException ignored)
+        catch (IllegalArgumentException ignored)
         {
             // Expected exception
         }

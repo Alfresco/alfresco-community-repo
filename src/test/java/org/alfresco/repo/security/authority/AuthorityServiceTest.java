@@ -252,6 +252,24 @@ public class AuthorityServiceTest extends TestCase
         }
     }
 
+    public void testCreateAuthorityWithIllegalCharacters() throws Exception
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            String groupName = "testGroupNameWith" + illegalCharacter;
+            try 
+            {
+                authorityService.createAuthority(AuthorityType.GROUP, groupName);
+                fail("AlfrescoRuntimeException not caught for illegalCharacter: " +groupName.charAt(groupName.indexOf(illegalCharacter)));
+            } 
+            catch (AlfrescoRuntimeException ignored)
+            {
+                // Expected
+            }
+        }
+    }
+
     public class GroupBehaviour implements NodeServicePolicies.BeforeDeleteNodePolicy
     {
 
@@ -346,14 +364,6 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("One", AuthorityType.GROUP).size());
         assertEquals(2, pubAuthorityService.getAllRootAuthoritiesInZone("Two", AuthorityType.GROUP).size());
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
-    }
-
-    @Category(RedundantTests.class)
-    public void test_ETWOTWO_400()
-    {
-        pubAuthorityService.createAuthority(AuthorityType.GROUP, "wo\"of");
-        Set<String> authorities = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, true, "wo\"of*", AuthorityService.ZONE_APP_DEFAULT);
-        assertEquals(1, authorities.size());
     }
 
     @Category(RedundantTests.class)
@@ -1314,7 +1324,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(1, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());
         assertEquals(0, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC2, false).size());
-        String authStuff = pubAuthorityService.createAuthority(AuthorityType.GROUP, "|<>?~@:}{+_)(*&^%$£!¬`,./#';][=-0987654321 1234556678 '");
+        String authStuff = pubAuthorityService.createAuthority(AuthorityType.GROUP, "|<>?~@:}{+_)(*&^%$£!¬`,.#';][=-0987654321 1234556678 '");
         pubAuthorityService.addAuthority(authC2, authStuff);
         assertEquals(3, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, auth1234, false).size());
         assertEquals(2, pubAuthorityService.getContainedAuthorities(AuthorityType.GROUP, authC1, false).size());

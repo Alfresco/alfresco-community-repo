@@ -1797,7 +1797,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 {
                     if (userName.indexOf(illegalCharacter) != -1)
                     {
-                        throw new AlfrescoRuntimeException("Person name contains characters that are not permitted: "+userName.charAt(userName.indexOf(illegalCharacter)));
+                        throw new PersonException("Person name contains characters that are not permitted: "+userName.charAt(userName.indexOf(illegalCharacter)));
                     }
                 }
             }

@@ -261,9 +261,9 @@ public class AuthorityServiceTest extends TestCase
             try 
             {
                 authorityService.createAuthority(AuthorityType.GROUP, groupName);
-                fail("AlfrescoRuntimeException not caught for illegalCharacter: " +groupName.charAt(groupName.indexOf(illegalCharacter)));
+                fail("AuthorityException not caught for illegalCharacter: " +groupName.charAt(groupName.indexOf(illegalCharacter)));
             } 
-            catch (AlfrescoRuntimeException ignored)
+            catch (AuthorityException ignored)
             {
                 // Expected
             }

@@ -1670,7 +1670,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             {
                 if (authorityName.indexOf(illegalCharacter) != -1)
                 {
-                    throw new AlfrescoRuntimeException("Group name contains characters that are not permitted: "+authorityName.charAt(authorityName.indexOf(illegalCharacter)));
+                    throw new AuthorityException("Group name contains characters that are not permitted: "+authorityName.charAt(authorityName.indexOf(illegalCharacter)));
                 }
             }
         }

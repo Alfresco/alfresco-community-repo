@@ -38,7 +38,7 @@
         <img.exe>convert</img.exe>
 
         <dependency.alfresco-repository.version>7.179</dependency.alfresco-repository.version>
-        <dependency.alfresco-data-model.version>8.50.12</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.50.13</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>7.32</dependency.alfresco-core.version>
 
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>

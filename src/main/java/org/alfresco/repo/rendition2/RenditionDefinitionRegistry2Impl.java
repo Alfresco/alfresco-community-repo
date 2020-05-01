@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,6 +32,7 @@ import org.alfresco.util.ConfigFileFinder;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.CronExpression;
@@ -217,6 +218,11 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
     public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
     {
         this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+    }
+
+    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator)
+    {
+        configScheduler.setShutdownIndicator(shutdownIndicator);
     }
 
     @Override

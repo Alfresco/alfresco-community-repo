@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,11 +26,9 @@
 package org.alfresco.transform.client.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.alfresco.transform.client.registry.AbstractTransformRegistry;
-import org.alfresco.transform.client.registry.TransformCache;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 import org.apache.commons.logging.Log;
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.InitializingBean;
@@ -114,6 +112,11 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
     public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
     {
         this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+    }
+
+    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator)
+    {
+        configScheduler.setShutdownIndicator(shutdownIndicator);
     }
 
     @Override

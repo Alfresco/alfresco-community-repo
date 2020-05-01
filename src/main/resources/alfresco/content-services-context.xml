@@ -197,6 +197,8 @@
       </property>
     </bean>
 
+    <bean id="shutdownIndicator" class="org.alfresco.util.ShutdownIndicator"/>
+
     <bean id="mimetypeConfigService" class="org.springframework.extensions.config.xml.XMLConfigService" init-method="init">
         <constructor-arg>
             <bean class="org.alfresco.util.ResourceFinderConfigSource">
@@ -229,6 +231,7 @@
       <property name="mimetypeJsonConfigDir" value="${mimetype.config.dir}" />
       <property name="cronExpression" value="${mimetype.config.cronExpression}"></property>
       <property name="initialAndOnErrorCronExpression" value="${mimetype.config.initialAndOnError.cronExpression}"></property>
+      <property name="shutdownIndicator" ref="shutdownIndicator"></property>
    </bean>
 
     <bean id="mimetypeServiceJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

@@ -132,6 +132,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
     public static final String KEY_ALLOW_UID_UPDATE = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
     private static final String KEY_USERS_CREATED = "PersonServiceImpl.KEY_USERS_CREATED";
+    private static final char[] ILLEGAL_CHARACTERS = {'/', '\\', '\r', '\n', '\"'};
 
     private StoreRef storeRef;
     private TransactionService transactionService;
@@ -224,7 +225,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 BeforeCreateNodePolicy.QNAME,
                 ContentModel.TYPE_PERSON,
                 beforeCreateNodeValidationBehaviour);
-        
+
         beforeDeleteNodeValidationBehaviour = new JavaBehaviour(this, "beforeDeleteNodeValidation");
         this.policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
@@ -1787,9 +1788,20 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         NodeRef personRef = childAssocRef.getChildRef();
         
         String userName = (String) this.nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
-        
+
         if (getPeopleContainer().equals(childAssocRef.getParentRef()))
         {
+            if (userName != null)
+            {
+                for (char illegalCharacter : ILLEGAL_CHARACTERS)
+                {
+                    if (userName.indexOf(illegalCharacter) != -1)
+                    {
+                        throw new AlfrescoRuntimeException("Person name contains characters that are not permitted: "+userName.charAt(userName.indexOf(illegalCharacter)));
+                    }
+                }
+            }
+
             // The value is stale.  However, we have already made the data change and
             // therefore do not need to lock the removal from further changes.
             removeFromCache(userName, false);

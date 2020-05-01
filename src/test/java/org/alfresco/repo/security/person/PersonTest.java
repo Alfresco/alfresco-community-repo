@@ -458,6 +458,24 @@ public class PersonTest extends TestCase
         assertTrue("Tests the impl method. We should have at least 1 person.", theImpl.countPeople()>0);
     }
 
+    public void testCreatePersonWithIllegalCharacters() throws Exception
+    {
+        char[] illegalCharacters = {'/', '\\', '\n', '\r', '"'};
+        for (char illegalCharacter : illegalCharacters)
+        {
+            String personName = "testPersonNameWith" + illegalCharacter;
+            try
+            {
+                personService.createPerson(createDefaultProperties(personName, "Some", "User", "some.user@example.com", "alfresco", rootNodeRef));
+                fail("AlfrescoRuntimeException not caught for illegalCharacter: " +personName.charAt(personName.indexOf(illegalCharacter)));
+            }
+            catch (AlfrescoRuntimeException ignored)
+            {
+                // Expected
+            }
+        }
+    }
+
     public void testCreateMissingPeople1()
     {
         personService.setCreateMissingPeople(false);

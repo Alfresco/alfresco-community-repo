@@ -426,31 +426,15 @@ public class AuthenticationTest extends TestCase
             // TODO - could create tenant domain 'chocolate.chip.cookie.com'
         }
 
-        authenticationService.createAuthentication("Andy_Woof/Domain", DONT_CARE_PASSWORD);
-        authenticationService.authenticate("Andy_Woof/Domain", DONT_CARE_PASSWORD);
-        assertEquals("Andy_Woof/Domain", authenticationService.getCurrentUserName());
-
-        authenticationService.createAuthentication("Andy_ Woof/Domain", DONT_CARE_PASSWORD);
-        authenticationService.authenticate("Andy_ Woof/Domain", DONT_CARE_PASSWORD);
-        assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
-
-        if (! tenantService.isEnabled())
+        try
         {
-            String un = "Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n\u0000[]{};'#:@~,./<>?|";
-            if (dialect instanceof PostgreSQLDialect)
-            {
-                // Note: PostgreSQL does not support \u0000 char embedded in a string
-                // http://archives.postgresql.org/pgsql-jdbc/2007-02/msg00115.php
-                un = "Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n[]{};'#:@~,./<>?|";
-            }
-            
-            authenticationService.createAuthentication(un, DONT_CARE_PASSWORD);
-            authenticationService.authenticate(un, DONT_CARE_PASSWORD);
-            assertEquals(un, authenticationService.getCurrentUserName());
+            authenticationService.createAuthentication("Andy_Woof/Domain", DONT_CARE_PASSWORD);
+            authenticationService.authenticate("Andy_Woof/Domain", DONT_CARE_PASSWORD);
+            fail("Tenant domain ~,./<>?\\\\| is not valid format\"");
         }
-        else
+        catch (AlfrescoRuntimeException ignored)
         {
-            // tenant domain ~,./<>?\\| is not valid format"
+            // Expected exception
         }
     }
     

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -71,6 +71,11 @@ public class SwitchingTransformServiceRegistry implements TransformServiceRegist
     @Override
     public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
     {
-        throw new UnsupportedOperationException("Unsupported operation SwitchingTransformServiceRegistry.findTransformerName");
+        String name = primary.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        if (name == null)
+        {
+            name = secondary.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        }
+        return name;
     }
 }

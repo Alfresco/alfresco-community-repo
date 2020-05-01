@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,12 +25,14 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -112,6 +114,21 @@ public class LegacyTransformServiceRegistry implements InitializingBean, Transfo
     @Override
     public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
     {
-        throw new UnsupportedOperationException("Unsupported operation LegacyTransformServiceRegistry.findTransformerName");
+        String name = null;
+        try
+        {
+            TransformationOptions transformationOptions = converter.getTransformationOptions(renditionName, actualOptions);
+            List<ContentTransformer> transformers = legacySynchronousTransformClient.getActiveTransformers(
+                    sourceMimetype, sourceSizeInBytes, targetMimetype, transformationOptions);
+            if (!transformers.isEmpty())
+            {
+                name = legacySynchronousTransformClient.getName() + ":" + transformers.get(0).getName();
+            }
+        }
+        catch (IllegalArgumentException ignore)
+        {
+            // Typically if the mimetype is invalid.
+        }
+        return name;
     }
 }

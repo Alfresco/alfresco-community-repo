@@ -148,6 +148,7 @@
         <property name="mimetypeService" ref="MimetypeService" />
         <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
         <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
+        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
     </bean>
 
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
@@ -183,6 +184,7 @@
         <property name="timeoutDefault" value="${system.thumbnail.definition.default.timeoutMs}" />
         <property name="cronExpression" value="${rendition.config.cronExpression}"></property>
         <property name="initialAndOnErrorCronExpression" value="${rendition.config.initialAndOnError.cronExpression}"></property>
+        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
     </bean>
 
     <bean id="renditionDefinitionRegistry2JsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

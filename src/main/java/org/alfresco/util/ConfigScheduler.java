@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -83,9 +83,21 @@ public abstract class ConfigScheduler<Data>
     protected Data data;
     private ThreadLocal<Data> threadData = ThreadLocal.withInitial(() -> data);
 
+    private ShutdownIndicator shutdownIndicator;
+
     public ConfigScheduler(Object client)
     {
         jobName = client.getClass().getName()+"Job@"+Integer.toHexString(System.identityHashCode(client));
+    }
+
+    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator)
+    {
+        this.shutdownIndicator = shutdownIndicator;
+    }
+
+    private boolean shuttingDown()
+    {
+        return shutdownIndicator != null && shutdownIndicator.isShuttingDown();
     }
 
     public abstract boolean readConfig() throws IOException;
@@ -198,24 +210,31 @@ public abstract class ConfigScheduler<Data>
      */
     public boolean readConfigAndReplace(boolean scheduledRead)
     {
-        boolean successReadingConfig;
-        log.debug((scheduledRead ? "Scheduled" : "Unscheduled")+" config read started");
-        Data data = getData();
-        try
+        // Config replacement is not done during shutdown. We cannot even log it without generating an INFO message.
+
+        // If shutting down, we return true indicating there were not problems, as that will result in the next
+        // scheduled job taking place later where as false would switch to a more frequent retry sequence.
+        boolean successReadingConfig = true;
+        if (!shuttingDown())
         {
-            Data newData = createData();
-            threadData.set(newData);
-            successReadingConfig = readConfig();
-            data = newData;
-            log.debug("Config read finished "+data+
-                    (successReadingConfig ? "" : ". Config replaced but there were problems")+"\n");
+            log.debug((scheduledRead ? "Scheduled" : "Unscheduled") + " config read started");
+            Data data = getData();
+            try
+            {
+                Data newData = createData();
+                threadData.set(newData);
+                successReadingConfig = readConfig();
+                data = newData;
+                log.debug("Config read finished " + data +
+                        (successReadingConfig ? "" : ". Config replaced but there were problems") + "\n");
+            }
+            catch (Exception e)
+            {
+                successReadingConfig = false;
+                log.error("Config read failed. " + e.getMessage(), e);
+            }
+            setData(data);
         }
-        catch (Exception e)
-        {
-            successReadingConfig = false;
-            log.error("Config read failed. "+e.getMessage(), e);
-        }
-        setData(data);
         return successReadingConfig;
     }
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.util.ConfigFileFinder;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.config.TikaConfig;
@@ -551,6 +552,11 @@ public class MimetypeMap implements MimetypeService
     public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
     {
         this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
+    }
+
+    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator)
+    {
+        configScheduler.setShutdownIndicator(shutdownIndicator);
     }
 
     /**

@@ -467,9 +467,9 @@ public class PersonTest extends TestCase
             try
             {
                 personService.createPerson(createDefaultProperties(personName, "Some", "User", "some.user@example.com", "alfresco", rootNodeRef));
-                fail("PersonException not caught for illegalCharacter: " +personName.charAt(personName.indexOf(illegalCharacter)));
+                fail("IllegalArgumentException not caught for illegalCharacter: " +personName.charAt(personName.indexOf(illegalCharacter)));
             }
-            catch (PersonException ignored)
+            catch (IllegalArgumentException ignored)
             {
                 // Expected
             }

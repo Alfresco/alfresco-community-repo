@@ -261,9 +261,9 @@ public class AuthorityServiceTest extends TestCase
             try 
             {
                 authorityService.createAuthority(AuthorityType.GROUP, groupName);
-                fail("AuthorityException not caught for illegalCharacter: " +groupName.charAt(groupName.indexOf(illegalCharacter)));
+                fail("IllegalArgumentException not caught for illegalCharacter: " +groupName.charAt(groupName.indexOf(illegalCharacter)));
             } 
-            catch (AuthorityException ignored)
+            catch (IllegalArgumentException ignored)
             {
                 // Expected
             }

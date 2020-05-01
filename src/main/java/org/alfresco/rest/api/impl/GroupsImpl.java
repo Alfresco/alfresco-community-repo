@@ -87,7 +87,6 @@ public class GroupsImpl implements Groups
     private static final String DISPLAY_NAME = "displayName";
     private static final String AUTHORITY_NAME = "authorityName";
     private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
-    private static final char[] illegalCharacters = {'/', '\\', '\r', '\n'};
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
@@ -947,14 +946,6 @@ public class GroupsImpl implements Groups
             if (groupId == null || groupId.isEmpty())
             {
                 throw new InvalidArgumentException("groupId is null or empty");
-            }
-
-            for (char illegalCharacter : illegalCharacters)
-            {
-                if (groupId.indexOf(illegalCharacter) != -1)
-                {
-                    throw new IllegalArgumentException("groupId contains characters that are not permitted: "+groupId.charAt(groupId.indexOf(illegalCharacter)));
-                }
             }
 
             if (groupAuthorityExists(groupId))

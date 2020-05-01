@@ -331,14 +331,14 @@ public class TestPeople extends AbstractBaseApiTest
         person.setUserName("myUserName11111111111111111111111111111111111111111111111111111111111111111111111111111111@" + account1.getId());
         people.create(person, 400);
 
-        // create person with invalid characters ("/", "\", "\n", "\r")
+        // create person with invalid characters {'/', '\\', '\n', '\r', '"'}
         {
-            char[] invalidCharacters = {'/', '\\', '\n', '\r'};
+            char[] invalidCharacters = {'/', '\\', '\n', '\r', '"'};
 
             for (char invalidCharacter : invalidCharacters)
             {
                 person.setUserName("myUser" + invalidCharacter + "Name@" + account1.getId());
-        people.create(person, 400);
+                people.create(person, 400);
             }
         }
 

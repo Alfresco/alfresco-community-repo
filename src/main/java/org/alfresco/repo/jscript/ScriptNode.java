@@ -2882,12 +2882,10 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             protected void doTransform(SynchronousTransformClient synchronousTransformClient, ContentReader reader, ContentWriter writer)
             {
-                Map<String, String> actualOptions = Collections.emptyMap();
+                Map<String, String> actualOptions = new HashMap<>(1);
                 if (options != null || !options.trim().isEmpty())
                 {
-                    // TODO it might be possible to extract some of the 'known ones' into actualOptions.
-                    throw new IllegalArgumentException("ImageMagick commandOptions '"+options+
-                            "' may no longer be passed blindly to the transformer for security reasons.");
+                    actualOptions.put(ImageTransformationOptions.OPT_COMMAND_OPTIONS, options);
                 }
                 transformNodeRef(synchronousTransformClient, reader, writer, actualOptions, sourceNodeRef);
             }

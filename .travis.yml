@@ -16,8 +16,8 @@ before_cache:
 env:
   global:
     - VERSION_EDITION=Community
-    # Must be in the format <alfresco-version>-<additional_versioning> ie. 6.3.0-repo-xxxx-x or 6.3.0-A-x
-    - RELEASE_VERSION=6.2.1-RC1
+    # Must be in the format <alfresco-version>-<additional_versioning> ie. 6.3.0-repo-xxxx-x or 6.3.0-Ax
+    - RELEASE_VERSION=6.2.1-A5
     - DEVELOPMENT_VERSION=6.2.1-SNAPSHOT
     - COMM_RELEASE_VERSION=
 branches:

@@ -82,5 +82,7 @@ public interface ContentTransformerWorker
         return false;
     }
 
-    public void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient);
+    public default void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient)
+    {
+    }
 }

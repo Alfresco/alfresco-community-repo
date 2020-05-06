@@ -298,7 +298,4 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
                     "   result: \n" + result);
         }
     }
-    public void setRemoteTransformerClient(RemoteTransformerClient remoteTransformerClient)
-    {
-    }
 }

@@ -165,6 +165,11 @@
             <artifactId>jaxrpc-api</artifactId>
             <version>1.1</version>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
 
         <!-- This is needed at runtime by Web Client, so not really a test dependency -->
         <dependency>

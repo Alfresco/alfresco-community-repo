@@ -41,10 +41,10 @@ public class FilePlanComponentAspects
 
     // aspect present on completed records
     public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
-    
+
 	// aspect present on record folders/categories with vital records
     public static final String ASPECTS_VITAL_RECORD_DEFINITION= "rma:vitalRecordDefinition";
-    
+
 	// aspect present on vital records
     public static final String ASPECTS_VITAL_RECORD = "rma:vitalRecord";
 
@@ -53,4 +53,7 @@ public class FilePlanComponentAspects
 
     // recordSearch aspect
     public static final String RECORD_SEARCH_ASPECT = "rma:recordSearch";
+
+    // retention schedule cut off aspect
+    public static final String CUT_OFF_ASPECT = "rma:cutOff";
 }

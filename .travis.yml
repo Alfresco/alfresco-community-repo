@@ -13,7 +13,6 @@ cache:
 # the cache can grow constantly
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-repository
-  - rm -rf $HOME/.m2/repository/org/springframework/spring-web/5.1.8.RELEASE
 
 branches:
   only:

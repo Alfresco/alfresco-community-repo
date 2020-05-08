@@ -322,7 +322,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         try
         {
-            keyInfoManager = getKeyInfoManager(getKeyMetaDataFileLocation());
+            keyInfoManager = getKeyInfoManager(getKeyStoreParameters());
             KeyStore ks = loadKeyStore(keyStoreParameters, keyInfoManager);
 
             logger.debug("Initializing key managers");
@@ -355,7 +355,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         try
         {
-            keyInfoManager = getKeyInfoManager(getKeyMetaDataFileLocation());
+            keyInfoManager = getKeyInfoManager(getKeyStoreParameters());
             KeyStore ks = loadKeyStore(getKeyStoreParameters(), keyInfoManager);
 
             logger.debug("Initializing trust managers");
@@ -376,12 +376,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             }
         }
     }
-    
-    protected String getKeyMetaDataFileLocation()
-    {
-        return keyStoreParameters.getKeyMetaDataFileLocation();
-    }
-    
+
     protected InputStream getKeyStoreStream(String location) throws FileNotFoundException
     {
         if(location == null)
@@ -396,9 +391,17 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         return new FileOutputStream(getKeyStoreParameters().getLocation());
     }
     
-    protected KeyInfoManager getKeyInfoManager(String metadataFileLocation) throws FileNotFoundException, IOException
+    protected KeyInfoManager getKeyInfoManager(KeyStoreParameters keyStoreParameters) throws IOException
     {
-        return new KeyInfoManager(metadataFileLocation, keyResourceLoader);
+        return new KeyInfoManager(keyStoreParameters, keyResourceLoader);
+    }
+
+    @Deprecated
+    protected KeyInfoManager getKeyInfoManager(String metadataFileLocation) throws IOException
+    {
+        KeyStoreParameters keyStoreParameters = new KeyStoreParameters();
+        keyStoreParameters.setKeyMetaDataFileLocation(metadataFileLocation);
+        return new KeyInfoManager(keyStoreParameters, keyResourceLoader);
     }
 
     protected KeyMap cacheKeys(KeyStore ks, KeyInfoManager keyInfoManager)
@@ -563,7 +566,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         try
         {
-            keyInfoManager = getKeyInfoManager(keyStoreParameters.getKeyMetaDataFileLocation());
+            keyInfoManager = getKeyInfoManager(keyStoreParameters);
             ks = loadKeyStore(keyStoreParameters, keyInfoManager);
             // Loaded
         }
@@ -635,7 +638,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
 
         try
         {
-            keyInfoManager = getKeyInfoManager(getKeyMetaDataFileLocation());
+            keyInfoManager = getKeyInfoManager(getKeyStoreParameters());
             Key key = getSecretKey(keyInfoManager.getKeyInformation(keyAlias));
             encryptionKeysRegistry.registerKey(keyAlias, key);
             keys.setKey(keyAlias, key);
@@ -678,7 +681,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         {
             if(!keyStoreExists(keyStoreParameters.getLocation()))
             {
-                keyInfoManager = getKeyInfoManager(keyStoreParameters.getKeyMetaDataFileLocation());
+                keyInfoManager = getKeyInfoManager(keyStoreParameters);
                 KeyStore ks = initialiseKeyStore(keyStoreParameters.getType(), keyStoreParameters.getProvider());
     
                 String keyStorePassword = keyInfoManager.getKeyStorePassword();
@@ -686,7 +689,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
                 {
                     throw new AlfrescoRuntimeException("Key store password is null for keystore at location "
                             + getKeyStoreParameters().getLocation()
-                            + ", key store meta data location" + getKeyMetaDataFileLocation());
+                            + ". Either specify it as a JVM property or in key store meta data location.");
                 }
 
                 for(String keyAlias : keys.getKeyAliases())
@@ -765,8 +768,13 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         }
     }
 
-    protected Key getSecretKey(KeyInformation keyInformation) throws NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException
+    protected Key getSecretKey(KeyInformation keyInformation) throws AlfrescoRuntimeException, NoSuchAlgorithmException, InvalidKeyException, InvalidKeySpecException
     {
+        if (keyInformation == null)
+        {
+            throw new AlfrescoRuntimeException("Unable to get secret key: no key information is provided");
+        }
+
         byte[] keyData = keyInformation.getKeyData();
 
         if(keyData == null)
@@ -796,7 +804,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
         writeLock.lock();
         try
         {
-            keyInfoManager = getKeyInfoManager(getKeyMetaDataFileLocation());
+            keyInfoManager = getKeyInfoManager(getKeyStoreParameters());
             KeyStore ks = loadKeyStore(getKeyStoreParameters(), keyInfoManager);
 
             // loading Key
@@ -985,7 +993,7 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
     public static class KeyInfoManager
     {
         private KeyResourceLoader keyResourceLoader;
-        private String metadataFileLocation;
+        private KeyStoreParameters keyStoreParameters;
         private Properties keyProps;
         private String keyStorePassword = null;
         private Map<String, KeyInformation> keyInfo;
@@ -1005,10 +1013,10 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             }
         }
 
-        KeyInfoManager(String metadataFileLocation, KeyResourceLoader keyResourceLoader) throws IOException, FileNotFoundException
+        KeyInfoManager(KeyStoreParameters keyStoreParameters, KeyResourceLoader keyResourceLoader) throws IOException, FileNotFoundException
         {
             this.keyResourceLoader = keyResourceLoader;
-            this.metadataFileLocation = metadataFileLocation;
+            this.keyStoreParameters = keyStoreParameters;
             keyInfo = new HashMap<String, KeyInformation>(2);
             loadKeyMetaData();
         }
@@ -1025,31 +1033,73 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
          * Where required, <tt>null</tt> values must be inserted into the map to indicate the presence
          * of a key that is not protected by a password.  They entry for {@link #KEY_KEYSTORE_PASSWORD}
          * is required if the keystore is password protected.
+         *
+         * WARNING. Storing passwords (keyMetaDataFileLocation) on the file system is not following best security practices.
+         *
+         * <p/>Loading of keys info from system (JVM) properties takes precedence over metadata file.
+         * <p/>Set the unique ID of the keystore and remove the metadata file location property to use JVM properties lookup instead. The property lookup format is the following:
+         * <ul>
+         *     <li>[keystore-id].password - keystore password</li>
+         *     <li>[keystore-id].aliases - comma separated list of aliases for the keys in the keystore</li>
+         *     <li>[keystore-id].[alias].keyData - key data bytes in base64</li>
+         *     <li>[keystore-id].[alias].algorithm - key algorithm</li>
+         *     <li>[keystore-id].[alias].password - key password</li>
+         * </ul>
+         *
          */
         protected void loadKeyMetaData() throws IOException, FileNotFoundException
         {
-            keyProps = keyResourceLoader.loadKeyMetaData(metadataFileLocation);
-            if(keyProps != null)
+            if (keyStoreParameters.getId() != null &&
+                    (keyStoreParameters.getKeyMetaDataFileLocation() == null ||
+                            keyStoreParameters.getKeyMetaDataFileLocation().isEmpty()))
             {
-                String aliases = keyProps.getProperty("aliases");
-                if(aliases == null)
+                Properties jvmProperties = System.getProperties();
+                keyStorePassword = jvmProperties.getProperty(keyStoreParameters.getId() + ".password");
+                String aliases = jvmProperties.getProperty(keyStoreParameters.getId() + ".aliases");
+                if (aliases == null || aliases.isEmpty())
                 {
-                    throw new AlfrescoRuntimeException("Passwords file must contain an aliases key");
+                    logger.warn("No aliases were specified for " + keyStoreParameters.getId()
+                            + " keystore");
                 }
-    
-                this.keyStorePassword = keyProps.getProperty(KEY_KEYSTORE_PASSWORD);
-                
-                StringTokenizer st = new StringTokenizer(aliases, ",");
-                while(st.hasMoreTokens())
+                else
                 {
-                    String keyAlias = st.nextToken();
-                    keyInfo.put(keyAlias, loadKeyInformation(keyAlias));
+                    StringTokenizer st = new StringTokenizer(aliases, ",");
+                    while(st.hasMoreTokens())
+                    {
+                        String keyAlias = st.nextToken();
+                        keyInfo.put(keyAlias, loadKeyInformation(jvmProperties, keyAlias, keyStoreParameters.getId() + "."));
+                    }
                 }
             }
             else
             {
-                // TODO
-                //throw new FileNotFoundException("Cannot find key metadata file " + getKeyMetaDataFileLocation());
+                logger.warn("Storing passwords (" + keyStoreParameters.getKeyMetaDataFileLocation()
+                        + ") on the file system is not following best security practices." +
+                        " Please refer to documentation and use JVM properties instead");
+
+                keyProps = keyResourceLoader.loadKeyMetaData(keyStoreParameters.getKeyMetaDataFileLocation());
+                if(keyProps != null)
+                {
+                    String aliases = keyProps.getProperty("aliases");
+                    if(aliases == null)
+                    {
+                        throw new AlfrescoRuntimeException("Passwords file must contain an aliases key");
+                    }
+
+                    this.keyStorePassword = keyProps.getProperty(KEY_KEYSTORE_PASSWORD);
+
+                    StringTokenizer st = new StringTokenizer(aliases, ",");
+                    while(st.hasMoreTokens())
+                    {
+                        String keyAlias = st.nextToken();
+                        keyInfo.put(keyAlias, loadKeyInformation(keyProps, keyAlias, ""));
+                    }
+                }
+                else
+                {
+                    // TODO
+                    //throw new FileNotFoundException("Cannot find key metadata file " + getKeyMetaDataFileLocation());
+                }
             }
         }
         
@@ -1067,11 +1117,11 @@ public class AlfrescoKeyStoreImpl implements AlfrescoKeyStore
             this.keyProps.remove(keyAlias);
         }
 
-        protected KeyInformation loadKeyInformation(String keyAlias)
+        protected KeyInformation loadKeyInformation(Properties keyProps, String keyAlias, String prefix)
         {
-            String keyPassword = keyProps.getProperty(keyAlias + ".password");
-            String keyData = keyProps.getProperty(keyAlias + ".keyData");
-            String keyAlgorithm = keyProps.getProperty(keyAlias + ".algorithm");
+            String keyPassword = keyProps.getProperty(prefix + keyAlias + ".password");
+            String keyData = keyProps.getProperty(prefix + keyAlias + ".keyData");
+            String keyAlgorithm = keyProps.getProperty(prefix + keyAlias + ".algorithm");
 
             byte[] keyDataBytes = null;
             if(keyData != null && !keyData.equals(""))

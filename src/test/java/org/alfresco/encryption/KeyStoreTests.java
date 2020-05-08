@@ -37,6 +37,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -212,7 +213,7 @@ public class KeyStoreTests
 
 		TestAlfrescoKeyStore missingMainKeyStore = getKeyStore("main", "JCEKS", Collections.singletonMap(KeyProvider.ALIAS_METADATA, "metadata"),
 				Collections.singletonMap(KeyProvider.ALIAS_METADATA, generateEncodedKey()), generateKeystoreName(), generateKeystoreName());
-
+        missingMainKeyStore.setKeysToValidate(new HashSet<>(Collections.singletonList("metadata")));
 		encryptionKeysRegistry.unregisterKey(KeyProvider.ALIAS_METADATA);
 		keyStoreChecker.setMainKeyStore(missingMainKeyStore);
 
@@ -240,7 +241,7 @@ public class KeyStoreTests
 		// missing main keystore, missing backup keystore, metadata registered key -> error, re-instate the keystore
 		TestAlfrescoKeyStore missingMainKeyStore = getKeyStore("main", "JCEKS", Collections.singletonMap(KeyProvider.ALIAS_METADATA, "metadata"),
 				null, generateKeystoreName(), generateKeystoreName());
-		
+        missingMainKeyStore.setKeysToValidate(new HashSet<>(Collections.singletonList("metadata")));
 		assertTrue("", encryptionKeysRegistry.isKeyRegistered("metadata"));
 
 		keyStoreChecker.setMainKeyStore(missingMainKeyStore);
@@ -268,6 +269,7 @@ public class KeyStoreTests
 		// create main keystore
 		TestAlfrescoKeyStore mainKeyStore = getKeyStore("main", "JCEKS", Collections.singletonMap(KeyProvider.ALIAS_METADATA, "metadata"),
 				null, generateKeystoreName(), generateKeystoreName());
+        mainKeyStore.setKeysToValidate(new HashSet<>(Collections.singletonList("metadata")));
 		createAndPopulateKeyStore(mainKeyStore);
 
 		// de-register metadata key
@@ -303,6 +305,7 @@ public class KeyStoreTests
 
 		TestAlfrescoKeyStore keyStore = getKeyStore("main", "JCEKS", Collections.singletonMap(KeyProvider.ALIAS_METADATA, "metadata"),
 				null, generateKeystoreName(), generateKeystoreName());
+		keyStore.setKeysToValidate(new HashSet<>(Collections.singletonList("metadata")));
 		createAndPopulateKeyStore(keyStore);
 
 		keyStoreChecker.setMainKeyStore(keyStore);
@@ -358,6 +361,7 @@ public class KeyStoreTests
 
 		TestAlfrescoKeyStore keyStore = getKeyStore("main", "JCEKS", Collections.singletonMap(KeyProvider.ALIAS_METADATA, "metadata"),
 				null, generateKeystoreName(), generateKeystoreName());
+        keyStore.setKeysToValidate(new HashSet<>(Collections.singletonList("metadata")));
 		createAndPopulateKeyStore(keyStore);
 
 		try

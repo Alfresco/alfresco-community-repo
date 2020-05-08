@@ -65,6 +65,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest.class,
     org.alfresco.repo.content.RoutingContentStoreTest.class,
 
+    org.alfresco.encryption.EncryptionTests.class,
+    org.alfresco.encryption.KeyStoreTests.class
+
     // TODO REPO-2791 org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest.class,
 })
 public class AppContext02TestSuite

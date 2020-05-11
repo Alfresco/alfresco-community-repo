@@ -26,6 +26,7 @@
  */
 package org.alfresco.rest.rm.community.recordcategories;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertTrue;
@@ -45,8 +46,6 @@ import org.testng.annotations.Test;
 
 public class AutomaticDispositionTest extends BaseRMRestTest
 {
-    private static final String CUT_OFF_ASPECT = "rma:cutOff";
-
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
 

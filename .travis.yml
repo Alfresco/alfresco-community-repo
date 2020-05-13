@@ -37,8 +37,8 @@ jobs:
   include:
     - stage: test
       name: "WhiteSource scan"
-      # only on develop and if it is not a PR
-      if: fork = false AND branch = develop AND type != pull_request
+      # only on master or develop and if it is not a PR
+      if: fork = false AND branch =~ ^(master|develop)$ AND type != pull_request
       install:
         - travis_retry travis_wait 30 mvn -q install "-Dversion.edition=${VERSION_EDITION}" -f war/pom.xml
       script:

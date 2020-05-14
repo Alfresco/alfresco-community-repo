@@ -598,8 +598,8 @@
                 <property name="ticketsCache">
                     <ref bean="ticketsCache" />
                 </property>
-                <property name="usernameKey">
-                    <ref bean="usernameKeyCache" />
+                <property name="usernameToTicketIdCache">
+                    <ref bean="usernameToTicketIdCache" />
                 </property>
                 <!-- The period for which tickets are valid in XML duration format. -->
                 <!-- The default is PT1H for one hour. -->

@@ -37,7 +37,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.GUID;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.safehaus.uuid.UUIDGenerator;
@@ -63,7 +62,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     private boolean oneOff;
     private String guid;
     private SimpleCache<String, Ticket> ticketsCache; // Can't use Ticket as it's private
-    private SimpleCache<String, String> usernameKey;
+    private SimpleCache<String, String> usernameToTicketIdCache;
     private ExpiryMode expiryMode = ExpiryMode.AFTER_INACTIVITY;
     private boolean useSingleTicketPerUser = true;
 
@@ -85,10 +84,10 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     }
 
     /**
-     * Set the usernameKey cache as secondary map for supporting cache clustering
+     * Set the usernameToTicketIdCache as secondary map for supporting cache clustering
      */
-    public void setUsernameKey (SimpleCache<String, String> usernameKey) {
-        this.usernameKey = usernameKey;
+    public void setUsernameToTicketIdCache (SimpleCache<String, String> usernameToTicketIdCache) {
+        this.usernameToTicketIdCache = usernameToTicketIdCache;
     }
 
     /**
@@ -146,55 +145,55 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     }
 
     /**
-     * All put operations into ticketsCache should go through this method,
+     * All put operations into ticketsCache and usernameToTicketIdCache should go through this method,
      * so we can debug/trace ticket problems easier from the logs
      */
-    private void putTicketIntoTicketsCache(Ticket ticket)
+    private void putIntoCache (Ticket ticket)
     {
         if (logger.isTraceEnabled())
         {
             logger.trace("Putting into ticketsCache " + ticketsCache.toString() + " ticket: " + ticket);
         }
         ticketsCache.put(ticket.getTicketId(), ticket);
-    }
 
-    /**
-     * All put operations into usernameKey cache should go through this method,
-     * so we can debug/trace  problems easier from the logs
-     */
-    private void putTicketIntoUsernameKeyCache (Ticket ticket)
-    {
         if (logger.isTraceEnabled())
         {
-            logger.trace("Putting into usernameKey " + usernameKey.toString() + " username and key of ticket: " + ticket);
+            logger.trace("Putting into usernameToTicketIdCache " + usernameToTicketIdCache.toString() + " username and ticketId of: " + ticket);
         }
-        usernameKey.put(ticket.getUserName(), ticket.getTicketId());
+        usernameToTicketIdCache.put(ticket.getUserName(), ticket.getTicketId());
     }
 
     /**
-     * All remove operations from ticketsCache should go through this method,
+     * All remove operations from ticketsCache and usernameToTicketIdCache should go through this method,
      * so we can debug/trace ticket problems easier from the logs
      */
-    private void removeTicketFromTicketsCache(String ticketId)
+    private void removeFromCache (String ticketId)
     {
+        Ticket ticket = null;
+        if(ticketId != null)
+        {
+            ticket = ticketsCache.get(ticketId);
+        }
+
         if (logger.isTraceEnabled())
         {
             logger.trace("Removing ticket from ticketsCache: " + ticketId);
         }
         ticketsCache.remove(ticketId);
-    }
 
-    /**
-     * All remove operations from usernameKey cache should go through this method,
-     * so we can debug/trace problems easier from the logs
-     */
-    private void removeFromUsernameKey(String username)
-    {
-        if (logger.isTraceEnabled())
+        if(ticket != null)
         {
-            logger.trace("Removing ticket key from usernameKey: " + username);
+            String username = ticket.getUserName();
+            String actualUserTicketIdFromCache = usernameToTicketIdCache.get(username);
+            if(ticketId.equals(actualUserTicketIdFromCache))
+            {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Removing ticketId from usernameToTicketIdCache for: " + username);
+                }
+                usernameToTicketIdCache.remove(username);
+            }
         }
-        usernameKey.remove(username);
     }
 
     @Override
@@ -214,8 +213,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                 expiryDate = Duration.add(new Date(), validDuration);
             }
             ticket = new Ticket(ticketsExpire ? expiryMode : ExpiryMode.DO_NOT_EXPIRE, expiryDate, userName, validDuration);
-            putTicketIntoTicketsCache(ticket);
-            putTicketIntoUsernameKeyCache(ticket);
+            putIntoCache(ticket);
         }
 
         String ticketString = GRANTED_AUTHORITY_TICKET_PREFIX + ticket.getTicketId();
@@ -229,40 +227,20 @@ public class InMemoryTicketComponentImpl implements TicketComponent
 
     private Ticket findNonExpiredUserTicket(String userName)
     {
-        String keyFromCache = usernameKey.get(userName);
-        if(StringUtils.isNotBlank(keyFromCache)) {
-            Ticket ticketFromCache = ticketsCache.get(keyFromCache);
-            if(ticketFromCache != null) {
+        String userTicketIdFromCache = usernameToTicketIdCache.get(userName);
+        if(userTicketIdFromCache != null)
+        {
+            Ticket ticketFromCache = ticketsCache.get(userTicketIdFromCache);
+            if(ticketFromCache != null)
+            {
                 Ticket newTicket = ticketFromCache.getNewEntry();
                 if(newTicket != null)
                 {
                     if (newTicket != ticketFromCache)
                     {
-                        putTicketIntoTicketsCache(newTicket);
-                        putTicketIntoUsernameKeyCache(newTicket);
+                        putIntoCache(newTicket);
                     }
-                    return ticketFromCache;
-                }
-            }
-        } else {
-            for (String key : ticketsCache.getKeys())
-            {
-                Ticket ticket = ticketsCache.get(key);
-                if (ticket != null)
-                {
-                    if(ticket.getUserName().equals(userName))
-                    {
-                        Ticket newTicket = ticket.getNewEntry();
-                        if(newTicket != null)
-                        {
-                            if (newTicket != ticket)
-                            {
-                                putTicketIntoTicketsCache(newTicket);
-                                putTicketIntoUsernameKeyCache(newTicket);
-                            }
-                            return ticket;
-                        }
-                    }
+                    return newTicket;
                 }
             }
         }
@@ -301,16 +279,11 @@ public class InMemoryTicketComponentImpl implements TicketComponent
         {
             //this feature is deprecated
 
-            removeTicketFromTicketsCache(ticketKey);
-            String userName = newTicket.getUserName();
-            if(StringUtils.isNotBlank(userName)) {
-                removeFromUsernameKey(userName);
-            }
+            removeFromCache(ticketKey);
         }
         else if (newTicket != ticket)
         {
-            putTicketIntoTicketsCache(newTicket);
-            putTicketIntoUsernameKeyCache(newTicket);
+            putIntoCache(newTicket);
         }
         currentTicket.set(ticketString);
         if (logger.isTraceEnabled())
@@ -357,7 +330,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     public void invalidateTicketById(String ticketString)
     {
         String key = ticketString.substring(GRANTED_AUTHORITY_TICKET_PREFIX.length());
-        removeTicketFromTicketsCache(key);
+        removeFromCache(key);
     }
 
     @Override
@@ -419,10 +392,11 @@ public class InMemoryTicketComponentImpl implements TicketComponent
                 logger.trace("Clearing all tickets from the ticketsCache, that used to have size: " + count);
             }
             ticketsCache.clear();
+            usernameToTicketIdCache.clear();
         }
         else
         {
-            Set<String> toRemove = new HashSet<String>();
+            Set<String> toRemove = new HashSet<>();
             for (String key : ticketsCache.getKeys())
             {
                 Ticket ticket = ticketsCache.get(key);
@@ -434,7 +408,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
             }
             for (String id : toRemove)
             {
-                removeTicketFromTicketsCache(id);
+                removeFromCache(id);
             }
         }
         return count;
@@ -443,35 +417,26 @@ public class InMemoryTicketComponentImpl implements TicketComponent
     @Override
     public void invalidateTicketByUser(String userName)
     {
-        Set<String> toRemove = new HashSet<String>();
+        Set<String> toRemove = new HashSet<>();
 
-        String keyFromCache = usernameKey.get(userName);
-        if(StringUtils.isNotBlank(keyFromCache)) {
-            Ticket ticketFromCache = ticketsCache.get(keyFromCache);
-            if(ticketFromCache != null) {
-                toRemove.add(ticketFromCache.getTicketId());
-            }
-        } else {
-            for (String key : ticketsCache.getKeys())
+        for (String key : ticketsCache.getKeys())
+        {
+            Ticket ticket = ticketsCache.get(key);
+            // Hack: The getKeys() call might return keys for null marker objects, yielding null values
+            if(ticket == null)
             {
-                Ticket ticket = ticketsCache.get(key);
-                // Hack: The getKeys() call might return keys for null marker objects, yielding null values
-                if (ticket == null)
-                {
-                    continue;
-                }
-                if (ticket.getUserName().equals(userName))
-                {
-                    toRemove.add(ticket.getTicketId());
-                }
+                continue;
+            }
+            if(ticket.getUserName().equals(userName))
+            {
+                toRemove.add(ticket.getTicketId());
             }
         }
 
         for (String id : toRemove)
         {
-            removeTicketFromTicketsCache(id);
+            removeFromCache(id);
         }
-        removeFromUsernameKey(userName);
     }
 
     @Override

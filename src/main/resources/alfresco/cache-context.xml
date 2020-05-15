@@ -281,8 +281,8 @@
       <constructor-arg value="cache.ticketsCache"/>
    </bean>
 
-    <bean name="usernameKeyCache" factory-bean="cacheFactory" factory-method="createCache">
-        <constructor-arg value="cache.usernameKeyCache"/>
+    <bean name="usernameToTicketIdCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.usernameToTicketIdCache"/>
     </bean>
       
    <!-- ===================================== -->

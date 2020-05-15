@@ -31,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -273,5 +274,11 @@ public class NodeResourceHelper
     public Set<String> getMappedAspects(NodeRef nodeRef)
     {
         return mapToNodeAspects(nodeService.getAspects(nodeRef));
+    }
+    
+    public List<String> getPrimaryHierarchy(NodeRef nodeRef, boolean showLeaf)
+    {
+        final Path path = nodeService.getPath(nodeRef);
+        return PathUtil.getNodeIdsInReverse(path, showLeaf);
     }
 }

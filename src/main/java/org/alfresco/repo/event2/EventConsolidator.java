@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,6 +65,7 @@ public class EventConsolidator implements EventSupportedPolicies
     private Map<QName, Serializable> propertiesAfter;
     private NodeRef nodeRef;
     private QName nodeType;
+    private List<String> primaryHierarchyBefore;
 
     public EventConsolidator(NodeResourceHelper nodeResourceHelper)
     {
@@ -145,6 +147,15 @@ public class EventConsolidator implements EventSupportedPolicies
     }
 
     @Override
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        eventTypes.add(EventType.NODE_UPDATED);
+
+        createBuilderIfAbsent(newChildAssocRef.getChildRef());
+        setBeforePrimaryHierarchy(helper.getPrimaryHierarchy(oldChildAssocRef.getParentRef(), true));
+    }
+
+    @Override
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         eventTypes.add(EventType.NODE_UPDATED);
@@ -193,6 +204,15 @@ public class EventConsolidator implements EventSupportedPolicies
         if (propertiesBefore == null)
         {
             propertiesBefore = before;
+        }
+    }
+
+    private void setBeforePrimaryHierarchy(List<String> before)
+    {
+        // Don't overwrite the original value if there are multiple calls.
+        if (primaryHierarchyBefore == null)
+        {
+            primaryHierarchyBefore = before;
         }
     }
 
@@ -263,6 +283,11 @@ public class EventConsolidator implements EventSupportedPolicies
         if (!aspectsBefore.isEmpty())
         {
             builder.setAspectNames(aspectsBefore);
+        }
+
+        if (primaryHierarchyBefore != null && !primaryHierarchyBefore.isEmpty())
+        {
+            builder.setPrimaryHierarchy(primaryHierarchyBefore);
         }
 
         return builder.build();

@@ -39,6 +39,7 @@ import org.alfresco.repo.event2.filter.NodeTypeFilter;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -119,6 +120,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                                            new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, this,
                                            new JavaBehaviour(this, "onRemoveAspect"));
+        policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME, this,
+                                           new JavaBehaviour(this, "onMoveNode"));
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -170,6 +173,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         getEventConsolidator(childAssocRef.getChildRef()).onCreateNode(childAssocRef);
+    }
+
+    @Override
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        getEventConsolidator(newChildAssocRef.getChildRef()).onMoveNode(oldChildAssocRef, newChildAssocRef);
     }
 
     @Override

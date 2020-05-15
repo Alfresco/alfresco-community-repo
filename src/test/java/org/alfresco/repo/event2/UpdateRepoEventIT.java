@@ -25,20 +25,25 @@
  */
 
 package org.alfresco.repo.event2;
-
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.event.v1.model.ContentInfo;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.junit.Test;
 
 /**
@@ -300,5 +305,209 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         //Create and update node are done in the same transaction so one event is expected
         // to be generated
         checkNumOfEvents(1);
+    }
+
+    @Test
+    public void testUpdateNodeType()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        // old node's type
+        assertEquals("Created node does not have the correct type", ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+
+        // node.Created event should be generated
+        RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        NodeResource nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+
+            // new node's type
+            assertEquals("Wrong node type", ContentModel.TYPE_FOLDER, nodeService.getType(nodeRef));
+            return null;
+        });
+
+        // we should have 2 events, node.Created and node.Updated
+        checkNumOfEvents(2);
+
+        resultRepoEvent = getRepoEvent(2);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
+
+        NodeResource resourceBefore = getNodeResourceBefore(2);
+        assertEquals("Incorrect node type was found","cm:content", resourceBefore.getNodeType());
+        // assertNotNull(resourceBefore.getModifiedAt());  uncomment this when the issue will be fixed
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getContent());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getPrimaryHierarchy());
+    }
+
+    @Test
+    public void testUpdateNodeTypeWithCustomType()
+    {
+        String modelName = "testModel" + System.currentTimeMillis();
+        String modelDescription = "testModel description";
+        Pair<String, String> namespacePair = getNamespacePair();
+
+        M2Model model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName);
+        model.createNamespace(namespacePair.getFirst(), namespacePair.getSecond());
+        model.setDescription(modelDescription);
+
+        String typeName = "testType";
+        M2Type m2Type = model.createType(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName);
+        m2Type.setTitle("Test type title");
+
+        // Create active model
+        CustomModelDefinition modelDefinition =
+                retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
+
+        assertNotNull(modelDefinition);
+        assertEquals(modelName, modelDefinition.getName().getLocalName());
+        assertEquals(modelDescription, modelDefinition.getDescription());
+
+        // List all of the model's types
+        Collection<TypeDefinition> types = modelDefinition.getTypeDefinitions();
+        assertEquals(1, types.size());
+
+        // node.Created event should be generated for the model
+        RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        NodeResource nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
+
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        // old node's type
+        assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+
+        // node.Created event should be generated
+        resultRepoEvent = getRepoEvent(2);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
+
+        QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.setType(nodeRef, typeQName);
+
+            // new node's type
+            assertEquals(typeQName, nodeService.getType(nodeRef));
+            return null;
+        });
+
+        // we should have 3 events, node.Created for the model, node.Created for the node and node.Updated
+        checkNumOfEvents(3);
+
+        resultRepoEvent = getRepoEvent(3);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, nodeResource.getNodeType());
+
+        NodeResource resourceBefore = getNodeResourceBefore(3);
+        assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
+        // assertNotNull(resourceBefore.getModifiedAt()); uncomment this when the issue will be fixed
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getContent());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getPrimaryHierarchy());
+
+    }
+
+    @Test
+    public void testUpdateTwiceNodeTypeInTheSameTransaction()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+
+        // node.Created event should be generated
+        RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        NodeResource nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", "cm:content", nodeResource.getNodeType());
+
+        // old type
+        assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+            nodeService.setType(nodeRef, ContentModel.TYPE_CONTENT);
+
+            // new type
+            assertEquals("Wrong node type", ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+            return null;
+        });
+
+        // we should have only 2 events, node.Created and node.Updated
+        checkNumOfEvents(2);
+
+        resultRepoEvent = getRepoEvent(2);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", "cm:content", nodeResource.getNodeType());
+
+        NodeResource resourceBefore = getNodeResourceBefore(2);
+        assertEquals("Incorrect node type was found", "cm:folder", resourceBefore.getNodeType());
+        // assertNotNull(resourceBefore.getModifiedAt()); uncomment this when the issue will be fixed
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getContent());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getPrimaryHierarchy());
+    }
+
+    @Test
+    public void testCreateAndUpdateNodeTypeInTheSameTransaction()
+    {
+        retryingTransactionHelper.doInTransaction(() -> {
+            final NodeRef nodeRef = nodeService.createNode(
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+
+            // old type
+            assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
+
+            nodeService.setType(nodeRef, ContentModel.TYPE_FOLDER);
+
+            // new type
+            assertEquals(ContentModel.TYPE_FOLDER, nodeService.getType(nodeRef));
+            return null;
+        });
+
+        // we should have only 1 event, node.Created
+        checkNumOfEvents(1);
+
+        RepoEvent<NodeResource>  resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        NodeResource nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Incorrect node type was found", "cm:folder", nodeResource.getNodeType());
+    }
+
+    private Pair<String, String> getNamespacePair()
+    {
+        long timeMillis = System.currentTimeMillis();
+        String uri = "http://www.alfresco.org/model/testcmmservicenamespace" + timeMillis + "/1.0";
+        String prefix = "testcmmservice" + timeMillis;
+
+        return new Pair<>(uri, prefix);
     }
 }

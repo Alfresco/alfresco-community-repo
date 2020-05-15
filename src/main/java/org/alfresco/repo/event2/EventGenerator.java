@@ -41,6 +41,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -116,6 +117,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                                            new JavaBehaviour(this, "beforeDeleteNode"));
         policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, this,
                                            new JavaBehaviour(this, "onUpdateProperties"));
+        policyComponent.bindClassBehaviour(OnSetNodeTypePolicy.QNAME, this,
+                                           new JavaBehaviour(this, "onSetNodeType"));
         policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, this,
                                            new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, this,
@@ -185,6 +188,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         getEventConsolidator(nodeRef).onUpdateProperties(nodeRef, before, after);
+    }
+
+    @Override
+    public void onSetNodeType(NodeRef nodeRef, QName before, QName after)
+    {
+        getEventConsolidator(nodeRef).onSetNodeType(nodeRef, before, after);
     }
 
     @Override

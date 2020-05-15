@@ -41,6 +41,7 @@ import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -88,6 +89,9 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     @Autowired
     protected NodeService nodeService;
+
+    @Autowired
+    protected CustomModelService customModelService;
 
     @Qualifier("descriptorComponent")
     @Autowired

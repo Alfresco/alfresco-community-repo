@@ -35,6 +35,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
  */
 public interface EventSupportedPolicies extends NodeServicePolicies.OnCreateNodePolicy,
                                                 NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                                NodeServicePolicies.OnSetNodeTypePolicy,
                                                 NodeServicePolicies.BeforeDeleteNodePolicy,
                                                 NodeServicePolicies.OnAddAspectPolicy,
                                                 NodeServicePolicies.OnRemoveAspectPolicy,

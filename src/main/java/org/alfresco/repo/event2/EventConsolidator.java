@@ -65,6 +65,7 @@ public class EventConsolidator implements EventSupportedPolicies
     private Map<QName, Serializable> propertiesAfter;
     private NodeRef nodeRef;
     private QName nodeType;
+    private QName nodeTypeBefore;
     private List<String> primaryHierarchyBefore;
 
     public EventConsolidator(NodeResourceHelper nodeResourceHelper)
@@ -153,6 +154,14 @@ public class EventConsolidator implements EventSupportedPolicies
 
         createBuilderIfAbsent(newChildAssocRef.getChildRef());
         setBeforePrimaryHierarchy(helper.getPrimaryHierarchy(oldChildAssocRef.getParentRef(), true));
+    }
+
+    @Override
+    public void onSetNodeType(NodeRef nodeRef, QName before, QName after)
+    {
+        eventTypes.add(EventType.NODE_UPDATED);
+        nodeTypeBefore = before;
+        createBuilderIfAbsent(nodeRef);
     }
 
     @Override
@@ -288,6 +297,11 @@ public class EventConsolidator implements EventSupportedPolicies
         if (primaryHierarchyBefore != null && !primaryHierarchyBefore.isEmpty())
         {
             builder.setPrimaryHierarchy(primaryHierarchyBefore);
+        }
+
+        if (nodeTypeBefore != null)
+        {
+            builder.setNodeType(helper.getQNamePrefixString(nodeTypeBefore));
         }
 
         return builder.build();

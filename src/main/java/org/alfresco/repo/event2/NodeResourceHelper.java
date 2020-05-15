@@ -99,7 +99,7 @@ public class NodeResourceHelper
 
         return NodeResource.builder().setId(nodeRef.getId())
                            .setName((String) properties.get(ContentModel.PROP_NAME))
-                           .setNodeType(toString(type))
+                           .setNodeType(getQNamePrefixString(type))
                            .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
                            .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
                            .setCreatedByUser(getUserInfo((String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
@@ -148,7 +148,7 @@ public class NodeResourceHelper
 
                 if (isNotEmptyString(v))
                 {
-                    filteredProps.put(toString(k), v);
+                    filteredProps.put(getQNamePrefixString(k), v);
                 }
             }
         });
@@ -223,7 +223,7 @@ public class NodeResourceHelper
 
     // Returns the QName in the format prefix:local, but in the exceptional case were there is no registered prefix
     // returns it in the form {uri}local.
-    private String toString(QName k)
+    public String getQNamePrefixString(QName k)
     {
         String key;
         try
@@ -244,7 +244,7 @@ public class NodeResourceHelper
         aspects.forEach(q -> {
             if (!nodeAspectFilter.isExcluded(q))
             {
-                filteredAspects.add(toString(q));
+                filteredAspects.add(getQNamePrefixString(q));
             }
         });
 

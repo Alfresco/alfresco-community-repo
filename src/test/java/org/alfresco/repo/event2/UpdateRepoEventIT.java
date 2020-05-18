@@ -55,18 +55,21 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     @Test
     public void testUpdateNodeResourceContent()
     {
-        ContentService contentService = (ContentService) applicationContext.getBean("contentService");
+        ContentService contentService = (ContentService) applicationContext.getBean(
+            "contentService");
 
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
 
         RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(1);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(),
+            resultRepoEvent.getType());
 
         NodeResource resource = getNodeResource(resultRepoEvent);
         assertNull("Content should have been null.", resource.getContent());
 
         retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
+                true);
             writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
             writer.setEncoding("UTF-8");
             writer.putContent("test content.");
@@ -74,7 +77,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         });
 
         resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
+            resultRepoEvent.getType());
 
         resource = getNodeResource(resultRepoEvent);
         ContentInfo content = resource.getContent();
@@ -88,7 +92,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // Update the content again
         retryingTransactionHelper.doInTransaction(() -> {
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT,
+                true);
             writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
             writer.setEncoding("UTF-8");
             writer.putContent("A quick brown fox jumps over the lazy dog.");
@@ -583,5 +588,236 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         String prefix = "testcmmservice" + timeMillis;
 
         return new Pair<>(uri, prefix);
+    }
+
+    @Test
+    public void testMoveFile()
+    {
+        final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
+        final String folder1ID = getNodeResource(1).getId();
+        final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
+        final String folder2ID = getNodeResource(2).getId();
+        final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.moveNode(
+                moveFile,
+                folder2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+            return null;
+        });
+
+        NodeResource resourceBefore = getNodeResourceBefore(4);
+        NodeResource resource = getNodeResource(4);
+
+        final String moveFileParentBeforeMove = resourceBefore.getPrimaryHierarchy().get(0);
+        final String moveFileParentAfterMove = resource.getPrimaryHierarchy().get(0);
+
+        assertEquals("Wrong node parent.", folder1ID, moveFileParentBeforeMove);
+        assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
+            getRepoEvent(4).getType());
+
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getName());
+        assertNull(resourceBefore.getNodeType());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNotNull(resourceBefore.getAspectNames());
+        assertNotNull(resourceBefore.getPrimaryHierarchy());
+        assertNull("Content should have been null.", resource.getContent());
+        assertNull("Content should have been null.", resourceBefore.getContent());
+
+        assertNotNull(resource.getModifiedAt());
+        assertNotNull(resource.getModifiedByUser());
+        assertNotNull(resource.getAspectNames());
+        assertNull(resource.getContent());
+        assertTrue(resource.getProperties().isEmpty());
+    }
+
+    @Test
+    public void testMoveFolder()
+    {
+        final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
+        final NodeRef moveFolder = createNode(ContentModel.TYPE_FOLDER, parent);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.moveNode(
+                moveFolder,
+                grandParent,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+            return null;
+        });
+
+        checkNumOfEvents(4);
+
+        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+
+        final String grandParentID = getNodeResource(repoEventsContainer.getEvent(1)).getId();
+        final String parentID = getNodeResource(repoEventsContainer.getEvent(2)).getId();
+
+        final String moveFolderParentBeforeMove =
+            getNodeResourceBefore(repoEventsContainer.getEvent(4)).getPrimaryHierarchy().get(0);
+        final String moveFolderParentAfterMove =
+            getNodeResource(repoEventsContainer.getEvent(4)).getPrimaryHierarchy().get(0);
+
+        assertEquals("Wrong node parent.", parentID, moveFolderParentBeforeMove);
+        assertEquals("Wrong node parent.", grandParentID, moveFolderParentAfterMove);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
+            getRepoEvent(4).getType());
+    }
+
+    @Test
+    public void testMoveFolderStructure()
+    {
+        final NodeRef root1 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef root2 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER, root1);
+        final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
+        createNode(ContentModel.TYPE_CONTENT, parent);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.moveNode(
+                grandParent,
+                root2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+            return null;
+        });
+
+        checkNumOfEvents(6);
+
+        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+
+        final String root2ID = getNodeResource(repoEventsContainer.getEvent(2)).getId();
+        final String grandParentParentAfterMove =
+            getNodeResource(repoEventsContainer.getEvent(6)).getPrimaryHierarchy().get(0);
+        assertEquals("Wrong node parent.", root2ID, grandParentParentAfterMove);
+
+        final String grandParentID = getNodeResource(repoEventsContainer.getEvent(3)).getId();
+        final String parentIDOfTheParentFolder =
+            getNodeResource(repoEventsContainer.getEvent(4)).getPrimaryHierarchy().get(0);
+        assertEquals("Wrong node parent.", grandParentID, parentIDOfTheParentFolder);
+
+        final String parentID = getNodeResource(repoEventsContainer.getEvent(4)).getId();
+        final String contentParentID =
+            getNodeResource(repoEventsContainer.getEvent(5)).getPrimaryHierarchy().get(0);
+        assertEquals("Wrong node parent.", parentID, contentParentID);
+    }
+
+    @Test
+    public void testMoveNodeWithAspects()
+    {
+        final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.addAspect(moveFile, ContentModel.ASPECT_VERSIONABLE, null);
+            return null;
+        });
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.moveNode(
+                moveFile,
+                folder2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+            return null;
+        });
+
+        NodeResource resource = getNodeResource(5);
+        assertNotNull(resource.getAspectNames());
+        assertTrue("Wrong aspect.", resource.getAspectNames().contains("cm:versionable"));
+
+        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+
+        final String folder2ID = getNodeResource(repoEventsContainer.getEvent(2)).getId();
+        final String moveFileParentAfterMove =
+            getNodeResource(repoEventsContainer.getEvent(5)).getPrimaryHierarchy().get(0);
+
+        assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
+    }
+
+    @Test
+    public void testMoveNodeWithProperties()
+    {
+        final NodeRef folder1 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef folder2 = createNode(ContentModel.TYPE_FOLDER);
+        final NodeRef moveFile = createNode(ContentModel.TYPE_CONTENT, folder1);
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.setProperty(moveFile, ContentModel.PROP_NAME, "test_new_name");
+
+            nodeService.moveNode(
+                moveFile,
+                folder2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+            return null;
+        });
+
+        NodeResource resource = getNodeResource(4);
+        assertEquals("test_new_name", resource.getName());
+
+        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+
+        final String folder2ID = getNodeResource(repoEventsContainer.getEvent(2)).getId();
+        final String moveFileParentAfterMove =
+            getNodeResource(repoEventsContainer.getEvent(4)).getPrimaryHierarchy().get(0);
+
+        assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
+    }
+
+    @Test
+    public void testCreateAndMoveFileInTheSameTransaction()
+    {
+        retryingTransactionHelper.doInTransaction(() -> {
+
+            NodeRef folder1 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(TEST_NAMESPACE),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+            NodeRef folder2 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(TEST_NAMESPACE),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+            NodeRef fileToMove = nodeService.createNode(
+                folder1,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE),
+                ContentModel.TYPE_CONTENT).getChildRef();
+
+            nodeService.moveNode(
+                fileToMove,
+                folder2,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(TEST_NAMESPACE));
+
+            assertEquals(folder2, nodeService.getPrimaryParent(fileToMove).getParentRef());
+
+            return null;
+        });
+
+        checkNumOfEvents(3);
+
+        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+
+        final String folder2ID = getNodeResource(repoEventsContainer.getEvent(2)).getId();
+        final String moveFileParentAfterMove =
+            getNodeResource(repoEventsContainer.getEvent(3)).getPrimaryHierarchy().get(0);
+
+        assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
     }
 }

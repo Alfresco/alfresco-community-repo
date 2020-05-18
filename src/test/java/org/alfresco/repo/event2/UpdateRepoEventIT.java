@@ -127,6 +127,80 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
+    public void testUpdateNodeResourceContentSameContentSize()
+    {
+        ContentService contentService = (ContentService) applicationContext.getBean("contentService");
+
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+
+        RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(1);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+
+        NodeResource resource = getNodeResource(resultRepoEvent);
+        assertNull("Content should have been null.", resource.getContent());
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+            writer.setEncoding("UTF-8");
+            writer.putContent("test content a");
+            return null;
+        });
+
+        resultRepoEvent = getRepoEvent(2);
+        assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
+
+        resource = getNodeResource(resultRepoEvent);
+        ContentInfo content = resource.getContent();
+        assertNotNull(content);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, content.getMimeType());
+        assertEquals("UTF-8", content.getEncoding());
+        assertEquals(14, (long) content.getSizeInBytes());
+
+        NodeResource resourceBefore = getNodeResourceBefore(resultRepoEvent);
+        assertNull("Content should have been null.", resourceBefore.getContent());
+
+        // Update the content again - different content but same size
+        retryingTransactionHelper.doInTransaction(() -> {
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.TYPE_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
+            writer.setEncoding("UTF-8");
+            writer.putContent("test content b");
+            return null;
+        });
+
+        resource = getNodeResource(3);
+        content = resource.getContent();
+        assertNotNull(content);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, content.getMimeType());
+        assertEquals("UTF-8", content.getEncoding());
+        assertEquals(14, (long) content.getSizeInBytes());
+
+        resourceBefore = getNodeResourceBefore(3);
+        assertNotNull("Content should not have been null.", resourceBefore.getContent());
+        content = resourceBefore.getContent();
+        assertNotNull(content);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, content.getMimeType());
+        assertEquals("UTF-8", content.getEncoding());
+        assertEquals(14, (long) content.getSizeInBytes());
+        assertNotNull(resourceBefore.getModifiedAt());
+
+        // Apart from the 'content' and 'modifiedAt' properties the rest should be not be not set
+        // for the resourceBefore object
+        assertNull(resourceBefore.getId());
+        assertNull(resourceBefore.getName());
+        assertNull(resourceBefore.getNodeType());
+        assertNull(resourceBefore.isFile());
+        assertNull(resourceBefore.isFolder());
+        assertNull(resourceBefore.getModifiedByUser());
+        assertNull(resourceBefore.getCreatedAt());
+        assertNull(resourceBefore.getCreatedByUser());
+        assertNull(resourceBefore.getProperties());
+        assertNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getPrimaryHierarchy());
+    }
+
+    @Test
     public void testUpdateContentTitle()
     {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);

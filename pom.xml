@@ -37,7 +37,7 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-repository.version>7.33.42.0</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>7.33.42.1</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>7.5.7.0</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>8.25.11.0</dependency.alfresco-data-model.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>

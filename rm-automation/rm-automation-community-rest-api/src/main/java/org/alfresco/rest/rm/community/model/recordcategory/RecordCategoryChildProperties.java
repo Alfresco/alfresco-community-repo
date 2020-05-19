@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY;
@@ -132,6 +133,10 @@ public class RecordCategoryChildProperties extends TestModel
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
     private String recordSearchDispositionInstructions;
 
+    @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
+    private Boolean recordSearchDispositionEvents;
+    
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
+
 }

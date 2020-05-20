@@ -243,7 +243,6 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     {
         Map<QName, String> mapedAspects = new HashMap<>();
 
-        mapedAspects.put(ContentModel.ASPECT_VERSIONABLE, " does not have the versionable aspect applied.");
         mapedAspects.put(ASPECT_RECORD, " is already a record.");
         mapedAspects.put(ContentModel.ASPECT_WORKING_COPY, " is a working copy.");
         mapedAspects.put(ASPECT_RECORD_REJECTION_DETAILS, " has previously been rejected.");
@@ -251,7 +250,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
 
         for (Map.Entry<QName, String> aspect : mapedAspects.entrySet())
         {
-            if (!nodeService.hasAspect(actionedUponNodeRef, aspect.getKey()))
+            if (nodeService.hasAspect(actionedUponNodeRef, aspect.getKey()))
             {
                 if (logger.isDebugEnabled())
                 {
@@ -259,6 +258,14 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 }
                 return true;
             }
+        }
+        if (!nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Can not declare version record, because " + actionedUponNodeRef.toString() + " does not have the versionable aspect applied.");
+            }
+            return true;
         }
         return false;
     }

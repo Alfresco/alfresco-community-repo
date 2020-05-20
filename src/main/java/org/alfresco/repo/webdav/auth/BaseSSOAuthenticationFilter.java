@@ -52,6 +52,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
 import org.alfresco.rest.api.PublicApiTenantWebScriptServletRequest;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.RuntimeContainer;
@@ -201,7 +202,16 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest) request;
 
-        Match match = container.getRegistry().findWebScript(req.getMethod(), getScriptUrl(req));
+        Match match = null;
+
+        try
+        {
+            match = container.getRegistry().findWebScript(req.getMethod(), getScriptUrl(req));
+        }
+        catch (NotFoundException notFoundEx)
+        {
+            getLogger().debug(req.getMethod() + " " + getScriptUrl(req) + "not found in Public API Container.");
+        }
         
         // If a filter up the chain has marked the request as not requiring auth then respect it        
         if (request.getAttribute(NO_AUTH_REQUIRED) != null)

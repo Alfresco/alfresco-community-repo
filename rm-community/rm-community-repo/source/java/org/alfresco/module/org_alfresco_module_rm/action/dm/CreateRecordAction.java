@@ -27,12 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.action.dm.RecordActionUtils.Services;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -43,11 +41,6 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-
-import org.springframework.util.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Creates a new record from an existing content object.
@@ -59,9 +52,6 @@ import org.apache.commons.logging.LogFactory;
 public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                                 implements RecordsManagementModel
 {
-    /** Logger */
-    private static final Log LOGGER = LogFactory.getLog(CreateRecordAction.class);
-
     /** Action name */
     public static final String NAME = "create-record";
 
@@ -70,20 +60,26 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     public static final String PARAM_HIDE_RECORD = "hide-record";
     public static final String PARAM_PATH = "path";
 
-    /** Node service */
+    /**
+     * Node service
+     */
     private NodeService nodeService;
 
-    /** File plan service */
+    /**
+     * File plan service
+     */
     private FilePlanService filePlanService;
 
-    /** Authentication util */
+    /**
+     * Authentication util
+     */
     private AuthenticationUtil authenticationUtil;
 
     /** Record service */
     private RecordService recordService;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -91,7 +87,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -99,12 +95,13 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param authenticationUtil    authentication util
+     * @param authenticationUtil authentication util
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
         this.authenticationUtil = authenticationUtil;
     }
+
 
     /**
      * @param recordService record service
@@ -136,7 +133,8 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
         if (pathParameter != null && !pathParameter.isEmpty())
         {
-            destinationRecordFolder = resolvePath(filePlan, pathParameter);
+            RecordActionUtils.Services services = new Services(nodeService, filePlanService, authenticationUtil);
+            destinationRecordFolder = RecordActionUtils.resolvePath(services, filePlan, pathParameter, NAME);
         }
 
         synchronized (this)
@@ -161,103 +159,5 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
         params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
-    }
-
-    /**
-     * Helper method to get the target record folder node reference from the action path parameter
-     *
-     * @param filePlan      The filePlan containing the path
-     * @param pathParameter The path
-     * @return The NodeRef of the resolved path
-     */
-    private NodeRef resolvePath(NodeRef filePlan, final String pathParameter)
-    {
-        NodeRef destinationFolder;
-
-        if (filePlan == null)
-        {
-            filePlan = getDefaultFilePlan();
-        }
-
-        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
-        if ((pathElementsArray != null) && (pathElementsArray.length > 0))
-        {
-            destinationFolder = resolvePath(filePlan, Arrays.asList(pathElementsArray));
-
-            // destination must be a record folder
-            QName nodeType = nodeService.getType(destinationFolder);
-            if (!nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
-            {
-                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path is not a record folder.");
-            }
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be found.");
-        }
-        return destinationFolder;
-    }
-
-    /**
-     * Helper method to recursively get the next path element node reference from the action path parameter
-     *
-     * @param parent The parent of the path elements
-     * @param pathElements The path elements still to be resolved
-     * @return The NodeRef of the resolved path element
-     */
-    private NodeRef resolvePath(NodeRef parent, List<String> pathElements)
-    {
-        NodeRef nodeRef;
-        String childName = pathElements.get(0);
-
-        nodeRef = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, childName);
-
-        if (nodeRef == null)
-        {
-            throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path could not be found.");
-        }
-        else
-        {
-            QName nodeType = nodeService.getType(nodeRef);
-            if (nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
-                    nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
-                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
-            {
-                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the destination path is invalid.");
-            }
-        }
-        if (pathElements.size() > 1)
-        {
-            nodeRef = resolvePath(nodeRef, pathElements.subList(1, pathElements.size()));
-        }
-        return nodeRef;
-    }
-
-    /**
-     * Helper method to get the default RM filePlan
-     *
-     * @return The NodeRef of the default RM filePlan
-     */
-    private NodeRef getDefaultFilePlan()
-    {
-        NodeRef filePlan = authenticationUtil.runAsSystem(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            }
-        });
-
-        // if the file plan is still null, raise an exception
-        if (filePlan == null)
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Unable to execute " + NAME + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
-                throw new AlfrescoRuntimeException("Unable to execute " + NAME + " action, because the fileplan path could not be determined.");
-            }
-        }
-        return filePlan;
     }
 }

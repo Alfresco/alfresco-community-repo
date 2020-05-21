@@ -1,10 +1,12 @@
 package org.alfresco.rest.requests.privateAPI;
 
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestCustomTypeModel;
 import org.alfresco.rest.model.RestSubscriberModel;
 import org.alfresco.rest.model.RestSyncNodeSubscriptionModel;
 import org.alfresco.rest.requests.CustomAspectModelManager;
 import org.alfresco.rest.requests.CustomModelManager;
+import org.alfresco.rest.requests.CustomTypeManager;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.requests.syncServiceAPI.Healthcheck;
 import org.alfresco.rest.requests.syncServiceAPI.Subscribers;
@@ -38,6 +40,11 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
         return new CustomModelManager(customContentModel, restWrapper);
     }
 
+    public CustomModelManager usingCustomModel()
+    {
+        return new CustomModelManager(restWrapper);
+    }
+
     /**
      * Provides DSL on all REST calls under <code>cmm/{modelName}/aspects/{aspectName}...</code> API path
      * 
@@ -48,6 +55,18 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
     public CustomAspectModelManager usingAspect(CustomContentModel customContentModel, CustomAspectModel aspectModel)
     {
         return new CustomAspectModelManager(customContentModel, aspectModel, restWrapper);
+    }
+
+    /**
+     * Provides DSL on all REST calls under <code>cmm/{modelName}/types/{typeName}...</code> API path
+     *
+     * @param customContentModel {@link CustomContentModel}
+     * @param customType {@link RestCustomTypeModel}
+     * @return {@link CustomTypeManager}
+     */
+    public CustomTypeManager usingCustomType(CustomContentModel customContentModel, RestCustomTypeModel customType)
+    {
+        return new CustomTypeManager(customContentModel, customType, restWrapper);
     }
 
     /**

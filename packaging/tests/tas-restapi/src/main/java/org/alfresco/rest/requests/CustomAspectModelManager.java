@@ -1,7 +1,5 @@
 package org.alfresco.rest.requests;
 
-import javax.json.JsonArrayBuilder;
-
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
@@ -18,7 +16,9 @@ public class CustomAspectModelManager extends ModelRequest<CustomAspectModelMana
 {
     private CustomContentModel customContentModel;
     private CustomAspectModel customAspectModel;
-    
+    private CustomModelProperties customProperties = new CustomModelProperties(restWrapper);
+
+
     public CustomAspectModelManager(CustomContentModel customContentModel, CustomAspectModel aspectModel, RestWrapper restWrapper)
     {
         super(restWrapper);
@@ -29,41 +29,58 @@ public class CustomAspectModelManager extends ModelRequest<CustomAspectModelMana
     public RestCustomAspectModel getAspect()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "cmm/{modelName}/aspects/{aspectName}?{parameters}",
-                this.customContentModel.getName(), this.customAspectModel.getName(), restWrapper.getParameters());
+            this.customContentModel.getName(), this.customAspectModel.getName(), restWrapper.getParameters());
         return restWrapper.processModel(RestCustomAspectModel.class, request);
     }
     
     public void addProperty(CustomAspectPropertiesModel propertyModel)
     {
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
-        array.add(JsonBodyGenerator.defineJSON()
-                .add("name", propertyModel.getName())
-                .add("title", propertyModel.getTitle())
-                .add("description", propertyModel.getDescription())
-                .add("dataType", propertyModel.getDataType())
-                .add("multiValued", propertyModel.isMultiValued())
-                .add("mandatory", propertyModel.isMandatory())
-                .add("mandatoryEnforced", propertyModel.isMandatoryEnforced()));
-        
-        String body = JsonBodyGenerator.defineJSON().add("name", this.customAspectModel.getName()).add("properties", array).build().toString();
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body, "cmm/{modelName}/aspects/{aspectName}?select=props", 
-                this.customContentModel.getName(), this.customAspectModel.getName());
-        restWrapper.processEmptyModel(request);
+        customProperties.addProperty(propertyModel, this.customContentModel, true,
+            this.customAspectModel.getName(), false, null);
     }
-    
+
+    public void addPropertyWithMinMaxValueConstraint(CustomAspectPropertiesModel propertyModel, int minValue, int maxValue)
+    {
+        customProperties.addProperty(propertyModel, this.customContentModel, true, this.customAspectModel.getName(),
+true, customProperties.createMinMaxValueConstraintArray(minValue, maxValue));
+    }
+
+    public void addPropertyWithMinMaxLengthConstraint(CustomAspectPropertiesModel propertyModel, int minLength, int maxLength)
+    {
+        customProperties.addProperty(propertyModel, this.customContentModel, true, this.customAspectModel.getName(),
+true, customProperties.createMinMaxLengthConstraint(minLength, maxLength));
+    }
+
+    public void addPropertyWithListOfValues(CustomAspectPropertiesModel propertyModel, boolean sorted, String... listOfValues)
+    {
+        customProperties.addProperty(propertyModel, this.customContentModel, true, this.customAspectModel.getName(),
+true, customProperties.createListOfValuesConstraint(sorted, listOfValues));
+    }
+
+    public void addPropertyWithRegularExpression(CustomAspectPropertiesModel propertyModel, String regex)
+    {
+        customProperties.addProperty(propertyModel, this.customContentModel, true, this.customAspectModel.getName(),
+                true, customProperties.createRegexConstraint(regex));
+    }
+
     public void deleteAspectProperty(CustomAspectPropertiesModel propertyModel)
     {
         String body = JsonBodyGenerator.defineJSON()
-                        .add("name", this.customAspectModel.getName()).build().toString();
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body, "cmm/{modelName}/aspects/{aspectName}?select=props&delete={propertyName}", 
-                this.customContentModel.getName(), this.customAspectModel.getName(), propertyModel.getName());
+            .add("name", this.customAspectModel.getName()).build().toString();
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body,
+            "cmm/{modelName}/aspects/{aspectName}?select=props&delete={propertyName}",
+            this.customContentModel.getName(),
+            this.customAspectModel.getName(),
+            propertyModel.getName());
         restWrapper.processEmptyModel(request);
     }
     
     public void deleteAspect()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "cmm/{modelName}/aspects/{aspectName}",
-                this.customContentModel.getName(), this.customAspectModel.getName());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE,
+            "cmm/{modelName}/aspects/{aspectName}",
+            this.customContentModel.getName(),
+            this.customAspectModel.getName());
         restWrapper.processEmptyModel(request);
     }
 }

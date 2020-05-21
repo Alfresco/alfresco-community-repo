@@ -216,14 +216,16 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 destinationRecordFolder = RecordActionUtils.resolvePath(services, filePlan, pathParameter, NAME);
             }
 
-
             // create record from latest version
             if (destinationRecordFolder != null)
             {
-                recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
-                recordService.file(actionedUponNodeRef);
+                NodeRef recordedVersion = recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
+                recordService.file(recordedVersion);
             }
-            recordableVersionService.createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
+            else
+            {
+                recordableVersionService.createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
+            }
         }
     }
 

@@ -68,7 +68,8 @@ public class FixedAclUpdaterTest extends TestCase
     private FileFolderService fileFolderService;
     private Repository repository;
     private FixedAclUpdater fixedAclUpdater;
-    private NodeRef folderNodeRef;
+    private NodeRef folderAsyncCallNodeRef;
+    private NodeRef folderSyncCallNodeRef;
     private PermissionsDaoComponent permissionsDaoComponent;
     private PermissionService permissionService;
     private NodeDAO nodeDAO;
@@ -91,10 +92,16 @@ public class FixedAclUpdaterTest extends TestCase
         NodeRef home = repository.getCompanyHome();
         // create a folder hierarchy for which will change permission inheritance
         int[] filesPerLevel = { 5, 5, 10 };
-        RetryingTransactionCallback<NodeRef> cb = createFolderHierchyCallback(home, fileFolderService, "ROOT", filesPerLevel);
-        folderNodeRef = txnHelper.doInTransaction(cb);
+        RetryingTransactionCallback<NodeRef> cb1 = createFolderHierchyCallback(home, fileFolderService, "rootFolderAsyncCall",
+                filesPerLevel);
+        folderAsyncCallNodeRef = txnHelper.doInTransaction(cb1);
 
-        // change setFixedAclMaxTransactionTime to lower value so setInheritParentPermissions on created folder hierarchy require async call
+        RetryingTransactionCallback<NodeRef> cb2 = createFolderHierchyCallback(home, fileFolderService, "rootFolderSyncCall",
+                filesPerLevel);
+        folderSyncCallNodeRef = txnHelper.doInTransaction(cb2);
+
+        // change setFixedAclMaxTransactionTime to lower value so setInheritParentPermissions on created folder
+        // hierarchy require async call
         setFixedAclMaxTransactionTime(permissionsDaoComponent, home, 50);
 
     }
@@ -135,18 +142,15 @@ public class FixedAclUpdaterTest extends TestCase
         // delete created folder hierarchy
         try
         {
-            txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    Set<QName> aspect = new HashSet<>();
-                    aspect.add(ContentModel.ASPECT_TEMPORARY);
-                    nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderNodeRef).getFirst(), aspect);
-                    fileFolderService.delete(folderNodeRef);
-                    return null;
-                }
-            });
+            txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                Set<QName> aspect = new HashSet<>();
+                aspect.add(ContentModel.ASPECT_TEMPORARY);
+                nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderAsyncCallNodeRef).getFirst(), aspect);
+                nodeDAO.addNodeAspects(nodeDAO.getNodePair(folderSyncCallNodeRef).getFirst(), aspect);
+                fileFolderService.delete(folderAsyncCallNodeRef);
+                fileFolderService.delete(folderSyncCallNodeRef);
+                return null;
+            }, false, true);
         }
         catch (Exception e)
         {
@@ -164,66 +168,67 @@ public class FixedAclUpdaterTest extends TestCase
      */
     private int getNodesCountWithPendingFixedAclAspect()
     {
-        return txnHelper.doInTransaction(new RetryingTransactionCallback<Integer>()
-        {
-            @Override
-            public Integer execute() throws Throwable
-            {
-                final Set<QName> aspects = new HashSet<>(1);
-                aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
-                GetNodesCountWithAspectCallback callback = new GetNodesCountWithAspectCallback();
-                nodeDAO.getNodesWithAspects(aspects, 1L, null, callback);
-                return callback.getNodesNumber();
-            }
-        });
+        return txnHelper.doInTransaction((RetryingTransactionCallback<Integer>) () -> {
+            final Set<QName> aspects = new HashSet<>(1);
+            aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+            GetNodesCountWithAspectCallback callback = new GetNodesCountWithAspectCallback();
+            nodeDAO.getNodesWithAspects(aspects, 1L, null, callback);
+            return callback.getNodesNumber();
+        }, true, true);
     }
 
     @Test
-    public void testMNT15368()
+    public void testSyncTimeOut()
+    {
+        testWork(folderSyncCallNodeRef, false);
+    }
+
+    @Test
+    public void testAsync()
+    {
+        testWork(folderAsyncCallNodeRef, true);
+    }
+
+    private void testWork(NodeRef folderRef, boolean asyncCall)
     {
         // kick it off by setting inherit parent permissions == false
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                permissionService.setInheritParentPermissions(folderNodeRef, false, true);
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            permissionService.setInheritParentPermissions(folderRef, false, asyncCall);
+            assertTrue("asyncCallRequired should be true", isFixedAclAsyncRequired());
+            return null;
+        }, false, true);
 
-                Boolean asyncCallRequired = (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
-                assertTrue("asyncCallRequired should be true", asyncCallRequired);
-
-                return null;
-            }
+        // Assert that there are nodes with aspect ASPECT_PENDING_FIX_ACL to be processed
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            assertTrue("There are no nodes to process", getNodesCountWithPendingFixedAclAspect() > 0);
+            return null;
         }, false, true);
 
         // run the fixedAclUpdater until there is nothing more to fix (running the updater
         // may create more to fix up)
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            int count = 0;
+            do
             {
-                int count = 0;
-                do
-                {
-                    count = fixedAclUpdater.execute();
-                }
-                while(count > 0);
-
-                return null;
-            }
+                count = fixedAclUpdater.execute();
+            } while (count > 0);
+            return null;
         }, false, true);
 
         // check if nodes with ASPECT_PENDING_FIX_ACL are processed
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
-                return null;
-            }
+        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+            return null;
         }, false, true);
+    }
+
+    private static boolean isFixedAclAsyncRequired()
+    {
+        if (AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY) == null)
+        {
+            return false;
+        }
+        return (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
     }
 
     private static class GetNodesCountWithAspectCallback implements NodeRefQueryCallback
@@ -244,8 +249,7 @@ public class FixedAclUpdaterTest extends TestCase
     }
 
     /**
-     * Creates a level in folder/file hierarchy. Intermediate levels will
-     * contain folders and last ones files
+     * Creates a level in folder/file hierarchy. Intermediate levels will contain folders and last ones files
      * 
      * @param fileFolderService
      * @param parent
@@ -277,142 +281,5 @@ public class FixedAclUpdaterTest extends TestCase
                 createFile(fileFolderService, parent, "File" + i, ContentModel.TYPE_CONTENT);
             }
         }
-    }
-
-    /**
-     * Create a folder hierarchy and start FixedAclUpdater. See {@link #getUsage()} for usage parameters 
-     */
-    public static void main(String... args)
-    {
-        ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
-        try
-        {
-            run(ctx, args);
-        }
-        catch (Exception e)
-        {
-            System.out.println("Failed to run FixedAclUpdaterTest  test");
-            e.printStackTrace();
-        }
-        finally
-        {
-            ctx.close();
-        }
-    }
-
-    public static void run(final ApplicationContext ctx, String... args) throws InterruptedException
-    {
-        ArgumentHelper argHelper = new ArgumentHelper(getUsage(), args);
-        int threadCount = argHelper.getIntegerValue("threads", true, 1, 100);
-        String levels[] = argHelper.getStringValue("filesPerLevel", true, true).split(",");
-        int fixedAclMaxTransactionTime = argHelper.getIntegerValue("fixedAclMaxTransactionTime", true, 1, 10000);
-        final int[] filesPerLevel = new int[levels.length];
-        for (int i = 0; i < levels.length; i++)
-        {
-            filesPerLevel[i] = Integer.parseInt(levels[i]);
-        }
-
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        final RetryingTransactionHelper txnHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
-        final FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
-        Repository repository = (Repository) ctx.getBean("repositoryHelper");
-        final FixedAclUpdater fixedAclUpdater = (FixedAclUpdater) ctx.getBean("fixedAclUpdater");
-        final PermissionsDaoComponent permissionsDaoComponent = (PermissionsDaoComponent) ctx.getBean("admPermissionsDaoComponent");
-
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
-        NodeRef home = repository.getCompanyHome();
-        final NodeRef root = createFile(fileFolderService, home, "ROOT", ContentModel.TYPE_FOLDER);
-
-        // create a folder hierarchy for which will change permission inheritance
-        Thread[] threads = new Thread[threadCount];
-        for (int i = 0; i < threadCount; i++)
-        {
-            final int index = i;
-            Thread t = new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    AuthenticationUtil.runAs(new RunAsWork<Void>()
-                    {
-                        @Override
-                        public Void doWork() throws Exception
-                        {
-                            
-                            RetryingTransactionCallback<NodeRef> cb = createFolderHierchyCallback(root, fileFolderService, "FOLDER" + index, filesPerLevel);
-                            txnHelper.doInTransaction(cb);
-                            return null;
-                        }
-                    }, AuthenticationUtil.getSystemUserName());
-                }
-            });
-            t.start();
-            threads[i] = t;
-        }
-        for (int i = 0; i < threads.length; i++)
-        {
-            threads[i].join();
-        }
-
-        setFixedAclMaxTransactionTime(permissionsDaoComponent, home, fixedAclMaxTransactionTime);
-
-        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // call setInheritParentPermissions on a node that will required async
-                AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_CALL_KEY, true);
-                final long startTime = System.currentTimeMillis();
-                permissionsDaoComponent.setInheritParentPermissions(root, false);
-
-                Boolean asyncCallRequired = (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
-                if (asyncCallRequired != null && asyncCallRequired)
-                {
-                    // check if there are nodes with ASPECT_PENDING_FIX_ACL
-                    AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-                    {
-                        @Override
-                        public void afterCommit()
-                        {
-                            long userEndTime = System.currentTimeMillis();
-                            // start fixedAclUpdater
-                            Thread t = new Thread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    fixedAclUpdater.execute();
-                                }
-                            });
-                            t.start();
-                            try
-                            {
-                                // wait to finish work
-                                t.join();
-                                System.out.println("Backend time " + (System.currentTimeMillis() - startTime));
-                                System.out.println("User time " + (userEndTime - startTime));
-                            }
-                            catch (InterruptedException e)
-                            {
-                            }
-                        }
-                    });
-                }
-                return null;
-            }
-        }, false, true);
-    }
-    
-    private static String getUsage()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("FixedAclUpdaterTest usage: ").append("\n");
-        sb.append("   FixedAclUpdaterTest --threads=<threadcount> --fixedAclMaxTransactionTime=<maxtime> --filesPerLevel=<levelfiles>").append("\n");
-        sb.append("      maxtime: max transaction time for fixed acl ").append("\n");
-        sb.append("      threadcount: number of threads to create the folder hierarchy ").append("\n");
-        sb.append("      levelfiles: number of folders/files per level separated by comma").append("\n");
-        return sb.toString();
     }
 }

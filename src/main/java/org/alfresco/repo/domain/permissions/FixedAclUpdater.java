@@ -321,7 +321,10 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             if (nodes.size() < maxItemBatchSize)
             {
                 nodes.add(nodePair.getSecond());
-                maxNodeId = nodePair.getFirst();
+                if (nodePair.getFirst() > maxNodeId)
+                {
+                    maxNodeId = nodePair.getFirst();
+                }
                 return true;
             }
             return false;

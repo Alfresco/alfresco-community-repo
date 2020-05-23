@@ -43,6 +43,7 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Events dependencies -->

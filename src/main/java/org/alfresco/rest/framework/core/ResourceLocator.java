@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,6 +31,8 @@ import java.util.Map;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.springframework.extensions.webscripts.Match;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -46,6 +48,17 @@ public interface ResourceLocator
     public static final String RELATIONSHIP_RESOURCE = "relationResource";
     public static final String RELATIONSHIP_ID = "relationshipId";
     public static final String PROPERTY = "property";
+    public static final String LEFTOVER = "leftover";
+
+    public static final String RELATIONSHIP2_ID = "relationship2Id";
+    public static final String PROPERTY2 = "property2";
+
+    /**
+     *
+     * @param templateVars
+     * @return
+     */
+    Map<String, String> parseTemplateVars(Map<String, String> templateVars);
 
     /**
      * Finds an Entity Resource and returns it in ResourceWithMetadata wrapper. 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -248,8 +248,25 @@ public class ResourceInspector
     {
         Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
         String urlPath = String.valueOf(annotAttribs.get("name"));
-        String entityPath = findEntityNameByAnnotationAttributes(annotAttribs);
-        String relationshipKey = ResourceDictionary.resourceKey(entityPath,urlPath);
+
+        String entityPath;
+
+        Class<?> entityResource = (Class)annotAttribs.get("entityResource");
+        RelationshipResource relAnnot = AnnotationUtils.findAnnotation(entityResource, RelationshipResource.class);
+        if (relAnnot != null)
+        {
+            Map<String, Object> relAnnotAttribs = AnnotationUtils.getAnnotationAttributes(relAnnot);
+            String relUrlPath = String.valueOf(relAnnotAttribs.get("name"));
+            urlPath = ResourceDictionary.resourceKey(relUrlPath, urlPath);
+
+            entityPath = findEntityNameByAnnotationAttributes(relAnnotAttribs);
+        }
+        else
+        {
+            entityPath = findEntityNameByAnnotationAttributes(annotAttribs);
+        }
+
+        String relationshipKey = ResourceDictionary.resourceKey(entityPath, urlPath);
         Api api = inspectApi(resource);
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,9 +40,12 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
+
+import java.util.Map;
 
 /**
  * Handles the HTTP DELETE for a Resource
@@ -62,8 +65,10 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
-        String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
-        String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
+        final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
+        final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
+        final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+
         final Params.RecognizedParams params = getRecognizedParams(req);
         
         switch (resourceMeta.getType())
@@ -75,8 +80,8 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 // note: relationshipId can be null - when deleting a related set/collection
                 return Params.valueOf(params, entityId, relationshipId, req);
             case PROPERTY:
-                final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+                final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
 
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {

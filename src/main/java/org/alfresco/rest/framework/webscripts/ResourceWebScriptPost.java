@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.rest.framework.webscripts;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
@@ -72,9 +73,14 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
+        final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
+        final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
+        final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+
+        final String operationName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
+        final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
+
         final RecognizedParams params = getRecognizedParams(req);
-        final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
-        final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.POST);
 
         switch (resourceMeta.getType())
@@ -83,7 +89,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
                 if (StringUtils.isNotBlank(entityId))
                 {
-                    throw new UnsupportedResourceOperationException("POST is executed against the collection URL");
+                    throw new UnsupportedResourceOperationException("POST is executed against a collection URL");
                 }
                 else
                 {
@@ -91,9 +97,15 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     return Params.valueOf(null, params, postedObj, req);
                 }
             case RELATIONSHIP:
-                if (StringUtils.isNotBlank(relationshipId))
+                if (StringUtils.isNotBlank(propertyName) && (StringUtils.isNotBlank(relationshipId)))
                 {
-                    throw new UnsupportedResourceOperationException("POST is executed against the collection URL");
+                    // collection resource (second level of relationship)
+                    Object postedRel = processRequest(resourceMeta, operation, req);
+                    return Params.valueOf(true, entityId, relationshipId, null, postedRel, null, null, params, null, req);
+                }
+                else if (StringUtils.isNotBlank(relationshipId))
+                {
+                    throw new UnsupportedResourceOperationException("POST is executed against a collection URL");
                 }
                 else
                 {
@@ -101,9 +113,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     return Params.valueOf(entityId, params, postedRel, req);
                 }
             case OPERATION:
-                final String operationName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
-
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
                     Object postedObj = processRequest(resourceMeta, operation, req);

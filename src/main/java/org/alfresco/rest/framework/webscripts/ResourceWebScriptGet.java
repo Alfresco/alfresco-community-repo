@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -47,6 +47,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.http.HttpMethod;
 
+import java.util.Map;
+
 /**
  * Handles the HTTP Get for a Resource
  * 
@@ -66,8 +68,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
-        final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
-        final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
+        final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
+
+        final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
+
+        final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
+        final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+
+        final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
+        final String relationship2Id = resourceVars.get(ResourceLocator.RELATIONSHIP2_ID);
+
         final RecognizedParams params = getRecognizedParams(req);
         
         switch (resourceMeta.getType())
@@ -79,26 +89,38 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 } 
                 else
                 {
-                    return Params.valueOf(params, null, null, req);// collection resource
+                    // collection resource (top-level of entities)
+                    return Params.valueOf(params, null, null, req);
                 }
             case RELATIONSHIP:
-                if (StringUtils.isNotBlank(relationshipId))
+
+                if (StringUtils.isNotBlank(propertyName))
                 {
-                    return Params.valueOf(params, entityId, relationshipId, req);
+                    if (StringUtils.isNotBlank(relationship2Id))
+                    {
+                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, null, params, null, req);
+                    }
+                    else
+                    {
+                        // collection resource (second level of relationship)
+                        return Params.valueOf(true, entityId, relationshipId, null, null, null, null, params, null, req);
+                    }
+                }
+                else if (StringUtils.isNotBlank(relationshipId))
+                {
+                    return Params.valueOf(false, entityId, relationshipId, null, null, null, null, params, null, req);
                 }
                 else
                 {
-                    return Params.valueOf(params, entityId, null, req); //relationship collection resource
+                    // collection resource (first level of relationship)
+                    return Params.valueOf(true, entityId, null, null, null, null, null, params, null, req);
                 }
             case PROPERTY:
-                final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
-
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, params, null, req);
+                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, propertyName, params, null, req);
                     }
                     else
                     {
@@ -124,9 +146,9 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
-                if (StringUtils.isBlank(params.getEntityId()))
+                if (StringUtils.isBlank(params.getEntityId()) || params.isCollectionResource())
                 {
-                    //Get the collection
+                    // Get the collection
                     if (EntityResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(EntityResourceAction.Read.class))
@@ -203,7 +225,31 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     }
                 }
             case RELATIONSHIP:
-                if(StringUtils.isNotBlank(params.getRelationshipId()))
+                if (StringUtils.isBlank(params.getRelationshipId()) || (params.isCollectionResource()))
+                {
+                    // Get the collection
+                    if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
+                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
+                        return relations;
+                    }
+                    else
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
+                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params,withResponse);
+                        return relations;
+                    }
+                } 
+                else 
                 {
                     if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
                     {
@@ -228,29 +274,6 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     else
                     {
                         throw new UnsupportedResourceOperationException();
-                    } 
-                } 
-                else 
-                {
-                    if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
-                        return relations;
-                    }
-                    else
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params,withResponse);
-                        return relations;
                     }
                 }
             case PROPERTY:

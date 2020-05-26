@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,7 +45,7 @@ public class ParamsExtender extends Params
 
     private ParamsExtender(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams)
     {
-        super(entityId, relationshipId, passedIn, stream, addressedProperty, recognizedParams, null, mock(WebScriptRequest.class));
+        super(null,entityId, relationshipId, null, passedIn, stream, addressedProperty, recognizedParams, null, mock(WebScriptRequest.class));
     }
     
     public static Params valueOf(Map<String, BeanPropertiesFilter> rFilter, String entityId)

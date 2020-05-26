@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -54,15 +54,17 @@ public class ResourceDictionary
     /*
      * Return a key by combining the entity and relationship ids
      */
-    public static String resourceKey(String entity, String relationship)
+    public static String resourceKey(final String entity, final String relationship)
     {
+        String rootEntity = entity.startsWith("/")?entity:"/"+entity;
         if (StringUtils.isNotBlank(relationship))
         {
-            return "/"+entity+"/{entityId}/"+relationship;    
+            String relationKey = (relationship.startsWith("/")?relationship:"/"+relationship);
+            return rootEntity+"/{entityId}"+relationKey;
         }
         else
         {
-            return "/"+entity;
+            return rootEntity;
         }
     }
 

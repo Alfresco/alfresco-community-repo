@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -126,8 +126,9 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                 {
                     Class<? extends ResourceAction> resAction = null;
 
-                    String entityId = templateVars.get(ResourceLocator.ENTITY_ID);
-                    String relationshipId = templateVars.get(ResourceLocator.RELATIONSHIP_ID);
+                    final Map<String, String> resourceVars = locator.parseTemplateVars(templateVars);
+                    final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
+                    final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
 
                     switch (rwm.getMetaData().getType())
                     {

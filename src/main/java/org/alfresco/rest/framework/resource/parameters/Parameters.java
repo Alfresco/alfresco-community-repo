@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,7 +41,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Gethin James
  */
 public interface Parameters
-{   
+{
+    String getEntityId();
+    String getRelationshipId();
+    String getRelationship2Id();
+    boolean isCollectionResource();
+
     /**
      * Gets a single request query parameter passed in by the user.
      * Currently doesn't support multiple values.

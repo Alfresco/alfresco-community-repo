@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,8 +48,16 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class Params implements Parameters
 {
+    // Note: isCollectionResource maps to "readAll". It can apply to these levels, eg ...
+    //            /entities,
+    //            /entities/{entityAId}/relationship1,
+    //            /entities/{entityAId}/relationship1/{entityBId}/relationship2
+    private final boolean isCollectionResource;
+
     private final String entityId;
     private final String relationshipId;
+    private final String relationship2Id;
+
     private final Object passedIn;
     private final InputStream stream;
     private final RecognizedParams recognizedParams;
@@ -61,11 +69,13 @@ public class Params implements Parameters
     private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, null, false);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
     
-    protected Params(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
+    protected Params(Boolean isCollectionResource, String entityId, String relationshipId, String relationship2Id, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
         super();
+        this.isCollectionResource = (isCollectionResource != null ? isCollectionResource : (entityId == null));
         this.entityId = entityId;
         this.relationshipId = relationshipId;
+        this.relationship2Id = relationship2Id;
         this.passedIn = passedIn;
         this.stream = stream;
         this.recognizedParams = recognizedParams;
@@ -76,33 +86,39 @@ public class Params implements Parameters
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId, WebScriptRequest request)
     {
-        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, null, false), null, request);
+        return new Params(null, entityId, null, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, null, false), null, request);
     }
 
     public static Params valueOf(String entityId, String relationshipId, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, null, null, null, NULL_PARAMS, null, request);
+        return new Params(null, entityId, relationshipId, null, null,null, null, NULL_PARAMS, null, request);
     }
     
     public static Params valueOf(RecognizedParams recognizedParams, String entityId, String relationshipId, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, null, null, null, recognizedParams, null, request);
+        return new Params(null, entityId, relationshipId, null, null, null, null, recognizedParams, null, request);
     }
     
     public static Params valueOf(String entityId, RecognizedParams recognizedParams, Object passedIn, WebScriptRequest request)
     {
-        return new Params(entityId, null, passedIn, null, null, recognizedParams, null, request);
+        return new Params(null, entityId, null, null, passedIn, null, null, recognizedParams, null, request);
     }
 
     public static Params valueOf(String entityId, String relationshipId, RecognizedParams recognizedParams, Object passedIn, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, passedIn, null, null, recognizedParams, null, request);
+        return new Params(null, entityId, relationshipId, null, passedIn, null, null, recognizedParams, null, request);
     }
 
     public static Params valueOf(String entityId, String relationshipId, Object passedIn, InputStream stream,
                                  String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
+        return new Params(null, entityId, relationshipId, null, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
+    }
+
+    public static Params valueOf(boolean isCollectionResource, String entityId, String relationshipId, String relationship2Id, Object passedIn, InputStream stream,
+                                 String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
+    {
+        return new Params(isCollectionResource, entityId, relationshipId, relationship2Id, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
     }
     
     public String getEntityId()
@@ -118,6 +134,16 @@ public class Params implements Parameters
     public String getRelationshipId()
     {
         return this.relationshipId;
+    }
+
+    public String getRelationship2Id()
+    {
+        return this.relationship2Id;
+    }
+
+    public boolean isCollectionResource()
+    {
+        return this.isCollectionResource;
     }
 
     public Query getQuery()

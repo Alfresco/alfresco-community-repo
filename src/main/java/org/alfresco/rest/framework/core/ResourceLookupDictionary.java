@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,8 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Match;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -50,6 +52,41 @@ public class ResourceLookupDictionary implements ResourceLocator
     private static Log logger = LogFactory.getLog(ResourceLookupDictionary.class);  
     
     private ResourceDictionary dictionary;
+
+    @Override
+    public Map<String, String> parseTemplateVars(Map<String, String> templateVars)
+    {
+        if ("preferences".equals(templateVars.get(ResourceLocator.RELATIONSHIP_RESOURCE)))
+        {
+            // REPO-855: special case for backwards-compatibility (see PersonPreferencesRelation.java)
+            return templateVars;
+        }
+
+        String leftover = templateVars.get(ResourceLocator.LEFTOVER);
+        if (StringUtils.isNotBlank(leftover))
+        {
+            Map<String, String> templateVars2 = new HashMap<>();
+            templateVars2.putAll(templateVars);
+
+            String[] split = leftover.split("/");
+            if (split.length > 0)
+            {
+                // eg. r1 in /nodes/n1/versions/v1/renditions/r1
+                templateVars2.put(RELATIONSHIP2_ID, split[0]);
+            }
+            if (split.length > 1)
+            {
+                // eg. content in /nodes/n1/versions/v1/renditions/r1/content
+                templateVars2.put(PROPERTY2, split[1]);
+            }
+
+            return templateVars2;
+        }
+        else
+        {
+            return templateVars;
+        }
+    }
 
     @Override
     public ResourceWithMetadata locateEntityResource(Api api, String entityResource, HttpMethod httpMethod) throws NotFoundException, UnsupportedResourceOperationException
@@ -69,16 +106,30 @@ public class ResourceLookupDictionary implements ResourceLocator
         }
 
         ResourceWithMetadata resource = apiResources.get(propertyResourceKey);
-        if (resource != null)
+        if (resource == null)
+        {
+            if (relationResource != null)
+            {
+                //Get entity/relationship resource and check if we are referencing a relation on it.
+                resourceKey = ResourceDictionary.resourceKey(entityResource, relationResource);
+                String relationResourceKey = ResourceDictionary.resourceKey(resourceKey, property);
+                resource = apiResources.get(relationResourceKey);
+                if (resource != null)
+                {
+                    ResourceOperation op = resource.getMetaData().getOperation(httpMethod);
+                    if (op == null) { throw new UnsupportedResourceOperationException(); }
+                    return resource;
+                }
+            }
+            logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource+" "+property==null?"":property);
+            throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
+        }
+        else
         {
             ResourceOperation op = resource.getMetaData().getOperation(httpMethod);
             if (op == null) { throw new UnsupportedResourceOperationException(); }
             return resource;
         }
-
-        logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource+" "+property==null?"":property);
-        throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
-
     }
 
     @Override
@@ -130,11 +181,19 @@ public class ResourceLookupDictionary implements ResourceLocator
     @Override
     public ResourceWithMetadata locateResource(Api api,Map<String, String> templateVars, HttpMethod httpMethod)
     {
-        String collectionName = templateVars.get(COLLECTION_RESOURCE);
-        String entityId = templateVars.get(ENTITY_ID);
-        String resourceName = templateVars.get(RELATIONSHIP_RESOURCE);
-        String property =  templateVars.get(PROPERTY);
+        Map<String, String> resourceVars = parseTemplateVars(templateVars);
 
+        String collectionName = resourceVars.get(COLLECTION_RESOURCE);
+        String entityId = resourceVars.get(ENTITY_ID);
+        String resourceName = resourceVars.get(RELATIONSHIP_RESOURCE);
+        String property =  resourceVars.get(PROPERTY);
+        String property2 = resourceVars.get(PROPERTY2);
+
+        if (StringUtils.isNotBlank(property2))
+        {
+            String resourceName2 = ResourceDictionary.resourceKey(resourceName, property);
+            return locateRelationPropertyResource(api,collectionName ,resourceName2, property2, httpMethod);
+        }
         if (StringUtils.isNotBlank(property))
         {
             return locateRelationPropertyResource(api,collectionName ,resourceName, property,httpMethod);

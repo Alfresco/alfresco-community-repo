@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.rest.framework.webscripts;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.framework.core.ResourceLocator;
@@ -75,9 +76,10 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
-        
-        final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
-        final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
+        final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
+        final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
+        final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+
         final RecognizedParams params = getRecognizedParams(req);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.PUT);
 
@@ -104,8 +106,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     return Params.valueOf(entityId, params, putRel, req);
                 }
             case PROPERTY:
-                final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+                final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
 
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {

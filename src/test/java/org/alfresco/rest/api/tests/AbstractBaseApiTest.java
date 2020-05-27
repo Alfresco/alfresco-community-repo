@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,14 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
@@ -76,6 +78,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Generic methods for calling the Api (originally taken and adapted from BaseCustomModelApiTest)
@@ -94,7 +97,9 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected static final String URL_NODES = "nodes";
 
-    private static final String URL_RENDITIONS = "renditions";
+    protected static final String URL_RENDITIONS = "renditions";
+    protected static final String URL_VERSIONS = "versions";
+
     private static final String URL_CHILDREN = "children";
     private static final String URL_CONTENT = "content";
 
@@ -841,22 +846,112 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
+    /**
+     * This test helper method uses "update binary content" to create one or more new versions. The file must already exist.
+     *
+     * @param userId
+     * @param contentNodeId
+     * @param cnt
+     * @param textContentPrefix
+     * @param verCnt
+     * @param majorVersion
+     * @param currentVersionLabel
+     * @return
+     * @throws Exception
+     */
+    protected String updateFileVersions(String userId, String contentNodeId, int cnt,
+                                      String textContentPrefix, int verCnt,
+                                      Boolean majorVersion, String currentVersionLabel) throws Exception
+    {
+        String[] parts = currentVersionLabel.split("\\.");
+
+        int majorVer = new Integer(parts[0]).intValue();
+        int minorVer = new Integer(parts[1]).intValue();
+
+        Map<String, String> params = new HashMap<>();
+        params.put(Nodes.PARAM_OVERWRITE, "true");
+
+        if (majorVersion != null)
+        {
+            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersion.toString());
+        }
+        else
+        {
+            majorVersion = false;
+        }
+
+
+        if (majorVersion)
+        {
+            minorVer = 0;
+        }
+
+        for (int i = 1; i <= cnt; i++)
+        {
+            if (majorVersion)
+            {
+                majorVer++;
+            }
+            else
+            {
+                minorVer++;
+            }
+
+            verCnt++;
+
+            params.put("comment", "my version " + verCnt);
+
+            String textContent = textContentPrefix + verCnt;
+
+            currentVersionLabel = majorVer + "." + minorVer;
+
+            // Update
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
+            File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+            PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+
+            HttpResponse response = putBinary(getNodeContentUrl(contentNodeId), payload, null, params, 200);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(nodeResp.getProperties());
+            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
+
+            // double-check - get version node info
+            response = getSingle(getNodeVersionsUrl(contentNodeId), currentVersionLabel, null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
+        }
+
+        return currentVersionLabel;
+    }
+
     protected static final long PAUSE_TIME = 5000; //millisecond
     protected static final int MAX_RETRY = 20;
 
-    protected Rendition waitAndGetRendition(String sourceNodeId, String renditionId) throws Exception
+    protected Rendition waitAndGetRendition(String sourceNodeId, String versionId, String renditionId) throws Exception
     {
-        return waitAndGetRendition(sourceNodeId, renditionId, MAX_RETRY, PAUSE_TIME);
+        return waitAndGetRendition(sourceNodeId, versionId, renditionId, MAX_RETRY, PAUSE_TIME);
     }
 
-    protected Rendition waitAndGetRendition(String sourceNodeId, String renditionId, int maxRetry, long pauseTime) throws Exception
+    protected Rendition waitAndGetRendition(String sourceNodeId, String versionId, String renditionId, int maxRetry, long pauseTime) throws Exception
     {
         int retryCount = 0;
         while (retryCount < maxRetry)
         {
             try
             {
-                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), renditionId, 200);
+                HttpResponse response;
+                if ((versionId != null) && (! versionId.isEmpty()))
+                {
+                    response = getSingle(getNodeVersionRenditionsUrl(sourceNodeId, versionId), renditionId, 200);
+                }
+                else
+                {
+                    response = getSingle(getNodeRenditionsUrl(sourceNodeId), renditionId, 200);
+                }
                 Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
                 assertNotNull(rendition);
                 assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -878,6 +973,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected Rendition createAndGetRendition(String sourceNodeId, String renditionId) throws Exception
     {
+        return createAndGetRendition(sourceNodeId, null, renditionId);
+    }
+
+    protected Rendition createAndGetRendition(String sourceNodeId, String versionId, String renditionId) throws Exception
+    {
         Rendition renditionRequest = new Rendition();
         renditionRequest.setId(renditionId);
 
@@ -886,8 +986,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             try
             {
-                HttpResponse res = post(getNodeRenditionsUrl(sourceNodeId), toJsonAsString(renditionRequest), 202);
-                assertNull(res.getJsonResponse());
+                HttpResponse response;
+                if ((versionId != null) && (! versionId.isEmpty()))
+                {
+                    response = post(getNodeVersionRenditionsUrl(sourceNodeId, versionId), toJsonAsString(renditionRequest), 202);
+                }
+                else
+                {
+                    response = post(getNodeRenditionsUrl(sourceNodeId), toJsonAsString(renditionRequest), 202);
+                }
+                assertNull(response.getJsonResponse());
                 break;
             }
             catch (AssertionError ex)
@@ -901,12 +1009,22 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             }
         }
 
-        return waitAndGetRendition(sourceNodeId, renditionId);
+        return waitAndGetRendition(sourceNodeId, versionId, renditionId);
     }
 
     protected String getNodeRenditionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
+    }
+
+    protected String getNodeVersionsUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;
+    }
+
+    protected String getNodeVersionRenditionsUrl(String nodeId, String versionId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS;
     }
 
     protected String getNodeChildrenUrl(String nodeId)

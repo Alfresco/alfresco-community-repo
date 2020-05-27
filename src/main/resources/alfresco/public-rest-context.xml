@@ -1389,6 +1389,10 @@
         <property name="renditions" ref="Renditions" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
+        <property name="renditions" ref="Renditions" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">
         <property name="quickShareLinks" ref="QuickShareLinks"/>
     </bean>

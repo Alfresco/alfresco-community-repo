@@ -5,10 +5,14 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.model.CustomAspectPropertiesModel;
 import org.alfresco.utility.model.CustomContentModel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -28,18 +32,14 @@ public class CustomModelProperties extends ModelRequest<CustomModelProperties>
                             boolean hasConstraints,
                             JsonArrayBuilder constraintsArray)
     {
-        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
-        array.add(JsonBodyGenerator.defineJSON()
-            .add("name", propertyModel.getName())
-            .add("title", propertyModel.getTitle())
-            .add("description", propertyModel.getDescription())
-            .add("dataType", propertyModel.getDataType())
-            .add("multiValued", propertyModel.isMultiValued())
-            .add("mandatory", propertyModel.isMandatory())
-            .add("mandatoryEnforced", propertyModel.isMandatoryEnforced()));
+        JsonArrayBuilder array;
         if(hasConstraints)
         {
-            array.add(JsonBodyGenerator.defineJSON().add("constraints", constraintsArray));
+            array = getPropertiesArray(propertyModel, true, constraintsArray);
+        }
+        else
+        {
+            array = getPropertiesArray(propertyModel, false, null);
         }
 
         String body = JsonBodyGenerator.defineJSON()
@@ -57,6 +57,35 @@ public class CustomModelProperties extends ModelRequest<CustomModelProperties>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body, urlPath,
             customContentModel.getName(), aspectOrTypeName);
         restWrapper.processEmptyModel(request);
+    }
+
+    private JsonArrayBuilder getPropertiesArray(CustomAspectPropertiesModel propertyModel, boolean hasConstraints, JsonArrayBuilder constraintsArray)
+    {
+        JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();;
+        if(hasConstraints)
+        {
+            array.add(JsonBodyGenerator.defineJSON()
+                .add("name", propertyModel.getName())
+                .add("title", propertyModel.getTitle())
+                .add("description", propertyModel.getDescription())
+                .add("dataType", propertyModel.getDataType())
+                .add("multiValued", propertyModel.isMultiValued())
+                .add("mandatory", propertyModel.isMandatory())
+                .add("mandatoryEnforced", propertyModel.isMandatoryEnforced())
+                .add("constraints", constraintsArray));
+        }
+        else
+        {
+            array.add(JsonBodyGenerator.defineJSON()
+                .add("name", propertyModel.getName())
+                .add("title", propertyModel.getTitle())
+                .add("description", propertyModel.getDescription())
+                .add("dataType", propertyModel.getDataType())
+                .add("multiValued", propertyModel.isMultiValued())
+                .add("mandatory", propertyModel.isMandatory())
+                .add("mandatoryEnforced", propertyModel.isMandatoryEnforced()));
+        }
+        return array;
     }
 
     public JsonArrayBuilder createMinMaxValueConstraintArray(int minValue, int maxValue)
@@ -97,10 +126,12 @@ public class CustomModelProperties extends ModelRequest<CustomModelProperties>
 
     public JsonArrayBuilder createListOfValuesConstraint(boolean sorted, String... listOfValues)
     {
+        JsonArrayBuilder valuesArray = JsonBodyGenerator.defineJSONArray();
+        Arrays.stream(listOfValues).forEach(valuesArray::add);
         JsonArrayBuilder constraintsArray = JsonBodyGenerator.defineJSONArray();
         JsonObjectBuilder param1 = JsonBodyGenerator.defineJSON()
             .add("name", "allowedValues")
-            .add("listValue", listOfValues.toString());
+            .add("listValue", valuesArray);
         JsonObjectBuilder param2 = JsonBodyGenerator.defineJSON()
             .add("name", "sorted")
             .add("simpleValue", Boolean.valueOf(sorted));

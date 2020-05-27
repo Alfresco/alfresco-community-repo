@@ -30,12 +30,12 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.RecordActionUtils.Services;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -49,7 +49,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -73,6 +72,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_PATH = "path";
 
+    private static final String FILE_UNFILED_RECORDS_CAPABILITY = "FileUnfiledRecords";
+
     /** Sync Model URI */
     private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
     
@@ -88,15 +89,17 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     /** Dictionary service */
     private DictionaryService dictionaryService;
     
-    /** recordable version service */
+    /** Recordable version service */
     private RecordableVersionService recordableVersionService;
     
-    /** authentication util */
+    /** Authentication util */
     private AuthenticationUtil authenticationUtil;
 
     /** Record service */
     private RecordService recordService;
 
+    /** Capability service */
+    private CapabilityService capabilityService;
 
     /**
      * @param nodeService   node service
@@ -144,6 +147,11 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     /**
@@ -219,8 +227,13 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             // create record from latest version
             if (destinationRecordFolder != null)
             {
-                NodeRef recordedVersion = recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
-                recordService.file(recordedVersion);
+                boolean hasFilingCapability = capabilityService.hasCapability(destinationRecordFolder, FILE_UNFILED_RECORDS_CAPABILITY);
+                // validate destination record folder
+                if (hasFilingCapability)
+                {
+                    NodeRef recordedVersion = recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
+                    recordService.file(recordedVersion);
+                }
             }
             else
             {
@@ -271,5 +284,4 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
         }
         return false;
     }
-
 }

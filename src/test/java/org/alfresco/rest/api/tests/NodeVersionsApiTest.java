@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -61,16 +61,10 @@ import static org.junit.Assert.*;
 public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_DELETED_NODES = "deleted-nodes";
-    private static final String URL_VERSIONS = "versions";
 
     protected String getNodeVersionRevertUrl(String nodeId, String versionId)
     {
         return getNodeVersionsUrl(nodeId) + "/" + versionId + "/revert";
-    }
-
-    protected String getNodeVersionsUrl(String nodeId)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;
     }
 
     /**
@@ -560,89 +554,6 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
         return new Pair<String,String>(currentVersionLabel, docId);
     }
-
-    /**
-     * This test helper method uses "update binary content" to create one or more new versions. The file must already exist.
-     *
-     * @param userId
-     * @param contentNodeId
-     * @param cnt
-     * @param textContentPrefix
-     * @param verCnt
-     * @param majorVersion
-     * @param currentVersionLabel
-     * @return
-     * @throws Exception
-     */
-    private String updateFileVersions(String userId, String contentNodeId, int cnt,
-                                      String textContentPrefix, int verCnt,
-                                      Boolean majorVersion, String currentVersionLabel) throws Exception
-    {
-        String[] parts = currentVersionLabel.split("\\.");
-
-        int majorVer = new Integer(parts[0]).intValue();
-        int minorVer = new Integer(parts[1]).intValue();
-
-        Map<String, String> params = new HashMap<>();
-        params.put(Nodes.PARAM_OVERWRITE, "true");
-
-        if (majorVersion != null)
-        {
-            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersion.toString());
-        }
-        else
-        {
-            majorVersion = false;
-        }
-
-
-        if (majorVersion)
-        {
-            minorVer = 0;
-        }
-
-        for (int i = 1; i <= cnt; i++)
-        {
-            if (majorVersion)
-            {
-                majorVer++;
-            }
-            else
-            {
-                minorVer++;
-            }
-
-            verCnt++;
-
-            params.put("comment", "my version " + verCnt);
-
-            String textContent = textContentPrefix + verCnt;
-
-            currentVersionLabel = majorVer + "." + minorVer;
-
-            // Update
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
-            File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
-            PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
-
-            HttpResponse response = putBinary(getNodeContentUrl(contentNodeId), payload, null, params, 200);
-            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-
-            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
-            assertNotNull(nodeResp.getProperties());
-            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
-            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
-
-            // double-check - get version node info
-            response = getSingle(getNodeVersionsUrl(contentNodeId), currentVersionLabel, null, 200);
-            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
-            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
-        }
-
-        return currentVersionLabel;
-    }
-
 
     /**
      * Tests api when uploading a file and then updating with a new version

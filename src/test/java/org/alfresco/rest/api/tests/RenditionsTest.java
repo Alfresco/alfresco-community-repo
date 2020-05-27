@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -548,7 +548,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String contentNodeId = document.getId();
 
         // wait and check that rendition is created ...
-        Rendition rendition = waitAndGetRendition(contentNodeId, renditionName);
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
@@ -637,7 +637,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         for (String renditionName : renditionNames)
         {
-            Rendition rendition = waitAndGetRendition(contentNodeId, renditionName);
+            Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
             assertNotNull(rendition);
             assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         }

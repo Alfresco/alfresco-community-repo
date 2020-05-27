@@ -18,6 +18,7 @@ branches:
   only:
     - master
     - /support\/.*/
+    - /feature\/.*/
 
 stages:
   - test

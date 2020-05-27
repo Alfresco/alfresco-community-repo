@@ -28,6 +28,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="recordService" ref="RecordService" />
+      <property name="capabilityService" ref="CapabilityService" />
       <property name="applicableTypes">
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}content</value>

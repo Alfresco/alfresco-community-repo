@@ -42,6 +42,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -233,6 +234,10 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 {
                     NodeRef recordedVersion = recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
                     recordService.file(recordedVersion);
+                }
+                else
+                {
+                    throw new AccessDeniedException("The" + authenticationUtil.getRunAsUser() + "user doesn't have file permission on the specified location");
                 }
             }
             else

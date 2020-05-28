@@ -51,7 +51,7 @@
         <dependency.httpcomponents.version>4.5.10</dependency.httpcomponents.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.1</dependency.poi.version>
-        <dependency.webscripts.version>8.2</dependency.webscripts.version>
+        <dependency.webscripts.version>8.3</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>

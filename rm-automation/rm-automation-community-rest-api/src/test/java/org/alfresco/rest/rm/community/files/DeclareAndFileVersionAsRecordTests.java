@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.files;
 
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
@@ -47,6 +49,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.util.DockerHelper;
+import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
@@ -77,19 +80,23 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute declare-version-record " +
             "action, because the destination path is not a record folder.";
     private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
+    private final static String FROZEN_RECORD_FOLDER_EXC = "You can't add new items to a frozen record folder.";
+    private final static String HOLD_NAME = getRandomName("holdName");
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
     private FileModel testFile;
     private FolderModel testFolder;
     private RecordCategory recordCategory;
-    private RecordCategoryChild recordFolder, closedRecordFolder;
+    private RecordCategoryChild recordFolder, closedRecordFolder, heldRecordFolder;
     private UnfiledContainerChild unfiledContainerFolder;
 
     @Autowired
     private RoleService roleService;
     @Autowired
     private DockerHelper dockerHelper;
+    @Autowired
+    private HoldsAPI holdsAPI;
 
     @BeforeClass (alwaysRun = true)
     public void declareAndFileVersionAsRecordSetup() throws Exception
@@ -107,6 +114,10 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
         closeFolder(closedRecordFolder.getId());
         unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
                 "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
+        heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
+        holdsAPI.createHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
+                HOLD_NAME);
 
         STEP("Create rm users with different permissions on the record category");
         userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,
@@ -178,6 +189,9 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
                         // a closed record folder
                         { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
                                 CLOSED_RECORD_FOLDER_EXC },
+                         // a frozen record folder
+                        { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
+                                FROZEN_RECORD_FOLDER_EXC },
                         // an arbitrary unfiled records folder
                         { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
                         // a collaboration site folder
@@ -187,7 +201,7 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
 
     /**
      * Given I am calling the "declare version as record" action
-     * And I provide an invalid record folder in the location parameter
+     * And I provide an invalid record folder in the path parameter
      * When I execute the action
      * Then I receive an error indicating that I have attempted to file version as record a document into an invalid
      * record folder
@@ -230,7 +244,7 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
 
     /**
      * Given I am calling the "declare version as record" action for a minor document version
-     * And I am not providing a location parameter value
+     * And I am not providing a path parameter value
      * When I execute the action
      * Then the document version is declared as a version record
      * And is placed in the Unfiled Records location
@@ -240,21 +254,20 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
     {
         STEP("Update document in the collaboration site");
         dataContent.usingSite(publicSite).usingAdmin().usingResource(testFile).updateContent("This is the new content" +
-                " " +
-                "for " + testFile.getName());
+               "for " + testFile.getName());
 
         STEP("Declare document version as record without providing a location parameter value using v1 actions api");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
                 Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
-        STEP("Verify the declared version record is placed in the Unfiled Records folder and is a record version");
+        STEP("Verify the declared version record is placed in the record folder and is a record version");
         assertTrue(isRecordVersionInRecordFolder(testFile, recordFolder, "1.1"), "Record should be filed to fileplan " +
                 "location");
     }
 
     /**
      * Given I am calling the "declare version as record" action for a major document version
-     * And I am not providing a location parameter value
+     * And I am not providing a path parameter value
      * When I execute the action
      * Then the document version is declared as a version record version
      * And is placed in the Unfiled Records location
@@ -270,7 +283,7 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
                 Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
-        STEP("Verify the declared version record is placed in the Unfiled Records folder and is a record version");
+        STEP("Verify the declared version record is placed in the record folder and is a record version");
         assertTrue(isRecordVersionInRecordFolder(testFile, recordFolder, "2.0"), "Version record should be filed to " +
                 "the record folder");
     }
@@ -278,6 +291,7 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void declareAndFileVersionAsRecordCleanUp()
     {
+        holdsAPI.deleteHold(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME);
         deleteRecordCategory(recordCategory.getId());
 
         //delete created collaboration site

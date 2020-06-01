@@ -527,6 +527,7 @@
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
+        <property name="downloadNotifierService" ref="downloadNotifierService" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

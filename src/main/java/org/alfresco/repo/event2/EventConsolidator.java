@@ -165,6 +165,18 @@ public class EventConsolidator implements EventSupportedPolicies
     }
 
     @Override
+    public void onDownloadNode(NodeRef nodeRef)
+    {
+        eventTypes.add(EventType.NODE_DOWNLOADED);
+
+        createBuilderIfAbsent(nodeRef);
+
+        this.propertiesBefore = null;
+        setBeforeProperties(Collections.emptyMap());
+        setAfterProperties(helper.getProperties(nodeRef));
+    }
+    
+    @Override
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         eventTypes.add(EventType.NODE_UPDATED);

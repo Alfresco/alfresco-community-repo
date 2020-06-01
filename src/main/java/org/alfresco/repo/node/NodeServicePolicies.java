@@ -380,4 +380,17 @@ public interface NodeServicePolicies
          */
         public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType);
     }
+
+    @AlfrescoPublicApi
+    public interface OnDownloadNodePolicy extends ClassPolicy
+    {
+        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDownloadNode");
+
+        /**
+         * Called after a node's content has been downloaded.
+         *
+         * @param nodeRef         the reference to the node that has been downloaded
+         */
+        public void onDownloadNode(NodeRef nodeRef);
+    }
 }

@@ -204,7 +204,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.RenditionService2Test.class,
     org.alfresco.transform.client.registry.TransformServiceRegistryConfigTest.class,
 
-    org.alfresco.repo.event2.EventFilterTest.class
+    org.alfresco.repo.event2.EventFilterTest.class,
+    org.alfresco.repo.node.DownloadNotifierServiceImplUnitTest.class
 })
 public class AllUnitTestsSuite
 {

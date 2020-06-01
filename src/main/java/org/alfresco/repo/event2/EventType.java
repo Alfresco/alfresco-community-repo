@@ -32,7 +32,7 @@ package org.alfresco.repo.event2;
  */
 public enum EventType
 {
-    NODE_CREATED("Created"), NODE_UPDATED("Updated"), NODE_DELETED("Deleted");
+    NODE_CREATED("Created"), NODE_UPDATED("Updated"), NODE_DELETED("Deleted"), NODE_DOWNLOADED("Downloaded");
 
     private static final String PREFIX = "org.alfresco.event.";
     private static final String CONTEXT = "node.";

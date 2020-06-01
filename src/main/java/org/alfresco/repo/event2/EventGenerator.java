@@ -39,6 +39,7 @@ import org.alfresco.repo.event2.filter.NodeTypeFilter;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnDownloadNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
@@ -125,6 +126,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                                            new JavaBehaviour(this, "onRemoveAspect"));
         policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME, this,
                                            new JavaBehaviour(this, "onMoveNode"));
+        policyComponent.bindClassBehaviour(OnDownloadNodePolicy.QNAME, this,
+                                           new JavaBehaviour(this, "onDownloadNode"));
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -196,6 +199,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         getEventConsolidator(nodeRef).onSetNodeType(nodeRef, before, after);
     }
 
+    @Override
+    public void onDownloadNode(NodeRef nodeRef)
+    {
+        getEventConsolidator(nodeRef).onDownloadNode(nodeRef);
+    }
+    
     @Override
     public void beforeDeleteNode(NodeRef nodeRef)
     {

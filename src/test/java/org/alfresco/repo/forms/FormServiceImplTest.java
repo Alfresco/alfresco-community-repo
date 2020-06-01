@@ -128,7 +128,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
     private static String LABEL_SIZE = "Size";
     private static String LABEL_ORIGINATOR = "From";
     private static String LABEL_ADDRESSEE = "To";
-    private static String LABEL_ADDRESSEES = "CC";
+    private static String LABEL_ADDRESSEES = "All Recipients";
     private static String LABEL_SUBJECT = "Subject";
     private static String LABEL_SENT_DATE = "Sent Date";
     private static String LABEL_REFERENCES = "References";

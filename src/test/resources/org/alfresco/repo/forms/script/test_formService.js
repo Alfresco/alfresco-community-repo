@@ -70,7 +70,7 @@ function testGetFormForContentNode()
     test.assertEquals("Description", descField.label);
     test.assertEquals("From", originatorField.label);
     test.assertEquals("To", addresseeField.label);
-    test.assertEquals("CC", addresseesField.label);
+    test.assertEquals("All Recipients", addresseesField.label);
     test.assertEquals("Subject", subjectField.label);
     test.assertEquals("Sent Date", sentDateField.label);
     test.assertEquals("References", referencesField.label);

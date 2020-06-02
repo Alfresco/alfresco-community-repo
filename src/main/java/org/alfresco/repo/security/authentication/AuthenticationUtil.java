@@ -618,7 +618,13 @@ public class AuthenticationUtil implements InitializingBean
         {
             if (originalFullAuthentication == null)
             {
-                AuthenticationUtil.clearCurrentSecurityContext();
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Removing the current security information for thread: " + Thread.currentThread().getName());
+                }
+                ContextHolder.setContext(null);
+                TenantContextHolder.clearTenantDomain();
+
                 logNDC(null);
             }
             else

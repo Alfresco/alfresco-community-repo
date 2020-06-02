@@ -35,6 +35,7 @@ import java.util.List;
 import javax.jms.ConnectionFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.repo.event.databind.ObjectMapperFactory;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.NodeResource;
@@ -83,6 +84,9 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     private static final CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
 
     private static boolean isCamelConfigured;
+
+    @Autowired
+    protected CMISConnector cmisConnector;
 
     @Autowired
     protected RetryingTransactionHelper retryingTransactionHelper;

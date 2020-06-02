@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Creates a new record from the 'current' document version.
@@ -135,7 +136,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
     
     /**
-     * @param authenticationUtil    authentication util
+     * @param authenticationUtil authentication util
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -150,6 +151,9 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
         this.recordService = recordService;
     }
 
+    /**
+     * @param capabilityService capability service
+     */
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
@@ -177,31 +181,12 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 logger.debug("Can not declare version as record, because " + actionedUponNodeRef.toString() + " is not a supported type.");
             }
         }
-        else if (!checkAspects(actionedUponNodeRef))
+        else if (!isActionEligible(actionedUponNodeRef))
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
             {
-                // TODO .. eventually make the file plan parameter required
-
-                filePlan = authenticationUtil.runAs(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
-                {
-                    @Override
-                    public NodeRef doWork()
-                    {
-                        return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-                    }
-                }, authenticationUtil.getAdminUserName());
-
-                // if the file plan is still null, raise an exception
-                if (filePlan == null)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Can not declare version record, because the default file plan can not be determined.  Make sure at least one file plan has been created.");
-                    }
-                    throw new AlfrescoRuntimeException("Can not declare version record, because the default file plan can not be determined.");
-                }
+                filePlan = RecordActionUtils.getDefaultFilePlan(authenticationUtil, filePlanService, NAME);
             }
             else
             {
@@ -237,7 +222,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 }
                 else
                 {
-                    throw new AccessDeniedException("The" + authenticationUtil.getRunAsUser() + "user doesn't have file permission on the specified location");
+                    throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
                 }
             }
             else
@@ -259,16 +244,16 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
 
     /* Check aspects that stop declaring the version as record.*/
-    private boolean checkAspects(NodeRef actionedUponNodeRef)
+    private boolean isActionEligible(NodeRef actionedUponNodeRef)
     {
-        Map<QName, String> mapedAspects = new HashMap<>();
+        Map<QName, String> mappedAspects = new HashMap<>();
 
-        mapedAspects.put(ASPECT_RECORD, " is already a record.");
-        mapedAspects.put(ContentModel.ASPECT_WORKING_COPY, " is a working copy.");
-        mapedAspects.put(ASPECT_RECORD_REJECTION_DETAILS, " has previously been rejected.");
-        mapedAspects.put(ASPECT_SYNCED, " is synched content.");
+        mappedAspects.put(ASPECT_RECORD, " is already a record.");
+        mappedAspects.put(ContentModel.ASPECT_WORKING_COPY, " is a working copy.");
+        mappedAspects.put(ASPECT_RECORD_REJECTION_DETAILS, " has previously been rejected.");
+        mappedAspects.put(ASPECT_SYNCED, " is synched content.");
 
-        for (Map.Entry<QName, String> aspect : mapedAspects.entrySet())
+        for (Map.Entry<QName, String> aspect : mappedAspects.entrySet())
         {
             if (nodeService.hasAspect(actionedUponNodeRef, aspect.getKey()))
             {

@@ -74,7 +74,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_PATH = "path";
 
-    private static final String FILE_UNFILED_RECORDS_CAPABILITY = "FileUnfiledRecords";
+    private static final String EDIT_RECORD_METADATA_CAPABILITY = "EditRecordMetadata";
 
     /** Sync Model URI */
     private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
@@ -213,9 +213,9 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             // create record from latest version
             if (destinationRecordFolder != null)
             {
-                boolean hasFilingCapability = capabilityService.hasCapability(destinationRecordFolder, FILE_UNFILED_RECORDS_CAPABILITY);
+                boolean hasCapability = capabilityService.hasCapability(destinationRecordFolder, EDIT_RECORD_METADATA_CAPABILITY);
                 // validate destination record folder
-                if (hasFilingCapability)
+                if (hasCapability)
                 {
                     NodeRef recordedVersion = recordableVersionService.createRecordFromLatestVersion(destinationRecordFolder, actionedUponNodeRef);
                     recordService.file(recordedVersion);

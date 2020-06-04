@@ -56,6 +56,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
         "async": false,
         "authority": null,
         "cascade": false
+        "folderChange": false
     }
     ]
  */
@@ -147,6 +148,9 @@ public class RestSyncSetChangesModel extends TestModel
     
     @JsonProperty(required = true)
     private int numberOfSecondaryAssocs;
+
+    @JsonProperty(required = true)
+    private boolean folderChange;
     
     
 
@@ -293,5 +297,13 @@ public class RestSyncSetChangesModel extends TestModel
     public void setNumberOfSecondaryAssocs(int numberOfSecondaryAssocs)
     {
         this.numberOfSecondaryAssocs = numberOfSecondaryAssocs;
+    }
+
+    public boolean isFolderChange() {
+        return folderChange;
+    }
+
+    public void setFolderChange(boolean folderChange) {
+        this.folderChange = folderChange;
     }
 }

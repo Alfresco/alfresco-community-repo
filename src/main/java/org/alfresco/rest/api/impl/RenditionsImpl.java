@@ -96,7 +96,7 @@ import java.util.TreeMap;
  */
 public class RenditionsImpl implements Renditions, ResourceLoaderAware
 {
-    private static final Log LOGGER = LogFactory.getLog(RenditionsImpl.class);
+    private static final Log logger = LogFactory.getLog(RenditionsImpl.class);
 
     private static final Set<String> RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES = Collections.singleton(PARAM_STATUS);
 
@@ -183,13 +183,14 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             includeNotCreated = !includeCreated;
         }
 
+        // List all available rendition definitions
+        long size = contentData.getSize();
+        RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
+        Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, size);
+
         Map<String, Rendition> apiRenditions = new TreeMap<>();
         if (includeNotCreated)
         {
-            // List all available rendition definitions
-            long size = contentData.getSize();
-            RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
-            Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNamesFrom(sourceMimetype, size);
             for (String renditionName : renditionNames)
             {
                 apiRenditions.put(renditionName, toApiRendition(renditionName));
@@ -203,16 +204,27 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             {
                 NodeRef renditionNodeRef = childAssociationRef.getChildRef();
                 Rendition apiRendition = toApiRendition(renditionNodeRef);
-                if (includeCreated)
+                String renditionName = apiRendition.getId();
+                if (renditionNames.contains(renditionName))
                 {
-                    // Replace/append any thumbnail definitions with created rendition info
-                    apiRenditions.put(apiRendition.getId(), apiRendition);
+                    if (includeCreated)
+                    {
+                        // Replace/append any thumbnail definitions with created rendition info
+                        apiRenditions.put(renditionName, apiRendition);
+                    }
+                    else
+                    {
+                        // Remove any thumbnail definitions that has been created from the list,
+                        // as the filter requires only the Not_Created renditions
+                        apiRenditions.remove(renditionName);
+                    }
                 }
                 else
                 {
-                    // Remove any thumbnail definitions that has been created from the list,
-                    // as the filter requires only the Not_Created renditions
-                    apiRenditions.remove(apiRendition.getId());
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Skip unknown rendition [" + renditionName + ", " + renditionNodeRef + "]");
+                    }
                 }
             }
         }
@@ -509,9 +521,9 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
             else
             {
-                if (LOGGER.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    LOGGER.debug("Retrieving content from resource path [" + phPath + ']');
+                    logger.debug("Retrieving content from resource path [" + phPath + ']');
                 }
                 // get extension of resource
                 String ext = "";
@@ -531,9 +543,9 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 }
                 catch (Exception ex)
                 {
-                    if (LOGGER.isErrorEnabled())
+                    if (logger.isErrorEnabled())
                     {
-                        LOGGER.error("Couldn't load the placeholder." + ex.getMessage());
+                        logger.error("Couldn't load the placeholder." + ex.getMessage());
                     }
                     throw new ApiException("Couldn't load the placeholder.");
                 }

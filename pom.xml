@@ -55,7 +55,7 @@
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.postgresql.version>42.2.12</dependency.postgresql.version>
+        <dependency.postgresql.version>42.2.13</dependency.postgresql.version>
         <dependency.mysql.version>8.0.20</dependency.mysql.version>
         <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>

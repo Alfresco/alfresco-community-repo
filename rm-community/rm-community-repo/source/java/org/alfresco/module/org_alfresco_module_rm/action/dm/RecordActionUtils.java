@@ -167,8 +167,8 @@ public class RecordActionUtils
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug("Unable to execute " + actionName + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
-                throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the fileplan path could not be determined.");
             }
+            throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the fileplan path could not be determined.");
         }
         return filePlan;
     }

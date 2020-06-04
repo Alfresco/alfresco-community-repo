@@ -38,12 +38,15 @@ import static org.mockito.Mockito.verify;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.BaseActionUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Declare as version record action unit test.
@@ -59,10 +62,19 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     
     /** actioned upon node reference */
     private NodeRef actionedUponNodeRef;
+
+    /** destination record folder node reference */
+    private NodeRef destinationRecordFolderNodeRef;
+
+    /** parent destination node reference */
+    private NodeRef parentDestinationNodeRef;
     
     /** declare as version record action */
     private @InjectMocks DeclareAsVersionRecordAction declareAsVersionRecordAction;
-    
+
+    @Mock
+    private CapabilityService mockedCapabilityService;
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
@@ -76,6 +88,12 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         
         // mocked actioned upon noderef
         actionedUponNodeRef = generateNodeRef();
+
+        // mocked destination record folder nodeRef
+        destinationRecordFolderNodeRef = generateNodeRef();
+
+        // mocked parent destination nodeRef
+        parentDestinationNodeRef = generateNodeRef();
     }
     
     /**
@@ -214,13 +232,13 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         // expect exception
         exception.expect(AlfrescoRuntimeException.class);
         
-        // exceute action
+        // execute action
         declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);                
     }
     
-    /** 
+    /**
      * Given that no file plan is provided
-     * And adefault file plan exists
+     * And a default file plan exists
      * When I execute the action
      * Then a version record is declared
      */
@@ -230,18 +248,18 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         // setup
         doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
         doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE); 
+        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
-      
+
         // no default file plan
         doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        
-        // exceute action
-        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);  
-        verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(filePlan, actionedUponNodeRef);              
+
+        // execute action
+        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
+        verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
     }
     
     /** 
@@ -268,7 +286,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         // expect exception
         exception.expect(AlfrescoRuntimeException.class);
         
-        // exceute action
+        // execute action
         declareAsVersionRecordAction.executeImpl(getMockedAction(), actionedUponNodeRef);                
     }
     
@@ -295,8 +313,73 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         doReturn(true).when(mockedFilePlanService).isFilePlan(myFilePlan);
         mockActionParameterValue(DeclareAsVersionRecordAction.PARAM_FILE_PLAN, myFilePlan);
         
-        // exceute action
+        // execute action
         declareAsVersionRecordAction.executeImpl(getMockedAction(), actionedUponNodeRef);   
         verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(myFilePlan, actionedUponNodeRef);               
+    }
+
+    /**
+     * Given that a valid location is provided
+     * When I execute the action
+     * Then a version record is declared in the provided location
+     */
+    @Test
+    public void validDestinationRecordFolderProvided()
+    {
+        String childName = GUID.generate();
+        // setup
+        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
+        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
+        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
+
+        // provided location
+        doReturn(destinationRecordFolderNodeRef).when(mockedNodeService).getChildByName(parentDestinationNodeRef, ContentModel.ASSOC_CONTAINS, childName);
+        doReturn(TYPE_RECORD_FOLDER).when(mockedNodeService).getType(destinationRecordFolderNodeRef);
+
+        // capability check
+        doReturn(true).when(mockedCapabilityService).hasCapability(destinationRecordFolderNodeRef, "EditRecordMetadata");
+
+        // file plan service
+        doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+
+        // execute action
+        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
+        verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
+    }
+
+    /**
+     * Given that an invalid location is provided
+     * When I execute the action
+     * Then an exception is thrown
+     */
+    @Test
+    public void invalidDestinationRecordFolderProvided()
+    {
+        String childName = GUID.generate();
+        // setup
+        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
+        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
+        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
+
+        // provided location
+        doReturn(destinationRecordFolderNodeRef).when(mockedNodeService).getChildByName(parentDestinationNodeRef, ContentModel.ASSOC_CONTAINS, childName);
+        doReturn(TYPE_RECORD_FOLDER).when(mockedNodeService).getType(destinationRecordFolderNodeRef);
+
+        // capability check
+        doReturn(false).when(mockedCapabilityService).hasCapability(destinationRecordFolderNodeRef, "EditRecordMetadata");
+
+        // expect exception
+        exception.expect(AlfrescoRuntimeException.class);
+
+        // execute action
+        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
     }
 }

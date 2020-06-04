@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.VERSION_AS_RECORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
@@ -879,4 +880,71 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
+    /**
+     * Helper method to verify if the document version is declared as record version in unfiled container
+     *
+     * @param testFile  the file  declared as record version
+     * @param version the document version
+     * @return true if matching record version is found in unfiled record container, false otherwise
+     */
+    protected boolean isRecordVersionInUnfiledRecords(FileModel testFile, String version)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                    () -> {
+                        UnfiledContainerChildEntry matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
+                                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS, "include=properties,aspectNames")
+                                                                                       .getEntries()
+                                                                                       .stream()
+                                                                                       .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
+                                                                                               && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
+                                                                                               && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
+                                                                                              )
+                                                                                       .findFirst().get();
+
+                        assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
+                    });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
+    /**
+     * Helper method to verify if the document version is declared as record version in a specific record folder
+     *
+     * @param testFile  the file declared as record version
+     * @param recordFolder  the record folder where the versioned record is filled
+     * @param version the document version
+     * @return true if matching record version is found in record folder, false otherwise
+     */
+    protected boolean isRecordVersionInRecordFolder(FileModel testFile, RecordCategoryChild recordFolder,
+                                                    String version)
+    {
+        try
+        {
+            Utility.sleep(5000, 15000,
+                    () -> {
+                        RecordFolderEntry matchingRecord = getRestAPIFactory().getRecordFolderAPI()
+                                                                              .getRecordFolderChildren(recordFolder.getId(),"include=properties,aspectNames")
+                                                                              .getEntries()
+                                                                              .stream()
+                                                                              .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
+                                                                                      && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
+                                                                                      && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
+                                                                                     )
+                                                                              .findFirst().get();
+
+                        assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
+                    });
+            return true;
+        }
+        catch (AssertionError | Exception e)
+        {
+            return false;
+        }
+    }
+
 }

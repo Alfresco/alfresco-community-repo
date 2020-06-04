@@ -218,14 +218,8 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     public void noFilePlanParameterNoDefaultFilePlan()
     {
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE); 
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
-      
+        setupMockedAspects();
+
         // no default file plan
         doReturn(null).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
         
@@ -235,7 +229,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         // execute action
         declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);                
     }
-    
+
     /**
      * Given that no file plan is provided
      * And a default file plan exists
@@ -246,13 +240,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     public void noFilePlanParameterDefaultFilePlan()
     {
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
+        setupMockedAspects();
 
         // no default file plan
         doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
@@ -261,7 +249,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
         verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
     }
-    
+
     /** 
      * Given that a file plan is provided
      * And it isn't a file plan
@@ -272,14 +260,8 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     public void invalidFilePlanParameter()
     {
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE); 
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
-      
+        setupMockedAspects();
+
         // not a file plan is provided in the parameters
         mockActionParameterValue(DeclareAsVersionRecordAction.PARAM_FILE_PLAN, generateNodeRef());
         
@@ -300,14 +282,8 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     public void validFilePlanParameter()
     {
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE); 
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
-      
+        setupMockedAspects();
+
         // not a file plan is provided in the parameters
         NodeRef myFilePlan = generateNodeRef(TYPE_FILE_PLAN);
         doReturn(true).when(mockedFilePlanService).isFilePlan(myFilePlan);
@@ -326,18 +302,14 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     @Test
     public void validDestinationRecordFolderProvided()
     {
-        String childName = GUID.generate();
+        String pathParameter = GUID.generate();
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
+        setupMockedAspects();
+
+        mockActionParameterValue(DeclareAsVersionRecordAction.PARAM_PATH, pathParameter);
 
         // provided location
-        doReturn(destinationRecordFolderNodeRef).when(mockedNodeService).getChildByName(parentDestinationNodeRef, ContentModel.ASSOC_CONTAINS, childName);
+        doReturn(destinationRecordFolderNodeRef).when(mockedNodeService).getChildByName(filePlan, ContentModel.ASSOC_CONTAINS, pathParameter);
         doReturn(TYPE_RECORD_FOLDER).when(mockedNodeService).getType(destinationRecordFolderNodeRef);
 
         // capability check
@@ -347,8 +319,8 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
 
         // execute action
-        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
-        verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
+        declareAsVersionRecordAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+        verify(mockedRecordableVersionService, times(1)).createRecordFromLatestVersion(destinationRecordFolderNodeRef, actionedUponNodeRef);
     }
 
     /**
@@ -361,13 +333,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     {
         String childName = GUID.generate();
         // setup
-        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
-        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
-        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
+        setupMockedAspects();
 
         // provided location
         doReturn(destinationRecordFolderNodeRef).when(mockedNodeService).getChildByName(parentDestinationNodeRef, ContentModel.ASSOC_CONTAINS, childName);
@@ -380,6 +346,17 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         exception.expect(AlfrescoRuntimeException.class);
 
         // execute action
-        declareAsVersionRecordAction.executeImpl(mock(Action.class), actionedUponNodeRef);
+        declareAsVersionRecordAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+    }
+
+    private void setupMockedAspects()
+    {
+        doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
+        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
+        doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD_REJECTION_DETAILS);
+        doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_SYNCED);
     }
 }

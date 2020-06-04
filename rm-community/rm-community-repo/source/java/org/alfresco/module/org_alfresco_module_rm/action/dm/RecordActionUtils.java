@@ -41,6 +41,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 
+/**
+ * Utility class containing helper methods for record
+ */
+
 public class RecordActionUtils
 {
     /**

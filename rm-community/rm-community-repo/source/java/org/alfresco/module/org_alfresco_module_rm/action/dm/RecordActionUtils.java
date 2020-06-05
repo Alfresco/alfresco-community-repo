@@ -46,7 +46,12 @@ public class RecordActionUtils
     /**
      * Logger
      */
-    private static final Log LOGGER = LogFactory.getLog(CreateRecordAction.class);
+    private static final Log LOGGER = LogFactory.getLog(RecordActionUtils.class);
+
+    /** Private constructor to prevent instantiation. */
+    private RecordActionUtils()
+    {
+    }
 
     static class Services
     {
@@ -94,7 +99,7 @@ public class RecordActionUtils
         }
 
         final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
-        if ((pathElementsArray != null) && (pathElementsArray.length > 0))
+        if (pathElementsArray.length > 0)
         {
             destinationFolder = resolvePath(services.getNodeService(), filePlan, Arrays.asList(pathElementsArray), actionName);
 
@@ -104,7 +109,8 @@ public class RecordActionUtils
             {
                 throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path is not a record folder.");
             }
-        } else
+        }
+        else
         {
             throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path could not be found.");
         }
@@ -128,7 +134,8 @@ public class RecordActionUtils
         if (nodeRef == null)
         {
             throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path could not be found.");
-        } else
+        }
+        else
         {
             QName nodeType = nodeService.getType(nodeRef);
             if (nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
@@ -152,14 +159,7 @@ public class RecordActionUtils
      */
     static NodeRef getDefaultFilePlan(AuthenticationUtil authenticationUtil, FilePlanService filePlanService, String actionName)
     {
-        NodeRef filePlan = authenticationUtil.runAsSystem(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            }
-        });
+        NodeRef filePlan = authenticationUtil.runAsSystem(() -> filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID));
 
         // if the file plan is still null, raise an exception
         if (filePlan == null)
@@ -167,8 +167,8 @@ public class RecordActionUtils
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug("Unable to execute " + actionName + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
-                throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the fileplan path could not be determined.");
             }
+            throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the fileplan path could not be determined.");
         }
         return filePlan;
     }

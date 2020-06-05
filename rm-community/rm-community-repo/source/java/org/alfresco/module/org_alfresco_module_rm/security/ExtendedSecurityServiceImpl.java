@@ -407,13 +407,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 // if exists and matches we have found our group
                 if (isIPRGroupTrueMatch(group, authorities))
                 {
-                    iprGroup = group;
-                    break;
+                    return new Pair<String, Integer>(group, nextGroupIndex);
                 }
             }
 
             // determine if there are any more pages to inspect
-            hasMoreItems = results.hasMoreItems();
+            hasMoreItems = hasMoreItems ? results.hasMoreItems() : false;
             pageCount ++;
         }
 
@@ -429,8 +428,15 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private boolean isIPRGroupTrueMatch(String group, Set<String> authorities)
     {
+        //Remove GROUP_EVERYONE for proper comparison as GROUP_EVERYONE is never included in an IPR group
+        Set<String> plainAuthorities = new HashSet<String>();
+        if (authorities != null)
+        {
+            plainAuthorities.addAll(authorities);
+            plainAuthorities.remove(PermissionService.ALL_AUTHORITIES);
+        }
         Set<String> contained =  authorityService.getContainedAuthorities(null, group, true);
-        return contained.equals(authorities);
+        return contained.equals(plainAuthorities);
     }
 
     /**

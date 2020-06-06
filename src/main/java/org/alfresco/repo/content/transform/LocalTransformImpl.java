@@ -39,7 +39,6 @@ import java.util.Set;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
 
 /**
  * A local transformer using flat transform options.
@@ -146,25 +145,13 @@ public class LocalTransformImpl extends AbstractLocalTransform
                                  String sourceExtension, String targetExtension,
                                  String renditionName, NodeRef sourceNodeRef)
     {
-        // Only pass the sourceEncoding and other dynamic values like it if they were supplied in the rendition
-        // definition without a value. The sourceEncoding value is also supplied in the RenditionEventProducer in
-        // the message to the T-Router.
         transformOptions = new HashMap<>(transformOptions);
-        if (transformOptions.containsKey(SOURCE_ENCODING) && transformOptions.get(SOURCE_ENCODING) == null)
-        {
-            String sourceEncoding = reader.getEncoding();
-            transformOptions.put(SOURCE_ENCODING, sourceEncoding);
-        }
+        // Dynamic transform options
+        String sourceEncoding = reader.getEncoding();
+        transformOptions.put(SOURCE_ENCODING, sourceEncoding);
         if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
         {
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
-        }
-
-        // The targetEncoding is passed as an option if it is know to the transformer and has not been set.
-        if (transformOptions.get(TARGET_ENCODING) == null && transformsTransformOptionNames.contains(TARGET_ENCODING))
-        {
-            String targetEncoding = writer.getEncoding();
-            transformOptions.put(TARGET_ENCODING, targetEncoding);
         }
 
         // Build an array of option names and values and extract the timeout.

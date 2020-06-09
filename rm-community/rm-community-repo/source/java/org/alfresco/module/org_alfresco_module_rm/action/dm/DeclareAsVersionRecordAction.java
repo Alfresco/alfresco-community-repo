@@ -181,7 +181,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 logger.debug("Can not declare version as record, because " + actionedUponNodeRef.toString() + " is not a supported type.");
             }
         }
-        else if (!isActionEligible(actionedUponNodeRef))
+        else if (isActionEligible(actionedUponNodeRef))
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
@@ -261,7 +261,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 {
                     logger.debug("Can not declare version record, because " + actionedUponNodeRef.toString() + aspect.getValue());
                 }
-                return true;
+                return false;
             }
         }
         if (!nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
@@ -270,8 +270,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             {
                 logger.debug("Can not declare version record, because " + actionedUponNodeRef.toString() + " does not have the versionable aspect applied.");
             }
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }

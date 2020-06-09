@@ -37,8 +37,8 @@ import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -50,7 +50,7 @@ public class RecordActionUtils
     /**
      * Logger
      */
-    private static final Log LOGGER = LogFactory.getLog(RecordActionUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecordActionUtils.class);
 
     /** Private constructor to prevent instantiation. */
     private RecordActionUtils()
@@ -139,15 +139,12 @@ public class RecordActionUtils
         {
             throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path could not be found.");
         }
-        else
+        QName nodeType = nodeService.getType(nodeRef);
+        if (nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
+                nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
+                nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
         {
-            QName nodeType = nodeService.getType(nodeRef);
-            if (nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
-                    nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
-                    nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
-            {
-                throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path is invalid.");
-            }
+            throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the destination path is invalid.");
         }
         if (pathElements.size() > 1)
         {
@@ -168,11 +165,10 @@ public class RecordActionUtils
         // if the file plan is still null, raise an exception
         if (filePlan == null)
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Unable to execute " + actionName + " action, because the fileplan path could not be determined.  Make sure at least one file plan has been created.");
-            }
-            throw new AlfrescoRuntimeException("Unable to execute " + actionName + " action, because the fileplan path could not be determined.");
+            final String logMessage =
+                    String.format("Unable to execute %s action, because the fileplan path could not be determined. Make sure at least one file plan has been created.", actionName);
+            LOGGER.debug(logMessage);
+            throw new AlfrescoRuntimeException(logMessage);
         }
         return filePlan;
     }

@@ -502,6 +502,16 @@ public class ContentServiceImpl extends ContentTransformServiceAdaptor implement
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
     }
 
+    @Override
+    public String getDirectAccessUrl(String contentUrl)
+    {
+        if (store.isDirectAccessSupported())
+        {
+            return store.getDirectAccessUrl(contentUrl);
+        }
+        return "";
+    }
+
     /**
      * Ensures that, upon closure of the output stream, the node is updated with
      * the latest URL of the content to which it refers.

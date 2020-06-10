@@ -152,4 +152,12 @@ public interface ContentService extends ContentTransformService
      */
     @Auditable
     public ContentWriter getTempWriter();
+
+    /**
+     * Gets a presigned URL to directly access a binary content.
+     *
+     * @param contentUrl A content store URL
+     * @return A direct access URL for a binary content or empty string if not supported
+     */
+    public String getDirectAccessUrl(String contentUrl);
 }

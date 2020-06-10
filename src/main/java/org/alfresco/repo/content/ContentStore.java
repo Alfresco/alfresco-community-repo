@@ -235,4 +235,27 @@ public interface ContentStore
      *      if an IO error occurs
      */
     public boolean delete(String contentUrl);
+
+    /**
+     * Gets a presigned URL to directly access a binary content.
+     *
+     * @param contentUrl A content store URL
+     * @return A direct access URL for a binary content
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default String getDirectAccessUrl(String contentUrl)
+    {
+        throw new UnsupportedOperationException(
+            "Retrieving direct access URLs is not supported by this content store.");
+    }
+
+    /**
+     * Checks if the store supports the retrieving of direct access URLs.
+     *
+     * @return true if direct access URLs retrieving is supported, false otherwise
+     */
+    default boolean isDirectAccessSupported()
+    {
+        return false;
+    }
 }

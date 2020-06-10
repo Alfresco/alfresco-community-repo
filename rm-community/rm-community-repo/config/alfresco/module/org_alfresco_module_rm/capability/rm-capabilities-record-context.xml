@@ -158,6 +158,7 @@
       parent="declarativeCapability">
       <property name="name" value="FileUnfiledRecords"/>
       <property name="permission" value="FileUnfiledRecords"/>
+      <property name="kind" value="RECORD" />
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>  		<!--  Checks if the user has the filling capability -->

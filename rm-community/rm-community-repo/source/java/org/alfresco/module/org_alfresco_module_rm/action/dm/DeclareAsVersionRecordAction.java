@@ -188,17 +188,14 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             {
                 filePlan = RecordActionUtils.getDefaultFilePlan(authenticationUtil, filePlanService, NAME);
             }
-            else
+            // verify that the provided file plan is actually a file plan
+            else if (!filePlanService.isFilePlan(filePlan))
             {
-                // verify that the provided file plan is actually a file plan
-                if (!filePlanService.isFilePlan(filePlan))
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Can not declare version record, because the provided file plan node reference is not a file plan.");
-                    }
-                    throw new AlfrescoRuntimeException("Can not declare version record, because the provided file plan node reference is not a file plan.");
+                    logger.debug("Can not declare version record, because the provided file plan node reference is not a file plan.");
                 }
+                throw new AlfrescoRuntimeException("Can not declare version record, because the provided file plan node reference is not a file plan.");
             }
 
             // resolve destination record folder if path supplied

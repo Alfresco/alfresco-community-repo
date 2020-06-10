@@ -313,7 +313,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
         doReturn(TYPE_RECORD_FOLDER).when(mockedNodeService).getType(destinationRecordFolderNodeRef);
 
         // capability check
-        doReturn(true).when(mockedCapabilityService).hasCapability(destinationRecordFolderNodeRef, "EditRecordMetadata");
+        doReturn(true).when(mockedCapabilityService).hasCapability(destinationRecordFolderNodeRef, "FileVersionRecords");
 
         // file plan service
         doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);

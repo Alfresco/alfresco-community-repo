@@ -62,6 +62,27 @@
       <property name="index" value="40" />
    </bean>
 
+   <bean id="rmFileVersionRecordsCapability"
+         parent="declarativeCapability">
+      <property name="name" value="FileVersionRecords" />
+      <property name="permission" value="FileVersionRecords" />
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true" />
+            <entry key="capabilityCondition.cutoff" value="false" />
+            <entry key="capabilityCondition.frozen" value="false" />
+            <entry key="capabilityCondition.closed" value="false" />
+         </map>
+      </property>
+      <property name="group"><ref bean="folderControlGroup" /></property>
+      <property name="index" value="50" />
+   </bean>
+
    <!--  Unassignable -->
 
    <bean id="rmCreateRecordFolderCapability"

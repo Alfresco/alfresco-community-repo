@@ -49,7 +49,8 @@
          "RequestRecordInformation",
          "FileUnfiledRecords",
          "RejectRecords",
-         "LinkToRecords"
+         "LinkToRecords",
+         "FileVersionRecords"
       ]
    },
    {
@@ -74,7 +75,8 @@
           "FileUnfiledRecords",
           "RejectRecords",
           "LinkToRecords",
-          "ManageAccessControls"
+          "ManageAccessControls",
+          "FileVersionRecords"
       ]
    },
    {
@@ -145,8 +147,8 @@
           "DeleteHold",
           "EndRetention",
           "EditHold",
-          "ManageAccessControls"
-
+          "ManageAccessControls",
+          "FileVersionRecords"
       ]
    },
    {
@@ -219,7 +221,8 @@
           "FileHoldReport",
           "DeleteHold",
           "EditHold",
-          "EndRetention"
+          "EndRetention",
+          "FileVersionRecords"
       ]
    }
 ]

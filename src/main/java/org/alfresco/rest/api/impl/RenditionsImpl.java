@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software LimitedP
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,7 +34,6 @@ import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
-import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Renditions;
@@ -65,10 +64,6 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionDoesNotExistException;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
@@ -92,7 +87,7 @@ import java.util.StringJoiner;
 import java.util.TreeMap;
 
 /**
- * @author Jamal Kaabi-Mofrad, janv
+ * @author Jamal Kaabi-Mofrad
  */
 public class RenditionsImpl implements Renditions, ResourceLoaderAware
 {
@@ -109,7 +104,6 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     private TenantService tenantService;
     private RenditionService2 renditionService2;
     private RenditionsDataCollector renditionsDataCollector;
-    private VersionService versionService;
 
     public void setNodes(Nodes nodes)
     {
@@ -157,21 +151,14 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         PropertyCheck.mandatory(this, "renditionsDataCollector", renditionsDataCollector);
 
         this.nodeService = serviceRegistry.getNodeService();
-        this.versionService = serviceRegistry.getVersionService();
         this.mimetypeService = serviceRegistry.getMimetypeService();
     }
 
     @Override
     public CollectionWithPagingInfo<Rendition> getRenditions(NodeRef nodeRef, Parameters parameters)
     {
-        return getRenditions(nodeRef, null, parameters);
-    }
-
-    @Override
-    public CollectionWithPagingInfo<Rendition> getRenditions(NodeRef nodeRef, String versionLabelId, Parameters parameters)
-    {
-        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
-        ContentData contentData = getContentData(validatedNodeRef, true);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        ContentData contentData = getContentData(nodeRef, true);
         String sourceMimetype = contentData.getMimetype();
 
         boolean includeCreated = true;
@@ -227,13 +214,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     @Override
     public Rendition getRendition(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        return getRendition(nodeRef, null, renditionId, parameters);
-    }
-
-    @Override
-    public Rendition getRendition(NodeRef nodeRef, String versionLabelId, String renditionId, Parameters parameters)
-    {
-        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
         NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, parameters);
         boolean includeNotCreated = true;
         String status = getStatus(parameters);
@@ -292,19 +273,13 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     @Override
     public void createRendition(NodeRef nodeRef, Rendition rendition, boolean executeAsync, Parameters parameters)
     {
-        createRendition(nodeRef, null, rendition, executeAsync, parameters);
-    }
-
-    @Override
-    public void createRendition(NodeRef nodeRef, String versionLabelId, Rendition rendition, boolean executeAsync, Parameters parameters)
-    {
         // If thumbnail generation has been configured off, then don't bother.
         if (!renditionService2.isEnabled())
         {
             throw new DisabledServiceException("Rendition generation has been disabled.");
         }
 
-        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
+        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
         final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
         if (renditionNodeRef != null)
         {
@@ -333,13 +308,6 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public void createRenditions(NodeRef nodeRef, List<Rendition> renditions, Parameters parameters)
             throws NotFoundException, ConstraintViolatedException
     {
-        createRenditions(nodeRef, null, renditions, parameters);
-    }
-
-    @Override
-    public void createRenditions(NodeRef nodeRef, String versionLabelId, List<Rendition> renditions, Parameters parameters)
-            throws NotFoundException, ConstraintViolatedException
-    {
         if (renditions.isEmpty())
         {
             return;
@@ -350,7 +318,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             throw new DisabledServiceException("Rendition generation has been disabled.");
         }
 
-        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
+        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
         RenditionDefinitionRegistry2 renditionDefinitionRegistry2 = renditionService2.getRenditionDefinitionRegistry2();
 
         // So that POST /nodes/{nodeId}/renditions can specify rendition names as a comma separated list just like
@@ -381,6 +349,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         List<String> renditionNamesToCreate = new ArrayList<>();
         for (String renditionName : renditionNames)
         {
+            System.err.println("renditionName="+renditionName);
             if (renditionName == null)
             {
                 throw new IllegalArgumentException(("Null rendition name supplied")); // 400
@@ -448,36 +417,18 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     @Override
     public BinaryResource getContent(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        return getContent(nodeRef, null, renditionId, parameters);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        return getContentNoValidation(validatedNodeRef, renditionId, parameters);
     }
 
     @Override
-    public BinaryResource getContent(NodeRef nodeRef, String versionLabelId, String renditionId, Parameters parameters)
+    public BinaryResource getContentNoValidation(NodeRef sourceNodeRef, String renditionId, Parameters parameters)
     {
-        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionLabelId, parameters);
-        return getContentImpl(validatedNodeRef, renditionId, parameters);
-    }
-
-    @Override
-    public BinaryResource getContentNoValidation(NodeRef nodeRef, String renditionId, Parameters parameters)
-    {
-        return getContentNoValidation(nodeRef, null, renditionId, parameters);
-    }
-
-    @Override
-    public BinaryResource getContentNoValidation(NodeRef nodeRef, String versionLabelId, String renditionId, Parameters parameters)
-    {
-        nodeRef = findVersionIfApplicable(nodeRef, versionLabelId);
-        return getContentImpl(nodeRef, renditionId, parameters);
-    }
-
-    private BinaryResource getContentImpl(NodeRef nodeRef, String renditionId, Parameters parameters)
-    {
-        NodeRef renditionNodeRef = getRenditionByName(nodeRef, renditionId, parameters);
+        NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionId, parameters);
 
         // By default set attachment header (with rendition Id) unless attachment=false
         boolean attach = true;
-        String attachment = parameters.getParameter(PARAM_ATTACHMENT);
+        String attachment = parameters.getParameter("attachment");
         if (attachment != null)
         {
             attach = Boolean.valueOf(attachment);
@@ -486,7 +437,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
         if (renditionNodeRef == null)
         {
-            boolean isPlaceholder = Boolean.valueOf(parameters.getParameter(PARAM_PLACEHOLDER));
+            boolean isPlaceholder = Boolean.valueOf(parameters.getParameter("placeholder"));
             if (!isPlaceholder)
             {
                 throw new NotFoundException("Thumbnail was not found for [" + renditionId + ']');
@@ -494,7 +445,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             String sourceNodeMimeType = null;
             try
             {
-                sourceNodeMimeType = (nodeRef != null ? getMimeType(nodeRef) : null);
+                sourceNodeMimeType = (sourceNodeRef != null ? getMimeType(sourceNodeRef) : null);
             }
             catch (InvalidArgumentException e)
             {
@@ -563,25 +514,23 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        if (nodeRef != null)
+        if (nodeRef == null)
         {
-            if (StringUtils.isEmpty(renditionId))
-            {
-                throw new InvalidArgumentException("renditionId can't be null or empty.");
-            }
-
-            ChildAssociationRef nodeRefRendition = renditionService2.getRenditionByName(nodeRef, renditionId);
-            if (nodeRefRendition != null)
-            {
-                ContentData contentData = getContentData(nodeRefRendition.getChildRef(), false);
-                if (contentData != null)
-                {
-                    return tenantService.getName(nodeRef, nodeRefRendition.getChildRef());
-                }
-            }
+            return null;
         }
 
-        return null;
+        if (StringUtils.isEmpty(renditionId))
+        {
+            throw new InvalidArgumentException("renditionId can't be null or empty.");
+        }
+
+        ChildAssociationRef nodeRefRendition = renditionService2.getRenditionByName(nodeRef, renditionId);
+        if (nodeRefRendition == null)
+        {
+            return null;
+        }
+
+        return tenantService.getName(nodeRef, nodeRefRendition.getChildRef());
     }
 
     protected Rendition toApiRendition(NodeRef renditionNodeRef)
@@ -621,42 +570,16 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return apiRendition;
     }
 
-    private NodeRef validateNode(StoreRef storeRef, final String nodeId, String versionLabelId, Parameters parameters)
+    public NodeRef validateNode(StoreRef storeRef, String nodeId)
     {
         if (nodeId == null)
         {
             throw new InvalidArgumentException("Missing nodeId");
         }
 
-        NodeRef nodeRef = nodes.validateNode(storeRef, nodeId);
+        final NodeRef nodeRef = nodes.validateNode(storeRef, nodeId);
         // check if the node represents a file
         isContentFile(nodeRef);
-
-        nodeRef = findVersionIfApplicable(nodeRef, versionLabelId);
-
-        return nodeRef;
-    }
-
-    private NodeRef findVersionIfApplicable(NodeRef nodeRef, String versionLabelId)
-    {
-        if (versionLabelId != null)
-        {
-            nodeRef = nodes.validateOrLookupNode(nodeRef.getId(), null);
-            VersionHistory vh = versionService.getVersionHistory(nodeRef);
-            if (vh != null)
-            {
-                try
-                {
-                    Version v = vh.getVersion(versionLabelId);
-                    nodeRef = VersionUtil.convertNodeRef(v.getFrozenStateNodeRef());
-                }
-                catch (VersionDoesNotExistException vdne)
-                {
-                    throw new NotFoundException("Couldn't find version: [" + nodeRef.getId() + ", " + versionLabelId + "]");
-                }
-            }
-        }
-
         return nodeRef;
     }
 

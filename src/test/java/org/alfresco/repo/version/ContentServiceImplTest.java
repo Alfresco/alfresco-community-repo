@@ -189,7 +189,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     @Test
     public void testWhenGetDirectAccessUrlIsNotSupported()
     {
-        assertEquals("", contentService.getDirectAccessUrl("s3v2://1234421"));
+        assertEquals("", contentService.getDirectAccessUrl("s3v2://1234421", 10));
         assertFalse(contentStore.isDirectAccessSupported());
     }
     

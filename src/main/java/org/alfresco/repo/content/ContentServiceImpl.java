@@ -503,11 +503,11 @@ public class ContentServiceImpl extends ContentTransformServiceAdaptor implement
     }
 
     @Override
-    public String getDirectAccessUrl(String contentUrl)
+    public String getDirectAccessUrl(String contentUrl, int expiryTime)
     {
         if (store.isDirectAccessSupported())
         {
-            return store.getDirectAccessUrl(contentUrl);
+            return store.getDirectAccessUrl(contentUrl, expiryTime);
         }
         return "";
     }

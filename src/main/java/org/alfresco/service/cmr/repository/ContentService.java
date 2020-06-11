@@ -154,10 +154,12 @@ public interface ContentService extends ContentTransformService
     public ContentWriter getTempWriter();
 
     /**
-     * Gets a presigned URL to directly access a binary content.
+     * Gets a presigned URL to directly access a binary content. It is up to the content store
+     * if it can fulfil this request with an expiry time or not.
      *
      * @param contentUrl A content store URL
+     * @param expiryTime Expiration time in milliseconds 
      * @return A direct access URL for a binary content or empty string if not supported
      */
-    public String getDirectAccessUrl(String contentUrl);
+    public String getDirectAccessUrl(String contentUrl, int expiryTime);
 }

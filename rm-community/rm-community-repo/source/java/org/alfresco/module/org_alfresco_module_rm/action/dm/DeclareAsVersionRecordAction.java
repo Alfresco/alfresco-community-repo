@@ -74,7 +74,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     public static final String PARAM_FILE_PLAN = "file-plan";
     public static final String PARAM_PATH = "path";
 
-    private static final String EDIT_RECORD_METADATA_CAPABILITY = "EditRecordMetadata";
+    private static final String FILE_VERSION_RECORDS_CAPABILITY = "FileVersionRecords";
 
     /** Sync Model URI */
     private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
@@ -181,24 +181,21 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 logger.debug("Can not declare version as record, because " + actionedUponNodeRef.toString() + " is not a supported type.");
             }
         }
-        else if (!isActionEligible(actionedUponNodeRef))
+        else if (isActionEligible(actionedUponNodeRef))
         {
             NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
             {
                 filePlan = RecordActionUtils.getDefaultFilePlan(authenticationUtil, filePlanService, NAME);
             }
-            else
+            // verify that the provided file plan is actually a file plan
+            else if (!filePlanService.isFilePlan(filePlan))
             {
-                // verify that the provided file plan is actually a file plan
-                if (!filePlanService.isFilePlan(filePlan))
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Can not declare version record, because the provided file plan node reference is not a file plan.");
-                    }
-                    throw new AlfrescoRuntimeException("Can not declare version record, because the provided file plan node reference is not a file plan.");
+                    logger.debug("Can not declare version record, because the provided file plan node reference is not a file plan.");
                 }
+                throw new AlfrescoRuntimeException("Can not declare version record, because the provided file plan node reference is not a file plan.");
             }
 
             // resolve destination record folder if path supplied
@@ -213,7 +210,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             // create record from latest version
             if (destinationRecordFolder != null)
             {
-                boolean hasCapability = capabilityService.hasCapability(destinationRecordFolder, EDIT_RECORD_METADATA_CAPABILITY);
+                boolean hasCapability = capabilityService.hasCapability(destinationRecordFolder, FILE_VERSION_RECORDS_CAPABILITY);
                 // validate destination record folder
                 if (hasCapability)
                 {
@@ -261,7 +258,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 {
                     logger.debug("Can not declare version record, because " + actionedUponNodeRef.toString() + aspect.getValue());
                 }
-                return true;
+                return false;
             }
         }
         if (!nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
@@ -270,8 +267,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             {
                 logger.debug("Can not declare version record, because " + actionedUponNodeRef.toString() + " does not have the versionable aspect applied.");
             }
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }

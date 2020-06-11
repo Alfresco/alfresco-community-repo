@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
+import static org.alfresco.module.org_alfresco_module_rm.action.dm.RecordActionUtils.resolvePath;
+
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
@@ -128,13 +130,13 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
         Boolean hideRecordValue = ((Boolean) action.getParameterValue(PARAM_HIDE_RECORD));
         if (hideRecordValue != null)
         {
-            hideRecord = hideRecordValue.booleanValue();
+            hideRecord = hideRecordValue;
         }
 
         if (pathParameter != null && !pathParameter.isEmpty())
         {
             RecordActionUtils.Services services = new Services(nodeService, filePlanService, authenticationUtil);
-            destinationRecordFolder = RecordActionUtils.resolvePath(services, filePlan, pathParameter, NAME);
+            destinationRecordFolder = resolvePath(services, filePlan, pathParameter, NAME);
         }
 
         synchronized (this)

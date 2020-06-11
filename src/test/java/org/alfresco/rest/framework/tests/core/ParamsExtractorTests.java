@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,10 +48,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
-import org.alfresco.rest.framework.core.ResourceDictionary;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
-import org.alfresco.rest.framework.core.ResourceLookupDictionary;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -92,8 +89,6 @@ public class ParamsExtractorTests
     static JacksonHelper jsonHelper = null;
     static ApiAssistant assistant = null;
 
-    static ResourceLocator locator;
-
     @BeforeClass
     public static void setupTests() throws Exception
     {
@@ -104,16 +99,12 @@ public class ParamsExtractorTests
 
         assistant = new ApiAssistant();
         assistant.setJsonHelper(jsonHelper);
-
-        locator = new ResourceLookupDictionary();
     }
 
     @Test
     public void testGetExtractor()
     {
-        ResourceWebScriptGet extractor = new ResourceWebScriptGet();
-        extractor.setLocator(locator);
-
+        ParamsExtractor extractor = new ResourceWebScriptGet();
         Map<String, String> templateVars = new HashMap<String, String>();
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
@@ -176,8 +167,6 @@ public class ParamsExtractorTests
         //Put together the stubs
         ResourceWebScriptPost extractor = new ResourceWebScriptPost();
         extractor.setAssistant(assistant);
-        extractor.setLocator(locator);
-
         Map<String, String> templateVars = new HashMap<String, String>();
 
         Content content = mock(Content.class);
@@ -295,8 +284,6 @@ public class ParamsExtractorTests
     {
         ResourceWebScriptPost extractor = new ResourceWebScriptPost();
         extractor.setAssistant(assistant);
-        extractor.setLocator(locator);
-
         Map<String, String> templateVars = new HashMap<String, String>();
 
         WebScriptRequest request = mock(WebScriptRequest.class);
@@ -354,8 +341,6 @@ public class ParamsExtractorTests
         //Put together the stubs
         ResourceWebScriptPut extractor = new ResourceWebScriptPut();
         extractor.setAssistant(assistant);
-        extractor.setLocator(locator);
-
         Map<String, String> templateVars = new HashMap<String, String>();
 
         Content content = mock(Content.class);
@@ -426,14 +411,12 @@ public class ParamsExtractorTests
     @Test
     public void testDeleteExtractor() throws IOException
     {
-        ResourceWebScriptDelete extractor = new ResourceWebScriptDelete();
-        extractor.setLocator(locator);
-
+        ParamsExtractor extractor = new ResourceWebScriptDelete();
         Map<String, String> templateVars = new HashMap<String, String>();
         
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
-
+        
         Params params = null;
         params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
@@ -472,9 +455,7 @@ public class ParamsExtractorTests
     {
        String specialChars = new String(new char[] { (char) '香' }) + " 香蕉";
        ResourceWebScriptPost extractor = new ResourceWebScriptPost();
-       extractor.setAssistant(assistant);
-       extractor.setLocator(locator);
-
+        extractor.setAssistant(assistant);
        Map<String, String> templateVars = new HashMap<String, String>();
        String mockMe = "{\"name\":\""+specialChars+"\",\"created\":\"2012-03-23T15:56:18.552+0000\",\"age\":54,\"id\":\"1234A3\",\"farm\":\"LARGE\"}";
        Content content = mock(Content.class);
@@ -497,8 +478,6 @@ public class ParamsExtractorTests
        //Test passing in special characters as a param.
        ResourceWebScriptGet getExtractor = new ResourceWebScriptGet();
        getExtractor.setAssistant(assistant);
-       getExtractor.setLocator(locator);
-
        Map<String, String> getTemplateVars = new HashMap<String, String>();
        WebScriptRequest getRequest = mock(WebScriptRequest.class);
        when(getRequest.getServiceMatch()).thenReturn(new Match(null, getTemplateVars, null));

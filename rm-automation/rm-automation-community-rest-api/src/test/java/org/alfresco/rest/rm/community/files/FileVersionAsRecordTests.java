@@ -71,7 +71,7 @@ import org.testng.annotations.Test;
  * @since 3.4
  */
 @AlfrescoTest (jira = "APPS-35")
-public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
+public class FileVersionAsRecordTests extends BaseRMRestTest
 {
     private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute declare-version-record action, " +
             "because the destination path could not be found.";
@@ -79,9 +79,9 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
             "because the destination path is invalid.";
     private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute declare-version-record " +
             "action, because the destination path is not a record folder.";
-    private final static String CLOSED_RECORD_FOLDER_EXC = "You can't add new items to a closed record folder.";
-    private final static String FROZEN_RECORD_FOLDER_EXC = "You can't add new items to a frozen record folder.";
-    private final static String HOLD_NAME = getRandomName("holdName");
+    private final static String ACCESS_DENIED_EXC = "Access Denied.  You do not have the appropriate " +
+            "permissions to perform this operation.";
+      private final static String HOLD_NAME = getRandomName("holdName");
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
@@ -188,10 +188,10 @@ public class DeclareAndFileVersionAsRecordTests extends BaseRMRestTest
                         { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
                         // a closed record folder
                         { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
-                                CLOSED_RECORD_FOLDER_EXC },
+                                ACCESS_DENIED_EXC },
                          // a frozen record folder
                         { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
-                                FROZEN_RECORD_FOLDER_EXC },
+                                ACCESS_DENIED_EXC },
                         // an arbitrary unfiled records folder
                         { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
                         // a collaboration site folder

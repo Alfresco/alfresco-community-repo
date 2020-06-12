@@ -256,7 +256,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         dataContent.usingSite(publicSite).usingAdmin().usingResource(testFile).updateContent("This is the new content" +
                "for " + testFile.getName());
 
-        STEP("Declare document version as record without providing a location parameter value using v1 actions api");
+        STEP("Declare document version as record with providing a location parameter value using v1 actions api");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
                 Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
@@ -279,7 +279,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         File sampleFile = Utility.getResourceTestDataFile("SampleTextFile_10kb.txt");
         restClient.authenticateUser(getAdminUser()).withCoreAPI().usingParams("majorVersion=true").usingNode(testFile).updateNodeContent(sampleFile);
 
-        STEP("Declare document version as record without providing a location parameter value using v1 actions api");
+        STEP("Declare document version as record with providing a location parameter value using v1 actions api");
         getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
                 Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 

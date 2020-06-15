@@ -109,10 +109,27 @@
             <extension>acp</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.visio" display="Microsoft Visio">
-            <extension>vsd</extension>
+            <extension default="true">vsd</extension>
+            <extension>vss</extension>
+            <extension>vst</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.visio2013" display="Microsoft Visio 2013">
             <extension>vsdx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-visio.drawing.macroenabled.main+xml" display="Microsoft Visio macro-enabled drawing">
+            <extension>vsdm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-visio.stencil.main+xml" display="Microsoft Visio stencil">
+            <extension>vssx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-visio.stencil.macroenabled.main+xml" display="Microsoft Visio macro-enabled stencil">
+            <extension>vssm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-visio.template.main+xml" display="Microsoft Visio template">
+            <extension>vstx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-visio.template.macroenabled.main+xml" display="Microsoft Visio macro-enabled template">
+            <extension>vstm</extension>
          </mimetype>
          <mimetype mimetype="application/vnd.adobe.xdp+xml" display="Adobe Acrobat XML Data Package">
             <extension>xdp</extension>

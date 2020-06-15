@@ -22,6 +22,7 @@
 
          <mimetype mimetype="application/vnd.ms-project" display="Microsoft Project">
             <extension default="true">mpp</extension>
+            <extension>mpt</extension>
          </mimetype>
 
          <mimetype mimetype="image/vnd.adobe.photoshop" display="Adobe Photoshop">

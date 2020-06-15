@@ -88,6 +88,8 @@ public class FilePlanComponentFields
     /** Electronic record properties */
     public static final String PROPERTIES_VERSION_TYPE = "cm:versionType";
     public static final String PROPERTIES_VERSION_LABEL = "cm:versionLabel";
+    public static final String PROPERTIES_VERSIONED_NODEREF = "rmv:versionedNodeRef";
+    public static final String PROPERTIES_RMV_VERSIONED = "rmv:versionLabel";
     public static final String PROPERTIES_DATE_TIME_ORIGINAL = "exif:dateTimeOriginal";
     public static final String PROPERTIES_EXPOSURE_TIME = "exif:exposureTime";
     public static final String PROPERTIES_FLASH = "exif:flash";

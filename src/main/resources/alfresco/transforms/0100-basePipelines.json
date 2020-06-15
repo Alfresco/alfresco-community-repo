@@ -199,6 +199,47 @@
       ]
     },
     {
+      "transformerName": "libreofficeHtmlToPdfViaOdt",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/vnd.oasis.opendocument.text"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/html",  "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "libreofficeToPdf",
+      "transformerFailover" : [ "libreoffice", "libreofficeHtmlToPdfViaOdt" ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.oasis.opendocument.graphics", "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.calc.template",       "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.impress.template",    "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.writer.template",     "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "text/tab-separated-values",                   "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.visio2013",                   "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/wordperfect",                     "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.calc",                "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.impress",             "priority": 150, "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "libreofficeToPdfBoxViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreofficeToPdf", "targetMediaType": "application/pdf"},
+        {"transformerName": "PdfBox"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfboxOptions"
+      ]
+    },
+    {
       "transformerName": "textBasedToImageViaText",
       "transformerPipeline" : [
         {"transformerName": "string",                                 "targetMediaType": "text/plain"},
@@ -209,6 +250,18 @@
       "transformOptions": [
         "pdfRendererOptions",
         "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "outlookMsgToLibreofficeViaText",
+      "transformerPipeline" : [
+        {"transformerName": "OutlookMsg",                              "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions"
       ]
     }
   ]

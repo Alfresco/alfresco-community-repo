@@ -36,7 +36,7 @@
 
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
 
-        <dependency.alfresco-data-model.version>8.119</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>8.122</dependency.alfresco-data-model.version>
         <dependency.alfresco-core.version>8.35</dependency.alfresco-core.version>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>

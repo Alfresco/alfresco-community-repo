@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -42,13 +42,10 @@ import org.apache.tika.metadata.Metadata;
 
 
 /**
- * @deprecated extractor has been moved to a T-Engine.
- *
  * @see DWGMetadataExtracter
  * 
  * @author Nick Burch
  */
-@Deprecated
 public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private DWGMetadataExtracter extracter;
@@ -177,5 +174,5 @@ public class DWGMetadataExtracterTest extends AbstractMetadataExtracterTest
       
        assertEquals("Custom DWG property not found", "valueforcustomprop1", properties.get(TIKA_CUSTOM_TEST_PROPERTY));
    }
-
+    
 }

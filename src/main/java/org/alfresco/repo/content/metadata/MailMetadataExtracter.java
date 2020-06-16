@@ -35,8 +35,6 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
- * @deprecated extractor has been moved to a T-Engine.
- *
  * Outlook MAPI format email meta-data extractor extracting the following values:
  * <pre>
  *   <b>sentDate:</b>               --      cm:sentdate
@@ -55,7 +53,6 @@ import org.apache.tika.parser.microsoft.OfficeParser;
  * @since 2.1
  * @author Kevin Roast
  */
-@Deprecated
 public class MailMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     private static final String KEY_SENT_DATE = "sentDate";

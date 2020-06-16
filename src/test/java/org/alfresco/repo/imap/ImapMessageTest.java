@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -99,8 +99,6 @@ import com.sun.mail.imap.protocol.IMAPResponse;
 import com.sun.mail.imap.protocol.RFC822DATA;
 import com.sun.mail.imap.protocol.UID;
 import com.sun.mail.util.ASCIIUtility;
-
-import static org.alfresco.model.ContentModel.PROP_MODIFIED;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ImapMessageTest extends TestCase
@@ -458,30 +456,15 @@ public class ImapMessageTest extends TestCase
         messageHelper.addCc(address);
         
         // Creating the message node in the repository
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
         String name = AlfrescoImapConst.MESSAGE_PREFIX + GUID.generate();
         FileInfo messageFile = fileFolderService.create(testImapFolderNodeRef, name, ContentModel.TYPE_CONTENT);
         // Writing a content.
-        NodeRef nodeRef = messageFile.getNodeRef();
-        Serializable origModified = getModified(nodeRef);
         new IncomingImapMessage(messageFile, serviceRegistry, message);
-        txn.commit();
-
-        // Calls to new IncomingImapMessage(...) only takes place when a new nodeRef is being created.
-        // No other code will be changing the nodeRef. An ImapModel.ASPECT_IMAP_CONTENT is added, which
-        // triggers a metadata extract to take place in a post commit method. Previously this would have been a
-        // synchronous process. This is no longer true as it may now take place in a T-Engine. So, we need to wait
-        // for the extract to take place. There does not
-        long end = System.currentTimeMillis()+10000;
-        while (System.currentTimeMillis() <= end && origModified.equals(getModified(nodeRef)))
-        {
-            Thread.currentThread().sleep(1000);
-        }
-
+        
         // Getting the transformed properties from the repository
         // cm:originator, cm:addressee, cm:addressees, imap:messageFrom, imap:messageTo, imap:messageCc
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(messageFile.getNodeRef());
+        
         String cmOriginator = (String) properties.get(ContentModel.PROP_ORIGINATOR);
         String cmAddressee = (String) properties.get(ContentModel.PROP_ADDRESSEE);
         @SuppressWarnings("unchecked")
@@ -503,12 +486,6 @@ public class ImapMessageTest extends TestCase
         assertEquals(decodedAddress, imapMessageTo);
         assertNotNull(imapMessageCc);
         assertEquals(decodedAddress, imapMessageCc);
-    }
-
-    private Serializable getModified(NodeRef nodeRef)
-    {
-        Map<QName, Serializable> origProperties = nodeService.getProperties(nodeRef);
-        return origProperties.get(PROP_MODIFIED);
     }
 
     @Category(RedundantTests.class)

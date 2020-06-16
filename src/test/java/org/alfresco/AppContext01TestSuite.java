@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,12 +45,9 @@ import org.junit.runners.Suite;
     org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest.class,
     org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest.class,
     org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest.class,
-
     org.alfresco.repo.action.executer.ContentMetadataExtracterTest.class,
     org.alfresco.repo.action.executer.ContentMetadataExtracterTagMappingTest.class,
     org.alfresco.repo.action.executer.ContentMetadataEmbedderTest.class,
-    org.alfresco.repo.action.executer.AsynchronousExtractorTest.class,
-
     org.alfresco.repo.rule.RuleLinkTest.class,
     org.alfresco.repo.rule.RuleServiceCoverageTest.class,
     org.alfresco.repo.rule.RuleServiceImplTest.class,

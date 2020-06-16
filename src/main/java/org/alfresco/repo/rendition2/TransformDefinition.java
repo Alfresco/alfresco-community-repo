@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -80,14 +80,7 @@ public class TransformDefinition extends RenditionDefinition2Impl
     public String getTransformName()
     {
         String renditionName = getRenditionName();
-        return getTransformName(renditionName);
-    }
-
-    public static String getTransformName(String renditionName)
-    {
-        return renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
-                ? null
-                : renditionName.substring(TRANSFORM_NAMESPACE.length());
+        return renditionName == null ? null : renditionName.substring(TRANSFORM_NAMESPACE.length());
     }
 
     public String getClientData()

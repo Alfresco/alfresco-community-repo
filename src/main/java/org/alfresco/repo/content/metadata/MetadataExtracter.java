@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -52,7 +52,6 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -403,46 +402,4 @@ public interface MetadataExtracter extends ContentWorker
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
             Map<String, Set<QName>> mapping);
-
-    /**
-     * Identical to {@link #extract(ContentReader, Map)} but with the addition of the {@code NodeRef} being acted on.
-     * By default, the method without the {@code NodeRef} is called.
-     *
-     * @param nodeRef               the node being acted on.
-     * @param reader                the source of the content
-     * @param destination           the map of properties to populate (essentially a return value)
-     * @return                      Returns a map of all properties on the destination map that were
-     *                              added or modified.  If the return map is empty, then no properties
-     *                              were modified.
-     * @throws ContentIOException   if a detectable error occurs
-     */
-    public default Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, Map<QName, Serializable> destination)
-    {
-        return extract(reader, destination);
-    }
-
-    /**
-     * Identical to {@link #extract(ContentReader, OverwritePolicy, Map, Map)}  but with the addition of the
-     * {@code NodeRef} being acted on. By default, the method without the {@code NodeRef} is called.
-     *
-     * @param nodeRef               the node being acted on.
-     * @param reader                the source of the content
-     * @param overwritePolicy       the policy stipulating how the system properties must be
-     *                              overwritten if present
-     * @param destination           the map of properties to populate (essentially a return value)
-     * @param mapping               a mapping of document-specific properties to system properties.
-     * @return                      Returns a map of all properties on the destination map that were
-     *                              added or modified.  If the return map is empty, then no properties
-     *                              were modified.
-     * @throws ContentIOException   if a detectable error occurs
-     */
-    public default Map<QName, Serializable> extract(
-            NodeRef nodeRef,
-            ContentReader reader,
-            OverwritePolicy overwritePolicy,
-            Map<QName, Serializable> destination,
-            Map<String, Set<QName>> mapping)
-    {
-        return extract(reader, overwritePolicy, destination, mapping);
-    }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2019 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,7 +29,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rendition.RenditionPreventionRegistry;
@@ -113,7 +112,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     private RuleService ruleService;
     private PostTxnCallbackScheduler renditionRequestSheduler;
     private TransformReplyProvider transformReplyProvider;
-    private AsynchronousExtractor asynchronousExtractor;
     private boolean enabled;
     private boolean thumbnailsEnabled;
 
@@ -178,11 +176,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         this.transformReplyProvider = transformReplyProvider;
     }
 
-    public void setAsynchronousExtractor(AsynchronousExtractor asynchronousExtractor)
-    {
-        this.asynchronousExtractor = asynchronousExtractor;
-    }
-
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
@@ -210,7 +203,6 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "ruleService", ruleService);
-        PropertyCheck.mandatory(this, "asynchronousExtractor", asynchronousExtractor);
     }
 
     @Override
@@ -382,104 +374,25 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public void consume(NodeRef sourceNodeRef, InputStream transformInputStream, RenditionDefinition2 renditionDefinition,
                         int transformContentHashCode)
     {
-        int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Consume: Source " + sourceContentHashCode + " and transform's source " + transformContentHashCode+" hashcodes");
-        }
-
         if (renditionDefinition instanceof TransformDefinition)
         {
-            TransformDefinition transformDefinition = (TransformDefinition)renditionDefinition;
-            String targetMimetype = transformDefinition.getTargetMimetype();
-            if (AsynchronousExtractor.isMetadataExtractMimetype(targetMimetype))
+            if (logger.isDebugEnabled())
             {
-                consumeExtractedMetadata(sourceNodeRef, sourceContentHashCode, transformInputStream, transformDefinition, transformContentHashCode);
+                TransformDefinition transformDefinition = (TransformDefinition)renditionDefinition;
+                String transformName = transformDefinition.getTransformName();
+                String replyQueue = transformDefinition.getReplyQueue();
+                String clientData = transformDefinition.getClientData();
+                boolean success = transformInputStream != null;
+                logger.info("Reply to " + replyQueue + " that the transform " + transformName +
+                        " with the client data " + clientData + " " + (success ? "was successful" : "failed."));
             }
-            else if (AsynchronousExtractor.isMetadataEmbedMimetype(targetMimetype))
-            {
-                consumeEmbeddedMetadata(sourceNodeRef, sourceContentHashCode, transformInputStream, transformDefinition, transformContentHashCode);
-            }
-            else
-            {
-                consumeTransformReply(sourceNodeRef, transformInputStream, transformDefinition, transformContentHashCode);
-            }
+            transformReplyProvider.produceTransformEvent(sourceNodeRef, transformInputStream,
+                    (TransformDefinition)renditionDefinition, transformContentHashCode);
         }
         else
         {
-            consumeRendition(sourceNodeRef, sourceContentHashCode, transformInputStream, renditionDefinition, transformContentHashCode);
+            consumeRendition(sourceNodeRef, transformInputStream, renditionDefinition, transformContentHashCode);
         }
-    }
-
-    private void consumeExtractedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream,
-                                          TransformDefinition transformDefinition, int transformContentHashCode)
-    {
-        if (transformInputStream == null)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignore transform for metadata extraction on " + nodeRef + " as it failed");
-            }
-        }
-        else if (transformContentHashCode != sourceContentHashCode)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignore transform for metadata extraction on " + nodeRef + " as it is no longer needed");
-            }
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Set the metadata extraction on " + nodeRef);
-            }
-            asynchronousExtractor.setMetadata(nodeRef, transformInputStream);
-        }
-    }
-
-    private void consumeEmbeddedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream,
-                                         TransformDefinition transformDefinition, int transformContentHashCode)
-    {
-        if (transformInputStream == null)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignore transform for metadata embed on " + nodeRef + " as it failed");
-            }
-        }
-        else if (transformContentHashCode != sourceContentHashCode)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Ignore transform for metadata embed on " + nodeRef + " as it is no longer needed");
-            }
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Set the content with embedded metadata on " + nodeRef);
-            }
-
-            asynchronousExtractor.setEmbeddedMetadata(nodeRef, transformInputStream);
-        }
-    }
-
-    private void consumeTransformReply(NodeRef sourceNodeRef, InputStream transformInputStream,
-                                       TransformDefinition transformDefinition, int transformContentHashCode)
-    {
-        if (logger.isDebugEnabled())
-        {
-            String transformName = transformDefinition.getTransformName();
-            String replyQueue = transformDefinition.getReplyQueue();
-            String clientData = transformDefinition.getClientData();
-            boolean success = transformInputStream != null;
-            logger.info("Reply to " + replyQueue + " that the transform " + transformName +
-                    " with the client data " + clientData + " " + (success ? "was successful" : "failed."));
-        }
-        transformReplyProvider.produceTransformEvent(sourceNodeRef, transformInputStream,
-                transformDefinition, transformContentHashCode);
     }
 
     /**
@@ -487,10 +400,15 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
      *  Does nothing if there is already a newer rendition.
      *  If the transformInputStream is null, this is taken to be a transform failure.
      */
-    private void consumeRendition(NodeRef sourceNodeRef, int sourceContentHashCode, InputStream transformInputStream,
+    private void consumeRendition(NodeRef sourceNodeRef, InputStream transformInputStream,
                                   RenditionDefinition2 renditionDefinition, int transformContentHashCode)
     {
         String renditionName = renditionDefinition.getRenditionName();
+        int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Consume: Source " + sourceContentHashCode + " and transform's source " + transformContentHashCode+" hashcodes");
+        }
         if (transformContentHashCode != sourceContentHashCode)
         {
             if (logger.isDebugEnabled())
@@ -557,7 +475,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                 }
                                 catch (Exception e)
                                 {
-                                    logger.error("Failed to copy transform InputStream into rendition " + renditionName + " on " + sourceNodeRef);
+                                    logger.error("Failed to read transform InputStream into rendition " + renditionName + " on " + sourceNodeRef);
                                     throw e;
                                 }
                             }

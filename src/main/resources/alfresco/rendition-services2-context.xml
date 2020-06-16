@@ -59,6 +59,7 @@
         <property name="policyComponent" ref="policyComponent" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="ruleService" ref="ruleService" />
+        <property name="asynchronousExtractor" ref="extractor.Asynchronous" />
         <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
         <property name="transformReplyProvider" ref="transformReplyProvider" />
         <property name="enabled" value="${renditionService2.enabled}" />

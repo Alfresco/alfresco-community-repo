@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -52,6 +52,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.pdf.PDFParser;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * Metadata extractor for the PDF documents.
  * <pre>
  *   <b>author:</b>                 --      cm:author
@@ -66,6 +68,7 @@ import org.apache.tika.parser.pdf.PDFParser;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
+@Deprecated
 public class PdfBoxMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log pdfLogger = LogFactory.getLog(PdfBoxMetadataExtracter.class);

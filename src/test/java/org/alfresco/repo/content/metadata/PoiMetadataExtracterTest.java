@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,11 +39,14 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * @see org.alfresco.repo.content.metadata.PoiMetadataExtracter
  * 
  * @author Neil McErlean
  * @author Dmitry Velichkevich
  */
+@Deprecated
 public class PoiMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private static final int MINIMAL_EXPECTED_PROPERTIES_AMOUNT = 3;

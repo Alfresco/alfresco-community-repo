@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -55,9 +55,12 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * @author Derek Hulley
  * @since 3.2
  */
+@Deprecated
 public class MailMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private MailMetadataExtracter extracter;

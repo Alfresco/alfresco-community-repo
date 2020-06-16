@@ -31,11 +31,14 @@ import java.util.Map;
 import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
+ * @deprecated The JodConverterMetadataExtracter has not been in use since 6.0.1
+ *
  * An interface that allows separation between the metadata extractor registry and the third party subsystem owning the
  * open office connection.
  * 
  * @author dward
  */
+@Deprecated
 public interface OpenOfficeMetadataWorker
 {
     /**

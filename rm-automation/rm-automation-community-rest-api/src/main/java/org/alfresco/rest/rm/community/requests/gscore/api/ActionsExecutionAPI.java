@@ -75,4 +75,31 @@ public class ActionsExecutionAPI extends RMModelRequest
         return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.DECLARE_AS_RECORD.getActionValue(), targetNode);
     }
+
+
+    /**
+     * Declares and file a document version as record to a record folder using v1 actions api
+     *
+     * @param targetNode      the node on which the action is executed
+     * @param destinationPath the path to the record folder
+     * @throws Exception
+     */
+    public JSONObject declareAndFileVersionAsRecord(RepoTestModel targetNode, String destinationPath) throws Exception
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode,
+                                         ImmutableMap.of("path", destinationPath));
+    }
+
+    /**
+     * Declares a document version as record using v1 actions api
+     *
+     * @param targetNode the node on which the action is executed
+     * @throws Exception
+     */
+    public JSONObject declareVersionAsRecord(RepoTestModel targetNode) throws Exception
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode);
+    }
 }

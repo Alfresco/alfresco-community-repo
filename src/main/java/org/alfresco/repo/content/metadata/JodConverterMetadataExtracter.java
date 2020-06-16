@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,17 +25,20 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.util.PropertyCheck;
-
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * @deprecated The JodConverterMetadataExtracter has not been in use since 6.0.1
- *
  * Extracts values from Open Office documents into the following:
  * <pre>
  *   <b>author:</b>                 --      cm:author
@@ -45,7 +48,6 @@ import java.util.Set;
  * 
  * @author Neil McErlean
  */
-@Deprecated
 public class JodConverterMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker
 {
     private OpenOfficeMetadataWorker worker;

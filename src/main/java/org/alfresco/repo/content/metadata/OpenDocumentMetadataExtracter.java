@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 - 2020 Antti Jokipii
+ * Copyright (C) 2005 Antti Jokipii
  *
  * This file is part of Alfresco
  *
@@ -59,8 +59,6 @@ import org.joda.time.format.DateTimeFormatter;
 
 
 /**
- * @deprecated extractor has been moved to a T-Engine.
- *
  * Metadata extractor for the
  * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_OPENDOCUMENT_TEXT MIMETYPE_OPENDOCUMENT_XXX}
  * mimetypes.
@@ -88,7 +86,6 @@ import org.joda.time.format.DateTimeFormatter;
  * @author Antti Jokipii
  * @author Derek Hulley
  */
-@Deprecated
 public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     private static final String KEY_CREATION_DATE = "creationDate";

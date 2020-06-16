@@ -255,10 +255,7 @@
    </bean>
 
    <!-- Metadata Extraction Registry -->
-   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry">
-       <property name="asyncExtractEnabled" value="${content.metadata.async.extract.enabled}" />
-       <property name="asyncEmbedEnabled" value="${content.metadata.async.embed.enabled}" />
-   </bean>
+   <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
    
    <!-- Abstract bean definition defining base definition for all metadata extracters -->
    <bean id="baseMetadataExtracter"
@@ -332,16 +329,6 @@
    </bean>
    <bean id="extracter.Audio" class="org.alfresco.repo.content.metadata.TikaAudioMetadataExtracter" parent="baseMetadataExtracter">
       <property name="tikaConfig" ref="tikaConfig"/>
-   </bean>
-   <bean id="extractor.Asynchronous" class="org.alfresco.repo.content.metadata.AsynchronousExtractor" parent="baseMetadataExtracter">
-      <property name="nodeService" ref="nodeService" />
-      <property name="namespacePrefixResolver" ref="namespaceService" />
-      <property name="transformerDebug" ref="transformerDebug" />
-      <property name="renditionService2" ref="renditionService2" />
-      <property name="contentService" ref="ContentService" />
-      <property name="transactionService" ref="transactionService" />
-      <property name="transformServiceRegistry" ref="transformServiceRegistry" />
-      <property name="taggingService" ref="taggingService" />
    </bean>
 
    <!-- Content Transformation Regisitry -->

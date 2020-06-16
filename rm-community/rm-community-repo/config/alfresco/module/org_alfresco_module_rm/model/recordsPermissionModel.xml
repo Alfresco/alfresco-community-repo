@@ -28,6 +28,7 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CloseFolders"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeclareRecordsInClosedFolders"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="ReOpenFolders"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileVersionRecords" />
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="CycleVitalRecords"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="PlanningReviewCycles"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="UpdateTriggerDates"/>
@@ -114,7 +115,8 @@
         <permissionGroup name="AddModifyEventDates" expose="false" allowFullControl="false"/>
         <permissionGroup name="CloseFolders" expose="false" allowFullControl="false"/>
         <permissionGroup name="DeclareRecordsInClosedFolders" expose="false" allowFullControl="false"/>
-        <permissionGroup name="ReOpenFolders" expose="false" allowFullControl="false"/>
+        <permissionGroup name="FileVersionRecords" expose="false" allowFullControl="false"/>
+        <permissionGroup name="ReOpenFolders" expose="false" allowFullControl="false" />
         <permissionGroup name="CycleVitalRecords" expose="false" allowFullControl="false"/>
         <permissionGroup name="PlanningReviewCycles" expose="false" allowFullControl="false"/>
         <permissionGroup name="UpdateTriggerDates" expose="false" allowFullControl="false"/>
@@ -230,6 +232,10 @@
 
         <permission name="_ReOpenFolders" expose="false">
             <grantedToGroup permissionGroup="ReOpenFolders"/>
+        </permission>
+
+        <permission name="_FileVersionRecords" expose="false">
+           <grantedToGroup permissionGroup="FileVersionRecords" />
         </permission>
 
         <permission name="_CycleVitalRecords" expose="false">

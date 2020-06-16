@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,22 +25,11 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
-import org.alfresco.repo.content.metadata.TikaPoweredMetadataExtracter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -55,14 +44,24 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.apache.tika.embedder.Embedder;
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Test of the ActionExecuter for embedding metadata
@@ -94,7 +93,9 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.dictionaryService = (DictionaryService) this.applicationContext.getBean("dictionaryService");
         this.mimetypeService = (MimetypeService) this.applicationContext.getBean("mimetypeService");
         this.metadataExtracterRegistry  = (MetadataExtracterRegistry) this.applicationContext.getBean("metadataExtracterRegistry");
-        
+        metadataExtracterRegistry.setAsyncExtractEnabled(false);
+        metadataExtracterRegistry.setAsyncEmbedEnabled(false);
+
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -123,15 +124,21 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         this.executer.setApplicableTypes(new String[] { ContentModel.TYPE_CONTENT.toString() });
     }
 
+    @After
+    public void after()
+    {
+        metadataExtracterRegistry.setAsyncExtractEnabled(true);
+        metadataExtracterRegistry.setAsyncEmbedEnabled(true);
+    }
+
     /**
      * Test that a failing embedder does not destroy the original content
      */
     @Test
     public void testFailingEmbedder()
     {
-        MetadataExtracterRegistry registry = (MetadataExtracterRegistry) applicationContext.getBean("metadataExtracterRegistry");
-        FailingEmbedder embedder = new FailingEmbedder(Arrays.asList(MimetypeMap.MIMETYPE_PDF));
-        embedder.setRegistry(registry);
+        AbstractMappingMetadataExtracter embedder = new FailingMappingMetadataEmbedder(Arrays.asList(MimetypeMap.MIMETYPE_PDF));
+        embedder.setRegistry(metadataExtracterRegistry);
         embedder.setDictionaryService(this.dictionaryService);
         embedder.setMimetypeService(this.mimetypeService);
         embedder.register();
@@ -158,17 +165,16 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
     }
     
     /**
-     * Tika-powered embedder which fails upon calling embed on its {@link FailingTikaEmbedder}
+     * Embedder which fails upon calling embed on its {@link FailingEmbedder}
      */
-    private class FailingEmbedder extends TikaPoweredMetadataExtracter
+    private class FailingMappingMetadataEmbedder extends AbstractMappingMetadataExtracter
     {
-        
         /**
          * Constructor for setting supported extract and embed mimetypes
          * 
          * @param mimetypes the supported extract and embed mimetypes
          */
-        public FailingEmbedder(Collection<String> mimetypes)
+        public FailingMappingMetadataEmbedder(Collection<String> mimetypes)
         {
             super(
                     new HashSet<String>(mimetypes), 
@@ -176,15 +182,26 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
         }
 
         @Override
-        protected Parser getParser()
+        protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
         {
-            return null;
+            Embedder embedder = getEmbedder();
+            if (embedder == null)
+            {
+                return;
+            }
+
+            Map<String, String> metadataAsStrings = convertMetadataToStrings(metadata);
+            Metadata metadataToEmbed = new Metadata();
+            metadataAsStrings.forEach((k,v)->metadataToEmbed.add(k, v));
+
+            InputStream inputStream = reader.getContentInputStream();
+            OutputStream outputStream = writer.getContentOutputStream();
+            embedder.embed(metadataToEmbed, null, outputStream, null);
         }
 
-        @Override
         protected Embedder getEmbedder()
         {
-            return new FailingTikaEmbedder();
+            return new FailingEmbedder();
         }
         
         @Override
@@ -202,12 +219,18 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
             mapping.put("author", qnames);
             return mapping;
         }
+
+        @Override
+        protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            return null;
+        }
     }
     
     /**
-     * Tika metadata embedder which fails on a call to embed.
+     * Metadata embedder which fails on a call to embed.
      */
-    private class FailingTikaEmbedder implements Embedder
+    private class FailingEmbedder implements Embedder
     {
         private static final long serialVersionUID = -4954679684941467571L;
 
@@ -219,7 +242,7 @@ public class ContentMetadataEmbedderTest extends BaseSpringTest
 
         @Override
         public void embed(Metadata metadata, InputStream originalStream, OutputStream outputStream, ParseContext context)
-                throws IOException, TikaException
+                throws IOException
         {
             throw new IOException("Forced failure");
         }

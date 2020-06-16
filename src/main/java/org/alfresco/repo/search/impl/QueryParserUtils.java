@@ -409,6 +409,11 @@ public class QueryParserUtils implements QueryConstants
             propertyFieldName = field.substring(field.startsWith("@") ? 1 : 0, field.length() - FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX.length());
             ending = FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX;
         }
+        else if (field.endsWith(FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX))
+        {
+            propertyFieldName = field.substring(field.startsWith("@") ? 1 : 0, field.length() - FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX.length());
+            ending = FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX;
+        }
         else if (field.endsWith(FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX))
         {
             propertyFieldName = field.substring(field.startsWith("@") ? 1 : 0, field.length() - FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX.length());

@@ -566,6 +566,20 @@ public class AlfrescoFunctionEvaluationContext implements FunctionEvaluationCont
                 return propertyField;
             }
         }
+        else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX))
+        {
+            QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX.length()));
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyField);
+            if (!propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE) &&
+                    !propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
+            {
+                throw new FTSQueryException(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX+" only supported on date and datetime properties");
+            }
+            else
+            {
+                return propertyField;
+            }
+        }
         else if(field.endsWith(QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX))
         {
             QName propertyField = QName.createQName(field.substring(0, field.length() - QueryConstants.FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX.length()));

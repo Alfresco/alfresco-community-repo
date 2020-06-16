@@ -191,6 +191,8 @@ public interface QueryConstants
 
     public static final String FIELD_SOLR_UNIT_OF_TIME_MONTH_SUFFIX = "_unit_of_time_month";
 
+    public static final String FIELD_SOLR_UNIT_OF_TIME_QUARTER_SUFFIX = "_unit_of_time_quarter";
+    
     public static final String FIELD_SOLR_UNIT_OF_TIME_YEAR_SUFFIX = "_unit_of_time_year";
 
     public static final String FIELD_SITE = "SITE";

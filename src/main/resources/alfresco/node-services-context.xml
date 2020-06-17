@@ -276,12 +276,6 @@
       </property>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
    </bean>
-
-   <bean id="downloadNotifierService" class="org.alfresco.repo.node.DownloadNotifierServiceImpl" init-method="init">
-      <property name="nodeService" ref="NodeService" />
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="policyIgnoreUtil" ref="policyIgnoreUtil" />
-   </bean>
    
    <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">
       <property name="policyComponent">

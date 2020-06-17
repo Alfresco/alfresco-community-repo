@@ -23,19 +23,17 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.alfresco.repo.node.NodeServicePolicies;
 
-@RunWith(Suite.class)
-@SuiteClasses({ org.alfresco.repo.event2.CreateRepoEventIT.class,
-                org.alfresco.repo.event2.UpdateRepoEventIT.class,
-                org.alfresco.repo.event2.DeleteRepoEventIT.class,
-                org.alfresco.repo.event2.DownloadRepoEventIT.class,
-                org.alfresco.repo.event2.ChildAssociationRepoEventIT.class,
-                org.alfresco.repo.event2.PeerAssociationRepoEventIT.class })
-public class RepoEvent2ITSuite
+/**
+ * Event generator supported policies for peer associations.
+ *
+ * @author Sara Aspery
+ */
+public interface PeerAssociationEventSupportedPolicies extends NodeServicePolicies.OnCreateAssociationPolicy,
+                                                               NodeServicePolicies.BeforeDeleteAssociationPolicy
 {
 }

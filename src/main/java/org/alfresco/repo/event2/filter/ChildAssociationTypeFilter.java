@@ -23,19 +23,41 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2;
+package org.alfresco.repo.event2.filter;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-@RunWith(Suite.class)
-@SuiteClasses({ org.alfresco.repo.event2.CreateRepoEventIT.class,
-                org.alfresco.repo.event2.UpdateRepoEventIT.class,
-                org.alfresco.repo.event2.DeleteRepoEventIT.class,
-                org.alfresco.repo.event2.DownloadRepoEventIT.class,
-                org.alfresco.repo.event2.ChildAssociationRepoEventIT.class,
-                org.alfresco.repo.event2.PeerAssociationRepoEventIT.class })
-public class RepoEvent2ITSuite
+import org.alfresco.service.namespace.QName;
+
+/**
+ * Implementation of the child association types filter.
+ *
+ * @author Sara Aspery
+ */
+public class ChildAssociationTypeFilter extends AbstractNodeEventFilter
 {
+    private final List<String> assocTypesBlackList;
+
+    public ChildAssociationTypeFilter(String filteredChildAssocTypes)
+    {
+        this.assocTypesBlackList = parseFilterList(filteredChildAssocTypes);
+    }
+
+    /**
+     *
+     * @see org.alfresco.repo.event2.filter.AbstractNodeEventFilter#getExcludedTypes()
+     */
+    @Override
+    public Set<QName> getExcludedTypes()
+    {
+        Set<QName> result = new HashSet<>();
+
+        // add child association types defined in repository.properties/alfresco-global.properties
+        assocTypesBlackList.forEach(childAssocType -> result.addAll(expandTypeDef(childAssocType)));
+
+        return result;
+    }
+
 }

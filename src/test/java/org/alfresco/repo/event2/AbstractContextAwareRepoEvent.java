@@ -37,8 +37,10 @@ import javax.jms.ConnectionFactory;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.repo.event.databind.ObjectMapperFactory;
+import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.NodeResource;
+import org.alfresco.repo.event.v1.model.PeerAssociationResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -237,6 +239,28 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return resource;
     }
 
+    protected ChildAssociationResource getChildAssocResource(RepoEvent repoEvent)
+    {
+        assertNotNull(repoEvent);
+        EventData<ChildAssociationResource> eventData = repoEvent.getData();
+        assertNotNull(eventData);
+        ChildAssociationResource resource = eventData.getResource();
+        assertNotNull(resource);
+
+        return resource;
+    }
+
+    protected PeerAssociationResource getPeerAssocResource(RepoEvent repoEvent)
+    {
+        assertNotNull(repoEvent);
+        EventData<PeerAssociationResource> eventData = repoEvent.getData();
+        assertNotNull(eventData);
+        PeerAssociationResource resource = eventData.getResource();
+        assertNotNull(resource);
+
+        return resource;
+    }
+    
     protected NodeResource getNodeResourceBefore(int eventSequenceNumber)
     {
         EventData<NodeResource> eventData = getEventData(eventSequenceNumber);
@@ -339,6 +363,15 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             events.clear();
         }
     }
+
+    public List<RepoEvent<NodeResource>> getChildAssocEvents(RepoEventContainer repoEventContainer, EventType eventType)
+    {
+        List<RepoEvent<NodeResource>> assocChildCreatedEvents = new ArrayList<>();
+        for (int i = 1; i <= repoEventContainer.getEvents().size(); i++)
+        {
+            if (repoEventContainer.getEvent(i).getType().equals(eventType.getType()))
+                assocChildCreatedEvents.add(repoEventContainer.getEvent(i));
+        }
+        return assocChildCreatedEvents;
+    }
 }
-
-

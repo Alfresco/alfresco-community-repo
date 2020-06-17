@@ -37,6 +37,8 @@ import java.util.Collections;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
 import org.alfresco.repo.event2.filter.EventUserFilter;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
@@ -61,6 +63,7 @@ public class EventFilterTest
     private static NodePropertyFilter propertyFilter;
     private static NodeTypeFilter typeFilter;
     private static NodeAspectFilter aspectFilter;
+    private static ChildAssociationTypeFilter childAssociationTypeFilter;
     private static EventUserFilter caseInsensitive_userFilter;
     private static EventUserFilter caseSensitive_userFilter;
 
@@ -80,6 +83,8 @@ public class EventFilterTest
                                            NamespaceService.CONTENT_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.FORUMS_MODEL_PREFIX,
                                            NamespaceService.FORUMS_MODEL_1_0_URI);
+        namespaceService.registerNamespace(NamespaceService.RENDITION_MODEL_PREFIX,
+                                           NamespaceService.RENDITION_MODEL_1_0_URI);
 
         propertyFilter = new NodePropertyFilter();
         propertyFilter.setNamespaceService(namespaceService);
@@ -95,6 +100,11 @@ public class EventFilterTest
         aspectFilter.setNamespaceService(namespaceService);
         aspectFilter.setDictionaryService(dictionaryService);
         aspectFilter.init();
+
+        childAssociationTypeFilter = new ChildAssociationTypeFilter("rn:rendition");
+        childAssociationTypeFilter.setNamespaceService(namespaceService);
+        childAssociationTypeFilter.setDictionaryService(dictionaryService);
+        childAssociationTypeFilter.init();
 
         caseInsensitive_userFilter = new EventUserFilter("System, john.doe, null", false);
         caseSensitive_userFilter = new EventUserFilter("System, john.doe, null", true);
@@ -139,6 +149,15 @@ public class EventFilterTest
         assertFalse(aspectFilter.isExcluded(ContentModel.ASPECT_TITLED));
     }
 
+    @Test
+    public void childAssociationTypeFilter()
+    {
+        assertTrue("Rendition child association type should have been filtered.",
+                childAssociationTypeFilter.isExcluded(RenditionModel.ASSOC_RENDITION));
+
+        assertFalse(childAssociationTypeFilter.isExcluded(ContentModel.ASSOC_CONTAINS));
+    }
+    
     @Test
     public void userFilter_case_insensitive()
     {

@@ -70,7 +70,7 @@
         <dependency.jackson.version>2.11.0</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
-        <dependency.acs-event-model.version>0.0.2</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.6</dependency.acs-event-model.version>
         <dependency.awaitility.version>4.0.2</dependency.awaitility.version>
     </properties>
 

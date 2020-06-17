@@ -25,6 +25,10 @@
         <constructor-arg value="${repo.event2.filter.users}"/>
         <constructor-arg type="boolean" value="${user.name.caseSensitive}" />
     </bean>
+
+    <bean id="event2ChildAssociationTypeFilter" class="org.alfresco.repo.event2.filter.ChildAssociationTypeFilter" parent="abstractNodeEventFilter">
+        <constructor-arg value="${repo.event2.filter.childAssocTypes}"/>
+    </bean>
     <!-- End of Event2 Filters -->
 
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator">

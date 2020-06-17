@@ -25,17 +25,42 @@
  */
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
-@RunWith(Suite.class)
-@SuiteClasses({ org.alfresco.repo.event2.CreateRepoEventIT.class,
-                org.alfresco.repo.event2.UpdateRepoEventIT.class,
-                org.alfresco.repo.event2.DeleteRepoEventIT.class,
-                org.alfresco.repo.event2.DownloadRepoEventIT.class,
-                org.alfresco.repo.event2.ChildAssociationRepoEventIT.class,
-                org.alfresco.repo.event2.PeerAssociationRepoEventIT.class })
-public class RepoEvent2ITSuite
+/**
+ * Helper for {@link QName} objects.
+ *
+ * @author Sara Aspery
+ */
+public class QNameHelper
 {
+    private final NamespaceService namespaceService;
+
+    public QNameHelper(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
+     * returns it in the form {uri}local.
+     *
+     * @param   k QName
+     * @return  a String representing the QName in the format prefix:local or {uri}local.
+     */
+    public String getQNamePrefixString(QName k)
+    {
+        String key;
+        try
+        {
+            key = k.toPrefixString(namespaceService);
+        }
+        catch (NamespaceException e)
+        {
+            key = k.toString();
+        }
+        return key;
+    }
 }

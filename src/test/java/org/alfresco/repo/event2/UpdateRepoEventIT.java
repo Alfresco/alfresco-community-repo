@@ -25,6 +25,7 @@
  */
 
 package org.alfresco.repo.event2;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -76,6 +77,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
+        checkNumOfEvents(2);
+        
         resultRepoEvent = getRepoEvent(2);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
             resultRepoEvent.getType());
@@ -152,6 +155,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
+        checkNumOfEvents(2);
+        
         resultRepoEvent = getRepoEvent(2);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
 
@@ -608,6 +613,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
+        checkNumOfEvents(4);
+        
         NodeResource resourceBefore = getNodeResourceBefore(4);
         NodeResource resource = getNodeResource(4);
 
@@ -628,7 +635,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getCreatedAt());
         assertNull(resourceBefore.getCreatedByUser());
         assertNull(resourceBefore.getProperties());
-        assertNotNull(resourceBefore.getAspectNames());
+        assertNull(resourceBefore.getAspectNames());
         assertNotNull(resourceBefore.getPrimaryHierarchy());
         assertNull("Content should have been null.", resource.getContent());
         assertNull("Content should have been null.", resourceBefore.getContent());
@@ -819,5 +826,63 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             getNodeResource(repoEventsContainer.getEvent(3)).getPrimaryHierarchy().get(0);
 
         assertEquals("Wrong node parent.", folder2ID, moveFileParentAfterMove);
+    }
+
+    @Test
+    public void testAddAspectRemoveAspectFromContentSameTransactionTest()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        NodeResource resource = getNodeResource(1);
+        final Set<String> originalAspects = resource.getAspectNames();
+        assertNotNull(originalAspects);
+
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            // Add cm:geographic aspect with default value
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+
+            // Remove cm:geographic aspect
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+            return null;
+        });
+
+        checkNumOfEvents(1);
+    }
+
+    @Test
+    public void testAddAspectRemoveAspectAddAspectFromContentSameTransactionTest()
+    {
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        NodeResource resource = getNodeResource(1);
+        final Set<String> originalAspects = resource.getAspectNames();
+        assertNotNull(originalAspects);
+        
+        retryingTransactionHelper.doInTransaction(() -> {
+            // Add cm:geographic aspect with default value
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+
+            // Remove cm:geographic aspect
+            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC);
+
+            // Add cm:geographic aspect with default value
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);
+
+            return null;
+        });
+
+        checkNumOfEvents(2);
+
+        resource = getNodeResource(2);
+        Set<String> aspectsAfter = resource.getAspectNames();
+        assertNotNull(aspectsAfter);
+        assertEquals(2, aspectsAfter.size());
+        assertTrue(aspectsAfter.contains("cm:auditable"));
+        assertTrue(aspectsAfter.contains("cm:auditable"));
+
+        NodeResource resourceBefore = getNodeResourceBefore(2);
+        Set<String> aspectsBefore = resourceBefore.getAspectNames();
+        assertNotNull(aspectsBefore);
+        assertEquals(1, aspectsBefore.size());
+        assertTrue(aspectsBefore.contains("cm:auditable"));
     }
 }

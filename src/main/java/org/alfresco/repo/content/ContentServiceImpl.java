@@ -509,7 +509,7 @@ public class ContentServiceImpl extends ContentTransformServiceAdaptor implement
     }
 
     @Override
-    public String getDirectAccessUrl(NodeRef nodeRef, int expiryTime)
+    public String getDirectAccessUrl(NodeRef nodeRef, long expiryTime)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 

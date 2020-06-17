@@ -167,5 +167,5 @@ public interface ContentService extends ContentTransformService
      *         no binary content for the node or empty string if not supported
      */
     @Auditable(parameters = {"nodeRef", "expiryTime"})
-    public String getDirectAccessUrl(NodeRef nodeRef, int expiryTime);
+    public String getDirectAccessUrl(NodeRef nodeRef, long expiryTime);
 }

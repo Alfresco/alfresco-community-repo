@@ -190,7 +190,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     public void testWhenGetDirectAccessUrlIsNotSupported()
     {
         NodeRef versionableNode = createNewVersionableNode();
-        assertEquals("", contentService.getDirectAccessUrl(versionableNode, 10));
+        assertEquals("", contentService.getDirectAccessUrl(versionableNode, 10L));
         assertFalse(contentStore.isDirectAccessSupported());
     }
     

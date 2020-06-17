@@ -154,12 +154,18 @@ public interface ContentService extends ContentTransformService
     public ContentWriter getTempWriter();
 
     /**
-     * Gets a presigned URL to directly access a binary content. It is up to the content store
-     * if it can fulfil this request with an expiry time or not.
+     * Gets a presigned URL to directly access a binary content. It is up to the
+     * content store if it can fulfil this request with an expiry time (in
+     * milliseconds) or not.
      *
-     * @param contentUrl A content store URL
-     * @param expiryTime Expiration time in milliseconds 
-     * @return A direct access URL for a binary content or empty string if not supported
+     * @param nodeRef
+     *            a reference to a node having a content property
+     * @param expiryTime
+     *            the expiration time in milliseconds of the direct access url. This
+     *            is the length of time in milliseconds that the link is valid for.
+     * @return A direct access URL for a binary content or returns null if there is
+     *         no binary content for the node or empty string if not supported
      */
-    public String getDirectAccessUrl(String contentUrl, int expiryTime);
+    @Auditable(parameters = {"nodeRef", "expiryTime"})
+    public String getDirectAccessUrl(NodeRef nodeRef, int expiryTime);
 }

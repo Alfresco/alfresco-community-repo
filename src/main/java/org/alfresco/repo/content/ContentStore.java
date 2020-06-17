@@ -241,11 +241,11 @@ public interface ContentStore
      * implementation if it can fulfil this request with an expiry time or not.
      *
      * @param contentUrl A content store URL
-     * @param expiryTime Expiration time in milliseconds 
+     * @param expiryTime Expiration time in milliseconds. This is the length of time in milliseconds that the link is valid for.
      * @return A direct access URL for a binary content
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
-    default String getDirectAccessUrl(String contentUrl, int expiryTime)
+    default String getDirectAccessUrl(String contentUrl, long expiryTime)
     {
         throw new UnsupportedOperationException(
             "Retrieving direct access URLs is not supported by this content store.");

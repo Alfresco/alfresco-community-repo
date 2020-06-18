@@ -38,6 +38,7 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -68,11 +69,17 @@ public class DockerHelper
     {
         if (SystemUtils.IS_OS_WINDOWS)
         {
-            this.dockerClient = DockerClientBuilder.getInstance(dockerHost).build();
+            this.dockerClient = DockerClientBuilder
+                .getInstance(dockerHost)
+                .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
+                .build();
         }
         else
         {
-            this.dockerClient = DockerClientBuilder.getInstance().build();
+            this.dockerClient = DockerClientBuilder
+                .getInstance()
+                .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
+                .build();
         }
     }
 

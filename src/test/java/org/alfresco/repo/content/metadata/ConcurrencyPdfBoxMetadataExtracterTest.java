@@ -35,11 +35,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * The test designed for testing the concurrent limitations in
  * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader, MetadataExtracterLimits)}
  *
  * @author amukha
  */
+@Deprecated
 public class ConcurrencyPdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private SlowPdfBoxMetadataExtracter extracter;

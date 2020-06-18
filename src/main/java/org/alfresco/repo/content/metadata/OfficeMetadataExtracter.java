@@ -53,6 +53,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * Office file format Metadata Extracter.  This extracter uses the POI library to extract
  * the following:
  * <pre>
@@ -78,6 +80,7 @@ import org.apache.tika.parser.microsoft.OfficeParser;
  * @author Derek Hulley
  * @author Nick Burch
  */
+@Deprecated
 public class OfficeMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     public static final String KEY_CREATE_DATETIME = "createDateTime";

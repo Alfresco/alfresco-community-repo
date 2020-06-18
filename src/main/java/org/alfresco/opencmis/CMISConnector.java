@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1040,7 +1040,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void extractMetadata(NodeRef nodeRef)
     {
     	org.alfresco.service.cmr.action.Action action = actionService.createAction(ContentMetadataExtracter.EXECUTOR_NAME);
-    	actionService.executeAction(action, nodeRef, true, false);
+    	action.setExecuteAsynchronously(true);
+    	actionService.executeAction(action, nodeRef, true, true);
     }
 
     public SiteInfo getSite(NodeRef nodeRef)

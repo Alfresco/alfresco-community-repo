@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.mp3.Mp3Parser;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * Extracts the following values from MP3 files:
  * <pre>
  *   <b>songTitle:</b>              --      cm:title
@@ -57,6 +59,7 @@ import org.apache.tika.parser.mp3.Mp3Parser;
  * 
  * @author Nick Burch
  */
+@Deprecated
 public class MP3MetadataExtracter extends TikaAudioMetadataExtracter
 {
     private static final String KEY_SONG_TITLE = "songTitle";

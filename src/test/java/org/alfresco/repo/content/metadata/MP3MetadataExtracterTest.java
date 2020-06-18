@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -52,8 +52,11 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * Test for the MP3 metadata extraction from id3 tags.
  */
+@Deprecated
 public class MP3MetadataExtracterTest extends TikaAudioMetadataExtracterTest
 {
     private MP3MetadataExtracter extracter;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,33 @@
  * #L%
  */
 package org.alfresco.repo.content.metadata;
+
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.StreamAwareContentReaderProxy;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -49,32 +76,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.alfresco.api.AlfrescoPublicApi;     
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.StreamAwareContentReaderProxy;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MalformedNodeRefException;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.namespace.InvalidQNameException;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Support class for metadata extracters that support dynamic and config-driven
@@ -131,7 +132,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     
     private MetadataExtracterRegistry registry;
     private MimetypeService mimetypeService;
-    private DictionaryService dictionaryService;
+    protected DictionaryService dictionaryService;
     private boolean initialized;
     
     private Set<String> supportedMimetypes;
@@ -232,6 +233,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         this.dictionaryService = dictionaryService;
     }
 
+    public Set<String> getSupportedMimetypes()
+    {
+        return supportedMimetypes;
+    }
+
     /**
      * Set the mimetypes that are supported by the extracter.
      * 
@@ -278,7 +284,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         return supportedEmbedMimetypes.contains(sourceMimetype);
     }
 
-    private boolean isEnabled(String mimetype)
+    protected boolean isEnabled(String mimetype)
     {
         return properties == null || mimetypeService == null ||
                (getBooleanProperty(beanName+".enabled", true) &&
@@ -714,10 +720,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         return readMappingProperties(mappingProperties.entrySet());
     }
-    
+
     /**
      * A utility method to convert mapping properties entries to the Map form.
-     * 
+     *
      * @see #setMappingProperties(Properties)
      */
     private Map<String, Set<QName>> readMappingProperties(Set<Entry<Object, Object>> mappingPropertiesEntries)
@@ -765,8 +771,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         throw new AlfrescoRuntimeException(
                                 "No prefix mapping for extracter property mapping: \n" +
-                                "   Extracter: " + this + "\n" +
-                                "   Mapping: " + entry);
+                                        "   Extracter: " + this + "\n" +
+                                        "   Mapping: " + entry);
                     }
                     qnameStr = QName.NAMESPACE_BEGIN + uri + QName.NAMESPACE_END + suffix;
                 }
@@ -780,8 +786,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 {
                     throw new AlfrescoRuntimeException(
                             "Can't create metadata extracter property mapping: \n" +
-                            "   Extracter: " + this + "\n" +
-                            "   Mapping: " + entry);
+                                    "   Extracter: " + this + "\n" +
+                                    "   Mapping: " + entry);
                 }
             }
             if (logger.isTraceEnabled())
@@ -1132,7 +1138,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     @Override
     public final Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination)
     {
-        return extract(reader, this.overwritePolicy, destination, this.mapping);
+        return extract(null, reader, this.overwritePolicy, destination, this.mapping);
     }
 
     /**
@@ -1144,7 +1150,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination)
     {
-        return extract(reader, overwritePolicy, destination, this.mapping);
+        return extract(null, reader, overwritePolicy, destination, this.mapping);
     }
 
     /**
@@ -1152,6 +1158,29 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     @Override
     public Map<QName, Serializable> extract(
+            ContentReader reader,
+            OverwritePolicy overwritePolicy,
+            Map<QName, Serializable> destination,
+            Map<String, Set<QName>> mapping)
+    {
+        return extract(null, reader, overwritePolicy, destination, mapping);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<QName, Serializable> extract(NodeRef nodeRef, ContentReader reader, Map<QName, Serializable> destination)
+    {
+        return extract(nodeRef, reader, overwritePolicy, destination, mapping);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<QName, Serializable> extract(
+            NodeRef nodeRef,
             ContentReader reader,
             OverwritePolicy overwritePolicy,
             Map<QName, Serializable> destination,
@@ -1182,12 +1211,13 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             // Check that the content has some meat
             if (reader.getSize() > 0 && reader.exists())
             {
-                rawMetadata = extractRaw(reader, getLimits(reader.getMimetype()));
+                rawMetadata = extractRaw(nodeRef, reader, getLimits(reader.getMimetype()));
             }
             else
             {
                 rawMetadata = new HashMap<String, Serializable>(1);
             }
+
             // Convert to system properties (standalone)
             Map<QName, Serializable> systemProperties = mapRawToSystem(rawMetadata);
             // Convert the properties according to the dictionary types
@@ -1215,7 +1245,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             //  the current mime type is plausible
             String typeErrorMessage = null;
             String differentType = null;
-            if(mimetypeService != null)
+            if (mimetypeService != null)
             {
                differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
             }
@@ -1224,7 +1254,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                logger.info("Unable to verify mimetype of " + reader.getReader() + 
                            " as no MimetypeService available to " + getClass().getName());
             }
-            if(differentType != null)
+            if (differentType != null)
             {
                typeErrorMessage = "\n" +
                   "   claimed mime type: " + reader.getMimetype() + "\n" +
@@ -1286,6 +1316,19 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             ContentReader reader,
             ContentWriter writer)
     {
+        embed(null, properties, reader, writer);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void embed(
+            NodeRef nodeRef,
+            Map<QName, Serializable> properties,
+            ContentReader reader,
+            ContentWriter writer)
+    {
         // Done
         if (logger.isDebugEnabled())
         {
@@ -1307,7 +1350,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
 
         try
         {
-            embedInternal(mapSystemToRaw(properties), reader, writer);
+            embedInternal(nodeRef, mapSystemToRaw(properties), reader, writer);
             if(logger.isDebugEnabled())
             {
                logger.debug("Embedded Metadata into " + writer);
@@ -1472,7 +1515,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @return                  Returns a modified map of properties that have been converted.
      */
     @SuppressWarnings("unchecked")
-    private Map<QName, Serializable> convertSystemPropertyValues(Map<QName, Serializable> systemProperties)
+    protected Map<QName, Serializable> convertSystemPropertyValues(Map<QName, Serializable> systemProperties)
     {
         Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(systemProperties.size() + 7);
         for (Map.Entry<QName, Serializable> entry : systemProperties.entrySet())
@@ -1500,6 +1543,10 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                     {
                         convertedPropertyValue = propertyValue;
                     }
+                    else if (propertyValue instanceof Long)
+                    {
+                        convertedPropertyValue = new Date((Long)propertyValue);
+                    }
                     else if (propertyValue instanceof Collection)
                     {
                         convertedPropertyValue = (Serializable) makeDates((Collection<String>) propertyValue);
@@ -1518,7 +1565,9 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                         {
                             StringBuilder mesg = new StringBuilder();
                             mesg.append("Unable to convert Date property: ").append(propertyQName)
-                                .append(", value: ").append(propertyValue).append(", type: ").append(propertyTypeDef.getName());
+                                .append(", value: ").append(propertyValue).append(" (")
+                                .append(propertyValue.getClass().getSimpleName())
+                                .append("), type: ").append(propertyTypeDef.getName());
                             logger.warn(mesg.toString());
                         }
                     }
@@ -1686,6 +1735,21 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                         // Didn't work
                     }
                 }
+            }
+
+            // Try milliseconds. This was introduced with T-Engine extractors. Previously Dates would have been
+            // created and then converted to a Alfresco Date property in a single operation. T-Engines do not know
+            // about Alfresco Date property formats.
+            try
+            {
+                long ms = Long.parseLong(dateStr);
+                if (Long.toString(ms).equals(dateStr))
+                {
+                    date = new Date(ms);
+                }
+            }
+            catch (NumberFormatException ignore)
+            {
             }
 
             if (date == null)
@@ -1982,7 +2046,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         
         return limits;
     }
-    
+
     /**
      * <code>Callable</code> wrapper for the 
      * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
@@ -2026,7 +2090,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     
     /**
      * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits}
-     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader, MetadataExtracterLimits)}
+     * {@link AbstractMappingMetadataExtracter#extractRaw(NodeRef, ContentReader, MetadataExtracterLimits)}
      */
     private class LimitExceededException extends Exception
     {
@@ -2047,19 +2111,17 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * <p>
      * If no timeout limit is defined or is unlimited (-1),
      * the <code>extractRaw</code> method is called directly.
-     * 
+     *
+     * @param nodeRef       the node being acted on.
      * @param reader        the document to extract the values from.  This stream provided by
      *                      the reader must be closed if accessed directly.
      * @param limits        the limits to impose on the extraction
      * @return              Returns a map of document property values keyed by property name.
      * @throws Throwable    All exception conditions can be handled.
      */
-    private Map<String, Serializable> extractRaw(
+    private Map<String, Serializable> extractRaw(NodeRef nodeRef,
             ContentReader reader, MetadataExtracterLimits limits) throws Throwable
     {
-        FutureTask<Map<String, Serializable>> task = null;
-        StreamAwareContentReaderProxy proxiedReader = null;
-        
         if (reader.getSize() > limits.getMaxDocumentSizeMB() * MEGABYTE_SIZE)
         {
             throw new LimitExceededException("Max doc size exceeded " + limits.getMaxDocumentSizeMB() + " MB");
@@ -2084,7 +2146,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 throw new LimitExceededException("Reached concurrent extractions limit - " + limits.getMaxConcurrentExtractionsCount());
             }
         }
-        
+
+        return extractRawInThread(nodeRef, reader, limits);
+    }
+
+    protected Map<String, Serializable> extractRawInThread(NodeRef nodeRef, ContentReader reader,
+                                                           MetadataExtracterLimits limits)
+            throws Throwable
+    {
+        FutureTask<Map<String, Serializable>> task = null;
+        StreamAwareContentReaderProxy proxiedReader = null;
         try
         {
             proxiedReader = new StreamAwareContentReaderProxy(reader);
@@ -2119,14 +2190,19 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         }
         finally
         {
-            int totalDocCount = CONCURRENT_EXTRACTIONS_COUNT.decrementAndGet();
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Extraction finalized. Remaining concurrent extraction : " + totalDocCount);
-            }
+            extractRawThreadFinished();
         }
     }
-    
+
+    protected void extractRawThreadFinished()
+    {
+        int totalDocCount = CONCURRENT_EXTRACTIONS_COUNT.decrementAndGet();
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Extraction finalized. Remaining concurrent extraction : " + totalDocCount);
+        }
+    }
+
     /**
      * Override to provide the raw extracted metadata values.  An extracter should extract
      * as many of the available properties as is realistically possible.  Even if the
@@ -2162,6 +2238,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      */
     protected abstract Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable;
 
+    protected void embedInternal(NodeRef nodeRef, Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
+    {
+        embedInternal(metadata, reader, writer);
+    }
+
     /**
      * Override to embed metadata values.  An extracter should embed
      * as many of the available properties as is realistically possible.  Even if the
@@ -2181,5 +2262,47 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     protected void embedInternal(Map<String, Serializable> metadata, ContentReader reader, ContentWriter writer) throws Throwable
     {
         // TODO make this an abstract method once more extracters support embedding
+    }
+
+    // Originally in TikaPoweredMetadataExtracter
+    public static Map<String, String> convertMetadataToStrings(Map<String, Serializable> properties)
+    {
+        Map<String, String> propertiesAsStrings = new HashMap<>();
+        for (String metadataKey : properties.keySet())
+        {
+            Serializable value = properties.get(metadataKey);
+            if (value == null)
+            {
+                continue;
+            }
+            if (value instanceof Collection<?>)
+            {
+                for (Object singleValue : (Collection<?>) value)
+                {
+                    try
+                    {
+                        // Convert to a string value
+                        propertiesAsStrings.put(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, singleValue));
+                    }
+                    catch (TypeConversionException e)
+                    {
+                        TikaPoweredMetadataExtracter.logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    // Convert to a string value
+                    propertiesAsStrings.put(metadataKey, DefaultTypeConverter.INSTANCE.convert(String.class, value));
+                }
+                catch (TypeConversionException e)
+                {
+                    TikaPoweredMetadataExtracter.logger.info("Could not convert " + metadataKey + ": " + e.getMessage());
+                }
+            }
+        }
+        return propertiesAsStrings;
     }
 }

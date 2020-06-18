@@ -36,6 +36,8 @@ import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
+ * @deprecated extractor has been moved to a T-Engine.
+ *
  * POI-based metadata extractor for Office 07 documents.
  * See http://poi.apache.org/ for information on POI.
  * <pre>
@@ -52,6 +54,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Neil McErlean
  * @author Dmitry Velichkevich
  */
+@Deprecated
 public class PoiMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log logger = LogFactory.getLog(PoiMetadataExtracter.class);

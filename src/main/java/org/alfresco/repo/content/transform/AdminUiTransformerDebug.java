@@ -249,7 +249,7 @@ public class AdminUiTransformerDebug extends TransformerDebug implements Applica
                                      boolean firstTransformer)
     {
         String mimetypes = firstTransformer
-                ? getSourceAndTargetExt(sourceMimetype, targetMimetype)
+                ? getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype)
                 : spaces(10);
         char c = (char)('a'+transformerCount);
         log(mimetypes+

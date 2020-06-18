@@ -1,9 +1,0 @@
-{
-  "{http://www.alfresco.org/model/content/1.0}addressee" : "mark.rogers@alfresco.com",
-  "{http://www.alfresco.org/model/content/1.0}description" : "This is a quick test",
-  "{http://www.alfresco.org/model/content/1.0}addressees" : [ "mark.rogers@alfresco.com", "speedy@quick.com", "mrquick@nowhere.com" ],
-  "{http://www.alfresco.org/model/content/1.0}sentdate" : "2013-01-18T13:44:20Z",
-  "{http://www.alfresco.org/model/content/1.0}subjectline" : "This is a quick test",
-  "{http://www.alfresco.org/model/content/1.0}author" : "Mark Rogers",
-  "{http://www.alfresco.org/model/content/1.0}originator" : "Mark Rogers"
-}

@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 
+import java.util.Date;
+
 /**
  * Provides low-level retrieval of content
  * {@link org.alfresco.service.cmr.repository.ContentReader readers} and
@@ -241,11 +243,11 @@ public interface ContentStore
      * implementation if it can fulfil this request with an expiry time or not.
      *
      * @param contentUrl A content store URL
-     * @param expiryTime Expiration time in milliseconds. This is the length of time in milliseconds that the link is valid for.
+     * @param expiresAt an optional expiry date, so the direct access url would become invalid when the expiry date is reached
      * @return A direct access URL for a binary content
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
-    default String getDirectAccessUrl(String contentUrl, long expiryTime)
+    default String getDirectAccessUrl(String contentUrl, Date expiresAt)
     {
         throw new UnsupportedOperationException(
             "Retrieving direct access URLs is not supported by this content store.");

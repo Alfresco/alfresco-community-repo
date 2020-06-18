@@ -63,6 +63,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -509,7 +510,7 @@ public class ContentServiceImpl extends ContentTransformServiceAdaptor implement
     }
 
     @Override
-    public String getDirectAccessUrl(NodeRef nodeRef, long expiryTime)
+    public String getDirectAccessUrl(NodeRef nodeRef, Date expiresAt)
     {
         ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
 
@@ -522,7 +523,7 @@ public class ContentServiceImpl extends ContentTransformServiceAdaptor implement
 
         if (store.isDirectAccessSupported())
         {
-            return store.getDirectAccessUrl(contentData.getContentUrl(), expiryTime);
+            return store.getDirectAccessUrl(contentData.getContentUrl(), expiresAt);
         }
         return "";
     }

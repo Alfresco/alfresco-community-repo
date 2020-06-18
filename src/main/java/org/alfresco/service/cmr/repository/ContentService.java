@@ -30,6 +30,8 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
+import java.util.Date;
+
 /**
  * Provides methods for accessing and transforming content.
  * <p>
@@ -160,12 +162,12 @@ public interface ContentService extends ContentTransformService
      *
      * @param nodeRef
      *            a reference to a node having a content property
-     * @param expiryTime
-     *            the expiration time in milliseconds of the direct access url. This
-     *            is the length of time in milliseconds that the link is valid for.
+     * @param expiresAt
+     *            an optional expiry date, so the direct access url would become
+     *            invalid when the expiry date is reached
      * @return A direct access URL for a binary content or returns null if there is
      *         no binary content for the node or empty string if not supported
      */
-    @Auditable(parameters = {"nodeRef", "expiryTime"})
-    public String getDirectAccessUrl(NodeRef nodeRef, long expiryTime);
+    @Auditable(parameters = {"nodeRef", "expiresAt"})
+    public String getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
 }

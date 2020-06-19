@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -74,6 +74,8 @@ import org.xml.sax.SAXException;
 
 
 /**
+ * @deprecated extractors have been moved to a T-Engine.
+ *
  * The parent of all Metadata Extractors which use
  * Apache Tika under the hood. This handles all the
  * common parts of processing the files, and the common
@@ -92,6 +94,7 @@ import org.xml.sax.SAXException;
  * @author Nick Burch
  */
 @AlfrescoPublicApi
+@Deprecated
 public abstract class TikaPoweredMetadataExtracter
         extends AbstractMappingMetadataExtracter
         implements MetadataEmbedder

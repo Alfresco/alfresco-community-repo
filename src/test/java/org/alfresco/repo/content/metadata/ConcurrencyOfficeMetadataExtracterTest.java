@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,8 +39,11 @@ import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * MNT-8978
  */
+@Deprecated
 public class ConcurrencyOfficeMetadataExtracterTest
 {
 

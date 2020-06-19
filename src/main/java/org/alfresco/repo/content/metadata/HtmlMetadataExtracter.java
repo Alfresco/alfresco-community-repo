@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -61,6 +61,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Extracts the following values from HTML documents:
  * <pre>
  *   <b>author:</b>                 --      cm:author
@@ -75,6 +77,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
+@Deprecated
 public class HtmlMetadataExtracter extends AbstractMappingMetadataExtracter
 {
     private static final String KEY_AUTHOR = "author";

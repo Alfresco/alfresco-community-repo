@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,8 @@ import org.apache.tika.parser.dwg.DWGParser;
 
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Metadata extractor for the
  * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_APP_DWG MIMETYPE_APP_DWG}
  * and
@@ -55,6 +57,7 @@ import org.apache.tika.parser.dwg.DWGParser;
  * @since 3.4
  * @author Nick Burch
  */
+@Deprecated
 public class DWGMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     private static final String KEY_KEYWORD = "keyword";

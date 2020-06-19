@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,8 @@ import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * POI-based metadata extractor for Office 07 documents.
  * See http://poi.apache.org/ for information on POI.
  * <pre>
@@ -52,6 +54,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Neil McErlean
  * @author Dmitry Velichkevich
  */
+@Deprecated
 public class PoiMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log logger = LogFactory.getLog(PoiMetadataExtracter.class);

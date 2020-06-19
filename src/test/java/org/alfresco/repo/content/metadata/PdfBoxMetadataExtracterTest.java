@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,10 +40,13 @@ import org.alfresco.service.namespace.QName;
 import org.apache.pdfbox.util.DateConverter;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * @see org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter
  * 
  * @author Jesper Steen Møller
  */
+@Deprecated
 public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private PdfBoxMetadataExtracter extracter;

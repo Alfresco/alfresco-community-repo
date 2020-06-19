@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -54,8 +54,11 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * @author Jesper Steen Møller
  */
+@Deprecated
 public class HtmlMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private static final String QUICK_TITLE_JAPANESE = "確認した結果を添付しますので、確認してください";

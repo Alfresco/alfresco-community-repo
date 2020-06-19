@@ -35,7 +35,7 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>

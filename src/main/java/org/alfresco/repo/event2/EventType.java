@@ -37,8 +37,8 @@ public enum EventType
     PEER_ASSOC_CREATED(EventTypeConst.CREATED, ContextType.PEER_ASSOC), PEER_ASSOC_DELETED(EventTypeConst.DELETED, ContextType.PEER_ASSOC);
 
     private static final String PREFIX = "org.alfresco.event.";
-    private String type;
-    private ContextType contextType;
+    private final String type;
+    private final ContextType contextType;
 
     EventType(String type, ContextType contextType)
     {
@@ -70,7 +70,8 @@ public enum EventType
     private enum ContextType
     {
         NODE("node."), CHILD_ASSOC("assoc.child."), PEER_ASSOC("assoc.peer.");
-        private String context;
+
+        private final String context;
         ContextType(String context)
         {
             this.context = context;

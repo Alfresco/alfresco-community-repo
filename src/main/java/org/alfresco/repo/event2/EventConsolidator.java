@@ -40,6 +40,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ContentInfo;
+import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.NodeResource.Builder;
@@ -61,10 +62,11 @@ public class EventConsolidator implements EventSupportedPolicies
     private final List<QName> aspectsAdded;
     private final List<QName> aspectsRemoved;
 
+    protected NodeRef nodeRef;
+
     private NodeResource.Builder resourceBuilder;
     private Map<QName, Serializable> propertiesBefore;
     private Map<QName, Serializable> propertiesAfter;
-    private NodeRef nodeRef;
     private QName nodeType;
     private QName nodeTypeBefore;
     private List<String> primaryHierarchyBefore;
@@ -84,11 +86,25 @@ public class EventConsolidator implements EventSupportedPolicies
      * @param eventInfo the object holding the event information
      * @return the {@link RepoEvent} instance
      */
-    public RepoEvent<NodeResource> getRepoEvent(EventInfo eventInfo)
+    public RepoEvent<DataAttributes<NodeResource>> getRepoEvent(EventInfo eventInfo)
     {
         NodeResource resource = buildNodeResource();
         EventType eventType = getDerivedEvent();
 
+        DataAttributes<NodeResource> eventData = buildEventData(eventInfo, resource, eventType);
+
+        return RepoEvent.<DataAttributes<NodeResource>>builder()
+                    .setId(eventInfo.getId())
+                    .setSource(eventInfo.getSource())
+                    .setTime(eventInfo.getTimestamp())
+                    .setType(eventType.getType())
+                    .setData(eventData)
+                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
+                    .build();
+    }
+
+    protected DataAttributes<NodeResource> buildEventData(EventInfo eventInfo, NodeResource resource, EventType eventType)
+    {
         EventData.Builder<NodeResource> eventDataBuilder = EventData.<NodeResource>builder()
                     .setEventGroupId(eventInfo.getTxnId())
                     .setResource(resource);
@@ -97,14 +113,8 @@ public class EventConsolidator implements EventSupportedPolicies
         {
             eventDataBuilder.setResourceBefore(buildNodeResourceBeforeDelta(resource));
         }
-        EventData<NodeResource> eventData = eventDataBuilder.build();
-        return RepoEvent.<NodeResource>builder()
-                    .setId(eventInfo.getId())
-                    .setSource(eventInfo.getSource())
-                    .setTime(eventInfo.getTimestamp())
-                    .setType(eventType.getType())
-                    .setData(eventData)
-                    .build();
+
+        return eventDataBuilder.build();
     }
 
     /**
@@ -202,7 +212,7 @@ public class EventConsolidator implements EventSupportedPolicies
         {
             aspectsRemoved.remove(aspectTypeQName);
         }
-        else 
+        else
         {
             aspectsAdded.add(aspectTypeQName);
         }
@@ -273,13 +283,13 @@ public class EventConsolidator implements EventSupportedPolicies
         return resourceBuilder.build();
     }
 
-    private NodeResource buildNodeResourceBeforeDelta(NodeResource after)
+    protected NodeResource buildNodeResourceBeforeDelta(NodeResource after)
     {
         if (after == null)
         {
             return null;
         }
-        
+
         Builder builder = NodeResource.builder();
 
         Map<QName, Serializable> changedPropsBefore = getBeforeMapChanges(propertiesBefore, propertiesAfter);
@@ -338,10 +348,10 @@ public class EventConsolidator implements EventSupportedPolicies
             builder.setNodeType(helper.getQNamePrefixString(nodeTypeBefore));
             resourceBeforeAllFieldsNull = false;
         }
-        
+
         return builder.build();
     }
-    
+
     Set<String> getMappedAspectsBefore(Set<String> currentAspects)
     {
         if (currentAspects == null)
@@ -352,7 +362,7 @@ public class EventConsolidator implements EventSupportedPolicies
         {
             Set<String> removed = helper.mapToNodeAspects(aspectsRemoved);
             Set<String> added = helper.mapToNodeAspects(aspectsAdded);
-            
+
             Set<String> before = new HashSet<>();
             if (!removed.isEmpty() || !added.isEmpty())
             {

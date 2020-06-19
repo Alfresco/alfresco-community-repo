@@ -28,6 +28,7 @@ package org.alfresco.repo.event2;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.PeerAssociationResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
@@ -43,11 +44,12 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
 {
     private final Deque<EventType> eventTypes;
 
-    private final AssociationRef associationRef;
-    private PeerAssociationResource resource;
-    private final QNameHelper helper;
+    protected final AssociationRef associationRef;
 
-    public PeerAssociationEventConsolidator(AssociationRef associationRef, QNameHelper helper)
+    private PeerAssociationResource resource;
+    private final NodeResourceHelper helper;
+
+    public PeerAssociationEventConsolidator(AssociationRef associationRef, NodeResourceHelper helper)
     {
         this.eventTypes = new ArrayDeque<>();
         this.associationRef = associationRef;
@@ -60,22 +62,28 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      * @param eventInfo the object holding the event information
      * @return the {@link RepoEvent} instance
      */
-    public RepoEvent<PeerAssociationResource> getRepoEvent(EventInfo eventInfo)
+    public RepoEvent<DataAttributes<PeerAssociationResource>> getRepoEvent(EventInfo eventInfo)
     {
         EventType eventType = getDerivedEvent();
 
-        EventData.Builder<PeerAssociationResource> eventDataBuilder = EventData.<PeerAssociationResource>builder()
-                .setEventGroupId(eventInfo.getTxnId())
-                .setResource(resource);
+        DataAttributes<PeerAssociationResource> eventData = buildEventData(eventInfo, resource);
 
-        EventData<PeerAssociationResource> eventData = eventDataBuilder.build();
-        return RepoEvent.<PeerAssociationResource>builder()
-                .setId(eventInfo.getId())
-                .setSource(eventInfo.getSource())
-                .setTime(eventInfo.getTimestamp())
-                .setType(eventType.getType())
-                .setData(eventData)
-                .build();
+        return RepoEvent.<DataAttributes<PeerAssociationResource>>builder()
+                    .setId(eventInfo.getId())
+                    .setSource(eventInfo.getSource())
+                    .setTime(eventInfo.getTimestamp())
+                    .setType(eventType.getType())
+                    .setData(eventData)
+                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
+                    .build();
+    }
+
+    protected DataAttributes<PeerAssociationResource> buildEventData(EventInfo eventInfo, PeerAssociationResource resource)
+    {
+        return EventData.<PeerAssociationResource>builder()
+                    .setEventGroupId(eventInfo.getTxnId())
+                    .setResource(resource)
+                    .build();
     }
 
     /**

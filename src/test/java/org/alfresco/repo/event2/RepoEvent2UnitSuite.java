@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.event2;
 
 import org.junit.runner.RunWith;
@@ -30,12 +31,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ CreateRepoEventIT.class,
-                UpdateRepoEventIT.class,
-                DeleteRepoEventIT.class,
-                ChildAssociationRepoEventIT.class,
-                PeerAssociationRepoEventIT.class
+@SuiteClasses({ EventFilterUnitTest.class,
+                EventConsolidatorUnitTest.class,
+                EventJSONSchemaUnitTest.class
 })
-public class RepoEvent2ITSuite
+public class RepoEvent2UnitSuite
 {
 }

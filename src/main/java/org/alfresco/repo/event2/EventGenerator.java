@@ -92,12 +92,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private Event2MessageProducer event2MessageProducer;
     private TransactionService transactionService;
     private PersonService personService;
+    private NodeResourceHelper nodeResourceHelper;
 
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
-    private NodeResourceHelper nodeResourceHelper;
-    private QNameHelper qNameHelper;
     private final EventTransactionListener transactionListener = new EventTransactionListener();
 
     @Override
@@ -112,15 +111,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "personService", personService);
+        PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
         this.userFilter = eventFilterRegistry.getEventUserFilter();
-        this.qNameHelper = new QNameHelper(namespaceService);
-        this.nodeResourceHelper = new NodeResourceHelper(nodeService, dictionaryService,
-                personService,
-                eventFilterRegistry,
-                qNameHelper);
     }
 
     private void bindBehaviours()
@@ -174,11 +169,14 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.descriptorService = descriptorService;
     }
 
+    // To make IntelliJ stop complaining about unused method!
+    @SuppressWarnings("unused")
     public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
     {
         this.eventFilterRegistry = eventFilterRegistry;
     }
 
+    @SuppressWarnings("unused")
     public void setEvent2MessageProducer(Event2MessageProducer event2MessageProducer)
     {
         this.event2MessageProducer = event2MessageProducer;
@@ -192,6 +190,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+
+    public void setNodeResourceHelper(NodeResourceHelper nodeResourceHelper)
+    {
+        this.nodeResourceHelper = nodeResourceHelper;
     }
 
     @Override
@@ -260,6 +263,22 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         getEventConsolidator(associationRef).beforeDeleteAssociation(associationRef);
     }
 
+    protected EventConsolidator createEventConsolidator()
+    {
+        return new EventConsolidator(nodeResourceHelper);
+    }
+
+    protected ChildAssociationEventConsolidator createChildAssociationEventConsolidator(
+                ChildAssociationRef childAssociationRef)
+    {
+        return new ChildAssociationEventConsolidator(childAssociationRef, nodeResourceHelper);
+    }
+
+    protected PeerAssociationEventConsolidator createPeerAssociationEventConsolidator(AssociationRef peerAssociationRef)
+    {
+        return new PeerAssociationEventConsolidator(peerAssociationRef, nodeResourceHelper);
+    }
+
     /**
      * @return the {@link EventConsolidator} for the supplied {@code nodeRef} from
      * the current transaction context.
@@ -276,7 +295,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         EventConsolidator eventConsolidator = nodeEvents.get(nodeRef);
         if (eventConsolidator == null)
         {
-            eventConsolidator = new EventConsolidator(nodeResourceHelper);
+            eventConsolidator = createEventConsolidator();
             nodeEvents.put(nodeRef, eventConsolidator);
         }
         return eventConsolidator;
@@ -310,7 +329,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         ChildAssociationEventConsolidator eventConsolidator = assocEvents.get(childAssociationRef);
         if (eventConsolidator == null)
         {
-            eventConsolidator = new ChildAssociationEventConsolidator(childAssociationRef, qNameHelper);
+            eventConsolidator = createChildAssociationEventConsolidator(childAssociationRef);
             assocEvents.put(childAssociationRef, eventConsolidator);
         }
         return eventConsolidator;
@@ -332,7 +351,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PeerAssociationEventConsolidator eventConsolidator = assocEvents.get(peerAssociationRef);
         if (eventConsolidator == null)
         {
-            eventConsolidator = new PeerAssociationEventConsolidator(peerAssociationRef, qNameHelper);
+            eventConsolidator = createPeerAssociationEventConsolidator(peerAssociationRef);
             assocEvents.put(peerAssociationRef, eventConsolidator);
         }
         return eventConsolidator;
@@ -398,7 +417,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
                     sendEvent(entry.getKey(), eventConsolidator);
                 }
-            } 
+            }
             catch (Exception e)
             {
                 // Must consume the exception to protect other TransactionListeners

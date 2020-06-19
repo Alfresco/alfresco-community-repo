@@ -23,44 +23,61 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.event2;
 
-import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
+import static org.junit.Assert.fail;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.junit.Test;
 
 /**
- * Helper for {@link QName} objects.
+ * Test event JSON schema mapping.
  *
- * @author Sara Aspery
+ * @author Jamal Kaabi-Mofrad
  */
-public class QNameHelper
+public class EventJSONSchemaUnitTest
 {
-    private final NamespaceService namespaceService;
 
-    public QNameHelper(NamespaceService namespaceService)
+    @Test
+    public void testEventJsonSchema()
     {
-        this.namespaceService = namespaceService;
+        for (EventType type : EventType.values())
+        {
+            try
+            {
+                EventJSONSchema.getSchema(type, 1);
+            }
+            catch (Exception ex)
+            {
+                fail(ex.getMessage());
+            }
+        }
     }
 
-    /**
-     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
-     * returns it in the form {uri}local.
-     *
-     * @param   k QName
-     * @return  a String representing the QName in the format prefix:local or {uri}local.
-     */
-    public String getQNamePrefixString(QName k)
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void testEventJsonSchemaInvalid()
     {
-        String key;
-        try
+        // Invalid version
+        for (EventType type : EventType.values())
         {
-            key = k.toPrefixString(namespaceService);
+            EventJSONSchema.getSchema(type, 5);
         }
-        catch (NamespaceException e)
+    }
+
+    @Test
+    public void testEventJsonSchemaV1()
+    {
+        for (EventType type : EventType.values())
         {
-            key = k.toString();
+            try
+            {
+                EventJSONSchema.getSchemaV1(type);
+            }
+            catch (Exception ex)
+            {
+                fail(ex.getMessage());
+            }
         }
-        return key;
     }
 }

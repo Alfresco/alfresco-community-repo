@@ -59,7 +59,7 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull("Missing node resource properties", createdResource.getProperties());
 
         deleteNode(nodeRef);
-        final RepoEvent<NodeResource> resultRepoEvent = getRepoEvent(2);
+        final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(2);
 
         assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
         assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());

@@ -23,7 +23,7 @@
 
     <bean id="event2UserFilter" class="org.alfresco.repo.event2.filter.EventUserFilter">
         <constructor-arg value="${repo.event2.filter.users}"/>
-        <constructor-arg type="boolean" value="${user.name.caseSensitive}" />
+        <constructor-arg type="boolean" value="${user.name.caseSensitive}"/>
     </bean>
 
     <bean id="event2ChildAssociationTypeFilter" class="org.alfresco.repo.event2.filter.ChildAssociationTypeFilter" parent="abstractNodeEventFilter">
@@ -31,7 +31,7 @@
     </bean>
     <!-- End of Event2 Filters -->
 
-    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator">
+    <bean id="baseEventGeneratorV2" abstract="true">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="nodeService"/>
         <property name="namespaceService" ref="namespaceService"/>
@@ -41,5 +41,19 @@
         <property name="event2MessageProducer" ref="event2MessageProducer"/>
         <property name="transactionService" ref="transactionService"/>
         <property name="personService" ref="personService"/>
+    </bean>
+
+    <bean id="baseNodeResourceHelper" abstract="true">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="personService" ref="personService"/>
+        <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
+        <property name="namespaceService" ref="namespaceService"/>
+    </bean>
+
+    <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>
+
+    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2">
+        <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
     </bean>
 </beans>

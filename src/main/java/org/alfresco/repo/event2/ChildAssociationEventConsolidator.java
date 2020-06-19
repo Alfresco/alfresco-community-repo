@@ -29,6 +29,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
+import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -44,11 +45,12 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
 {
     private final Deque<EventType> eventTypes;
 
-    private final ChildAssociationRef childAssociationRef;
-    private ChildAssociationResource resource;
-    private final QNameHelper helper;
+    protected final ChildAssociationRef childAssociationRef;
 
-    public ChildAssociationEventConsolidator(ChildAssociationRef childAssociationRef, QNameHelper helper)
+    private ChildAssociationResource resource;
+    private final NodeResourceHelper helper;
+
+    public ChildAssociationEventConsolidator(ChildAssociationRef childAssociationRef, NodeResourceHelper helper)
     {
         this.eventTypes = new ArrayDeque<>();
         this.childAssociationRef = childAssociationRef;
@@ -62,22 +64,28 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
      * @param eventInfo the object holding the event information
      * @return the {@link RepoEvent} instance
      */
-    public RepoEvent<ChildAssociationResource> getRepoEvent(EventInfo eventInfo)
+    public RepoEvent<DataAttributes<ChildAssociationResource>> getRepoEvent(EventInfo eventInfo)
     {
         EventType eventType = getDerivedEvent();
 
-        EventData.Builder<ChildAssociationResource> eventDataBuilder = EventData.<ChildAssociationResource>builder()
-                .setEventGroupId(eventInfo.getTxnId())
-                .setResource(resource);
+        DataAttributes<ChildAssociationResource> eventData = buildEventData(eventInfo, resource);
 
-        EventData<ChildAssociationResource> eventData = eventDataBuilder.build();
-        return RepoEvent.<ChildAssociationResource>builder()
-                .setId(eventInfo.getId())
-                .setSource(eventInfo.getSource())
-                .setTime(eventInfo.getTimestamp())
-                .setType(eventType.getType())
-                .setData(eventData)
-                .build();
+        return RepoEvent.<DataAttributes<ChildAssociationResource>>builder()
+                    .setId(eventInfo.getId())
+                    .setSource(eventInfo.getSource())
+                    .setTime(eventInfo.getTimestamp())
+                    .setType(eventType.getType())
+                    .setData(eventData)
+                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
+                    .build();
+    }
+
+    protected DataAttributes<ChildAssociationResource> buildEventData(EventInfo eventInfo, ChildAssociationResource resource)
+    {
+        return EventData.<ChildAssociationResource>builder()
+                    .setEventGroupId(eventInfo.getTxnId())
+                    .setResource(resource)
+                    .build();
     }
 
     /**

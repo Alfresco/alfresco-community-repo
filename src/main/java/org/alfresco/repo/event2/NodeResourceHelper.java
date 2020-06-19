@@ -53,38 +53,71 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Helper for {@link NodeResource} objects.
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeResourceHelper
+public class NodeResourceHelper implements InitializingBean
 {
     private static final Log LOGGER = LogFactory.getLog(NodeResourceHelper.class);
 
-    private final NodeService nodeService;
-    private final DictionaryService dictionaryService;
-    private final PersonService personService;
-    private final NodeAspectFilter nodeAspectFilter;
-    private final NodePropertyFilter nodePropertyFilter;
-    private final QNameHelper qNameHelper;
+    protected NodeService         nodeService;
+    protected DictionaryService   dictionaryService;
+    protected PersonService       personService;
+    protected EventFilterRegistry eventFilterRegistry;
+    protected NamespaceService    namespaceService;
 
-    public NodeResourceHelper(NodeService nodeService,
-                              DictionaryService dictionaryService, PersonService personService,
-                              EventFilterRegistry eventFilterRegistry,
-                              QNameHelper qNameHelper)
+    private NodeAspectFilter   nodeAspectFilter;
+    private NodePropertyFilter nodePropertyFilter;
+
+    @Override
+    public void afterPropertiesSet() throws Exception
     {
-        this.nodeService = nodeService;
-        this.dictionaryService = dictionaryService;
-        this.personService = personService;
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "personService", personService);
+        PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+
         this.nodeAspectFilter = eventFilterRegistry.getNodeAspectFilter();
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
-        this.qNameHelper = qNameHelper;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    // To make IntelliJ stop complaining about unused method!
+    @SuppressWarnings("unused")
+    public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
+    {
+        this.eventFilterRegistry = eventFilterRegistry;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef)
@@ -221,11 +254,25 @@ public class NodeResourceHelper
         return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    // Returns the QName in the format prefix:local, but in the exceptional case were there is no registered prefix
-    // returns it in the form {uri}local.
+    /**
+     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
+     * returns it in the form {uri}local.
+     *
+     * @param   k QName
+     * @return  a String representing the QName in the format prefix:local or {uri}local.
+     */
     public String getQNamePrefixString(QName k)
     {
-        return qNameHelper.getQNamePrefixString(k);
+        String key;
+        try
+        {
+            key = k.toPrefixString(namespaceService);
+        }
+        catch (NamespaceException e)
+        {
+            key = k.toString();
+        }
+        return key;
     }
 
     public Set<String> mapToNodeAspects(Collection<QName> aspects)

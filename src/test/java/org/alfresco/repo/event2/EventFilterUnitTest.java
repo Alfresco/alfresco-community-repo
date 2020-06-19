@@ -57,7 +57,7 @@ import org.mockito.stubbing.Answer;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventFilterTest
+public class EventFilterUnitTest
 {
     private static NamespaceService namespaceService;
     private static NodePropertyFilter propertyFilter;

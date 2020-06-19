@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Antti Jokipii
+ * Copyright (C) 2005 - 2020 Antti Jokipii
  *
  * This file is part of Alfresco
  *
@@ -59,6 +59,8 @@ import org.joda.time.format.DateTimeFormatter;
 
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Metadata extractor for the
  * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_OPENDOCUMENT_TEXT MIMETYPE_OPENDOCUMENT_XXX}
  * mimetypes.
@@ -86,6 +88,7 @@ import org.joda.time.format.DateTimeFormatter;
  * @author Antti Jokipii
  * @author Derek Hulley
  */
+@Deprecated
 public class OpenDocumentMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     private static final String KEY_CREATION_DATE = "creationDate";

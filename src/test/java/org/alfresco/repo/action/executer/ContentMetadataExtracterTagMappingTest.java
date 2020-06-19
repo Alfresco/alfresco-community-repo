@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,6 +43,7 @@ import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
 import org.alfresco.repo.content.metadata.TikaPoweredMetadataExtracter;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;

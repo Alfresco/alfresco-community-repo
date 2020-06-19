@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,8 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * A Metadata Extractor which makes use of Apache Tika,
  *  and allows the selection of the Tika parser to be
  *  sprung-in to extract the metadata from your document.
@@ -56,6 +58,7 @@ import org.apache.tika.parser.Parser;
  * @author Nick Burch
  */
 @AlfrescoPublicApi
+@Deprecated
 public class TikaSpringConfiguredMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log logger = LogFactory.getLog(TikaSpringConfiguredMetadataExtracter.class);

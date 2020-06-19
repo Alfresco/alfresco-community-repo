@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -39,6 +39,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Extracts values from Open Office documents into the following:
  * <pre>
  *   <b>author:</b>                 --      cm:author
@@ -48,6 +50,7 @@ import org.alfresco.util.PropertyCheck;
  * 
  * @author Neil McErlean
  */
+@Deprecated
 public class JodConverterMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker
 {
     private OpenOfficeMetadataWorker worker;

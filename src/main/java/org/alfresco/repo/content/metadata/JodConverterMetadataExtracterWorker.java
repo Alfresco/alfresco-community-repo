@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -59,6 +59,10 @@ import com.sun.star.util.CloseVetoException;
 import com.sun.star.util.XCloseable;
 import com.sun.star.util.XRefreshable;
 
+/**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ */
+@Deprecated
 public class JodConverterMetadataExtracterWorker implements
         OpenOfficeMetadataWorker
 {
@@ -120,6 +124,7 @@ public class JodConverterMetadataExtracterWorker implements
     }
 }
 
+@Deprecated
 class ExtractMetadataOfficeTask implements OfficeTask
 {
     /*
@@ -259,6 +264,7 @@ class ExtractMetadataOfficeTask implements OfficeTask
     }
 }
 
+@Deprecated
 class ResultsCallback
 {
     private Map<String, Serializable> results = new HashMap<String, Serializable>();

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,11 +31,14 @@ import org.apache.tika.extractor.DocumentSelector;
 import org.apache.tika.metadata.Metadata;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Tika 1.6 has the ability to parse embedded artifacts, such as images in a PDF,
  * but this can be very resource intensive so adding this selector
  * to parsers and transformers that handle formats with embedded artifacts
  * will disable parsing of the specified content types.
  */
+@Deprecated
 public class MediaTypeDisablingDocumentSelector implements DocumentSelector
 {
     private List<String> disabledMediaTypes;

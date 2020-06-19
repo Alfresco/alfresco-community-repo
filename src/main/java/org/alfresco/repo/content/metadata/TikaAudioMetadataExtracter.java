@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -42,6 +42,8 @@ import org.gagravarr.tika.FlacParser;
 import org.gagravarr.tika.VorbisParser;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * A Metadata Extractor which makes use of the Apache
  *  Tika Audio Parsers to extract metadata from your
  *  media files. 
@@ -64,6 +66,7 @@ import org.gagravarr.tika.VorbisParser;
  * @since 4.0
  * @author Nick Burch
  */
+@Deprecated
 public class TikaAudioMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static final String KEY_LYRICS = "lyrics";

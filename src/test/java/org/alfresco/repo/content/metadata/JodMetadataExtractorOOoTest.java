@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -50,10 +50,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * 
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * @author Neil McErlean
  * @since 3.2 SP1
  */
+@Deprecated
 public class JodMetadataExtractorOOoTest extends AbstractJodConverterBasedTest
 {
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";

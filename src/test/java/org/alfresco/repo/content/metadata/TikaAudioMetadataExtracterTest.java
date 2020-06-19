@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,7 +24,7 @@
  * #L%
  */
 /*
- * Copyright (C) 2005 Jesper Steen Møller
+ * Copyright (C) 2005 - 2020 Jesper Steen Møller
  *
  * This file is part of Alfresco
  *
@@ -53,8 +53,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * @deprecated OOTB extractors are being moved to T-Engines.
+ *
  * Test for the audio metadata extraction.
  */
+@Deprecated
 public class TikaAudioMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private TikaAudioMetadataExtracter extracter;

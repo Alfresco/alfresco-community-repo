@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
 import org.junit.Test;
@@ -191,7 +192,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     @Test
     public void testWhenGetDirectAccessUrlIsNotSupported()
     {
-        NodeRef versionableNode = createNewVersionableNode();
+        assertFalse(contentStore.isDirectAccessSupported());
 
         // Set the presigned URL to expire after one minute.
         Date expiresAt = new Date();
@@ -199,10 +200,37 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         expTimeMillis += 1000 * 60;
         expiresAt.setTime(expTimeMillis);
 
-        assertEquals("", contentService.getDirectAccessUrl(versionableNode, expiresAt));
-        assertFalse(contentStore.isDirectAccessSupported());
+        try
+        {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
+            fail("nodeRef has no content");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        try
+        {
+            assertEquals(null, contentService.getDirectAccessUrl(null, null));
+            fail("nodeRef is null");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        // Create a node with content
+        NodeRef nodeRef = createNewVersionableNode();
+
+        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, null));
+        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
     }
-    
+
 //  Commented out as OpenOffice is not on the build machines.
 //    public void testGetTransformer0()
 //    {

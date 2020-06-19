@@ -165,9 +165,9 @@ public interface ContentService extends ContentTransformService
      * @param expiresAt
      *            an optional expiry date, so the direct access url would become
      *            invalid when the expiry date is reached
-     * @return A direct access URL for a binary content or returns null if there is
-     *         no binary content for the node or empty string if not supported
+     * @return A direct access URL object for a binary content or returns null if not supported
+     * @throws IllegalArgumentException if there is no binary content for the node
      */
     @Auditable(parameters = {"nodeRef", "expiresAt"})
-    public String getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
+    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
 }

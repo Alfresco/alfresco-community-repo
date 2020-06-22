@@ -28,6 +28,9 @@ package org.alfresco.service.cmr.repository;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
+@AlfrescoPublicApi
 public class DirectAccessUrl implements Serializable
 {
     private static final long serialVersionUID = -881676208224414139L;

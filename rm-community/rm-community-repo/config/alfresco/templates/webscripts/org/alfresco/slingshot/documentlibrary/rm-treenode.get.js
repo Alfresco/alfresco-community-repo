@@ -93,7 +93,7 @@ function getTreenode()
 
                //
 
-               var hasCreateCapability = rmNode.hasCapability("Create");
+               hasCreateCapability = rmNode.hasCapability("Create");
 
                if (evalChildFolders)
                {

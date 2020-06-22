@@ -145,7 +145,7 @@ public class RuleDefinition
         return this;
     }
 
-    public Boolean isCreateRecordPath()
+    public Boolean getCreateRecordPath()
     {
         return createRecordPath;
     }

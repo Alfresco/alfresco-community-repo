@@ -257,9 +257,9 @@ public class RulesAPI extends BaseAPI
             JSONObject parameters = new JSONObject();
             if (ruleProperties.getPath() != null)
             {
-                if(ruleProperties.isCreateRecordPath() != null)
+                if(ruleProperties.getCreateRecordPath() != null)
                 {
-                    parameters.put("createRecordPath", ruleProperties.isCreateRecordPath());
+                    parameters.put("createRecordPath", ruleProperties.getCreateRecordPath());
                 }
                 parameters.put("path", ruleProperties.getPath());
             }

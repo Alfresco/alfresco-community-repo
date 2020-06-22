@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -73,9 +74,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.repo.thumbnail.ThumbnailHelper;
-import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionModel;
@@ -90,6 +88,7 @@ import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
@@ -103,7 +102,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
-import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
@@ -140,6 +138,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -167,6 +166,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
@@ -189,7 +189,6 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 public class NodesImpl implements Nodes
 {
     private static final Log logger = LogFactory.getLog(NodesImpl.class);
-
 
     private enum Type
     {
@@ -313,7 +312,6 @@ public class NodesImpl implements Nodes
     {
         this.smartStore = smartStore;
     }
-
 
     // excluded namespaces (aspects, properties, assoc types)
     private static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
@@ -3351,6 +3349,68 @@ public class NodesImpl implements Nodes
 
         lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
+    }
+
+    @Override
+    public DirectAccessUrl requestContentUrl(String nodeId, DirectAccessUrlRequest nodeDirectAccess)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        return requestContentUrl(nodeRef, nodeDirectAccess);
+    }
+
+    private void checkExpiryDate(Date expiryDate)
+    {
+        DateTime now = DateTime.now();
+        if (now.isAfter(expiryDate.getTime()))
+        {
+            throw new InvalidArgumentException("Invalid expiry date. Expiry date can't be in the past.");
+        }
+    }
+
+    @Override
+    public DirectAccessUrl requestContentUrl(NodeRef nodeRef, DirectAccessUrlRequest directAccessUrlRequest)
+    {
+        if (nodeRef == null)
+        {
+            throw new InvalidArgumentException("Missing nodeRef");
+        }
+
+        Date expiresAt = null;
+        if (directAccessUrlRequest != null)
+        {
+            if (directAccessUrlRequest.getExpiresAt() != null && directAccessUrlRequest.getValidFor() != null)
+            {
+                throw new InvalidArgumentException("Direct access url can not have both expiresAt and validFor set.");
+            }
+
+            if (directAccessUrlRequest.getExpiresAt() != null)
+            {
+                checkExpiryDate(directAccessUrlRequest.getExpiresAt());
+
+                expiresAt = directAccessUrlRequest.getExpiresAt();
+            }
+            else if (directAccessUrlRequest.getValidFor() != null)
+            {
+                Date expiration = new Date();
+                long expTimeMillis = expiration.getTime();
+
+                expTimeMillis += (directAccessUrlRequest.getValidFor() * 1000);
+                expiration.setTime(expTimeMillis);
+
+                checkExpiryDate(expiration);
+
+                expiresAt = expiration;
+            }
+        }
+
+        DirectAccessUrl directAccessUrl = contentService.getDirectAccessUrl(nodeRef, expiresAt);
+
+        if (directAccessUrl == null)
+        {
+            throw new DisabledServiceException("Direct access url isn't available.");
+        }
+
+        return directAccessUrl;
     }
 
     /**

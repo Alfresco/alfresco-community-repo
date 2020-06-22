@@ -36,6 +36,7 @@
         <img.exe>convert</img.exe>
 
         <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-core.version>7.5</dependency.alfresco-core.version>

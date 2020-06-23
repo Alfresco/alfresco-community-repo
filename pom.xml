@@ -58,7 +58,7 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.postgresql.version>42.2.14</dependency.postgresql.version>
         <dependency.mysql.version>8.0.20</dependency.mysql.version>
-        <dependency.mariadb.version>2.6.0</dependency.mariadb.version>
+        <dependency.mariadb.version>2.6.1</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <!-- REPO-4964 -->
         <dependency.keycloak.version>11.0.0-alfresco-001</dependency.keycloak.version>

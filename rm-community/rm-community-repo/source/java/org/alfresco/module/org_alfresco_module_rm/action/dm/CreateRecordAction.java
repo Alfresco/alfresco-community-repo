@@ -59,7 +59,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
 
     /** Parameter names */
     public static final String PARAM_FILE_PLAN = "file-plan";
-    public static final String PARAM_HIDE_RECORD = "hideRecord";
+    public static final String PARAM_HIDE_RECORD = "hide-record";
     public static final String PARAM_PATH = "path";
 
     /**

@@ -80,10 +80,12 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
+import org.alfresco.rest.api.NodeDefinitionMapper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.model.NodeDefinition;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
@@ -125,6 +127,7 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -215,6 +218,7 @@ public class NodesImpl implements Nodes
     private RetryingTransactionHelper retryingTransactionHelper;
     private LockService lockService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
+    private NodeDefinitionMapper nodeDefinitionMapper;
 
     private enum Activity_Type
     {
@@ -311,6 +315,11 @@ public class NodesImpl implements Nodes
     public void setSmartStore(VirtualStore smartStore)
     {
         this.smartStore = smartStore;
+    }
+    
+    public void setNodeDefinitionMapper(NodeDefinitionMapper nodeDefinitionMapper)
+    {
+        this.nodeDefinitionMapper = nodeDefinitionMapper;
     }
 
     // excluded namespaces (aspects, properties, assoc types)
@@ -1026,10 +1035,24 @@ public class NodesImpl implements Nodes
             }
         }
 
+        if (includeParam.contains(PARAM_INCLUDE_DEFINITION)) 
+        {
+            NodeDefinition nodeDefinition = nodeDefinitionMapper.fromTypeDefinition(getTypeDefinition(nodeRef), dictionaryService);
+            node.setDefinition(nodeDefinition);
+        }
+
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
         return node;
+    }
+
+    private TypeDefinition getTypeDefinition(NodeRef nodeRef)
+    {
+        QName type = nodeService.getType(nodeRef);
+        Set<QName> aspectNames = nodeService.getAspects(nodeRef);
+        TypeDefinition typeDefinition = dictionaryService.getAnonymousType(type, aspectNames);
+        return typeDefinition;
     }
 
     @Override
@@ -3668,4 +3691,3 @@ public class NodesImpl implements Nodes
         return repositoryHelper;
     }
 }
-

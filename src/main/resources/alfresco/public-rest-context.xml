@@ -518,6 +518,8 @@
         </property>
     </bean>
 
+    <bean id="nodeDefinitionMapper" class="org.alfresco.rest.api.impl.NodeDefinitionMapperImpl"/>
+
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
@@ -527,6 +529,7 @@
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
+        <property name="nodeDefinitionMapper" ref="nodeDefinitionMapper" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

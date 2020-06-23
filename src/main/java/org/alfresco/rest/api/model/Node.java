@@ -95,6 +95,7 @@ public class Node implements Comparable<Node>
 
     protected List<String> allowableOperations;
     protected NodePermissions nodePermissions;
+    protected NodeDefinition definition;
 
     //optional SearchEntry (only ever returned from a search)
     protected SearchEntry search = null;
@@ -467,6 +468,16 @@ public class Node implements Comparable<Node>
     public void setSecondaryChildren(List<AssocChild> secondaryChildren)
     {
         this.secondaryChildren = secondaryChildren;
+    }
+
+    public NodeDefinition getDefinition()
+    {
+        return definition;
+    }
+
+    public void setDefinition(NodeDefinition definition)
+    {
+        this.definition = definition;
     }
 
     @Override

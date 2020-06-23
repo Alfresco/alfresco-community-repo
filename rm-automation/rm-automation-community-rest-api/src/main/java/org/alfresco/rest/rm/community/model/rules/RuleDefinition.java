@@ -41,7 +41,7 @@ public class RuleDefinition
     private boolean runInBackground = false;
     private String ruleType = ConditionsOnRule.ADDED.getWhenConditionValue();
     private String path;
-    private boolean createRecordPath = false;
+    private Boolean createRecordPath;
     private String contentTitle;
     private String contentDescription;
     private String rejectReason;
@@ -145,7 +145,7 @@ public class RuleDefinition
         return this;
     }
 
-    public boolean isCreateRecordPath()
+    public Boolean getCreateRecordPath()
     {
         return createRecordPath;
     }

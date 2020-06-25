@@ -136,7 +136,7 @@ public class QueryRegisterComponentImpl implements QueryRegisterComponent
         try
         {
             InputStream is = this.getClass().getClassLoader().getResourceAsStream(location);
-            SAXReader reader = SAXReader.createDefault();
+            SAXReader reader = new SAXReader();
             Document document = reader.read(is);
             is.close();
             QueryCollection collection = QueryCollectionImpl.createQueryCollection(document.getRootElement(), dictionaryService, namespaceService);

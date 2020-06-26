@@ -709,6 +709,11 @@
                     <groupId>org.glassfish.corba</groupId>
                     <artifactId>glassfish-corba-omgapi</artifactId>
                 </exclusion>
+                <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -746,6 +751,11 @@
                 <exclusion>
                     <groupId>org.glassfish.corba</groupId>
                     <artifactId>glassfish-corba-omgapi</artifactId>
+                </exclusion>
+                <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1191,6 +1201,11 @@
               <exclusion>
                 <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+              </exclusion>
+              <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+              <exclusion>
+                  <groupId>javax.annotation</groupId>
+                  <artifactId>javax.annotation-api</artifactId>
               </exclusion>
             </exclusions>
         </dependency>

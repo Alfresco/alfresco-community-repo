@@ -28,7 +28,7 @@
       <dependency.alfresco-core.version>7.33</dependency.alfresco-core.version>
       <dependency.alfresco-repository.version>7.188</dependency.alfresco-repository.version>
       <dependency.alfresco-remote-api.version>7.140</dependency.alfresco-remote-api.version>
-      <alfresco.alfresco-share-services.version>6.2.1</alfresco.alfresco-share-services.version>
+      <alfresco.alfresco-share-services.version>6.2.2</alfresco.alfresco-share-services.version>
       <image.name>alfresco/alfresco-governance-repository-community</image.name>
 
       <maven.javadoc.skip>false</maven.javadoc.skip>

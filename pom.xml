@@ -66,7 +66,7 @@
         <dependency.camel.version>2.24.2</dependency.camel.version>
         <dependency.activemq.version>5.15.12</dependency.activemq.version>
         <dependency.pdfbox.version>2.0.20</dependency.pdfbox.version>
-        <dependency.cxf.version>3.3.6</dependency.cxf.version>
+        <dependency.cxf.version>3.3.7</dependency.cxf.version>
         <dependency.jackson.version>2.11.1</dependency.jackson.version>
         <dependency.jackson-databind.version>2.10.2</dependency.jackson-databind.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>

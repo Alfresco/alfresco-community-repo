@@ -76,7 +76,7 @@
       <spring.version>5.1.15.RELEASE</spring.version>
       <alfresco.version>6.2.2-A1</alfresco.version>
       <alfresco.min.version>6.2.1</alfresco.min.version>
-      <share.version>6.2.1</share.version>
+      <share.version>6.2.2</share.version>
       <!-- The properties app.amp.* need to be set for share to work. -->
       <app.filtering.enabled>true</app.filtering.enabled>
    </properties>

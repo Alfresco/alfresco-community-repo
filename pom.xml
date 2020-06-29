@@ -59,7 +59,7 @@
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>6.2.2</alfresco.share.version>
-        <alfresco.alfresco-share-services.version>6.2.1</alfresco.alfresco-share-services.version>
+        <alfresco.alfresco-share-services.version>6.2.2</alfresco.alfresco-share-services.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledrive.version>3.2.0</alfresco.googledrive.version>

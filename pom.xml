@@ -34,14 +34,14 @@
         <version.edition>Community</version.edition>
         <image.tag>latest</image.tag>
 
-        <dependency.alfresco-remote-api.version>7.145</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-repository.version>7.197</dependency.alfresco-repository.version>
-        <dependency.alfresco-data-model.version>8.50.17</dependency.alfresco-data-model.version>
-        <dependency.alfresco-core.version>7.33</dependency.alfresco-core.version>
+        <dependency.alfresco-remote-api.version>7.147</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-repository.version>7.200</dependency.alfresco-repository.version>
+        <dependency.alfresco-data-model.version>8.50.18</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>7.34</dependency.alfresco-core.version>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
 
-        <dependency.alfresco-spring-webscripts.version>7.14</dependency.alfresco-spring-webscripts.version>
+        <dependency.alfresco-spring-webscripts.version>7.16</dependency.alfresco-spring-webscripts.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-trashcan-cleaner.version>2.3</dependency.alfresco-trashcan-cleaner.version>
@@ -547,6 +547,12 @@
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>1.13.1</version>
+            </dependency>
+            <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
+            <dependency>
+                <groupId>com.drewnoakes</groupId>
+                <artifactId>metadata-extractor</artifactId>
+                <version>2.13.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

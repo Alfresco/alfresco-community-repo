@@ -1,3 +1,6 @@
 language: java
 jdk:
   - oraclejdk8
+sudo: false
+install: true
+script: travis_wait 30 mvn -B clean verify -Dcommunity

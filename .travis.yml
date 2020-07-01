@@ -8,9 +8,7 @@ jdk:
 branches:
   only:
     - release/V2.7*
-    - feature-2.7/*
-    - merge-2.7/*
-    - hotfix-2.7/*
+    -(feature|hotfix|merge)-2.7/*
 
 cache:
   directories:
@@ -30,9 +28,13 @@ stages:
 jobs:
   include:
     - stage: Build AGS
-      - name: "Build Community"
-      - name: "Build Enterprise"
-      - name: "Benchmark"
+      - name: "Build AGS Community"
+        - before_install: bash scripts/setUpMavenPhase.sh
+        - script:
+              - travis_wait 60 mvn -B ${mavenPhase} -P${buildProfile} -Dimage.tag=${latestImageTag} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+      - name: "Build AGS Enterprise"
+      - name: "AGS Benchmark"
 
     - stage: Tests
       - name: "Community Integrations Tests on MySQL"
@@ -52,3 +54,5 @@ jobs:
 
     - stage: Publish
       - name: "Copy to S3 Release Bucket"
+before_install:
+  - "cp .travis.settings.xml $HOME/.m2/settings.xml"

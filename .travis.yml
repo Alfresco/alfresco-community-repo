@@ -3,7 +3,7 @@ dist: xenial
 sudo: required
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 branches:
   only:
@@ -23,7 +23,7 @@ before_cache:
 stages:
   - name: Build AGS
   - name: Tests
-      if: commit_message !~ /\[skip tests\]/
+  #    if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
   - name: Publish
@@ -45,7 +45,6 @@ jobs:
         stage: Build AGS
         before_install: bash scripts/setUpMavenPhase.sh
 
-    - stage: Tests
       - name: "Community Integrations Tests on MySQL"
       - name: "Enterprise Integrations Tests on MySQL"
       - name: "Community Rest API Tests"
@@ -53,15 +52,15 @@ jobs:
       - name: "Community UI Tests ..."
       - name: "Enterprise UI Tests ..."
 
-    - stage: Security Scans
+
       - name: "Source Clear Scan (SCA)"
       - name: "Static Analysis (SAST)"
 
-    - stage: Release
+
       - name: "Community Release"
       - name: "Enterprise Release"
 
-    - stage: Publish
+
       - name: "Copy to S3 Release Bucket"
 
 before_install:

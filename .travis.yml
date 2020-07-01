@@ -1,6 +1,54 @@
+os: linux
+dist: xenial
+sudo: required
 language: java
 jdk:
   - oraclejdk8
-sudo: false
-install: true
-script: travis_wait 30 mvn -B clean verify -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+branches:
+  only:
+    - release/V2.7*
+    - feature-2.7/*
+    - merge-2.7/*
+    - hotfix-2.7/*
+
+cache:
+  directories:
+    - $HOME/.m2
+# the cache can grow constantly
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+
+stages:
+  - name: Build AGS
+  - name: Tests
+      if: commit_message !~ /\[skip tests\]/
+  - name: Security Scans
+  - name: Release
+  - name: Publish
+
+jobs:
+  include:
+    - stage: Build AGS
+      - name: "Build Community"
+      - name: "Build Enterprise"
+      - name: "Benchmark"
+
+    - stage: Tests
+      - name: "Community Integrations Tests on MySQL"
+      - name: "Enterprise Integrations Tests on MySQL"
+      - name: "Community Rest API Tests"
+      - name: "Enterprise Rest API Tests"
+      - name: "Community UI Tests ..."
+      - name: "Enterprise UI Tests ..."
+
+    - stage: Security Scans
+      - name: "Source Clear Scan (SCA)"
+      - name: "Static Analysis (SAST)"
+
+    - stage: Release
+      - name: "Community Release"
+      - name: "Enterprise Release"
+
+    - stage: Publish
+      - name: "Copy to S3 Release Bucket"

@@ -10,3 +10,4 @@ then
 else
     export mavenPhase="verify"
 fi
+echo "Maven Phase: ${mavenPhase}"

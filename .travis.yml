@@ -1,6 +1,6 @@
 os: linux
 dist: xenial
-sudo: required
+sudo: false
 language: java
 jdk:
   - openjdk8
@@ -12,13 +12,17 @@ branches:
     - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
 
-#cache:
-#  directories:
-#    - $HOME/.m2
-#
-## the cache can grow constantly
-#before_cache:
-#  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+cache:
+  directories:
+    - $HOME/.m2
+
+# the cache can grow constantly
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+
+before_install:
+  - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+install: true
 
 stages:
   - name: Build AGS
@@ -32,17 +36,17 @@ jobs:
   include:
       - name: "Build AGS Community"
         stage: Build AGS
-        before_install: bash scripts/setUpMavenPhase.sh
+        before_script: bash scripts/setUpMavenPhase.sh
         script:
           - echo  "Maven phase" ${mavenPhase}
           - travis_wait 60 mvn -B ${mavenPhase} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
       - name: "Build AGS Enterprise"
         stage: Build AGS
-        before_install: bash scripts/setUpMavenPhase.sh
+        before_script: bash scripts/setUpMavenPhase.sh
 
       - name: "AGS Benchmark"
-        before_install: bash scripts/setUpMavenPhase.sh
+        before_script: bash scripts/setUpMavenPhase.sh
 
         stage: Tests
       - name: "Community Integrations Tests on MySQL"
@@ -63,5 +67,3 @@ jobs:
         stage: Publish
       - name: "Copy to S3 Release Bucket"
 
-before_install:
-  - "cp .travis.settings.xml $HOME/.m2/settings.xml"

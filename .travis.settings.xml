@@ -47,7 +47,7 @@
       <server>
          <id>alfresco-enterprise-releases</id>
          <username>${env.MAVEN_USERNAME}</username>
-         <password>>${env.MAVEN_PASSWORD}</password>
+         <password>${env.MAVEN_PASSWORD}</password>
       </server>
    </servers>
 </settings>

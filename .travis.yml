@@ -35,7 +35,7 @@ jobs:
   include:
     - name: "Pre-download all dependencies to cache without building"
       stage: Prepare
-      script: mvn dependency:resolve
+      script: mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:collect
     - name: "Build Community"
       stage: Build AGS
       script:

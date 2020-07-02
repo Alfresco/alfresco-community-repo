@@ -1,6 +1,5 @@
 os: linux
 dist: xenial
-sudo: required
 language: java
 jdk:
   - openjdk8
@@ -21,7 +20,7 @@ before_cache:
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
-#install: skip
+install: skip
 
 stages:
   - name: Prepare

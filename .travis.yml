@@ -22,7 +22,7 @@ before_cache:
 stages:
   - name: Build AGS
   - name: Tests
-      if: commit_message !~ /\[skip tests\]/
+    if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
   - name: Publish

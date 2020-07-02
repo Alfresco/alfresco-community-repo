@@ -31,34 +31,61 @@ jobs:
   include:
     - name: "Build Community"
       stage: Build AGS
-
+      script:
+        - echo "Build Community"
     - name: "Build Enterprise"
       stage: Build AGS
+      script:
+        - echo "Build Enterprise"
     - name: "Benchmark"
       stage: Build AGS
+      script:
+        - echo "Benchmark"
 
     - name: "Community Integrations Tests on MySQL"
       stage: Tests
+      script:
+        - echo "Community Integrations Tests on MySQL"
     - name: "Enterprise Integrations Tests on MySQL"
       stage: Tests
+      script:
+        - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
+      script:
+        - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      script:
+        - echo "Enterprise Rest API Tests"
     - name: "Community UI Tests ..."
       stage: Tests
+      script:
+        - echo "Community UI Tests ..."
     - name: "Enterprise UI Tests ..."
       stage: Tests
+      script:
+        - echo "Enterprise UI Tests ..."
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans
+      script:
+       - echo "Source Clear Scan (SCA)"
     - name: "Static Analysis (SAST)"
       stage: Security Scans
+      script:
+       - echo "Static Analysis (SAST)"
 
     - name: "Community Release"
       stage: Release
+      script:
+        - echo "Community Release"
     - name: "Enterprise Release"
       stage: Release
+      script:
+        - echo "Enterprise Release"
 
     - name: "Copy to S3 Release Bucket"
       stage: Publish
+      script:
+        - echo "Copy to S3 Release Bucket"

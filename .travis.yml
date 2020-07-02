@@ -40,7 +40,7 @@ jobs:
     - name: "Build Community"
       stage: Build AGS
       script:
-        - echo "Build Community"
+        - mvn clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests
     - name: "Build Enterprise"
       stage: Build AGS
       script:

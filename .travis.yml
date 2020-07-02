@@ -35,7 +35,7 @@ jobs:
   include:
     - name: "Pre-download all dependencies to cache without building"
       stage: Prepare
-      script: mvn dependency:go-offline
+      script: mvn dependency:resolve
     - name: "Build Community"
       stage: Build AGS
       script:

@@ -19,6 +19,8 @@ cache:
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
 
+install: skip
+
 stages:
   - name: Build AGS
   - name: Tests

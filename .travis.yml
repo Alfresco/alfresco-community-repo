@@ -29,26 +29,36 @@ stages:
 
 jobs:
   include:
-    - stage: Build AGS
-      - name: "Build Community"
-      - name: "Build Enterprise"
-      - name: "Benchmark"
+    - name: "Build Community"
+      stage: Build AGS
 
-    stage: Tests
-      - name: "Community Integrations Tests on MySQL"
-      - name: "Enterprise Integrations Tests on MySQL"
-      - name: "Community Rest API Tests"
-      - name: "Enterprise Rest API Tests"
-      - name: "Community UI Tests ..."
-      - name: "Enterprise UI Tests ..."
+    - name: "Build Enterprise"
+      stage: Build AGS
+    - name: "Benchmark"
+      stage: Build AGS
 
-    stage: Security Scans
-      - name: "Source Clear Scan (SCA)"
-      - name: "Static Analysis (SAST)"
+    - name: "Community Integrations Tests on MySQL"
+      stage: Tests
+    - name: "Enterprise Integrations Tests on MySQL"
+      stage: Tests
+    - name: "Community Rest API Tests"
+      stage: Tests
+    - name: "Enterprise Rest API Tests"
+      stage: Tests
+    - name: "Community UI Tests ..."
+      stage: Tests
+    - name: "Enterprise UI Tests ..."
+      stage: Tests
 
-    stage: Release
-      - name: "Community Release"
-      - name: "Enterprise Release"
+    - name: "Source Clear Scan (SCA)"
+      stage: Security Scans
+    - name: "Static Analysis (SAST)"
+      stage: Security Scans
 
-    stage: Publish
-      - name: "Copy to S3 Release Bucket"
+    - name: "Community Release"
+      stage: Release
+    - name: "Enterprise Release"
+      stage: Release
+
+    - name: "Copy to S3 Release Bucket"
+      stage: Publish

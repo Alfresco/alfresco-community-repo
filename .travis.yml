@@ -59,9 +59,8 @@ jobs:
     - name: "Community Rest API Tests"
       stage: Tests
       install:
-        - mvn clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests
-        - cd rm-automation/rm-automation-community-rest-api
-        - mvn clean install -Pinstall-alfresco,apply-rm-community -Dinstaller.url=https://releases.alfresco.com/Enterprise-5.2/5.2.7/5.2.7/build-00025/ALL/alfresco-content-services-installer-5.2.7-linux-x64.bin
+        - mvn clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -B
+        - travis_wait 60 ./scripts/startAlfresco.sh "apply-rm-community"
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"

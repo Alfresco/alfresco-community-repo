@@ -34,30 +34,27 @@ stages:
 
 jobs:
   include:
+      - stage: Build AGS
       - name: "Build AGS Community"
-        stage: Build AGS
         before_install: source scripts/setUpMavenPhase.sh
         install:
           - echo  "Maven phase" ${MAVEN_PHASE}  $MAVEN_PHASE
           - travis_wait 60 mvn ${MAVEN_PHASE} -B -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
       - name: "Build AGS Enterprise"
-        stage: Build AGS
-        before_install: bash scripts/setUpMavenPhase.sh
+        before_install: source scripts/setUpMavenPhase.sh
         install:
           - echo  "Maven phase" ${MAVEN_PHASE}  $MAVEN_PHASE
           - travis_wait 60 mvn ${MAVEN_PHASE} -B -Dskip.integrationtests=false -f rm-enterprise/pom.xml -am -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
       - name: "AGS Benchmark"
-        stage: Build AGS
-        before_install: bash scripts/setUpMavenPhase.sh
+        before_install: source scripts/setUpMavenPhase.sh
         install:
           - echo "Maven phase" ${MAVEN_PHASE}  $MAVEN_PHASE
-          - travis_wait 60 mvn ${MAVEN_PHASE} -B -Dskip.integrationtests=false -f rm-enterprise/pom.xml -am -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+          - travis_wait 60 mvn ${MAVEN_PHASE} -B -Dskip.integrationtests=false -f rm-benchmark/pom.xml -am -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-
-      - name: "Community Integrations Tests on MySQL"
         stage: Tests
+      - name: "Community Integrations Tests on MySQL"
       - name: "Enterprise Integrations Tests on MySQL"
       - name: "Community Rest API Tests"
       - name: "Enterprise Rest API Tests"

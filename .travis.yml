@@ -21,9 +21,10 @@ before_cache:
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
-install: skip
+#install: skip
 
 stages:
+  - name: Prepare
   - name: Build AGS
   - name: Tests
     if: commit_message !~ /\[skip tests\]/
@@ -33,6 +34,9 @@ stages:
 
 jobs:
   include:
+    - name: "Pre-download all dependencies to cache without building"
+      stage: Prepare
+      script: mvn dependency:go-offline
     - name: "Build Community"
       stage: Build AGS
       script:

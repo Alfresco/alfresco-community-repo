@@ -95,6 +95,46 @@
          <build>
             <plugins>
                <plugin>
+                  <groupId>io.fabric8</groupId>
+                  <artifactId>docker-maven-plugin</artifactId>
+                  <version>0.31.0</version>
+                  <executions>
+                     <execution>
+                        <id>start-postgresql</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                           <goal>start</goal>
+                        </goals>
+                        <configuration>
+                           <images>
+                              <image>
+                                 <alias>test-database</alias>
+                                 <name>postgres:9.1</name>
+                                 <run>
+                                    <ports>
+                                       <port>5432:5432</port>
+                                    </ports>
+                                    <env>
+                                       <POSTGRES_PASSWORD>alfresco</POSTGRES_PASSWORD>
+                                       <POSTGRES_USER>alfresco</POSTGRES_USER>
+                                       <POSTGRES_DB>alfresco</POSTGRES_DB>
+                                    </env>
+                                    <cmd>
+                                       <shell>-c max_connections=300</shell>
+                                    </cmd>
+                                    <wait>
+                                       <log>database system is ready to accept connections</log>
+                                       <time>20000</time>
+                                    </wait>
+                                 </run>
+                              </image>
+                           </images>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+
+               <plugin>
                   <artifactId>maven-antrun-plugin</artifactId>
                   <executions>
                      <execution>

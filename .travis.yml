@@ -12,13 +12,13 @@ branches:
     - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
 
-cache:
-  directories:
-    - $HOME/.m2
-
-# the cache can grow constantly
-before_cache:
-  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+#cache:
+#  directories:
+#    - $HOME/.m2
+#
+## the cache can grow constantly
+#before_cache:
+#  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
 
 stages:
   - name: Build AGS

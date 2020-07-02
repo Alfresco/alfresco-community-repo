@@ -38,6 +38,7 @@ jobs:
           - travis_wait 60 mvn -B ${mavenPhase} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
       - name: "Build AGS Enterprise"
+        stage: Build AGS
         before_install: bash scripts/setUpMavenPhase.sh
 
       - name: "AGS Benchmark"

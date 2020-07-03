@@ -1,16 +1,15 @@
 os: linux
 dist: xenial
-sudo: required
 language: java
 jdk:
-  - oraclejdk8
+  - openjdk8
 
 branches:
   only:
-    - release/V2.7*
-    - feature-2.7/*
-    - merge-2.7/*
-    - hotfix-2.7/*
+    - /release\/V2.7.*/
+    - /feature-2.7\/.*/
+    - /merge-2.7\/.*/
+    - /hotfix-2.7\/.*/
 
 cache:
   directories:
@@ -19,36 +18,77 @@ cache:
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
 
+before_install:
+  - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+install: skip
+
 stages:
   - name: Build AGS
   - name: Tests
-      if: commit_message !~ /\[skip tests\]/
+    if: commit_message !~ /\[skip tests\]/
   - name: Security Scans
   - name: Release
   - name: Publish
 
 jobs:
   include:
-    - stage: Build AGS
-      - name: "Build Community"
-      - name: "Build Enterprise"
-      - name: "Benchmark"
+    - name: "Build Community"
+      stage: Build AGS
+      script:
+        - echo "Build Community"
+    - name: "Build Enterprise"
+      stage: Build AGS
+      script:
+        - echo "Build Enterprise"
+    - name: "Benchmark"
+      stage: Build AGS
+      script:
+        - echo "Benchmark"
 
-    - stage: Tests
-      - name: "Community Integrations Tests on MySQL"
-      - name: "Enterprise Integrations Tests on MySQL"
-      - name: "Community Rest API Tests"
-      - name: "Enterprise Rest API Tests"
-      - name: "Community UI Tests ..."
-      - name: "Enterprise UI Tests ..."
+    - name: "Community Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Community Integrations Tests on MySQL"
+    - name: "Enterprise Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Enterprise Integrations Tests on MySQL"
+    - name: "Community Rest API Tests"
+      stage: Tests
+      script:
+        - echo "Community Rest API Tests"
+    - name: "Enterprise Rest API Tests"
+      stage: Tests
+      script:
+        - echo "Enterprise Rest API Tests"
+    - name: "Community UI Tests ..."
+      stage: Tests
+      script:
+        - echo "Community UI Tests ..."
+    - name: "Enterprise UI Tests ..."
+      stage: Tests
+      script:
+        - echo "Enterprise UI Tests ..."
 
-    - stage: Security Scans
-      - name: "Source Clear Scan (SCA)"
-      - name: "Static Analysis (SAST)"
+    - name: "Source Clear Scan (SCA)"
+      stage: Security Scans
+      script:
+       - echo "Source Clear Scan (SCA)"
+    - name: "Static Analysis (SAST)"
+      stage: Security Scans
+      script:
+       - echo "Static Analysis (SAST)"
 
-    - stage: Release
-      - name: "Community Release"
-      - name: "Enterprise Release"
+    - name: "Community Release"
+      stage: Release
+      script:
+        - echo "Community Release"
+    - name: "Enterprise Release"
+      stage: Release
+      script:
+        - echo "Enterprise Release"
 
-    - stage: Publish
-      - name: "Copy to S3 Release Bucket"
+    - name: "Copy to S3 Release Bucket"
+      stage: Publish
+      script:
+        - echo "Copy to S3 Release Bucket"

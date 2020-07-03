@@ -1,6 +1,5 @@
 os: linux
 dist: xenial
-sudo: false
 language: java
 jdk:
   - openjdk8
@@ -22,7 +21,7 @@ before_cache:
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
-install: skip
+install: true
 
 stages:
   - name: Build AGS
@@ -34,47 +33,72 @@ stages:
 
 jobs:
   include:
+    - name: "Build AGS Community"
+      stage: Build AGS
+      before_install: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 80 mvn ${MAVEN_PHASE} -B -q -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-      - name: "Build AGS Community"
-        stage: Build AGS
-        before_install: source scripts/setUpMavenPhase.sh
-        install:
-          - travis_retry travis_wait 80 mvn ${MAVEN_PHASE} -B -q -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-        script: skip
+    - name: "Build AGS Enterprise"
+      stage: Build AGS
+      before_install: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn clean install -B -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      script:
+        - travis_retry travis_wait 60 mvn ${MAVEN_PHASE} -B -q -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-      - name: "Build AGS Enterprise"
-        stage: Build AGS
-        before_install: source scripts/setUpMavenPhase.sh
-        install:
-          - travis_retry travis_wait 60 mvn clean install -B -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-          - travis_retry travis_wait 60 mvn ${MAVEN_PHASE} -B -q -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-        script: skip
-        
-      - name: "AGS Benchmark"
-        stage: Build AGS
-        before_install: source scripts/setUpMavenPhase.sh
-        install:
-          - travis_retry travis_wait 60 mvn -B clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-        script:
-          - travis_retry travis_wait 35 mvn -B ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+    - name: "AGS Benchmark"
+      stage: Build AGS
+      before_install: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn -B clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      script:
+        - travis_retry travis_wait 35 mvn -B ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
-      - name: "Community Integrations Tests on MySQL"
-        stage: Tests
-      - name: "Enterprise Integrations Tests on MySQL"
-      - name: "Community Rest API Tests"
-      - name: "Enterprise Rest API Tests"
-      - name: "Community UI Tests ..."
-      - name: "Enterprise UI Tests ..."
+    - name: "Community Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Community Integrations Tests on MySQL"
+    - name: "Enterprise Integrations Tests on MySQL"
+      stage: Tests
+      script:
+        - echo "Enterprise Integrations Tests on MySQL"
+    - name: "Community Rest API Tests"
+      stage: Tests
+      script:
+        - echo "Community Rest API Tests"
+    - name: "Enterprise Rest API Tests"
+      stage: Tests
+      script:
+        - echo "Enterprise Rest API Tests"
+    - name: "Community UI Tests ..."
+      stage: Tests
+      script:
+        - echo "Community UI Tests ..."
+    - name: "Enterprise UI Tests ..."
+      stage: Tests
+      script:
+        - echo "Enterprise UI Tests ..."
 
-      - name: "Source Clear Scan (SCA)"
-        stage: Security Scans
-      - name: "Static Analysis (SAST)"
+    - name: "Source Clear Scan (SCA)"
+      stage: Security Scans
+      script:
+       - echo "Source Clear Scan (SCA)"
+    - name: "Static Analysis (SAST)"
+      stage: Security Scans
+      script:
+       - echo "Static Analysis (SAST)"
 
+    - name: "Community Release"
+      stage: Release
+      script:
+        - echo "Community Release"
+    - name: "Enterprise Release"
+      stage: Release
+      script:
+        - echo "Enterprise Release"
 
-      - name: "Community Release"
-        stage: Release
-      - name: "Enterprise Release"
-
-      - name: "Copy to S3 Release Bucket"
-        stage: Publish
-
+    - name: "Copy to S3 Release Bucket"
+      stage: Publish
+      script:
+        - echo "Copy to S3 Release Bucket"

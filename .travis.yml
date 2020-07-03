@@ -57,7 +57,6 @@ jobs:
 
     - name: "Community Integrations Tests on MySQL"
       stage: Tests
-      install: skip
       script:
         - echo "Community Integrations Tests on MySQL"
     - name: "Enterprise Integrations Tests on MySQL"

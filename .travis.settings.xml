@@ -1,46 +1,42 @@
 <settings>
-      <profiles>
-         <profile>
-            <id>alfresco-internal</id>
-            <activation>
-               <activeByDefault>true</activeByDefault>
-            </activation>
-
-            <!-- Added to automatically download javadoc. -->
-            <properties>
-               <downloadSources>true</downloadSources>
-               <downloadJavadocs>true</downloadJavadocs>
-            </properties>
-
-            <repositories>
-               <repository>
-                  <id>alfresco-internal</id>
-                  <releases>
-                     <enabled>true</enabled>
-                  </releases>
-                  <snapshots>
-                     <enabled>true</enabled>
-                  </snapshots>
-                  <name>Alfresco Internal Repository</name>
-                  <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
-               </repository>
-            </repositories>
-            <pluginRepositories>
-               <pluginRepository>
-                  <id>alfresco-private</id>
-                  <name>Alfresco Internal Repository</name>
-                  <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
-               </pluginRepository>
-               <!--
-               <pluginRepository>
-                 <id>alfresco-internal-snapshots</id>
-                 <name>Alfresco Internal Snapshots Repository</name>
-                 <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-snapshots</url>
-                </pluginRepository>
-               -->
-            </pluginRepositories>
-         </profile>
-      </profiles>
+   <profiles>
+      <profile>
+         <id>alfresco-internal</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
+         <repositories>
+            <repository>
+               <id>alfresco-internal</id>
+               <releases>
+                  <enabled>true</enabled>
+               </releases>
+               <snapshots>
+                  <enabled>true</enabled>
+               </snapshots>
+               <name>Alfresco Internal Repository</name>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>alfresco-internal</id>
+               <name>Alfresco Internal Repository</name>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/internal</url>
+            </pluginRepository>
+            <pluginRepository>
+               <id>alfresco-public</id>
+               <name>Alfresco Public Repository</name>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+            </pluginRepository>
+            <pluginRepository>
+               <id>alfresco-private</id>
+               <name>Alfresco Private Repository</name>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+   </profiles>
 
    <servers>
       <server>

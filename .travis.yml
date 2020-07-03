@@ -14,6 +14,10 @@ branches:
 cache:
   directories:
     - $HOME/.m2
+    - rm-community/rm-community-repo/target
+    - rm-community/rm-community-share/target
+    - rm-enterprise/rm-enterprise-repo/target
+    - rm-enterprise/rm-enterprise-share/target
 # the cache can grow constantly
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
@@ -38,7 +42,7 @@ jobs:
     - name: "Build Community"
       stage: Build AGS
       script:
-        - echo "Build Community"
+        - travis_retry travis_wait 90 mvn -B clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
     - name: "Build Enterprise"
       stage: Build AGS
       script:
@@ -58,8 +62,6 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
-      before_install:
-        - travis_retry travis_wait 90 mvn -B clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
       install:
         - travis_retry travis_wait 90 bash scripts/startAlfresco.sh apply-rm-community
       script:

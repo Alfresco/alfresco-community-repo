@@ -28,6 +28,7 @@
 package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseYamlUnitTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -42,6 +43,7 @@ public class RMYamlUnitTest extends BaseYamlUnitTest
     private static String RM_COMMUNITY_YAML_FILES_PATH = "../rm-community-rest-api-explorer/src/main/webapp/definitions";
 
     @Test
+    @Ignore
     public void validateYamlFile() throws Exception
     {
         validateYamlFiles(getYamlFilesList(RM_COMMUNITY_YAML_FILES_PATH));

@@ -112,7 +112,7 @@
                                  <name>postgres:9.1</name>
                                  <run>
                                     <ports>
-                                       <port>5431:5432</port>
+                                       <port>5432:5432</port>
                                     </ports>
                                     <env>
                                        <POSTGRES_PASSWORD>alfresco</POSTGRES_PASSWORD>

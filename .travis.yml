@@ -63,7 +63,7 @@ jobs:
     - name: "Community Rest API Tests"
       stage: Tests
       install:
-        - travis_retry travis_wait 90 bash scripts/startAlfresco.sh apply-rm-community
+        - travis_wait 90 bash scripts/startAlfresco.sh apply-rm-community
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"

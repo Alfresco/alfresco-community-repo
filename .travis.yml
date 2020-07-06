@@ -11,6 +11,14 @@ branches:
     - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
 
+env:
+  - AUTOMATION_COMMUNITY_PATH=rm-automation/rm-automation-community-rest-api
+  - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
+  - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
+  - AUTOMATION_COMMUNITY_TARGET=$AUTOMATION_COMMUNITY_PATH/target
+  - AUTOMATION_ENTERPRISE_TARGET=$AUTOMATION_ENTERPRISE_PATH/target
+  - AUTOMATION_UI_TARGET=$AUTOMATION_UI_PATH/target
+
 cache:
   directories:
     - $HOME/.m2
@@ -18,6 +26,9 @@ cache:
     - rm-community/rm-community-share/target
     - rm-enterprise/rm-enterprise-repo/target
     - rm-enterprise/rm-enterprise-share/target
+    - $AUTOMATION_COMMUNITY_TARGET
+    - $AUTOMATION_ENTERPRISE_TARGET
+    - $AUTOMATION_UI_TARGET
 # the cache can grow constantly
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
@@ -62,9 +73,9 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
-      before_install: travis_wait 60 bash scripts/downloadInstaller.sh
+      before_install: travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_TARGET
       install:
-        - travis_wait 60 bash scripts/startAlfresco.sh apply-rm-community
+        - travis_wait 60 bash scripts/startAlfresco.sh AUTOMATION_COMMUNITY_PATH apply-rm-community
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"

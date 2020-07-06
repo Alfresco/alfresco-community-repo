@@ -2,7 +2,7 @@
 # fail script immediately on any errors in external commands and print the lines
 set -ev
 
-outputFile="/rm-automation"
+outputFile="$TRAVIS_BUILD_DIR/rm-automation"
 amzFile="/eu.dl.alfresco.com/release/enterprise/5.2/5.2.7/5.2.7.4/alfresco-content-services-installer-5.2.7.4-linux-x64.bin"
 host="s3-eu-west-1.amazonaws.com"
 contentType="binary/octet-stream"

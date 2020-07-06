@@ -35,13 +35,13 @@ jobs:
   include:
     - name: "Build AGS Community"
       stage: Build AGS
-      before_install: source scripts/setUpMavenPhase.sh
+      before_script: source scripts/setUpMavenPhase.sh
       script:
         - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Enterprise"
       stage: Build AGS
-      before_install: source scripts/setUpMavenPhase.sh
+      before_script: source scripts/setUpMavenPhase.sh
       install:
         - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
@@ -49,7 +49,7 @@ jobs:
 
     - name: "Build AGS Benchmark"
       stage: Build AGS
-      before_install: source scripts/setUpMavenPhase.sh
+      before_script: source scripts/setUpMavenPhase.sh
       install:
         - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:

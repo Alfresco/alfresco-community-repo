@@ -25,7 +25,7 @@ stages:
   - release
 
 before_install:
-  - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.4 postgres -c 'max_connections=300'
+  - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
   - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
 
 install: travis_retry mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V

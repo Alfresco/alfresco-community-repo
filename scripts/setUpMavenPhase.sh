@@ -2,10 +2,9 @@
 echo "Branch name: ${TRAVIS_BRANCH}"
 
 # If this is pull request
-if [[ "${TRAVIS_PULL_REQUEST}" != "false"  ]];
+if [ "${TRAVIS_PULL_REQUEST}" != "false"  ];
 then
   export MAVEN_PHASE="verify"
-  exit 0
 fi
 
 if [ "${TRAVIS_BRANCH}" == "master" ];
@@ -17,3 +16,4 @@ then
 else
     export MAVEN_PHASE="verify"
 fi
+echo "Maven Phase: $MAVEN_PHASE"

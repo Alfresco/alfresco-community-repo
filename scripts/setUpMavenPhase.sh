@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 echo "Branch name: ${TRAVIS_BRANCH}"
-
+echo "Branch name: ${TRAVIS_PULL_REQUEST}"
 # If this is pull request
 if [ "${TRAVIS_PULL_REQUEST}" != "false"  ];
 then
   export MAVEN_PHASE="verify"
+  echo "Maven Phase: ${MAVEN_PHASE}"
+  exit 0
 fi
 
 if [ "${TRAVIS_BRANCH}" == "master" ];
@@ -16,4 +18,5 @@ then
 else
     export MAVEN_PHASE="verify"
 fi
-echo "Maven Phase: $MAVEN_PHASE"
+
+

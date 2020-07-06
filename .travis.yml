@@ -75,7 +75,7 @@ jobs:
       stage: Tests
       before_install: travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_TARGET
       install:
-        - travis_wait 60 bash scripts/startAlfresco.sh AUTOMATION_COMMUNITY_PATH apply-rm-community
+        - travis_wait 60 bash scripts/startAlfresco.sh $AUTOMATION_COMMUNITY_PATH apply-rm-community
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"

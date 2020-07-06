@@ -62,9 +62,9 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
-      before_install: travis_wait 90 bash scripts/downloadInstaller.sh
+      before_install: travis_wait 60 bash scripts/downloadInstaller.sh
       install:
-        - travis_wait 90 bash scripts/startAlfresco.sh apply-rm-community
+        - travis_wait 60 bash scripts/startAlfresco.sh apply-rm-community
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"

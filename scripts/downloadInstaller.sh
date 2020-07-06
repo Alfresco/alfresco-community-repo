@@ -17,4 +17,4 @@ curl -H "Host: s3-${region}.amazonaws.com" \
      -H "Date: ${dateValue}" \
      -H "Content-Type: ${contentType}" \
      -H "Authorization: AWS ${s3Key}:${signature}" \
-     https://s3-${region}.amazonaws.com/${bucket}/${amzFile} -o $outputFile
+     https://s3-${region}.amazonaws.com/${bucket}/${amzFile} -o ${outputFile}

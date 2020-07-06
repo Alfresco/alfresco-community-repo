@@ -5,4 +5,5 @@ set -ev
 export PROFILE=$1
 
 cd rm-automation
-mvn install -Pinstall-alfresco,${PROFILE} -Dinstaller.url=${INSTALLER_URL} -q
+ls
+mvn install -Pinstall-alfresco,${PROFILE} -q

@@ -14,3 +14,5 @@ curl -H "Host: ${host}" \
      -H "Content-Type: ${contentType}" \
      -H "Authorization: AWS $RELEASE_AWS_ACCESS_KEY:${signature}" \
      https://${host}${amzFile} -o ${outputFile}
+
+ls "$TRAVIS_BUILD_DIR/$1"

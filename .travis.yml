@@ -66,26 +66,34 @@ jobs:
       stage: Tests
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
-      install: travis_wait 60 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
-        - echo "Community Rest API Tests"
+        - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
-      install: travis_wait 60 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
+        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
       script:
-        - echo "Enterprise Rest API Tests"
+        - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Community UI Tests ..."
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Community UI Tests ..."
+        - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Enterprise UI Tests ..."
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
       script:
-        - echo "Enterprise UI Tests ..."
+        - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
 
     - name: "Source Clear Scan (SCA)"
       stage: Security Scans

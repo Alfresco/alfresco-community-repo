@@ -31,6 +31,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -54,6 +55,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -486,5 +488,36 @@ public class CachingContentStoreTest
         
         when(backingStore.delete("url")).thenReturn(false);
         assertFalse(cachingStore.delete("url"));
+    }
+
+    @Test
+    public void isDirectAccessSupported()
+    {
+        assertFalse(cachingStore.isDirectAccessSupported());
+
+        when(backingStore.isDirectAccessSupported()).thenReturn(true);
+        assertTrue(cachingStore.isDirectAccessSupported());
+    }
+
+    @Test
+    public void getDirectAccessUrlUnsupported()
+    {
+        try
+        {
+            when(backingStore.getDirectAccessUrl(anyString(), any())).thenThrow(new UnsupportedOperationException());
+            cachingStore.getDirectAccessUrl("url", null);
+            fail();
+        }
+        catch (UnsupportedOperationException e)
+        {
+            // expected
+        }
+    }
+
+    @Test
+    public void getDirectAccessUrl()
+    {
+        when(backingStore.getDirectAccessUrl(anyString(), any())).thenReturn(new DirectAccessUrl());
+        cachingStore.getDirectAccessUrl("url", null);
     }
 }

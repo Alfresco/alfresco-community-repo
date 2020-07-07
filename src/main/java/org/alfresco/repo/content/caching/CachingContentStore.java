@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.caching;
 
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -39,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
@@ -474,5 +476,15 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     public String getBeanName()
     {
         return this.beanName;
-    }    
+    }
+
+    public boolean isDirectAccessSupported()
+    {
+        return backingStore.isDirectAccessSupported();
+    }
+
+    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    {
+        return backingStore.getDirectAccessUrl(contentUrl, expiresAt);
+    }
 }

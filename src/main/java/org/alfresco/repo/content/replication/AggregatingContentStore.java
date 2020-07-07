@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.replication;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -39,6 +40,7 @@ import org.alfresco.repo.content.caching.CachingContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -261,5 +263,116 @@ public class AggregatingContentStore extends AbstractContentStore
             logger.debug("Deleted content for URL: " + contentUrl);
         }
         return deleted;
+    }
+
+    /**
+     * @return Returns <tt>true</tt> if at least one store supports direct access
+     */
+    public boolean isDirectAccessSupported()
+    {
+        // Check the primary store
+        boolean isDirectAccessSupported = primaryStore.isDirectAccessSupported();
+
+        if (!isDirectAccessSupported)
+        {
+            // Direct access is not supported by the primary store so we have to check the
+            // other stores
+            for (ContentStore store : secondaryStores)
+            {
+
+                isDirectAccessSupported = store.isDirectAccessSupported();
+
+                if (isDirectAccessSupported)
+                {
+                    break;
+                }
+            }
+        }
+
+        return isDirectAccessSupported;
+    }
+
+    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException("ReplicatingContentStore not initialised");
+        }
+
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        try
+        {
+            // Keep track of the unsupported state of the content URL - it might be a rubbish URL
+            boolean contentUrlSupported = true;
+            boolean directAccessUrlSupported = true;
+
+            DirectAccessUrl directAccessUrl = null;
+
+            // Check the primary store
+            try
+            {
+                directAccessUrl = primaryStore.getDirectAccessUrl(contentUrl, expiresAt);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                // The store does not support direct access URL
+                directAccessUrlSupported = false;
+            } 
+            catch (UnsupportedContentUrlException e)
+            {
+                // The store can't handle the content URL
+                contentUrlSupported = false;
+            }
+
+            if (directAccessUrl != null)
+            {
+                return directAccessUrl;
+            }
+
+            // the content is not in the primary store so we have to go looking for it
+            for (ContentStore store : secondaryStores)
+            {
+                try
+                {
+                    directAccessUrl = store.getDirectAccessUrl(contentUrl, expiresAt);
+                }
+                catch (UnsupportedOperationException e)
+                {
+                    // The store does not support direct access URL
+                    directAccessUrlSupported = false;
+                }
+                catch (UnsupportedContentUrlException e)
+                {
+                    // The store can't handle the content URL
+                    contentUrlSupported = false;
+                }
+
+                if (directAccessUrl != null)
+                {
+                    break;
+                }
+            }
+
+            if (directAccessUrl == null)
+            {
+                if (!directAccessUrlSupported)
+                {
+                    // The direct access URL was not supported
+                    throw new UnsupportedOperationException("Retrieving direct access URLs is not supported by this content store.");
+                }
+                else if (!contentUrlSupported)
+                {
+                    // The content URL was not supported
+                    throw new UnsupportedContentUrlException(this, contentUrl);
+                }
+            }
+
+            return directAccessUrl;
+        }
+        finally
+        {
+            readLock.unlock();
+        }
     }
 }

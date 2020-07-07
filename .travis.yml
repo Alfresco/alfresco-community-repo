@@ -67,7 +67,7 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
-      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
         - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Enterprise Rest API Tests"
@@ -75,7 +75,7 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
-      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
       script:
         - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Community UI Tests ..."
@@ -83,7 +83,7 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-community -f $AUTOMATION_UI_PATH/pom.xml
       script:
         - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
     - name: "Enterprise UI Tests ..."
@@ -91,7 +91,7 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+      install: travis_wait 15 mvn install -Pinstall-alfresco,apply-rm-enterprise -f $AUTOMATION_UI_PATH/pom.xml
       script:
         - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
 

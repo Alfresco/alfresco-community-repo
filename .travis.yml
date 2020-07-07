@@ -78,9 +78,7 @@ jobs:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
       install: travis_wait 20 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
-      script:
-        - echo "Community Rest API Tests"
-        - curl --output /dev/null --silent --head --fail http://localhost:8080/alfresco
+      script: travis_wait 90 mvn -B install -Prun-alfresco  -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:

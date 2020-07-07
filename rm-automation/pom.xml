@@ -145,8 +145,8 @@
                         </goals>
                         <configuration>
                            <target>
-                              <echo>Recreating database...</echo>
-                              <sql driver="org.postgresql.Driver" url="jdbc:postgresql:template1" userid="alfresco" password="alfresco" autocommit="true">drop database if exists alfresco; create database alfresco</sql>
+<!--                              <echo>Recreating database...</echo>-->
+<!--                              <sql driver="org.postgresql.Driver" url="jdbc:postgresql:template1" userid="alfresco" password="alfresco" autocommit="true">drop database if exists alfresco; create database alfresco</sql>-->
                               <chmod file="target/alf-installer.bin" perm="a+x" verbose="true" />
                               <echo>Installing Alfresco...</echo>
                               <exec executable="${basedir}/target/alf-installer.bin" dir="target" failonerror="true">

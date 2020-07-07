@@ -28,7 +28,6 @@
 package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseYamlUnitTest;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**

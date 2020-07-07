@@ -16,18 +16,10 @@ env:
     - AUTOMATION_COMMUNITY_PATH=rm-automation/rm-automation-community-rest-api
     - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
     - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
-    - TARGET=target
 
 cache:
   directories:
     - $HOME/.m2
-    - rm-community/rm-community-repo/target
-    - rm-community/rm-community-share/target
-    - rm-enterprise/rm-enterprise-repo/target
-    - rm-enterprise/rm-enterprise-share/target
-    - $AUTOMATION_COMMUNITY_PATH/$TARGET
-    - $AUTOMATION_ENTERPRISE_PATH/$TARGET
-    - $AUTOMATION_UI_PATH/$TARGET
 # the cache can grow constantly
 before_cache:
   - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
@@ -52,7 +44,7 @@ jobs:
     - name: "Build Community"
       stage: Build AGS
       script:
-        - travis_retry travis_wait 90 mvn -B clean install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+        - echo "Build Community"
     - name: "Build Enterprise"
       stage: Build AGS
       script:
@@ -72,13 +64,18 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
-      before_install: travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/$TARGET
-      install:
-        - travis_wait 60 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+      before_install:
+        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+        - travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
+      install: travis_wait 60 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
+        - travis_wait 60 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
+      install: travis_wait 60 mvn install -Pinstall-alfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
       script:
         - echo "Enterprise Rest API Tests"
     - name: "Community UI Tests ..."

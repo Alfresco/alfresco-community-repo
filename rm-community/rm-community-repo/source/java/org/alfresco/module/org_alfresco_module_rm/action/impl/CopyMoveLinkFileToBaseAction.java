@@ -290,7 +290,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
             final boolean create = createValue == null ? false : createValue.booleanValue();
             QName type = getNodeService().getType(actionedUponNodeRef);
-            final boolean isRecord = (getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(type));
+            final boolean isRecord = getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT);
 
             // create or resolve the specified path
             path = getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
@@ -310,6 +310,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param action  Action to use for reporting if anything goes wrong
      * @param parent  Parent of path to be created
      * @param actionedUponNodeRef  The node subject to the file/move/copy action
+     * @param isRecord true if node is a CONTENT SubType
      * @param pathElements  The elements of the path to be created
      * @param targetisUnfiledRecords  true if the target is within unfiled records
      * @param create  true if the path should be creeated if it does not exist

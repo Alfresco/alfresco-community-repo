@@ -43,7 +43,6 @@ public class RMYamlUnitTest extends BaseYamlUnitTest
     private static String RM_COMMUNITY_YAML_FILES_PATH = "../rm-community-rest-api-explorer/src/main/webapp/definitions";
 
     @Test
-    @Ignore
     public void validateYamlFile() throws Exception
     {
         validateYamlFiles(getYamlFilesList(RM_COMMUNITY_YAML_FILES_PATH));

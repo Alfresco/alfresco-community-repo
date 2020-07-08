@@ -77,7 +77,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     public enum CopyMoveLinkFileToActionMode
     {
         COPY, MOVE, LINK
-    };
+    }
 
     /** Action Mode */
     private CopyMoveLinkFileToActionMode mode;
@@ -289,13 +289,15 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             // get the create parameter
             Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
             final boolean create = createValue == null ? false : createValue.booleanValue();
+            QName type = getNodeService().getType(actionedUponNodeRef);
+            final boolean isRecord = getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT);
 
             // create or resolve the specified path
             path = getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
             {
                 public NodeRef execute() throws Throwable
                 {
-                    return createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+                    return createOrResolvePath(action, context, actionedUponNodeRef, isRecord, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
                 }
             }, false, true);
         }
@@ -308,13 +310,14 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param action  Action to use for reporting if anything goes wrong
      * @param parent  Parent of path to be created
      * @param actionedUponNodeRef  The node subject to the file/move/copy action
+     * @param isRecord true if node is a CONTENT SubType
      * @param pathElements  The elements of the path to be created
      * @param targetisUnfiledRecords  true if the target is within unfiled records
      * @param create  true if the path should be creeated if it does not exist
      * @param creating  true if we have already created the parent and therefore can skip the check to see if the next path element already exists
      * @return
      */
-    private NodeRef createOrResolvePath(Action action, NodeRef parent, NodeRef actionedUponNodeRef, List<String> pathElements, boolean targetisUnfiledRecords, boolean create, boolean creating)
+    private NodeRef createOrResolvePath(Action action, NodeRef parent, NodeRef actionedUponNodeRef, boolean isRecord, List<String> pathElements, boolean targetisUnfiledRecords, boolean create, boolean creating)
     {
         NodeRef nodeRef = null;
         String childName = pathElements.get(0);
@@ -328,7 +331,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             if(create)
             {
                 creating = true;
-                boolean lastAsFolder = lastPathElement && (getDictionaryService().isSubClass(getNodeService().getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(getNodeService().getType(actionedUponNodeRef)));
+                boolean lastAsFolder = lastPathElement && isRecord;
                 nodeRef = createChild(action, parent, childName, targetisUnfiledRecords, lastAsFolder);
             }
             else
@@ -348,7 +351,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         }
         if(pathElements.size() > 1)
         {
-            nodeRef = createOrResolvePath(action, nodeRef, actionedUponNodeRef, pathElements.subList(1, pathElements.size()), targetisUnfiledRecords, create, creating);
+            nodeRef = createOrResolvePath(action, nodeRef, actionedUponNodeRef, isRecord, pathElements.subList(1, pathElements.size()), targetisUnfiledRecords, create, creating);
         }
         return nodeRef;
     }

@@ -243,6 +243,10 @@
    </listener>
 
    <!-- Enterprise listener placeholder -->
+   <servlet>
+      <servlet-name>downloadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.DownloadContentServlet</servlet-class>
+   </servlet>
 
    <servlet>
       <servlet-name>WebDAV</servlet-name>
@@ -383,6 +387,16 @@
    </servlet>
 
    <!-- Enterprise servlet placeholder -->
+
+   <servlet-mapping>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/download/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/d/*</url-pattern>
+   </servlet-mapping>
 
    <servlet-mapping>
         <servlet-name>WebDAV</servlet-name>

@@ -4,12 +4,15 @@ language: java
 jdk:
   - openjdk8
 
+services:
+  - docker
+
 branches:
   only:
-    - /release\/V2.7.*/
-    - /feature-2.7\/.*/
-    - /merge-2.7\/.*/
-    - /hotfix-2.7\/.*/
+    - /release\/V3.0.*/
+    - /feature-3.0\/.*/
+    - /merge-3.0\/.*/
+    - /hotfix-3.0\/.*/
 
 cache:
   directories:
@@ -37,7 +40,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       script:
-        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Enterprise"
       stage: Build AGS
@@ -45,7 +48,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
-        - travis_retry travis_wait 60 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 60 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Benchmark"
       stage: Build AGS

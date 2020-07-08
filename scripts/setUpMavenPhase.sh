@@ -6,6 +6,6 @@ if [[ "${TRAVIS_BRANCH}" == "master" || "${TRAVIS_BRANCH}" = release* ]] && [ "$
 then
     export MAVEN_PHASE="deploy"
 else
-    export MAVEN_PHASE="deploy"
+    export MAVEN_PHASE="verify"
 fi
 

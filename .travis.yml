@@ -1,3 +1,5 @@
+import:
+  - source: travis-env-vars.yml
 os: linux
 dist: xenial
 language: java
@@ -10,12 +12,6 @@ branches:
     - /feature-2.7\/.*/
     - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
-
-env:
-  global:
-    - AUTOMATION_COMMUNITY_PATH=rm-automation/rm-automation-community-rest-api
-    - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
-    - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
 
 cache:
   directories:
@@ -78,7 +74,11 @@ jobs:
         - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
       install: travis_wait 20 mvn install -Pinstall-alfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
-      script: travis_wait 90 mvn -B install -Prun-alfresco  -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+      script:
+        - echo "Community Rest API Tests"
+# Uncomment following line to start alfresco env using run-alfresco profile and run the tests.
+# Currently commented because running tests is part of APPS-236 task
+#      travis_wait 90 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:

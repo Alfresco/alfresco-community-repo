@@ -5,6 +5,11 @@
          <activation>
             <activeByDefault>true</activeByDefault>
          </activation>
+		 <!-- Added to automatically download javadoc. -->
+	     <properties>
+		  <downloadSources>true</downloadSources>
+		  <downloadJavadocs>true</downloadJavadocs>
+		 </properties>
          <repositories>
             <repository>
                <id>alfresco-internal</id>
@@ -55,5 +60,10 @@
          <username>${env.MAVEN_USERNAME}</username>
          <password>${env.MAVEN_PASSWORD}</password>
       </server>
+	  <server>
+		 <id>alfresco-internal-snapshots/id>
+         <username>${env.MAVEN_USERNAME}</username>
+         <password>${env.MAVEN_PASSWORD}</password>
+	  </server>
    </servers>
 </settings>

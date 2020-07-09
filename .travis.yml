@@ -73,8 +73,9 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
       install:
-        - docker --version
-        - docker-compose -f rm-community/rm-community-repo/docker-compose.yml up -d
+        - cd rm-community/rm-community-repo
+        - docker-compose up -d
+      before_script:
         - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community Rest API Tests"
@@ -83,7 +84,9 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
       install:
-        - docker-compose -f rm-enterprise/rm-enterprise-repo/docker-compose.yml up -d
+        - cd rm-enterprise/rm-enterprise-repo
+        - docker-compose up -d
+      before_script:
         - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise Rest API Tests"
@@ -92,7 +95,9 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
       install:
-        - docker-compose -f rm-community/rm-community-share/docker-compose.yml up -d
+        - cd rm-community/rm-community-share
+        - docker-compose up -d
+      before_script:
         - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community UI Tests ..."
@@ -101,7 +106,9 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
       install:
-        - docker-compose -f rm-enterprise/rm-enterprise-share/docker-compose.yml up -d
+        - cd rm-enterprise/rm-enterprise-share
+        - docker-compose up -d
+      before_script:
         - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise UI Tests ..."

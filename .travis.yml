@@ -9,10 +9,10 @@ services:
 
 branches:
   only:
-    - /release\/V3.0.*/
-    - /feature-3.0\/.*/
-    - /merge-3.0\/.*/
-    - /hotfix-3.0\/.*/
+    - /release\/V3.\d.*/
+    - /feature-3.\d\/.*/
+    - /merge-3.\d\/.*/
+    - /hotfix-3.\d\/.*/
 
 cache:
   directories:
@@ -20,7 +20,7 @@ cache:
 
 # the cache can grow constantly
 before_cache:
-  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-governace*
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"

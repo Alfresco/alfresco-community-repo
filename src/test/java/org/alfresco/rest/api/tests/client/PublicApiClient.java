@@ -74,6 +74,7 @@ import org.alfresco.rest.api.tests.client.data.Site;
 import org.alfresco.rest.api.tests.client.data.SiteContainer;
 import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
+import org.alfresco.rest.api.tests.client.data.SiteGroup;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -1131,6 +1132,35 @@ public class PublicApiClient
         public void removeFavouriteSite(String personId, FavouriteSite site) throws PublicApiException
         {
             remove("people", personId, "favorite-sites", site.getSiteId(), "Failed to remove favourite site");
+        }
+
+        public SiteGroup addGroup(String siteId, SiteGroup group) throws PublicApiException
+        {
+            HttpResponse response = create("sites", siteId, "group-members", null, group.toJSON().toString() , "Failed to add site groups");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+        }
+
+        public ListResponse<SiteGroup> getGroups(String siteId, Map<String, String> params) throws PublicApiException
+        {
+            HttpResponse response = getAll("sites", siteId, "group-members", null, params, "Failed to fetch all site groups");
+            return SiteGroup.parseGroupMemberOfSites(siteId, response.getJsonResponse());
+        }
+
+        public SiteGroup getGroup(String siteId, String groupId) throws PublicApiException
+        {
+            HttpResponse response = getSingle("sites", siteId, "group-members", groupId.toString() , "Failed to get a site group");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+        }
+
+        public SiteGroup updateGroup(String siteId, SiteGroup group) throws PublicApiException
+        {
+            HttpResponse response = update("sites", siteId, "group-members", group.getId(), group.toJSON().toString() , "Failed to update a site group");
+            return SiteGroup.parseSiteGroup(siteId, (JSONObject)response.getJsonResponse().get("entry"));
+        }
+
+        public void deleteGroup(String siteId, String groupId) throws PublicApiException
+        {
+            remove("sites", siteId, "group-members", groupId , "Failed to delete site group");
         }
     }
 

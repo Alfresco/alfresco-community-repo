@@ -762,6 +762,7 @@
         <property name="siteSurfConfig" ref="siteSurfConfig" />
         <property name="permissionService" ref="PermissionService" />
         <property name="siteServiceImpl" ref="siteService" />
+        <property name="authorityService" ref="authorityService" />
     </bean>
 
     <bean id="siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
@@ -1470,5 +1471,9 @@
 
     <bean class="org.alfresco.rest.api.groups.GroupMembersRelation">
         <property name="groups" ref="Groups" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.groups.SiteGroupsRelation">
+        <property name="sites" ref="Sites" />
     </bean>
 </beans>

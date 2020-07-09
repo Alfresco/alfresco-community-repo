@@ -105,7 +105,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 	    	{
 		    	int skipCount = 0;
 				int maxItems = 2;
-				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 6);
 				publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
 				ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(testSite.getSiteId(), createParams(paging, null));
 				checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
@@ -114,7 +114,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 	    	{
 				int skipCount = 2;
 				int maxItems = 10;
-				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 6);
 				publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
 				ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(testSite.getSiteId(), createParams(paging, null));
 				checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
@@ -132,7 +132,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 	    	{
 				int skipCount = 2;
 				int maxItems = 10;
-				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 6);
 				publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
 				sitesProxy.getSiteMembers(GUID.generate(), createParams(paging, null));
 				fail();
@@ -415,7 +415,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 			{
 		    	int skipCount = 0;
 				int maxItems = Integer.MAX_VALUE;
-				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+				Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 2);
 				ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
 				checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
 			}
@@ -559,7 +559,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 				{
 			    	int skipCount = 0;
 					int maxItems = Integer.MAX_VALUE;
-					Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+					Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 2);
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
 					ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
 					checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
@@ -658,7 +658,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 
 					int skipCount = 0;
 					int maxItems = Integer.MAX_VALUE;
-					Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
+					Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), 3);
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
 					ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
 					checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);

@@ -71,6 +71,7 @@ import org.junit.runners.Suite;
     GroupsTest.class,
     TestPeople.class,
     TestSiteMembers.class,
+    TestSiteGroups.class,
     TestPersonSites.class,
     TestSiteMembershipRequests.class,
     TestFavourites.class,

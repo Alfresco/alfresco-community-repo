@@ -51,6 +51,7 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
     private String siteId;
 	private String role;
 	private Status status;
+	private boolean isMemberOfGroup;
 
 	public SiteMember()
 	{
@@ -75,6 +76,15 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 		this.role = role;
 	}
     
+	public SiteMember(String memberId, Person member, String siteId, String role, boolean isMemberOfGroup)
+	{
+		this.memberId = memberId;
+		this.member = member;
+		this.siteId = siteId;
+		this.role = role;
+		this.isMemberOfGroup = isMemberOfGroup;
+	}
+
     public String getMemberId()
     {
 		return memberId;
@@ -120,22 +130,32 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 		return role;
 	}
 
+	public boolean isMemberOfGroup()
+	{
+		return isMemberOfGroup;
+	}
+
+	public void setMemberOfGroup(boolean memberOfGroup)
+	{
+		isMemberOfGroup = memberOfGroup;
+	}
+
 	@Override
 	public String toString()
 	{
 		return "SiteMember [memberId=" + memberId + ", member=" + member
 				+ ", siteId=" + siteId + ", role=" + role + ", status="
-				+ status + "]";
+				+ status + ", isMemberOfGroup=" + isMemberOfGroup + "]";
 	}
 
 	public static SiteMember parseSiteMember(String siteId, JSONObject jsonObject)
 	{
 		String id = (String)jsonObject.get("id");
 		String role = (String)jsonObject.get("role");
+		boolean isMemberOfGroup = (boolean)jsonObject.get("isMemberOfGroup");
 		JSONObject personJSON = (JSONObject)jsonObject.get("person");
 		Person member = Person.parsePerson(personJSON);
-		SiteMember siteMember = new SiteMember(id, member, siteId, role);
-		return siteMember;
+		return new SiteMember(id, member, siteId, role, isMemberOfGroup);
 	}
 
 	public static ListResponse<SiteMember> parseSiteMembers(String siteId, JSONObject jsonObject)

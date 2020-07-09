@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.api.people.PeopleEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.service.cmr.site.SiteRole;
 
 /**
  * Represents site membership.
@@ -41,6 +40,7 @@ public class SiteMember
 {
 	private String personId;
 	private String role;
+	private boolean isMemberOfGroup;
 
 	public SiteMember()
 	{
@@ -59,6 +59,22 @@ public class SiteMember
 		}
 		this.personId = personId;
 		this.role = role;
+	}
+
+	public SiteMember(String personId, String role, boolean isMemberOfGroup)
+	{
+		super();
+		if(personId == null)
+		{
+			throw new IllegalArgumentException();
+		}
+		if(role == null)
+		{
+			throw new IllegalArgumentException();
+		}
+		this.personId = personId;
+		this.role = role;
+		this.isMemberOfGroup = isMemberOfGroup;
 	}
 
 	@JsonProperty("id")
@@ -90,6 +106,16 @@ public class SiteMember
 			throw new IllegalArgumentException();
 		}
 		this.personId = personId;
+	}
+
+	public void setIsMemberOfGroup(boolean isMemberOfGroup)
+	{
+		this.isMemberOfGroup = isMemberOfGroup;
+	}
+
+	public boolean getIsMemberOfGroup()
+	{
+		return isMemberOfGroup;
 	}
 
 	@Override
@@ -127,13 +153,18 @@ public class SiteMember
 			return false;
 		}
 		
+		if (isMemberOfGroup != other.isMemberOfGroup)
+		{
+			return false;
+		}
+
 		return(role == other.role);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "SiteMember [personId=" + personId + ", role=" + role + "]";
+		return "SiteMember [personId=" + personId + ", isMemberOfGroup=" + isMemberOfGroup + ", role=" + role + "]";
 	}
 	
 }

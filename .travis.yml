@@ -73,8 +73,8 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
       install:
-        - ./scripts/startAlfresco.sh rm-community/rm-community-repo
-        - ./scripts/waitForAlfrescoToStart.sh
+        - bash scripts/startAlfresco.sh rm-community/rm-community-repo
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"
@@ -82,8 +82,8 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
       install:
-        - ./scripts/startAlfresco.sh rm-enterprise/rm-enterprise-repo
-        - ./scripts/waitForAlfrescoToStart.sh
+        - bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-repo
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise Rest API Tests"
     - name: "Community UI Tests ..."
@@ -91,8 +91,8 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
       install:
-        - ./scripts/startAlfresco.sh rm-community/rm-community-share
-        - ./scripts/waitForAlfrescoToStart.sh
+        - bash scripts/startAlfresco.sh rm-community/rm-community-share
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community UI Tests ..."
     - name: "Enterprise UI Tests ..."
@@ -100,8 +100,8 @@ jobs:
       before_install:
         - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
       install:
-        - ./scripts/startAlfresco.sh rm-enterprise/rm-enterprise-share
-        - ./scripts/waitForAlfrescoToStart.sh
+        - bash scripts/startAlfresco.sh rm-enterprise/rm-enterprise-share
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise UI Tests ..."
     - name: "Source Clear Scan (SCA)"

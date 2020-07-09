@@ -25,9 +25,8 @@
  */
 package org.alfresco.util.test.junitrules;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.io.Serializable;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
@@ -39,6 +38,9 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -280,7 +282,58 @@ public class TemporarySites extends AbstractPersonRule
                                                                userNames.get(2),
                                                                userNames.get(3));
     }
-    
+
+    /*
+     * This method creates a test site with n groups.
+     */
+    public List<String> createTestSiteWithGroups(final String siteShortName, String sitePreset, SiteVisibility visibility, String siteCreator, int noOfGroups) {
+        // create the site
+        this.createSite(sitePreset, siteShortName, null, null, visibility, siteCreator);
+
+        // create the users
+        final RetryingTransactionHelper transactionHelper = appContextRule.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        final SiteService siteService = appContextRule.getApplicationContext().getBean("siteService", SiteService.class);
+        final AuthorityService authorityService = appContextRule.getApplicationContext().getBean("authorityService", AuthorityService.class);
+        final PersonService personService = appContextRule.getApplicationContext().getBean("personService", PersonService.class);
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(siteCreator);
+
+        // Create group with one user and add it to the site
+        List<String> groupIds = transactionHelper.doInTransaction(new RetryingTransactionCallback<List<String>>() {
+            public List<String> execute() throws Throwable {
+                List<String> groups = new ArrayList<String>(noOfGroups);
+
+                for (int i = 0; i < noOfGroups; i++) {
+                    String shareRole = SiteModel.STANDARD_PERMISSIONS.get(i % 4);
+                    final String groupName = "Test_Group_" + GUID.generate();
+                    final String userName = "Test_User_" + GUID.generate();
+
+                    log.debug("Creating temporary site user " + userName);
+
+                    final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                    properties.put(ContentModel.PROP_USERNAME, userName);
+                    properties.put(ContentModel.PROP_FIRSTNAME, GUID.generate());
+                    properties.put(ContentModel.PROP_LASTNAME, GUID.generate());
+                    properties.put(ContentModel.PROP_EMAIL, GUID.generate() + "@test.com");
+                    personService.createPerson(properties);
+
+                    log.debug("Creating temporary site group " + groupName);
+                    final String groupId = authorityService.createAuthority(AuthorityType.GROUP, groupName);
+                    authorityService.setAuthorityDisplayName(groupId, GUID.generate());
+                    authorityService.addAuthority(groupId, userName);
+                    siteService.setMembership(siteShortName, groupId, shareRole);
+                    groups.add(userName);
+                }
+
+                return groups;
+            }
+        });
+
+
+        return groupIds;
+    }
+
     /**
      * A simple POJO class to store the {@link SiteInfo} for this site and its initial, automatically created members' usernames.
      * 

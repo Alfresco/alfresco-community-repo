@@ -27,20 +27,20 @@ package org.alfresco.repo.site;
 
 /**
  * Conveys parameters for the site members canned query.
- * 
+ *
  * @author steveglover
  *
  */
 public class SiteMembersCannedQueryParams
 {
 	private String shortName;
-	private boolean collapseGroups;
+	final private boolean expandGroups;
 
-	public SiteMembersCannedQueryParams(String shortName, boolean collapseGroups)
+	public SiteMembersCannedQueryParams(String shortName, boolean expandGroups)
 	{
 		super();
 		this.shortName = shortName;
-		this.collapseGroups = collapseGroups;
+		this.expandGroups = expandGroups;
 	}
 
 	public String getShortName()
@@ -48,8 +48,8 @@ public class SiteMembersCannedQueryParams
 		return shortName;
 	}
 
-	public boolean isCollapseGroups()
+	public boolean isExpandGroups()
 	{
-		return collapseGroups;
+		return expandGroups;
 	}
 }

@@ -25,36 +25,34 @@
  */
 package org.alfresco.repo.site;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
+import org.alfresco.util.Pair;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Conveys information for a member of a site.
- * 
+ *
  * @author steveglover
  *
  */
-public class SiteMembership
+@AlfrescoPublicApi
+public class SiteMembership extends AbstractSiteMembership
 {
-    private SiteInfo siteInfo;
-    private String personId;
     private String firstName;
     private String lastName;
-    private String role;
+    private boolean isMemberOfGroup;
 
-    public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName,
+    /**
+     * @deprecated from 7.0.0
+     */
+    public SiteMembership(SiteInfo siteInfo, String id, String firstName, String lastName,
             String role)
     {
-        super();
-        if (siteInfo == null)
-        {
-            throw new java.lang.IllegalArgumentException();
-        }
-        if (personId == null)
-        {
-            throw new java.lang.IllegalArgumentException(
-                    "Person required building site membership of " + siteInfo.getShortName());
-        }
+        super(siteInfo,id, role);
         if (firstName == null)
         {
             throw new java.lang.IllegalArgumentException(
@@ -65,49 +63,38 @@ public class SiteMembership
             throw new java.lang.IllegalArgumentException(
                     "LastName required building site membership of " + siteInfo.getShortName());
         }
-        if (role == null)
-        {
-            throw new java.lang.IllegalArgumentException(
-                    "Role required building site membership of " + siteInfo.getShortName());
-        }
-        this.siteInfo = siteInfo;
-        this.personId = personId;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.role = role;
     }
 
-    public SiteMembership(SiteInfo siteInfo, String personId, String role)
+    public SiteMembership(SiteInfo siteInfo, String id, String firstName, String lastName,
+            String role, boolean isMemberOfGroup)
     {
-        super();
-        if (siteInfo == null)
-        {
-            throw new java.lang.IllegalArgumentException();
-        }
-        if (personId == null)
+        super(siteInfo, id, role);
+        if (firstName == null)
         {
             throw new java.lang.IllegalArgumentException(
-                    "Person required building site membership of " + siteInfo.getShortName());
+                    "FirstName required building site membership of " + siteInfo.getShortName());
         }
-        if (role == null)
+        if (lastName == null)
         {
             throw new java.lang.IllegalArgumentException(
-                    "Role required building site membership of " + siteInfo.getShortName());
+                    "LastName required building site membership of " + siteInfo.getShortName());
         }
-
-        this.siteInfo = siteInfo;
-        this.personId = personId;
-        this.role = role;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.isMemberOfGroup = isMemberOfGroup;
     }
 
-    public SiteInfo getSiteInfo()
+    public SiteMembership(SiteInfo siteInfo, String id, String role)
     {
-        return siteInfo;
+        super(siteInfo, id, role);
     }
 
+    /** @deprecated from 7.0.0 use getId instead */
     public String getPersonId()
     {
-        return personId;
+        return id;
     }
 
     public String getFirstName()
@@ -120,9 +107,9 @@ public class SiteMembership
         return lastName;
     }
 
-    public String getRole()
+    public boolean isMemberOfGroup()
     {
-        return role;
+        return isMemberOfGroup;
     }
 
     @Override
@@ -130,7 +117,7 @@ public class SiteMembership
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((personId == null) ? 0 : personId.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((role == null) ? 0 : role.hashCode());
         result = prime * result + ((getSiteInfo() == null) ? 0 : getSiteInfo().hashCode());
         return result;
@@ -146,15 +133,19 @@ public class SiteMembership
         if (getClass() != obj.getClass())
             return false;
         SiteMembership other = (SiteMembership) obj;
-        if (personId == null)
+        if (id == null)
         {
-            if (other.personId != null)
+            if (other.id != null)
                 return false;
         }
-        else if (!personId.equals(other.personId))
+        else if (!id.equals(other.id))
             return false;
         if (role != other.role)
             return false;
+
+        if (isMemberOfGroup != other.isMemberOfGroup)
+            return false;
+
         if (getSiteInfo() == null)
         {
             if (other.getSiteInfo() != null)
@@ -168,8 +159,42 @@ public class SiteMembership
     @Override
     public String toString()
     {
-        return "SiteMembership [siteInfo=" + getSiteInfo() + ", personId=" + personId
-                + ", firstName=" + firstName + ", lastName=" + lastName + ", role=" + role + "]";
+        return "SiteMembership [siteInfo=" + getSiteInfo() + ", id=" + id
+                + ", firstName=" + firstName + ", lastName=" + lastName + ", role=" + role +
+                ", isMemberOfGroup = " + isMemberOfGroup + "]";
     }
 
+
+    static int compareTo(List<Pair<? extends Object, CannedQuerySortDetails.SortOrder>> sortPairs, SiteMembership o1, SiteMembership o2)
+    {
+        String personId1 = o1.getPersonId();
+        String personId2 = o2.getPersonId();
+        String firstName1 = o1.getFirstName();
+        String firstName2 = o2.getFirstName();
+        String lastName1 = o1.getLastName();
+        String lastName2 = o2.getLastName();
+        String siteRole1 = o1.getRole();
+        String siteRole2 = o2.getRole();
+        String shortName1 = o1.getSiteInfo().getShortName();
+        String shortName2 = o2.getSiteInfo().getShortName();
+
+        int personId = SiteMembershipComparator.safeCompare(personId1, personId2);
+        int firstName = SiteMembershipComparator.safeCompare(firstName1, firstName2);
+        int siteShortName = SiteMembershipComparator.safeCompare(shortName1, shortName2);
+        int lastName = SiteMembershipComparator.safeCompare(lastName1, lastName2);
+        int siteRole = SiteMembershipComparator.safeCompare(siteRole1, siteRole2);
+
+        if (siteRole == 0 && siteShortName == 0 && personId == 0)
+        {
+            // equals contract
+            return 0;
+        }
+
+        return SiteMembershipComparator.compareSiteMembersBody(sortPairs, personId1, personId2, lastName1, lastName2, siteRole1, siteRole2, personId, firstName, lastName, siteRole, 0);
+    }
+
+    static Comparator<SiteMembership> getComparator(List<Pair<?, CannedQuerySortDetails.SortOrder>> sortPairs)
+    {
+        return (SiteMembership o1, SiteMembership o2) -> compareTo(sortPairs, o1, o2);
+    }
 }

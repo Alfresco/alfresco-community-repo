@@ -48,10 +48,10 @@ public class SiteMembershipTest
     String lastName = UUID.randomUUID().toString();
     String role = "Consumer";
 
-    String personErrorMessage = "Person required building site membership of ";
+    String idErrorMessage = "Id required building site membership";
     String firstNameErrorMessage = "FirstName required building site membership of ";
     String lastNameErrorMessage = "LastName required building site membership of ";
-    String roleErrorMessage = "Role required building site membership of ";
+    String roleErrorMessage = "Role required building site membership";
 
     @Before
     public void createSite()
@@ -73,7 +73,7 @@ public class SiteMembershipTest
         }
         catch (IllegalArgumentException e)
         {
-            assertEquals(personErrorMessage + siteInfo.getShortName(), e.getMessage());
+            assertEquals(idErrorMessage, e.getMessage());
         }
 
         try
@@ -82,7 +82,7 @@ public class SiteMembershipTest
         }
         catch (IllegalArgumentException e)
         {
-            assertEquals(personErrorMessage + siteInfo.getShortName(), e.getMessage());
+            assertEquals(idErrorMessage, e.getMessage());
         }
     }
 
@@ -95,7 +95,7 @@ public class SiteMembershipTest
         }
         catch (IllegalArgumentException e)
         {
-            assertEquals(roleErrorMessage + siteInfo.getShortName(), e.getMessage());
+            assertEquals(roleErrorMessage, e.getMessage());
         }
 
         try
@@ -104,7 +104,7 @@ public class SiteMembershipTest
         }
         catch (IllegalArgumentException e)
         {
-            assertEquals(roleErrorMessage + siteInfo.getShortName(), e.getMessage());
+            assertEquals(roleErrorMessage, e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class SiteMembershipTest
     }
 
     @Test
-    public void testNullLastNale() throws Exception
+    public void testNullLastName() throws Exception
     {
         try
         {

@@ -55,7 +55,7 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
         this.comparatorType = comparatorType;
     }
 
-    private <T extends Object> int safeCompare(Comparable<T> o1, T o2)
+    static <T extends Object> int safeCompare(Comparable<T> o1, T o2)
     {
         int ret = 0;
 
@@ -115,8 +115,8 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
         return ret;
     }
 
-    private int compareMembersBody(String personId1, String personId2, String lastName1, String lastName2, String siteRole1, String siteRole2, int personId, int firstName,
-            int lastName, int siteRole, int ret)
+    static int compareSiteMembersBody(List<Pair<? extends Object, SortOrder>> sortPairs, String personId1, String personId2, String lastName1, String lastName2, String siteRole1, String siteRole2, int personId, int firstName,
+                                      int lastName, int siteRole, int ret)
     {
         for (Pair<? extends Object, SortOrder> pair : sortPairs)
         {
@@ -153,6 +153,38 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
                 ret = personId * multiplier;
             }
 
+            if (ret != 0)
+            {
+                break;
+            }
+        }
+        return ret;
+    }
+
+    static int compareSiteGroupsBody(List<Pair<? extends Object, SortOrder>> sortPairs, String displayName1, String displayName2, String siteRole1, String siteRole2, int displayName, int siteRole, int ret)
+    {
+        for (Pair<? extends Object, SortOrder> pair : sortPairs)
+        {
+            Object name = pair.getFirst();
+            SortOrder sortOrder = pair.getSecond();
+
+            int multiplier = sortOrder.equals(SortOrder.ASCENDING) ? 1 : -1;
+            if (name.equals(SiteService.SortFields.DisplayName))
+            {
+                if (displayName1 == null || displayName2 == null)
+                {
+                    continue;
+                }
+                ret = displayName * multiplier;
+            }
+            else if (name.equals(SiteService.SortFields.Role))
+            {
+                if (siteRole1 == null || siteRole2 == null)
+                {
+                    continue;
+                }
+                ret = siteRole * multiplier;
+            }
             if (ret != 0)
             {
                 break;
@@ -245,7 +277,7 @@ public class SiteMembershipComparator implements Comparator<SiteMembership>
             }
             case MEMBERS:
             {
-                ret = compareMembersBody(personId1, personId2, lastName1, lastName2, siteRole1, siteRole2, personId, firstName, lastName, siteRole, ret);
+                ret = compareSiteMembersBody(sortPairs, personId1, personId2, lastName1, lastName2, siteRole1, siteRole2, personId, firstName, lastName, siteRole, ret);
                 break;
             }
         }

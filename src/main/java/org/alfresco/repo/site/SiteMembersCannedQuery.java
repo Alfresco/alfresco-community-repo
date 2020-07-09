@@ -25,11 +25,8 @@
  */
 package org.alfresco.repo.site;
 
-import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -74,13 +71,12 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
         SiteMembersCannedQueryParams paramBean = (SiteMembersCannedQueryParams)parameters.getParameterBean();
         
         String siteShortName = paramBean.getShortName();
-        boolean collapseGroups = paramBean.isCollapseGroups();
 
 		CannedQuerySortDetails sortDetails = parameters.getSortDetails();
 		List<Pair<? extends Object, SortOrder>> sortPairs = sortDetails.getSortPairs();
 		
     	final CQSiteMembersCallback callback = new CQSiteMembersCallback(siteShortName, sortPairs);
-    	siteService.listMembers(siteShortName, null, null, collapseGroups, callback);
+    	siteService.listMembers(siteShortName, null, null, true, false, paramBean.isExpandGroups(), callback);
     	callback.done();
 
         return callback.getSiteMembers();
@@ -95,19 +91,25 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 
     private class CQSiteMembersCallback implements SiteMembersCallback
     {
-    	private String siteShortName;
     	private SiteInfo siteInfo;
     	private Set<SiteMembership> siteMembers;
 
     	CQSiteMembersCallback(String siteShortName, List<Pair<? extends Object, SortOrder>> sortPairs)
     	{
-    		this.siteShortName = siteShortName;
 			this.siteInfo = siteService.getSite(siteShortName);
-    		this.siteMembers = sortPairs != null && sortPairs.size() > 0 ? new TreeSet<SiteMembership>(new SiteMembershipComparator(sortPairs, SiteMembershipComparator.Type.MEMBERS)) : new HashSet<SiteMembership>();
+    		this.siteMembers = sortPairs != null && sortPairs.size() > 0
+					? new TreeSet<SiteMembership>(SiteMembership.getComparator(sortPairs))
+					: new HashSet<SiteMembership>();
     	}
 
+		/**
+		 * @deprecated from 7.0.0
+		 */
 		@Override
-		public void siteMember(String authority, String permission)
+		public void siteMember(String authority, String permission) {}
+
+		@Override
+		public void siteMember(String authority, String permission, boolean isMemberOfGroup)
 		{
 			String firstName = null;
 			String lastName = null;
@@ -115,12 +117,11 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 			if(personService.personExists(authority))
 			{
 				NodeRef nodeRef = personService.getPerson(authority);
-				firstName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME);
-				lastName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
+				firstName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME);
+				lastName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
 			}
 
-			SiteMembership siteMember = new SiteMembership(siteInfo, authority, firstName, lastName, permission);
-    		siteMembers.add(siteMember);
+    		siteMembers.add(new SiteMembership(siteInfo, authority, firstName, lastName, permission, isMemberOfGroup));
 		}
 
 		@Override
@@ -131,16 +132,7 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 		
 		List<SiteMembership> getSiteMembers()
 		{
-    		// "drain" the site memberships into a (sorted) list
-
-    		List<SiteMembership> siteMemberships = new ArrayList<SiteMembership>(siteMembers.size());
-    		Iterator<SiteMembership> it = siteMembers.iterator();
-    		while(it.hasNext())
-    		{
-    			siteMemberships.add(it.next());
-    			it.remove();
-    		}
-    		return siteMemberships;
+    		return new ArrayList<>(siteMembers);
 		}
 
 		void done()

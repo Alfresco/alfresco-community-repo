@@ -28,9 +28,6 @@ before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
 install: skip
 
-services:
-  - docker
-
 stages:
   - name: Build AGS
   - name: Tests
@@ -74,36 +71,38 @@ jobs:
     - name: "Community Rest API Tests"
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+        - travis_retry travis_wait 90 mvn -B install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+      install:
+        - docker --version
+        - docker-compose -f rm-community/rm-community-repo/docker-compose.yml up -d
+        - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community Rest API Tests"
-# Uncomment following line to start alfresco env using run-alfresco profile and run the tests.
-# Currently commented because running tests is part of APPS-236 task
-#      travis_wait 90 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_ENTERPRISE_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_ENTERPRISE_PATH/pom.xml
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
+      install:
+        - docker-compose -f rm-enterprise/rm-enterprise-repo/docker-compose.yml up -d
+        - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise Rest API Tests"
     - name: "Community UI Tests ..."
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_UI_PATH/pom.xml
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+      install:
+        - docker-compose -f rm-community/rm-community-share/docker-compose.yml up -d
+        - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community UI Tests ..."
     - name: "Enterprise UI Tests ..."
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B install -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests -q
-        - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_UI_PATH/target
-      install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-enterprise -q -f $AUTOMATION_UI_PATH/pom.xml
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+      install:
+        - docker-compose -f rm-enterprise/rm-enterprise-share/docker-compose.yml up -d
+        - ./scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise UI Tests ..."
     - name: "Source Clear Scan (SCA)"

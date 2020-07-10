@@ -27,6 +27,8 @@
     </distributionManagement>
 
     <properties>
+        <dependency.tika.version>1.24.1</dependency.tika.version>
+
         <dependency.alfresco-core.version>8.36</dependency.alfresco-core.version>
         <dependency.cxf.version>3.3.7</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
@@ -172,12 +174,6 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcmail-jdk15on</artifactId>
                 <version>1.66</version>
-            </dependency>
-            <!-- Newer metadata-extractor, used in TIKA, see ACS-370 -->
-            <dependency>
-                <groupId>com.drewnoakes</groupId>
-                <artifactId>metadata-extractor</artifactId>
-                <version>2.14.0</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -346,12 +342,12 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.21-20190624-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers</artifactId>
-            <version>1.21-20190624-alfresco-patched</version>
+            <version>${dependency.tika.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.tdunning</groupId>

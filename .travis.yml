@@ -12,15 +12,15 @@ branches:
     - /feature-2.7\/.*/
     - /merge-2.7\/.*/
     - /hotfix-2.7\/.*/
-#
-#cache:
-#  directories:
-#    - $HOME/.m2
-#
-## the cache can grow constantly
-#before_cache:
-#  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
-#  - rm -rf $HOME/.m2/repository/org/codehaus
+
+cache:
+  directories:
+    - $HOME/.m2
+
+# the cache can grow constantly
+before_cache:
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"

@@ -7,7 +7,7 @@
       <version>12</version>
    </parent>   
    <artifactId>alfresco-core</artifactId>
-   <version>8.37-SNAPSHOT</version>
+   <version>8.37</version>
    <name>Alfresco Core</name>
    <description>Alfresco core libraries and utils</description>
 
@@ -15,7 +15,7 @@
       <connection>scm:git:https://github.com/Alfresco/alfresco-core.git</connection>
       <developerConnection>scm:git:https://github.com/Alfresco/alfresco-core.git</developerConnection>
       <url>https://github.com/Alfresco/alfresco-core</url>
-      <tag>HEAD</tag>
+      <tag>8.37</tag>
   </scm>
 
    <distributionManagement>

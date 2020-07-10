@@ -51,7 +51,7 @@ jobs:
       install:
         - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
-        - travis_retry travis_wait 60 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 80 mvn -B -q clean ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Benchmark"
       stage: Build AGS

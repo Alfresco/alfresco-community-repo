@@ -92,7 +92,7 @@
         <property name="dictionaryService" ref="dictionaryService" />
         <property name="nodeService" ref="mlAwareNodeService" />
         <property name="globalContentPropertyRestrictions" value="${contentPropertyRestrictions.enabled}" />
-        <property name="globalContentPropertyRestrictionWhiteList" value="{contentPropertyRestrictions.whitelist}"/>
+        <property name="globalContentPropertyRestrictionWhiteList" value="${contentPropertyRestrictions.whitelist}"/>
     </bean>
 
     <bean id="disableAuditablePolicySetPropertyInterceptor" class="org.alfresco.repo.audit.DisableAuditableBehaviourInterceptor">

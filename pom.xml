@@ -29,7 +29,7 @@
     <properties>
         <dependency.tika.version>1.24.1</dependency.tika.version>
 
-        <dependency.alfresco-core.version>8.36</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>8.37</dependency.alfresco-core.version>
         <dependency.cxf.version>3.3.7</dependency.cxf.version>
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>

@@ -48,7 +48,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
         - travis_retry travis_wait 60 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
@@ -56,7 +56,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 

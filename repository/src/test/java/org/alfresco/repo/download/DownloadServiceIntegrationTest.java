@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
@@ -69,8 +70,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -123,6 +127,7 @@ public class DownloadServiceIntegrationTest
     private static PermissionService         PERMISSION_SERVICE;
     private static RetryingTransactionHelper TRANSACTION_HELPER;
     private static IntegrityChecker          INTEGRITY_CHECKER;
+    private static RepoAdminService          REPO_ADMIN_SERVICE;
     
     // Test Content 
     private NodeRef rootFolder;
@@ -136,6 +141,41 @@ public class DownloadServiceIntegrationTest
     private Set<String> allEntries;
 
     private NodeRef fileToCheckout;
+
+    // MNT-21671 Download as zip does not include custom folders.
+    // Define a custom model that is child of cm:folder
+    private static final String CUSTOM_FOLDER_MODEL_XML =
+        "<model name=\"custom:customModel\" xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
+            "   <description>Custom Model</description>" +
+            "   <author></author>" +
+            "   <version>1.0</version>" +
+
+            "   <imports>" +
+            "      <import uri=\"http://www.alfresco.org/model/dictionary/1.0\" prefix=\"d\"/>" +
+            "      <import uri=\"http://www.alfresco.org/model/content/1.0\" prefix=\"cm\"/>" +
+            "   </imports>" +
+
+            "   <namespaces>" +
+            "      <namespace uri=\"custom.model\" prefix=\"custom\"/>" +
+            "   </namespaces>" +
+
+            "   <types>" +
+            "      <type name=\"custom:folderx\">" +
+            "         <title>Custom FolderX</title>" +
+            "         <parent>cm:folder</parent>" +
+            "         <properties>" +
+            "            <property name=\"custom:invoice\">" +
+            "               <type>d:text</type>" +
+            "            </property>" +
+            "         </properties>" +
+            "         <associations>"  +
+            "         </associations>" +
+            "      </type>" +
+            "   </types>" +
+
+            "   <aspects>" +
+            "   </aspects>" +
+            "</model>";
     
     @BeforeClass public static void init()
     {
@@ -151,6 +191,7 @@ public class DownloadServiceIntegrationTest
         INTEGRITY_CHECKER.setEnabled(true);
         INTEGRITY_CHECKER.setFailOnViolation(true);
         INTEGRITY_CHECKER.setTraceOn(true);
+        REPO_ADMIN_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("RepoAdminService", RepoAdminService.class);
     }
  
     /**
@@ -203,6 +244,24 @@ public class DownloadServiceIntegrationTest
        allEntries.add("rootFolder/level1Folder2/fileToCheckout.txt");
        PERMISSION_SERVICE.setPermission(level1Folder2, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
        PERMISSION_SERVICE.setPermission(fileToCheckout, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);
+
+        // MNT-21671 Download as zip does not include custom folders.
+        // deploy custom model
+        final String modelFileName1 = "model-MNT-21671.xml";
+        InputStream modelStream = null;
+        try
+        {
+            modelStream = new ByteArrayInputStream(CUSTOM_FOLDER_MODEL_XML.getBytes("UTF-8"));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        REPO_ADMIN_SERVICE.deployModel(modelStream, modelFileName1);
+        final QName customFolderType = QName.createQName("{custom.model}folderx");
+
+        testNodes.createNode(rootFolder, "level1CustomFolder", customFolderType, AuthenticationUtil.getAdminUserName());
+        allEntries.add("rootFolder/level1CustomFolder/");
     }
     
     @Test public void createDownload() throws IOException, InterruptedException

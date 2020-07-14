@@ -20,7 +20,7 @@ cache:
 
 # the cache can grow constantly
 before_cache:
-  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-governance-services*
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
@@ -40,7 +40,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       script:
-        - travis_retry travis_wait 100 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 120 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Build AGS Enterprise"
       stage: Build AGS

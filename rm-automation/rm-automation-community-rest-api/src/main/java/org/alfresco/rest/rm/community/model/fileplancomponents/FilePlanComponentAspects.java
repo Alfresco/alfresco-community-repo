@@ -59,4 +59,6 @@ public class FilePlanComponentAspects
 
     //declare version as record aspect
     public static final String  VERSION_AS_RECORD="rmv:versionRecord";
+
+    public static final String  ASPECT_STORE_SELECTOR="cm:storeSelector";
 }

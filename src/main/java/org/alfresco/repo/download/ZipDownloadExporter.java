@@ -39,6 +39,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.download.DownloadStatus.Status;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -77,6 +78,7 @@ public class ZipDownloadExporter extends BaseExporter
     
     private RetryingTransactionHelper transactionHelper;
     private DownloadStorage downloadStorage;
+    private DictionaryService dictionaryService;
     private DownloadStatusUpdateService updateService;
 
     private Deque<Pair<String, NodeRef>> path = new LinkedList<Pair<String, NodeRef>>();
@@ -93,11 +95,12 @@ public class ZipDownloadExporter extends BaseExporter
      * @param transactionHelper RetryingTransactionHelper
      * @param updateService DownloadStatusUpdateService
      * @param downloadStorage DownloadStorage
+     * @param dictionaryService DictionaryService
      * @param downloadNodeRef NodeRef
      * @param total long
      * @param totalFileCount long
      */
-    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, NodeRef downloadNodeRef, long total, long totalFileCount)
+    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, DictionaryService dictionaryService, NodeRef downloadNodeRef, long total, long totalFileCount)
     {
         super(checkOutCheckInService, nodeService);
         try
@@ -106,6 +109,7 @@ public class ZipDownloadExporter extends BaseExporter
             this.updateService = updateService;
             this.transactionHelper = transactionHelper;
             this.downloadStorage = downloadStorage;
+            this.dictionaryService = dictionaryService;
             
             this.downloadNodeRef = downloadNodeRef;
             this.total = total;
@@ -134,7 +138,7 @@ public class ZipDownloadExporter extends BaseExporter
     {
         this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         path.push(new Pair<String, NodeRef>(currentName, nodeRef));
-        if (ContentModel.TYPE_FOLDER.equals(nodeService.getType(nodeRef)))
+        if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
         {
             String path = getPath() + PATH_SEPARATOR;
             ZipArchiveEntry archiveEntry = new ZipArchiveEntry(path);

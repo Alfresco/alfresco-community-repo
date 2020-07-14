@@ -22,6 +22,7 @@ import org.alfresco.rest.core.RestModels;
  * {
  * "entry": {
  * "role": "SiteManager",
+ * "isMemberOfGroup": false,
  * "person": {
  * "firstName": "Administrator",
  * "emailNotificationsEnabled": true,
@@ -36,6 +37,7 @@ import org.alfresco.rest.core.RestModels;
  * {
  * "entry": {
  * "role": "SiteConsumer",
+ * "isMemberOfGroup": false,
  * "person": {
  * "firstName": "CqeKxvPHBd FirstName",
  * "lastName": "LN-CqeKxvPHBd",

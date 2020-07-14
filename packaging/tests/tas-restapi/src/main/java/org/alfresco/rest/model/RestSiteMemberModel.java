@@ -23,7 +23,8 @@ public class RestSiteMemberModel extends TestModel implements IRestModel<RestSit
 
     private UserRole role;
     private String id = "no-id";
-   
+    private boolean isMemberOfGroup;
+
     private RestPersonModel person;
 
     public UserRole getRole()
@@ -49,6 +50,16 @@ public class RestSiteMemberModel extends TestModel implements IRestModel<RestSit
     public RestPersonModel getPerson()
     {
         return person;
+    }
+
+    public boolean getIsMemberOfGroup()
+    {
+        return isMemberOfGroup;
+    }
+
+    public void setIsMemberOfGroup(boolean memberOfGroup)
+    {
+        isMemberOfGroup = memberOfGroup;
     }
 
     public void setPerson(RestPersonModel person)

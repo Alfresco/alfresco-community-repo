@@ -1,3 +1,5 @@
+import:
+  - source: travis-env-vars.yml
 os: linux
 dist: xenial
 language: java
@@ -46,7 +48,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
         - travis_retry travis_wait 60 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
@@ -54,7 +56,7 @@ jobs:
       stage: Build AGS
       before_script: source scripts/setUpMavenPhase.sh
       install:
-        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        - travis_retry travis_wait 60 mvn -B -q clean install $MVN_SKIP -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
         - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
@@ -68,18 +70,38 @@ jobs:
         - echo "Enterprise Integrations Tests on MySQL"
     - name: "Community Rest API Tests"
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+      install:
+        - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community Rest API Tests"
     - name: "Enterprise Rest API Tests"
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
+      install:
+        - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise Rest API Tests"
     - name: "Community UI Tests ..."
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+      install:
+        - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Community UI Tests ..."
     - name: "Enterprise UI Tests ..."
       stage: Tests
+      before_install:
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+      install:
+        - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
+        - bash scripts/waitForAlfrescoToStart.sh
       script:
         - echo "Enterprise UI Tests ..."
 

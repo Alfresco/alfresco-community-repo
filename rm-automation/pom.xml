@@ -90,7 +90,6 @@
    </build>
 
    <profiles>
-      <!-- Profile used to install alfresco on bamboo. It can be removed after travis migration is finished -->
       <profile>
          <id>install-alfresco</id>
          <build>

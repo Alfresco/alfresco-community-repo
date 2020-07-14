@@ -2,7 +2,7 @@ os: linux
 dist: xenial
 language: java
 jdk:
-  - openjdk11
+  - openjdk8
 
 services:
   - docker

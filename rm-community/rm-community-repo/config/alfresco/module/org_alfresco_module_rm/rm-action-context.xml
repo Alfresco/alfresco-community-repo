@@ -965,31 +965,6 @@
       <property name="allowParameterSubstitutions" value="true" />
    </bean>
 
-    <!-- Worm action -->
-
-    <bean id="worm_proxy" parent="rmProxyAction" >
-        <property name="target">
-            <ref bean="worm"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="worm_security"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="worm_security" parent="actionSecurity">
-        <property name="objectDefinitionSource">
-            <value>
-                org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-                org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-            </value>
-        </property>
-    </bean>
-
-    <bean id="worm" class="org.alfresco.module.org_alfresco_module_rm.action.impl.WormAction" parent="rmAction">
-    </bean>
-
    <!-- add record types -->
 
    <bean id="addRecordTypes_proxy" parent="rmProxyAction" >

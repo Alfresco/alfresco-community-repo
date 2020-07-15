@@ -988,6 +988,7 @@
     </bean>
 
     <bean id="worm" class="org.alfresco.module.org_alfresco_module_rm.action.impl.WormAction" parent="rmAction">
+       <property name="publicAction" value="true"/>
     </bean>
 
    <!-- add record types -->

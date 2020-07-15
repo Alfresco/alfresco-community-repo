@@ -71,7 +71,7 @@ jobs:
     - name: "Community Rest API Tests"
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo -am
       install:
         - bash scripts/startAlfresco.sh $COMMUNITY_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
@@ -80,7 +80,7 @@ jobs:
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo -am
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_REPO_PATH
         - bash scripts/waitForAlfrescoToStart.sh
@@ -89,7 +89,7 @@ jobs:
     - name: "Community UI Tests ..."
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-community-repo,:alfresco-rm-community-share -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-community-repo,:alfresco-governance-services-community-share -am
       install:
         - bash scripts/startAlfresco.sh $COMMUNITY_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh
@@ -98,7 +98,7 @@ jobs:
     - name: "Enterprise UI Tests ..."
       stage: Tests
       before_install:
-        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-rm-enterprise-repo,:alfresco-rm-enterprise-share -am
+        - travis_retry travis_wait 90 mvn -B -q install $MVN_SKIP -PbuildDockerImage -pl :alfresco-governance-services-enterprise-repo,:alfresco-governance-services-enterprise-share -am
       install:
         - bash scripts/startAlfresco.sh $ENTERPRISE_SHARE_PATH
         - bash scripts/waitForAlfrescoToStart.sh

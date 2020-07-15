@@ -468,6 +468,7 @@
                            <id>start</id>
                            <phase>pre-integration-test</phase>
                            <goals>
+                              <goal>stop</goal>
                               <goal>start</goal>
                            </goals>
                            <configuration>

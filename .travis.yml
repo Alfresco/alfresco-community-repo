@@ -4,19 +4,23 @@ language: java
 jdk:
   - openjdk11
 
+services:
+  - docker
+
 branches:
   only:
-    - /release\/V2.7.*/
-    - /feature-2.7\/.*/
-    - /merge-2.7\/.*/
-    - /hotfix-2.7\/.*/
+    - /release\/V3.\d+.*/
+    - /feature-3.\d+\/.*/
+    - /merge-3.\d+\/.*/
+    - /hotfix-3.\d+\/.*/
 
 cache:
   directories:
     - $HOME/.m2
+
 # the cache can grow constantly
 before_cache:
-  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-rm*
+  - rm -rf $HOME/.m2/repository/org/alfresco/alfresco-governance-services*
 
 before_install:
   - "cp .travis.settings.xml $HOME/.m2/settings.xml"
@@ -32,18 +36,27 @@ stages:
 
 jobs:
   include:
-    - name: "Build Community"
+    - name: "Build AGS Community"
       stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
       script:
-        - echo "Build Community"
-    - name: "Build Enterprise"
+        - travis_retry travis_wait 120 mvn -B -q clean ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -Dcommunity -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+    - name: "Build AGS Enterprise"
       stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -f rm-community/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
-        - echo "Build Enterprise"
-    - name: "Benchmark"
+        - travis_retry travis_wait 60 mvn -B -q ${MAVEN_PHASE} -P${BUILD_PROFILE} -Dimage.tag=${IMAGE_TAG} -Dskip.integrationtests=false -f rm-enterprise/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+    - name: "Build AGS Benchmark"
       stage: Build AGS
+      before_script: source scripts/setUpMavenPhase.sh
+      install:
+        - travis_retry travis_wait 60 mvn -B -q clean install -DskipTests -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       script:
-        - echo "Benchmark"
+        - travis_retry travis_wait 35 mvn -B -q ${MAVEN_PHASE} -Dskip.integrationtests=false -f rm-benchmark/pom.xml -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
     - name: "Community Integrations Tests on MySQL"
       stage: Tests

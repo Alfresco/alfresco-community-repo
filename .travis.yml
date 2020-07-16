@@ -9,10 +9,10 @@ services:
 
 branches:
   only:
-    - /release\/V3.\d+.*/
-    - /feature-3.\d+\/.*/
-    - /merge-3.\d+\/.*/
-    - /hotfix-3.\d+\/.*/
+    - master
+    - /feature\/.*/
+    - /merge\/.*/
+    - /hotfix\/.*/
 
 cache:
   directories:

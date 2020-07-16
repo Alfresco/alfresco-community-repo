@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,7 +41,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
 {
 
     /** The name of the property holding the bean name of the source {@link ApplicationContextFactory}. */
-    private static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
+    protected static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
 
     /** The default bean name of the source {@link ApplicationContextFactory}. */
     protected String sourceBeanName;

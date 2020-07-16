@@ -22,8 +22,6 @@
                 <value>manager</value>
             </list>
         </property>
-        <property name="unencryptedContentStoreBeanName" value="unencryptedContentStore"/>
-        <property name="encryptedContentStoreBeanName" value="encryptedContentStore"/>
     </bean>
 
     <!-- Default ContentStore subsystem, that does not use encryption -->
@@ -229,9 +227,9 @@
       </property>
       <property name="jsonObjectMapper" ref="mimetypeServiceJsonObjectMapper" />
       <property name="mimetypeJsonConfigDir" value="${mimetype.config.dir}" />
-      <property name="cronExpression" value="${mimetype.config.cronExpression}"></property>
-      <property name="initialAndOnErrorCronExpression" value="${mimetype.config.initialAndOnError.cronExpression}"></property>
-      <property name="shutdownIndicator" ref="shutdownIndicator"></property>
+      <property name="cronExpression" value="${mimetype.config.cronExpression}" />
+      <property name="initialAndOnErrorCronExpression" value="${mimetype.config.initialAndOnError.cronExpression}" />
+      <property name="shutdownIndicator" ref="shutdownIndicator" />
    </bean>
 
     <bean id="mimetypeServiceJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,97 +25,34 @@
  */
 package org.alfresco.repo.management.subsystems;
 
-import java.io.IOException;
-
 import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
 
+import java.io.IOException;
+
 /**
- * {@link SwitchableApplicationContextFactory} that only allows the subsystem to be switched
- * if the current subsystem is the unencrypted content store. When an attempt is made to switch away
- * from any other store (e.g. the encrypted store) then nothing happens. This is achieved by returning
- * <code>false</code> for {@link #isUpdateable(String)} calls when the current sourceBeanName is
- * that of the unencrypted content store's subsystem.
- *  
+ * {@link SwitchableApplicationContextFactory} that only allows the subsystem to be switched from unencrypted to encrypted, 
+ * or if the two subsystems have the same ecrypted state.
+ * Switching back to unencrypted from encrypted content store is not allowed. 
+ * 
  * @author Matt Ward
  */
 public class CryptodocSwitchableApplicationContextFactory extends SwitchableApplicationContextFactory
-	
 {
-    private static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
-    private String unencryptedContentStoreBeanName;
-    private String encryptedContentStoreBeanName;
     private DescriptorService descriptorService;
     private static final Log logger = LogFactory.getLog(CryptodocSwitchableApplicationContextFactory.class);
     
-    @Override
-    public boolean isUpdateable(String name)
-    {
-        if (name == null)
-        {
-            throw new IllegalStateException("Property name cannot be null");
-        }
-        
-        boolean updateable = true;
-        if (name.equals(SOURCE_BEAN_PROPERTY))
-        {
-        	if(getCurrentSourceBeanName().equals(unencryptedContentStoreBeanName))
-        	{
-        		if(descriptorService != null)
-        		{
-        			LicenseDescriptor license = descriptorService.getLicenseDescriptor();
-        			if(license != null && license.isCryptodocEnabled())
-        			{
-        				return true;
-        			}
-        			return false;
-        		}
-        	}
-
-        	// can the source bean name be changed?
-        	if(!getCurrentSourceBeanName().equals(unencryptedContentStoreBeanName))
-        	{
-        		// the subsystem has been switched once.
-        		return false;
-        	}
-        }
-        return updateable;
-    }
-
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new CryptoSwitchableState(sourceBeanName);
     }
-
-
-    /**
-     * The bean name of the unencrypted ContentStore subsystem.
-     * 
-     * @param unencryptedContentStoreBeanName String
-     */
-    public void setUnencryptedContentStoreBeanName(String unencryptedContentStoreBeanName)
-    {
-        this.unencryptedContentStoreBeanName = unencryptedContentStoreBeanName;
-    }
     
-	public String getEncryptedContentStoreBeanName() 
-	{
-		return encryptedContentStoreBeanName;
-	}
-
-	public void setEncryptedContentStoreBeanName(
-			String encryptedContentStoreBeanName) 
-	{
-	    this.encryptedContentStoreBeanName = encryptedContentStoreBeanName;
-	}
-
-
-
 	protected class CryptoSwitchableState extends SwitchableState
     {
         protected CryptoSwitchableState(String sourceBeanName)
@@ -126,25 +63,77 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         @Override
         public void setProperty(String name, String value)
         {
-            if (!isUpdateable(name))
+            if (name.equals(SOURCE_BEAN_PROPERTY))
             {
-            	if(value.equalsIgnoreCase(unencryptedContentStoreBeanName))
-            	{
-            		throw new IllegalStateException("Switching to an unencrypted content store is not possible.");
-            	}
-            	if(value.equalsIgnoreCase(encryptedContentStoreBeanName))
-            	{
-            		throw new IllegalStateException("Switching to an encrypted content store is not licensed.");
-            	}
-                throw new IllegalStateException("Switching to an unknown content store is not possible." + value);
+                ChildApplicationContextFactory newSourceBean;
+                try
+                {
+                    newSourceBean = getParent().getBean(value, ChildApplicationContextFactory.class);
+                }
+                catch (BeansException e)
+                {
+                    throw new IllegalStateException("Switching to the unknown content store \"" + value + "\" is not possible.");
+                }
+
+                if (canSwitchSubsystemTo(newSourceBean, value))
+                {
+                    boolean isNewEncrypted = isEncryptedContentStoreSubsystem(newSourceBean, value);
+                    if (isNewEncrypted && !isEncryptionSupported())
+                    {
+                        throw new IllegalStateException("Switching to the encrypted content store \"" + value + "\" is not licensed.");
+                    }
+                } 
+                else
+                {
+                    throw new IllegalStateException("Switching to the unencrypted content store \"" + value + "\" is not possible.");
+                }
             }
             super.setProperty(name, value);
         }
     }
-	
+
+    private boolean canSwitchSubsystemTo(Object newSourceBean, String beanName)
+    {
+        Object currentSourceBean = getParent().getBean(getCurrentSourceBeanName());
+        boolean isCurrentEncrypted = isEncryptedContentStoreSubsystem(currentSourceBean, getCurrentSourceBeanName());
+        // Can switch from an unencrypted content store to any kind of content store
+        if (!isCurrentEncrypted)
+        {
+            return true;
+        }
+        boolean isNewEncrypted = isEncryptedContentStoreSubsystem(newSourceBean, beanName);
+        // Can switch from an encrypted content store only to another encrypted one
+        return isCurrentEncrypted && isNewEncrypted;
+    }
+
+    private boolean isEncryptedContentStoreSubsystem(Object sourceBean, String beanName)
+    {
+        boolean isEncrypted = false;
+        if (sourceBean instanceof EncryptedContentStoreChildApplicationContextFactory)
+        {
+            isEncrypted = ((EncryptedContentStoreChildApplicationContextFactory) sourceBean).isEncryptedContent();
+        }
+        //If not explicitly set as encrypted, check if the source bean is the cryptodoc subsystem bean
+        if (!isEncrypted)
+        {
+            isEncrypted = beanName.equals("encryptedContentStore");
+        }
+        return isEncrypted;
+    }
+
+    private boolean isEncryptionSupported()
+    {
+        boolean isSupported = true;
+        if (descriptorService != null)
+        {
+            LicenseDescriptor license = descriptorService.getLicenseDescriptor();
+            isSupported = license != null && license.isCryptodocEnabled();
+        }
+        return isSupported;
+    }
+    
 	public void onApplicationEvent(ApplicationEvent event)
 	{
-		
 		if(logger.isDebugEnabled())
 		{
 			logger.debug("event : " + event);

@@ -1,0 +1,10 @@
+env:
+  global:
+    - AUTOMATION_COMMUNITY_PATH=rm-automation/rm-automation-community-rest-api
+    - AUTOMATION_ENTERPRISE_PATH=rm-automation/rm-automation-enterprise-rest-api
+    - AUTOMATION_UI_PATH=rm-automation/rm-automation-ui
+    - COMMUNITY_REPO_PATH=rm-community/rm-community-repo
+    - COMMUNITY_SHARE_PATH=rm-community/rm-community-share
+    - ENTERPRISE_REPO_PATH=rm-enterprise/rm-enterprise-repo
+    - ENTERPRISE_SHARE_PATH=rm-enterprise/rm-enterprise-share
+    - MVN_SKIP='-Dmaven.javadoc.skip=true -Dmaven.source.skip=true -DskipTests'

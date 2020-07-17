@@ -34,6 +34,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -84,6 +85,7 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -396,8 +398,73 @@ public class ImapMessageTest extends TestCase
         }
     }
 
-    
-    
+    @Test
+    public void testSearchTermWithNonEnglishLocale() throws Exception
+    {
+        folder = (IMAPFolder) store.getFolder(TEST_FOLDER);
+        folder.open(Folder.READ_ONLY);
+
+        Locale defaultLocale = Locale.getDefault();
+        try
+        {
+            Locale.setDefault(Locale.FRENCH);
+            String dateStr = "12-Jul-2020";
+            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand()
+            {
+                @Override
+                public Object doCommand(IMAPProtocol protocol)
+                {
+                    return protocol.command("UID SEARCH SINCE " + dateStr, null);
+                }
+            };
+            // UID SEARCH SINCE
+            Response[] ret = (Response[]) folder.doCommand(uid_search_since);
+            IMAPResponse response = (IMAPResponse) ret[0];
+            assertEquals("* SEARCH ", response.toString());
+        }
+        catch (MessagingException e)
+        {
+            fail("Date cannot be parsed");
+        }
+        finally
+        {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    @Test
+    public void testSearchTermWithNonEnglishLocaleFalsePositive() throws Exception
+    {
+        Locale defaultLocale = Locale.getDefault();
+        try
+        {
+            folder = (IMAPFolder) store.getFolder(TEST_FOLDER);
+            folder.open(Folder.READ_ONLY);
+
+            Locale.setDefault(Locale.FRENCH);
+            String dateStr = "12-juil.-2020";
+            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand()
+            {
+                @Override
+                public Object doCommand(IMAPProtocol protocol)
+                {
+                    return protocol.command("UID SEARCH SINCE " + dateStr, null);
+                }
+            };
+            // UID SEARCH SINCE
+            Response[] ret = (Response[]) folder.doCommand(uid_search_since);
+            assertEquals("java.net.SocketException: Connection reset", ret[0].getException().toString());
+        }
+        catch (MessagingException e)
+        {
+            // expected
+        }
+        finally
+        {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
     public void testUnmodifiedMessage() throws Exception
     {
         // Get test message UID
@@ -773,7 +840,7 @@ public class ImapMessageTest extends TestCase
         txn.commit();
 
         // Closing client connection
-        folder.close(false);
+        folder.forceClose();
         store.close();
         logger.debug("tearDown end");
     }

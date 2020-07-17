@@ -1151,7 +1151,7 @@ public class ImapServiceImplTest extends TestCase
      * MNT-12773
      * @throws AddressException
      */
-    public void testSearchTerms() throws AddressException 
+    public void testSearchTerms() throws AddressException
     {
         List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, IMAP_ROOT+"/"+TEST_IMAP_FOLDER_NAME+"/_*", false);
         ArrayList<Long> res = new ArrayList<Long>();

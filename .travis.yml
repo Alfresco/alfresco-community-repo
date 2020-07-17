@@ -76,10 +76,7 @@ jobs:
         - travis_wait 5 bash scripts/downloadInstaller.sh $AUTOMATION_COMMUNITY_PATH/target
       install: travis_wait 20 mvn -B install -PinstallAlfresco,apply-rm-community -q -f $AUTOMATION_COMMUNITY_PATH/pom.xml
       script:
-        - echo "Community Rest API Tests"
-# Uncomment following line to start alfresco env using run-alfresco profile and run the tests.
-# Currently commented because running tests is part of APPS-236 task
-#      travis_wait 90 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
+        - travis_wait 60 mvn -B install -Prun-alfresco -Dskip.automationtests=false -f $AUTOMATION_COMMUNITY_PATH/pom.xml
     - name: "Enterprise Rest API Tests"
       stage: Tests
       before_install:

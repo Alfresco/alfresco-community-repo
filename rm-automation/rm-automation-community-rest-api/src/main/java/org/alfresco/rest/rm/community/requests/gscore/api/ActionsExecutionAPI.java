@@ -102,4 +102,16 @@ public class ActionsExecutionAPI extends RMModelRequest
         return getRmRestWrapper().withCoreAPI().usingActions()
                                  .executeAction(ActionsOnRule.DECLARE_VERSION_AS_RECORD.getActionValue(), targetNode);
     }
+
+    /**
+     * Add WORM lock to a node using v1 actions api
+     *
+     * @param targetNode the node on which the action is executed
+     * @throws Exception
+     */
+    public JSONObject addWORMLock(RepoTestModel targetNode) throws Exception
+    {
+        return getRmRestWrapper().withCoreAPI().usingActions()
+                                 .executeAction(ActionsOnRule.WORM_LOCK.getActionValue(), targetNode);
+    }
 }

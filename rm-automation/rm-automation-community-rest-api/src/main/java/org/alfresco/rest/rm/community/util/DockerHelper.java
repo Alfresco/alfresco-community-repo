@@ -27,6 +27,8 @@
 
 package org.alfresco.rest.rm.community.util;
 
+import static org.testng.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +44,7 @@ import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.alfresco.utility.Utility;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +143,22 @@ public class DockerHelper
             alfrescoContainers.forEach(alfrescoContainer -> alfrescoLogs.addAll(getDockerLogs(alfrescoContainer.getId(), timeStamp)));
             return alfrescoLogs;
         }
+    }
+
+    /**
+     * Helper method to check if the specified exception is thrown in alfresco logs
+     *
+     * @param expectedException the expected exception to be thrown
+     * @throws Exception
+     */
+    public void checkExceptionIsInAlfrescoLogs(String expectedException) throws Exception
+    {
+        //Retry the operation because sometimes it takes few seconds to throw the exception
+        Utility.sleep(6000, 30000, () ->
+        {
+            List<String> alfrescoLogs = getAlfrescoLogs();
+            assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));
+        });
     }
 
     /**

@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 
 import java.io.Serializable;
@@ -312,7 +313,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (holdContainer != null)
         {
             // get the children of the root hold container
-            List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef holdAssoc : holdsAssocs)
             {
                 NodeRef hold = holdAssoc.getChildRef();
@@ -405,7 +406,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
         // get the hold by name
-        NodeRef hold = nodeService.getChildByName(holdContainer, ContentModel.ASSOC_CONTAINS, name);
+        NodeRef hold = nodeService.getChildByName(holdContainer, ASSOC_CONTAINS, name);
         if (hold != null && !isHold(hold))
         {
             throw new AlfrescoRuntimeException("Can not get hold, because the named node reference isn't a hold.");
@@ -468,7 +469,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         QName assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name);
 
         // create hold
-        ChildAssociationRef childAssocRef = nodeService.createNode(holdContainer, ContentModel.ASSOC_CONTAINS, assocName, TYPE_HOLD, properties);
+        ChildAssociationRef childAssocRef = nodeService.createNode(holdContainer, ASSOC_CONTAINS, assocName, TYPE_HOLD, properties);
 
         NodeRef holdNodeRef = childAssocRef.getChildRef();
 
@@ -658,6 +659,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     //set in transaction cache in order not to trigger update policy when adding the association
                     transactionalResourceHelper.getSet("frozen").add(nodeRef);
                     nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
+                    // get the documents primary parent assoc
+                    ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+                    nodeService.addChild(hold, nodeRef, ASSOC_CONTAINS, parentAssoc.getQName());
 
                     // Mark all the folders contents as frozen
                     if (isRecordFolder(nodeRef))

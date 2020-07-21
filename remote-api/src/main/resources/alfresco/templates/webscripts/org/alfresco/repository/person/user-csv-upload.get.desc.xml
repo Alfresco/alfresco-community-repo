@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Information on Creating Users by using CSV</shortname>
+   <description>
+      Gives information on creating users by using CSV upload, and provides
+      the form through which to upload.
+   </description>
+   <url>/api/people/upload</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

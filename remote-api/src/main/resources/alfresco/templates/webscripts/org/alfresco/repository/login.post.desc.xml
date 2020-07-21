@@ -1,0 +1,54 @@
+<webscript>
+  <shortname>Log in (POST)</shortname>
+  <description>  
+  <![CDATA[
+  Log in and establish a ticket.
+  <BR />
+  Input
+  <BR />
+  JSON Data Object.
+  <dl>
+  <dt>username</dt><dd>cleartext user name</dd>
+  <dt>password</dt><dd>cleartext password</dd>
+  </dl>
+  <BR>
+  Returns the new authentication ticket.
+  ]]>
+  </description>
+  <url>/api/login</url>
+  <format default="json"/>
+  <authentication>none</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Authentication</family>
+  <requests>
+    <request>
+      <format>json</format>
+      <type>
+        <![CDATA[
+        {
+          "username": string,
+          "password": string
+        }
+        ]]>
+      </type>
+    </request>
+  </requests>
+  <responses>
+    <response>
+      <format>json</format>
+      <type>
+        <![CDATA[
+        {
+          "data":
+          [
+            {
+              "ticket": string
+            }
+          ]
+        }
+        ]]>
+      </type>
+    </response>
+  </responses>
+</webscript>

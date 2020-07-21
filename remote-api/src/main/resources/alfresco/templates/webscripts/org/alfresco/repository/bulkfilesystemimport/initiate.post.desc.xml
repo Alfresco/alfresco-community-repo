@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Bulk Filesystem Import</shortname>
+  <description>Web Script that initiates a bulk filesystem import.</description>
+  <url>/bulkfsimport/initiate</url>
+  <authentication>admin</authentication>
+  <transaction>none</transaction>
+  <family>Bulk Filesystem Import</family>
+  <lifecycle>internal</lifecycle>
+  <cache>
+    <never>true</never>
+  </cache>
+</webscript>

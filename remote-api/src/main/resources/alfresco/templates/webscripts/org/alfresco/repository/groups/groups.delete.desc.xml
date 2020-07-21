@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Delete a group</shortname>
+   <description><![CDATA[
+      Deletes a group and all its dependents.
+      <br />
+      You must have "administrator" privileges to delete a group.
+      <br /> 
+   ]]>
+   </description>
+   <url>/api/groups/{shortName}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>limited_support</lifecycle>
+</webscript>

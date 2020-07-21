@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Add comment</shortname>
+  <description>Add a new comment to a node</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/comments</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

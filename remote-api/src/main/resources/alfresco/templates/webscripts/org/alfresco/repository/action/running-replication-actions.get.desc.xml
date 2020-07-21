@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>List running replication actions</shortname>
+  <description>
+  Returns (limited) details on all currently running replication actions.
+  </description>
+  <url>/api/running-replication-actions?name={name?}</url>
+  <format default="json"/>
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

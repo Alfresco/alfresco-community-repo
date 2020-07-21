@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Alfresco repo usage</shortname>
+  <description>Get repository usage.</description>
+  <url>/api/admin/usage</url>
+  <format default="json" />
+  <authentication>guest</authentication>
+  <transaction allow="readonly">required</transaction>
+  <family>Admin</family>
+  <lifecycle>internal</lifecycle>
+</webscript>

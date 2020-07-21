@@ -1,0 +1,17 @@
+<webscript>
+  <shortname>Activities user feed</shortname>
+  <description>Allow the currently logged in user to get their feed.</description>
+  <url>/api/activities/feed/user</url>
+  <url>/api/activities/feed/user?format=atomfeed</url>
+  <url>/api/activities/feed/user?format=json</url>
+  <url>/api/activities/feed/user?s={siteId?}</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;format=atomfeed</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;format=json</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}&amp;format=atomfeed</url>
+  <url>/api/activities/feed/user?s={siteId?}&amp;exclUser={false?}&amp;exclOthers={false?}&amp;following={false?}&amp;activityFilter={activityFilter}&amp;format=json</url>
+  <format default="atomfeed"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

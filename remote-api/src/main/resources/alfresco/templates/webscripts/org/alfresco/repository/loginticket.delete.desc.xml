@@ -1,0 +1,20 @@
+<webscript>
+  <shortname>Log out</shortname>
+  <description><![CDATA[
+  Log out, delete log in ticket.
+  <BR>After the user has logged out the ticket is no longer valid and subsequent attempts to use it will fail.
+  ]]>
+  </description>
+  <url>/api/login/ticket/{ticket}</url>
+  <format default="xml"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Authentication</family>
+  <args>
+    <arg>
+      <shortname>ticket</shortname>
+      <description>The login ticket to invalidate.</description>
+    </arg>
+  </args>
+</webscript>

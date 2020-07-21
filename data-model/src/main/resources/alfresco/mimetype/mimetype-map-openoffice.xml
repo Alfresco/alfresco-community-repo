@@ -1,0 +1,101 @@
+<alfresco-config area="mimetype-map">
+   
+   <config evaluator="string-compare" condition="Mimetype Map">
+      <mimetypes>
+
+         <!-- Open Office 2.x / Open Document -->
+         <mimetype mimetype="application/vnd.oasis.opendocument.text" display="OpenDocument Text (OpenOffice 2.0)">
+            <extension>odt</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.text-template" display="OpenDocument Text Template">
+	       <extension>ott</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.text-web" display="HTML Document Template">
+	       <extension>oth</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.text-master" display="OpenDocument Master Document">
+	       <extension>odm</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.graphics" display="OpenDocument Drawing">
+	       <extension>odg</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.graphics-template" display="OpenDocument Drawing Template">
+	       <extension>otg</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.presentation" display="OpenDocument Presentation">
+	       <extension>odp</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.presentation-template" display="OpenDocument Presentation Template">
+	       <extension>otp</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.spreadsheet" display="OpenDocument Spreadsheet">
+	       <extension>ods</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.spreadsheet-template" display="OpenDocument Spreadsheet Template">
+	       <extension>ots</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.chart" display="OpenDocument Chart">
+	       <extension>odc</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.formula" display="OpenDocument Formula">
+	       <extension>odf</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.database" display="OpenDocument Database">
+	       <extension>odb</extension>
+         </mimetype>
+	     <mimetype mimetype="application/vnd.oasis.opendocument.image" display="OpenDocument Image">
+	       <extension>odi</extension>
+         </mimetype>
+
+         <!-- OpenOffice 1.0 / StarOffice 6.0 -->
+         <mimetype mimetype="application/vnd.sun.xml.calc" display="OpenOffice 1.0/StarOffice6.0 Calc 6.0">
+           <extension>sxc</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.calc.template" display="OpenOffice 1.0/StarOffice6.0 Calc 6.0 Template">
+           <extension>stc</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.draw" display="OpenOffice 1.0/StarOffice6.0 Draw 6.0">
+           <extension>sxd</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.impress" display="OpenOffice 1.0/StarOffice6.0 Impress 6.0">
+           <extension>sxi</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.impress.template" display="OpenOffice 1.0/StarOffice6.0 Impress 6.0 Template">
+           <extension>sti</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.writer" display="OpenOffice 1.0/StarOffice6.0 Writer 6.0">
+           <extension>sxw</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.sun.xml.writer.template" display="OpenOffice 1.0/StarOffice6.0 Writer 6.0 Template">
+           <extension>stw</extension>
+         </mimetype>
+
+         <!-- StarOffice 5.x -->
+         <mimetype mimetype="application/vnd.stardivision.draw" display="StarDraw 5.x">
+           <extension>sda</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.calc" display="StarCalc 5.x">
+           <extension>sdc</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.impress" display="StarImpress 5.x">
+           <extension>sdd</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.impress-packed" display="StarImpress Packed 5.x">
+           <extension>sdp</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.chart" display="StaChart 5.x">
+           <extension>sds</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.writer" display="StarWriter 5.x">
+           <extension>sdw</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.writer-global" display="StarWriter 5.x global">
+           <extension>sgl</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.stardivision.math" display="StarMath 5.x">
+           <extension>smf</extension>
+         </mimetype>
+      </mimetypes>
+   </config>
+   
+</alfresco-config>

@@ -1,0 +1,67 @@
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org/workflows/internal">
+
+   <process isExecutable="true" id="activitiInvitationModerated" name="Moderated activiti invitation process">
+
+      <startEvent id="start" activiti:formKey="imwf:moderatedInvitationSubmitTask" />
+      
+      <sequenceFlow id="flow1" sourceRef="start" targetRef="sendInvite" />
+      
+      <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendModeratedInviteDelegate}"></serviceTask>
+
+      <sequenceFlow id="flow2" sourceRef="sendInvite" targetRef="reviewTask" />
+
+      <userTask id="reviewTask" name="Review Task"
+         activiti:formKey="imwf:activitiModeratedInvitationReviewTask">
+         <extensionElements>
+            <activiti:taskListener event="create"
+               class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+               <activiti:field name="script">
+                  <activiti:string>
+                     if (typeof bpm_workflowDueDate != 'undefined')
+                        task.setVariable('bpm_dueDate', bpm_workflowDueDate);
+                     if (typeof bpm_workflowPriority != 'undefined') 
+                        task.priority = bpm_workflowPriority;
+                     </activiti:string>
+               </activiti:field>
+            </activiti:taskListener>
+            <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+               <activiti:field name="script">
+                  <activiti:string>
+                     execution.setVariable('imwf_reviewOutcome', task.getVariable('imwf_reviewOutcome'));
+                     execution.setVariable('imwf_reviewComments', task.getVariable('bpm_comment'));
+                     execution.setVariable('imwf_reviewer', person.properties.userName);
+                  </activiti:string>
+               </activiti:field>
+            </activiti:taskListener>
+         </extensionElements>
+         <potentialOwner>
+            <resourceAssignmentExpression>
+               <formalExpression>${bpm_groupAssignee}</formalExpression>
+            </resourceAssignmentExpression>
+         </potentialOwner>
+      </userTask>
+      
+      <sequenceFlow id="flow3" sourceRef="reviewTask" targetRef="reviewDecision" />
+
+      <exclusiveGateway id="reviewDecision" name="Review Decision" /> 
+
+      <sequenceFlow id="flow4" sourceRef="reviewDecision" targetRef="approved">
+          <conditionExpression xsi:type="tFormalExpression">${imwf_reviewOutcome=='approve'}</conditionExpression>
+      </sequenceFlow>
+      
+      <serviceTask id="approved" name="Approved" activiti:delegateExpression="${ApproveModeratedInviteDelegate}" />
+      <sequenceFlow id="flow5" sourceRef="approved" targetRef="end" />
+
+      <sequenceFlow id="flow6" sourceRef="reviewDecision" targetRef="rejected" />
+
+      <serviceTask id="rejected" name="Rejected" activiti:delegateExpression="${RejectModeratedInviteDelegate}" />
+      <sequenceFlow id='flow7' sourceRef='rejected' targetRef='end' />
+      
+      <endEvent id="end" />
+   </process>
+
+</definitions>

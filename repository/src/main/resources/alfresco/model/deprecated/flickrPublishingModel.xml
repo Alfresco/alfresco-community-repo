@@ -1,0 +1,38 @@
+<model name="flickr:publishingmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Flickr Publishing Content Model</description>
+   <author>Alfresco</author>
+   <published>2011-07-13</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+      <import uri="http://www.alfresco.org/model/publishing/1.0" prefix="pub" />
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/publishing/flickr/1.0" prefix="flickr" />
+   </namespaces>
+
+   <types>
+      <type name="flickr:DeliveryChannel">
+         <title>Flickr Delivery Channel</title>
+         <description>Node type used to represent Flickr delivery channels</description>
+         <parent>pub:DeliveryChannel</parent>
+         <mandatory-aspects>
+            <aspect>pub:OAuth1DeliveryChannelAspect</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+
+   <aspects>
+      <aspect name="flickr:AssetAspect">
+         <title>Flickr Asset</title>
+         <description>Applied to a node that has been published to Flickr</description>
+         <parent>pub:AssetAspect</parent>
+      </aspect>
+   </aspects>
+</model>

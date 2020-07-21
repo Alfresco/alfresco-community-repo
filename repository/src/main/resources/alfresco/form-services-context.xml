@@ -1,0 +1,241 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="formResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.form-service</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- form service bean -->
+    <bean id="FormService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.forms.FormService</value>
+        </property>
+        <property name="target">
+            <ref bean="formService" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="FormService_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref bean="FormService_security" />
+            </list>
+        </property>
+    </bean>
+
+    <!-- Form service transaction bean -->
+    <bean id="FormService_transaction"
+        class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Form service security bean -->
+    <bean id="FormService_security"
+        class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <bean id="formService" class="org.alfresco.repo.forms.FormServiceImpl">
+        <property name="processorRegistry" ref="formProcessorRegistry" />
+    </bean>
+
+    <!-- Registry beans -->
+    <bean id="formProcessorRegistry"
+        class="org.alfresco.repo.forms.processor.FormProcessorRegistry" />
+
+    <bean id="nodeFilterRegistry" class="org.alfresco.repo.forms.processor.FilterRegistry" />
+
+    <bean id="typeFilterRegistry" class="org.alfresco.repo.forms.processor.FilterRegistry" />
+
+    <!-- Form processors  -->
+    <bean id="baseFormProcessor" abstract="true" init-method="register"
+        class="org.alfresco.repo.forms.processor.node.ContentModelFormProcessor">
+        <property name="processorRegistry" ref="formProcessorRegistry" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+        <property name="permissionService" ref="PermissionService" />
+    </bean>
+
+   <bean id="actionFormProcessor" class="org.alfresco.repo.forms.processor.action.ActionFormProcessor" init-method="register">
+      <property name="processorRegistry" ref="formProcessorRegistry" />
+      <property name="matchPattern">
+         <value>action</value>
+      </property>
+      <property name="actionService" ref="ActionService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="namespaceService" ref="NamespaceService" />
+   </bean>
+   
+   <bean id="nodeFormProcessor"
+      class="org.alfresco.repo.forms.processor.node.NodeFormProcessor"
+      parent="baseFormProcessor">
+      <property name="filterRegistry" ref="nodeFilterRegistry" />
+      <property name="matchPattern">
+         <value>node</value>
+      </property>
+   </bean>
+
+   <bean id="typeFormProcessor"
+      class="org.alfresco.repo.forms.processor.node.TypeFormProcessor"
+      parent="baseFormProcessor">
+        <property name="filterRegistry" ref="typeFilterRegistry" />
+      <property name="matchPattern">
+         <value>type</value>
+      </property>
+   </bean>
+
+    <!--  Filters -->
+    <bean id="baseFormFilter" abstract="true" init-method="register"
+        class="org.alfresco.repo.forms.processor.AbstractFilter" />
+
+    <!--
+        <bean id="imageAspectFormFilter"
+        class="org.alfresco.repo.forms.processor.node.ImageAspectFilter"
+        parent="baseFormFilter"> <property name="filterRegistry"
+        ref="nodeFilterRegistry" /> </bean>
+    -->
+
+    <bean id="taskFormFilter" class="org.alfresco.repo.forms.processor.workflow.WorkflowFormFilter"
+        parent="baseFormFilter">
+	   <property name="filterRegistry" ref="taskFilterRegistry" />
+	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.comment.property.max.length}</value>
+       </property>
+	   <property name="maxLengthBpmCommentProperty_oldPropertyName">
+            <value>${system.workflow.jbpm.comment.property.max.length}</value>
+       </property>
+    </bean>
+	
+    <bean id="workflowFormFilter" class="org.alfresco.repo.forms.processor.workflow.WorkflowFormFilter"
+        parent="baseFormFilter">
+       <property name="filterRegistry" ref="workflowFilterRegistry" />
+	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.comment.property.max.length}</value>
+       </property>
+	   <property name="maxLengthBpmCommentProperty_oldPropertyName">
+            <value>${system.workflow.jbpm.comment.property.max.length}</value>
+       </property>
+    </bean>
+
+    <bean id="formServiceScript" parent="baseJavaScriptExtension"
+        class="org.alfresco.repo.forms.script.ScriptFormService">
+        <property name="extensionName">
+            <value>formService</value>
+        </property>
+        <property name="formService" ref="FormService" />
+    </bean>
+
+    <!--  Field Processor Config -->
+
+    <!-- The Field Processor Registry -->
+    <bean id="fieldProcessorRegistry"
+        class="org.alfresco.repo.forms.processor.node.ContentModelFieldProcessorRegistry">
+        <property name="defaultProcessor" ref="defaultFieldProcessor" />
+    </bean>
+
+    <!-- The Field Processors -->
+    <bean id="baseFieldProcessor" abstract="true"
+        class="org.alfresco.repo.forms.processor.AbstractFieldProcessor">
+        <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+    </bean>
+
+    <bean id="qnameFieldProcessor" abstract="true"
+        class="org.alfresco.repo.forms.processor.node.QNameFieldProcessor"
+        parent="baseFieldProcessor">
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+    </bean>
+
+    <bean id="propertyFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.PropertyFieldProcessor"
+        parent="qnameFieldProcessor" />
+
+    <bean id="associationFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.AssociationFieldProcessor"
+        parent="qnameFieldProcessor" />
+
+    <bean id="encodingFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.EncodingFieldProcessor"
+        parent="baseFieldProcessor" />
+
+    <bean id="mimetypeFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.MimetypeFieldProcessor"
+        parent="baseFieldProcessor" />
+
+    <bean id="sizeFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.SizeFieldProcessor"
+        parent="baseFieldProcessor" />
+
+    <bean id="defaultFieldProcessor"
+        class="org.alfresco.repo.forms.processor.node.DefaultFieldProcessor"
+        parent="qnameFieldProcessor" />
+
+    <!--  Workflow Form Processor Config -->
+
+    <bean id="workflowFormProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessor"
+        parent="baseFormProcessor">
+        <property name="filterRegistry" ref="workflowFilterRegistry" />
+        <property name="workflowService" ref="WorkflowService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="matchPattern" value="workflow" />
+        <property name="extendedPropertyFieldProcessor" ref="extendedPropertyFieldProcessor" />
+    </bean>
+
+   <bean id="taskFormProcessor"
+       class="org.alfresco.repo.forms.processor.workflow.TaskFormProcessor"
+       parent="baseFormProcessor">
+       <property name="filterRegistry" ref="taskFilterRegistry" />
+       <property name="workflowService" ref="WorkflowService" />
+       <property name="authenticationService" ref="AuthenticationService" />
+       <property name="personService" ref="PersonService" />
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="matchPattern" value="task" />
+       <property name="extendedPropertyFieldProcessor" ref="extendedPropertyFieldProcessor" />
+   </bean>
+
+    <bean id="workflowFilterRegistry" class="org.alfresco.repo.forms.processor.FilterRegistry" />
+
+    <bean id="taskFilterRegistry" class="org.alfresco.repo.forms.processor.FilterRegistry" />
+
+    <bean id="packageItemsFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.PackageItemsFieldProcessor"
+        parent="baseFieldProcessor" />
+        
+    <bean id="transitionsFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.TransitionFieldProcessor"
+        parent="baseFieldProcessor" />
+        
+   <bean id="messageFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.MessageFieldProcessor"
+        parent="baseFieldProcessor" />
+        
+   <bean id="taskOwnerFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.TaskOwnerFieldProcessor"
+        parent="baseFieldProcessor" />
+   
+   <!-- Not using baseFieldProcessor as parent, this class should NOT be registered with the registry -->     
+   <bean id="extendedPropertyFieldProcessor"
+        class="org.alfresco.repo.forms.processor.workflow.ExtendedPropertyFieldProcessor">
+        <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
+
+</beans>

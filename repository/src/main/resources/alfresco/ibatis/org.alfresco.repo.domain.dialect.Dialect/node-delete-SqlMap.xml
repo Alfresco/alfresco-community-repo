@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.delete">
+
+    <delete id="delete_NodesByTxnCommitTime" parameterType="TransactionQuery">
+        <![CDATA[
+        delete from alf_node
+        where
+            type_qname_id = #{typeQNameId} and
+            transaction_id IN
+            (
+                select txn.id from alf_transaction txn
+                where
+                    txn.commit_time_ms >= #{minCommitTime} and
+                    txn.commit_time_ms < #{maxCommitTime}
+            )
+        ]]>
+    </delete>
+    
+    <delete id="delete_NodePropsByTxnCommitTime" parameterType="TransactionQuery">
+        <![CDATA[
+        delete from alf_node_properties
+        where exists
+        (
+            select 1
+            from
+                alf_node node
+                join alf_transaction txn on (txn.id = node.transaction_id)
+            where
+                node.type_qname_id = #{typeQNameId} and
+                alf_node_properties.node_id = node.id and
+                (txn.commit_time_ms >= #{minCommitTime} and
+                 txn.commit_time_ms < #{maxCommitTime})
+        )
+        ]]>
+    </delete>
+    
+</mapper>

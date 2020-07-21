@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.delete">
+
+    <!-- Does nothing on the assumption that the property clean cleaned the nodes as well (ACE-3942) -->
+    <delete id="delete_NodesByTxnCommitTime" parameterType="TransactionQuery">
+        <![CDATA[
+        delete n from alf_node n
+        join alf_transaction txn on (txn.id = n.transaction_id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            (txn.commit_time_ms >= #{minCommitTime} and
+             txn.commit_time_ms < #{maxCommitTime})
+        ]]>
+    </delete>
+    
+    <delete id="delete_NodePropsByTxnCommitTime" parameterType="TransactionQuery">
+        <![CDATA[
+        delete np from alf_node_properties np
+        join alf_node n on (np.node_id = n.id)
+        join alf_transaction txn on (txn.id = n.transaction_id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            (txn.commit_time_ms >= #{minCommitTime} and
+             txn.commit_time_ms < #{maxCommitTime})
+        ]]>
+    </delete>
+    
+</mapper>

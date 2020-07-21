@@ -1,0 +1,30 @@
+@startuml
+
+title Tenant Service (aws)
+
+
+
+interface TenantService
+interface TenantServiceSPI
+
+class Tenant
+class TenantServiceDDBImpl
+class TenantServiceImpl
+class TenantServiceLambda
+
+
+Tenant <.. TenantService : uses
+Tenant <.. TenantServiceDDBImpl : uses
+Tenant <.. TenantServiceImpl : uses
+Tenant <.. TenantServiceSPI : uses
+TenantServiceDDBImpl <.. TenantServiceLambda : uses
+TenantServiceImpl <.. TenantServiceLambda : uses
+TenantServiceSPI <.. TenantServiceImpl : uses
+TenantServiceSPI <.. TenantServiceLambda : uses
+
+TenantService <|.. TenantServiceImpl : implements
+TenantServiceSPI <|.. TenantServiceDDBImpl : implements
+
+center footer © 2016 Alfresco Software Inc. all rights reserved \n Generated from PlantUML
+
+@enduml

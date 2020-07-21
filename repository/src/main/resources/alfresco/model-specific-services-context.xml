@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- File/folder specific service -->
+
+   <bean id="fileFolderCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+      <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+
+   <bean name="hiddenAspect" class="org.alfresco.repo.model.filefolder.HiddenAspect">
+      <property name="nodeService" ref="nodeService"/>
+      <property name="fileFolderService" ref="fileFolderService"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+
+      <property name="patterns">
+         <list>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="\._.*" />
+                <!-- Show them in webdav because office 2011 want to see them-->
+                <property name="visibility" value="webdav" />				
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="\..*" />
+                <property name="visibility" value="webdav,nfs,ftp" />
+                <property name="hiddenAttribute" value="cifs" />
+                <property name="cmisDisableHideConfig" value="${cmis.disable.hidden.leading.period.files}" />
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="Thumbs\.db" />
+                <property name="visibility" value="webdav,nfs,ftp" />
+                <property name="hiddenAttribute" value="cifs" />
+            </bean>
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="Desktop\.ini" />
+                <property name="visibility" value="webdav,nfs,ftp" />
+                <property name="hiddenAttribute" value="cifs" />
+            </bean>
+            <!-- completely hidden i.e. to all clients and does not apply to children -->
+            <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
+                <property name="filter" value="surf-config" />
+                <property name="cascadeHiddenAspect" value="false" />
+                <property name="cascadeIndexControlAspect" value="false" />
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <bean name="fileFolderService" class="org.alfresco.repo.model.filefolder.FileFolderServiceImpl" init-method="init" parent="abstractBaseCopyService">
+      <property name="namespaceService"><ref bean="namespaceService" /></property>
+      <property name="dictionaryService"><ref bean="dictionaryService" /></property>
+      <property name="nodeService"><ref bean="nodeService" /></property>
+      <property name="copyService"><ref bean="copyService" /></property>
+      <property name="searchService"><ref bean="admSearchService" /></property>
+      <property name="contentService"><ref bean="contentService" /></property>
+      <property name="mimetypeService"><ref bean="mimetypeService" /></property>
+      <property name="hiddenAspect"><ref bean="hiddenAspect" /></property>
+      <property name="behaviourFilter" ref="policyBehaviourFilter"></property>
+      <property name="preserveAuditableData" value="${system.auditableData.FileFolderService}"></property>
+
+      <property name="cannedQueryRegistry" ref="fileFolderCannedQueryRegistry"/>
+      <property name="defaultListMaxResults" value="${system.filefolderservice.defaultListMaxResults}"/>
+      
+      <property name="systemPaths">
+         <list>
+            <value>/${spaces.company_home.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.webscripts.childname}</value>
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.extension_webscripts.childname}</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean name="fileFolderGetChildrenCannedQueryFactory" class="org.alfresco.repo.model.filefolder.GetChildrenCannedQueryFactory">
+      <property name="registry" ref="fileFolderCannedQueryRegistry"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+      <property name="methodSecurity" ref="FileFolderService_security_list"/>
+      <property name="hiddenAspect" ref="hiddenAspect"/>
+   </bean>
+
+   <bean name="documentLinkService" class="org.alfresco.repo.doclink.DocumentLinkServiceImpl" init-method="init">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="dictionaryService" ref="dictionaryService"/>
+       <property name="searchService" ref="admSearchService"/>
+       <property name="namespaceService" ref="namespaceService"/>
+       <property name="checkOutCheckInService" ref="checkOutCheckInService"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="permissionService" ref="permissionService" />
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+
+   <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService"/>
+      </property>
+      <property name="fileFolderService">
+         <ref bean="fileFolderService"/>
+      </property>
+   </bean>
+
+  <bean id="mlContentInterceptor" class="org.alfresco.repo.model.ml.MLContentInterceptor" >
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="contentService">
+         <ref bean="contentService"/>
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService"/>
+      </property>
+   </bean>
+
+   <bean name="temporaryFiles" class="org.alfresco.util.PatternFilter">
+      <property name="patterns">
+         <list>
+            <value><![CDATA[.*\.tmp]]></value>
+            <value><![CDATA[.*\.temp]]></value>
+            <value><![CDATA[.*\.wbk]]></value>
+            <value><![CDATA[(\._)?\~.*]]></value>
+         </list>
+      </property>
+   </bean>
+
+   <!-- Paths matching one of these patterns will be treated as system paths -->
+   <bean name="systemPaths" class="org.alfresco.util.PatternFilter">
+      <property name="patterns">
+         <list>
+            <value><![CDATA[\.TemporaryItems]]></value>
+            <value><![CDATA[\.DS_Store]]></value>
+         </list>
+      </property>
+   </bean>
+   
+   <bean name="filenameFilteringInterceptor" class="org.alfresco.repo.model.filefolder.FilenameFilteringInterceptor">
+      <property name="nodeService" ref="nodeService" />
+      <property name="permissionService" ref="permissionService" />
+      <property name="contentService" ref="contentService" />
+      <property name="systemPaths" ref="systemPaths" />
+      <property name="hiddenAspect" ref="hiddenAspect" />
+      <property name="temporaryFiles" ref="temporaryFiles" />
+      <property name="enabled" value="${fileFolderService.checkHidden.enabled}" />
+   </bean>
+
+  <!-- FileFolderLoader and required beans -->
+   <bean name="fileFolderLoader" class="org.alfresco.repo.model.filefolder.FileFolderLoader">
+       <constructor-arg ref="repositoryState" />
+       <constructor-arg ref="transactionService" />
+       <constructor-arg ref="repositoryHelper" />
+       <constructor-arg ref="FileFolderService" />
+       <constructor-arg ref="nodeService" />
+       <constructor-arg ref="contentService" />
+       <constructor-arg ref="policyBehaviourFilter" />
+   </bean>
+   <alias name="fileFolderLoader" alias="FileFolderLoader"/>
+ 
+   <!-- Multilingual specific service -->
+   <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
+      <property name="nodeService">
+         <ref bean="mlAwareNodeService" />
+      </property>
+      <property name="permissionService">
+         <ref bean="permissionService" />
+      </property>
+      <property name="contentFilterLanguagesService">
+         <ref bean="contentFilterLanguagesService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="fileFolderService" />
+      </property>
+      <property name="versionService">
+         <ref bean="versionService" />
+      </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
+   </bean>
+
+   <!-- Edition service -->
+   <bean name="editionService" class="org.alfresco.repo.model.ml.EditionServiceImpl" >
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="versionService">
+         <ref bean="versionService" />
+      </property>
+      <property name="multilingualContentService">
+         <ref bean="multilingualContentService" />
+      </property>
+      <property name="versionNodeService">
+         <ref bean="versionNodeService" />
+      </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
+      <property name="nodeArchiveService">
+         <ref bean="nodeArchiveService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="fileFolderService" />
+      </property>
+   </bean>
+
+   <bean id="ImapService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+     <property name="sourceApplicationContextFactory">
+        <ref bean="imap" />
+     </property>
+      <property name="sourceBeanName">
+          <value>ImapService</value>
+      </property>
+     <property name="interfaces">
+        <list>
+           <value>org.alfresco.repo.imap.ImapService</value>
+        </list>
+     </property>
+   </bean>
+   
+   <!-- Email alias -->
+   <bean id="aliasableAspect"
+        class="org.alfresco.email.server.AliasableAspect"
+        init-method="init">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+   </bean> 
+   
+   <!-- IMAP  -->
+   <bean id="imapContentPolicy" class="org.alfresco.repo.imap.ImapContentPolicy" init-method="init">
+        <property name="actionService">
+            <ref bean="actionService"/>
+        </property>       
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+    </bean>
+   
+</beans>

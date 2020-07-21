@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model name="tcdm:myDecimalTestModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+    <!-- Meta-data about the model -->
+    <description>Test CMIS Decimal for Boundaries Model</description>
+    <author>SSergey</author>
+    <version>1.0</version>
+
+    <imports>
+        <!-- Import Alfresco Dictionary Definitions -->
+        <import uri="http://www.alfresco.org/model/dictionary/1.0"
+            prefix="d" />
+        <!-- Import Alfresco Content Domain Model Definitions -->
+        <import uri="http://www.alfresco.org/model/content/1.0"
+            prefix="cm" />
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://testCMISDecimalModel/1.0/"
+            prefix="tcdm" />
+    </namespaces>
+
+    <types>
+        <type name="tcdm:testdecimalstype">
+            <title>Test Decimals Type</title>
+            <parent>cm:content</parent>
+            <properties>
+                <property name="tcdm:float">
+                    <title>Float</title>
+                    <description>Float</description>
+                    <type>d:float</type>
+                </property>
+                <property name="tcdm:double">
+                    <title>Double</title>
+                    <description>Double</description>
+                    <type>d:double</type>
+                </property>
+                <property name="tcdm:floatwithbounds">
+                    <title>Float With Boundaries</title>
+                    <description>Float With Boundaries</description>
+                    <type>d:float</type>
+                    <constraints>
+                        <constraint type="MINMAX">
+                            <parameter name="minValue"><value>-10</value></parameter>
+                            <parameter name="maxValue"><value>10</value></parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+                <property name="tcdm:doublewithbounds">
+                    <title>Double With Boundaries</title>
+                    <description>Double With Boundaries</description>
+                    <type>d:double</type>
+                    <constraints>
+                        <constraint type="MINMAX">
+                            <parameter name="minValue"><value>-10</value></parameter>
+                            <parameter name="maxValue"><value>10</value></parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+            </properties>
+        </type>
+    </types>
+</model>

@@ -1,0 +1,45 @@
+{
+    "name":"Test",
+    "filing":{
+        
+    },
+    "nodes":[
+        {
+            "name":"Node1",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node1_content_FR'"
+            },
+            "filing":{
+                "path":"%ACTUAL_PATH%",
+                "classification":{
+                    "type":"cm:content"
+                },
+                "properties":{
+                    "cm:description":"Node1_content_FR"
+                }
+                
+            }
+            
+        },
+        {
+            "name":"Node2",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"=cm:description:'Node2_folder_FR'"
+            },
+            "filing":{
+                "path":"%ACTUAL_PATH%",
+                "classification":{
+                    "type":"cm:folder"
+                },
+                "properties":{
+                    "cm:description":"Node2_folder_FR"
+                }
+                
+            }
+            
+        }
+        
+    ]
+}

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org">
+
+    <process id="hybridReview" name="Hybrid Review And Approve Process">
+
+        <extensionElements>
+            <activiti:executionListener delegateExpression="${HybridWorkflowCleanupListener}" event="end" />
+            <activiti:executionListener event="start" class="org.alfresco.repo.workflow.activiti.listener.ScriptExecutionListener">
+               <activiti:field name="script">
+                     <activiti:string>
+                        execution.setVariable('wf_approveCount', 0);
+                        execution.setVariable('wf_rejectCount', 0);
+                        
+                        execution.setVariable('wf_actualPercent', 0);
+                        execution.setVariable('wf_actualRejectPercent', 0);
+                        
+                        execution.setVariable('wf_reviewerCount', bpm_assignees.size());
+                        execution.setVariable('wf_requiredPercent', wf_requiredApprovePercent);
+                        
+                        var commentsArray = new java.util.ArrayList();
+                        execution.setVariable('hwf_comments', commentsArray);
+                     </activiti:string>
+                  </activiti:field>
+            </activiti:executionListener>
+        </extensionElements>
+        
+        <startEvent id="start" activiti:formKey="wf:submitReviewTask" />
+
+        <sequenceFlow id='flow1' sourceRef='start' targetRef='reviewTask' />
+
+        <userTask id="reviewTask" name="Review Task" activiti:formKey="wf:activitiReviewTask">
+           <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDescription != 'undefined') task.description = bpm_workflowDescription;
+                        if (typeof bpm_workflowDueDate != 'undefined') task.dueDate = bpm_workflowDueDate;
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                        task.setVariableLocal('bpm_reassignable', false);
+                        task.setVariableLocal('bpm_packageActionGroup', '');
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+               <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                       var approved = (task.getVariableLocal('wf_reviewOutcome') == 'Approve');
+                       if(approved) {
+                            var newApprovedCount = wf_approveCount + 1;
+                            var newApprovedPercentage = (newApprovedCount / wf_reviewerCount) * 100;
+                            
+                            execution.setVariable('wf_approveCount', newApprovedCount);
+                            execution.setVariable('wf_actualPercent', newApprovedPercentage);
+                        } else {
+                            var newRejectCount = wf_rejectCount + 1;
+                            var newRejectPercentage = (newRejectCount / wf_reviewerCount) * 100;
+                            
+                            execution.setVariable('wf_rejectCount', newRejectCount);
+                            execution.setVariable('wf_actualRejectPercent', newRejectPercentage);
+                        }
+                        
+                        var decisionMarker = (approved ? "1" : "0");
+                        var taskComment = decisionMarker + person.properties.firstName + " " + person.properties.lastName + ": " + task.getVariableLocal('bpm_comment');
+                        
+                        if(taskComment != null)
+                        {
+                           var comments = execution.getVariable('hwf_comments');
+                           comments.add(taskComment);
+                           execution.setVariable('hwf_comments', comments);
+                        }
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+           </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${reviewAssignee.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+            
+           <!-- For each assignee, task is created -->
+           <multiInstanceLoopCharacteristics isSequential="false">
+              <loopDataInputRef>bpm_assignees</loopDataInputRef>
+              <inputDataItem name="reviewAssignee" />
+              <completionCondition>${wf_actualPercent >= wf_requiredApprovePercent || wf_requiredApprovePercent > (100 - wf_actualRejectPercent)}</completionCondition>
+           </multiInstanceLoopCharacteristics>
+        </userTask>
+
+        <sequenceFlow id='flow2' sourceRef='reviewTask' targetRef='end' />
+            
+        <endEvent id="end" />
+
+    </process>
+    
+</definitions>

@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/alfresco-api" target="/test-authenticationservice"/>
+    </PathMappings>
+
+    <Application name="Test AuthenticationService" key="test-authenticationservice">
+        <AuditPath key="post">
+            <AuditPath key="AuthenticationService">
+                <AuditPath key="authenticate">
+                    <AuditPath key="args">
+                        <AuditPath key="userName">
+                            <RecordValue key="value" dataExtractor="simpleValue"/>
+                        </AuditPath>
+                    </AuditPath>
+                    <AuditPath key="error">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

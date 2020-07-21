@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<definitions id="adhoc-definitions"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://activiti.org/bpmn20" 
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:activiti="http://activiti.org/bpmn">
+
+    <process id="activitiAdhocTimer" name="Activiti Timer Adhoc">
+
+        <startEvent id="start"
+            activiti:formKey="wf:submitAdhocTask" />
+
+        <sequenceFlow id='flow1' 
+            sourceRef='start'
+            targetRef='adhocTask' />
+
+        <userTask id="adhocTask" name="Urgent task"
+            activiti:formKey="wf:adhocTask">
+           <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                      if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                      if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+           </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${bpm_assignee.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+        
+        <!-- Boundry event attached to 'adhocTask', which will end the task after 1 minute -->
+        <boundaryEvent id="timer" cancelActivity="true" attachedToRef="adhocTask" name="testTimer">
+		   <timerEventDefinition>
+		    <!-- ISO-8601 durations of one hour-->
+		    <timeDuration>PT1H</timeDuration>
+		  </timerEventDefinition>
+		</boundaryEvent>   
+
+        <sequenceFlow id='flow2' 
+        sourceRef='adhocTask'
+            targetRef='taskDone' />
+
+        <userTask id="taskDone" name="Urgent task completed on time"
+            activiti:formKey="wf:completedAdhocTask" >
+            <documentation>
+                The urgent task was completed on time by ${bpm_assignee.properties.userName}.
+            </documentation>
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+           </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+        
+        <userTask id="taskExpired" name="Urgent task expired"
+            activiti:formKey="wf:completedAdhocTask" >
+            <documentation>
+                The urgent task was NOT completed on time by ${bpm_assignee.properties.userName}.
+            </documentation>
+            <extensionElements>
+               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+                  <activiti:field name="script">
+                     <activiti:string>
+                        if (typeof bpm_workflowDueDate != 'undefined') task.setVariableLocal('bpm_dueDate', bpm_workflowDueDate);
+                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
+                     </activiti:string>
+                  </activiti:field>
+               </activiti:taskListener>
+           </extensionElements>
+            <humanPerformer>
+                <resourceAssignmentExpression>
+                    <formalExpression>${initiator.properties.userName}</formalExpression>
+                </resourceAssignmentExpression>
+            </humanPerformer>
+        </userTask>
+
+        <sequenceFlow id='flow3' sourceRef='taskDone'
+            targetRef='theEnd' /> 
+        
+        <sequenceFlow id='flow4' sourceRef='timer'
+            targetRef='taskExpired' />
+        
+         <sequenceFlow id='veryLongTimer' sourceRef='taskExpired'
+            targetRef='theEnd' />
+
+        <endEvent id="theEnd" />
+    </process>
+</definitions>

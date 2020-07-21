@@ -1,0 +1,26 @@
+@startuml
+left to right direction
+skinparam linetype ortho
+
+component Client
+component TransformationEngine {
+component Service
+component Router
+component Configuration
+}
+component AdminConsole
+component Log
+component TransformationFarm {
+component Worker1
+component Worker2
+component Worker3
+}
+Client->Service:calls
+Service->Router:calls
+Router->Configuration:reads
+AdminConsole->Configuration:sets
+Service->Log:writes
+AdminConsole->Log:writes
+Router->Worker1:calls
+
+@enduml

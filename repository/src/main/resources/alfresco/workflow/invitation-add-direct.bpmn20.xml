@@ -1,0 +1,23 @@
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://alfresco.org/workflows/internal">
+
+   <process isExecutable="true" id="activitiInvitationNominatedAddDirect" name="Add user activiti invitation process">
+
+      <startEvent id="start" activiti:formKey="inwf:inviteToSiteTask" />
+
+      <sequenceFlow id="flow1" sourceRef="start" targetRef="accepted" />
+      
+      <serviceTask id="accepted" name="Accepted" activiti:delegateExpression="${AcceptNominatedInviteDelegate}" />
+      <sequenceFlow id="flow2" sourceRef="accepted" targetRef="sendInvite" />
+      
+      <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteAddDirectDelegate}" />
+      
+      <sequenceFlow id="flow3" sourceRef="sendInvite" targetRef="end" />
+
+      <endEvent id="end" />
+   </process>
+
+</definitions>

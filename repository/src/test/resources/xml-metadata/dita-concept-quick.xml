@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From the DITA Open Toolkit project, under the Apache License v2.0 -->
+<!-- (C) Copyright IBM Corporation 2001, 2005. All Rights Reserved. *-->
+<!DOCTYPE concept PUBLIC "-//OASIS//DTD DITA Concept//EN" "concept.dtd">
+<concept id="conceptconcept" xml:lang="en-us">
+<title>The quick brown fox jumps over the lazy dog</title>
+<shortdesc>Gym class featuring a brown fox and lazy dog</shortdesc>
+<conbody>
+  <p>The quick brown fox jumps over the lazy dog.</p>
+</conbody>
+</concept> 

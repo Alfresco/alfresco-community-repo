@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- ========================================================= -->
+<!-- The configuration of the Authority Service Implementation -->
+<!-- ========================================================= -->
+
+<!--                                                                          -->
+<!-- This implementation supports the identification of users as admin users. -->
+<!-- It also supports groups and allows groups and users to be arranged into  -->
+<!-- hierarchies.                                                             -->
+<!--                                                                          -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl" init-method="init">
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="authorityDAO">
+            <ref bean="authorityDAO" />
+        </property>
+        <property name="userNameMatcher">
+            <ref bean="userNameMatcher" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService" />
+        </property>
+        <property name="permissionServiceSPI">
+            <ref bean="permissionServiceImpl" />
+        </property>
+        <!--                                                                  -->
+        <!-- A list of groups with admin rights.                              -->
+        <!--                                                                  -->
+        <property name="adminGroups">
+            <set>
+                <value>ALFRESCO_ADMINISTRATORS</value>
+            </set>
+        </property>
+        <!--                                                                  -->
+        <!-- A list of groups with guest rights.                              -->
+        <!--                                                                  -->
+        <property name="guestGroups">
+            <set>
+            </set>
+        </property>
+         <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+    </bean>
+
+    <!-- Authority DAO that stores group information along with user information, -->
+    <!-- in the repository.                                                       -->
+    <!--                                                                          -->
+    <!-- This bean uses the authorityLookupCache configured in cache-context.xml  -->
+    <!--                                                                          -->
+
+    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.AuthorityDAOImpl" init-method="init">   
+        <property name="storeUrl">
+            <value>${spaces.store}</value>
+        </property>
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="searchService">
+            <ref bean="admSearchService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="authorityLookupCache">
+            <ref bean="authorityLookupCache" />
+        </property>
+        <property name="userAuthorityCache">
+            <ref bean="userToAuthorityCache" />
+        </property>
+        <property name="childAuthorityCache">
+            <ref bean="authorityToChildAuthorityCache" />
+        </property>
+        <property name="zoneAuthorityCache">
+            <ref bean="zoneToAuthorityCache" />
+        </property>
+        <property name="singletonCache">
+            <ref bean="immutableSingletonCache" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+        <property name="cannedQueryRegistry" ref="cannedQueryRegistry" />
+        <property name="cannedQueryDAO" ref="cannedQueryDAO" />
+        <property name="qnameDAO" ref="qnameDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
+        <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
+        <property name="useBridgeTable" value="${authority.useBridgeTable}" />
+        <property name="findAuthoritiesLimit" value="${authority.findAuthorityLimit}" />
+    </bean>
+
+    <bean id="authorityTypeBehaviour" class="org.alfresco.repo.security.authority.AuthorityTypeBehaviour" init-method="init">
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent"/>
+        </property>
+    </bean>
+
+    <bean name="authorityBridgeDAO" class="org.alfresco.repo.security.authority.AuthorityBridgeDAOImpl">
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+    </bean>
+    
+    <bean name="authsGetAuthoritiesCannedQueryFactory" class="org.alfresco.repo.security.authority.GetAuthoritiesCannedQueryFactory">
+        <property name="registry" ref="cannedQueryRegistry"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="AuthorityService_security_getAuthorities"/>
+    </bean>
+
+    <!--  Expose the Authority service to Java script API ROOT Scopeable object called "groups" -->
+    <bean id="authorityServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.security.authority.script.ScriptAuthorityService">
+        <property name="extensionName">
+            <value>groups</value>
+        </property>
+        <property name="serviceRegistry">
+            <ref bean="ServiceRegistry" />
+        </property>
+    </bean>
+
+</beans>

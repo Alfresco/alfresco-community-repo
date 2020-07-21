@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.subscriptions">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_SubscriptionNode" type="SubscriptionNode">
+        <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="id" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="pararmeter_Subscription" type="Subscription">
+        <parameter property="userNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <!--                -->
+    <!-- Insert, Delete  -->
+    <!--                -->
+    
+    <insert id="insert_Subscription" parameterMap="pararmeter_Subscription">
+        insert into alf_subscriptions (user_node_id, node_id) 
+        values (?, ?)
+    </insert>
+    
+    <delete id="delete_Subscription" parameterMap="pararmeter_Subscription">
+        delete from alf_subscriptions where user_node_id = #{userNodeId} and node_id = #{nodeId}
+    </delete>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_Subscriptions" parameterType="map" resultMap="result_SubscriptionNode">
+        select
+            store.protocol as protocol, store.identifier as identifier, node.uuid as uuid
+        from
+            alf_node node 
+            join alf_store store on (store.id = node.store_id)
+            join alf_subscriptions sub on (sub.node_id = node.id)
+        where
+            sub.user_node_id = #{userNodeId}
+    </select>
+    
+    <!-- Get the ... -->
+    <select id="select_countSubscriptions" parameterType="map" resultType="long">
+        select
+            count(node_id)
+        from
+            alf_node node join alf_subscriptions sub on (sub.node_id = node.id)
+        where
+            sub.user_node_id = #{userNodeId}
+    </select>
+    
+    <select id="select_hasSubscribed" parameterMap="pararmeter_Subscription" resultType="long">
+        select
+            count(node_id)
+        from
+            alf_node node join alf_subscriptions sub on (sub.node_id = node.id)
+        where
+            sub.user_node_id = #{userNodeId} and sub.node_id = #{nodeId}
+    </select>
+    
+    <select id="select_Following" parameterType="map" resultType="String">
+        select
+            props.string_value as user_id
+        from
+            alf_node node 
+            join alf_subscriptions sub on (sub.node_id = node.id)
+            join alf_node_properties props on (props.node_id = node.id)
+        where
+            props.qname_id=#{userIdQname} and sub.user_node_id = #{userNodeId}
+    </select>
+    
+    <select id="select_Followers" parameterType="map" resultType="String">
+        select
+            props.string_value as user_id
+        from
+            alf_node node 
+            join alf_subscriptions sub on (sub.user_node_id = node.id)
+            join alf_node_properties props on (props.node_id = node.id)
+        where
+            props.qname_id=#{userIdQname} and sub.node_id = #{userNodeId}
+    </select>
+
+    <select id="select_countFollowers" parameterType="map" resultType="long">
+        select
+            count(user_node_id)
+        from
+            alf_node node join alf_subscriptions sub on (sub.user_node_id = node.id)
+        where
+            sub.node_id = #{userNodeId}
+    </select>    
+  
+</mapper>

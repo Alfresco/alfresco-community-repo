@@ -1,0 +1,15 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"		   
+           xmlns:ver="http://www.alfresco.org/model/versionstore/1.0">
+
+    <view:reference view:pathref="/">
+        <!-- Apply All access to Everyone on root node of light weight versin store -->
+		<view:acl>
+		   <view:ace view:access="ALLOWED">
+		      <view:authority>GROUP_EVERYONE</view:authority>
+		      <view:permission>All</view:permission>
+		   </view:ace>
+		</view:acl>
+		<ver:versionStoreRoot/>
+    </view:reference>
+               
+</view:view>

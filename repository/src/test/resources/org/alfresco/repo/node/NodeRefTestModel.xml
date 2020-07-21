@@ -1,0 +1,97 @@
+<model name="node-ref-test:nodeservice"
+	xmlns="http://www.alfresco.org/model/dictionary/1.0">
+	
+	<description>Test Model for NodeService tests</description>
+	<author>Alfresco</author>
+	<published>2005-06-05</published>
+	<version>0.1</version>
+	
+	<imports>
+		<import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+		<import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+		<import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+	</imports>
+	
+	<namespaces>
+		<namespace uri="http://www.alfresco.org/test/NodeRefTestModel"
+			prefix="node-ref-test"/>
+	</namespaces>
+	
+	<types>
+		<type name="node-ref-test:testType">
+			<title>Content</title>
+			<parent>cm:content</parent>
+			<archive>false</archive>
+			<properties>
+				<property name="node-ref-test:category1">
+					<type>d:category</type>
+					<mandatory>false</mandatory>
+					<multiple>false</multiple>
+				</property>
+				<property name="node-ref-test:categories1">
+					<type>d:category</type>
+					<mandatory>false</mandatory>
+					<multiple>true</multiple>
+				</property>
+				<property name="node-ref-test:noderef1">
+					<type>d:noderef</type>
+					<mandatory>false</mandatory>
+					<multiple>false</multiple>
+				</property>
+				<property name="node-ref-test:noderefs1">
+					<type>d:noderef</type>
+					<mandatory>false</mandatory>
+					<multiple>true</multiple>
+				</property>
+			</properties>
+		</type>
+	</types>
+	
+	<aspects>
+		
+		<aspect name="node-ref-test:singleCategory">
+			<title>Single Category</title>
+			<properties>
+				<property name="node-ref-test:category">
+					<type>d:category</type>
+					<mandatory>false</mandatory>
+					<multiple>false</multiple>
+				</property>
+			</properties>
+		</aspect>
+		
+		<aspect name="node-ref-test:multipleCategories">
+			<title>Multiple Categories</title>
+			<properties>
+				<property name="node-ref-test:categories">
+					<type>d:category</type>
+					<mandatory>false</mandatory>
+					<multiple>true</multiple>
+				</property>
+			</properties>
+		</aspect>
+		
+		<aspect name="node-ref-test:singleNodeRef">
+			<title>Single Node Ref</title>
+			<properties>
+				<property name="node-ref-test:noderef">
+					<type>d:noderef</type>
+					<mandatory>false</mandatory>
+					<multiple>false</multiple>
+				</property>
+			</properties>
+		</aspect>
+		
+		<aspect name="node-ref-test:multipleNodeRefs">
+			<title>Mutliple Node Refs</title>
+			<properties>
+				<property name="node-ref-test:noderefs">
+					<type>d:noderef</type>
+					<mandatory>false</mandatory>
+					<multiple>true</multiple>
+				</property>
+			</properties>
+		</aspect>
+		
+	</aspects>
+</model>

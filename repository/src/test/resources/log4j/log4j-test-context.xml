@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Sample context to test Log4J hierarchy overrides --> 
+<beans>
+   
+    <bean id="log4JHierarchyInit" class="org.alfresco.repo.admin.Log4JHierarchyInit" init-method="init">
+        <property name="extraLog4jUrls">
+            <list>
+                <!-- Uses 'test-resources' folder, which is on the classpath -->
+                <value>classpath*:log4j/log4j.properties</value>
+            </list>
+        </property>
+    </bean>
+   
+</beans>

@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Policy Support -->
+
+	<bean id="policyBehaviourQueue" class="org.alfresco.repo.policy.TransactionBehaviourQueue">
+	</bean>
+
+	<bean id="policyTransactionHandlerFactory" class="org.alfresco.repo.policy.TransactionInvocationHandlerFactory">
+		<constructor-arg index="0">
+			<ref bean="policyBehaviourQueue"/>
+		</constructor-arg>
+	</bean>
+
+    <bean id="policyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+	    </property>
+		<property name="tenantService">
+			<ref bean="tenantService"/>
+	    </property>
+    </bean>
+    
+     <bean id="unboundPolicyBehaviourFilter" class="org.alfresco.repo.policy.BehaviourFilterImpl">
+		<property name="dictionaryService">
+			<ref bean="dictionaryService"/>
+	    </property>
+		<property name="tenantService">
+			<ref bean="tenantService"/>
+	    </property>	    
+    </bean>
+
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl">
+        <constructor-arg index="0">
+            <ref bean="dictionaryService"/>
+        </constructor-arg>
+        <property name="behaviourFilter">
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="transactionInvocationHandlerFactory">
+        	<ref bean="policyTransactionHandlerFactory"/>
+        </property>
+        <property name="tryLockTimeout">
+            <value>${system.lockTryTimeout.PolicyComponentImpl}</value>
+        </property>
+    </bean>
+    
+    <bean id="policyRegistration" abstract="true" init-method="register">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>  	    
+    </bean>
+
+    <!-- for restore, needs to be before bootstrap-context -->
+    <bean id="dictionaryModelType" class="org.alfresco.repo.dictionary.DictionaryModelType" init-method="init">
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="namespaceDAO" ref="namespaceDAO"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="modelValidator" ref="modelValidator"/>
+      <property name="transactionService" ref="TransactionService"/>
+      <property name="jobLockService" ref="jobLockService"/>
+	  <property name="authorityService" ref="authorityService"/>
+    </bean>
+    
+    <bean id="policyIgnoreUtil" class="org.alfresco.util.PolicyIgnoreUtil">
+      <property name="tenantService" ref="tenantService"/>
+      <property name="storesToIgnorePolicies" ref="storesToIgnorePolicies"/>
+    </bean>
+</beans>

@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE permissions >
+
+<permissions>
+    
+    <!-- Namespaces used in type references -->
+    
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <namespace uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
+   </namespaces>
+   
+   <!-- ============================================ -->
+   <!-- Permissions specific to the wiki integration -->
+   <!-- ============================================ -->
+   
+   <permissionSet type="st:site" expose="selected">
+   
+      <permissionGroup name="SiteManager" allowFullControl="true" expose="true" />
+      
+      <permissionGroup name="SiteCollaborator" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="SiteContributor" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
+      </permissionGroup>
+      
+      <permissionGroup name="SiteConsumer" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Consumer" type="cm:cmobject" />
+         <includePermissionGroup permissionGroup="ReadPermissions" type="sys:base" />
+      </permissionGroup>
+      
+   </permissionSet>
+
+</permissions>

@@ -1,0 +1,537 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<!--
+   Bean definitions shared by the ldap and ldap-ad subsystems
+-->
+
+<beans>
+   <!-- LDAP authentication configuration -->
+
+   <!--
+
+      You can also use JAAS authentication for Kerberos against Active Directory or NTLM if you also require single sign
+      on from the web browser. You do not have to use LDAP authentication to synchronise groups and users from an LDAP
+      store if it supports other authentication routes, like Active Directory.
+   -->
+   
+   <bean id="monitor" class="org.alfresco.repo.security.authentication.ldap.Monitor" >
+      <property name="LDAPAuthenticationComponent">
+           <ref bean="authenticationComponent" />
+      </property>
+      
+      <property name="ChainingUserRegistrySynchronizerStatus">
+           <ref bean="userRegistrySynchronizer" />
+      </property>
+   </bean>
+   
+   <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.ldap.LDAPAuthenticationComponentImpl"
+      parent="authenticationComponentBase">
+      <property name="id">
+         <value>${instancePath}</value>
+      </property>
+      <property name="active">
+         <value>${ldap.authentication.active}</value>
+      </property>
+      <property name="LDAPInitialDirContextFactory">
+         <ref bean="ldapInitialDirContextFactory" />
+      </property>
+      <property name="userNameFormat">
+         <value>${ldap.authentication.userNameFormat}</value>
+      </property>
+      <property name="ldapNameResolver">
+         <ref bean="userRegistry" />
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="escapeCommasInBind">
+         <value>${ldap.authentication.escapeCommasInBind}</value>
+      </property>
+      <property name="escapeCommasInUid">
+         <value>${ldap.authentication.escapeCommasInUid}</value>
+      </property>
+      <property name="allowGuestLogin">
+         <value>${ldap.authentication.allowGuestLogin}</value>
+      </property>
+      <property name="defaultAdministratorUserNameList">
+         <value>${ldap.authentication.defaultAdministratorUserNames}</value>
+      </property>
+   </bean>
+
+   <!-- Wrapped version to be used within subsystem -->
+   <bean id="AuthenticationComponent" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.repo.security.authentication.AuthenticationComponent</value>
+      </property>
+      <property name="transactionManager">
+         <ref bean="transactionManager" />
+      </property>
+      <property name="target">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- Authenticaton service for chaining -->
+   <bean id="localAuthenticationService" class="org.alfresco.repo.security.authentication.AuthenticationServiceImpl">
+      <property name="ticketComponent">
+         <ref bean="ticketComponent" />
+      </property>
+      <property name="authenticationComponent">
+         <ref bean="authenticationComponent" />
+      </property>
+      <property name="sysAdminParams">
+         <ref bean="sysAdminParams" />
+      </property>
+      <property name="personService">
+          <!-- use the unsecure "personService" because we need to know if  -->
+          <!-- personService.getUserNamesAreCaseSensitive(), without having the user authenticated yet -->
+         <ref bean="personService" />
+      </property>
+      <property name="protectedUsersCache">
+         <ref bean="protectedUsersCache" />
+      </property>
+      <property name="protectionEnabled">
+         <value>${authentication.protection.enabled}</value>
+      </property>
+      <property name="protectionLimit">
+         <value>${authentication.protection.limit}</value>
+      </property>
+      <property name="protectionPeriodSeconds">
+         <value>${authentication.protection.periodSeconds}</value>
+      </property>
+   </bean>
+
+   <!--
+
+      This bean is used to support general LDAP authentication. It is also used to provide read only access to users and
+      groups to pull them out of the LDAP reopsitory
+   -->
+
+   <bean id="ldapInitialDirContextFactory" class="org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactoryImpl">
+
+      <property name="trustStorePath">
+         <value>${ldap.authentication.truststore.path}</value>
+      </property>
+      <property name="trustStoreType">
+         <value>${ldap.authentication.truststore.type}</value>
+      </property>
+      <property name="trustStorePassPhrase">
+         <value>${ldap.authentication.truststore.passphrase}</value>
+      </property>
+
+      <property name="initialDirContextEnvironment">
+         <map>
+            <!-- The LDAP provider -->
+            <entry key="java.naming.factory.initial">
+               <value>${ldap.authentication.java.naming.factory.initial}</value>
+            </entry>
+
+            <!-- The url to the LDAP server -->
+            <!-- Note you can use space separated urls - they will be tried in turn until one works -->
+            <!-- This could be used to authenticate against one or more ldap servers (you will not know which one ....) -->
+            <entry key="java.naming.provider.url">
+               <value>${ldap.authentication.java.naming.provider.url}</value>
+            </entry>
+
+            <!-- Custom Socket factory -->
+            <entry key="java.naming.ldap.factory.socket">
+               <value>${ldap.java.naming.ldap.factory.socket:#{null}}</value>
+            </entry>
+            
+
+            <!-- The authentication mechanism to use for password validation -->
+            <!-- Some sasl authentication mechanisms may require a realm to be set -->
+            <!--                java.naming.security.sasl.realm -->
+            <!-- The available options will depend on your LDAP provider -->
+            <entry key="java.naming.security.authentication">
+               <value>${ldap.authentication.java.naming.security.authentication}</value>
+            </entry>
+
+            <!-- Requests timeout, in miliseconds, use 0 for none (default) -->
+            <entry key="com.sun.jndi.ldap.read.timeout">
+               <value>${ldap.authentication.java.naming.read.timeout}</value>
+            </entry>
+
+            <!-- Follow referrals, can be: ignore, follow, throw -->
+            <!-- the default one is "follow" -->
+            <entry key="java.naming.referral">
+               <value>${ldap.authentication.java.naming.referral}</value>
+            </entry>
+
+            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+            <entry key="java.naming.security.protocol">
+               <value>${ldap.authentication.java.naming.security.protocol}</value>
+            </entry>
+         </map>
+      </property>
+      <property name="defaultIntialDirContextEnvironment">
+         <map>
+            <!-- The LDAP provider -->
+            <entry key="java.naming.factory.initial">
+               <value>${ldap.authentication.java.naming.factory.initial}</value>
+            </entry>
+
+            <!-- The url to the LDAP server -->
+            <!-- Note you can use space separated urls - they will be tried in turn until one works -->
+            <!-- This could be used to authenticate against one or more ldap servers (you will not know which one ....) -->
+            <entry key="java.naming.provider.url">
+               <value>${ldap.authentication.java.naming.provider.url}</value>
+            </entry>
+
+
+            <!-- Custom Socket factory -->
+            <entry key="java.naming.ldap.factory.socket">
+               <value>${ldap.java.naming.ldap.factory.socket:#{null}}</value>
+            </entry>
+
+
+            <!-- The authentication mechanism to use for SYNCHRONIZATION -->
+            <!-- Some sasl authentication mechanisms may require a realm to be set -->
+            <!--                java.naming.security.sasl.realm -->
+            <!-- The available options will depend on your LDAP provider -->
+            <entry key="java.naming.security.authentication">
+               <value>${ldap.synchronization.java.naming.security.authentication}</value>
+            </entry>
+
+            <!-- The id of a user who can read group and user information -->
+            <!-- This does not go through the pattern substitution defined above and is used "as is" -->
+            <entry key="java.naming.security.principal">
+               <value>${ldap.synchronization.java.naming.security.principal}</value>
+            </entry>
+
+            <!-- The password for the user defined above -->
+            <entry key="java.naming.security.credentials">
+               <value>${ldap.synchronization.java.naming.security.credentials}</value>
+            </entry>
+
+            <!-- Allow the 'underlying mechanism' to obtain credentials (e.g. Kerberos) -->
+            <entry key="javax.security.auth.useSubjectCredsOnly">
+               <value>false</value>
+            </entry>
+
+            <!-- Requests timeout, in miliseconds, use 0 for none (default) -->
+            <entry key="com.sun.jndi.ldap.read.timeout">
+               <value>${ldap.authentication.java.naming.read.timeout}</value>
+            </entry>
+
+            <!-- Follow referrals, can be: ignore, follow, throw -->
+            <!-- the default one is "follow" -->
+            <entry key="java.naming.referral">
+               <value>${ldap.authentication.java.naming.referral}</value>
+            </entry>
+
+            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+            <entry key="java.naming.security.protocol">
+               <value>${ldap.authentication.java.naming.security.protocol}</value>
+            </entry>
+	    
+            <!-- Connection pool configuration -->
+            <entry key="com.sun.jndi.ldap.connect.pool">
+               <value>${ldap.synchronization.com.sun.jndi.ldap.connect.pool}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.timeout">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.timeout}</value>
+            </entry>
+         </map>
+      </property>
+      <property name="poolSystemProperties">
+         <map>
+            <entry key="com.sun.jndi.ldap.connect.pool.authentication">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.authentication}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.debug">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.debug}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.initsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.initsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.maxsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.maxsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.prefsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.prefsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.protocol">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.protocol}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.timeout">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.timeout}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+    <!-- Regularly exports user and group information from LDAP -->
+    
+    <bean id="userRegistry" class="org.alfresco.repo.security.sync.ldap.LDAPUserRegistry">
+        <property name="active">
+            <value>${ldap.synchronization.active}</value>
+        </property>
+
+        <!--
+        If positive, this property indicates that RFC 2696 paged results should be
+        used to split query results into batches of the specified size. This
+        overcomes any size limits imposed by the LDAP server.        
+        -->
+        <property name="queryBatchSize">
+            <value>${ldap.synchronization.queryBatchSize}</value>
+        </property>
+
+        <!--
+        If positive, this property indicates that range retrieval should be used to fetch
+        multi-valued attributes (such as member) in batches of the specified size.
+        Overcomes any size limits imposed by Active Directory.        
+        -->
+        <property name="attributeBatchSize">
+            <value>${ldap.synchronization.attributeBatchSize}</value>
+        </property>
+
+        <!--
+        The query to select all objects that represent the groups to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=groupOfNames)
+        
+        For Active Directory:
+        (objectclass=group)
+        -->
+        <property name="groupQuery">
+            <value>${ldap.synchronization.groupQuery}</value>
+        </property>
+        
+        <!--
+        The query to select objects that represent the groups to import that have changed since a certain time.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (&(objectclass=groupOfNames)(!(modifyTimestamp<={0})))
+        
+        For Active Directory:
+        (&(objectclass=group)(!(modifyTimestamp<={0})))
+        -->
+        <property name="groupDifferentialQuery">
+            <value>${ldap.synchronization.groupDifferentialQuery}</value>
+        </property>
+
+        <!-- 
+        The query to select all objects that represent the users to import.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (objectclass=inetOrgPerson)
+        
+        For Active Directory:
+        (objectclass=user)
+        -->
+        <property name="personQuery">
+            <value>${ldap.synchronization.personQuery}</value>
+        </property>
+        
+        <!-- 
+        The query to select objects that represent the users to import that have changed since a certain time.
+        
+        For Open LDAP, using a basic schema, the following is probably what you want:
+        (&(objectclass=inetOrgPerson)(!(modifyTimestamp<={0})))
+        
+        For Active Directory:
+        (&(objectclass=user)(!(modifyTimestamp<={0})))
+        -->
+        <property name="personDifferentialQuery">
+            <value>${ldap.synchronization.personDifferentialQuery}</value>
+        </property>
+
+        <!--
+        The group search base restricts the LDAP group query to a sub section of tree on the LDAP server.
+        -->
+        <property name="groupSearchBase">
+            <value>${ldap.synchronization.groupSearchBase}</value>
+        </property>
+        
+        <!--
+        The user search base restricts the LDAP user query to a sub section of tree on the LDAP server.
+        -->
+        <property name="userSearchBase">
+            <value>${ldap.synchronization.userSearchBase}</value>
+        </property>
+
+        <!--
+        The unique identifier for the user.
+        -->
+        <property name="userIdAttributeName">
+            <value>${ldap.synchronization.userIdAttributeName}</value>
+        </property>
+        
+        <!--
+        The name of the operational attribute recording the last update time for a group or user.
+        -->
+        <property name="modifyTimestampAttributeName">
+            <value>${ldap.synchronization.modifyTimestampAttributeName}</value>
+        </property>
+
+        <!--
+        The timestamp format. Unfortunately, this varies between directory servers.
+        -->
+        <property name="timestampFormat">
+            <value>${ldap.synchronization.timestampFormat}</value>
+        </property>
+
+        <!--
+        The user account status property interpreter. Unfortunately, this varies between directory servers.
+        -->
+        <property name="userAccountStatusInterpreter">
+            <ref bean="${ldap.synchronization.userAccountStatusInterpreter}" />
+        </property>
+
+        <!--
+        An attribute that is a unique identifier for each group found. 
+        This is also the name of the group with the current group implementation.
+        This is mandatory for any groups found.
+        
+        OpenLDAP: "cn" as it is mandatory on groupOfNames
+        Active Directory: "cn"
+        
+        -->
+        <property name="groupIdAttributeName">
+            <value>${ldap.synchronization.groupIdAttributeName}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for group members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a group. 
+        -->
+        <property name="groupType">
+            <value>${ldap.synchronization.groupType}</value>
+        </property>
+        
+        <!-- 
+        The objectClass attribute for person members.
+        For each member of a group, the distinguished name is given.
+        The object is looked up by its DN. If the object is of this class it is treated as a person. 
+        -->
+        <property name="personType">
+            <value>${ldap.synchronization.personType}</value>
+        </property>
+        
+        <!--
+        The repeating attribute on group objects (found by query or as sub groups)
+        used to define membership of the group. This is assumed to hold distinguished names of
+        other groups or users/people; the above types are used to determine this.
+        
+        OpenLDAP: "member" as it is mandatory on groupOfNames
+        Active Directory: "member"
+        
+        -->
+        <property name="memberAttribute">
+            <value>${ldap.synchronization.groupMemberAttributeName}</value>
+        </property>        
+
+        <!--
+        This property defines a mapping between attributes held on LDAP user objects and
+        the properties of user objects held in the repository. The key is the QName of an attribute in
+        the repository, the value is the attribute name from the user/inetOrgPerson/.. object in the
+        LDAP repository.     
+        -->
+        <property name="personAttributeMapping">
+            <map>
+                <entry key="cm:userName">
+                    <!-- Must match the same attribute as userIdAttributeName -->
+                    <value>${ldap.synchronization.userIdAttributeName}</value>
+                </entry>
+                <entry key="cm:firstName">
+                    <!-- OpenLDAP: "givenName" -->
+                    <!-- Active Directory: "givenName" -->
+                    <value>${ldap.synchronization.userFirstNameAttributeName}</value>
+                </entry>
+                <entry key="cm:lastName">
+                    <!-- OpenLDAP: "sn" -->
+                    <!-- Active Directory: "sn" -->
+                    <value>${ldap.synchronization.userLastNameAttributeName}</value>
+                </entry>
+                <entry key="cm:email">
+                    <!-- OpenLDAP: "mail" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userEmailAttributeName}</value>
+                </entry>
+                <entry key="cm:organization">
+                    <!-- OpenLDAP: "o" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userOrganizationalIdAttributeName}</value>
+                </entry>
+                <!-- This deprecated property has been replaced by "cm:organization". We will use the same mapping -->
+                <entry key="cm:organizationId">
+                    <!-- OpenLDAP: "o" -->
+                    <!-- Active Directory: "???" -->
+                    <value>${ldap.synchronization.userOrganizationalIdAttributeName}</value>
+                </entry>
+                <!-- Always use the default -->
+                <entry key="cm:homeFolderProvider">
+                    <null/>
+                </entry>
+                <entry key="cm:userAccountStatusProperty">
+                    <!-- Oracle / Red Hat / 389 DS:  "nsAccountLock"-->
+                    <!-- OpenLDAP: "pwdAccountLockedTime" -->
+                    <!-- Active Directory: "userAccountControl" -->
+                    <value>${ldap.synchronization.userAccountStatusProperty}</value>
+                </entry>
+            </map>
+        </property>
+        <!-- Set a default home folder provider -->
+        <!-- Defaults only apply for values above -->
+        <property name="personAttributeDefaults">
+            <map>
+                <entry key="cm:homeFolderProvider">
+                    <value>${ldap.synchronization.defaultHomeFolderProvider}</value>
+                </entry>
+            </map>
+        </property>
+    
+        <!--
+        This property defines a mapping between attributes held on LDAP group objects and
+        the properties of authorities held in the repository. The key is the QName of an attribute in
+        the repository, the value is the attribute name from the group object in the LDAP repository.     
+        -->
+        <property name="groupAttributeMapping">
+            <map>
+                <entry key="cm:authorityName">
+                    <!-- Must match the same attribute as groupIdAttributeName -->
+                    <value>${ldap.synchronization.groupIdAttributeName}</value>
+                </entry>
+                <entry key="cm:authorityDisplayName">
+                    <!-- OpenLDAP: "description" -->
+                    <!-- Active Directory: "displayName" -->
+                    <value>${ldap.synchronization.groupDisplayNameAttributeName}</value>
+                </entry>
+            </map>
+        </property>
+
+        <property name="enableProgressEstimation">
+            <value>${ldap.synchronization.enableProgressEstimation}</value>
+        </property>
+
+        <!-- Services -->
+        <property name="LDAPInitialDirContextFactory">
+            <ref bean="ldapInitialDirContextFactory"/>
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService"/>
+        </property>
+    </bean>
+
+    <!-- FTP authentication -->
+    <bean id="ftpAuthenticator" class="org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator" parent="ftpAuthenticatorBase">
+        <property name="active">
+            <value>${ldap.authentication.authenticateFTP}</value>
+        </property>
+    </bean>
+
+</beans>

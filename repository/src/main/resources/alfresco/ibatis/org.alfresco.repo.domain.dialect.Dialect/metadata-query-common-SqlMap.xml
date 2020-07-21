@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.metadata.query">
+
+   <sql id="sql_select_byDynamicQuery">
+        select 
+            node.id             as id
+        from
+            alf_node node
+            <foreach item="item" index="index" collection="joins">
+                <choose>
+                    <when test="item.type == 'PARENT'">
+                        <if test="item.outer">left outer </if>join alf_child_assoc ${item.alias} on (${item.alias}.child_node_id = node.id)
+                    </when>
+                    <when test="item.type == 'PROPERTY'">
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias} on ((${item.alias}.node_id = node.id) AND (#{item.qnameId} = ${item.alias}.qname_id))
+                    </when>
+                    <when test="item.type == 'CONTENT_MIMETYPE'">
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
+                        <if test="item.outer">left outer </if>join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                        <if test="item.outer">left outer </if>join alf_mimetype  ${item.alias} on (${item.alias}_cd.content_mimetype_id = ${item.alias}.id)
+                    </when>
+                    <when test="item.type == 'CONTENT_URL'">
+                        <if test="item.outer">left outer </if>join alf_node_properties ${item.alias}_p on ((${item.alias}_p.node_id = node.id) AND (#{item.qnameId} = ${item.alias}_p.qname_id))
+                        <if test="item.outer">left outer </if>join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                        <if test="item.outer">left outer </if>join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
+                    </when>
+                </choose>
+            </foreach>
+        where 
+            node.type_qname_id &lt;&gt; #{sysDeletedType}
+            AND node.store_id = #{storeId}
+            <if test="sinceTxId != null">
+                <if test="sinceTxId > -1">
+                    AND node.transaction_id &gt; #{sinceTxId}
+                </if>
+            </if>
+            <if test="hasPredicate">
+                AND
+                <foreach item="item" index="index" collection="predicateParts">
+                    <choose>
+                        <when test="item.type == 'OPEN'">
+                            (
+                        </when>
+                        <when test="item.type == 'CLOSE'">
+                            )
+                        </when>
+                        <when test="item.type == 'AND'">
+                            AND
+                        </when>
+                        <when test="item.type == 'OR'">
+                            OR
+                        </when>
+                        <when test="item.type == 'NOT'">
+                            NOT
+                        </when>
+                        <when test="item.type == 'NP_MATCHES'">
+                            1 = 1
+                        </when>
+                        <when test="item.type == 'NP_FAILS'">
+                            1 = 0
+                        </when>
+                        <when test="item.type == 'ASPECT'">
+                             node.id IN (select aspect.node_id from alf_node_aspects aspect  
+                             where aspect.qname_id IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>)
+                        </when>
+                        <otherwise>
+                            <!--  skip ORDER and NO_ORDER -->
+                            <if test="item.type != 'ORDER' and item.type != 'NO_ORDER'">
+                                <choose>
+                                    <when test="item.joinCommandType == 'NODE'">
+                                    ( 
+                                    </when>
+                                	<otherwise>
+                                	    <choose>
+                                	         <when test="item.type == 'NOTEXISTS'">
+                                	             node.id NOT IN (
+                                	         </when>
+                                	         <otherwise>
+                                	             node.id IN (
+                                	         </otherwise>
+                                	    </choose>
+                                	</otherwise>
+                            	</choose>
+                           
+                            	<choose>
+                            		<when test="item.joinCommandType == 'PARENT'">
+                            	    	select ${item.alias}.child_node_id from alf_child_assoc ${item.alias} where 
+                            		</when>
+                            		<when test="item.joinCommandType == 'PROPERTY'">
+                            			select ${item.alias}.node_id from alf_node_properties ${item.alias} where (#{item.qnameId} = ${item.alias}.qname_id) AND 
+                            		</when>
+                            		<when test="item.joinCommandType == 'CONTENT_MIMETYPE'">
+                            	    	select ${item.alias}_p.node_id from alf_node_properties ${item.alias}_p 
+                                        	          join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                                        	          join alf_mimetype  ${item.alias} on (${item.alias}_cd.content_mimetype_id = ${item.alias}.id)
+                                           	       where (#{item.qnameId} = ${item.alias}_p.qname_id)
+                                           	       AND
+                            		</when>
+                            		<when test="item.joinCommandType == 'CONTENT_URL'">
+                            	    	select ${item.alias}_p.node_id from alf_node_properties ${item.alias}_p 
+                                        	          join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                                           		      join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
+                                           	       where (#{item.qnameId} = ${item.alias}_p.qname_id)
+                                                   AND 
+                            		</when>
+                            	</choose>
+                            	<choose>
+                                	<when test="item.type == 'EQUALS'">
+                                    	${item.fieldAndFunction} = #{item.value}
+                                	</when>
+                                	<when test="item.type == 'EXISTS'">
+                                    	${item.alias}.${item.fieldName} IS NOT NULL
+                                	</when>
+                                	<when test="item.type == 'NOTEXISTS'">
+                                    	${item.alias}.${item.fieldName} IS NOT NULL
+                                	</when>
+                                	<when test="item.type == 'GT'">
+                                    	${item.fieldAndFunction} &gt; #{item.value}
+                                	</when>
+                                	<when test="item.type == 'GTE'">
+                                    	${item.fieldAndFunction} &gt;= #{item.value}
+                                	</when>
+                                	<when test="item.type == 'LT'">
+                                    	${item.fieldAndFunction} &lt; #{item.value}
+                                	</when>
+                                	<when test="item.type == 'LTE'">
+                                    	${item.fieldAndFunction} &lt;= #{item.value}
+                                	</when>
+                                	<when test="item.type == 'IN'">
+                                    	${item.fieldAndFunction} IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
+                                	</when>
+                                	<when test="item.type == 'NOTIN'">
+                                    	${item.fieldAndFunction} NOT IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
+                                	</when>
+                                	<when test="item.type == 'LIKE'">
+                                    	${item.fieldAndFunction} LIKE #{item.value}  <include refid="alfresco.util.escape"/>
+                                	</when>
+                                	<when test="item.type == 'NOTLIKE'">
+                                    	${item.fieldAndFunction} NOT LIKE #{item.value}  <include refid="alfresco.util.escape"/>
+                                	</when>
+                                	<when test="item.type == 'NOTEQUALS'">
+                                    	${item.fieldAndFunction} &lt;&gt; #{item.value}
+                                	</when>
+                            	</choose>
+                            	)
+                        	</if>
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </if>
+        <if test="hasOrderBy">
+          <if test="hasPredicatePartsOrder">
+            order by
+            <foreach item="item" index="index" collection="predicateParts" open="" separator="," close="">
+                 <choose>
+                     <!--  Only look at ORDER items -->
+                     <when test="item.type == 'ORDER'">
+                         ${item.alias}.${item.fieldName} ${item.value}
+                     </when>
+                 </choose>
+            </foreach>
+          </if>
+        </if>    
+    </sql>
+
+</mapper>

@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Transaction Interceptors for the Calendar Service -->
+   <bean id="calendarServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getCalendarEntry</value>
+                <value>listCalendarEntries</value>
+                <value>listOutlookCalendarEntries</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="calendarServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createCalendarEntry</value>
+                <value>updateCalendarEntry</value>
+                <value>deleteCalendarEntry</value>
+            </list>
+        </property>
+    </bean>
+
+
+   <!-- Calendar Service -->
+   <bean id="CalendarService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.calendar.CalendarService</value>
+      </property>
+      <property name="target">
+         <ref bean="calendarService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="calendarServiceReadTxnAdvisor" />
+            <idref bean="calendarServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="CalendarService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- List of Calendar Canned queries -->
+   <bean id="calendarCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+    
+   <!-- The regular GetChildren Canned Query Factory -->
+   <bean name="calendarGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+       <property name="registry" ref="calendarCannedQueryRegistry"/>
+       <property name="dictionaryService" ref="dictionaryService"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="nodeService" ref="nodeService"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="localeDAO" ref="localeDAO"/>
+       <property name="contentDataDAO" ref="contentDataDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="CalendarService_security_listCalendarEntries"/>
+   </bean>
+
+   <!-- The multiple site, Date filtering GetChildren Canned Query Factory -->
+   <bean name="calendarGetCalendarEntriesCannedQueryFactory" class="org.alfresco.repo.calendar.cannedqueries.GetCalendarEntriesCannedQueryFactory">
+       <property name="registry" ref="calendarCannedQueryRegistry"/>
+       <property name="taggingService" ref="taggingService"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeService" ref="nodeService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="CalendarService_security_listCalendarEntries"/>
+   </bean>
+
+   <!-- Calendar Service base bean -->
+	<bean id="calendarService" class="org.alfresco.repo.calendar.CalendarServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="taggingService" ref="TaggingService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="transactionService" ref="transactionService" />
+        <property name="cannedQueryRegistry" ref="calendarCannedQueryRegistry" />
+	</bean>
+
+</beans>

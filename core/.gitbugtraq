@@ -1,0 +1,4 @@
+# For SmartGit
+[bugtraq "jira"]
+ url = https://issues.alfresco.com/jira/browse/%BUGID%
+ logRegex = ([A-Z]+-\\d+)

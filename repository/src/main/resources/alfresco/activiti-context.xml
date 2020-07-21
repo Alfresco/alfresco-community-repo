@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- Activiti requires a wrapped DataSource -->
+    <bean id="wrappedDataSource"
+        class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <property name="targetDataSource" ref="dataSource" />
+    </bean>
+    
+    <!-- Additional datasource to use for Activit's ID-generator -->
+    <bean id="activitiIdGeneratorDataSource" class="org.alfresco.config.JndiObjectFactoryBean">
+        <property name="jndiName">
+            <value>java:comp/env/jdbc/activitiIdGeneratorDataSource</value>
+        </property>
+        <property name="defaultObject">
+            <ref bean="defaultActivitiIdGeneratorDataSource" />
+        </property>
+    </bean>
+    
+    <!-- Reverting to baseDefaultDataSource, with max 1 connection available -->
+    <bean id="defaultActivitiIdGeneratorDataSource" parent="baseDefaultDataSource">
+    	<property name="initialSize">
+    		<value>0</value>
+    	</property>
+    	<property name="maxActive">
+    		<value>1</value>
+    	</property>
+    	<property name="maxIdle">
+    		<value>1</value>
+    	</property>
+    	<property name="minIdle">
+    		<value>0</value>
+    	</property>
+    </bean>
+
+    <!-- Custom variable types added to activiti -->
+    <bean id="activitiScriptNodeType"
+        class="org.alfresco.repo.workflow.activiti.variable.ScriptNodeVariableType">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+    </bean>
+
+    <bean id="activitiScriptNodeListType"
+        class="org.alfresco.repo.workflow.activiti.variable.ScriptNodeListVariableType">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+    </bean>
+    
+    <bean id="activitiProcessParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoProcessBpmnParseHandler">
+       <property name="processCreateListener" ref="activitiProcessCreateListener" />
+       <property name="tenantService" ref="tenantService" />
+       <property name="multiTenancyEnabled" value="${system.workflow.deployWorkflowsInTenant}" />
+   	</bean>
+
+    	<bean id="activitiCallActivityParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoCallActivityBpmnParseHandler">
+		<property name="tenantService" ref="tenantService" />
+      <property name="multiTenancyEnabled" value="${system.workflow.deployWorkflowsInTenant}" />
+	</bean>
+
+   	<bean id="activitiUserTaskParseHandler" class="org.alfresco.repo.workflow.activiti.AlfrescoUserTaskBpmnParseHandler">
+		<property name="createTaskListener" ref="activitiCreateTaskListener" />
+		<property name="completeTaskListener" ref="activitiCompleteTaskListener" />
+		<property name="notificationTaskListener" ref="activitiTaskNotificationListener" />
+	</bean>
+
+    <!-- -->
+    <!-- Activiti Process Engine -->
+    <!-- -->
+    <bean id="activitiProcessEngineConfiguration"
+        class="org.alfresco.repo.workflow.activiti.AlfrescoProcessEngineConfiguration">
+        <property name="dataSource" ref="wrappedDataSource" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="databaseSchemaUpdate" value="none" />
+        <property name="history" value="full" />
+
+        <!-- Job-executor will be enabled once the SchemaAvailableEvent has 
+            been fired -->
+        <property name="jobExecutorActivate" value="false" />
+
+        <!-- Limit the visible beans in expressions -->
+        <property name="beans" ref="activitiBeanRegistry" />
+
+        <property name="customTypes">
+            <list>
+                <ref bean="activitiScriptNodeType" />
+                <ref bean="activitiScriptNodeListType" />
+            </list>
+        </property>
+        <property name="postBpmnParseHandlers">
+           <list>
+               <ref bean="activitiProcessParseHandler" />
+               <ref bean="activitiCallActivityParseHandler" />
+               <ref bean="activitiUserTaskParseHandler" />
+           </list>
+       	</property>
+        <property name="unprotectedNodeService" ref="nodeService" />
+        <property name="idBlockSize" value="${system.workflow.engine.activiti.idblocksize}"></property>
+        
+        <!-- Custom datasource for ID-generator block-acquiring to prevent lock when all -->
+        <property name="idGeneratorDataSource">
+        	<ref bean="activitiIdGeneratorDataSource" />
+        </property>
+    </bean>
+
+    <bean id="activitiProcessEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+        <property name="processEngineConfiguration" ref="activitiProcessEngineConfiguration" />
+    </bean>
+
+    <util:map id="activitiBeanRegistry" map-class="java.util.HashMap">
+        <entry key="services" value-ref="ServiceRegistry" />
+    </util:map>
+
+    <bean id="baseJavaDelegate" class="org.alfresco.repo.workflow.activiti.BaseJavaDelegate"
+        abstract="true">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="beanRegistry" ref="activitiBeanRegistry" />
+    </bean>
+    
+    <bean id="baseExecutionListener" class="org.alfresco.repo.workflow.activiti.BaseExecutionListener"
+        abstract="true">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="beanRegistry" ref="activitiBeanRegistry" />
+    </bean>
+
+    <!-- Activiti Workflow Engine Factory -->
+	<bean id="activitiWorkflowManager"
+		class="org.alfresco.repo.workflow.activiti.ActivitiWorkflowManagerFactory">
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="personService" ref="PersonService" />
+		<property name="dictionaryService" ref="DictionaryService" />
+		<property name="tenantService" ref="tenantService" />
+		<property name="messageService" ref="messageService" />
+		<property name="serviceRegistry" ref="ServiceRegistry" />
+		<property name="BPMEngineRegistry" ref="bpm_engineRegistry" />
+		<property name="authorityDAO" ref="authorityDAO" />
+		<property name="processEngine" ref="activitiProcessEngine" />
+		<property name="repositoryHelper" ref="repositoryHelper" />
+		<property name="engineId" value="activiti" />
+		<property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+		<property name="retentionHistoricProcessInstance"
+			value="${system.workflow.engine.activiti.retentionHistoricProcessInstance}" />
+	</bean>
+
+    <!-- Activiti Workflow Engine -->
+    <bean id="activitiWorkflowEngine" factory-bean="activitiWorkflowManager"
+        factory-method="getWorkflowEngine" />
+
+    <!-- Activiti Property Converter -->
+    <bean id="activitiPropertyConverter" factory-bean="activitiWorkflowManager"
+        factory-method="getPropertyConverter" />
+
+    <!-- Activiti Node Converter -->
+    <bean id="activitiNodeConverter" factory-bean="activitiWorkflowManager"
+        factory-method="getNodeConverter" />
+
+    <!-- Workflow Authority Manager -->
+    <bean id="workflowAuthorityManager" factory-bean="activitiWorkflowManager"
+        factory-method="getWorkflowAuthorityManager" />
+
+    <!-- Activiti Property Handler Registry -->
+    <bean id="activitiPropertyHandlerRegistry" factory-bean="activitiWorkflowManager"
+        factory-method="getPropertyHandlerRegistry" />
+
+    <!-- -->
+    <!-- Property Handlers -->
+    <!-- -->
+
+    <!-- Activiti Base Property Handler -->
+    <bean id="activitiPropertyHandler"
+        class="org.alfresco.repo.workflow.AbstractWorkflowPropertyHandler"
+        depends-on="activitiWorkflowManager" abstract="true">
+        <property name="messageService" ref="messageService" />
+        <property name="nodeConverter" ref="activitiNodeConverter" />
+        <property name="registry" ref="activitiPropertyHandlerRegistry" />
+    </bean>
+
+    <!-- Activiti Description Property Handler -->
+    <bean id="activitiDescriptionPropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiDescriptionPropertyHandler"
+        parent="activitiPropertyHandler" />
+
+    <!-- Activiti Owner Property Handler -->
+    <bean id="activitiOwnerPropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiOwnerPropertyHandler"
+        parent="activitiPropertyHandler" />
+
+    <!-- Activiti Package Property Handler -->
+    <bean id="activitiPackagePropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiPackagePropertyHandler"
+        parent="activitiPropertyHandler" >
+        <property name="runtimeService" ref="activitiRuntimeService" />
+    </bean>
+
+    <!-- Activiti Pooled Actors Property Handler -->
+    <bean id="activitiPooledActorsPropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiPooledActorsPropertyHandler"
+        parent="activitiPropertyHandler">
+        <property name="taskService" ref="activitiTaskService" />
+        <property name="workflowAuthorityManager" ref="workflowAuthorityManager" />
+    </bean>
+
+    <!-- Activiti Priority Property Handler -->
+    <bean id="activitiPriorityPropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiPriorityPropertyHandler"
+        parent="activitiPropertyHandler" />
+
+    <!-- Activiti Due Date Property Handler -->
+    <bean id="activitiDueDatePropertyHandler"
+        class="org.alfresco.repo.workflow.activiti.properties.ActivitiDueDatePropertyHandler"
+        parent="activitiPropertyHandler" />
+
+    <!-- Listeners for all activiti-tasks in alfresco -->
+    <bean id="activitiCompleteTaskListener"
+        class="org.alfresco.repo.workflow.activiti.tasklistener.TaskCompleteListener"
+        depends-on="activitiWorkflowManager">
+        <property name="propertyConverter" ref="activitiPropertyConverter" />
+        <property name="namespaceService" ref="NamespaceService" />
+    </bean>
+
+    <bean id="activitiCreateTaskListener"
+        class="org.alfresco.repo.workflow.activiti.tasklistener.TaskCreateListener"
+        depends-on="activitiWorkflowManager">
+        <property name="propertyConverter" ref="activitiPropertyConverter" />
+    </bean>
+    
+    <bean id="activitiTaskNotificationListener"
+        class="org.alfresco.repo.workflow.activiti.tasklistener.TaskNotificationListener"
+        depends-on="activitiWorkflowManager">
+        <property name="propertyConverter" ref="activitiPropertyConverter" />
+        <property name="workflowNotification" ref="workflowNotification" />
+    </bean>
+
+    <bean id="activitiProcessCreateListener" class="org.alfresco.repo.workflow.activiti.listener.ProcessStartExecutionListener">
+      <property name="tenantService" ref="tenantService" />
+      <property name="deployWorkflowsInTenant" value="${system.workflow.deployWorkflowsInTenant}" />
+    </bean>
+
+    <bean id="activitiRepositoryService" factory-bean="activitiProcessEngine"
+        factory-method="getRepositoryService" />
+    <bean id="activitiRuntimeService" factory-bean="activitiProcessEngine"
+        factory-method="getRuntimeService" />
+    <bean id="activitiTaskService" factory-bean="activitiProcessEngine"
+        factory-method="getTaskService" />
+    <bean id="activitiManagementService" factory-bean="activitiProcessEngine"
+        factory-method="getManagementService" />
+    <bean id="activitiHistoryService" factory-bean="activitiProcessEngine"
+        factory-method="getHistoryService" />
+        
+
+</beans>

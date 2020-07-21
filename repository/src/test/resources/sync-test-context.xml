@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+    <!-- A test instance of the user registry synchronizer -->
+    <bean id="testUserRegistrySynchronizer" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer"  
+        init-method="init">
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="testApplicationContextManager" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="sourceBeanName">
+            <value>userRegistry</value>
+        </property>
+        <property name="loggingInterval">
+            <value>100</value>
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
+        </property>
+        <property name="nameChecker" ref="nameChecker" />
+    </bean>
+
+    <!-- A test instance of the user registry synchronizer -->
+    <bean id="testUserRegistrySynchronizerPreventDeletions" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizer"  
+        init-method="init">
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="applicationContextManager">
+            <ref bean="testApplicationContextManager" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="jobLockService">
+            <ref bean="jobLockService" />
+        </property>
+        <property name="sourceBeanName">
+            <value>userRegistry</value>
+        </property>
+        <property name="loggingInterval">
+            <value>100</value>
+        </property>
+        <property name="allowDeletions">
+            <value>false</value>
+        </property>
+        <property name="syncDelete">
+            <value>false</value>
+        </property>
+        <property name="sysAdminParams">
+            <ref bean="sysAdminParams" />
+        </property>
+        <property name="nameChecker" ref="nameChecker" />
+    </bean>
+
+    <!--  A fake applicaton context manager into which we can inject test-specific beans -->
+    <bean id="testApplicationContextManager" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest$MockApplicationContextManager" />
+
+    <bean id="testSynchronizeEventListener" class="org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest$TestSynchronizeEventListener">
+        <property name="synchronizer" ref="testUserRegistrySynchronizer" />
+    </bean>
+
+</beans>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.people">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <!-- GetPeople Canned Query -->
+    
+    <select id="select_GetPeopleCannedQuery" parameterType="FilterSortPerson" resultType="String">
+       select
+            childNode.uuid as uuid
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            <if test="prop1qnameId != null">
+            left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
+            </if>
+            <if test="prop2qnameId != null">
+            left join alf_node_properties prop2 on (prop2.node_id = childNode.id and prop2.qname_id = #{prop2qnameId})
+            </if>
+            <if test="prop3qnameId != null">
+            left join alf_node_properties prop3 on (prop3.node_id = childNode.id and prop3.qname_id = #{prop3qnameId})
+            </if>
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            <foreach item="item" index="index" collection="pattern" open=" " separator=" " close=" ">
+              <if test="prop1qnameId != null or prop2qnameId != null or prop3qnameId != null ">
+              and lower(
+              </if>
+            <if test="prop1qnameId != null">
+              prop1.string_value || ' ' ||  
+            </if>
+            <if test="prop2qnameId != null">
+              prop2.string_value || ' ' ||
+            </if>
+            <if test="prop3qnameId != null">
+              prop3.string_value || ' ' ||  
+            </if>
+              <if test="prop1qnameId != null or prop2qnameId != null or prop3qnameId != null ">  
+              ' ') like lower(#{item}) <include refid="alfresco.util.escape"/>
+            </if>
+            </foreach>
+            <if test="includeAspectIds != null">
+                and exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = childNode.id
+                    and aspects.qname_id in 
+                    <foreach item="item" index="index" collection="includeAspectIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                )
+           </if>
+           <if test="excludeAspectIds != null">
+                and not exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = childNode.id
+                    and aspects.qname_id in 
+                    <foreach item="item" index="index" collection="excludeAspectIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                )
+           </if>
+        <if test="sort1asc != null">
+        order by
+            prop1.string_value <if test="sort1asc == true">ASC</if><if test="sort1asc == false">DESC</if>
+        </if>
+        <if test="sort2asc != null">
+          , prop2.string_value <if test="sort2asc == true">ASC</if><if test="sort2asc == false">DESC</if>
+        </if>
+        <if test="sort3asc != null">
+          , prop3.string_value <if test="sort3asc == true">ASC</if><if test="sort3asc == false">DESC</if>
+        </if>
+    </select>
+    
+</mapper>

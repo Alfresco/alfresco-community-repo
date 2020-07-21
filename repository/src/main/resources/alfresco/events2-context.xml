@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- Event2 Filters -->
+    <bean id="event2FilterRegistry" class="org.alfresco.repo.event2.filter.EventFilterRegistry"/>
+
+    <bean id="abstractNodeEventFilter" class="org.alfresco.repo.event2.filter.AbstractNodeEventFilter" abstract="true" init-method="init">
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+    </bean>
+
+    <bean id="event2NodeTypeFilter" class="org.alfresco.repo.event2.filter.NodeTypeFilter" parent="abstractNodeEventFilter">
+        <constructor-arg value="${repo.event2.filter.nodeTypes}"/>
+    </bean>
+
+    <bean id="event2NodeAspectFilter" class="org.alfresco.repo.event2.filter.NodeAspectFilter" parent="abstractNodeEventFilter">
+        <constructor-arg value="${repo.event2.filter.nodeAspects}"/>
+    </bean>
+
+    <bean id="event2NodePropertyFilter" class="org.alfresco.repo.event2.filter.NodePropertyFilter" parent="abstractNodeEventFilter"/>
+
+    <bean id="event2UserFilter" class="org.alfresco.repo.event2.filter.EventUserFilter">
+        <constructor-arg value="${repo.event2.filter.users}"/>
+        <constructor-arg type="boolean" value="${user.name.caseSensitive}"/>
+    </bean>
+
+    <bean id="event2ChildAssociationTypeFilter" class="org.alfresco.repo.event2.filter.ChildAssociationTypeFilter" parent="abstractNodeEventFilter">
+        <constructor-arg value="${repo.event2.filter.childAssocTypes}"/>
+    </bean>
+    <!-- End of Event2 Filters -->
+
+    <bean id="baseEventGeneratorV2" abstract="true">
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="descriptorService" ref="descriptorComponent"/>
+        <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
+        <property name="event2MessageProducer" ref="event2MessageProducer"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="personService" ref="personService"/>
+    </bean>
+
+    <bean id="baseNodeResourceHelper" abstract="true">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="personService" ref="personService"/>
+        <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
+        <property name="namespaceService" ref="namespaceService"/>
+    </bean>
+
+    <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>
+
+    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2">
+        <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
+    </bean>
+</beans>

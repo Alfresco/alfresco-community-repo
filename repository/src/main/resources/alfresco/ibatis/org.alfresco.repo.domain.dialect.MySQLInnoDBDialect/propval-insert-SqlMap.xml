@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.propval.insert">
+
+    <insert id="insert_PropertyClass" parameterType="PropertyClass" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyClass_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertyStringValue" parameterType="PropertyStringValue" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyStringValue_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertyDoubleValue" parameterType="PropertyDoubleValue" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyDoubleValue_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertySerializableValue" parameterMap="alfresco.propval.parameter_PropertySerializableValue" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertySerializableValue_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertyValue" parameterType="PropertyValue" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyValue_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertyRoot" parameterMap="alfresco.propval.parameter_PropertyRoot" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyRoot_AutoIncrement"/>
+    </insert>
+
+    <insert id="insert_PropertyUniqueContext" parameterType="PropertyUniqueContext" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.propval.insert_PropertyUniqueContext_AutoIncrement"/>
+    </insert>
+
+</mapper>

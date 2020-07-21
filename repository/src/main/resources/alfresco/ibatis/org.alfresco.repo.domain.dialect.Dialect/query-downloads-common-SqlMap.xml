@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.downloads">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Download" type="Download">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+    </resultMap>
+    
+    <!-- GetDownloads Canned Query (model-specific) -->
+    
+    <select id="select_GetDownloadsBeforeQuery" parameterType="org.alfresco.repo.download.cannedquery.GetDownloadsCannedQueryParams" resultMap="result_Download">
+       select
+            childNode.id             as id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid,
+            childNode.audit_created  as audit_created,
+            childNode.audit_creator  as audit_creator,
+            childNode.audit_accessed as audit_accessed,
+            childNode.audit_modified as audit_modified
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and childNode.type_qname_id = #{contentTypeQNameId}
+        order by
+            childNode.audit_modified ASC
+    </select>
+    
+</mapper>

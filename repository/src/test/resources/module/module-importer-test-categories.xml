@@ -1,0 +1,26 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:test="http://www.alfresco.org/test/1.0">
+
+   <cm:category>
+      <cm:name>module.importer.test.categories</cm:name>
+      <sys:node-uuid>test:xyz-root</sys:node-uuid>
+      <cm:subcategories>
+         <cm:category>
+            <cm:name>X</cm:name>
+            <sys:node-uuid>test:x</sys:node-uuid>
+         </cm:category>
+         <cm:category>
+            <cm:name>Y</cm:name>
+            <sys:node-uuid>test:y</sys:node-uuid>
+         </cm:category>
+         <cm:category>
+            <cm:name>Z</cm:name>
+            <sys:node-uuid>test:z</sys:node-uuid>
+         </cm:category>
+      </cm:subcategories>
+   </cm:category>
+
+</view:view>
+                    

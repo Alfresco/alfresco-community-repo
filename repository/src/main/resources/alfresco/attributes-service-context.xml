@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="attributeService" class="org.alfresco.repo.attributes.AttributeServiceImpl">
+        <property name="propertyValueDAO">
+            <ref bean="propertyValueDAO"/>
+        </property>
+    </bean>
+
+    <!-- Cleanup job for alf_prop_xxx tables -->
+    <bean id="propTablesCleanupSchedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <bean id="propTablesCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
+                    <property name="cronExpression" value="${attributes.propcleaner.cronExpression}" />
+                    <property name="jobDetail" ref="propTablesCleanupJobDetail"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="propTablesCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="org.alfresco.repo.attributes.PropTablesCleanupJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="propTablesCleaner" value-ref="propTablesCleaner"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="propTablesCleaner" class="org.alfresco.repo.attributes.PropTablesCleaner">
+        <property name="jobLockService" ref="JobLockService"/>
+        <property name="propertyValueDAO" ref="propertyValueDAO"/>
+        <property name="globalProperties" ref="global-properties"/>
+    </bean>
+</beans>

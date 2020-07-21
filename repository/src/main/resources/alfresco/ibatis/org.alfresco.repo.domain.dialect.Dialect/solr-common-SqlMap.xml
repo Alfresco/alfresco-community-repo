@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.solr">
+
+    <!-- RESULT MAPS -->
+
+    <resultMap id="result_AclChangeSet" type="SOLRAclChangeSet">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclCount" column="acl_count" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    </resultMap>
+    <resultMap id="result_Acl" type="SOLRAcl">
+        <result property="id" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="inheritedId" column="inherited_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclChangeSetId" column="acl_changeset_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_Transaction" type="SOLRTransaction">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="commitTimeMs" column="commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="updates" column="updates" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+        <result property="deletes" column="deletes" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    </resultMap>
+    <resultMap id="result_Node" type="SOLRNode">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long" />
+        <result property="transaction.id" column="txn_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="transaction.commitTimeMs" column="txn_commit_time_ms" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="shardKey" column="shard_key" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <!-- SELECTS -->
+    
+    <select id="select_ChangeSets_Summary" parameterType="SOLRTrackingParameters" resultMap="result_AclChangeSet">
+        select
+            acs.id              as id,
+            acs.commit_time_ms  as commit_time_ms,
+            count(acl.id) as acl_count
+        from
+            alf_acl_change_set acs
+        join alf_access_control_list acl on (acl.acl_change_set = acs.id)
+        <where>
+           exists (select 1 from alf_node admnode where admnode.acl_id = acl.id)
+           <if test="fromCommitTimeInclusive != null">
+               and <![CDATA[acs.commit_time_ms >= #{fromCommitTimeInclusive}]]>
+           </if>
+           <if test="fromIdInclusive != null">
+               and <![CDATA[acs.id >= #{fromIdInclusive}]]>
+           </if>
+           <if test="toCommitTimeExclusive != null">
+               and <![CDATA[acs.commit_time_ms < #{toCommitTimeExclusive}]]>
+           </if>
+           <if test="toIdExclusive != null">
+               and <![CDATA[acs.id < #{toIdExclusive}]]>
+           </if>
+        </where>
+        group by acs.commit_time_ms, acs.id
+        order by acs.commit_time_ms ASC, acs.id ASC
+    </select>
+
+    <select id="select_AclsByChangeSetIds" parameterType="SOLRTrackingParameters" resultMap="result_Acl">
+        select
+            acl.acl_change_set  as acl_changeset_id,
+            acl.id              as acl_id,
+            acl.inherited_acl   as inherited_acl_id
+        from
+            alf_access_control_list acl
+        <where>
+            exists (select 1 from alf_node admnode where admnode.acl_id = acl.id)
+            <if test="fromIdInclusive != null">
+               and <![CDATA[acl.id >= #{fromIdInclusive}]]>
+            </if>
+            <if test="ids != null">
+                and acl.acl_change_set in 
+                <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+            acl.id ASC
+    </select>
+
+    <select id="select_Txns" parameterType="SOLRTrackingParameters" resultMap="result_Transaction">
+       select
+            txn.id              as id,
+            txn.commit_time_ms  as commit_time_ms,
+            count(case when node.type_qname_id != #{deletedTypeQNameId} then 1 end) as updates,
+            count(case when node.type_qname_id = #{deletedTypeQNameId} then 1 end) as deletes
+        from
+            alf_transaction txn
+        join alf_node node on (txn.id = node.transaction_id)
+        <where>
+           <if test="fromCommitTimeInclusive != null">
+               <![CDATA[txn.commit_time_ms >= #{fromCommitTimeInclusive}]]>
+           </if>
+           <if test="fromIdInclusive != null">
+               and <![CDATA[txn.id >= #{fromIdInclusive}]]>
+           </if>
+           <if test="toCommitTimeExclusive != null">
+               and <![CDATA[txn.commit_time_ms < #{toCommitTimeExclusive}]]>
+           </if>
+           <if test="toIdExclusive != null">
+               and <![CDATA[txn.id < #{toIdExclusive}]]>
+           </if>
+        </where>
+        group by txn.commit_time_ms, txn.id
+        order by txn.commit_time_ms ASC, txn.id ASC
+    </select>
+
+    <select id="select_Txn_Nodes" parameterType="SOLRNodeParameters" resultMap="result_Node">
+        select
+            COALESCE(np.long_value, node.id) as id,
+            node.type_qname_id      as type_qname_id,
+            node.transaction_id     as txn_id,
+            txn.commit_time_ms      as txn_commit_time_ms,
+            node.uuid               as uuid,
+            node.acl_id             as acl_id,
+            store.protocol          as protocol,
+            store.identifier        as identifier,
+            <choose>
+               <when test="shardPropertyQNameId == null">
+                  null as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -1">
+                  node.audit_created as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -2">
+                  node.audit_modified as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -3">
+                  node.audit_creator as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -4">
+                  node.audit_modifier as shard_key
+               </when>
+                <when test="shardPropertyType == 'long' or shardPropertyType == 'int'">
+                    shardkey.long_value as shard_key
+                </when>
+               <otherwise>
+                   shardkey.string_value as shard_key
+               </otherwise>
+            </choose>
+        from
+            alf_transaction txn
+            join alf_node node on (txn.id = node.transaction_id)
+            join alf_store store on (store.id = node.store_id)
+            left outer join alf_node_properties np on (np.node_id = node.id and np.qname_id = #{originalIdPropQNameId})
+            <if test="shardPropertyQNameId != null and shardPropertyQNameId >= 0" >
+                left outer join alf_node_properties shardkey on (shardkey.node_id = node.id and shardkey.qname_id = #{shardPropertyQNameId})
+            </if>
+        <where>
+           <choose>
+	           <when test="transactionIds != null">
+	                txn.id in 
+	                <foreach item="item" index="index" collection="transactionIds" open="(" separator="," close=")">
+	                    #{item}
+	                </foreach>
+	           </when>
+	           <when test="fromTxnId != null and toTxnId != null">
+	                <![CDATA[txn.id >= #{fromTxnId} and txn.id <= #{toTxnId}]]>
+	           </when>
+	           <when test="fromTxnId == null and toTxnId != null">
+	                <![CDATA[txn.id <= #{toTxnId}]]>
+	           </when>
+               <when test="fromTxnId != null and toTxnId == null">
+                    <![CDATA[txn.id >= #{fromTxnId}]]>
+               </when>
+	       </choose>
+           <if test="fromNodeId != null">
+                and <![CDATA[node.id >= #{fromNodeId}]]>
+           </if>
+           <if test="toNodeId != null">
+                and <![CDATA[node.id <= #{toNodeId}]]>
+           </if>
+           <if test="storeProtocol != null">
+                and store.protocol = #{storeProtocol}
+           </if>
+           <if test="storeIdentifier != null">
+                and store.identifier = #{storeIdentifier}
+           </if>
+           <if test="includeTypeIds != null">
+                and node.type_qname_id in 
+                <foreach item="item" index="index" collection="includeTypeIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+           </if>
+           <if test="excludeTypeIds != null">
+                and node.type_qname_id not in 
+                <foreach item="item" index="index" collection="excludeTypeIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+           </if>
+           <if test="includeAspectIds != null">
+                and exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = node.id
+                    and aspects.qname_id in 
+                    <foreach item="item" index="index" collection="includeAspectIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                )
+           </if>
+           <if test="excludeAspectIds != null">
+                and not exists (
+                    select *
+                    from alf_node_aspects aspects
+                    where
+                    aspects.node_id = node.id
+                    and aspects.qname_id in 
+                    <foreach item="item" index="index" collection="excludeAspectIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                )
+           </if>
+        </where>
+        order by node.id ASC
+    </select>
+    
+</mapper>

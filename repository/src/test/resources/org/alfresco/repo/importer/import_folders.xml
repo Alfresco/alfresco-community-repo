@@ -1,0 +1,51 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+    xmlns:app="http://www.alfresco.org/model/application/1.0" >
+
+    <cm:folder view:childName="cm:main folder">
+        <app:uifacets/>
+        <app:icon>space-icon-default</app:icon>
+        <cm:name>main folder</cm:name>
+        <cm:title>main folder</cm:title>        
+        <cm:contains>
+            <cm:folder view:childName="cm:sub folder">
+                <app:uifacets />
+                <app:icon>space-icon-default</app:icon>
+                <cm:name>sub folder</cm:name>
+                <cm:title>sub folder</cm:title>
+                <cm:contains>
+                    <cm:folder view:childName="cm:subfolder1">
+                        <app:uifacets />
+                        <app:icon>space-icon-default</app:icon>
+                        <cm:name>sub folder1</cm:name>
+                        <cm:title>sub folder1</cm:title>
+
+                    </cm:folder>
+                    <cm:folder view:childName="cm:subfolder2">
+                        <app:uifacets />
+                        <app:icon>space-icon-default</app:icon>
+                        <cm:name>sub folder2</cm:name>
+                        <cm:title>sub folder2</cm:title>
+
+                    </cm:folder>
+                    
+                </cm:contains>
+            </cm:folder>
+        </cm:contains>
+    </cm:folder>
+
+    <cm:folder view:childName="cm:ArchiveFolder">
+        <app:uifacets />
+        <app:icon>space-icon-default</app:icon>
+        <cm:name>ArchiveFolder</cm:name>
+        <cm:title>ArchiveFolder</cm:title>
+        <cm:contains>
+            <cm:folder view:childName="cm:2015">
+                <app:uifacets />
+                <app:icon>space-icon-default</app:icon>
+                <cm:name>2015</cm:name>
+                <cm:title>2015</cm:title>
+            </cm:folder>
+        </cm:contains>
+    </cm:folder>
+
+</view:view>

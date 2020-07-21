@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- These are the XML files of the "core" of the context -->
+    <!-- This includes bootstrap-context.xml, so subsystems are "core" too -->
+    <import resource="classpath:alfresco/tx-cache-context.xml" />
+    <import resource="classpath:alfresco/cache-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/cluster/cluster-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/spring/*-context.xml" />
+    <import resource="classpath*:alfresco/dbscripts/*-context.xml" />
+    <import resource="classpath:alfresco/st-context.xml"/>
+    <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
+    <import resource="classpath:alfresco/encryption-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/jmx/jmx-context.xml" />
+    <import resource="classpath:alfresco/spring/*-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/spring/*-context.xml" />
+    <import resource="classpath:alfresco/core-services-context.xml" />
+    <import resource="classpath:alfresco/copy-services-context.xml" />
+    <import resource="classpath:alfresco/public-services-context.xml" />
+    <import resource="classpath:alfresco/model-specific-services-context.xml" />
+    <import resource="classpath:alfresco/action-services-context.xml" />
+    <import resource="classpath:alfresco/rule-services-context.xml" />
+    <import resource="classpath:alfresco/node-services-context.xml" />
+    <import resource="classpath:alfresco/scheduler-core-context.xml" />
+    <import resource="classpath:alfresco/network-authentication-context.xml" />
+    <import resource="classpath:alfresco/content-services-context.xml" />
+    <import resource="classpath:alfresco/mt/st-admin-context.xml"/>
+    <import resource="classpath:alfresco/dao/dao-context.xml" />
+    <import resource="classpath:alfresco/ibatis/ibatis-context.xml" />
+    <import resource="classpath:alfresco/ownable-services-context.xml" />
+    <import resource="classpath:alfresco/template-services-context.xml" />
+    <import resource="classpath:alfresco/script-services-context.xml" />
+    <import resource="classpath:alfresco/authority-services-context.xml" />
+    <import resource="classpath:alfresco/authentication-services-context.xml" />
+    <import resource="classpath:alfresco/usage-services-context.xml" />
+    <import resource="classpath:alfresco/policy-context.xml" />
+    <import resource="classpath:alfresco/import-export-context.xml" />
+    <import resource="classpath:alfresco/bootstrap-context.xml" />
+    <import resource="classpath:alfresco/repo-admin-context.xml"/>
+    <import resource="classpath:alfresco/workflow-context.xml" />
+    <import resource="classpath:alfresco/audit-services-context.xml" />
+    <import resource="classpath:alfresco/attributes-service-context.xml"/>
+    <import resource="classpath:alfresco/site-services-context.xml"/>
+    <import resource="classpath:alfresco/notification-services-context.xml"/>
+    <import resource="classpath:alfresco/activities/activities-feed-context.xml" />
+    <import resource="classpath:alfresco/tagging-services-context.xml"/>
+    <import resource="classpath:alfresco/invitation-service-context.xml"/>
+    <import resource="classpath:alfresco/webdav-context.xml"/>
+    <import resource="classpath*:alfresco/patch/*-context.xml" />
+    <import resource="classpath*:alfresco/dbscripts/*-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/authorization-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/enterprise-usage-services-context.xml" />
+    <import resource="classpath:alfresco/heartbeat/heartbeat-context.xml"/>
+    <import resource="classpath*:alfresco/events2-context.xml"/>
+</beans>

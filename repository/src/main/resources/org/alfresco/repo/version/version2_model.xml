@@ -1,0 +1,179 @@
+<model name="ver2:versionmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Version2 Store Model</description>
+   <author>Alfresco</author>
+   <published>2010-04-29</published>
+   <version>2.1</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/versionstore/2.0" prefix="ver2"/>
+   </namespaces>
+   
+   <types>
+      
+      <type name="ver2:versionHistory">
+      
+         <parent>cm:cmobject</parent>
+         
+         <properties>
+            <property name="ver2:versionedNodeId">
+               <type>d:text</type>
+            </property>
+         </properties>
+         
+         <associations>
+            <child-association name="ver2:version">
+               <target>
+                  <class>sys:base</class>
+               </target>
+            </child-association>
+            <association name="ver2:rootVersion">
+               <target>
+                  <class>sys:base</class>
+               </target>
+            </association>
+         </associations>
+      </type>
+      
+      <!-- since 3.3 (Ent) -->
+      <type name="ver2:versionedAssoc">
+         <parent>sys:reference</parent>
+         <properties>
+            <property name="ver2:assocDbId">
+               <type>d:long</type>
+            </property>
+            <property name="ver2:targetVersionRef">
+               <type>d:noderef</type>
+            </property>
+         </properties>
+      </type>
+      
+   </types>
+   
+   <aspects>
+   
+      <aspect name="ver2:versionStoreRoot">
+         <title>Version Store Root</title>
+         <associations>
+            <child-association name="ver2:versionHistory">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>ver2:versionHistory</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </aspect>
+      
+      <aspect name="ver2:version">
+         <title>Version</title>
+         
+         <properties>
+            <property name="ver2:versionNumber">
+               <type>d:int</type>
+            </property>
+            <property name="ver2:versionLabel">
+               <type>d:text</type>
+            </property>
+            <property name="ver2:description">
+               <type>d:text</type>
+            </property>
+            <property name="ver2:frozenNodeType">
+               <type>d:qname</type>
+            </property>
+            <property name="ver2:frozenAspects">
+               <type>d:qname</type>
+               <multiple>true</multiple>
+            </property>
+            
+            <!-- frozen sys:referenceable properties (x4) -->
+            
+            <property name="ver2:frozenNodeStoreProtocol">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="ver2:frozenNodeStoreId">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="ver2:frozenNodeId">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="ver2:frozenNodeDbId">
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            
+            <!--  frozen cm:auditable properties (x5) -->
+            
+            <property name="ver2:frozenCreated">
+               <title>Created</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+                  <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ver2:frozenCreator">
+               <title>Creator</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="ver2:frozenModified">
+               <title>Modified</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            <property name="ver2:frozenModifier">
+               <title>Modifier</title>
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
+            <property name="ver2:frozenAccessed">
+               <title>Accessed</title>
+               <type>d:datetime</type>
+               <protected>true</protected>
+                  <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored> 
+                  <tokenised>both</tokenised>
+               </index>
+            </property>
+            
+         </properties>
+         
+         <associations>
+            
+            <!-- since 3.3 (Ent) -->
+            <child-association name="ver2:versionedAssocs">
+               <target>
+                  <class>ver2:versionedAssoc</class>
+               </target>
+            </child-association>
+            
+         </associations>
+         
+      </aspect>
+      
+   </aspects>
+
+</model>

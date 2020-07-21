@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Preference Service Bean -->
+    <bean id="PreferenceService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.preference.PreferenceService</value>
+        </property>
+        <property name="target">
+            <ref bean="preferenceService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="PreferenceService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="PreferenceService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Preference service transaction bean -->
+    <bean id="PreferenceService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- Preference service security bean -->
+    <bean id="PreferenceService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+    
+    <!-- Preference service implemenation bean -->
+    <bean id="preferenceService" class="org.alfresco.repo.preference.PreferenceServiceImpl">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="personService" ref="PersonService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="authenticationContext" ref="authenticationContext"/>
+        <property name="authorityService" ref="AuthorityService"/>
+    </bean>
+    
+    <bean id="preferenceServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.preference.script.ScriptPreferenceService">
+        <property name="extensionName">
+            <value>preferenceService</value>
+        </property>
+        <!-- Has the ServiceRegistry for people extending it to use -->
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="preferenceService" ref="preferenceService"/>
+        <property name="transactionService" ref="transactionService"/>
+    </bean>
+
+</beans>

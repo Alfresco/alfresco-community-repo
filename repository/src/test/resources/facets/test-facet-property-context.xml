@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="solrFacetRawPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+      <property name="locations">
+         <list>
+            <value>classpath*:facets/facets-config-sample.properties</value>
+            <value>classpath*:facets/extension/facets-config-custom-sample.properties</value>
+         </list>
+      </property>
+   </bean>
+   <bean id="solrFacetConfigsTest" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetConfig">
+      <constructor-arg index="0" ref="solrFacetRawPropertiesTest" />
+      <constructor-arg index="1">
+         <value>default,custom</value>
+      </constructor-arg>
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+</beans>

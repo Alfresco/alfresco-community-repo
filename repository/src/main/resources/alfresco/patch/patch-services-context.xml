@@ -1,0 +1,1411 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+   
+    <bean id="PatchService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.admin.patch.PatchService</value>
+        </property>
+        <property name="target"><ref bean="patchComponent"/></property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="PatchService_transaction" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="PatchService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="apply*">PROPAGATION_NOT_SUPPORTED</prop>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patchComponent" class="org.alfresco.repo.admin.patch.PatchServiceImpl" >
+        <property name="descriptorService">
+            <ref bean="descriptorComponent" />
+        </property>
+        <property name="transactionService">
+            <ref bean="transactionService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+        <property name="appliedPatchDAO">
+            <ref bean="appliedPatchDAO" />
+        </property>
+    </bean>
+
+    <!-- base patch definition -->
+    <bean id="basePatch" abstract="true" depends-on="patchComponent" init-method="init">
+        <property name="patchService" ref="patchComponent" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="searchService" ref="searchService" />
+        <property name="nodeService" ref="nodeService"/>
+        <property name="authenticationContext" ref="authenticationContext" />
+        <property name="tenantAdminService" ref="TenantAdminService" />
+    </bean>
+    
+     <!-- base patch definition -->
+    <bean id="baseWorkflowPatch" abstract="true" parent="basePatch" depends-on="patchComponent" init-method="init">
+        <property name="tenantAdminService" ref="TenantAdminService" />
+        <property name="applyToTenants">
+            <value>${system.workflow.deployWorkflowsInTenant}</value>
+        </property>
+    </bean>
+    
+    <!-- Example patches -->
+    <bean id="patch.sample.01" class="org.alfresco.repo.admin.patch.SamplePatch" parent="basePatch" >
+        <property name="id"><value>Sample01</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
+    </bean>
+    <bean id="patch.sample.02" class="org.alfresco.repo.admin.patch.SamplePatch" parent="basePatch" >
+        <property name="id"><value>Sample02</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.sample.01" />
+            </list>
+        </property>
+    </bean>
+    <bean id="patch.sample.03" class="org.alfresco.repo.admin.patch.SimplePatch" parent="basePatch" >
+        <property name="id"><value>Sample03</value></property>
+        <property name="description"><value>A NO-OP sample patch</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>1000</value></property>
+        <property name="targetSchema"><value>1001</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+    </bean>
+
+    <!--              -->
+    <!-- Helper beans -->
+    <!--              -->
+    
+    <bean id="bootstrapSpacesMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>alfresco/messages/bootstrap-spaces</value> 
+            </list>
+        </property>
+    </bean>
+    
+    <!--==============================-->
+    <!--====== RETIRED PATCHES =======-->
+    <!--==============================-->
+
+	<import resource="classpath:alfresco/patch/retired-patches-context.xml" />
+    
+    <!--===========================-->
+    <!--====== LIVE PATCHES =======-->
+    <!--===========================-->
+    
+    <bean id="patch.spacesBootstrapSmartTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartTemplatesFolder</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</value></property>
+        <property name="bootstrapView"><props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/spacesSmartFolderTemplates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.spacesBootstrapSmartFolderExample" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartFolderExample</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartFolderExample.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}/smartFoldersExample.json</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</prop>
+                <prop key="location">alfresco/bootstrap/example_smartfoldertemplates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-example-smartfoldertemplates</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.spacesBootstrapSmartDownloadFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartDownloadFolder</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartDownloadFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartdownloads.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/spacesSmartFolderDownloads.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.exampleJavaScript" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.exampleJavaScript</value></property>
+        <property name="description"><value>patch.exampleJavaScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>${version.schema}</value></property>
+        <property name="targetSchema"><value>100000</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</prop>
+                <prop key="location">alfresco/bootstrap/example_javascripts2.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.updateWorkflowNotificationTemplates" class="org.alfresco.repo.admin.patch.impl.UpdateWorkflowNotificationTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.updateWorkflowNotificationTemplates</value></property>
+        <property name="description"><value>patch.updateWorkflowNotificationTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5018</value></property>
+        <property name="targetSchema"><value>5019</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+    </bean>
+    
+    <bean id="patch.updateMimetypes4" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypes4</value></property>
+        <property name="description"><value>patch.updateMimetypes4.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5019</value></property>
+        <property name="targetSchema"><value>5020</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="image/x-dwg" value="image/vnd.dwg" />
+                <entry key="application/dwg" value="image/vnd.dwg" />
+                <entry key="application/photoshop" value="image/vnd.adobe.photoshop" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="patch.updateMimetypesWMA" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypesWMA</value></property>
+        <property name="description"><value>patch.updateMimetypesWMA.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5020</value></property>
+        <property name="targetSchema"><value>5021</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="video/x-ms-wma" value="audio/x-ms-wma" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="patch.updateFollowingEmailTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.UpdateFollowingEmailTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.updateFollowingEmailTemplatesPatch</value></property>
+        <property name="description"><value>patch.updateFollowingEmailTemplatesPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5021</value></property>
+        <property name="targetSchema"><value>5022</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+    
+    <bean id="patch.db-V4.0-SolrTracking" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-SolrTracking" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5022" />
+        <property name="targetSchema" value="5023" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/Solr-Tracking.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.addDutchEmailTemplatesPatch" class="org.alfresco.repo.admin.patch.impl.AddDutchEmailTemplatesPatch" parent="basePatch">
+        <property name="id"><value>patch.addDutchEmailTemplatesPatch</value></property>
+        <property name="description"><value>patch.addDutchEmailTemplatesPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5023</value></property>
+        <property name="targetSchema"><value>5024</value></property>
+        <property name="requiresTransaction"><value>true</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+    
+    <bean id="patch.fixBpmPackages" class="org.alfresco.repo.admin.patch.impl.FixBpmPackagesPatch" parent="basePatch">
+        <property name="id"><value>patch.fixBpmPackages</value></property>
+        <property name="description"><value>patch.fixBpmPackages.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5024</value></property>
+        <property name="targetSchema"><value>5025</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>     
+        <property name="policyFilter">
+            <ref bean="policyBehaviourFilter" />
+        </property>
+    </bean>
+
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar</value></property>
+        <property name="description"><value>patch.alterJBPM331CLOBcolumnsToNvarchar.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6000</value></property>
+        <property name="targetSchema"><value>6001</value></property>
+    </bean>
+    
+    <bean id="patch.imapUnsubscribedAspect" class="org.alfresco.repo.admin.patch.impl.ImapUnsubscribedAspectPatch" parent="basePatch">
+        <property name="id"><value>patch.imapUnsubscribedAspect</value></property>
+        <property name="description"><value>patch.imapUnsubscribedAspect.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6001</value></property>
+        <property name="targetSchema"><value>6002</value></property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V4.0-TenantTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.0-TenantTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6004</value></property>
+        <property name="targetSchema"><value>6005</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-TenantTables.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.remoteCredentialsContainer" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.remoteCredentialsContainer</value></property>
+        <property name="description"><value>patch.remoteCredentialsContainer.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6005</value></property>
+        <property name="targetSchema"><value>6006</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.remote_credentials_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/remoteCredentialsSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.syncSetDefinitionsContainer" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.syncSetDefinitionsContainer</value></property>
+        <property name="description"><value>patch.syncSetDefinitionsContainer.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6005</value></property>
+        <property name="targetSchema"><value>6006</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.syncset_definition_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/syncSetDefinitionsSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.migrateTenantsFromAttrsToTable" class="org.alfresco.repo.admin.patch.impl.MigrateTenantsFromAttrsToTablePatch" parent="basePatch">
+        <property name="id"><value>patch.migrateTenantsFromAttrsToTable</value></property>
+        <property name="description"><value>patch.migrateTenantsFromAttrsToTable.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6006</value></property>
+        <property name="targetSchema"><value>6007</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="attributeService">
+            <ref bean="attributeService"/>
+        </property>
+        <property name="tenantAdminDAO">
+            <ref bean="tenantAdminDAO"/>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V4.0-TenantTables"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.0-AclChangeSet2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.0-AclChangeSet2" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6008" />
+        <property name="targetSchema" value="6009" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.0/${db.script.dialect}/AclChangeSet-Tracking2.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.swsdpPatch" class="org.alfresco.repo.admin.patch.impl.SWSDPPatch" parent="basePatch" >
+        <property name="id"><value>patch.swsdpPatch</value></property>
+        <property name="description"><value>patch.swsdpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6007</value></property>
+        <property name="targetSchema"><value>6008</value></property>
+        <property name="siteService" ref="siteService" />
+        <property name="hiddenAspect" ref="hiddenAspect" />
+    </bean>    
+    
+    <!-- noop: executed in patch.redeployParallelActivitiWorkflows-after-5-11-upgrade, after database has been upgraded -->
+    <bean id="patch.redeployParallelActivitiWorkflows" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.redeployParallelActivitiWorkflows</value></property>
+        <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6009</value></property>
+        <property name="targetSchema"><value>6010</value></property>
+    </bean>
+
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-remove-redundant-jbpm-indexes" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-remove-redundant-jbpm-indexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6010</value></property>
+        <property name="targetSchema"><value>6011</value></property>
+    </bean>
+
+     <bean id="patch.show.audit" class="org.alfresco.repo.admin.patch.impl.UpdateAuditTemplatePatch" parent="basePatch" >
+        <property name="id"><value>patch.show.audit</value></property>
+        <property name="description"><value>patch.show.audit.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6011</value></property>
+        <property name="targetSchema"><value>6012</value></property>
+        <!-- bootstrap view -->
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="contentService">
+            <ref bean="ContentService" />
+        </property>
+        <property name="copyPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}/cm:show_audit.ftl</value>
+        </property>
+        <property name="fileName">
+            <value>alfresco/templates/content/examples/show_audit.ftl</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.updateMimetypesSVG" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypesSVG</value></property>
+        <property name="description"><value>patch.updateMimetypesSVG.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6013</value></property>
+        <property name="targetSchema"><value>6014</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="image/svg" value="image/svg+xml" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.1-NodeDeleted" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-NodeDeleted</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6014</value></property>
+        <property name="targetSchema"><value>6015</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/NodeDeleted.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.updateMimetypesVISIO" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+        <property name="id"><value>patch.updateMimetypesVISIO</value></property>
+        <property name="description"><value>patch.updateMimetypesVISIO.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6015</value></property>
+        <property name="targetSchema"><value>6016</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.db-V3.2-ContentTables2"/>
+            </list>
+        </property>
+        <property name="mimetypeDAO">
+            <ref bean="mimetypeDAO"/>
+        </property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="retryingTransactionHelper">
+            <ref bean="retryingTransactionHelper"/>
+        </property>
+        <property name="mimetypeMappings">
+            <map>
+                <entry key="application/visio" value="application/vnd.visio" />
+            </map>
+        </property>
+        <property name="reindex">
+            <value>true</value>
+        </property>
+    </bean>
+    
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-JBPM-varinst-indexes" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-JBPM-varinst-indexes</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6016</value></property>
+        <property name="targetSchema"><value>6017</value></property>
+    </bean>
+      
+    <bean id="patch.emailAliasableAspect" class="org.alfresco.repo.admin.patch.impl.AliasableAspectPatch" parent="basePatch">
+        <property name="id"><value>patch.emailAliasableAspect</value></property>
+        <property name="description"><value>patch.emailAliasableAspect.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6019</value></property>
+        <property name="targetSchema"><value>6020</value></property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+        <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO"/>
+        </property>
+        <property name="qnameDAO">
+            <ref bean="qnameDAO"/>
+        </property>
+        <property name="behaviourFilter" >
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+    </bean>
+    
+     <bean id="patch.db-V4.1-drop-alfqname-fk-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-drop-alfqname-fk-indexes" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="6023" />
+        <property name="targetSchema" value="6024" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/dropAlfQnameFKIndexes.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.2-remove-index-acl_id" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-remove-index-acl_id" />
+        <property name="description" value="patch.db-V4.2-remove-index-acl_id.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6024</value></property>
+        <property name="targetSchema"><value>6025</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/remove-index-acl_id.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.1-drop-activiti-feed-format" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-drop-activiti-feed-format" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6025</value></property>
+        <property name="targetSchema"><value>6026</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/drop-activiti-feed-format.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.calendarAllDayEventDatesCorrectingPatch" class="org.alfresco.repo.admin.patch.impl.CalendarAllDayEventDatesCorrectingPatch" parent="basePatch" >
+        <property name="id"><value>patch.calendarAllDayEventDatesCorrectingPatch</value></property>
+        <property name="description"><value>patch.calendarAllDayEventDatesCorrectingPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6026</value></property>
+        <property name="targetSchema"><value>6027</value></property>
+        <property name="batchSize"><value>1000</value></property>
+        <property name="batchEnabled"><value>true</value></property>
+        <property name="siteService"><ref bean="siteService" /></property>
+        <property name="calendarService"><ref bean="calendarService" /></property>
+        <property name="dependsOn">
+           <list>
+              <ref bean="patch.calendarNamespaceUri" />
+           </list>
+         </property>
+    </bean>
+
+    <bean id="patch.sharedFolder" class="org.alfresco.repo.admin.patch.impl.SharedFolderPatch" parent="basePatch">
+        <property name="id"><value>patch.sharedFolder</value></property>
+        <property name="description"><value>patch.sharedFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6023</value></property>
+        <property name="targetSchema"><value>6024</value></property>
+        <property name="applyToTenants"><value>true</value></property>
+        <property name="jobLockService" ref="jobLockService" />
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.shared.childname}</value>
+        </property>
+      
+        <property name="renamePath">
+            <value>/${spaces.company_home.childname}/cm:shared</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}</prop>
+                <prop key="location">alfresco/bootstrap/sharedSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+        <!--  Do we deferr running the shared folder patch? -->
+        <property name="deferred"><value>${system.patch.sharedFolder.deferred}</value></property>
+    </bean>
+    
+    <bean id="patch.db-V4.2-metadata-query-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.2-metadata-query-indexes</value></property>
+        <property name="description"><value>patch.db-V4.2-metadata-query-indexes.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6025</value></property>
+        <property name="targetSchema"><value>6026</value></property>
+        <property name="ignored"><value>${system.metadata-query-indexes.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/metadata-query-indexes.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.redeployActivitiWorkflowsForCategory" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.redeployActivitiWorkflowsForCategory</value></property>
+        <property name="description"><value>patch.redeployActivitiWorkflowsForCategory.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6027</value></property>
+        <property name="targetSchema"><value>6028</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-moderated.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-nominated.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/publish-web-content.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="patch.redeployParallelActivitiWorkflows-after-5-11-upgrade" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.redeployParallelActivitiWorkflows-after-5-11-upgrade</value></property>
+        <property name="description"><value>patch.redeployParallelActivitiWorkflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6029</value></property>
+        <property name="targetSchema"><value>6030</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/parallel-review-group.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V4.1-fix-Repo-seqs-order" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-fix-Repo-seqs-order" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6030</value></property>
+        <property name="targetSchema"><value>6031</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/fix-Repo-seqs-order.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V4.1-ChildAssoc-OrderBy" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-ChildAssoc-OrderBy</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>6032</value></property>
+        <property name="targetSchema"><value>6033</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/ChildAssoc-OrderBy.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V4.1-createIdxAlfNodeTQN" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-createIdxAlfNodeTQN</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7000</value></property>
+        <property name="targetSchema"><value>7001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/createIdxAlfNodeTQN.sql</value>
+        </property>
+    </bean>
+ 
+    <bean id="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7001</value></property>
+        <property name="targetSchema"><value>7002</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/restructure-idx_alf_nprop_s-MSSQL.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.siteAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.siteAdministrators</value></property>
+        <property name="description"><value>patch.siteAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7002</value></property>
+        <property name="targetSchema"><value>7003</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>SITE_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>SITE_ADMINISTRATORS</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                     </set>
+                </property>
+             </bean>
+        </property>
+    </bean>
+    
+    <bean id="patch.alfrescoSearchAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.alfrescoSearchAdministrators</value></property>
+        <property name="description"><value>patch.alfrescoSearchAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7003</value></property>
+        <property name="targetSchema"><value>7004</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>ALFRESCO_SEARCH_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>ALFRESCO_SEARCH_ADMINISTRATORS</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                     </set>
+                </property>
+             </bean>
+        </property>
+    </bean>
+    
+    <!-- Add cm:indexControl aspect to surf-config folders and their children -->
+    <bean id="patch.surfConfigFolder" class="org.alfresco.repo.admin.patch.impl.SurfConfigFolderPatch" parent="basePatch" >
+        <property name="id"><value>patch.surfConfigFolder</value></property>
+        <property name="description"><value>patch.surfConfigFolderPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7004</value></property>
+        <property name="targetSchema"><value>7005</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <!-- We have to ignore it, as this patch will be run by the scheduler in the background. The AsynchronousPatch will take care of registration -->
+        <property name="ignored"><value>${system.patch.surfConfigFolder.deferred}</value></property>
+        <property name="patchDAO" ref="patchDAO" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="qnameDAO" ref="qnameDAO" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="jobLockService" ref="jobLockService" />
+        <!--  Do we deferr running the surf-config folder patch? -->
+        <property name="deferred"><value>${system.patch.surfConfigFolder.deferred}</value></property>
+    </bean>
+ 
+    <bean id="patch.renameSiteAuthorityDisplayName"
+        class="org.alfresco.repo.admin.patch.impl.RenameSiteAuthorityDisplayName"
+        parent="basePatch">
+        <property name="id">
+            <value>patch.renameSiteAuthorityDisplayName</value>
+        </property>
+        <property name="description">
+            <value>patch.renameSiteAuthorityDisplayName.description</value>
+        </property>
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>8000</value>
+        </property>
+        <property name="targetSchema">
+            <value>8001</value>
+        </property>
+        <property name="siteService">
+            <ref bean="siteService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+    </bean>
+
+    <bean id="patch.db-V5.0-upgrade-to-activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
+        <property name="description" value="patch.db-V5.0-upgrade-to-activiti-5.16.2.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="8003" />
+        <property name="targetSchema" value="8004" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-upgrade-5-16-2.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.1-update-activiti-nullable-columns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-update-activiti-nullable-columns" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8005</value></property>
+        <property name="targetSchema"><value>8006</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/update-activiti-nullable-columns.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V5.0-ContentUrlEncryptionTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V5.0-ContentUrlEncryptionTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8006</value></property>
+        <property name="targetSchema"><value>8007</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentUrlEncryptionTables.sql</value>
+        </property>
+    </bean>
+    
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.eol-wcmwf" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
+        <property name="id"><value>patch.eol-wcmwf</value></property>
+        <property name="description"><value>patch.eol-wcmwf.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8007</value></property>
+        <property name="targetSchema"><value>8008</value></property>
+    </bean>
+
+    <bean id="patch.db-V5.0-upgrade-to-activiti-5.16.4" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-upgrade-to-activiti-5.16.4" />
+        <property name="description" value="patch.db-V5.0-upgrade-to-activiti-5.16.4.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="8008" />
+        <property name="targetSchema" value="8009" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-upgrade-5-16-4.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.2-migrate-locale-multilingual" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.2-migrate-locale-multilingual" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8018</value></property>
+        <property name="targetSchema"><value>8019</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/migrate-locale-multilingual.sql</value>
+        </property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V4.0-Node-Locale" />
+            </list>
+        </property>
+    </bean>
+
+   <bean id="patch.fixWebscriptTemplate" class="org.alfresco.repo.admin.patch.impl.FixTemplatePatch"
+      parent="basePatch">
+      <property name="id" value="patch.fixWebscriptTemplate" />
+      <property name="description" value="patch.fixWebscriptTemplate.description" />
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9000</value>
+      </property>
+      <property name="targetSchema">
+         <value>9001</value>
+      </property>
+      <property name="contentService" ref="ContentService"/>
+      <property name="repository" ref="repositoryHelper"/>
+      <property name="target">
+          <value>/app:company_home/app:dictionary/cm:webscripts/cm:org/cm:alfresco/cm:sample/cm:blogsearch.get.html.ftl</value>
+      </property>
+      <property name="source">
+          <value>alfresco/bootstrap/webscripts/blogsearch.get.html.ftl</value>
+      </property>
+   </bean>
+   
+   <bean id="patch.addUnmovableAspect" class="org.alfresco.repo.admin.patch.impl.AddUnmovableAspectToSitesPatch"
+      parent="basePatch">
+      <property name="id" value="patch.addUnmovableAspect" />
+      <property name="description" value="patch.addUnmovableAspect.description" />
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9003</value>
+      </property>
+      <property name="targetSchema">
+         <value>9004</value>
+      </property>
+      <property name="siteService">
+         <ref bean="siteService" />
+      </property>
+      <property name="behaviourFilter" >
+         <ref bean="policyBehaviourFilter"/>
+      </property>
+      <property name="jobLockService" >
+         <ref bean="jobLockService" />
+      </property>
+      <property name="deferred"><value>${system.patch.addUnmovableAspect.deferred}</value></property>
+   </bean>
+
+   <bean id="patch.deleteClassifibleAspectForFailedThumbnail" class="org.alfresco.repo.admin.patch.impl.GenericDeleteAspectForTypePatch"
+      parent="basePatch">
+      <property name="id">
+         <value>patch.deleteClassifibleAspectForFailedThumbnail</value>
+      </property>
+      <property name="description">
+         <value>patch.deleteClassifibleAspectForFailedThumbnail.description</value>
+      </property>
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9004</value>
+      </property>
+      <property name="targetSchema">
+         <value>9005</value>
+      </property>
+      <property name="patchDAO">
+         <ref bean="patchDAO" />
+      </property>
+      <property name="nodeDAO">
+         <ref bean="nodeDAO" />
+      </property>
+      <property name="retryingTransactionHelper">
+         <ref bean="retryingTransactionHelper" />
+      </property>
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
+      <property name="qnameStringType">
+         <value>{http://www.alfresco.org/model/content/1.0}failedThumbnail</value>
+      </property>
+      <property name="qnameStringAspect">
+         <value>{http://www.alfresco.org/model/content/1.0}generalclassifiable</value>
+      </property>
+   </bean>
+
+    <bean id="patch.imapSpacesTemplates3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.imapSpacesTemplates3</value></property>
+        <property name="description"><value>patch.imapSpacesLocaleTemplates2.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9001</value></property>
+        <property name="targetSchema"><value>9002</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/bootstrap/imapSpacesTemplates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                <prop key="uuidBinding">UPDATE_EXISTING</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" />
+        <property name="description" value="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9002" />
+        <property name="targetSchema" value="9003" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-del-unused-after-5-16-2.sql</value>
+        </property>
+    </bean>
+    
+   <bean id="patch.downloadsFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.downloadsFolder</value></property>
+        <property name="description"><value>patch.downloadsFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9005</value></property>
+        <property name="targetSchema"><value>9006</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${system.system_container.childname}/${system.downloads_container.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${system.system_container.childname}</prop>
+                <prop key="location">alfresco/bootstrap/downloadsSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>    
+    <bean id="patch.db-V5.1-metadata-query-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V5.1-metadata-query-indexes</value></property>
+        <property name="description"><value>patch.db-V5.1-metadata-query-indexes.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9003</value></property>
+        <property name="targetSchema"><value>9004</value></property>
+        <property name="ignored"><value>${system.metadata-query-indexes-more.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.1/${db.script.dialect}/metadata-query-indexes-2.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.fixPersonSizeCurrentType" class="org.alfresco.repo.admin.patch.impl.FixPersonSizeCurrentTypePatch" parent="basePatch" >
+        <property name="id"><value>patch.fixPersonSizeCurrentType</value></property>
+        <property name="description"><value>patch.fixPersonSizeCurrentType.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9007</value></property>
+        <property name="targetSchema"><value>9008</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <property name="patchDAO">
+            <ref bean="patchDAO"/>
+        </property>
+    </bean>
+
+    <bean id="patch.alfrescoModelAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.alfrescoModelAdministrators</value></property>
+        <property name="description"><value>patch.alfrescoModelAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9008</value></property>
+        <property name="targetSchema"><value>9009</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                     </set>
+                </property>
+             </bean>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V4.1-AuthorizationTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-AuthorizationTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9010</value></property>
+        <property name="targetSchema"><value>9011</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuthorizationTables.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.addInviteAddDirectEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.addInviteAddDirectEmailTemplates</value></property>
+        <property name="description"><value>patch.addInviteAddDirectEmailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9009</value></property>
+        <property name="targetSchema"><value>9010</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}/cm:invite-email-add-direct.html.ftl</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                <prop key="location">alfresco/templates/invite-add-direct-email-templates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+           </props>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V5.0-update-activiti-default-timestamp-column" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-update-activiti-default-timestamp-column" />
+        <property name="description" value="patch.db-V5.0-update-activiti-default-timestamp-column.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9012" />
+        <property name="targetSchema" value="9013" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/update-activiti-default-timestamp-column.sql</value>
+        </property>
+    </bean>
+    <bean id="patch.imapSpacesTemplates4" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id" value="patch.imapSpacesTemplates4" />
+        <property name="description" value="patch.imapSpacesLocaleTemplates2.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9011" />
+        <property name="targetSchema" value="9012" />
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/bootstrap/imapSpacesTemplates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                <prop key="uuidBinding">UPDATE_EXISTING</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V5.1-upgrade-to-activiti-5.19.0" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.1-upgrade-to-activiti-5.19.0" />
+        <property name="description" value="patch.db-V5.1-upgrade-to-activiti-5.19.0" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9013" />
+        <property name="targetSchema" value="9014" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.1/${db.script.dialect}/activiti-upgrade-5-19-0.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.addSurfConfigFolders" class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch" parent="basePatch" >
+        <property name="id"><value>patch.addSurfConfigFolders</value></property>
+        <property name="description"><value>patch.addSurfConfigFolders.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9014</value></property>
+        <property name="targetSchema"><value>9015</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.alfrescoModelAdministrators" />
+            </list>
+        </property>
+        <property name="siteService" ref="siteService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="authorityService" ref="AuthorityService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="hiddenAspect" ref="hiddenAspect" />
+        <property name="folderDetailsList" >
+          <list>
+            <bean class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch$FolderDetails">
+                <property name="folderName">
+                    <value>extensions</value>
+                </property>
+                <property name="authority">
+                    <value>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="permission">
+                    <value>Collaborator</value>
+                </property>
+                <property name="applyPermissionIfFolderExist">
+                    <value>true</value>
+                </property>
+            </bean>
+            <bean class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch$FolderDetails">
+                <property name="folderName">
+                    <value>module-deployments</value>
+                </property>
+                <property name="authority">
+                    <value>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="permission">
+                    <value>Collaborator</value>
+                </property>
+                <property name="applyPermissionIfFolderExist">
+                    <value>true</value>
+                </property>
+            </bean>
+          </list>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" />
+        <property name="description" value="patch.db-V5.0-activiti-correct-tenant-id-MSSQL.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9016" />
+        <property name="targetSchema" value="9017" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-correct-tenant-id-MSSQL.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.redeployInvitationNominatedAddDirectActivitiWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow</value></property>
+        <property name="description"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10001</value></property>
+        <property name="targetSchema"><value>10002</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-add-direct.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="patch.updateAdminUserWhenDefault" class="org.alfresco.repo.admin.patch.impl.AdminUserPatch" parent="basePatch" >
+        <property name="id"><value>patch.updateAdminUserWhenDefault</value></property>
+        <property name="description"><value>patch.updateAdminUserWhenDefault.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10002</value></property>
+        <property name="targetSchema"><value>10003</value></property>
+        <property name="authenticationContextManager" ref="Authentication" />
+    </bean>
+    
+     <bean id="patch.addInviteModeratedEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.addInviteModeratedEmailTemplates</value></property>
+        <property name="description"><value>patch.addInviteModeratedEmailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10050</value></property>
+        <property name="targetSchema"><value>10051</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}/cm:invite-email-moderated.html.ftl</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                <prop key="location">alfresco/templates/invite-moderated-email-templates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+           </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V5.2-remove-jbpm-tables-from-db" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V5.2-remove-jbpm-tables-from-db</value></property>
+        <property name="description"><value>patch.db-V5.2-remove-jbpm-tables-from-db.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10051</value></property>
+        <property name="targetSchema"><value>10052</value></property>
+        <property name="ignored"><value>${system.remove-jbpm-tables-from-db.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.2/${db.script.dialect}/remove-jbpm-tables-from-db.sql</value>
+        </property>
+    </bean>    
+
+    <bean id="patch.redeployInvitationModeratedActivitiWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.redeployInvitationModeratedActivitiWorkflow</value></property>
+        <property name="description"><value>patch.redeployInvitationModeratedActivitiWorkflow.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10052</value></property>
+        <property name="targetSchema"><value>10053</value></property>
+        <property name="workflowDefinitions">
+            <list>
+                <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-moderated.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                </props>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V6.0-change-set-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V6.0-change-set-indexes</value></property>
+        <property name="description"><value>patch.db-V6.0-change-set-indexes.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10200</value></property>
+        <property name="targetSchema"><value>10201</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/6.0/${db.script.dialect}/change-set-indexes.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V6.3-remove-alf_server-table" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V6.3-remove-alf_server-table</value></property>
+        <property name="description"><value>patch.db-V6.3-remove-alf_server-table.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>14000</value></property>
+        <property name="targetSchema"><value>14001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/6.3/${db.script.dialect}/remove-alf_server-table.sql</value>
+        </property>
+    </bean>
+</beans>

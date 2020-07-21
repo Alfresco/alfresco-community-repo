@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.qname.insert">
+
+    <insert id="insert_Namespace" parameterType="Namespace" >
+    	<selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_namespace_seq')
+        </selectKey>
+    
+        <include refid="alfresco.qname.insert_Namespace_Sequence"/>
+    </insert>
+
+    <insert id="insert_QName" parameterType="QName" >
+    	<selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_qname_seq')
+        </selectKey>
+        
+        <include refid="alfresco.qname.insert_QName_AutoIncrement_Sequence"/>
+        
+    </insert>
+
+</mapper>

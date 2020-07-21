@@ -1,0 +1,344 @@
+@startuml
+
+left to right direction
+
+' Generated using https://github.com/juanmf/Java2PlantUML
+
+' Participants 
+
+class org.alfresco.error.AlfrescoRuntimeException {
+-  MESSAGE_DELIMITER : c String
+-  errorCounter : c AtomicInteger
+-  msgId : c String
+-  msgParams : c Object;
+-  serialVersionUID : long
+--
++   AlfrescoRuntimeException(c String) 
++   AlfrescoRuntimeException(c String, c Object;) 
++   AlfrescoRuntimeException(c String, c Object;, c Throwable) 
++   AlfrescoRuntimeException(c String, c Throwable) 
++  create(c String, c Object;)  :  AlfrescoRuntimeException
++  create(c Throwable, c String, c Object;)  :  AlfrescoRuntimeException
++  getMsgId()  :  String
++  getMsgParams()  :  Object;
++  getNumericalId()  :  String
++  getRootCause()  :  Throwable
++  makeRuntimeException(c Throwable, c String, c Object;)  :  RuntimeException
+-  buildErrorLogNumber(c String)  :  String
+-  padInt(c StringBuilder, int, int)  : void
+-  resolveMessage(c String, c Object;)  :  String
+
+}
+class org.alfresco.service.cmr.security.NoSuchPersonException {
+-  serialVersionUID : long
+-  userName : c String
+--
++   NoSuchPersonException(c String) 
++  getUserName()  :  String
+
+}
+interface org.alfresco.service.cmr.security.OwnableService {
++  NO_OWNER : c String
+--
++  getOwner(c NodeRef)  :  String
++  hasOwner(c NodeRef)  : boolean
++  setOwner(c NodeRef, c String)  : void
++  takeOwnership(c NodeRef)  : void
+
+}
+class org.alfresco.service.cmr.security.PersonService$PersonInfo {
+-  firstName : c String
+-  lastName : c String
+-  nodeRef : c NodeRef
+-  userName : c String
+--
++   PersonService$PersonInfo(c NodeRef, c String, c String, c String) 
++  getFirstName()  :  String
++  getLastName()  :  String
++  getNodeRef()  :  NodeRef
++  getUserName()  :  String
+
+}
+enum org.alfresco.service.cmr.security.AccessStatus {
++  ALLOWED : c AccessStatus
++  DENIED : c AccessStatus
++  UNDETERMINED : c AccessStatus
+--
+-   AccessStatus() 
++  valueOf(c String)  :  AccessStatus
++  values()  :  AccessStatus;
+
+}
+interface org.alfresco.service.cmr.security.AuthenticationService {
+--
++  authenticate(c String, class [C)  : void
++  authenticateAsGuest()  : void
++  authenticationExists(c String)  : boolean
++  clearCurrentSecurityContext()  : void
++  getAuthenticationEnabled(c String)  : boolean
++  getCurrentTicket()  :  String
++  getCurrentUserName()  :  String
++  getDefaultAdministratorUserNames()  :  Set
++  getDefaultGuestUserNames()  :  Set
++  getDomains()  :  Set
++  getDomainsThatAllowUserCreation()  :  Set
++  getDomainsThatAllowUserDeletion()  :  Set
++  getDomiansThatAllowUserPasswordChanges()  :  Set
++  getNewTicket()  :  String
++  guestUserAuthenticationAllowed()  : boolean
++  invalidateTicket(c String)  : void
++  invalidateUserSession(c String)  : void
++  isCurrentUserTheSystemUser()  : boolean
++  validate(c String)  : void
+
+}
+interface org.alfresco.service.cmr.security.AuthorityService {
++  ZONE_APP_DEFAULT : c String
++  ZONE_APP_SHARE : c String
++  ZONE_AUTH_ALFRESCO : c String
++  ZONE_AUTH_EXT_PREFIX : c String
+--
++  addAuthority( Collection< String>, c String)  : void
++  addAuthority(c String, c String)  : void
++  addAuthorityToZones(c String,  Set< String>)  : void
++  authorityExists(c String)  : boolean
++  countGroups()  : long
++  countUsers()  : long
++  createAuthority(c AuthorityType, c String)  :  String
++  createAuthority(c AuthorityType, c String, c String,  Set< String>)  :  String
++  deleteAuthority(c String)  : void
++  deleteAuthority(c String, boolean)  : void
++  findAuthorities(c AuthorityType, c String, boolean, c String, c String)  :  Set
++  getAllAuthorities(c AuthorityType)  :  Set
++  getAllAuthoritiesInZone(c String, c AuthorityType)  :  Set
++  getAllRootAuthorities(c AuthorityType)  :  Set
++  getAllRootAuthoritiesInZone(c String, c AuthorityType)  :  Set
++  getAuthorities()  :  Set
++  getAuthorities(c AuthorityType, c String, c String, boolean, boolean, c PagingRequest)  :  PagingResults
++  getAuthoritiesForUser(c String)  :  Set
++  getAuthoritiesInfo(c AuthorityType, c String, c String, c String, boolean, c PagingRequest)  :  PagingResults
++  getAuthorityDisplayName(c String)  :  String
++  getAuthorityNodeRef(c String)  :  NodeRef
++  getAuthorityZones(c String)  :  Set
++  getContainedAuthorities(c AuthorityType, c String, boolean)  :  Set
++  getContainingAuthorities(c AuthorityType, c String, boolean)  :  Set
++  getContainingAuthoritiesInZone(c AuthorityType, c String, c String, i AuthorityService$AuthorityFilter, int)  :  Set
++  getDefaultZones()  :  Set
++  getName(c AuthorityType, c String)  :  String
++  getOrCreateZone(c String)  :  NodeRef
++  getShortName(c String)  :  String
++  getZone(c String)  :  NodeRef
++  hasAdminAuthority()  : boolean
++  hasGuestAuthority()  : boolean
++  isAdminAuthority(c String)  : boolean
++  isGuestAuthority(c String)  : boolean
++  removeAuthority(c String, c String)  : void
++  removeAuthorityFromZones(c String,  Set< String>)  : void
++  setAuthorityDisplayName(c String, c String)  : void
+
+}
+enum org.alfresco.service.cmr.security.AuthorityType {
++  ADMIN : c AuthorityType
++  EVERYONE : c AuthorityType
++  GROUP : c AuthorityType
++  GUEST : c AuthorityType
++  OWNER : c AuthorityType
++  ROLE : c AuthorityType
++  USER : c AuthorityType
++  WILDCARD : c AuthorityType
+--
+-   AuthorityType() 
++  equals(c String)  : boolean
++  getAuthorityType(c String)  :  AuthorityType
++  getFixedString()  :  String
++  getOrderPosition()  : int
++  getPrefixString()  :  String
++  isFixedString()  : boolean
++  isPrefixed()  : boolean
++  valueOf(c String)  :  AuthorityType
++  values()  :  AuthorityType;
+
+}
+interface org.alfresco.service.cmr.security.PersonService {
+--
++  countPeople()  : int
++  createMissingPeople()  : boolean
++  createPerson( Map< QName, Serializable>)  :  NodeRef
++  createPerson( Map< QName, Serializable>,  Set< String>)  :  NodeRef
++  deletePerson(c NodeRef)  : void
++  deletePerson(c NodeRef, boolean)  : void
++  deletePerson(c String)  : void
++  getAllPeople()  :  Set
++  getMutableProperties()  :  Set
++  getPeople( List< Pair< QName, String>>, boolean,  List< Pair< QName, Boolean>>, c PagingRequest)  :  PagingResults
++  getPeople(c String,  List< QName>,  List< Pair< QName, Boolean>>, c PagingRequest)  :  PagingResults
++  getPeople(c String,  List< QName>,  Set< QName>,  Set< QName>, boolean,  List< Pair< QName, Boolean>>, c PagingRequest)  :  PagingResults
++  getPeopleContainer()  :  NodeRef
++  getPeopleFilteredByProperty(c QName, i Serializable, int)  :  Set
++  getPerson(c NodeRef)  :  PersonService$PersonInfo
++  getPerson(c String)  :  NodeRef
++  getPerson(c String, boolean)  :  NodeRef
++  getPersonOrNull(c String)  :  NodeRef
++  getUserIdentifier(c String)  :  String
++  getUserNamesAreCaseSensitive()  : boolean
++  isEnabled(c String)  : boolean
++  isMutable()  : boolean
++  notifyPerson(c String, c String)  : void
++  personExists(c String)  : boolean
++  setCreateMissingPeople(boolean)  : void
++  setPersonProperties(c String,  Map< QName, Serializable>)  : void
++  setPersonProperties(c String,  Map< QName, Serializable>, boolean)  : void
+
+}
+interface org.alfresco.service.cmr.security.PublicServiceAccessService {
+--
++  hasAccess(c String, c String, c Object;)  :  AccessStatus
+
+}
+interface org.alfresco.service.cmr.security.MutableAuthenticationService {
+--
++  createAuthentication(c String, class [C)  : void
++  deleteAuthentication(c String)  : void
++  isAuthenticationCreationAllowed()  : boolean
++  isAuthenticationMutable(c String)  : boolean
++  setAuthentication(c String, class [C)  : void
++  setAuthenticationEnabled(c String, boolean)  : void
++  updateAuthentication(c String, class [C, class [C)  : void
+
+}
+class org.alfresco.service.cmr.security.PermissionContext {
+-  additionalContext :  Map< String, Object>
+-  aspects :  HashSet< QName>
+-  dynamicAuthorityAssignment :  Map< String, Set< String>>
+-  properties :  Map< QName, Serializable>
+-  storeAcl : c Long
+-  type : c QName
+--
++   PermissionContext(c QName) 
++  addDynamicAuthorityAssignment(c String, c String)  : void
++  getAdditionalContext()  :  Map
++  getAspects()  :  HashSet
++  getDynamicAuthorityAssignment()  :  Map
++  getProperties()  :  Map
++  getStoreAcl()  :  Long
++  getType()  :  QName
++  setStoreAcl(c Long)  : void
+
+}
+interface org.alfresco.repo.security.permissions.PermissionCheckValue {
+--
++  getNodeRef()  :  NodeRef
+
+}
+interface org.alfresco.service.cmr.security.PermissionService {
++  ADD_CHILDREN : c String
++  ADMINISTRATOR_AUTHORITY : c String
++  ALL_AUTHORITIES : c String
++  ALL_PERMISSIONS : c String
++  ASPECTS : c String
++  CANCEL_CHECK_OUT : c String
++  CHANGE_PERMISSIONS : c String
++  CHECK_IN : c String
++  CHECK_OUT : c String
++  CONSUMER : c String
++  CONTRIBUTOR : c String
++  COORDINATOR : c String
++  CREATE_ASSOCIATIONS : c String
++  CREATE_CHILDREN : c String
++  DELETE : c String
++  DELETE_ASSOCIATIONS : c String
++  DELETE_CHILDREN : c String
++  DELETE_NODE : c String
++  EDITOR : c String
++  EXECUTE : c String
++  EXECUTE_CONTENT : c String
++  FULL_CONTROL : c String
++  GROUP_PREFIX : c String
++  GUEST_AUTHORITY : c String
++  LINK_CHILDREN : c String
++  LOCK : c String
++  LOCK_OWNER_AUTHORITY : c String
++  OWNER_AUTHORITY : c String
++  PROPERTIES : c String
++  READ : c String
++  READ_ASSOCIATIONS : c String
++  READ_CHILDREN : c String
++  READ_CONTENT : c String
++  READ_PERMISSIONS : c String
++  READ_PROPERTIES : c String
++  ROLE_PREFIX : c String
++  SET_OWNER : c String
++  TAKE_OWNERSHIP : c String
++  UNLOCK : c String
++  WRITE : c String
++  WRITE_CONTENT : c String
++  WRITE_PROPERTIES : c String
+--
++  clearPermission(c NodeRef, c String)  : void
++  clearPermission(c StoreRef, c String)  : void
++  deletePermission(c NodeRef, c String, c String)  : void
++  deletePermission(c StoreRef, c String, c String)  : void
++  deletePermissions(c NodeRef)  : void
++  deletePermissions(c StoreRef)  : void
++  getAllAuthorities()  :  String
++  getAllPermission()  :  String
++  getAllSetPermissions(c NodeRef)  :  Set
++  getAllSetPermissions(c StoreRef)  :  Set
++  getAuthorisations()  :  Set
++  getInheritParentPermissions(c NodeRef)  : boolean
++  getOwnerAuthority()  :  String
++  getPermissions(c NodeRef)  :  Set
++  getReaders(c Long)  :  Set
++  getReadersDenied(c Long)  :  Set
++  getSettablePermissions(c NodeRef)  :  Set
++  getSettablePermissions(c QName)  :  Set
++  hasPermission(c Long, c PermissionContext, c String)  :  AccessStatus
++  hasPermission(c NodeRef, c String)  :  AccessStatus
++  hasReadPermission(c NodeRef)  :  AccessStatus
++  setInheritParentPermissions(c NodeRef, boolean)  : void
++  setInheritParentPermissions(c NodeRef, boolean, boolean)  : void
++  setPermission(c NodeRef, c String, c String, boolean)  : void
++  setPermission(c StoreRef, c String, c String, boolean)  : void
+
+}
+interface org.alfresco.service.cmr.security.AuthorityService$AuthorityFilter {
+--
++  includeAuthority(c String)  : boolean
+
+}
+interface org.alfresco.service.cmr.security.AccessPermission {
+--
++  getAccessStatus()  :  AccessStatus
++  getAuthority()  :  String
++  getAuthorityType()  :  AuthorityType
++  getPermission()  :  String
++  getPosition()  : int
++  isInherited()  : boolean
++  isSetDirectly()  : boolean
+
+}
+class org.alfresco.repo.security.person.PersonException {
+-  serialVersionUID : long
+--
++   PersonException(c String) 
++   PersonException(c String, c Object;) 
++   PersonException(c String, c Object;, c Throwable) 
++   PersonException(c String, c Throwable) 
+
+}
+
+' Relations 
+
+org.alfresco.service.cmr.security.PersonService$PersonInfo "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeRef  : nodeRef: c NodeRef
+org.alfresco.error.AlfrescoRuntimeException "1"  o-left-  "1" java.util.concurrent.atomic.AtomicInteger  : errorCounter: c AtomicInteger
+org.alfresco.service.cmr.security.PermissionContext "1"  o-left-  "*" org.alfresco.service.namespace.QName  : aspects:  HashSet< QName>
+org.alfresco.service.cmr.security.PermissionContext "1"  o-left-  "1" org.alfresco.service.namespace.QName  : type: c QName
+org.alfresco.service.cmr.security.PermissionContext "1"  o-left-  "*" org.alfresco.service.namespace.QName  : properties:  Map< QName, Serializable>
+org.alfresco.repo.security.person.PersonException  -up|>  org.alfresco.error.AlfrescoRuntimeException
+org.alfresco.service.cmr.security.NoSuchPersonException  -up|>  org.alfresco.repo.security.person.PersonException
+org.alfresco.service.cmr.security.MutableAuthenticationService  ..up|>  org.alfresco.service.cmr.security.AuthenticationService
+org.alfresco.service.cmr.security.PersonService$PersonInfo  ..up|>  org.alfresco.repo.security.permissions.PermissionCheckValue
+
+' Notes 
+
+@enduml

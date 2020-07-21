@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--<!DOCTYPE query-register PUBLIC '-//ALFRESCO//DTD QUERY//EN' 'queryRegister.dtd'>-->
+<query-register>
+    <name>test-query-register</name>
+    <namespaces>
+        <namespace>
+            <prefix>alf</prefix>
+            <uri>http://www.alfresco.org</uri>
+        </namespace>
+        <namespace>
+            <prefix>tulip</prefix>
+            <uri>http://www.trees.tulip/barking/woof</uri>
+        </namespace>
+    </namespaces>
+    <!-- My test query definition -->
+    <parameter-definition>
+        <qname>alf:query-parameter-name</qname>
+        <type>alf:string</type>
+        <default-value>A name</default-value>
+        
+    </parameter-definition>
+    
+    <query-definition>
+        <qname>alf:query1</qname>
+        <language>lucene</language>
+        <parameter-ref>
+            <qname>alf:query-parameter-name</qname>
+        </parameter-ref>
+        <parameter-definition>
+            <qname>alf:banana</qname>
+            <property>alf:name-of-property</property>
+        </parameter-definition>
+        <query>+QNAME:$alf:query-parameter-name</query>
+    </query-definition>
+    
+    
+    <query-definition>
+        <qname>alf:test1</qname>
+        <language>lucene</language>
+        <query>TEXT:fox</query>
+    </query-definition>
+    
+    <query-definition>
+        <qname>alf:test2</qname>
+        <language>lucene</language>
+        <parameter-definition>
+            <qname>alf:banana</qname>
+            <type>alf:string</type>
+            <default-value>fox</default-value>
+        </parameter-definition>
+        <query>TEXT:${alf:banana}</query>
+    </query-definition>
+    
+    <query-definition>
+        <qname>alf:test3</qname>
+        <language>lucene</language>
+        <parameter-definition>
+            <qname>alf:banana</qname>
+            <type>alf:string</type>
+            <default-value>fox</default-value>
+        </parameter-definition>
+        <query>PATH:"${alf:banana}"</query>
+    </query-definition>
+    
+    
+    
+</query-register>

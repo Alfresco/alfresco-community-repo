@@ -1,0 +1,504 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+   Configuration of shared (cross-transaction) caches. The in-transaction caches
+   are defined in tx-cache-context.xml
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!--
+      Factory responsible for creating caches - override this bean
+      to modify cache creation behaviour.
+   -->
+   <bean id="cacheFactory" class="org.alfresco.repo.cache.DefaultCacheFactory">
+      <property name="properties" ref="global-properties"/>
+   </bean>
+   
+   <!-- ============================================ -->
+   <!-- Asynchronous Cache Support                   -->
+   <!-- ============================================ -->
+   
+   <bean id="asynchronouslyRefreshedCacheThreadPoolExecutor" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+      <property name="poolName" value="asynchronouslyRefreshedCacheThreadPool" />
+      <property name="corePoolSize" value="1" />
+      <property name="maximumPoolSize" value="1" />
+      <property name="threadPriority" value="5" />
+    </bean>
+
+   <bean name="asynchronouslyRefreshedCacheRegistry" class="org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry" >
+   </bean>
+
+   <bean name="abstractAsynchronouslyRefreshedCache" class="org.alfresco.util.cache.AbstractAsynchronouslyRefreshedCache" abstract="true">
+      <property name="threadPoolExecutor" ref="asynchronouslyRefreshedCacheThreadPoolExecutor" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="registry" ref="asynchronouslyRefreshedCacheRegistry" />
+    </bean> 
+   
+   <!-- =========================== -->
+   <!-- Authority BridgeTable cache -->
+   <!-- =========================== -->
+
+   <bean name="authorityBridgeTableCache" class="org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCache" parent="abstractAsynchronouslyRefreshedCache">
+      <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+      <property name="tenantAdminService" ref="tenantAdminService" />
+      <property name="authorityDAO" ref="authorityDAO" />
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Property Values Cache                 -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Property entities -->
+   
+   <bean name="propertyValueSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.propertyValueCache"/>      
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Property Class Cache                  -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Property Class entities -->
+   
+   <bean name="propertyClassSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.propertyClassCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- Property Unique Context Cache         -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Property Unique Contexts -->
+   
+   <bean name="propertyUniqueContextSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.propertyUniqueContextSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- ID lookup for ContentData entities    -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for ContentData -->
+   
+   <bean name="contentDataSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentDataSharedCache"/>
+   </bean>
+
+   <bean name="contentUrlSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentUrlSharedCache"/>
+   </bean>
+
+   <bean name="contentUrlMasterKeySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentUrlMasterKeySharedCache"/>
+   </bean>
+
+   <bean name="contentUrlEncryptingMasterKeySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentUrlEncryptingMasterKeySharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- ID lookup for general, shared, immutable entities       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for immutable entities -->
+   
+   <bean name="immutableEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.immutableEntitySharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Root Nodes lookup                     -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Root Nodes -->
+
+   <bean name="node.rootNodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.rootNodesSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for Root Nodes -->
+
+   <bean name="node.allRootNodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.allRootNodesSharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- Nodes lookup                        -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Nodes -->
+
+   <bean name="node.nodesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.nodesSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Node Aspect lookup                    -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Node Aspects -->
+
+   <bean name="node.aspectsSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.aspectsSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Node Properties lookup                -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Node Properties -->
+
+   <bean name="node.propertiesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.propertiesSharedCache"/>
+   </bean>
+
+   
+   <!-- ===================================== -->
+   <!-- Child by cm:name lookup for nodes  -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Child-by-name -->
+   
+   <bean name="node.childByNameSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.node.childByNameSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Rules lookup for nodes                -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Node Rules -->
+   
+   <bean name="nodeRulesSharedCache" class="org.alfresco.repo.cache.NullCache"/>
+   
+   <!-- ===================================== -->
+   <!-- Authority container look up for users -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for User Authorities -->
+   
+   <bean name="userToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.userToAuthoritySharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for User Authentication -->
+   
+   <bean name="authenticationSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.authenticationSharedCache"/>
+   </bean>
+
+   <!-- ====================================== -->
+   <!-- NodeRef lookup for authority containers -->
+   <!-- ====================================== -->
+
+   <!-- The cross-transaction shared cache for authority containers -->
+   
+   <bean name="authoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.authoritySharedCache"/>
+   </bean>
+
+   <!-- ================================================ -->
+   <!-- Authority NodeRef lookup to ChildAssociationRefs -->
+   <!-- ================================================ -->
+
+   <!-- The cross-transaction shared cache for authority containers -->
+   
+   <bean name="authorityToChildAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.authorityToChildAuthoritySharedCache"/>
+   </bean>
+   
+   <!-- ================================================ -->
+   <!-- Zone lookup to ChildAssociationRefs              -->
+   <!-- ================================================ -->
+
+   <!-- The cross-transaction shared cache for authority containers -->
+   
+   <bean name="zoneToAuthoritySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.zoneToAuthoritySharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- Permissions access cache              -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Permissions -->
+   
+   <bean name="permissionsAccessSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.permissionsAccessSharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- ACL Readers cache                     -->
+   <!-- ===================================== -->
+
+    <!-- The cross-transaction shared cache for ACL readers -->
+   
+   <bean name="readersSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.readersSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- ACL Readers Denied cache                     -->
+   <!-- ===================================== -->
+
+    <!-- The cross-transaction shared cache for ACL denied readers -->
+   
+   <bean name="readersDeniedSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.readersDeniedSharedCache"/>
+   </bean>
+   
+      
+   <!-- ===================================== -->
+   <!-- Node owner cache                      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Node Ownership -->
+   
+   <bean name="nodeOwnerSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.nodeOwnerSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Person username to NodeRef cache      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Person -->
+   
+   <bean name="personSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.personSharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- Authentication Ticket Cache           -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for In-Memory Tickets -->
+   
+   <bean name="ticketsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.ticketsCache"/>
+   </bean>
+
+    <bean name="usernameToTicketIdCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.usernameToTicketIdCache"/>
+    </bean>
+      
+   <!-- ===================================== -->
+   <!-- WebServices Query Session Cache       -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for WebService query sessions -->
+   
+   <bean name="webServicesQuerySessionSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+       <constructor-arg value="cache.webServicesQuerySessionSharedCache"/>
+   </bean>
+   
+	
+   <!-- ===================================== -->
+   <!-- ACL cache                      -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Acls -->
+   
+   <bean name="aclSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.aclSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- ACL Entity cache                      -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for ACL entities -->
+   
+   <bean name="aclEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.aclEntitySharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Authority Entity cache                -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for Authority entities -->
+   
+   <bean name="authorityEntitySharedCache" class="org.alfresco.repo.cache.NullCache"/>
+   
+   
+   <!-- ===================================== -->
+   <!-- Permission Entity cache               -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for Permission entities -->
+   
+   <bean name="permissionEntitySharedCache" class="org.alfresco.repo.cache.NullCache"/>
+
+   
+   <!-- ===================================== -->
+   <!-- Messages Caches                       -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for In-Memory ResourceBundleBaseNames -->
+   
+   <bean name="resourceBundleBaseNamesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.resourceBundleBaseNamesSharedCache"/>
+   </bean>
+
+   <!-- The cross-transaction shared cache for In-Memory LoadedResourceBundles -->
+   
+   <bean name="loadedResourceBundlesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.loadedResourceBundlesSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for In-Memory Messages -->
+   
+   <bean name="messagesSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.messagesSharedCache"/>
+   </bean>
+   
+
+   <!-- ===================================== -->
+   <!-- Dictionary / Namespace Caches         -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Dictionary Models -->
+   
+   <bean name="compiledModelsCache" class="org.alfresco.repo.dictionary.CompiledModelsCache" parent="abstractAsynchronouslyRefreshedCache">
+	  <property name="dictionaryDAO" ref="dictionaryDAO" /> 	
+   </bean>
+
+   <!-- The cross-transaction shared cache for Dictionary Namespaces [Must be non-clustered, non-txn and UNLIMITED IN SIZE]-->
+   <bean name="prefixesCache" class="org.alfresco.repo.cache.MemoryCache" />
+   
+   <!-- ===================================== -->
+   <!-- RoutingContentStore caches            -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for AbstractRoutingContentStore -->
+   
+   <!--
+      Local cache is used even when clustered.
+      AbstractRoutingContentStore.selectReadStore(String) will correct incorrect/missing cache entries
+      and it doesn't really make sense to try to replicate or Serialize a ContentStore implementation. 
+   -->
+   <bean name="routingContentStoreSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.routingContentStoreSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Executing Actions caches              -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Executing Actions -->
+   
+   <bean name="executingActionsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.executingActionsCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- TagScope Summary caches               -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for tagscope summary properties -->
+   
+   <bean name="tagscopeSummarySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.tagscopeSummarySharedCache"/>
+   </bean>
+
+   <!-- ===================================== -->
+   <!-- IMAP caches                           -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for IMAP messages -->
+   
+   <bean name="imapMessageSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.imapMessageSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Tenant Entity Cache                   -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Tenant entities -->
+   
+   <bean name="tenantEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.tenantEntitySharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Immutable Singleton Cache             -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for immutable (tenant-aware) singletons -->
+   
+   <bean name="immutableSingletonSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.immutableSingletonSharedCache"/>
+   </bean>
+
+   <bean name="openCMISRegistrySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.openCMISRegistrySharedCache"/>
+   </bean>
+
+   <!-- Remote Alfresco Ticket Cache, cross-transaction shared cache -->
+   <bean name="remoteAlfrescoTicketService.ticketsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.remoteAlfrescoTicketService.ticketsCache"/>
+   </bean>
+   
+   
+   <bean name="contentDiskDriver.fileInfoCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentDiskDriver.fileInfoCache"/>
+   </bean>
+
+   <bean name="globalConfigSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.globalConfigSharedCache"/>
+   </bean>
+   
+   <!-- ===================================== -->
+   <!-- Site ShortName to NodeRef look up     -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for Site NodeRefs -->
+   
+   <bean name="siteNodeRefSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.siteNodeRefSharedCache"/>
+   </bean>
+   
+   
+   <!-- ===================================== -->
+   <!-- SAML TrustEngine cache     			  -->
+   <!-- ===================================== -->
+   
+   <!-- The cross-transaction shared cache for SAML TrustEngines -->
+   
+   <bean name="samlTrustEngineSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.samlTrustEngineSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for solr Facets NodeRefs -->
+   
+   <bean name="solrFacetNodeRefSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.solrFacetNodeRefSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for shard states -->
+   <bean name="shardStateSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.shardStateSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for shard instances to guids -->
+   <bean name="shardToGuidSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.shardToGuidSharedCache"/>
+   </bean>
+
+   <!-- The cross-transaction shared cache for In-Memory protected users -->
+
+   <bean name="protectedUsersCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.protectedUsersCache"/>
+   </bean>
+
+    <!-- The cross-transaction shared cache for heartbeat data on cluster usage -->
+
+   <bean name="hbClusterUsageCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.hbClusterUsageCache"/>
+   </bean>
+</beans>

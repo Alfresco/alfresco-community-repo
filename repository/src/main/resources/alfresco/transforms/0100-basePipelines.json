@@ -1,0 +1,268 @@
+{
+  "transformers": [
+    {
+      "transformerName": "officeToImageViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfToImageViaPng"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "pdfToImageViaPng",
+      "transformerPipeline" : [
+        {"transformerName": "pdfrenderer",      "targetMediaType": "image/png"},
+        {"transformerName": "imagemagick"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "iWorksToImageViaJpg",
+      "transformerPipeline" : [
+        {"transformerName": "appleIWorks",                                      "targetMediaType": "image/jpeg"},
+        {"transformerName": "imagemagick"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "outlookMsg2Image",
+      "transformerPipeline" : [
+        {"transformerName": "OutlookMsg",                                    "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions",
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "outlookMsg2Pdf",
+      "transformerPipeline" : [
+        {"transformerName": "OutlookMsg",                  "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.ms-outlook",  "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    },
+    {
+      "transformerName": "rfc822ToPdf",
+      "transformerPipeline" : [
+        {"transformerName": "rfc822",                       "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "message/rfc822",               "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "rfc822ToImage",
+      "transformerPipeline" : [
+        {"transformerName": "rfc822",                           "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "textToImageViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice",                  "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfToImageViaPng"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/plain",                   "targetMediaType": "image/gif" },
+        {"sourceMediaType": "text/plain",                   "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "text/plain",                   "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "text/plain",                   "targetMediaType": "image/png" },
+
+        {"sourceMediaType": "text/csv",                     "targetMediaType": "image/gif" },
+        {"sourceMediaType": "text/csv",                     "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "text/csv",                     "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "text/csv",                     "targetMediaType": "image/png" },
+
+        {"sourceMediaType": "text/xml",                     "targetMediaType": "image/gif" },
+        {"sourceMediaType": "text/xml",                     "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "text/xml",                     "targetMediaType": "image/tiff"},
+        {"sourceMediaType": "text/xml",                     "targetMediaType": "image/png" }
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "htmlToPdfViaOdt",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice",                  "targetMediaType": "application/vnd.oasis.opendocument.text"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/html",                    "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "htmlToImageViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "htmlToPdfViaOdt",               "targetMediaType": "application/pdf"},
+        {"transformerName": "pdfToImageViaPng"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "ooXmlToImageViaText",
+      "transformerPipeline" : [
+        {"transformerName": "OOXML",                                                                        "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions",
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "archiveToImageViaText",
+      "transformerPipeline" : [
+        {"transformerName": "Archive",                                                                        "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "archiveOptions",
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "ooXmlToPdfViaText",
+      "transformerPipeline" : [
+        {"transformerName": "OOXML",                                                                        "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    },
+    {
+      "transformerName": "archiveToPdfViaText2",
+      "transformerPipeline" : [
+        {"transformerName": "Archive",                                                                        "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/x-cpio",                                                          "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/java-archive",                                                    "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/x-tar",                                                           "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/zip",                                                             "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+        "archiveOptions"
+      ]
+    },
+    {
+      "transformerName": "libreofficeHtmlToPdfViaOdt",
+      "transformerPipeline" : [
+        {"transformerName": "libreoffice", "targetMediaType": "application/vnd.oasis.opendocument.text"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "text/html",  "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "libreofficeToPdf",
+      "transformerFailover" : [ "libreoffice", "libreofficeHtmlToPdfViaOdt" ],
+      "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/vnd.oasis.opendocument.graphics", "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.calc.template",       "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.impress.template",    "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.writer.template",     "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "text/tab-separated-values",                   "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.visio2013",                   "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/wordperfect",                     "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.calc",                "priority": 150, "targetMediaType": "application/pdf" },
+        {"sourceMediaType": "application/vnd.sun.xml.impress",             "priority": 150, "targetMediaType": "application/pdf" }
+      ],
+      "transformOptions": [
+      ]
+    },
+    {
+      "transformerName": "libreofficeToPdfBoxViaPdf",
+      "transformerPipeline" : [
+        {"transformerName": "libreofficeToPdf", "targetMediaType": "application/pdf"},
+        {"transformerName": "PdfBox"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfboxOptions"
+      ]
+    },
+    {
+      "transformerName": "textBasedToImageViaText",
+      "transformerPipeline" : [
+        {"transformerName": "string",                                 "targetMediaType": "text/plain"},
+        {"transformerName": "textToImageViaPdf"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "pdfRendererOptions",
+        "imageMagickOptions"
+      ]
+    },
+    {
+      "transformerName": "outlookMsgToLibreofficeViaText",
+      "transformerPipeline" : [
+        {"transformerName": "OutlookMsg",                              "targetMediaType": "text/plain"},
+        {"transformerName": "libreoffice"}
+      ],
+      "supportedSourceAndTargetList": [
+      ],
+      "transformOptions": [
+        "tikaOptions"
+      ]
+    }
+  ]
+}

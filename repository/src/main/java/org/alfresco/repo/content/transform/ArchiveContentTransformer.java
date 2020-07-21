@@ -1,0 +1,168 @@
+/*
+ * #%L
+ * Alfresco Repository
+ * %%
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.repo.content.transform;
+
+import java.util.ArrayList;
+
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.EmptyParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.pkg.PackageParser;
+
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
+
+/**
+ * This class transforms archive files (zip, tar etc) to text, which enables indexing
+ *  and searching of archives as well as webpreviewing.
+ * The transformation can simply list the names of the entries within the archive, or
+ *  it can also include the textual content of the entries themselves.
+ * The former is suggested for web preview, the latter for indexing.
+ * This behaviour is controlled by the recurse flag. 
+ * 
+ * @author Neil McErlean
+ * @author Nick Burch
+ * @since 3.4
+ *
+ * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
+ */
+@Deprecated
+public class ArchiveContentTransformer extends TikaPoweredContentTransformer
+{ 
+    /**
+     * The logger
+     */
+    private static Log logger = LogFactory.getLog(ArchiveContentTransformer.class);
+
+    private boolean includeContents = false;
+    private TikaConfig tikaConfig;
+    
+    /** 
+     * We support all the archive mimetypes that the Tika
+     *  package parser can handle
+     */
+    public static ArrayList<String> SUPPORTED_MIMETYPES;
+    static {
+       SUPPORTED_MIMETYPES = new ArrayList<String>();
+       Parser p = new PackageParser();
+       for(MediaType mt : p.getSupportedTypes(null)) {
+          // Tika can probably do some useful text
+          SUPPORTED_MIMETYPES.add( mt.toString() );
+       }
+    }
+     
+    public ArchiveContentTransformer() {
+        super(SUPPORTED_MIMETYPES);
+    }
+    
+    /**
+     * Injects the TikaConfig to use
+     * 
+     * @param tikaConfig The Tika Config to use 
+     */
+    public void setTikaConfig(TikaConfig tikaConfig)
+    {
+        this.tikaConfig = tikaConfig;
+    }
+    
+    public void setIncludeContents(String includeContents)
+    {
+       // Spring really ought to be able to handle
+       //  setting a boolean that might still be
+       //  ${foo} (i.e. not overridden in a property).
+       // As we can't do that with spring, we do it...
+       this.includeContents = false;
+       if(includeContents != null && includeContents.length() > 0)
+       {
+          this.includeContents = TransformationOptions.relaxedBooleanTypeConverter.convert(includeContents).booleanValue();
+       }
+    }
+    
+    @Override
+    protected Parser getParser() {
+      return new PackageParser();
+    }
+
+    @Override
+    protected ParseContext buildParseContext(Metadata metadata,
+         String targetMimeType, TransformationOptions options) {
+      ParseContext context = super.buildParseContext(metadata, targetMimeType, options);
+      
+      boolean recurse = includeContents;
+      if(options.getIncludeEmbedded() != null)
+      {
+         recurse = options.getIncludeEmbedded();
+      }
+      
+      if(recurse)
+      {
+         // Use an auto detect parser to handle the contents
+         if(tikaConfig == null)
+         {
+             tikaConfig = TikaConfig.getDefaultConfig();
+         }
+         context.set(Parser.class, new AutoDetectParser(tikaConfig));
+      }
+      else
+      {
+          // REPO-1066: an AutoDetectParser is the default in Tika after: https://issues.apache.org/jira/browse/TIKA-2096
+          // so we need to specify an empty one if we don't want the recurse parsing to happen
+          context.set(Parser.class, new EmptyParser());
+      }
+      return context;
+    }
+
+    @Override
+    protected void transformRemote(RemoteTransformerClient remoteTransformerClient, ContentReader reader,
+                                   ContentWriter writer, TransformationOptions options,
+                                   String sourceMimetype, String targetMimetype,
+                                   String sourceExtension, String targetExtension,
+                                   String targetEncoding) throws Exception
+    {
+        long timeoutMs = options.getTimeoutMs();
+        boolean recurse = includeContents;
+        if(options.getIncludeEmbedded() != null)
+        {
+            recurse = options.getIncludeEmbedded();
+        }
+        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+                timeoutMs, logger,
+                "transformName", "Archive",
+                "includeContents", Boolean.toString(recurse),
+                "sourceMimetype", sourceMimetype,
+                "sourceExtension", sourceExtension,
+                "targetMimetype", targetMimetype,
+                TARGET_ENCODING, targetEncoding);
+    }
+}

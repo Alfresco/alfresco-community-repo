@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.propval">
+
+    <!-- NOTE: MyBatis #224 - eg. Oracle -->
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_PropertyClass" type="PropertyClass">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="javaClassName" column="java_class_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="javaClassNameShort" column="java_class_name_short" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="javaClassNameCrc" column="java_class_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_PropertyDateValue" type="PropertyDateValue">
+        <!--  date_value is the PK as well -->
+        <result property="dateValue" column="date_value" jdbcType="BIGINT" javaType="long"/>
+        <result property="fullYear" column="full_year" jdbcType="SMALLINT" javaType="short"/>
+        <result property="halfOfYear" column="half_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="quarterOfYear" column="quarter_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="monthOfYear" column="month_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="weekOfYear" column="week_of_year" jdbcType="TINYINT" javaType="short"/>
+        <result property="weekOfMonth" column="week_of_month" jdbcType="TINYINT" javaType="short"/>
+        <result property="dayOfYear" column="day_of_year" jdbcType="SMALLINT" javaType="short"/>
+        <result property="dayOfMonth" column="day_of_month" jdbcType="TINYINT" javaType="short"/>
+        <result property="dayOfWeek" column="day_of_week" jdbcType="TINYINT" javaType="short"/>
+    </resultMap>
+    <resultMap id="result_PropertyStringValue" type="PropertyStringValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="stringEndLower" column="string_end_lower" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="stringCrc" column="string_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_PropertyDoubleValue" type="PropertyDoubleValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="doubleValue" column="double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+    </resultMap>
+    <resultMap id="result_PropertySerializableValue" type="PropertySerializableValue">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="serializableValue" column="serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_LocalOnly" type="PropertyValue">
+        <result property="id" column="prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="actualTypeId" column="prop_actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="persistedType" column="prop_persisted_type" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="longValue" column="prop_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_DoubleOnly" type="PropertyValue" extends="result_PropertyValue_LocalOnly">
+        <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_StringOnly" type="PropertyValue" extends="result_PropertyValue_LocalOnly">
+        <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    <resultMap id="result_PropertyValue_All" type="PropertyValue" extends="result_PropertyValue_LocalOnly">
+        <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="serializableValue" column="prop_serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
+    <resultMap id="result_PropertyLink" type="PropertyLink">
+        <result property="rootPropId" column="link_root_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="propIndex" column="link_prop_index" jdbcType="BIGINT" javaType="long"/>
+        <result property="containedIn" column="link_contained_in" jdbcType="BIGINT" javaType="long"/>
+        <result property="keyPropId" column="link_key_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="valuePropId" column="link_value_prop_id" jdbcType="BIGINT" javaType="long"/>
+    </resultMap>
+    <resultMap id="result_PropertyRoot" type="PropertyRoot">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+    </resultMap>
+    <resultMap id="result_PropertyUniqueContext" type="PropertyUniqueContext">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="value1PropId" column="value1_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="value2PropId" column="value2_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="value3PropId" column="value3_prop_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="propertyId" column="prop1_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    <resultMap id="result_PropertyIdSearchRow" type="PropertyIdSearchRow">
+        <!-- If we use nested ResultMaps, then this ResultMap can't be embedded... -->
+        <id property="rootPropId" column="link_root_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <id property="propIndex" column="link_prop_index" jdbcType="BIGINT" javaType="long"/>
+        <id property="containedIn" column="link_contained_in" jdbcType="BIGINT" javaType="long"/>
+        <result property="keyPropId" column="link_key_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="valuePropId" column="link_value_prop_id" jdbcType="BIGINT" javaType="long"/>
+        <result property="actualTypeId" column="prop_actual_type_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="persistedType" column="prop_persisted_type" jdbcType="TINYINT" javaType="java.lang.Short"/>
+        <result property="longValue" column="prop_long_value" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="doubleValue" column="prop_double_value" jdbcType="DOUBLE" javaType="java.lang.Double"/>
+        <result property="stringValue" column="prop_string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="serializableValue" column="prop_serializable_value" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </resultMap>
+    <resultMap id="result_PropertyIdQueryResult" type="PropertyIdQueryResult">
+        <id property="propId" column="prop_id" jdbcType="BIGINT" javaType="long"/>
+        <association property="propValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/>
+    </resultMap>
+  
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+
+    <parameterMap id="parameter_PropertySerializableValue" type="PropertySerializableValue">
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
+    <parameterMap id="parameter_IdPropertySerializableValue" type="PropertySerializableValue">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="serializableValue" jdbcType="BLOB" javaType="java.io.Serializable"/>
+    </parameterMap>
+    <parameterMap id="parameter_PropertyRoot" type="PropertyRoot">
+        <parameter property="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+    </parameterMap>
+    <parameterMap id="parameter_IdPropertyRoot" type="PropertyRoot">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="version" jdbcType="TINYINT" javaType="java.lang.Short"/>
+    </parameterMap>
+
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_PropertyClass_AutoIncrement">
+        insert into alf_prop_class (java_class_name, java_class_name_short, java_class_name_crc) 
+        values (#{javaClassName}, #{javaClassNameShort}, #{javaClassNameCrc})
+    </sql>
+    
+    <sql id="insert_PropertyClass_Sequence">
+        insert into alf_prop_class (id, java_class_name, java_class_name_short, java_class_name_crc) 
+        values (#{id}, #{javaClassName}, #{javaClassNameShort}, #{javaClassNameCrc})
+    </sql>
+    
+    <sql id="insert_PropertyStringValue_AutoIncrement">
+        insert into alf_prop_string_value (string_value, string_end_lower, string_crc) 
+        values (#{stringValue}, #{stringEndLower}, #{stringCrc})
+    </sql>
+    
+    <sql id="insert_PropertyStringValue_Sequence">
+        insert into alf_prop_string_value (id, string_value, string_end_lower, string_crc) 
+        values (#{id}, #{stringValue}, #{stringEndLower}, #{stringCrc})
+    </sql>
+    
+    <sql id="insert_PropertyDoubleValue_AutoIncrement">
+        insert into alf_prop_double_value (double_value) 
+        values (#{doubleValue})
+    </sql>
+    
+    <sql id="insert_PropertyDoubleValue_Sequence">
+        insert into alf_prop_double_value (id, double_value) 
+        values (#{id}, #{doubleValue})
+    </sql>
+    
+    <sql id="insert_PropertySerializableValue_AutoIncrement">
+        insert into alf_prop_serializable_value (serializable_value) 
+        values (?)
+    </sql>
+    
+    <sql id="insert_PropertySerializableValue_Sequence">
+        insert into alf_prop_serializable_value (id, serializable_value) 
+        values (?, ?)
+    </sql>
+    
+    <sql id="insert_PropertyValue_AutoIncrement">
+        insert into alf_prop_value (actual_type_id, persisted_type, long_value) 
+        values (#{actualTypeId}, #{persistedType}, #{longValue})
+    </sql>
+    
+    <sql id="insert_PropertyValue_Sequence">
+        insert into alf_prop_value (id, actual_type_id, persisted_type, long_value) 
+        values (#{id}, #{actualTypeId}, #{persistedType}, #{longValue})
+    </sql>
+    
+    <sql id="insert_PropertyRoot_AutoIncrement">
+        insert into alf_prop_root (version) 
+        values (?)
+    </sql>
+    
+    <sql id="insert_PropertyRoot_Sequence">
+        insert into alf_prop_root (id, version) 
+        values (?, ?)
+    </sql>
+    
+    <sql id="insert_PropertyUniqueContext_AutoIncrement">
+        insert into alf_prop_unique_ctx (version, value1_prop_id, value2_prop_id, value3_prop_id, prop1_id) 
+        values (#{version}, #{value1PropId}, #{value2PropId}, #{value3PropId}, #{propertyId,jdbcType=BIGINT})
+    </sql>
+    
+    <sql id="insert_PropertyUniqueContext_Sequence">
+        insert into alf_prop_unique_ctx (id, version, value1_prop_id, value2_prop_id, value3_prop_id, prop1_id)
+        values (#{id}, #{version}, #{value1PropId}, #{value2PropId}, #{value3PropId}, #{propertyId,jdbcType=BIGINT})
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <!-- Get a property class by ID -->
+    <select id="select_PropertyClassByID" parameterType="PropertyClass" resultMap="result_PropertyClass">
+        select
+            *
+        from
+            alf_prop_class
+        where
+            id = #{id}
+    </select>
+
+    <!-- Get the property class by class name -->
+    <select id="select_PropertyClassByName" parameterType="PropertyClass" resultMap="result_PropertyClass">
+        select
+            *
+        from
+            alf_prop_class
+        where
+            java_class_name_crc = #{javaClassNameCrc} and
+            java_class_name_short = #{javaClassNameShort}
+    </select>
+
+    <insert id="insert_PropertyDateValue" parameterType="PropertyDateValue" >
+        insert into alf_prop_date_value
+        (
+           date_value,
+           full_year, half_of_year, quarter_of_year,
+           month_of_year,
+           week_of_year, week_of_month,
+           day_of_year, day_of_month, day_of_week
+        ) 
+        values
+        (
+           #{dateValue},
+           #{fullYear}, #{halfOfYear}, #{quarterOfYear},
+           #{monthOfYear},
+           #{weekOfYear}, #{weekOfMonth},
+           #{dayOfYear}, #{dayOfMonth}, #{dayOfWeek}
+        )
+    </insert>
+
+    <!-- Get a property date value by ID -->
+    <select id="select_PropertyDateValueByID" parameterType="java.lang.Long" resultMap="result_PropertyDateValue">
+        select
+            *
+        from
+            alf_prop_date_value
+        where
+            date_value = #{dateValue}
+    </select>
+
+    <!-- Get the property date value by value -->
+    <select id="select_PropertyDateValueByValue" parameterType="java.lang.Long" resultMap="result_PropertyDateValue">
+        select
+            *
+        from
+            alf_prop_date_value
+        where
+            date_value = #{dateValue}
+    </select>
+
+    <!-- Get a property string value by ID -->
+    <select id="select_PropertyStringValueByID" parameterType="PropertyStringValue" resultType="string">
+        select
+            string_value
+        from
+            alf_prop_string_value
+        where
+            id = #{id}
+    </select>
+
+    <!-- Get the property string value by value 
+    -->
+    <select id="select_PropertyStringValueByValue" parameterType="PropertyStringValue" resultType="java.lang.Long">
+        select
+            id
+        from
+            alf_prop_string_value
+        where
+            string_end_lower = #{stringEndLower} and
+            string_crc = #{stringCrc}
+    </select>
+
+    <!-- Get a property double value by ID -->
+    <select id="select_PropertyDoubleValueByID" parameterType="PropertyDoubleValue" resultMap="result_PropertyDoubleValue">
+        select
+            *
+        from
+            alf_prop_double_value
+        where
+            id = #{id}
+    </select>
+
+    <!-- Get the property double value by value -->
+    <select id="select_PropertyDoubleValueByValue" parameterType="PropertyDoubleValue" resultMap="result_PropertyDoubleValue">
+        select
+            *
+        from
+            alf_prop_double_value
+        where
+            double_value = #{doubleValue}
+    </select>
+
+    <!-- Get a property serializable value by ID -->
+    <select id="select_PropertySerializableValueByID" parameterType="PropertySerializableValue" resultMap="result_PropertySerializableValue">
+        select
+            *
+        from
+            alf_prop_serializable_value
+        where
+            id = #{id}
+    </select>
+
+    <!-- Get the property value by value in alf_prop_value -->
+    <select id="select_PropertyValueByLocalValue" parameterType="PropertyValue" resultMap="result_PropertyValue_LocalOnly">
+        select
+            pv.id as prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value
+        from
+            alf_prop_value pv
+        where
+            pv.actual_type_id = #{actualTypeId} and
+            pv.long_value = #{longValue}
+    </select>
+
+    <!-- Get the property value by value in alf_prop_double_value -->
+    <select id="select_PropertyValueByDoubleValue" parameterType="PropertyValue" resultMap="result_PropertyValue_DoubleOnly">
+        select
+            pv.id as prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value
+        from
+            alf_prop_value pv
+            join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = #{persistedType})
+        where
+            pv.actual_type_id = #{actualTypeId} and
+            dv.double_value = #{doubleValue}
+    </select>
+
+    <!-- Get the property value by value in alf_prop_string_value -->
+    <select id="select_PropertyValueByStringValue" parameterType="PropertyStringQuery" resultMap="result_PropertyValue_StringOnly">
+        select
+            pv.id                       as prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            sv.string_value             as prop_string_value
+        from
+            alf_prop_value pv
+            join alf_prop_string_value sv on (sv.id = pv.long_value and pv.persisted_type = #{persistedType})
+        where
+            pv.actual_type_id = #{actualTypeId} and
+            sv.string_end_lower = #{stringEndLower} and
+            sv.string_crc = #{stringCrc}
+    </select>
+
+    <!-- Get the property value by ID -->
+    <select id="select_PropertyValueById" parameterType="PropertyValue" resultMap="result_PropertyValue_All">
+        select
+            pv.id                       as prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
+        from
+            alf_prop_value pv
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        where
+            pv.id = #{id}
+    </select>
+
+    <!-- Get the property value by ID -->
+    <select id="select_PropertyById" parameterType="PropertyValue" resultMap="result_PropertyIdSearchRow">
+        select
+            pl.root_prop_id             as link_root_prop_id,
+            pl.prop_index               as link_prop_index,
+            pl.contained_in             as link_contained_in,
+            pl.key_prop_id              as link_key_prop_id,
+            pl.value_prop_id            as link_value_prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
+        from
+            alf_prop_link pl
+            join alf_prop_value pv on (pl.value_prop_id = pv.id)
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        where
+            pl.root_prop_id = #{id}
+    </select>
+    
+    <!-- Get the property values by a list of IDs -->
+    <select id="select_PropertiesByIds" parameterType="PropertyIdQueryParameter" resultMap="result_PropertyIdQueryResult">
+        select
+            pl.root_prop_id             as prop_id,
+            pl.root_prop_id             as link_root_prop_id,
+            pl.prop_index               as link_prop_index,
+            pl.contained_in             as link_contained_in,
+            pl.key_prop_id              as link_key_prop_id,
+            pl.value_prop_id            as link_value_prop_id,
+            pv.actual_type_id           as prop_actual_type_id,
+            pv.persisted_type           as prop_persisted_type,
+            pv.long_value               as prop_long_value,
+            dv.double_value             as prop_double_value,
+            sv.string_value             as prop_string_value,
+            serv.serializable_value     as prop_serializable_value
+        from
+            alf_prop_link pl
+            join alf_prop_value pv on (pl.value_prop_id = pv.id)
+            left join alf_prop_double_value dv on (dv.id = pv.long_value and pv.persisted_type = 2)
+            left join alf_prop_string_value sv on (sv.id = pv.long_value and (pv.persisted_type = 3 OR pv.persisted_type = 5 OR pv.persisted_type = 6))
+            left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
+        where pl.root_prop_id in
+            <foreach item="item" index="index" collection="rootPropIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        order by
+            root_prop_id
+    </select>
+    
+    <select id="select_PropertyRootById" parameterType="PropertyRoot" resultMap="result_PropertyRoot">
+        select
+            id,
+            version
+        from
+            alf_prop_root
+        where
+            id = #{id}
+    </select>
+
+    <update id="update_PropertyRoot" parameterType="PropertyRoot">
+        update
+            alf_prop_root
+        set
+            version = #{version}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+    <delete id="delete_PropertyRootById" parameterType="PropertyRoot">
+        delete from
+            alf_prop_root
+        where
+            id = #{id}
+    </delete>
+
+    <insert id="insert_PropertyLink" parameterType="PropertyLink" >
+        insert into alf_prop_link
+        (
+           root_prop_id, prop_index, contained_in, key_prop_id, value_prop_id
+        )
+        values
+        (
+           #{rootPropId}, #{propIndex}, #{containedIn}, #{keyPropId}, #{valuePropId}
+        )
+    </insert>
+    
+    <delete id="delete_PropertyLinksByRootId" parameterType="PropertyRoot">
+        delete from
+            alf_prop_link
+        where
+            root_prop_id = #{id}
+    </delete>
+
+    <select id="select_PropertyUniqueContextById" parameterType="PropertyUniqueContext" resultMap="result_PropertyUniqueContext">
+        select
+            id,
+            version,
+            value1_prop_id,
+            value2_prop_id,
+            value3_prop_id,
+            prop1_id
+        from
+            alf_prop_unique_ctx
+        where
+            id = #{id}
+    </select>
+
+    <select id="select_PropertyUniqueContextByValues" parameterType="PropertyUniqueContext" resultMap="result_PropertyUniqueContext">
+        select
+            id,
+            version,
+            value1_prop_id,
+            value2_prop_id,
+            value3_prop_id,
+            prop1_id
+        from
+            alf_prop_unique_ctx
+        where
+            value1_prop_id = #{value1PropId}
+        <if test="value2PropId != null">
+            and value2_prop_id = #{value2PropId}
+        </if>
+        <if test="value3PropId != null">
+            and value3_prop_id = #{value3PropId}
+        </if>
+    </select>
+
+    <update id="update_PropertyUniqueContext" parameterType="PropertyUniqueContext">
+        update
+            alf_prop_unique_ctx
+        set
+            version = #{version},
+            value1_prop_id = #{value1PropId},
+            value2_prop_id = #{value2PropId},
+            value3_prop_id = #{value3PropId},
+            prop1_id = #{propertyId,jdbcType=BIGINT}
+        where
+            id = #{id}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+
+    <delete id="delete_PropertyUniqueContextById" parameterType="PropertyUniqueContext">
+        delete from
+            alf_prop_unique_ctx
+        where
+            id = #{id} 
+    </delete>
+
+    <delete id="delete_PropertyUniqueContextByValues" parameterType="PropertyUniqueContext">
+        delete from
+            alf_prop_unique_ctx
+        where
+            value1_prop_id = #{value1PropId}
+        <if test="value2PropId != null">
+            and value2_prop_id = #{value2PropId}
+        </if>
+        <if test="value3PropId != null">
+            and value3_prop_id = #{value3PropId}
+        </if>
+    </delete>
+
+</mapper>

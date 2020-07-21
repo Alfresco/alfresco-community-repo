@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.patch">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_nodeIdAndName" type="java.util.HashMap">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <resultMap id="result_nodeNameUuidMap" type="java.util.HashMap">
+        <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    <parameterMap id="parameter_IdMap" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="long"/>
+    </parameterMap>
+
+    <parameterMap id="parameter_contentMimetype" type="map">
+        <parameter property="newMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="oldMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_nodeTypeAndNamePattern" type="map">
+        <parameter property="typeQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="propQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="namePattern" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_qnameIdAndMinMaxNodeId" type="map">
+        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_nsIdAndMinMaxNodeId" type="map">
+        <parameter property="nsId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_mimetypeIdAndMinMaxNodeId" type="map">
+        <parameter property="mimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
+    <parameterMap id="parameter_qnameIdPairAndMinMaxNodeId" type="map">
+        <parameter property="qnameId1" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId2" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_qnameCrcAndMinMaxNodeId" type="map">
+        <parameter property="qnameCrcSites" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcSurfConfig" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcPages" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcUser" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameTypeIdContains" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <parameterMap id="parameter_fixSizeCurrentType" type="map">
+        <parameter property="sizeCurrentQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
+    <!--                -->
+    <!-- Selects        -->
+    <!--                -->
+
+    <select id="select_admMaxNodeId" resultType="java.lang.Long">
+        select max(id) from alf_node
+    </select>
+    
+    <select id="select_nodesByTypeAndNamePattern" parameterMap="parameter_nodeTypeAndNamePattern" resultMap="result_nodeIdAndName">
+        select
+            s.protocol,
+            s.identifier,
+            n.uuid,
+            np.string_value as name
+        from
+            alf_node n
+            join alf_store s on (s.id = n.store_id)
+            join alf_node_properties np on (np.node_id = n.id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            np.qname_id = #{propQNameId} and
+            np.string_value like #{namePattern} <include refid="alfresco.util.escape"/>
+    </select>
+    
+    <select id="select_CountNodesWithAspectIds" parameterType="Ids" resultType="long" >
+        select
+            count(*)
+        from
+            alf_node_aspects na
+        where
+            na.qname_id in
+                <foreach item="item" index="i" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+    
+    <!-- Find nodes by type qname -->
+    
+    <select id="select_NodesByTypeQName" parameterMap="parameter_qnameIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+        where
+            n.type_qname_id = #{qnameId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+     <select id="select_NodesByTypeUriId" parameterMap="parameter_nsIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_qname q on q.id = n.type_qname_id
+        where
+            q.ns_id = #{nsId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+    <!-- Find nodes by aspect qname -->
+    
+    <select id="select_NodesByAspectQName" parameterMap="parameter_qnameIdAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_node_aspects a on n.id = a.node_id
+        where
+            a.qname_id = #{qnameId}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+    <!-- Find nodes by content mimetype -->
+    
+    <select id="select_NodesByContentMimetype" parameterMap="parameter_mimetypeIdAndMinMaxNodeId" resultType="long">
+        select
+            np.node_id
+        from
+            alf_node_properties np
+            join alf_content_data cd on np.long_value = cd.id
+        where
+            cd.content_mimetype_id = #{mimetypeId}
+            and (np.actual_type_n = 3 or np.actual_type_n = 21)
+            and np.node_id &gt;= #{minNodeId}
+            and np.node_id &lt; #{maxNodeId}
+    </select>
+
+    <!-- Find nodes by type qname and aspect qname -->
+    
+    <select id="select_NodesByTypeAndAspectQNameQName" parameterMap="parameter_qnameIdPairAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_node_aspects a on n.id = a.node_id
+        where
+            a.qname_id = #{qnameId2}
+            and n.type_qname_id = #{qnameId1}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
+    </select>
+    
+    <select id="select_CountNodesWithTypeId" parameterType="Ids" resultType="java.lang.Long" >
+        select
+            count(*)
+        from
+            alf_node n
+        where
+            n.type_qname_id = #{idOne}
+    </select>
+    
+    <!-- Select children of surf-config folder. Mainly, we are interested in:
+         company_home/sites/surf-config/components
+         company_home/sites/surf-config/pages
+         company_home/sites/surf-config/pages/user
+         company_home/sites/surf-config/pages/user{userId}
+     -->
+    <select id="select_ChildrenOfTheSharedSurfConfigFolder" parameterMap="parameter_qnameCrcAndMinMaxNodeId" resultMap="result_nodeNameUuidMap" >
+        <![CDATA[            
+        select lev3.child_node_name as name, lev3.child_node_id as node_id, targetn.uuid, targets.protocol, targets.identifier
+        from
+            alf_child_assoc lev1
+            join alf_child_assoc lev2 on (lev2.parent_node_id = lev1.child_node_id)
+            join alf_child_assoc lev3 on (lev3.parent_node_id = lev2.child_node_id)
+            join alf_node targetn on (targetn.id = lev3.child_node_id)
+            join alf_store targets on (targets.id = targetn.store_id)
+        where
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
+            and lev3.child_node_id >= #{minNodeId}
+            and lev3.child_node_id < #{maxNodeId}
+        UNION
+        select lev4.child_node_name as name, lev4.child_node_id as node_id, targetn.uuid, targets.protocol, targets.identifier
+        from
+            alf_child_assoc lev1
+            join alf_child_assoc lev2 on (lev2.parent_node_id = lev1.child_node_id)
+            join alf_child_assoc lev3 on (lev3.parent_node_id = lev2.child_node_id)
+            join alf_child_assoc lev4 on (lev4.parent_node_id = lev3.child_node_id)
+            join alf_node targetn on (targetn.id = lev4.child_node_id)
+            join alf_store targets on (targets.id = targetn.store_id)
+        where
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
+            and lev3.qname_crc = #{qnameCrcPages}
+            and lev3.type_qname_id = #{qnameTypeIdContains}
+            and lev4.child_node_id >= #{minNodeId}
+            and lev4.child_node_id < #{maxNodeId}
+        UNION 
+        select lev5.child_node_name as name, lev5.child_node_id as node_id, targetn.uuid, targets.protocol, targets.identifier
+        from
+            alf_child_assoc lev1
+            join alf_child_assoc lev2 on (lev2.parent_node_id = lev1.child_node_id)
+            join alf_child_assoc lev3 on (lev3.parent_node_id = lev2.child_node_id)
+            join alf_child_assoc lev4 on (lev4.parent_node_id = lev3.child_node_id)
+            join alf_child_assoc lev5 on (lev5.parent_node_id = lev4.child_node_id)
+            join alf_node targetn on (targetn.id = lev5.child_node_id)
+            join alf_store targets on (targets.id = targetn.store_id)
+        where
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
+            and lev3.qname_crc = #{qnameCrcPages}
+            and lev3.type_qname_id = #{qnameTypeIdContains}
+            and lev4.qname_crc = #{qnameCrcUser}
+            and lev4.type_qname_id = #{qnameTypeIdContains}
+            and lev5.child_node_id >= #{minNodeId}
+            and lev5.child_node_id < #{maxNodeId}
+       ]]>
+    </select>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <update id="update_contentMimetypeId" parameterMap="parameter_contentMimetype">
+        update
+            alf_content_data
+        set
+            content_mimetype_id = ?
+        where
+            content_mimetype_id = ?
+    </update>
+    
+    <update id="update_fixSizeCurrentType" parameterMap="parameter_fixSizeCurrentType">
+        update
+            alf_node_properties
+        set
+            actual_type_n = 3, persisted_type_n = 3
+        where
+            qname_id = #{sizeCurrentQNameId} AND (actual_type_n = 0 OR persisted_type_n = 0)
+    </update>
+    
+    <!--                -->
+    <!-- Deletes        -->
+    <!--                -->
+    
+</mapper>

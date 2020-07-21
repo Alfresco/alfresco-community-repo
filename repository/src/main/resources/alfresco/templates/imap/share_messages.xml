@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+    <cm:content view:childName="cm:emailbody-share-textplain.ftl" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>Email template used to generate the "multipart/alternative" IMAP message body ("text/plain" part) for documents in Sites.</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/templates/imap/imap_message_text_plain_share.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title>emailbody-share-textplain.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody-share-textplain.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    <cm:content view:childName="cm:emailbody-share-texthtml.ftl" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>Email template used to generate the "multipart/alternative" IMAP message body ("text/html" part) for documents in Sites</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/templates/imap/imap_message_text_html_share.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title>emailbody-share-texthtml.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody-share-texthtml.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    <cm:content view:childName="cm:emailbody-alfresco-textplain.ftl"  xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>Email template used to generate the "multipart/alternative" IMAP message body ("text/plain" part) for documents in Alfresco</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/templates/imap/imap_message_text_plain_alfresco.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title>emailbody-alfresco-textplain.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody-alfresco-textplain.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+    <cm:content view:childName="cm:emailbody-alfresco-texthtml.ftl"  xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>Email template used to generate the "multipart/alternative" IMAP message body ("text/html" part) for documents in Alfresco</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/templates/imap/imap_message_text_html_alfresco.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
+            <cm:title>emailbody-alfresco-texthtml.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody-alfresco-texthtml.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>	
+</view:view>

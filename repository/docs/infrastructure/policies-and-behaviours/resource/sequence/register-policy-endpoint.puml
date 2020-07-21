@@ -1,0 +1,37 @@
+@startuml
+
+Title: Policies: Register Policy Endpoint (V5.2 Proposal)
+
+skinparam componentStyle uml2
+
+actor "Client App" as Client
+participant "Policy Endpoint Rest API" as API
+participant "PolicyEndpointService" as PS
+participant "PolicyEndpointRegistry" as PER
+participant "PolicyEndpointDAO" as DAO
+database DB
+participant "PolicyComponent" as PC
+database AMQ
+
+note over DAO,DB
+    UNIQUE : policy,typeOrAspect,endpoint
+    OTHER  : active, modified
+    SORT   : modified
+end note
+
+Client -> API
+API -> PS : registerPolicyEndpoint(policy, typeOrAspect, endpoint)
+PS -> DAO : createPolicyEndpoint(policy, typeOrAspect, endpoint)
+DAO -> DB : INSERT
+PS <-- DAO : success
+PS -> PER : reload(fromTime)
+PER -> DAO : getPolicyEndpoints(fromTime)
+loop each policy endpoint registration change
+    PER -> PER
+end
+PS <-- PER : success
+API <-- PS : success
+Client <-- API : OK
+
+
+@enduml

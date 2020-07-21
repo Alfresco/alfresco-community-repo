@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="Messaging" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>${messaging.subsystem.autoStart}</value>
+        </property>
+    </bean>
+
+    <!-- Import the Camel context from the subsystem -->
+    <bean id="alfrescoCamelContext"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Messaging" />
+        </property>
+        <property name="sourceBeanName">
+            <value>alfrescoCamelContext</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.apache.camel.CamelContext</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- Import the Camel producer template from the subsystem -->
+    <bean id="camelProducerTemplate"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Messaging" />
+        </property>
+        <property name="sourceBeanName">
+            <value>camelProducerTemplate</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.apache.camel.ProducerTemplate</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="alfrescoEventObjectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+        <property name="failOnEmptyBeans" value="false"/>
+        <property name="indentOutput" value="true"/>
+    </bean>
+
+    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer">
+        <property name="producer" ref="camelProducerTemplate" />
+        <property name="endpoint" value="direct-vm:alfresco.raw.events" />
+        <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
+    </bean>
+
+    <!-- Event2 beans -->
+    <bean id="event2ObjectMapper" class="org.alfresco.repo.event.databind.ObjectMapperFactory" factory-method="createInstance"/>
+
+    <bean id="event2MessageProducer" class="org.alfresco.repo.event2.Event2MessageProducer">
+        <property name="producer" ref="camelProducerTemplate"/>
+        <property name="endpoint" value="${repo.event2.topic.endpoint}"/>
+        <property name="objectMapper" ref="event2ObjectMapper"/>
+    </bean>
+</beans>

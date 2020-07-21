@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Deprecated context -->
+
+
+   <!-- NOOP to override custom-activities-feed-context.xml (introduced in 3.0, 3.1)
+   
+        With 3.2, the activities feed context has been re-factored to use new Alfresco/iBatis hierarchical loading
+   
+        note: the following custom extension files are deprecated (and unused) with 3.2 and should be removed
+   
+        alfresco/extension/custom-activities-feed-context.xml
+        alfresco/extension/custom-activities-SqlMapConfig.xml
+   -->
+   <bean id="sqlMapClient" class="java.util.ArrayList"/>
+   
+</beans>

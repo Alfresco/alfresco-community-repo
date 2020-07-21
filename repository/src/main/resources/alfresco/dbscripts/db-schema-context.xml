@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<!--
+    Database scripts and patches
+-->
+
+    <bean id="schema.create.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preCreateScriptUrls">
+            <list>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-RepoTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-LockTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-PropertyValueTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentUrlEncryptionTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuditTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-TenantTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuthorizationTables.sql</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preUpdateScriptPatches">
+            <list>
+				<ref bean="patch.db-V4.1-update-activiti-nullable-columns" />
+            </list>
+        </property>
+        <property name="postUpdateScriptPatches">
+            <list>
+                <ref bean="patch.db-V4.0-SolrTracking" />
+                <ref bean="patch.db-V4.0-AclChangeSet2" />
+                <ref bean="patch.db-V4.0-TenantTables" />
+                <ref bean="patch.db-V4.1-NodeDeleted" />
+                <ref bean="patch.db-V4.1-drop-alfqname-fk-indexes" />
+                <ref bean="patch.db-V4.2-remove-index-acl_id" />
+                <ref bean="patch.db-V4.1-drop-activiti-feed-format" />
+                <ref bean="patch.db-V4.2-metadata-query-indexes" />
+                <ref bean="patch.db-V4.1-fix-Repo-seqs-order" />
+                <ref bean="patch.db-V4.1-ChildAssoc-OrderBy" />
+                <ref bean="patch.db-V4.1-createIdxAlfNodeTQN" />
+                <ref bean="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
+                <ref bean="patch.db-V4.2-migrate-locale-multilingual" />
+                <ref bean="patch.db-V4.1-AuthorizationTables" />
+                <ref bean="patch.db-V5.0-ContentUrlEncryptionTables" />
+                <ref bean="patch.db-V5.1-metadata-query-indexes" />
+                <ref bean="patch.db-V5.2-remove-jbpm-tables-from-db" />
+                <ref bean="patch.db-V6.0-change-set-indexes" />
+                <ref bean="patch.db-V6.3-remove-alf_server-table" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="schema.upgrade.activiti" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
+        <property name="schemaBootstrap" ref="schemaBootstrap" />
+        <property name="preUpdateScriptPatches">
+            <list>
+            </list>
+        </property>
+        <property name="updateActivitiScriptPatches">
+            <list>
+                <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
+                <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.4" />
+                <ref bean="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" />
+                <ref bean="patch.db-V5.0-update-activiti-default-timestamp-column" />
+                <ref bean="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" />
+                <ref bean="patch.db-V5.1-upgrade-to-activiti-5.19.0" />
+            </list>
+        </property>
+    </bean>
+
+</beans>

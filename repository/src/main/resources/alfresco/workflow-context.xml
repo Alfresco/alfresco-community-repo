@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!--                                 -->
+   <!-- Workflow Service Implementation -->
+   <!--                                 -->
+
+   <bean id="workflowDeployer" class="org.alfresco.repo.workflow.WorkflowDeployer" abstract="true">
+      <property name="transactionService" ref="transactionService"/>
+      <property name="authenticationContext" ref="authenticationContext" />
+      <property name="workflowService" ref="WorkflowService" />
+      <property name="workflowAdminService" ref="workflowAdminService" />
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="tenantAdminService" ref="tenantAdminService"/>
+   </bean>
+   
+   <bean id="workflowServiceImpl" class="org.alfresco.repo.workflow.WorkflowServiceImpl">
+      <property name="transactionService" ref="transactionService"/>
+      <property name="authorityService" ref="authorityService"/>
+      <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+      <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="protectedNodeService" ref="NodeService"/>
+      <property name="workflowAdminService" ref="workflowAdminService"/>
+      <property name="workflowNotification" ref="workflowNotification"/>
+      <property name="maxAuthoritiesForPooledTasks">
+         <value>${system.workflow.maxAuthoritiesForPooledTasks}</value>
+      </property>
+      <property name="maxPooledTasks">
+         <value>${system.workflow.maxPooledTasks}</value>
+      </property>
+      <property name="multiTenantWorkflowDeploymentEnabled">
+         <value>${system.workflow.deployWorkflowsInTenant}</value>
+      </property>
+   </bean>
+
+   <bean id="workflowPackageImpl" class="org.alfresco.repo.workflow.WorkflowPackageImpl">
+      <property name="importerBootstrap" ref="spacesBootstrap"/>
+      <property name="searchService" ref="searchService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="policyBehaviourFilter" ref="policyBehaviourFilter"/>
+   </bean>
+
+   <bean id="workflowNotification" class="org.alfresco.repo.workflow.WorkflowNotificationUtils">
+      <property name="workflowService" ref="workflowServiceImpl"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="notificationService" ref="NotificationService"/>
+   </bean>
+
+   <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">
+      <property name="workflowService" ref="WorkflowService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="personService" ref="PersonService"/>
+      <property name="authorityDAO" ref="authorityDAO"/>
+      <property name="fileFolderService" ref="FileFolderService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+
+   <bean id="workflowInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.workflow-interpreter-help</value>
+            </list>
+        </property>
+   </bean>
+   
+   <!--                                       -->
+   <!-- Workflow Admin Service Implementation -->
+   <!--                                       -->
+   <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl" >
+       <property name="workflowEngineConfigurations">
+           <list>
+               <!-- ActivitiWorkflowEngine configuration -->
+               <props>
+                   <prop key="engineId">activiti</prop>
+                   <prop key="enabled">${system.workflow.engine.activiti.enabled}</prop>
+                   <prop key="visible">${system.workflow.engine.activiti.definitions.visible}</prop>
+              </props>
+          </list>      
+       </property>
+   </bean>
+
+   <!--                 -->
+   <!-- Workflow Action -->
+   <!--                 -->
+
+   <bean id="start-workflow" class="org.alfresco.repo.workflow.StartWorkflowActionExecuter" parent="action-executer">
+      <property name="publicAction"><value>false</value></property>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="workflowService" ref="WorkflowService"/>
+   </bean>
+
+   <bean id="cancel-workflow" class="org.alfresco.repo.workflow.CancelWorkflowActionExecuter" parent="action-executer">
+      <property name="publicAction"><value>false</value></property>
+      <property name="workflowService" ref="WorkflowService"/>
+   </bean>
+
+   <!--                       -->
+   <!-- Alfresco BPM Registry -->
+   <!--                       -->
+
+   <bean id="bpm_engineRegistry" class="org.alfresco.repo.workflow.BPMEngineRegistry">
+      <property name="workflowAdminService" ref="workflowAdminService" />
+   </bean>
+
+   <bean id="bpm_engine" class="org.alfresco.repo.workflow.AlfrescoBpmEngine" abstract="true">
+      <property name="BPMEngineRegistry" ref="bpm_engineRegistry"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
+   </bean>
+
+   <!--                     -->
+   <!-- Activiti Implementation -->
+   <!--                     -->
+    <import resource="classpath:alfresco/activiti-context.xml" />
+
+   <!-- Workflow Patch Deployer -->
+   <bean id="workflowPatchDeployer" parent="workflowDeployer" scope="prototype"/>
+   
+   <!-- Deploy any additional workflows definitions from repo -->
+   <!-- note: needs to match bootstrap-context.xml locations (customWorkflowDefsSpace.xml) -->
+   <bean id="customWorkflowDefsRepositoryLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overriden here -->
+        <property name="path">
+            <value>/app:company_home/app:dictionary/app:workflow_defs</value>
+        </property>
+   </bean>
+   
+   <!--  Workflow Definition Type (bpm:workflowDefinition) -->
+   <bean id="workflowDefinitionType" class="org.alfresco.repo.workflow.WorkflowDefinitionType" init-method="init">
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="workflowDeployer" ref="workflowBootstrap"/>
+   </bean>
+   
+</beans>

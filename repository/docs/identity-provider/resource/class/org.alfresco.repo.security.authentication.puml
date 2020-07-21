@@ -1,0 +1,310 @@
+@startuml
+
+' Generated using https://github.com/juanmf/Java2PlantUML
+
+left to right direction
+' Participants 
+
+interface org.alfresco.repo.security.authentication.AlfrescoSecureContext {
+--
++  getEffectiveAuthentication()  :  Authentication
++  getRealAuthentication()  :  Authentication
++  setEffectiveAuthentication(i Authentication)  : void
++  setRealAuthentication(i Authentication)  : void
+
+}
+interface net.sf.acegisecurity.context.security.SecureContext {
+--
++  getAuthentication()  :  Authentication
++  setAuthentication(i Authentication)  : void
+
+}
+class org.alfresco.repo.security.authentication.AuthenticationUtil$ThreadLocalStack {
+--
+~   AuthenticationUtil$ThreadLocalStack() 
+#  initialValue()  :  Stack
+
+}
+class org.alfresco.repo.security.authentication.TicketExpiredException {
+-  serialVersionUID : long
+--
++   TicketExpiredException(c String) 
++   TicketExpiredException(c String, c Throwable) 
+
+}
+class org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket {
+-  expires : c InMemoryTicketComponentImpl$ExpiryMode
+-  expiryDate : c Date
+-  serialVersionUID : long
+-  testDuration : c Duration
+-  ticketId : c String
+-  userName : c String
+-  validDuration : c Duration
+--
+-   InMemoryTicketComponentImpl$Ticket(c InMemoryTicketComponentImpl$ExpiryMode, c Date, c String, c Duration, c String) 
+~   InMemoryTicketComponentImpl$Ticket(c InMemoryTicketComponentImpl$ExpiryMode, c Date, c String, c Duration) 
+#  getExpires()  :  InMemoryTicketComponentImpl$ExpiryMode
+#  getExpiryDate()  :  Date
+#  getTicketId()  :  String
+#  getUserName()  :  String
++  equals(c Object)  : boolean
++  hashCode()  : int
+~  getNewEntry()  :  InMemoryTicketComponentImpl$Ticket
+~  hasExpired(c Date)  : boolean
+
+}
+class org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl {
++  GRANTED_AUTHORITY_TICKET_PREFIX : c String
+-  currentTicket :  ThreadLocal< String>
+-  expiryMode : c InMemoryTicketComponentImpl$ExpiryMode
+-  guid : c String
+-  oneOff : boolean
+-  ticketsCache :  SimpleCache< String, InMemoryTicketComponentImpl$Ticket>
+-  ticketsExpire : boolean
+-  useSingleTicketPerUser : boolean
+-  validDuration : c Duration
+--
++   InMemoryTicketComponentImpl() 
++  clearCurrentSecurityContext()  : void
++  clearCurrentTicket()  : void
++  countTickets(boolean)  : int
++  equals(c Object)  : boolean
++  getAuthorityForTicket(c String)  :  String
++  getCurrentTicket(c String, boolean)  :  String
++  getNewTicket(c String)  :  String
++  getUseSingleTicketPerUser()  : boolean
++  getUsersWithTickets(boolean)  :  Set
++  hashCode()  : int
++  invalidateTicketById(c String)  : void
++  invalidateTicketByUser(c String)  : void
++  invalidateTickets(boolean)  : int
++  setExpiryMode(c String)  : void
++  setOneOff(boolean)  : void
++  setTicketsCache( SimpleCache< String, InMemoryTicketComponentImpl$Ticket>)  : void
++  setTicketsExpire(boolean)  : void
++  setUseSingleTicketPerUser(boolean)  : void
++  setValidDuration(c String)  : void
++  validateTicket(c String)  :  String
+-  findNonExpiredUserTicket(c String)  :  InMemoryTicketComponentImpl$Ticket
+-  getTicketByTicketString(c String)  :  InMemoryTicketComponentImpl$Ticket
+-  getTicketKey(c String)  :  String
+
+}
+interface org.springframework.beans.factory.InitializingBean {
+--
++  afterPropertiesSet()  : void
+
+}
+interface org.alfresco.repo.security.authentication.AuthenticationStep {
+--
++  getArgs()  :  Object;
++  getKey()  :  String
++  getMessage()  :  String
++  isSuccess()  : boolean
+
+}
+interface org.alfresco.repo.security.authentication.AuthenticationUtil$RunAsWork <Result extends c Object> {
+--
++  doWork()  :  Object
+
+}
+class org.alfresco.repo.security.authentication.AuthenticationUtil {
++  SYSTEM_USER_NAME : c String
+-  defaultAdminUserName : c String
+-  defaultGuestUserName : c String
+-  initialized : boolean
+-  mtEnabled : boolean
+-  threadLocalFullAuthenticationStack :  ThreadLocal< Stack< Authentication>>
+-  threadLocalRunAsAuthenticationStack :  ThreadLocal< Stack< Authentication>>
+-  threadLocalTenantDomainStack :  ThreadLocal< Stack< String>>
+~  s_logger : i Log
+--
++   AuthenticationUtil() 
++  afterPropertiesSet()  : void
++  clearCurrentSecurityContext()  : void
++  getAdminRoleName()  :  String
++  getAdminUserName()  :  String
++  getFullAuthentication()  :  Authentication
++  getFullyAuthenticatedUser()  :  String
++  getGuestRoleName()  :  String
++  getGuestUserName()  :  String
++  getRunAsAuthentication()  :  Authentication
++  getRunAsUser()  :  String
++  getSystemUserName()  :  String
++  getUserTenant(c String)  :  Pair
++  isMtEnabled()  : boolean
++  isRunAsUserTheSystemUser()  : boolean
++  logAuthenticatedUsers()  : void
++  logNDC(c String)  : void
++  popAuthentication()  : void
++  pushAuthentication()  : void
++  runAs( AuthenticationUtil$RunAsWork<R>, c String)  :  Object
++  runAsSystem( AuthenticationUtil$RunAsWork<R>)  :  Object
++  setAdminUserAsFullyAuthenticatedUser()  :  Authentication
++  setDefaultAdminUserName(c String)  : void
++  setDefaultGuestUserName(c String)  : void
++  setFullAuthentication(i Authentication)  :  Authentication
++  setFullyAuthenticatedUser(c String)  :  Authentication
++  setMtEnabled(boolean)  : void
++  setRunAsUser(c String)  :  Authentication
++  setRunAsUserSystem()  :  Authentication
+-  getAuthenticationToken(c String, i UserDetails)  :  UsernamePasswordAuthenticationToken
+-  getDefaultUserDetails(c String)  :  UserDetails
+-  getUserName(i Authentication)  :  String
+-  setFullyAuthenticatedUser(c String, i UserDetails)  :  Authentication
+~  setRunAsAuthentication(i Authentication)  :  Authentication
+~  setRunAsUser(c String, i UserDetails)  :  Authentication
+
+}
+class org.alfresco.repo.security.authentication.AuthenticationException {
+-  serialVersionUID : long
+~  diagnostic : c AuthenticationDiagnostic
+--
++   AuthenticationException(c String) 
++   AuthenticationException(c String, c AuthenticationDiagnostic) 
++   AuthenticationException(c String, c AuthenticationDiagnostic, c Object;, c Throwable) 
++   AuthenticationException(c String, c AuthenticationDiagnostic, c Throwable) 
++   AuthenticationException(c String, c Object;) 
++   AuthenticationException(c String, c Object;, c AuthenticationDiagnostic) 
++   AuthenticationException(c String, c Object;, c Throwable) 
++   AuthenticationException(c String, c Throwable) 
++  getDiagnostic()  :  AuthenticationDiagnostic
+
+}
+class org.alfresco.error.AlfrescoRuntimeException {
+-  MESSAGE_DELIMITER : c String
+-  errorCounter : c AtomicInteger
+-  msgId : c String
+-  msgParams : c Object;
+-  serialVersionUID : long
+--
++   AlfrescoRuntimeException(c String) 
++   AlfrescoRuntimeException(c String, c Object;) 
++   AlfrescoRuntimeException(c String, c Object;, c Throwable) 
++   AlfrescoRuntimeException(c String, c Throwable) 
++  create(c String, c Object;)  :  AlfrescoRuntimeException
++  create(c Throwable, c String, c Object;)  :  AlfrescoRuntimeException
++  getMsgId()  :  String
++  getMsgParams()  :  Object;
++  getNumericalId()  :  String
++  getRootCause()  :  Throwable
++  makeRuntimeException(c Throwable, c String, c Object;)  :  RuntimeException
+-  buildErrorLogNumber(c String)  :  String
+-  padInt(c StringBuilder, int, int)  : void
+-  resolveMessage(c String, c Object;)  :  String
+
+}
+class org.alfresco.repo.security.authentication.AuthenticationDiagnostic {
++  STEP_KEY_LDAP_AUTHENTICATION : c String
++  STEP_KEY_LDAP_CONNECTED : c String
++  STEP_KEY_LDAP_CONNECTING : c String
++  STEP_KEY_LDAP_FORMAT_USER : c String
++  STEP_KEY_LDAP_LOOKEDUP_USER : c String
++  STEP_KEY_LDAP_LOOKUP_USER : c String
++  STEP_KEY_LDAP_SEARCH : c String
++  STEP_KEY_VALIDATION : c String
++  STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_ACTIVE : c String
++  STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_FOUND : c String
+-  serialVersionUID : long
+-  steps :  List< AuthenticationStep>
+--
++   AuthenticationDiagnostic() 
++  addStep(c String, boolean)  : void
++  addStep(c String, boolean, c Object;)  : void
++  addStep(i AuthenticationStep)  : void
++  getSteps()  :  List
+
+}
+class org.alfresco.repo.security.authentication.AuthenticationStepImpl {
+-  serialVersionUID : long
+~  args : c Object;
+~  key : c String
+~  success : boolean
+--
++   AuthenticationStepImpl(c String) 
++  getArgs()  :  Object;
++  getKey()  :  String
++  getMessage()  :  String
++  isSuccess()  : boolean
++  toString()  :  String
+
+}
+interface net.sf.acegisecurity.context.Context {
+--
++  validate()  : void
+
+}
+class org.alfresco.repo.security.authentication.AlfrescoSecureContextImpl {
+-  effectiveAuthentication : i Authentication
+-  realAuthentication : i Authentication
+-  serialVersionUID : long
+--
++   AlfrescoSecureContextImpl() 
++  equals(c Object)  : boolean
++  getAuthentication()  :  Authentication
++  getEffectiveAuthentication()  :  Authentication
++  getRealAuthentication()  :  Authentication
++  hashCode()  : int
++  setAuthentication(i Authentication)  : void
++  setEffectiveAuthentication(i Authentication)  : void
++  setRealAuthentication(i Authentication)  : void
++  toString()  :  String
++  validate()  : void
+
+}
+enum org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$ExpiryMode {
++  AFTER_FIXED_TIME : c InMemoryTicketComponentImpl$ExpiryMode
++  AFTER_INACTIVITY : c InMemoryTicketComponentImpl$ExpiryMode
++  DO_NOT_EXPIRE : c InMemoryTicketComponentImpl$ExpiryMode
+--
+-   InMemoryTicketComponentImpl$ExpiryMode() 
++  valueOf(c String)  :  InMemoryTicketComponentImpl$ExpiryMode
++  values()  :  InMemoryTicketComponentImpl$ExpiryMode;
+
+}
+interface org.alfresco.repo.security.authentication.TicketComponent {
+--
++  clearCurrentTicket()  : void
++  countTickets(boolean)  : int
++  getAuthorityForTicket(c String)  :  String
++  getCurrentTicket(c String, boolean)  :  String
++  getNewTicket(c String)  :  String
++  getUseSingleTicketPerUser()  : boolean
++  getUsersWithTickets(boolean)  :  Set
++  invalidateTicketById(c String)  : void
++  invalidateTicketByUser(c String)  : void
++  invalidateTickets(boolean)  : int
++  validateTicket(c String)  :  String
+
+}
+
+' Relations 
+
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "1"  o-left-  "1" org.alfresco.repo.cache.SimpleCache  : ticketsCache:  SimpleCache< String, InMemoryTicketComponentImpl$Ticket>
+org.alfresco.repo.security.authentication.AlfrescoSecureContextImpl "1"  o-left-  "1" net.sf.acegisecurity.Authentication  : realAuthentication: i Authentication
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket "1"  o-left-  "1" org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$ExpiryMode  : expires: c InMemoryTicketComponentImpl$ExpiryMode
+org.alfresco.error.AlfrescoRuntimeException "1"  o-left-  "1" java.util.concurrent.atomic.AtomicInteger  : errorCounter: c AtomicInteger
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket "1"  o-left-  "1" org.alfresco.service.cmr.repository.datatype.Duration  : testDuration: c Duration
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket "1"  o-left-  "1" org.alfresco.service.cmr.repository.datatype.Duration  : validDuration: c Duration
+org.alfresco.repo.security.authentication.AuthenticationUtil "1"  o-left-  "1" org.apache.commons.logging.Log  : s_logger: i Log
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "1"  o-left-  "1" org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$ExpiryMode  : expiryMode: c InMemoryTicketComponentImpl$ExpiryMode
+org.alfresco.repo.security.authentication.AuthenticationException "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationDiagnostic  : diagnostic: c AuthenticationDiagnostic
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket "1"  o-left-  "1" java.util.Date  : expiryDate: c Date
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "1"  o-left-  "1" org.alfresco.service.cmr.repository.datatype.Duration  : validDuration: c Duration
+org.alfresco.repo.security.authentication.AlfrescoSecureContextImpl "1"  o-left-  "1" net.sf.acegisecurity.Authentication  : effectiveAuthentication: i Authentication
+org.alfresco.repo.security.authentication.AuthenticationException  -up|>  org.alfresco.error.AlfrescoRuntimeException
+org.alfresco.repo.security.authentication.TicketExpiredException  -up|>  org.alfresco.repo.security.authentication.AuthenticationException
+"net.sf.acegisecurity.context.Context"  -()   Serializable
+"org.alfresco.repo.security.authentication.AuthenticationStepImpl"  -()   Serializable
+org.alfresco.repo.security.authentication.AlfrescoSecureContext  ..up|>  net.sf.acegisecurity.context.security.SecureContext
+org.alfresco.repo.security.authentication.AuthenticationStepImpl  ..up|>  org.alfresco.repo.security.authentication.AuthenticationStep
+org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl  ..up|>  org.alfresco.repo.security.authentication.TicketComponent
+net.sf.acegisecurity.context.security.SecureContext  ..up|>  net.sf.acegisecurity.context.Context
+"org.alfresco.repo.security.authentication.AuthenticationDiagnostic"  -()   Serializable
+"org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl$Ticket"  -()   Serializable
+org.alfresco.repo.security.authentication.AlfrescoSecureContextImpl  ..up|>  org.alfresco.repo.security.authentication.AlfrescoSecureContext
+org.alfresco.repo.security.authentication.AuthenticationUtil  ..up|>  org.springframework.beans.factory.InitializingBean
+
+' Notes 
+
+@enduml

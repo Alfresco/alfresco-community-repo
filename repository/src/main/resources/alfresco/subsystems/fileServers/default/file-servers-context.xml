@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <bean id="fileServerConfiguration"
+         parent="fileServerConfigurationBase"
+         factory-bean="fileServerConfigurationFactory"
+         factory-method="createFileServerConfiguration">
+      <property name="ftpConfigBean">
+         <ref bean="ftpServerConfig" />
+      </property>
+      <property name="filesystemContexts">
+         <ref bean="filesystemContexts" />
+      </property>
+      <property name="securityConfigBean">
+         <ref bean="fileSecurityConfig" />
+      </property>
+   </bean>
+
+   <!-- FTP Server -->
+
+   <bean id="ftpServer" class="org.alfresco.filesys.FTPServerBean" destroy-method="stopServer">
+      <constructor-arg>
+         <ref bean="fileServerConfiguration" />
+      </constructor-arg>
+   </bean>
+
+   <!--  JMX Monitoring -->
+
+   <bean id="FileServerConfig" class="org.alfresco.filesys.FileServerConfig">
+      <property name="fileServerConfiguration">
+         <ref bean="fileServerConfiguration" />
+      </property>
+      <property name="ftpServer">
+         <ref bean="ftpServer" />
+      </property>
+   </bean>
+
+   <bean id="ftpServerConfig" class="org.alfresco.filesys.config.FTPConfigBean">
+      <property name="serverEnabled">
+         <value>${ftp.enabled}</value>
+      </property>
+
+      <property name="port">
+         <value>${ftp.port}</value>
+      </property>
+
+       <property name="sessionTimeout">
+           <value>${ftp.sessionTimeout}</value>
+       </property>
+
+      <property name="bindTo">
+         <value>${ftp.bindto}</value>
+      </property>
+
+      <!-- FTP authentication -->
+      <property name="authenticator">
+         <ref bean="ftpAuthenticator" />
+      </property>
+
+      <!-- FTP server debug settings -->
+      <!-- Enable 'log4j.logger.org.alfresco.fileserver=debug' in log4j.properties file -->
+      <property name="debugFlags">
+		  <value>${ftp.sessionDebug}</value>
+	  </property>
+
+	  <!-- Data ports range -->
+	  <property name="dataPortFrom">
+		  <value>${ftp.dataPortFrom}</value>
+	  </property>
+	  <property name="dataPortTo">
+		  <value>${ftp.dataPortTo}</value>
+	  </property>
+
+       <property name="externalAddress">
+           <value>${ftp.externalAddress}</value>
+       </property>
+
+	 <!-- FTPS support -->
+	 <property name="keyStorePath">
+		 <value>${ftp.keyStore}</value>
+	 </property>
+	 <property name="keyStoreType">
+		 <value>${ftp.keyStoreType}</value>
+	 </property>
+	 <property name="keyStorePassphrase">
+		 <value>${ftp.keyStorePassphrase}</value>
+	 </property>
+	   
+	 <property name="trustStorePath">
+		 <value>${ftp.trustStore}</value>
+	 </property>
+	 <property name="trustStoreType">
+		 <value>${ftp.trustStoreType}</value>
+	 </property>
+	 <property name="trustStorePassphrase">
+		 <value>${ftp.trustStorePassphrase}</value>
+	 </property>
+	   
+	 <property name="requireSecureSession">
+		 <value>${ftp.requireSecureSession}</value>
+	 </property>
+	   
+	 <property name="sslEngineDebug">
+		 <value>${ftp.sslEngineDebug}</value>
+	 </property>
+   </bean>
+   
+   <!--  For multi-tennancy -->
+   <bean id="filesystemMTShareMapper" class="org.alfresco.filesys.alfresco.MultiTenantShareMapper"
+      init-method="init">
+          <property name="serverConfiguration">
+            <ref bean="fileServerConfiguration" />
+          </property>
+          <property name="repoDiskInterface"> 
+             <ref bean="contentDiskDriver"/> 
+           </property> 
+          <property name="quotaManager">
+            <ref bean="filesystemQuotaManager"/>
+          </property>
+          <property name="tenantShareName">
+             <value>${filesystem.name}</value>
+          </property>
+          <property name="storeName">
+             <value>${protocols.storeName}</value>
+          </property>
+          <property name="rootPath">
+             <value>${filesystem.rootPath}</value>
+          </property>
+   </bean>
+
+   <!-- Alfresco Filesystem quota manager -->
+   <bean id="filesystemQuotaManager" class="org.alfresco.filesys.repo.ContentQuotaManager"
+       init-method="init">
+       <property name="contentService">
+           <ref bean="ContentService" />
+       </property>
+	   <property name="usageService">
+		   <ref bean="ContentUsageService" />
+	   </property>
+   </bean>
+	
+   <bean id="filesystemContexts" class="org.springframework.beans.factory.config.ListFactoryBean">
+      <property name="sourceList">
+         <list>
+            <!-- Alfresco repository access shared filesystem -->
+            <bean class="org.alfresco.filesys.repo.ContentContext">
+               <property name="sysAdminParams">
+                  <ref bean="sysAdminParams" />
+               </property>
+               <property name="deviceName">
+                  <value>${filesystem.name}</value>
+               </property>
+               <property name="storeName">
+                  <value>${protocols.storeName}</value>
+               </property>
+               <property name="rootPath">
+                  <value>${filesystem.rootPath}</value>
+               </property>
+               <property name="renameShufflePattern">
+                  <value>${filesystem.renameShufflePattern}</value>
+               </property>
+               
+               <!-- Mark locked files as offline -->
+               <property name="offlineFiles">
+                  <value>true</value>
+               </property>
+
+			   <!-- Enable the quota manager -->
+			   <property name="quotaManager">
+				   <ref bean="filesystemQuotaManager" />
+			   </property>
+
+               <!-- Additional access control of the filesystem -->
+               <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
+               <!--
+                  <property name="accessControl"> <bean class="org.alfresco.filesys.config.acl.AccessControlListBean">
+                  <property name="defaultAccessLevel"> <value>Write</value> </property> </bean> </property>
+               -->
+            </bean>
+         </list>
+      </property>
+   </bean>
+
+   <!--Configurable global ACLS - actually post-processed composite properties -->
+   <bean id="filesystem.acl.global.domainAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <bean id="filesystem.acl.global.protocolAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <bean id="filesystem.acl.global.userAccessControls" class="org.springframework.beans.factory.config.ListFactoryBean" />
+
+   <bean id="fileSecurityConfig" class="org.alfresco.filesys.config.SecurityConfigBean">
+      <!-- Custom share mapper when multi-tenancy is enabled -->
+      <property name="shareMapper">
+          <ref bean="filesystemMTShareMapper" />
+      </property>
+
+      <!-- Global access control list                                                                    -->
+      <!-- Applied to all filesystems that do not have an accessControl property                         -->
+      <property name="globalAccessControl">
+         <bean class="org.alfresco.filesys.config.acl.AccessControlListBean">
+            <!-- Access type of 'none' will stop the filesystem from showing up for that user/address/protocol -->
+            <property name="defaultAccessLevel">
+               <value>${filesystem.acl.global.defaultAccessLevel}</value>
+            </property>
+            <property name="domainAccessControls">
+               <ref bean="filesystem.acl.global.domainAccessControls" />
+            </property>
+            <property name="protocolAccessControls">
+               <ref bean="filesystem.acl.global.protocolAccessControls" />
+            </property>
+            <property name="userAccessControls">
+               <ref bean="filesystem.acl.global.userAccessControls" />
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+</beans>

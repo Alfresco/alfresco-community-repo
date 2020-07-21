@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+	<!-- Subscription service bean -->
+	<bean id="SubscriptionServiceImpl" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<property name="proxyInterfaces">
+			<value>org.alfresco.service.cmr.subscriptions.SubscriptionService</value>
+		</property>
+		<property name="target">
+			<ref bean="subscriptionService" />
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<idref bean="AuditMethodInterceptor" />
+				<idref bean="exceptionTranslator" />
+			</list>
+		</property>
+	</bean>
+
+    <bean id="followingEmailTemplateLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
+        <!-- other properties will be defaulted, but can be overridden here -->
+        <property name="path">
+            <value>${subscriptions.following.emailTemplatePath}</value>
+        </property>
+        <property name="queryLanguage">
+            <value>${subscriptions.following.emailTemplateLocationType}</value>
+        </property>
+    </bean>
+    
+	<!-- Subscription implementation bean -->
+	<bean id="subscriptionService" class="org.alfresco.repo.subscriptions.SubscriptionServiceImpl">
+		<property name="subscriptionsDAO" ref="subscriptionsDAO" />
+		<property name="nodeService" ref="NodeService" />
+		<property name="personService" ref="PersonService" />
+		<property name="activityService" ref="activityService" />
+		<property name="authorityService" ref="AuthorityService" />
+		<property name="actionService" ref="ActionService" />
+		<property name="searchService" ref="SearchService" />
+		<property name="namespaceService" ref="NamespaceService" />
+		<property name="fileFolderService" ref="FileFolderService" />
+		<property name="active" value="${subscriptions.enabled}" />
+		<property name="followingEmailTemplateLocation" ref="followingEmailTemplateLocation"/>
+	</bean>
+
+</beans>

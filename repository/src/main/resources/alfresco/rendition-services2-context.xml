@@ -1,0 +1,208 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ #%L
+  ~ Alfresco Repository
+  ~ %%
+  ~ Copyright (C) 2005 - 2018 Alfresco Software Limited
+  ~ %%
+  ~ This file is part of the Alfresco software.
+  ~ If the software was purchased under a paid Alfresco license, the terms of
+  ~ the paid license agreement will prevail.  Otherwise, the software is
+  ~ provided under the following open source license terms:
+  ~
+  ~ Alfresco is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Alfresco is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+  ~ #L%
+  -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Rendition Service 2 -->
+
+    <bean id="RenditionService2" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.rendition2.RenditionService2</value>
+        </property>
+        <property name="target">
+            <ref bean="renditionService2" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="RenditionService2_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref bean="RenditionService2_security" />
+            </list>
+        </property>
+    </bean>
+
+    <!-- Rendition Service 2 base bean -->
+    <bean id="renditionService2" class="org.alfresco.repo.rendition2.RenditionService2Impl">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
+        <property name="transformClient" ref="transformClient" />
+        <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
+        <property name="transformReplyProvider" ref="transformReplyProvider" />
+        <property name="enabled" value="${renditionService2.enabled}" />
+        <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
+    </bean>
+
+    <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">
+        <property name="transactionService" ref="TransactionService" />
+    </bean>
+
+    <bean id="transformReplyProvider" class="org.alfresco.repo.rendition2.StubTransformReplyProvider">
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformClient" parent="localTransformClient"/>
+
+    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.SwitchingTransformClient">
+        <constructor-arg name="primary" ref="localTransformClientImpl" />
+        <constructor-arg name="secondary" ref="legacyTransformClient" />
+    </bean>
+
+    <bean id="localTransformClientImpl" class="org.alfresco.repo.rendition2.LocalTransformClient">
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistryImpl" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="contentService" ref="contentService" />
+        <property name="renditionService2" ref="renditionService2" />
+    </bean>
+
+    <bean id="legacyTransformClient" class="org.alfresco.repo.rendition2.LegacyTransformClient">
+        <property name="transactionService" ref="transactionService" />
+        <property name="contentService" ref="contentService" />
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="synchronousTransformClient" parent="switchingSynchronousTransformClient" />
+
+    <bean id="switchingSynchronousTransformClient" class="org.alfresco.repo.rendition2.SwitchingSynchronousTransformClient">
+        <constructor-arg name="primary" ref="localSynchronousTransformClient" />
+        <constructor-arg name="secondary" ref="legacySynchronousTransformClient" />
+        <property name="transformerDebug" ref="transformerDebug" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="localSynchronousTransformClient" class="org.alfresco.repo.rendition2.LocalSynchronousTransformClient">
+        <property name="localTransformServiceRegistry" ref="localTransformServiceRegistryImpl" />
+    </bean>
+
+    <!-- Deprecated -->
+    <bean id="legacySynchronousTransformClient" class="org.alfresco.repo.rendition2.LegacySynchronousTransformClient">
+        <property name="mimetypeService" ref="mimetypeService" />
+        <property name="transformerRegistry" ref="contentTransformerRegistry" />
+        <property name="transformerDebug" ref="transformerDebug" />
+        <property name="converter" ref="transformOptionsConverter" />
+    </bean>
+
+    <!-- Deprecated bean that converts transform properties to the deprecated TransformationOptions format -->
+    <bean id="transformOptionsConverter" class="org.alfresco.repo.rendition2.TransformationOptionsConverter">
+        <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
+        <property name="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
+        <property name="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
+        <property name="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
+        <property name="maxPages" value="${system.thumbnail.definition.default.maxPages}" />
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="remoteTransformServiceRegistry" class="org.alfresco.repo.content.transform.DummyTransformServiceRegistry" />
+
+    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.SwitchingTransformServiceRegistry">
+        <constructor-arg name="primary" ref="localTransformServiceRegistryImpl" />
+        <constructor-arg name="secondary" ref="legacyTransformServiceRegistry" />
+    </bean>
+
+    <bean id="localTransformServiceRegistryImpl" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >
+        <property name="jsonObjectMapper" ref="localTransformServiceRegistryJsonObjectMapper" />
+        <property name="pipelineConfigDir" value="${local.transform.pipeline.config.dir}" />
+        <property name="enabled" value="${local.transform.service.enabled}" />
+        <property name="cronExpression" value="${local.transform.service.cronExpression}"></property>
+        <property name="initialAndOnErrorCronExpression" value="${local.transform.service.initialAndOnError.cronExpression}"></property>
+        <property name="properties" ref="global-properties" />
+        <property name="transformerDebug" ref="transformerDebug" />
+        <property name="mimetypeService" ref="MimetypeService" />
+        <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
+        <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
+        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
+    </bean>
+
+    <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
+    <bean id="legacyTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyTransformServiceRegistry" >
+        <property name="legacySynchronousTransformClient" ref="legacySynchronousTransformClient" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="enabled" value="${legacy.transform.service.enabled}" />
+        <property name="transformerDebug" ref="transformerDebug" />
+    </bean>
+
+    <bean id="RenditionService2_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Rendition service 2 security bean -->
+    <bean id="RenditionService2_security"
+          class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <!-- Rendition Definition Registry 2 -->
+    <bean id="renditionDefinitionRegistry2" class="org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl">
+        <property name="jsonObjectMapper" ref="renditionDefinitionRegistry2JsonObjectMapper" />
+        <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+        <property name="renditionConfigDir" value="${rendition.config.dir}" />
+        <property name="timeoutDefault" value="${system.thumbnail.definition.default.timeoutMs}" />
+        <property name="cronExpression" value="${rendition.config.cronExpression}"></property>
+        <property name="initialAndOnErrorCronExpression" value="${rendition.config.initialAndOnError.cronExpression}"></property>
+        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
+    </bean>
+
+    <bean id="renditionDefinitionRegistry2JsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+
+    <!-- Process raw content update events -->
+    <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
+        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <!-- Process transform request events. -->
+    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
+        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+<!-- The definitions are read from json files (possibly added to a volume via k8 ConfigMaps) -->
+
+</beans>

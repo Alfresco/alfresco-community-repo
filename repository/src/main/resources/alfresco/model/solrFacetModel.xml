@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Solr Facet Model -->
+<model name="srft:solrfacetmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->
+   <description>Solr Facet Model</description>
+   <author>Jamal Kaabi-Mofrad</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other 
+      models -->
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+   </imports>
+
+   <!-- Solr Facets Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/solrfacet/1.0" prefix="srft" />
+      <!-- if you want to extend the properties of a facet then use this namespace to mark the custom properties -->
+      <namespace uri="http://www.alfresco.org/model/solrfacetcustomproperty/1.0" prefix="srftcustom"/>
+   </namespaces>
+
+   <types>
+      <type name="srft:facetField">
+         <title>Facet Field</title>
+         <parent>cm:content</parent>
+         <archive>false</archive>
+         <properties>
+            <property name="srft:fieldType">
+               <title>Field Type</title>
+               <type>d:qname</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:fieldLabel">
+               <title>Field Display Label Key</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:displayControl">
+               <title>Field Display Control</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:maxFilters">
+               <title>Maximum Filters</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:hitThreshold">
+               <title>Hit Threshold</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:minFilterValueLength">
+               <title>Minimum Filter Value Length</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:sortBy">
+               <title>Sort By</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:scope">
+               <title>Scope</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:scopedSites">
+               <title>Scoped Sites</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:isEnabled">
+               <title>Is enabled</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+            <property name="srft:isDefault">
+               <title>Is Default (loaded from a properties file)</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+      
+      <!-- Facets Root Folder -->
+      <type name="srft:facets">
+         <title>Facets</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="srft:facetOrder">
+               <title>Ordered sequence of Facet IDs</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
+      </type>
+   </types>
+
+   <aspects>
+      <!-- Custom Facet Properties Aspect -->
+      <aspect name="srft:customProperties">
+         <title>Facet Custom Properties</title>
+         <properties>
+            <property name="srftcustom:extraInformation">
+               <title>Additional Facet Information</title>
+               <type>d:any</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+
+</model>

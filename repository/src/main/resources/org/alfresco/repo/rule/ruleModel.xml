@@ -1,0 +1,86 @@
+<model name="rule:rulemodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Rule Model</description>
+   <author>Alfresco</author>
+   <published>2005-08-16</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/action/1.0" prefix="act"/>
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/rule/1.0" prefix="rule"/>
+   </namespaces>
+
+   <types>
+   
+	  <type name="rule:rule">
+	     <title>Rule</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="rule:ruleType">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <multiple>true</multiple>
+            </property>
+            <property name="rule:applyToChildren">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="rule:executeAsynchronously">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="rule:disabled">
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <default>false</default>
+            </property>
+         </properties>          
+         <associations>
+            <child-association name="rule:action">
+               <target>
+                  <class>act:action</class>
+                  <mandatory enforced="true">true</mandatory>
+                  <many>false</many>
+               </target>
+            </child-association>
+         </associations>          
+		 <mandatory-aspects>
+		 	<aspect>cm:titled</aspect>
+		    <aspect>cm:auditable</aspect>
+         </mandatory-aspects>
+	  </type>
+
+	</types>
+	
+	<aspects>
+	
+      <aspect name="rule:rules">
+         <title>Rules</title>           
+         <associations>
+            <child-association name="rule:ruleFolder">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:systemfolder</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>                  
+               </target>
+            </child-association>
+         </associations>  
+      </aspect>
+      
+      <aspect name="rule:ignoreInheritedRules">
+         <title>Ignore Inherited Rules</title>           
+      </aspect>
+         
+	</aspects>
+
+</model>

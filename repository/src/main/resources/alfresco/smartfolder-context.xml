@@ -1,0 +1,327 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <import resource="classpath:alfresco/model-specific-services-context.xml" />
+
+   <import resource="classpath:alfresco/dao/dao-context.xml" />
+
+   <!-- CONFIGURATION -->
+
+   <bean id="config.CompanyHomeContext" class="org.alfresco.repo.virtual.config.CompanyHomeContext">
+      <property name="companyHomeQName">
+         <value>${spaces.company_home.childname}</value>
+      </property>
+   </bean>
+
+   <bean id="config.RepositoryNodeRefResolver" class="org.alfresco.repo.virtual.config.RepositoryNodeRefResolver">
+      <property name="repository" ref="repositoryHelper" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+   </bean>
+
+   <bean id="config.NodeRefPathExpressionFactory" class="org.alfresco.repo.virtual.config.NodeRefPathExpressionFactory">
+      <property name="resolver" ref="config.RepositoryNodeRefResolver" />
+      <property name="NodeRefContexts">
+         <set>
+            <ref bean="config.CompanyHomeContext" />
+         </set>
+      </property>
+   </bean>
+
+   <bean id="config.hash.store" class="org.alfresco.repo.virtual.ref.HashStoreConfiguration.HashStoreConfigurationBean">
+      <property name="classpathsHashes" value="${smart.reference.classpath.hash}"/>
+   </bean>
+
+   <!-- VIRTUALIZATION CONTENT MODEL -->
+
+   <bean id="systemTemplateLocations" class="org.alfresco.repo.virtual.model.SystemTemplateLocationsConstraint" init-method="initialize">
+      <property name="shortName">
+         <value>systemTemplateLocations</value>
+      </property>
+      <property name="sorted" value="true" />
+      <property name="registry">
+         <ref bean="cm:constraintRegistry" />
+      </property>
+      <property name="nodeService" ref="nodeService" />
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+      <property name="templatesParentClasspath" value="${smart.folders.config.system.templates.classpath}" />
+      <property name="templatesParentRepositoryPath">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.folders.config.system.templates.path}" />
+         </bean>
+      </property>
+      <property name="repositoryTemplateTypeName" value="${smart.folders.config.system.templates.template.type}" />
+   </bean>
+
+   <!-- VIRTUALIZATION INTERNALS -->
+
+   <bean id="publicAPIfacet" class="org.alfresco.repo.virtual.PublicAPIFacet">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+   </bean>
+
+   <bean id="coreAPIfacet" class="org.alfresco.repo.virtual.CoreAPIFacet">
+      <property name="nodeService" ref="nodeService" />
+      <property name="fileFolderService" ref="fileFolderService" />
+      <property name="contentService" ref="contentService" />
+      <property name="searchService" ref="searchService" />
+      <property name="scriptService" ref="scriptService" />
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="permissionService" ref="permissionService" />
+   </bean>
+
+   <bean id="actualEnvironment" class="org.alfresco.repo.virtual.AlfrescoEnviroment">
+      <property name="alfrescoAPIFacet" ref="coreAPIfacet" />
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="repositoryHelper" ref="repositoryHelper" />
+      <property name="nodeRefResolver" ref="config.RepositoryNodeRefResolver" />
+   </bean>
+
+   <bean id="templateVirtualizationMethod" abstract="true" init-method="init">
+      <property name="vanillaProcessor" value="${smart.folders.config.vanilla.processor.classpath}" />
+   </bean>
+
+   <bean id="aspectVirtualizationMethod" abstract="true" parent="templateVirtualizationMethod" init-method="init">
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+   </bean>
+
+   <bean id="customVirtualizationMethod" parent="aspectVirtualizationMethod" class="org.alfresco.repo.virtual.store.CustomVirtualizationMethod">
+      <property name="aspectName" value="${smart.folders.config.custom.aspect}" />
+      <property name="associationName" value="${smart.folders.config.custom.aspect.template.association}" />
+   </bean>
+
+   <bean id="systemVirtualizationMethod" parent="aspectVirtualizationMethod" class="org.alfresco.repo.virtual.store.SystemVirtualizationMethod">
+      <property name="aspectName" value="${smart.folders.config.system.aspect}" />
+      <property name="systemPathPropertyName" value="${smart.folders.config.system.aspect.template.location.property}" />
+   </bean>
+
+   <bean id="typeVirtualizationMethod" parent="templateVirtualizationMethod" class="org.alfresco.repo.virtual.store.TypeVirtualizationMethod">
+      <property name="namespacePrefixResolver" ref="namespaceService" />
+      <property name="templatesPath">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.folders.config.type.templates.path}" />
+         </bean>
+      </property>
+      <property name="qnameFilters" value="${smart.folders.config.type.templates.qname.filter}" />
+   </bean>
+
+   <bean id="smartStore" class="org.alfresco.repo.virtual.store.VirtualStoreImpl">
+      <property name="environment" ref="actualEnvironment" />
+      <property name="virtualizationMethods">
+         <list>
+            <ref bean="customVirtualizationMethod" />
+            <ref bean="systemVirtualizationMethod" />
+            <ref bean="typeVirtualizationMethod" />
+         </list>
+      </property>
+      
+      <!-- Smart user permissions define permission overriding rules for smart entries through sets of     -->
+      <!-- permissions that are forcibly allowed or denied over the permissions the node adheres to.           -->
+      <!-- Smart nodes defined in smart templates adhere to the actual node they are attached to unless    -->
+      <!-- otherwise specified in allowSmartNodes or denySmartNodes.                                       -->
+      <!-- Smart nodes that have no filling rule definition also consider permissions defined by the         -->
+      <!-- denyReadonlySmartNodes property.                                                                  -->
+      <!-- Query nodes that result from running queries defined by smart nodes adhere to the node that they  -->
+      <!-- stand for unless otherwise specified in the allow allowQueryNodes or denyQueryNodes properties.     -->
+      <property name="userPermissions">
+         <bean id="smartUserPermissions" class="org.alfresco.repo.virtual.store.VirtualUserPermissions"  init-method="init">
+            <property name="denyReadonlySmartNodes">
+               <set>
+                  <value>Unlock</value>
+                  <value>CancelCheckOut</value>
+                  <value>ChangePermissions</value>
+                  <value>CreateChildren</value>
+                  <value>Delete</value>
+                  <value>DeleteNode</value>
+                  <value>Write</value>
+                  <value>WriteProperties</value>
+                  <value>WriteContent</value>
+                  <value>CreateAssociations</value>
+               </set>
+            </property>
+            <property name="allowSmartNodes">
+               <set>
+               </set>
+            </property>
+            <property name="denySmartNodes">
+               <set>
+                  <value>ChangePermissions</value>
+                  <value>WriteProperties</value>
+                  <value>DeleteNode</value>
+                  <value>Delete</value>
+                  <value>Write</value>
+               </set>
+            </property>
+            <property name="allowQueryNodes">
+               <set>
+               </set>
+            </property>
+            <property name="denyQueryNodes">
+               <set>
+                  <value>ChangePermissions</value>
+                  <value>DeleteNode</value>
+                  <value>Delete</value>
+               </set>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <!-- VIRTUALIZATION BUNDLE -->
+
+   <bean id="nodeServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualNodeServiceExtension">
+      <property name="downloadAssociationsFolder">
+         <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
+            <property name="path" value="${smart.download.associations.folder}" />
+         </bean>
+      </property>
+      <property name="smartStore" ref="smartStore" />
+      <property name="environment" ref="actualEnvironment" />
+      <property name="extensionPoint" ref="nodeServiceExtensionPoint" />
+   </bean>
+
+   <bean id="fileFolderServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualFileFolderServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="environment" ref="actualEnvironment" />
+      <property name="extensionPoint" ref="fileFolderServiceExtensionPoint" />
+   </bean>
+
+   <bean id="preferenceServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualPreferenceServiceExtension">
+      <property name="preferenceService" ref="preferenceService" />
+      <property name="extensionPoint" ref="preferenceServiceExtensionPoint" />
+   </bean>
+
+   <bean id="ratingServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualRatingServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="ratingServiceExtensionPoint" />
+   </bean>
+
+   <bean id="lockServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualLockServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="lockServiceExtensionPoint" />
+   </bean>
+
+   <bean id="permissionServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualPermissionServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="permissionServiceExtensionPoint" />
+   </bean>
+
+   <bean id="checkOutCheckInServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualCheckOutCheckInServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="checkOutCheckInServiceExtensionPoint" />
+   </bean>
+
+   <bean id="versionServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualVersionServiceExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="versionServiceExtensionPoint" />
+   </bean>
+
+   <bean id="lockableAspectInterceptorExtension" class="org.alfresco.repo.virtual.bundle.VirtualLockableAspectInterceptorExtension">
+      <property name="environment" ref="actualEnvironment" />
+      <property name="extensionPoint" ref="lockableAspectInterceptorExtensionPoint" />
+   </bean>
+
+   <bean id="workflowPackageExtension" class="org.alfresco.repo.virtual.bundle.VirtualWorkflowPackageExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="workflowPackageExtensionPoint" />
+   </bean>
+
+   <bean id="defaultCopyBehaviourCallbackExtension" class="org.alfresco.repo.virtual.bundle.VirtualDefaultCopyBehaviourCallbackExtension">
+      <property name="environment" ref="actualEnvironment" />
+      <property name="extensionPoint" ref="defaultCopyBehaviourCallbackExtensionPoint" />
+   </bean>
+
+   <bean id="behaviourFilterExtension" class="org.alfresco.repo.virtual.bundle.VirtualBehaviourFilterExtension">
+      <property name="smartStore" ref="smartStore" />
+      <property name="extensionPoint" ref="behaviourFilterExtensionPoint" />
+   </bean>
+
+   <!-- BUNDLE -->
+
+   <bean id="smartFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
+      <property name="id" value="org.alfresco.virtual.folders" />
+      <property name="enabled" value="${smart.folders.enabled}" />
+      <property name="extensions">
+         <list>
+            <ref bean="nodeServiceExtension" />
+            <ref bean="fileFolderServiceExtension" />
+            <ref bean="preferenceServiceExtension" />
+            <ref bean="ratingServiceExtension" />
+            <ref bean="lockServiceExtension" />
+            <ref bean="permissionServiceExtension" />
+            <ref bean="checkOutCheckInServiceExtension" />
+            <ref bean="versionServiceExtension" />
+            <ref bean="lockableAspectInterceptorExtension" />
+            <ref bean="workflowPackageExtension" />
+            <ref bean="defaultCopyBehaviourCallbackExtension" />
+            <ref bean="behaviourFilterExtension" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- EPs -->
+
+   <bean id="permissionServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceTrait" />
+   </bean>
+
+   <bean id="nodeServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.node.db.traitextender.NodeServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.node.db.traitextender.NodeServiceTrait" />
+   </bean>
+
+   <bean id="fileFolderServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceTrait" />
+   </bean>
+
+   <bean id="preferenceServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.preference.traitextender.PreferenceServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.preference.traitextender.PreferenceServiceTrait" />
+   </bean>
+
+   <bean id="ratingServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.rating.traitextender.RatingServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.rating.traitextender.RatingServiceTrait" />
+   </bean>
+
+   <bean id="lockServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.lock.traitextender.LockServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.lock.traitextender.LockServiceTrait" />
+   </bean>
+
+   <bean id="checkOutCheckInServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.coci.traitextender.CheckOutCheckInServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.coci.traitextender.CheckOutCheckInServiceTrait" />
+   </bean>
+
+   <bean id="versionServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.version.traitextender.VersionServiceExtension" />
+      <property name="trait" value="org.alfresco.repo.version.traitextender.VersionServiceTrait" />
+   </bean>
+
+   <bean id="lockableAspectInterceptorExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.lock.traitextender.LockableAspectInterceptorExtension" />
+      <property name="trait" value="org.alfresco.repo.lock.traitextender.LockableAspectInterceptorTrait" />
+   </bean>
+
+   <bean id="workflowPackageExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.workflow.traitextender.WorkflowPackageExtension" />
+      <property name="trait" value="org.alfresco.repo.workflow.traitextender.WorkflowPackageTrait" />
+   </bean>
+
+   <bean id="defaultCopyBehaviourCallbackExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackExtension" />
+      <property name="trait" value="org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackTrait" />
+   </bean>
+
+   <bean id="behaviourFilterExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
+      <property name="extension" value="org.alfresco.repo.policy.traitextender.BehaviourFilterExtension" />
+      <property name="trait" value="org.alfresco.repo.policy.traitextender.BehaviourFilterTrait" />
+   </bean>
+
+</beans>

@@ -1,0 +1,22 @@
+{
+  "mediaTypes": [
+    {
+      "name": "Test MPEG4 Audio",
+      "mediaType": "test audio/mp4",
+      "extensions": [
+        {"extension": "test m4a"}
+      ]
+    },
+    {
+      "name": "Test Plain Text",
+      "mediaType": "test text/plain",
+      "text": true,
+      "extensions": [
+        {"extension": "test txt", "default": true},
+        {"extension": "test sql", "name": "SQL"},
+        {"extension": "test properties", "name": "Java Properties"},
+        {"extension": "test log", "name": "Log File"}
+      ]
+    }
+  ]
+}

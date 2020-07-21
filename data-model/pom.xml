@@ -1,0 +1,417 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>12</version>
+    </parent>
+
+    <artifactId>alfresco-data-model</artifactId>
+    <name>Alfresco Data Model</name>
+    <description>Alfresco Data Model classes</description>
+    <version>8.138-SNAPSHOT</version>
+
+    <scm>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-data-model</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <dependency.tika.version>1.24.1</dependency.tika.version>
+
+        <dependency.alfresco-core.version>8.38</dependency.alfresco-core.version>
+        <dependency.cxf.version>3.3.7</dependency.cxf.version>
+        <!-- Files to exclude from SonarQube analysis -->
+        <sonar.exclusions>
+            source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
+            source/java/org/alfresco/repo/search/impl/parsers/FTSParser.java,
+            source/java/org/alfresco/repo/search/impl/parsers/FTSLexer.java
+        </sonar.exclusions>
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jibx</groupId>
+                <artifactId>maven-jibx-plugin</artifactId>
+                <configuration>
+                    <load>true</load>
+                    <schemaBindingDirectory>${project.build.sourceDirectory}/org/alfresco/repo/dictionary</schemaBindingDirectory>
+                    <includeSchemaBindings>
+                        <includeSchemaBinding>m2binding.xml</includeSchemaBinding>
+                    </includeSchemaBindings>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bind-sources</id>
+                        <goals>
+                            <goal>bind</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ACE-3329 Create _en.properties message files  -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+                    <execution>
+                        <id>duplicate-english-messages</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <target>
+                        <copy todir="${project.build.outputDirectory}">
+                            <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
+                        </copy>
+                    </target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.jibx</groupId>
+                                        <artifactId>
+                                            maven-jibx-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.2.5,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>bind</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute>
+                                            <runOnConfiguration>true</runOnConfiguration>
+                                            <runOnIncremental>true</runOnIncremental>
+                                        </execute>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Newer cxf libs, see REPO-3131 -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-policy</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <!-- Newer bouncycastle, used in TIKA, see REPO-4241 -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk15on</artifactId>
+                <version>1.66</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>1.13.1</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>28.2-jre</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.19</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>2.0.17</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
+        </dependency>
+        <!--
+            | provided dependencies (are not transitive and not included in webapps)
+            | see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope
+            -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--
+            | compile dependencies
+            -->
+        <dependency>
+            <groupId>org.jibx</groupId>
+            <artifactId>jibx-run</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+        <dependency> 
+            <groupId>com.fasterxml.jackson.core</groupId> 
+            <artifactId>jackson-annotations</artifactId> 
+            <version>2.11.1</version> 
+        </dependency> 
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.codehaus.woodstox:woodstox-core-asl -->
+        <dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-ws-metadata_2.0_spec -->
+        <dependency>
+            <groupId>jakarta.jws</groupId>
+            <artifactId>jakarta.jws-api</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
+        <dependency>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces javax.annotation:javax.annotation-api -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>1.3.5</version>
+        </dependency>
+        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <!-- the cxf libs were updated, see dependencyManagement section -->
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-commons-impl</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.xml.messaging.saaj</groupId>
+                    <artifactId>saaj-impl</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from com.fasterxml.woodstox:woodstox-core -->
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>woodstox-core-asl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-server-bindings</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- This is now deployed at:
+            | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/
+            -->
+        <dependency>
+            <groupId>org.acegisecurity</groupId>
+            <artifactId>acegi-security</artifactId>
+            <version>0.8.2_patched</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-xmlfactory</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.0-alfresco-patched-20191004</version>
+        </dependency>
+        <!-- Tika -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${dependency.tika.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>${dependency.tika.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.tdunning</groupId>
+                    <artifactId>json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>asm</groupId>
+                    <artifactId>asm</artifactId>
+                </exclusion>
+                <!-- Duplicate classes from com.sun.xml.bind:jaxb-core-->
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>txw2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.istack</groupId>
+                    <artifactId>istack-commons-runtime</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>gunit</artifactId>
+            <version>3.5.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.4.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

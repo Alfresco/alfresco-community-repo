@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:crypt="http://code.google.com/p/spring-crypto-utils/schema/crypt"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://code.google.com/p/spring-crypto-utils/schema/crypt
+        http://code.google.com/p/spring-crypto-utils/schema/crypt.xsd">
+
+    <crypt:keystore id="ks-test-1" location="classpath:alfresco/keystore-tests/ks-test-1.jks" password="ksPwd1" type="JCEKS"/>
+    <crypt:keystore id="ks-test-2" location="classpath:alfresco/keystore-tests/ks-test-2.jks" password="ksPwd2" type="JCEKS"/>
+    
+</beans>

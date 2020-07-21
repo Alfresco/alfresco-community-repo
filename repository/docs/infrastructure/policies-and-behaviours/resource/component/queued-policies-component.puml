@@ -1,0 +1,56 @@
+@startuml
+
+title Policies: Queued Policies (V5.2 Proposal)
+
+actor user
+
+database ActiveMQ as AMQ
+database DB {
+    folder alf_policies
+}
+
+component "Client Application" {
+    component [Client Code]
+    component [ClientQueueReceiver]
+    component [Camel(Client App)]
+}
+user <--> [Client Code]
+ClientQueueReceiver <-- [Camel(Client App)]
+ClientQueueReceiver -> [Client Code]
+[Camel(Client App)] <- AMQ
+
+component "Alfresco One Platform" {
+    component Quartz as Q
+    component [Camel] as Camel
+    
+    component [Policy ReST API] as PR
+    component PolicyService as PS {
+        [PolicyCheckJob] as PCJ
+        [PolicyMap] as PM <<Map>>
+        component Routes as R {
+            component ToQueue
+            component FromQueue
+        }
+    }
+    component PolicyComponent as PC {
+        component QueuedBehaviour as QB
+    }
+    component [Alfresco Services] as Services
+    component PolicyDAO as PD
+}
+
+[Client Code] <-> PR
+
+Q --> PCJ
+PCJ -> PM
+PR --> PS
+Services -> PC
+PCJ --> PD
+PD -> DB
+QB -> ToQueue
+ToQueue -> Camel
+FromQueue <- Camel
+FromQueue --> Services
+Camel <-> AMQ
+
+@enduml

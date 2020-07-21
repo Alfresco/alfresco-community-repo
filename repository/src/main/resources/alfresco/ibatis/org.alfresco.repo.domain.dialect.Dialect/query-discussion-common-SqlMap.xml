@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.query.discussion">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+
+    <resultMap id="result_NodeWithChildrenEntity" type="NodeWithChildrenEntity">
+        <id property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <association property="node" resultMap="alfresco.node.result_Node"/>
+        <collection property="children" javaType="ArrayList" ofType="org.alfresco.repo.discussion.cannedqueries.NodeWithChildrenEntity$NameAndCreatedAt">
+           <constructor>
+              <idArg column="post_node_id" javaType="Long" jdbcType="BIGINT"/>
+              <idArg column="post_node_name" javaType="String" jdbcType="VARCHAR"/>
+              <idArg column="post_node_created" javaType="String" jdbcType="VARCHAR"/>
+           </constructor>
+        </collection>
+    </resultMap>
+    
+
+    <!-- GetDiscussionTopicsWithPosts Canned Query (model-specific) - note: date properties are stored as ISO 8061 string -->
+    
+    <select id="select_GetDiscussionTopcisWithPosts" parameterType="NodeWithChildrenEntity" resultMap="result_NodeWithChildrenEntity">
+       select
+            topicNode.id                as id,
+            topicStore.protocol         as protocol,
+            topicStore.identifier       as identifier,
+            topicNode.uuid              as uuid,
+            topicNode.audit_created     as audit_created,
+            topicNode.audit_creator     as audit_creator,
+            topicNode.audit_modified    as audit_modified,
+            topicNode.audit_modifier    as audit_modifier,
+            prop_name.string_value      as name,
+            postNode.id                 as post_node_id,
+            postNode.audit_created      as post_node_created,
+            prop_post_name.string_value as post_node_name
+        from
+            alf_child_assoc assoc
+            join alf_node topicNode on (topicNode.id = assoc.child_node_id)
+            join alf_store topicStore on (topicStore.id = topicNode.store_id)
+            left join alf_node_properties prop_name on (prop_name.node_id = topicNode.id and prop_name.qname_id = #{nameQNameId})
+            left join alf_child_assoc post_assoc on (topicNode.id = post_assoc.parent_node_id)
+            left join alf_node postNode on (post_assoc.child_node_id = postNode.id)
+            left join alf_node_properties prop_post_name on (prop_post_name.node_id = postNode.id and prop_post_name.qname_id = #{nameQNameId})
+        where
+            assoc.parent_node_id = #{parentNodeId}
+            and topicNode.type_qname_id = #{contentTypeQNameId}
+            and postNode.type_qname_id = #{childrenTypeQNameId}
+    </select>
+</mapper>

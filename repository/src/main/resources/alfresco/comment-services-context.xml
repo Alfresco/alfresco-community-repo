@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- List of Comments Canned queries -->
+   <bean id="commentsCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+
+   <!-- The regular GetChildren Canned Query Factory -->
+   <bean name="commentsGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory">
+       <property name="registry" ref="commentsCannedQueryRegistry"/>
+       <property name="dictionaryService" ref="dictionaryService"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="nodeService" ref="nodeService"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="localeDAO" ref="localeDAO"/>
+       <property name="contentDataDAO" ref="contentDataDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="CommentService_security_listComments"/>
+   </bean>
+
+    <!-- Comment Service (Management of Share comments) -->
+    <bean id="CommentService" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.repo.forum.CommentService</value>
+       </property>
+       <property name="target">
+          <ref bean="commentService" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="CommentService_transaction" />
+             <idref bean="AuditMethodInterceptor" />
+             <idref bean="exceptionTranslator" />
+             <idref bean="CommentService_security" />
+          </list>
+       </property>
+    </bean>
+   
+    <!-- Comment service transaction bean -->
+    <bean id="CommentService_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+       <property name="transactionManager">
+          <ref bean="transactionManager" />
+       </property>
+       <property name="transactionAttributes">
+          <props>
+             <prop key="*">${server.transaction.mode.default}</prop>
+          </props>
+       </property>
+    </bean>
+   
+    <bean id="CommentService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor"/>
+
+    <!-- The canned queries that the calendar service uses do however need to check -->
+    <bean id="CommentService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.repo.forum.CommentService.listComments=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+            </value>
+        </property>
+    </bean>
+
+    <bean id="CommentService_security_listComments" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
+        <property name="methodSecurityInterceptor" ref="CommentService_CannedQuery_security" />
+        <property name="service" value="org.alfresco.repo.forum.CommentService" />
+        <property name="methodName" value="listComments" />
+    </bean>
+    
+    <!-- Comment Service base bean -->
+    <bean id="commentService" class="org.alfresco.repo.forum.CommentServiceImpl">
+       <property name="nodeService" ref="NodeService"/>
+       <property name="contentService" ref="ContentService"/>
+       <property name="siteService" ref="SiteService"/>
+       <property name="activityService" ref="activityService"/>       
+       <property name="cannedQueryRegistry" ref="commentsCannedQueryRegistry"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="lockService" ref="LockService"/>
+       <property name="dictionaryService" ref="DictionaryService"/>
+    </bean>
+
+    <!-- Policies/behaviours for forum-related nodes  -->
+    <bean id="discussableAspect" class="org.alfresco.repo.forum.DiscussableAspect" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="dbNodeService">
+            <ref bean="dbNodeService" />
+        </property>		
+        <property name="fileFolderService">
+            <ref bean="fileFolderService" />
+        </property>
+    </bean>
+    <bean id="forumPostBehaviours" class="org.alfresco.repo.forum.ForumPostBehaviours" init-method="init">
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="commentService" ref="CommentService"/>
+        <property name="rawNodeService" ref="nodeService"/> <!-- Intentional small 'n' -->
+        <property name="nodeService" ref="NodeService"/>    <!-- Intentional large 'N' -->
+    </bean>
+    <bean id="commentsRollupAspect" class="org.alfresco.repo.forum.CommentsRollupAspect" init-method="init">
+       <property name="policyComponent" ref="policyComponent"/>
+   </bean>
+</beans>

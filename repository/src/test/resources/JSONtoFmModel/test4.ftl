@@ -1,0 +1,13 @@
+<h1>${glossary.title}<h1>
+<h2>${glossary.GlossDiv.title}<h2>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.ID}<h3>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.SortAs}<h3>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.GlossTerm}<h3>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.Acronym}<h3>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.Abbrev}<h3>
+<h3>${glossary.GlossDiv.GlossList.GlossEntry.GlossSee}<h3>
+<h4>${glossary.GlossDiv.GlossList.GlossEntry.GlossDef.para}<h4>
+<h4>${glossary.GlossDiv.GlossList.GlossEntry.GlossDef.GlossSeeAlso[0]}<h4>
+<h4>${glossary.GlossDiv.GlossList.GlossEntry.GlossDef.GlossSeeAlso[1]}<h4>
+<h4>${glossary.GlossDiv.GlossList.GlossEntry.GlossDef.GlossSeeAlso[2]}<h4>
+<h4>${glossary.GlossDiv.GlossList.GlossEntry.GlossDef.GlossSeeAlso[3]}<h4>

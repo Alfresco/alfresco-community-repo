@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.activities.insert">
+
+   <insert id="insert_activity_feedcontrol" parameterType="FeedControl">
+      
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
+         select nextVal('alf_activity_feed_control_seq')
+      </selectKey>
+      
+      <include refid="alfresco.activities.insert_ActivityFeedControl_Sequence"/>
+      
+   </insert>
+   
+   <insert id="insert_activity_feed" parameterType="ActivityFeed">
+      
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
+         select nextVal('alf_activity_feed_seq')
+      </selectKey>
+      
+      <include refid="alfresco.activities.insert_ActivityFeed_Sequence"/>
+      
+   </insert>
+   
+   <insert id="insert_activity_post" parameterType="ActivityPost">
+      
+      <selectKey keyProperty="id" resultType="long" order="BEFORE" >
+         select nextVal('alf_activity_post_seq')
+      </selectKey>
+      
+      <include refid="alfresco.activities.insert_ActivityPost_Sequence"/>
+      
+   </insert>
+   
+</mapper>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="cmiscustom:model" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>CMIS Custom Model</description>
+    <author>Alfresco</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/cmis/custom" prefix="cmiscustom"/>
+    </namespaces>
+
+    <types>
+      <type name="cmiscustom:folder">
+         <title>Custom Folder</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="cmiscustom:folderprop_string">
+                <title>Custom Folder Property (string)</title>
+                <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+    
+      <type name="cmiscustom:document">
+         <title>Custom Document</title>
+         <parent>cm:content</parent>
+         <properties>
+            <property name="cmiscustom:docprop_string">
+                <title>Custom Document Property (string)</title>
+                <type>d:text</type>
+            </property>
+            <property name="cmiscustom:docprop_boolean_multi">
+                <title>Custom Document Property (multi-valued boolean)</title>
+                <type>d:boolean</type>
+                <multiple>true</multiple>
+            </property>
+            <property name="cmiscustom:docprop_datetime">
+                <title>Custom Document Property (datetime)</title>
+                <type>d:datetime</type>
+            </property>
+         </properties>
+         <associations>
+            <association name="cmiscustom:assoc">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+    </types>
+
+</model>

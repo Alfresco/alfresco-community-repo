@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <typeAliases>
+        <typeAlias alias="ActivityFeedQuery" type="org.alfresco.repo.domain.activities.ActivityFeedQueryEntity"/>
+        <typeAlias alias="ActivityFeed" type="org.alfresco.repo.domain.activities.ActivityFeedEntity"/>
+        <typeAlias alias="FeedControl" type="org.alfresco.repo.domain.activities.FeedControlEntity"/>
+        <typeAlias alias="ActivityPost" type="org.alfresco.repo.domain.activities.ActivityPostEntity"/>
+    </typeAliases>
+    
+    <mappers>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-select-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/activities-insert-SqlMap.xml"/>
+    </mappers>
+    
+</configuration>

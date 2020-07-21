@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+    xmlns:app="http://www.alfresco.org/model/application/1.0"
+    xmlns:sys="http://www.alfresco.org/model/system/1.0"
+    xmlns:cm="http://www.alfresco.org/model/content/1.0"> 
+    <cm:folder view:childName="${spaces.templates.email.activities.childname}">
+        <view:aspects>
+            <app:uifacets></app:uifacets>
+        </view:aspects>
+        <view:properties>
+            <cm:description>${spaces.templates.email.activities.description}</cm:description>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.templates.email.activities.name}</cm:title>
+            <cm:name>${spaces.templates.email.activities.name}</cm:name>
+        </view:properties>
+        <view:associations>
+            <cm:contains>
+                <cm:content view:childName="cm:activities-email.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email.ftl|mimetype=text/plain|size=8926|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email.ftl</cm:name>
+                        <cm:title>activities-email.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.default}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+                <cm:content view:childName="cm:activities-email_fr.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_fr.ftl|mimetype=text/plain|size=8942|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_fr.ftl</cm:name>
+                        <cm:title>activities-email_fr.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.french}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+                <cm:content view:childName="cm:activities-email_es.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_es.ftl|mimetype=text/plain|size=8936|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_es.ftl</cm:name>
+                        <cm:title>activities-email_es.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.spanish}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+                <cm:content view:childName="cm:activities-email_de.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_de.ftl|mimetype=text/plain|size=8946|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_de.ftl</cm:name>
+                        <cm:title>activities-email_de.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.german}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+                <cm:content view:childName="cm:activities-email_it.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_it.ftl|mimetype=text/plain|size=8939|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_it.ftl</cm:name>
+                        <cm:title>activities-email_it.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.italian}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+                <cm:content view:childName="cm:activities-email_ja.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_ja.ftl|mimetype=text/plain|size=8884|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_ja.ftl</cm:name>
+                        <cm:title>activities-email_ja.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.japanese}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content><cm:content view:childName="cm:activities-email_nl.ftl">
+                    <view:aspects>
+                        <cm:titled></cm:titled>
+                        <cm:author></cm:author>
+                        <app:inlineeditable></app:inlineeditable>
+                        <sys:referenceable></sys:referenceable>
+                    </view:aspects>
+                    <view:properties>
+                        <app:editInline>true</app:editInline>
+                        <cm:content>contentUrl=classpath:alfresco/templates/activities-email-templates/activities-email_nl.ftl|mimetype=text/plain|size=8884|encoding=UTF-8</cm:content>
+                        <cm:author></cm:author>
+                        <cm:name>activities-email_nl.ftl</cm:name>
+                        <cm:title>activities-email_nl.ftl</cm:title>
+                        <cm:description>${spaces.templates.email.generate_the_activities_email.description} - ${version.dutch}</cm:description>
+                    </view:properties>
+                    <view:associations></view:associations>
+                </cm:content>
+            </cm:contains>
+        </view:associations>
+    </cm:folder>
+</view:view>

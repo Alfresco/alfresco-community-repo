@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="ownableService" class="org.alfresco.repo.ownable.impl.OwnableServiceImpl" init-method="init">
+        <property name="nodeService">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="authenticationService">
+            <ref bean="authenticationService"/>
+        </property>
+        <property name="nodeOwnerCache">
+            <ref bean="nodeOwnerCache"/>
+        </property>
+        <property name="policyComponent">
+            <ref bean="policyComponent" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="storesToIgnorePolicies">
+            <ref bean="storesToIgnorePolicies"/>
+        </property>
+        <property name="renditionService">
+            <ref bean="renditionService"/>
+        </property>
+    </bean>
+</beans>

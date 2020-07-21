@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.insert">
+
+    <insert id="insert_Server" parameterType="Server" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_server_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Server_Sequence"/>
+    </insert>
+
+    <insert id="insert_Store" parameterType="Store" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_store_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Store_Sequence"/>
+    </insert>
+
+    <insert id="insert_Node" parameterType="Node" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_node_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Node_Sequence"/>
+    </insert>
+
+    <insert id="insert_Transaction" parameterType="Transaction" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_transaction_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_Transaction_Sequence"/>
+    </insert>
+
+    <insert id="insert_NodeAssoc" parameterType="NodeAssoc" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_node_assoc_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_NodeAssoc_Sequence"/>
+    </insert>
+
+    <insert id="insert_ChildAssoc" parameterType="ChildAssoc" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_child_assoc_seq')
+        </selectKey>
+        
+        <include refid="alfresco.node.insert_ChildAssoc_Sequence"/>
+        
+    </insert>
+
+</mapper>

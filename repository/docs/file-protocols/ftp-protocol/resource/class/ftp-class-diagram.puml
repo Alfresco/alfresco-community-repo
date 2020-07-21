@@ -1,0 +1,86 @@
+@startuml
+
+' Generated using https://github.com/juanmf/Java2PlantUML
+
+left to right direction
+' Participants 
+
+interface org.alfresco.jlan.ftp.FTPAuthenticator {
+--
++  authenticateUser(c ClientInfo, c FTPSrvSession)  : boolean
++  closeAuthenticator()  : void
++  initialize(c ServerConfiguration, i ConfigElement)  : void
+
+}
+interface org.springframework.beans.factory.DisposableBean {
+--
++  destroy()  : void
+
+}
+interface org.alfresco.filesys.auth.ftp.package-info {
+--
+
+}
+interface org.alfresco.repo.management.subsystems.ActivateableBean {
+--
++  isActive()  : boolean
+
+}
+class org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase {
+#  logger : i Log
+#  serverConfiguration : i ServerConfigurationAccessor
+-  active : boolean
+-  authenticationComponent : i AuthenticationComponent
+-  authenticationService : i AuthenticationService
+-  authorityService : i AuthorityService
+-  transactionService : i TransactionService
+--
++   FTPAuthenticatorBase() 
+#  checkForAdminUserName(c ClientInfo)  : void
+#  createTransaction()  :  UserTransaction
+#  getAuthenticationComponent()  :  AuthenticationComponent
+#  getAuthenticationService()  :  AuthenticationService
+#  getAuthorityService()  :  AuthorityService
+#  getTransactionService()  :  TransactionService
++  authenticateUser(c ClientInfo, c FTPSrvSession)  : boolean
++  closeAuthenticator()  : void
++  destroy()  : void
++  initialize()  : void
++  initialize(c ServerConfiguration, i ConfigElement)  : void
++  isActive()  : boolean
++  setActive(boolean)  : void
++  setAuthenticationComponent(i AuthenticationComponent)  : void
++  setAuthenticationService(i AuthenticationService)  : void
++  setAuthorityService(i AuthorityService)  : void
++  setConfig(i ServerConfigurationAccessor)  : void
++  setTransactionService(i TransactionService)  : void
+
+}
+class org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator {
+#  m_encryptor : c PasswordEncryptor
+#  m_md4Encoder : i MD4PasswordEncoder
+--
++   AlfrescoFtpAuthenticator() 
+#  doGuestLogon(c AlfrescoClientInfo, c SrvSession)  : void
++  authenticateUser(c ClientInfo, c FTPSrvSession)  : boolean
+
+}
+
+' Relations 
+
+org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator "1"  o-left-  "1" org.alfresco.repo.security.authentication.MD4PasswordEncoder  : m_md4Encoder: i MD4PasswordEncoder
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator "1"  o-left-  "1" org.alfresco.jlan.server.auth.PasswordEncryptor  : m_encryptor: c PasswordEncryptor
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.alfresco.jlan.server.config.ServerConfigurationAccessor  : serverConfiguration: i ServerConfigurationAccessor
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationComponent  : authenticationComponent: i AuthenticationComponent
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthorityService  : authorityService: i AuthorityService
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthenticationService  : authenticationService: i AuthenticationService
+org.alfresco.filesys.auth.ftp.AlfrescoFtpAuthenticator  -up|>  org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase  ..up|>  org.alfresco.jlan.ftp.FTPAuthenticator
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase  ..up|>  org.alfresco.repo.management.subsystems.ActivateableBean
+org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase  ..up|>  org.springframework.beans.factory.DisposableBean
+
+' Notes 
+
+@enduml

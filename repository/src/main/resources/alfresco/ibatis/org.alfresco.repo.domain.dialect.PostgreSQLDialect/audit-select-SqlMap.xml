@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 
+   Dialect: Postgres
+-->
+<mapper namespace="alfresco.audit">
+
+    <!-- Get audit entries -->
+    <select id="select_AuditEntriesWithoutValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+        <include refid="select_AuditEntriesWithoutValuesCommon"/>
+    </select>
+
+    <select id="select_AuditEntriesWithValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
+        <include refid="select_AuditEntriesWithValuesCommon"/>
+    </select>
+
+</mapper>

@@ -1,0 +1,60 @@
+@startuml
+
+Title: Create a Tenant (NoSQL)
+actor "User" as U
+participant "Tenant Console" as TC
+participant "TenantServiceClient" as TCL
+participant "TenantServiceRestV1" as TRS
+participant "TenantServiceImpl" as TSI
+participant "Cx1TenantService" as CTS
+participant "cassandra-driver-core-2.2.0-rc1" as DDC
+database "Cassandra" as C
+
+U->TC:create Tenant
+note right
+	The Tenant Console
+	may be part of the 
+	Admin Console
+end note
+activate TC
+TC->TCL:createTenant()
+activate TCL
+TCL->TCL: find server from super\nAbstractServiceClient
+TCL->TRS: HTTP POST {tenantCtx}/public/an2/v1/tenants\nCreateTenantPojo(JSON)
+activate TRS
+note right
+	This is wired
+	to the endpoint
+	using Jersey 
+end note
+TRS->TSI: create(TenantServiceSPI=Cx1TenantService)
+activate TSI
+TSI->CTS: createTenant()
+note right
+	The Cassandra 
+	implementation can 
+	be replaced by
+	other implementations
+	(e.g. Dynamo DB)
+	through Spring config
+end note
+activate CTS
+CTS->DDC: insert into Table alf_data_tenants
+activate DDC
+DDC->C: store the tenant record
+C->DDC:success
+deactivate C
+DDC->CTS: success
+deactivate DDC
+CTS->TSI:success
+deactivate CTS
+TSI->TRS: success
+deactivate TSI
+TRS->TCL: HTTP 200 OK
+deactivate TRS
+TCL->TC: success
+deactivate TCL
+TC->>U:success message
+deactivate TC
+
+@enduml

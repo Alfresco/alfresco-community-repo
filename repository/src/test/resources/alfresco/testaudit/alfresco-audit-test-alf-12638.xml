@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+
+	<DataExtractors>
+		<DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue" />
+	</DataExtractors>
+
+	<DataGenerators>
+		<DataGenerator name="currentUser" registeredName="auditModel.generator.user" />
+	</DataGenerators>
+
+	<PathMappings>
+		<PathMap source="/alfresco-api" target="/test-alf-12638" />
+	</PathMappings>
+	
+	<Application name="Test ALF-12638" key="test-alf-12638">
+		<AuditPath key="post">
+			<AuditPath key="NodeService">
+				<AuditPath key="getRootNode">
+					<AuditPath key="error">
+						<RecordValue key="error" dataExtractor="simpleValue" />
+						<GenerateValue key="username" dataGenerator="currentUser" />
+					</AuditPath>
+				</AuditPath>
+			</AuditPath>
+		</AuditPath>	
+	</Application>
+
+</Audit>

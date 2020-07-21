@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+    <DataExtractors>
+        <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue" />
+        <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue" />
+    </DataExtractors>
+
+    <!-- MNT-16748 -->
+    <!-- An example of how to audit search -->
+    <!-- Note the 'X' suffix showing that the data generated can be on any path -->
+    <!-- 
+        New audit entry: 
+            Application ID: 4
+            Entry ID:       51
+            Values:         
+                /searchaudit/query/args/store=workspace://SpacesStore
+                /searchaudit/query/args/language=xpath
+                /searchaudit/query/args/query=/company_home
+                /searchaudit/query/no-error=null
+        
+            Audit Data: 
+                /searchaudit/queryX/languageX=xpath
+                /searchaudit/queryX/storeX=workspace://SpacesStore
+                /searchaudit/queryX/queryX=/company_home
+    -->
+
+    <PathMappings>
+        <!-- Take the entire post-call data for 'SearchService.query' method and route it to '/searchaudit/query'-->
+        <PathMap source="/alfresco-api/post/SearchService/query" target="/searchaudit/query" />
+    </PathMappings>
+
+    <Application name="SearchAudit" key="searchaudit">
+        <AuditPath key="queryX">
+            <RecordValue key="storeX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/store" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="languageX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/language" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="queryX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/query" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="searchParametersX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/searchParameters" dataTrigger="/searchaudit/query/no-error" />
+        </AuditPath>
+    </Application>
+
+</Audit>

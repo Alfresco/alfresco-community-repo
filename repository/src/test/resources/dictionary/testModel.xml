@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"               
+       xsi:schemaLocation="http://www.alfresco.org/model/dictionary/1.0 ../../../../webapps/alfresco/WEB-INF/classes/alfresco/model/modelSchema.xsd"      
+       xmlns="http://www.alfresco.org/model/dictionary/1.0" name="mage:model">
+
+    <description>Mage-Ml Metadata Model</description>
+    <author>Sergio D'Ascia</author>
+    <version>1.0</version>
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+    <namespaces>
+        <namespace uri="mage.model" prefix="mage"/>
+    </namespaces>
+    <types>
+    </types>
+</model>

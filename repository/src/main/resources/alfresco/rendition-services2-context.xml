@@ -1,0 +1,233 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ #%L
+  ~ Alfresco Repository
+  ~ %%
+  ~ Copyright (C) 2005 - 2018 Alfresco Software Limited
+  ~ %%
+  ~ This file is part of the Alfresco software.
+  ~ If the software was purchased under a paid Alfresco license, the terms of
+  ~ the paid license agreement will prevail.  Otherwise, the software is
+  ~ provided under the following open source license terms:
+  ~
+  ~ Alfresco is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Lesser General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ Alfresco is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+  ~ #L%
+  -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Rendition Service 2 -->
+
+    <bean id="RenditionService2" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.rendition2.RenditionService2</value>
+        </property>
+        <property name="target">
+            <ref bean="renditionService2" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="RenditionService2_transaction" />
+                <idref bean="AuditMethodInterceptor" />
+                <idref bean="exceptionTranslator" />
+                <idref bean="RenditionService2_security" />
+            </list>
+        </property>
+    </bean>
+
+    <!-- Rendition Service 2 base bean -->
+    <bean id="renditionService2" class="org.alfresco.repo.rendition2.RenditionService2Impl">
+        <property name="transactionService" ref="TransactionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="renditionPreventionRegistry" ref="renditionPreventionRegistry" />
+        <property name="transformClient" ref="transformClient" />
+        <property name="renditionDefinitionRegistry2" ref="renditionDefinitionRegistry2" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="enabled" value="${renditionService2.enabled}" />
+        <property name="thumbnailsEnabled" value="${system.thumbnail.generate}" />
+        <property name="renditionRequestSheduler" ref="renditionRequestSheduler" />
+    </bean>
+
+    <bean id="renditionRequestSheduler" class="org.alfresco.repo.util.PostTxnCallbackScheduler">
+        <property name="transactionService" ref="TransactionService" />
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformClient" parent="localTransformClient"/>
+
+    <bean id="localTransformClient" class="org.alfresco.repo.rendition2.LegacyLocalTransformClient">
+        <property name="transactionService" ref="transactionService" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="converter" ref="transformOptionsConverter" />
+    </bean>
+
+    <!-- Deprecated bean that converts transform properties to the deprecated TransformationOptions format -->
+    <bean id="transformOptionsConverter" class="org.alfresco.repo.rendition2.TransformationOptionsConverter">
+        <property name="maxSourceSizeKBytes" value="${system.thumbnail.definition.default.maxSourceSizeKBytes}" />
+        <property name="readLimitTimeMs" value="${system.thumbnail.definition.default.readLimitTimeMs}" />
+        <property name="readLimitKBytes" value="${system.thumbnail.definition.default.readLimitKBytes}" />
+        <property name="pageLimit" value="${system.thumbnail.definition.default.pageLimit}" />
+        <property name="maxPages" value="${system.thumbnail.definition.default.maxPages}" />
+    </bean>
+
+    <!-- Replaced in the enterprise edition -->
+    <bean id="transformServiceRegistry" parent="localTransformServiceRegistry"/>
+
+    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.rendition2.LegacyLocalTransformServiceRegistry" >
+        <property name="contentService" ref="contentService" />
+        <property name="converter" ref="transformOptionsConverter" />
+        <property name="enabled" value="${local.transform.service.enabled}" />
+        <property name="transformerDebug" ref="transformerDebug" />
+    </bean>
+
+    <bean id="RenditionService2_transaction"
+          class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager" />
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Rendition service 2 security bean -->
+    <bean id="RenditionService2_security"
+          class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
+
+    <!-- Rendition Definition Registry 2 -->
+    <bean id="renditionDefinitionRegistry2" class="org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl">
+        <property name="transformServiceRegistry" ref="transformServiceRegistry" />
+    </bean>
+
+    <!-- Process raw content update events -->
+    <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor">
+        <property name="renditionService2" ref="renditionService2" />
+        <property name="messagingObjectMapper" ref="alfrescoEventObjectMapper" />
+        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <!-- The definitions -->
+
+    <bean id="renditionDefinition2Medium" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="medium"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="100"/>
+                <entry key="resizeHeight" value="100"/>
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2DocLib" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="doclib"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="100"/>
+                <entry key="resizeHeight" value="100"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Imgpreview" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="imgpreview"/>
+        <constructor-arg name="targetMimetype" value="image/jpeg"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="960"/>
+                <entry key="resizeHeight" value="960"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="avatar"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="64"/>
+                <entry key="resizeHeight" value="64"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Avatar32" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="avatar32"/>
+        <constructor-arg name="targetMimetype" value="image/png"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="resizeWidth" value="32"/>
+                <entry key="resizeHeight" value="32"/>
+                <entry key="allowEnlargement" value="false" />
+                <entry key="maintainAspectRatio" value="true"/>
+                <entry key="thumbnail" value="true"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Webpreview" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="webpreview"/>
+        <constructor-arg name="targetMimetype" value="application/x-shockwave-flash"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="flashVersion" value="9"/>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+    <bean id="renditionDefinition2Pdf" class="org.alfresco.repo.rendition2.RenditionDefinition2Impl">
+        <constructor-arg name="renditionName" value="pdf"/>
+        <constructor-arg name="targetMimetype" value="application/pdf"/>
+        <constructor-arg name="transformOptions">
+            <map>
+                <entry key="timeout" value="${system.thumbnail.definition.default.timeoutMs}" />
+            </map>
+        </constructor-arg>
+        <constructor-arg name="registry" ref="renditionDefinitionRegistry2"/>
+    </bean>
+
+</beans>

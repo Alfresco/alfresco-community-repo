@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- I18N -->
+   
+   <bean id="emailResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.email-service</value>
+            </list>
+        </property>
+   </bean>
+   
+     <!-- Email Server -->
+    <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
+        <property name="enabled">
+            <value>${email.server.enabled}</value>
+        </property>
+        <property name="domain">
+            <value>${email.server.domain}</value>
+        </property>
+        <property name="port">
+            <value>${email.server.port}</value>
+        </property>
+        <property name="maxConnections">
+            <value>${email.server.connections.max}</value>
+        </property>
+        <property name="blockedSenders">
+            <value>${email.server.blocked.senders}</value>
+        </property>
+        <property name="allowedSenders">
+            <value>${email.server.allowed.senders}</value>
+        </property>
+        <property name="enableTLS">
+            <value>${email.server.enableTLS}</value>
+        </property>
+        <property name="hideTLS">
+            <value>${email.server.hideTLS}</value>
+        </property>
+        <property name="requireTLS">
+            <value>${email.server.requireTLS}</value>
+        </property>
+        <property name="authenticate">
+            <value>${email.server.auth.enabled}</value>
+        </property>
+        <property name="emailService">
+            <ref bean="EmailService" />
+        </property>
+        <property name="authenticationComponent">
+            <ref bean="authenticationComponent" />
+        </property>
+        <property name="unknownUser">
+           <value>${email.inbound.unknownUser}</value>
+        </property>
+    </bean>
+
+   <alias name="emailService" alias="EmailService"/>
+
+	<bean id="emailService" class="org.alfresco.email.server.EmailServiceImpl"
+	    init-method="init">
+		<property name="emailInboundEnabled">
+			<value>${email.inbound.enabled}</value>
+		</property>
+		<property name="unknownUser">
+           <value>${email.inbound.unknownUser}</value>
+		</property>
+		<property name="emailContributorsAuthority">
+           <value>${email.inbound.emailContributorsAuthority}</value>
+        </property>
+		<property name="emailMessageHandlerMap">
+			<map>
+				<entry key="cm:folder">
+					<ref bean="folderEmailMessageHandler"></ref>
+				</entry>
+				<entry key="cm:content">
+					<ref bean="documentEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:forum">
+					<ref bean="forumEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:discussion">
+					<ref bean="forumEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:topic">
+					<ref bean="topicEmailMessageHandler"></ref>
+				</entry>
+				<entry key="fm:post">
+					<ref bean="topicEmailMessageHandler"></ref>
+				</entry>
+			</map>
+		</property>
+		<property name="namespaceService">
+			<ref bean="NamespaceService" />
+		</property>
+		<property name="nodeService">
+			<ref bean="NodeService" />
+		</property>
+		<property name="searchService">
+			<ref bean="SearchService" />
+		</property>
+	    <property name="attributeService">
+            <ref bean="attributeService" />
+        </property>
+		<property name="retryingTransactionHelper">
+			<ref bean="retryingTransactionHelper" />
+		</property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="DictionaryService" />
+        </property>
+	</bean>
+
+	<bean id="emailMessageHandlerBase" abstract="true">
+		<property name="dictionaryService">
+			<ref bean="DictionaryService" />
+		</property>
+		<property name="nodeService">
+			<ref bean="NodeService" />
+		</property>
+		<property name="contentService">
+			<ref bean="ContentService" />
+		</property>
+		<property name="mimetypeService">
+			<ref bean="MimetypeService" />
+		</property>
+	</bean>
+
+	<bean id="folderEmailMessageHandler"
+		parent="emailMessageHandlerBase"
+		class="org.alfresco.email.server.handler.FolderEmailMessageHandler" >
+	
+		<property name="overwriteDuplicates">
+		    <value>${email.handler.folder.overwriteDuplicates}</value>            
+        </property>
+    </bean>
+
+	<bean id="forumEmailMessageHandler"
+		parent="emailMessageHandlerBase"
+		class="org.alfresco.email.server.handler.ForumEmailMessageHandler" />
+
+	<bean id="documentEmailMessageHandler"
+		parent="emailMessageHandlerBase"
+		class="org.alfresco.email.server.handler.DocumentEmailMessageHandler" />
+
+	<bean id="topicEmailMessageHandler"
+		parent="emailMessageHandlerBase"
+		class="org.alfresco.email.server.handler.TopicEmailMessageHandler" />
+
+
+</beans>

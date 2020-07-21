@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+    <bean id="repositoryHelper" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.model.Repository" />
+    </bean>
+
+    <bean id="SiteService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.repo.site.SiteServiceInternal" />
+    </bean>
+
+    <bean id="NodeService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.repository.NodeService" />
+    </bean>
+
+    <bean id="NamespaceService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.namespace.NamespaceService" />
+    </bean>
+
+    <bean id="SearchService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.alfresco.service.cmr.search.SearchService" />
+    </bean>
+
+</beans>

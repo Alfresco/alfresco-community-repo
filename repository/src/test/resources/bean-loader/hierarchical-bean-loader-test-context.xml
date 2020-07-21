@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="test-properties"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>false</value>
+        </property>
+        <property name="systemPropertiesModeName">
+            <value>SYSTEM_PROPERTIES_MODE_OVERRIDE</value>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
+    </bean>
+    
+	<bean id="test.someString" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+        <property name="targetBeanName">
+            <value>test.someString.#bean.dialect#</value>
+        </property>
+        <property name="targetClass">
+            <value>java.lang.String</value>
+        </property>
+        <property name="dialectBaseClass">
+            <value>java.util.AbstractCollection</value>
+        </property>
+        <property name="dialectClass">
+            <value>${hierarchy-test.dialect}</value>
+        </property>
+    </bean>
+
+    <bean id="test.someString.java.util.AbstractCollection" class="java.lang.String">
+        <constructor-arg value="AbstractCollection"></constructor-arg>
+    </bean>
+    <bean id="test.someString.java.util.AbstractList" class="java.lang.String">
+        <constructor-arg value="AbstractList"></constructor-arg>
+    </bean>
+    <bean id="test.someString.java.util.TreeSet" class="java.lang.String">
+        <constructor-arg value="TreeSet"></constructor-arg>
+    </bean>
+
+</beans>

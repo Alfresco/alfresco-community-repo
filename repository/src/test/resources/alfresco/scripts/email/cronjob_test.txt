@@ -1,0 +1,45 @@
+https://issues.alfresco.com/jira/browse/MNT-8776
+
+Cronjob sending emails fails when « System » is used, it causes FTL model.person=null when sending mails
+
+To reproduce, configure a « CronScheduledQueryBasedTemplateActionDefinition » 
+<bean id="createNewsEachWeek" class="org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinition">
+<property name="transactionMode">
+<value>UNTIL_FIRST_FAILURE</value>
+</property>
+..
+<property name="queryTemplate">
+<value>+TYPE:"cm:folder" +@cm\:name:"Gepubliceerd"</value>
+</property>
+..
+<property name="runAsUser">
+<value>System</value>
+</property>
+</bean>
+You need a script called by  CronScheduledQueryBasedTemplateActionDefinition  that execute the MailAcionExecuter :
+function notifyIntranetGroup(content) {
+if(SENT_NOTIFICATION_EMAILS == true) {
+var mail = actions.create("mail");
+mail.parameters.to = SENT_NOTIFICATION_ADRESS;
+mail.parameters.subject = "[INFO][NEW][NEWS] " + content.properties["cm:name"];
+mail.parameters.text = "Een nieuw nieuwsbericht werd toegevoegd.";
+var notificationTemplate = search.luceneSearch("@cm
+:name:'notify_new_document_email.ftl'");
+if(notificationTemplate.length >= 1) { 
+if(notificationTemplate[0].name == "notify_new_document_email.ftl")
+{ mail.parameters.template = notificationTemplate[0]; }
+}
+mail.execute(content);
+}
+}
+THE FTL notify_new_document_email.ftl must exist as well in your repo.
+--------------------------------------
+A new document '$
+{document.name}
+', is available in the '$
+{space.name}
+' space, it was added by $
+{person.properties.firstName}
+<#if person.properties.lastName?exists> $
+{person.properties.lastName}
+</#if>.

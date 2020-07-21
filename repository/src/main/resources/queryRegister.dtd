@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Parameter definitions -->
+<!ELEMENT query-register (name, namespaces, parameter-definition*, query-definition*)>
+<!ELEMENT namespaces (namespace*)>
+<!ELEMENT namespace (prefix, uri)>
+<!ELEMENT prefix (#PCDATA)>
+<!ELEMENT uri (#PCDATA)>
+<!ELEMENT parameter-definition (qname, (property | type ), default-value?)>
+<!ELEMENT qname (#PCDATA)>
+<!ELEMENT property (#PCDATA) >
+<!ELEMENT type (#PCDATA) >
+<!ELEMENT query-definition (qname, language, (parameter-definition | parameter-ref)*, query)>
+<!ELEMENT parameter-ref (qname)>
+<!ELEMENT language (#PCDATA)>
+<!ELEMENT query (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT default-value (#PCDATA)>

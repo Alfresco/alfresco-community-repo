@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+   Select statements that require proper size limiting on the DB side
+   Dialect: Generic
+-->
+<mapper namespace="alfresco.content.select">
+
+    <!-- Get content URL entities that were orphaned before a give time -->
+    <select id="select_ContentUrlsOrphaned" parameterType="ContentUrlOrphanQuery" resultMap="alfresco.content.result_ContentUrl">
+        <![CDATA[
+        select
+            cu.*
+        from
+            alf_content_url cu
+            left outer join alf_content_data cd on (cd.content_url_id = cu.id)
+        where
+            cd.id is null and
+            cu.orphan_time > 0 and
+            cu.orphan_time < #{maxOrphanTimeExclusive} and
+            cu.orphan_time is not null
+        ]]>
+    </select>
+
+</mapper>

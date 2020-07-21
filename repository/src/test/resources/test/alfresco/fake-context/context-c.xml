@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- Defines some beans, some of which are used by C, and beans which use -->
+<!--  A and B -->
+<beans>
+   <bean id="FromCRefNoneNum1" class="java.lang.Long">
+      <constructor-arg type="String"><value>123456789</value></constructor-arg>
+   </bean>
+   <bean id="FromCRefNoneNum2" class="java.lang.String">
+      <constructor-arg type="String"><value>The Lazy Fox</value></constructor-arg>
+   </bean>
+
+   <bean id="FromCRefANum1" class="java.lang.String">
+      <constructor-arg type="String"><ref bean="FromARefNoneNum1" /></constructor-arg>
+   </bean>
+   <bean id="FromCRefANum2" class="java.lang.String">
+      <constructor-arg type="String"><ref bean="FromARefNoneNum2" /></constructor-arg>
+   </bean>
+   <bean id="FromCRefBNum1" class="java.util.Date">
+      <property name="time">
+         <ref bean="FromBRefNoneNum1" />
+      </property>
+   </bean>
+</beans>

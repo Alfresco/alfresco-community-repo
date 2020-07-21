@@ -1,0 +1,30 @@
+<binding>
+
+<!--   <format type="java.util.Date" serializer="org.alfresco.repo.dictionary.M2XML.serialiseDate" deserializer="org.alfresco.repo.dictionary.M2XML.deserialiseDate"/> -->
+         
+   <mapping name="system-info" class="org.alfresco.repo.importer.system.SystemInfo">
+      
+      <structure name="patches">
+         <collection field="patches" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <structure name="patch" type="org.alfresco.repo.importer.system.PatchInfo" usage="optional">
+               <value name="id" field="id"/>
+               <value name="description" field="description"/>
+               <value name="fixes-from-schema" field="fixesFromSchema"/>
+               <value name="fixes-to-schema" field="fixesToSchema"/>
+               <value name="target-schema" field="targetSchema"/>
+               <value name="applied-to-schema" field="appliedToSchema"/>
+               <value name="applied-to-server" field="appliedToServer"/>
+               <value name="applied-on-date" field="appliedOnDate"/>
+               <value name="was-executed" field="wasExecuted"/>
+               <value name="succeeded" field="succeeded"/>
+               <value name="report" field="report" usage="optional"/>
+            </structure>
+         </collection>
+      </structure>
+
+      <structure name="version-store">
+      </structure>
+      
+   </mapping>
+
+</binding>

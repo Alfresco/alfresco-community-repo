@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.propval.insert">
+
+    <insert id="insert_PropertyClass" parameterType="PropertyClass" >
+        <selectKey resultType=
+        "long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_class_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyClass_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertyStringValue" parameterType="PropertyStringValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_string_value_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyStringValue_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertyDoubleValue" parameterType="PropertyDoubleValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_double_value_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyDoubleValue_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertySerializableValue" parameterMap="alfresco.propval.parameter_IdPropertySerializableValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_serializable_value_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertySerializableValue_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertyValue" parameterType="PropertyValue" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_value_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyValue_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertyRoot" parameterMap="alfresco.propval.parameter_IdPropertyRoot" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_root_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyRoot_Sequence"/>
+    </insert>
+
+    <insert id="insert_PropertyUniqueContext" parameterType="PropertyUniqueContext" >
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_prop_unique_ctx_seq')
+        </selectKey>
+        <include refid="alfresco.propval.insert_PropertyUniqueContext_Sequence"/>
+    </insert>
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+    <bean id="searchResourceFinder" class="org.alfresco.util.ResourceFinder"/>
+    
+    <bean id="searchSchedulerResources" factory-bean="searchResourceFinder" factory-method="getResources">
+        <constructor-arg>
+            <list>
+                <value>classpath:alfresco/domain/quartz.properties</value>
+                <value>classpath*:alfresco/enterprise/*-quartz.properties</value>
+                <value>classpath*:alfresco/extension/*-quartz.properties</value>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="searchSchedulerProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <ref bean="searchSchedulerResources" />
+        </property>
+    </bean>
+
+    <!-- Search task scheduler -->
+    <!-- Triggers should not appear here-->
+    <!-- This bean should not need to appear else where in extension configuration -->
+    <!-- if it is required to add triggers to the scheduler use SchedulerAccessorBean or AlfrescoSchedulerAccessorBean-->
+    <bean id="searchSchedulerFactory" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" depends-on="dynamicExporter">
+        <property name="waitForJobsToCompleteOnShutdown">
+            <value>true</value>
+        </property>
+        <property name="schedulerFactoryClass">
+            <value>org.alfresco.repo.scheduler.AlfrescoSchedulerFactory</value>
+        </property>
+        <property name="jobFactory">
+            <bean class="org.alfresco.repo.scheduler.AlfrescoJobFactory" />
+        </property>
+        <property name="quartzProperties">
+            <ref bean="schedulerProperties" />
+        </property>
+        <property name="schedulerName">
+            <value>SearchScheduler</value>
+        </property>
+        <!-- Do not auto start the scheduler - this is done at the end of the bootstrap process -->
+        <property name="autoStartup">
+            <value>false</value>
+        </property>
+    </bean>
+</beans>

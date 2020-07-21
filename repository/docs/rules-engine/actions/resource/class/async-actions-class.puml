@@ -1,0 +1,37 @@
+@startuml
+
+title Actions: Asynchronous Actions Classes (V5.1 Current)
+
+interface ActionService {
+    + void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions, boolean executeAsychronously)
+}
+class ActionServiceImpl implements ActionService {
+    - ActionTransactionListener transactionListener
+    - Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues
+    + void registerAsynchronousActionExecutionQueue(String key, AsynchronousActionExecutionQueue asyncExecQueue)
+    + void executeAction(...)
+    - void addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain)
+    - List<PendingAction> getPostTransactionPendingActions()
+    + postCommit()
+    - queueAction(PendingAction action)
+    + etc(...)
+}
+
+interface AsynchronousActionExecutionQueue {
+    + void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef, boolean checkConditions, Set<String> actionChain);
+}
+class AsynchronousActionExecutionQueueImpl implements AsynchronousActionExecutionQueue {
+    - ThreadPoolExecutor threadPoolExecutor
+    - TransactionService transactionService
+    - PolicyComponent policyComponent
+    - Map<String, AbstractAsynchronousActionFilter> actionFilters
+    - String id
+    + void init()
+    + void executeAction(...)
+    + etc(...)
+}
+
+AsynchronousActionExecutionQueueImpl o- "1" ActionServiceImpl
+AsynchronousActionExecutionQueueImpl "0..*" -o ActionServiceImpl
+
+@enduml

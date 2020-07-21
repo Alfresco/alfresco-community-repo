@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0">
+   <st:sites xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns:st="http://www.alfresco.org/model/site/1.0" xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:app="http://www.alfresco.org/model/application/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns="" view:childName="${spaces.sites.childname}">
+      <view:acl>
+      </view:acl>
+      <view:aspects>
+         <app:uifacets/>
+      </view:aspects>
+      <view:properties>
+         <cm:name>${spaces.sites.name}</cm:name>
+         <app:icon>space-icon-default</app:icon>
+         <cm:title>${spaces.sites.name}</cm:title>
+         <cm:description>${spaces.sites.description}</cm:description>
+      </view:properties>
+      <view:associations>
+         <cm:contains>
+            <cm:folder view:childName="cm:surf-config">
+               <view:properties>
+                  <cm:description></cm:description>
+                  <cm:name>surf-config</cm:name>
+               </view:properties>
+               <view:aspects>
+                  <sys:hidden/>
+               </view:aspects>
+               <cm:contains>
+                  <cm:folder view:childName="cm:extensions">
+                     <view:acl>
+                        <view:ace view:access="ALLOWED">
+                           <view:authority>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</view:authority>
+                           <view:permission>Collaborator</view:permission>
+                        </view:ace>
+                     </view:acl>
+                     <view:properties>
+                        <cm:description></cm:description>
+                        <cm:name>extensions</cm:name>
+                     </view:properties>
+                     <view:aspects>
+                        <sys:hidden/>
+                    </view:aspects>
+                  </cm:folder>
+               </cm:contains>
+               <cm:contains>
+                  <cm:folder view:childName="cm:module-deployments">
+                     <view:acl>
+                        <view:ace view:access="ALLOWED">
+                           <view:authority>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</view:authority>
+                           <view:permission>Collaborator</view:permission>
+                        </view:ace>
+                     </view:acl>
+                     <view:properties>
+                        <cm:description></cm:description>
+                        <cm:name>module-deployments</cm:name>
+                     </view:properties>
+                     <view:aspects>
+                        <sys:hidden/>
+                    </view:aspects>
+                  </cm:folder>
+               </cm:contains>
+            </cm:folder>
+         </cm:contains>
+      </view:associations>
+   </st:sites>
+</view:view>

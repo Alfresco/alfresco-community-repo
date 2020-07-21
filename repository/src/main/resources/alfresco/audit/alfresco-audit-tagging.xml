@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- "Audit" Configuration for the Tagging Service -->
+<!-- The tagging service makes use of the audit service to provide -->
+<!-- an event store for tag scope updates -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/tagging" target="/tagging"/>
+    </PathMappings>
+
+    <Application name="Alfresco Tagging Service" key="tagging">
+        <AuditPath key="node">
+            <RecordValue key="value" dataExtractor="simpleValue"/>
+        </AuditPath>
+        <AuditPath key="tags">
+            <RecordValue key="value" dataExtractor="simpleValue"/>
+        </AuditPath>
+    </Application>
+</Audit>

@@ -1,0 +1,81 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:cm="http://www.alfresco.org/model/content/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0"
+           xmlns:app="http://www.alfresco.org/model/application/1.0">
+    
+    <view:reference view:pathref="${bootstrap.location.path}">
+        <!-- Apply Read access to Everyone on root node of Spaces Store -->
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+        <!-- Apply Read access to Guest on root node of Spaces Store -->
+        <view:acl>
+            <view:ace view:access="ALLOWED">
+                <view:authority>${alfresco_user_store.guestusername}</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+    </view:reference>
+    
+    <sys:container view:childName="${system.system_container.childname}">
+        <!-- Apply Read access to Everyone on sys:system node -->
+        <view:acl view:inherit="false">
+            <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Read</view:permission>
+            </view:ace>
+        </view:acl>
+        <sys:children>
+            <sys:container view:childName="${system.people_container.childname}">
+                <sys:children>
+                    <cm:person view:childName="cm:${alfresco_user_store.adminusername}">
+                        <view:acl>
+                           <view:ace view:access="ALLOWED">
+                              <view:authority>${alfresco_user_store.adminusername}</view:authority>
+                              <view:permission>All</view:permission>
+                           </view:ace>
+                           <view:ace view:access="ALLOWED">
+                              <view:authority>ROLE_OWNER</view:authority>
+                              <view:permission>All</view:permission>
+                           </view:ace>
+                        </view:acl>
+                        <view:aspects>
+                            <cm:ownable></cm:ownable>
+                        </view:aspects>
+                        <cm:owner>${alfresco_user_store.adminusername}</cm:owner>
+                        <cm:userName>${alfresco_user_store.adminusername}</cm:userName>
+                        <cm:firstName>Administrator</cm:firstName>
+                        <cm:lastName></cm:lastName>
+                        <cm:email>admin@alfresco.com</cm:email>
+                        <cm:organizationId></cm:organizationId>
+                        <cm:homeFolder>/${spaces.company_home.childname}</cm:homeFolder>
+                        <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>
+                        <cm:sizeCurrent>0</cm:sizeCurrent>
+                    </cm:person>
+                    <!-- Guest needs to read their own person information -->
+                    <cm:person view:childName="cm:${alfresco_user_store.guestusername}">
+                        <view:acl>
+                           <view:ace view:access="ALLOWED">
+                              <view:authority>${alfresco_user_store.guestusername}</view:authority>
+                              <view:permission>Read</view:permission>
+                           </view:ace>
+                        </view:acl>
+                        <cm:userName>${alfresco_user_store.guestusername}</cm:userName>
+                        <cm:firstName>Guest</cm:firstName>
+                        <cm:lastName></cm:lastName>
+                        <cm:email></cm:email>
+                        <cm:organizationId></cm:organizationId>
+                        <cm:homeFolder>/${spaces.company_home.childname}/${spaces.guest_home.childname}</cm:homeFolder>
+                        <cm:homeFolderProvider>bootstrapHomeFolderProvider</cm:homeFolderProvider>
+                        <cm:sizeCurrent>0</cm:sizeCurrent>
+                    </cm:person>
+                </sys:children>
+            </sys:container>
+            <sys:container view:childName="${system.workflow_container.childname}"/>
+        </sys:children>
+    </sys:container>
+
+</view:view>

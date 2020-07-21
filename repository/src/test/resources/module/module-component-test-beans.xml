@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!--
+   Context for testing module components.
+   This is a primary context that pulls in all the others required, 
+   including the Alfresco context.
+-->
+<beans >
+
+   <!-- Import the Alfresco nitty gritty -->
+   <import resource="classpath:alfresco/application-context.xml" />
+   
+   <!--
+      Define the module components that need testing.
+      This is pretty much how they will appear in individual module contexts, anyway
+   -->
+   <bean id="module.test.importerComponent" class="org.alfresco.repo.module.ImporterModuleComponent" parent="module.baseComponent">
+      <!-- General properties for component management -->
+      <property name="moduleId" value="module.test" />
+      <property name="name" value="importerComponent" />
+      <property name="description" value="A sample data importer" />
+      <property name="sinceVersion" value="2.0" />
+      <property name="appliesFromVersion" value="1.0" />
+      <property name="appliesToVersion" value="1.4" />
+      <!-- Implementation-specific properties for execution -->
+      <property name="importer" ref="spacesBootstrap" />
+      <property name="bootstrapView">
+         <props>
+            <prop key="path">/cm:categoryRoot/cm:generalclassifiable</prop>
+            <prop key="location">module/module-importer-test-categories.xml</prop>
+         </props>
+      </property>
+   </bean>
+
+</beans>

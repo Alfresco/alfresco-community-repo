@@ -1,0 +1,57 @@
+<alfresco-config>
+   
+   <config>
+      <global-item>The global value</global-item>
+      <override>false</override>
+      <merge-children>
+         <child-one>child one value</child-one>
+      </merge-children>
+      <children-replace>
+         <child-one>child one value</child-one>
+         <child-two>child two value</child-two>
+         <child-three>child three value</child-three>
+      </children-replace>
+   </config>
+   
+   <config evaluator="string-compare" condition="Unit Test">
+      <item>The value</item>
+      <override>true</override>
+   </config>
+   
+   <config evaluator="string-compare" condition="Merge Test">
+      <first-item>first value</first-item>
+      <second-item>second value</second-item>
+      <third-item>third value</third-item>
+      <children>
+         <child-one>child one value</child-one>
+      </children>
+   </config>
+   
+   <config evaluator="string-compare" condition="Replace Test">
+      <first-item>first value</first-item>
+      <second-item>second value</second-item>
+      <third-item>third value</third-item>
+      <children>
+         <child-one>child one value</child-one>
+      </children>
+   </config>
+   
+   <config evaluator="string-compare" condition="Named Child Test">
+      <children>
+         <child-one>child one value</child-one>
+         <child-two>child two value</child-two>
+         <child-three>
+            <grand-children>
+               <grand-child-one an-attribute="test">grand child one value</grand-child-one>
+               <grand-child-two>grand child two value</grand-child-two>
+            </grand-children>
+         </child-three>
+         <child-four>child four value</child-four>
+      </children>
+   </config>
+   
+   <config evaluator="string-compare" condition="Restricted Area Test">
+      <available>A value</available>
+   </config>
+   
+</alfresco-config>

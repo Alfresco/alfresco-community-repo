@@ -1,0 +1,307 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <bean id="controlDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>controlDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.control.ControlDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.alfresco.repo.domain.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="controlDAO.org.alfresco.repo.domain.dialect.Dialect"
+         class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+   </bean>
+   <bean id="controlDAO.org.alfresco.repo.domain.dialect.PostgreSQLDialect"
+         class="org.alfresco.repo.domain.control.ibatis.ControlDAOImpl$PostgreSQL"
+         parent="controlDAO.org.alfresco.repo.domain.dialect.Dialect">
+   </bean>
+   
+   <bean id="postDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityPostDAOImpl">
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
+   </bean>
+   
+   <bean id="feedDAO" class="org.alfresco.repo.domain.activities.ibatis.ActivityFeedDAOImpl">
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
+      <property name="tenantService" ref="tenantService"/>
+      <property name="fetchBatchSize" value="${activities.feed.fetchBatchSize}"/>
+   </bean>
+   
+   <bean id="feedControlDAO" class="org.alfresco.repo.domain.activities.ibatis.FeedControlDAOImpl">
+      <property name="sqlSessionTemplate" ref="activitiesSqlSessionTemplate"/>
+   </bean>
+   
+   <bean id="subscriptionsDAO" class="org.alfresco.repo.domain.subscriptions.ibatis.SubscriptionsDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="personService" ref="personService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="QNameDAO" ref="qnameDAO"/>
+   </bean>
+   
+   <bean id="patchDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>patchDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.patch.PatchDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.alfresco.repo.domain.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="patchDAOBase" abstract="true">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+   </bean>
+   <bean id="patchDAO.org.alfresco.repo.domain.dialect.Dialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl" parent="patchDAOBase" />
+   <bean id="patchDAO.org.alfresco.repo.domain.dialect.PostgreSQLDialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl$PostgreSQL" parent="patchDAOBase" />
+   <bean id="patchDAO.org.alfresco.repo.domain.dialect.AlfrescoOracle9Dialect" class="org.alfresco.repo.domain.patch.ibatis.PatchDAOImpl$Oracle" parent="patchDAOBase" />
+   
+   <bean id="appliedPatchDAO" class="org.alfresco.repo.domain.patch.ibatis.AppliedPatchDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+   </bean>
+   
+   <bean id="qnameDAO" class="org.springframework.aop.framework.ProxyFactoryBean" >
+      <property name="targetName">
+         <value>qnameDAOImpl</value>
+      </property>
+      <property name="proxyInterfaces">
+         <list>
+            <value>org.alfresco.repo.domain.qname.QNameDAO</value>
+         </list>
+      </property>
+      <property name="interceptorNames">
+         <list>
+         </list>
+      </property>
+   </bean>
+   <bean id="qnameDAOImpl" class="org.alfresco.repo.domain.qname.ibatis.QNameDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="namespaceCache" ref="immutableEntityCache"/>
+      <property name="qnameCache" ref="immutableEntityCache"/>
+   </bean>
+
+   <bean id="nodeDAO" class="org.alfresco.util.bean.HierarchicalBeanLoader">
+      <property name="targetBeanName">
+         <value>nodeDAO.#bean.dialect#</value>
+      </property>
+      <property name="targetClass">
+         <value>org.alfresco.repo.domain.node.NodeDAO</value>
+      </property>
+        <property name="dialectBaseClass">
+            <value>org.alfresco.repo.domain.dialect.Dialect</value>
+        </property>
+        <property name="dialectClass">
+            <bean class="org.springframework.beans.factory.config.PropertyPathFactoryBean">
+                <property name="targetBeanName" value="dialect" />
+                <property name="propertyPath" value="class.name" />
+            </bean>
+        </property>
+   </bean>
+   <bean id="nodeDAObase" abstract="true" init-method="init">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="transactionService" ref="transactionService" />
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
+      <property name="aclDAO" ref="aclDAO"/>
+      <property name="accessControlListDAO" ref="admNodeACLDAO"/>
+      <property name="controlDAO" ref="controlDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="usageDAO" ref="usageDAO"/>
+      <property name="rootNodesCache" ref="node.rootNodesCache"/>
+      <property name="allRootNodesCache" ref="node.allRootNodesCache"/>
+      <property name="nodesCache" ref="node.nodesCache"/>
+      <property name="aspectsCache" ref="node.aspectsCache"/>
+      <property name="propertiesCache" ref="node.propertiesCache"/>
+      <property name="parentAssocsCacheSize" value="${system.cache.parentAssocs.maxSize}"/>
+      <property name="parentAssocsCacheLimitFactor" value="${system.cache.parentAssocs.limitFactor}"/>
+      <property name="childByNameCache" ref="node.childByNameCache"/>
+      <property name="cachingThreshold" value="${nodes.bulkLoad.cachingThreshold}"/>
+   </bean>
+   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
+   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQL" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
+   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.AlfrescoSQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
+   
+   <!-- WARNING: Experimental/unsupported - see MySQLClusterNDBDialect ! -->
+   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.AlfrescoMySQLClusterNDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQLClusterNDB" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
+   
+   <bean id="lockDAO" class="org.alfresco.repo.domain.locks.ibatis.LockDAOImpl">
+      <property name="sqlSessionTemplate" ref="locksSqlSessionTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+   
+   <bean id="mimetypeDAO" class="org.alfresco.repo.domain.mimetype.ibatis.MimetypeDAOImpl">
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
+      <property name="mimetypeEntityCache" ref="immutableEntityCache"/>
+   </bean>
+   
+   <bean id="encodingDAO" class="org.alfresco.repo.domain.encoding.ibatis.EncodingDAOImpl">
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
+      <property name="encodingEntityCache" ref="immutableEntityCache"/>
+   </bean>
+   
+   <bean id="localeDAO" class="org.alfresco.repo.domain.locale.ibatis.LocaleDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="localeEntityCache" ref="immutableEntityCache"/>
+   </bean>
+   
+   <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
+      <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
+      <property name="contentDataCache" ref="contentDataCache"/>
+      <property name="contentUrlCache" ref="contentUrlCache"/>
+      <property name="controlDAO" ref="controlDAO"/>
+      <property name="mimetypeDAO" ref="mimetypeDAO"/>
+      <property name="encodingDAO" ref="encodingDAO"/>
+      <property name="localeDAO" ref="localeDAO"/>
+      <property name="contentStoreCleaner" ref="eagerContentStoreCleaner"/>
+   </bean>
+   
+   <bean id="scriptExecutor" class="org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImpl">
+      <constructor-arg>
+         <bean class="org.alfresco.repo.domain.schema.script.ScriptExecutorImpl">
+            <property name="dataSource">
+               <ref bean="dataSource" />
+            </property>
+            <!--<property name="localSessionFactory">-->
+               <!--<ref bean="&amp;sessionFactory"></ref>  &lt;!&ndash; inject the actual factory, not a session &ndash;&gt;-->
+            <!--</property>-->
+            <property name="dialect">
+               <ref bean="dialect" />
+            </property>
+            <property name="globalProperties">
+               <ref bean="global-properties" />
+            </property>
+         </bean>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="propertyValueDAO" class="org.alfresco.repo.domain.propval.ibatis.PropertyValueDAOImpl">
+      <property name="sqlSessionTemplate" ref="propertyValueSqlSessionTemplate"/>
+      <property name="converter">
+         <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
+      </property>
+      <property name="controlDAO" ref="controlDAO"/>
+      <property name="propertyClassCache" ref="propertyClassCache"/>
+      <!--
+      <property name="propertyDateValueCache" ref="propertyValueCache"/>
+      <property name="propertyStringValueCache" ref="propertyValueCache"/>
+      <property name="propertyDoubleValueCache" ref="propertyValueCache"/>
+      <property name="propertySerializableValueCache" ref="propertyValueCache"/>
+      -->
+      <property name="propertyValueCache" ref="propertyValueCache"/>
+      <property name="propertyCache" ref="propertyValueCache"/>
+      
+      <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
+      
+      <property name="scriptExecutor" ref="scriptExecutor"/>
+      <property name="uniquenessCheckEnabled" value="${system.propval.uniquenessCheck.enabled}"/>
+      
+   </bean>
+   
+   <bean id="auditDAO" class="org.alfresco.repo.domain.audit.ibatis.AuditDAOImpl">
+      <property name="sqlSessionTemplate" ref="auditSqlSessionTemplate"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="contentDataDAO" ref="contentDataDAO"/>
+      <property name="propertyValueDAO" ref="propertyValueDAO"/>
+   </bean>
+   
+   <!-- Permissions (including ACLs / ACEs) -->
+   
+   <bean id="permissionsDaoComponent" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+      <property name="proxyInterface">
+         <value>org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent</value>
+      </property>
+      <property name="defaultBinding">
+         <ref bean="admPermissionsDaoComponent"></ref>
+      </property>
+      <property name="redirectedProtocolBindings">
+         <map>
+            <entry key="workspace"><ref bean="admPermissionsDaoComponent"></ref></entry>
+            <entry key="versionStore"><ref bean="admPermissionsDaoComponent"></ref></entry>
+         </map>
+      </property>
+   </bean>
+   
+   <bean id="admPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.ADMPermissionsDaoComponentImpl">
+      <property name="aclDAO">
+         <ref bean="aclDAO"/>
+      </property>
+      <property name="protocolToACLDAO">
+         <map>
+            <entry key="workspace"><ref bean="admNodeACLDAO"></ref></entry>
+         </map>
+      </property>
+      <property name="defaultACLDAO">
+          <ref bean="admNodeACLDAO"/>
+       </property>
+   </bean>
+   
+   <bean id="admNodeACLDAO" class="org.alfresco.repo.domain.permissions.ADMAccessControlListDAO">
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="aclDAO" ref="aclDAO"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="preserveAuditableData" value="${system.auditableData.ACLs}"></property>
+      <property name="fixedAclMaxTransactionTime" value="${system.fixedACLs.maxTransactionTime}"/>
+   </bean>
+    
+   <bean id="aclCrudDAO" class="org.alfresco.repo.domain.permissions.ibatis.AclCrudDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="aclEntityCache" ref="aclEntityCache"/>
+      <property name="authorityEntityCache" ref="authorityEntityCache"/>
+      <property name="permissionEntityCache" ref="permissionEntityCache"/>
+   </bean>
+   
+   <bean id="aclDAO" class="org.alfresco.repo.domain.permissions.AclDAOImpl">
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="aclCrudDAO" ref="aclCrudDAO"/>
+      <property name="aclCache" ref="aclCache"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="tenantService" ref="tenantService"/>
+   </bean>
+   
+   <bean id="usageDAO" class="org.alfresco.repo.domain.usage.ibatis.UsageDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+   </bean>
+   
+   <bean id="cannedQueryDAO" class="org.alfresco.repo.domain.query.ibatis.CannedQueryDAOImpl" init-method="init">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="controlDAO" ref="controlDAO"/>
+   </bean>
+   
+   <bean id="solrDAO" class="org.alfresco.repo.domain.solr.ibatis.SOLRDAOImpl" init-method="init">
+      <property name="sqlSessionTemplate" ref="solrSqlSessionTemplate"/>
+      <property name="qNameDAO" ref="qnameDAO"/>
+   </bean>
+   
+   <bean id="tenantAdminDAO" class="org.alfresco.repo.domain.tenant.ibatis.TenantAdminDAOImpl">
+      <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+      <property name="tenantEntityCache" ref="tenantEntityCache"/>
+   </bean>
+   
+</beans>

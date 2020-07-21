@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- We need to import spring contexts for our test code in a very specific order.
+         [Community, Enterprise, Cloud] and config defined in Cloud must override config defined in
+         Enterprise or Community. Likewise for other combinations. -->
+    <import resource="classpath:alfresco/test/integration/community/*-context.xml"/>
+    <import resource="classpath:alfresco/test/integration/enterprise/*-context.xml"/>
+    <import resource="classpath:alfresco/test/integration/cloud/*-context.xml"/>
+</beans>

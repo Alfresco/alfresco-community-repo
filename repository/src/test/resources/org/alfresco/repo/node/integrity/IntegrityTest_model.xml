@@ -1,0 +1,245 @@
+<model name="test:integrity" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Test Model for Integrity tests</description>
+   <author>Alfresco</author>
+   <published>2005-06-05</published>
+   <version>0.1</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri='http://www.alfresco.org/model/content/1.0' prefix='cm'/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/IntegrityTest" prefix="test"/>
+   </namespaces>
+
+   <constraints>
+      <constraint name="test:lov1" type="LIST">
+         <title>lov11 title</title>
+         <description>lov1 description</description>
+         <parameter name="allowedValues">
+             <list>
+                 <value>ABC</value>
+                 <value>DEF </value>
+                 <value> EFG</value>
+                 <value> HIJ </value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+
+   <types>
+      <!-- Type without anyting -->
+      <type name="test:typeWithoutAnything">
+         <title>Type Without Anything</title>
+         <parent>sys:base</parent>
+      </type>
+      <!-- Type with mandatory properties -->
+      <type name="test:typeWithProperties">
+         <title>Type With Properties</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:prop-text-a">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:prop-text-b">
+               <type>d:text</type>
+            </property>
+            <property name="test:prop-text-c">
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="test:prop-text-d">
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+               <constraints>
+                  <constraint ref="test:lov1"/>
+               </constraints>
+            </property>
+         </properties>
+      </type>
+      <!-- Type with encrypted properties -->
+      <type name="test:typeWithEncryptedProperties">
+         <title>Type With Encrypted Properties</title>
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:prop-encrypted-a">
+               <type>d:encrypted</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:prop-encrypted-b">
+               <type>d:encrypted</type>
+            </property>
+            <property name="test:prop-encrypted-c">
+               <type>d:encrypted</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+         </properties>
+      </type>
+      <!-- Type with mandatory aspect -->
+      <type name="test:typeWithAspect">
+         <title>Type With Aspect</title>
+         <parent>sys:base</parent>
+         <mandatory-aspects>
+            <aspect>test:aspectWithProperties</aspect>
+         </mandatory-aspects>
+      </type>
+      <!-- Type with assocs -->
+      <type name="test:typeWithAssocs">
+         <title>Type With Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <association name="test:assoc-0to* - 0to*">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:assoc-1to1 - 1to1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+            <association name="test:assoc-1to1 - 0to*">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+      <!-- Type with child assocs -->
+      <type name="test:typeWithChildAssocs">
+         <title>Type With Child Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="test:child-0to* - 0to*">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+            <child-association name="test:child-1to1 - 1to1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
+      <!-- Type with mandatory non-enforced child assocs -->
+      <type name="test:typeWithNonEnforcedChildAssocs">
+         <title>Type With Child Assocs</title>
+         <parent>sys:base</parent>
+         <associations>
+            <child-association name="test:child-non-enforced">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:typeWithoutAnything</class>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </target>
+               <duplicate>false</duplicate>
+            </child-association>
+         </associations>
+      </type>
+      <!-- Type with mandatory non-enforced assocs -->
+      <type name="test:typeWithNonEnforcedTargetAssocs">
+         <title>Type With Non Enforced Assocs</title>
+         <parent>cm:content</parent>
+         <associations>
+            <association name="test:target-non-enforced">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory enforced="false">true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+   </types>
+   
+   <aspects>
+      <!-- aspect with properties -->
+      <aspect name="test:aspectWithProperties">
+         <title>Aspect with Properties</title>
+         <properties>
+            <property name="test:prop-int-a">
+               <type>d:int</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:prop-int-b">
+               <type>d:int</type>
+            </property>
+            <property name="test:prop-int-c">
+               <type>d:int</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+         </properties>
+      </aspect>
+      <!-- aspect with associations -->
+      <aspect name="test:aspectWithAssoc">
+         <title>Aspect with associations</title>
+         <associations>
+             <association name="test:aspect-assoc-1to1 - 1to1">
+                <source>
+                   <mandatory>true</mandatory>
+                   <many>false</many>
+                </source>
+                <target>
+                   <class>test:typeWithoutAnything</class>
+                   <mandatory>true</mandatory>
+                   <many>false</many>
+                </target>
+             </association>
+         </associations>
+      </aspect>
+      <!-- aspect with aspects -->
+      <aspect name="test:aspectWithAspect">
+         <title>Aspect with aspects</title>
+         <mandatory-aspects>
+            <aspect>test:aspectWithProperties</aspect>
+         </mandatory-aspects>
+      </aspect>
+   </aspects>
+
+</model>

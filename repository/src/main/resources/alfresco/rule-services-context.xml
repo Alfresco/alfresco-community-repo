@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+   <!-- Rules Service -->
+   
+   <bean id="ruleService" class="org.alfresco.repo.rule.RuleServiceImpl" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="runtimeNodeService" ref="nodeService"/>
+        <property name="copyService" ref="copyService"/>
+        <property name="actionService" ref="ActionService"/>
+        <property name="runtimeActionService" ref="actionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="permissionService" ref="permissionService"/>
+	    <property name="nodeRulesCache" ref="nodeRulesCache"/>
+        <property name="rulesDisabled">
+            <value>false</value>
+        </property>
+   </bean>
+   
+   <!-- Rules Aspect -->
+   
+   <bean id="rulesAspect" class="org.alfresco.repo.rule.RulesAspect" init-method="init">
+      <property name="policyComponent">
+         <ref bean="policyComponent"/>
+      </property>             
+      <property name="behaviourFilter">
+         <ref bean="policyBehaviourFilter"/>
+      </property>       
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>       
+      <property name="ruleService">
+         <ref bean="ruleService"/>
+      </property>
+   </bean> 
+   
+   <!-- I18N -->
+   
+   <bean id="ruleResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+        <property name="resourceBundles">
+            <list>
+                <value>alfresco.messages.rule-config</value>
+            </list>
+        </property>
+   </bean>
+         
+   <!-- Rule types -->
+   
+   <bean id="rule-type-base" abstract="true" init-method="init">   
+      <property name="ruleService">
+         <ref bean="ruleService"/>
+      </property>      
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>                    
+   </bean>
+   
+   <bean id="inbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+      <constructor-arg>
+         <list>
+            <ref bean="on-create-node-trigger"/>
+            <ref bean="on-move-node-trigger"/>
+            <ref bean="on-create-child-association-trigger"/>
+            <ref bean="on-content-create-trigger"/>
+            <ref bean="on-content-restore-trigger"/>
+         </list>
+      </constructor-arg>
+   </bean>
+
+   <bean id="update" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+      <constructor-arg>
+         <list>
+            <ref bean="on-property-update-trigger"/>
+            <ref bean="on-create-association-trigger"/>
+            <ref bean="on-delete-association-trigger"/>
+         </list>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="outbound" class="org.alfresco.repo.rule.RuleTypeImpl" parent="rule-type-base">
+      <constructor-arg>
+         <list>
+             <ref bean="on-delete-child-association-trigger"/>
+             <ref bean="on-delete-node-trigger"/>
+         </list>
+      </constructor-arg>
+   </bean>
+      
+   <!-- Rule triggers -->
+   
+   <bean id="rule-trigger-base" abstract="true" init-method="registerRuleTrigger">
+      <property name="policyComponent" ref="policyComponent"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="authenticationComponent" ref="authenticationComponent"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="ruleService" ref="ruleService"/>
+      <property name="ignoredAspectsStr">
+         <list>
+            <value>{http://www.alfresco.org/model/system/1.0}noContent</value>
+            <value>{http://www.alfresco.org/model/system/1.0}temporary</value>
+         </list>
+      </property>
+      <property name="ignoredTypeStr">
+      	 <list>
+      		<value>{http://www.alfresco.org/model/rule/1.0}rule</value>
+      		<value>{http://www.alfresco.org/model/action/1.0}action</value>
+      		<value>{http://www.alfresco.org/model/content/1.0}thumbnail</value>
+      		<value>{http://www.alfresco.org/model/content/1.0}failedThumbnail</value>
+      		<!-- Workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382) -->
+      		<value>{http://www.alfresco.org/model/content/1.0}rating</value>
+      		<value>{http://www.alfresco.org/model/content/1.0}systemfolder</value>
+      		<value>{http://www.alfresco.org/model/forum/1.0}post</value>	
+      	 </list>
+      </property>
+   </bean>
+   
+   <bean id="on-create-node-trigger" class="org.alfresco.repo.rule.ruletrigger.CreateNodeRuleTrigger" parent="rule-trigger-base">
+      <property name="runtimeRuleService" ref="ruleService"/>
+      <property name="isClassBehaviour">
+           <value>true</value>
+      </property>
+   </bean>
+   
+   <bean id="on-update-node-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleNodeRefPolicyRuleTrigger" parent="rule-trigger-base">
+      <property name="policyName">
+         <value>onUpdateNode</value>
+      </property>
+   </bean>
+   
+   <bean id="on-property-update-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
+      <property name="ignoreEmptyContent" >
+         <value>${policy.content.update.ignoreEmpty}</value>
+      </property>
+   </bean>
+   
+   <bean id="on-create-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.OnCreateChildAssociationRuleTrigger" parent="rule-trigger-base">
+   </bean>
+   
+   <bean id="on-move-node-trigger" class="org.alfresco.repo.rule.ruletrigger.OnMoveNodeRuleTrigger" parent="rule-trigger-base">
+      <property name="isClassBehaviour">
+         <value>true</value>
+      </property>
+   </bean>
+   
+   <bean id="on-delete-child-association-trigger" class="org.alfresco.repo.rule.ruletrigger.BeforeDeleteChildAssociationRuleTrigger" parent="rule-trigger-base">
+      <property name="executeRuleImmediately">
+          <value>true</value>
+      </property>
+   </bean>
+      
+   <bean id="on-delete-node-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleNodeRefPolicyRuleTrigger" parent="rule-trigger-base">
+      <property name="policyName">
+         <value>beforeDeleteNode</value>
+      </property>
+      <property name="executeRuleImmediately">
+          <value>true</value>
+      </property>
+   </bean>
+   
+   <bean id="association-trigger-base" abstract="true" parent="rule-trigger-base">
+      <!-- Creation or deletion of these association types will not cause rules to be triggered on their source nodes -->
+      <property name="excludedAssociationTypes">
+         <set>
+            <bean class="org.alfresco.service.namespace.QName" factory-method="createQName">
+               <constructor-arg value="{http://www.alfresco.org/model/content/1.0}original"/>
+            </bean>
+         </set>
+      </property>
+   </bean>
+   
+   <bean id="on-create-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="association-trigger-base">
+      <property name="policyName">
+         <value>onCreateAssociation</value>
+      </property>
+   </bean>
+   
+   <bean id="on-delete-association-trigger" class="org.alfresco.repo.rule.ruletrigger.SingleAssocRefPolicyRuleTrigger" parent="association-trigger-base">
+      <property name="policyName">
+         <value>onDeleteAssociation</value>
+      </property>
+   </bean>
+   
+   <bean id="on-content-create-trigger" class="org.alfresco.repo.rule.ruletrigger.OnPropertyUpdateRuleTrigger" parent="rule-trigger-base">
+      <property name="onNewContent">
+         <value>true</value>
+      </property>
+      <property name="runtimeRuleService" ref="ruleService"/>
+      <property name="ignoreEmptyContent" >
+         <value>${policy.content.update.ignoreEmpty}</value>
+      </property>
+   </bean>
+   
+   <bean id="on-content-restore-trigger" class="org.alfresco.repo.rule.ruletrigger.RestoreNodeRuleTrigger" parent="rule-trigger-base" />
+   
+</beans>

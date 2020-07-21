@@ -1,0 +1,192 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+	        xmlns:cm="http://www.alfresco.org/model/content/1.0"
+	        xmlns:app="http://www.alfresco.org/model/application/1.0"
+                xmlns:emailserver="http://www.alfresco.org/model/emailserver/1.0">
+	
+	<!-- NOTE: all replaced properties referenced from repository.properties file must also be
+	     mapped in the import-export-context.xml spacesStoreImporter/configuration section -->
+	<cm:folder view:childName="${spaces.company_home.childname}">
+		<view:acl view:inherit="false">
+			<view:ace view:access="ALLOWED">
+				<view:authority>GROUP_EVERYONE</view:authority>
+				<view:permission>Consumer</view:permission>
+			</view:ace>
+		</view:acl>
+		<app:uifacets/>
+		<cm:name>${spaces.company_home.name}</cm:name>
+		<app:icon>space-icon-default</app:icon>
+		<cm:title>${spaces.company_home.name}</cm:title>
+		<cm:description>${spaces.company_home.description}</cm:description>
+		<cm:contains>
+			<cm:folder view:childName="${spaces.dictionary.childname}">
+            <view:acl view:inherit="false">
+               <view:ace view:access="ALLOWED">
+                  <view:authority>GROUP_EVERYONE</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+            </view:acl>
+            <app:uifacets/>
+            <cm:name>${spaces.dictionary.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.dictionary.name}</cm:title>
+            <cm:description>${spaces.dictionary.description}</cm:description>
+            <cm:contains>
+               <cm:folder view:childName="${spaces.templates.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.templates.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.templates.name}</cm:title>
+                  <cm:description>${spaces.templates.description}</cm:description>
+               </cm:folder>
+               <cm:folder
+                  view:childName="${spaces.templates.content.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.templates.content.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.templates.content.name}</cm:title>
+                  <cm:description>${spaces.templates.content.description}</cm:description>
+               </cm:folder>
+               <cm:folder
+                  view:childName="${spaces.templates.email.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.templates.email.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.templates.email.name}</cm:title>
+                  <cm:description>${spaces.templates.email.description}</cm:description>
+                        <cm:contains>
+                            <cm:folder
+                                view:childName="${spaces.templates.email.invite.childname}">
+                                <app:uifacets/>
+                                <cm:name>${spaces.templates.email.invite.name}</cm:name>
+                                <app:icon>space-icon-default</app:icon>
+                                <cm:title>${spaces.templates.email.invite.name}</cm:title>
+                                <cm:description>${spaces.templates.email.invite.description}</cm:description>
+                                <!-- The email templates for this folder get loaded in via -->
+                                <!--  ACP bootstrap patches which are always run -->
+                            </cm:folder>
+                        </cm:contains>
+               </cm:folder>
+               <cm:folder
+                  view:childName="${spaces.templates.rss.childname}">
+                  <view:acl>
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>${alfresco_user_store.guestusername}</view:authority>
+                        <view:permission>Consumer</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <app:uifacets/>
+                  <cm:name>${spaces.templates.rss.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.templates.rss.name}</cm:title>
+                  <cm:description>${spaces.templates.rss.description}</cm:description>
+               </cm:folder>
+               <cm:folder
+                  view:childName="${spaces.savedsearches.childname}">
+                  <view:acl view:inherit="false">
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>GROUP_EVERYONE</view:authority>
+                        <view:permission>Contributor</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <app:uifacets/>
+                  <cm:name>${spaces.savedsearches.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.savedsearches.name}</cm:title>
+                  <cm:description>${spaces.savedsearches.description}</cm:description>
+               </cm:folder>
+               <cm:folder view:childName="${spaces.scripts.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.scripts.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.scripts.name}</cm:title>
+                  <cm:description>${spaces.scripts.description}</cm:description>
+               </cm:folder>
+               <cm:folder view:childName="${spaces.nodetemplates.childname}">
+                  <app:uifacets/>
+                  <cm:name>${spaces.nodeTemplatesSpace.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.nodeTemplatesSpace.name}</cm:title>
+                  <cm:description>${spaces.nodeTemplatesSpace.description}</cm:description>
+               </cm:folder>
+               <cm:folder view:childName="${spaces.smartfolders.childname}">
+                  <view:acl view:inherit="false">
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>GROUP_EVERYONE</view:authority>
+                        <view:permission>Contributor</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <app:uifacets />
+                  <cm:name>${spaces.smartfoldertemplates.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.smartfoldertemplates.name}</cm:title>
+                  <cm:description>${spaces.smartfoldertemplates.description}</cm:description>
+               </cm:folder>
+               <cm:folder view:childName="${spaces.smartdownloads.childname}">
+                  <view:acl view:inherit="false">
+                     <view:ace view:access="ALLOWED">
+                        <view:authority>GROUP_EVERYONE</view:authority>
+                        <view:permission>Contributor</view:permission>
+                     </view:ace>
+                  </view:acl>
+                  <app:uifacets />
+                  <cm:name>${spaces.smartdownloads.name}</cm:name>
+                  <app:icon>space-icon-default</app:icon>
+                  <cm:title>${spaces.smartdownloads.name}</cm:title>
+                  <cm:description>${spaces.smartdownloads.description}</cm:description>
+               </cm:folder>
+            </cm:contains>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.guest_home.childname}">
+            <view:acl view:inherit="false">
+               <view:ace view:access="ALLOWED">
+                  <view:authority>${alfresco_user_store.guestusername}</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+               <view:ace view:access="ALLOWED">
+                  <view:authority>GROUP_EVERYONE</view:authority>
+                  <view:permission>Consumer</view:permission>
+               </view:ace>
+            </view:acl>
+            <app:uifacets/>
+            <cm:name>${spaces.guest_home.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.guest_home.name}</cm:title>
+            <cm:description>${spaces.guest_home.description}</cm:description>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.user_homes.childname}">
+            <app:uifacets/>
+            <cm:name>${spaces.user_homes.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.user_homes.name}</cm:title>
+            <cm:description>${spaces.user_homes.description}</cm:description>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.shared.childname}">
+           <view:acl view:inherit="false">
+              <view:ace view:access="ALLOWED">
+                <view:authority>GROUP_EVERYONE</view:authority>
+                <view:permission>Contributor</view:permission>
+              </view:ace>
+            </view:acl>
+            <app:uifacets/>
+            <cm:name>${spaces.shared.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.shared.title}</cm:title>
+            <cm:description>${spaces.shared.description}</cm:description>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.imap_attachments.childname}">
+            <app:uifacets/>
+            <cm:name>${spaces.imap_attachments.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.imap_attachments.name}</cm:title>
+            <cm:description>${spaces.imap_attachments.description}</cm:description>
+         </cm:folder>
+         <cm:folder view:childName="${spaces.imap_home.childname}">
+            <app:uifacets/>
+            <cm:name>${spaces.imap_home.name}</cm:name>
+            <app:icon>space-icon-default</app:icon>
+            <cm:title>${spaces.imap_home.name}</cm:title>
+            <cm:description>${spaces.imap_home.description}</cm:description>
+         </cm:folder>
+      </cm:contains>
+   </cm:folder>
+</view:view>

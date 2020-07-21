@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.content.insert">
+   
+   <insert id="insert_Mimetype" parameterType="Mimetype" >
+        
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_mimetype_seq')
+        </selectKey>
+        
+        <include refid="alfresco.content.insert_Mimetype_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_Encoding" parameterType="Encoding" >
+    
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+             select nextVal('alf_encoding_seq')
+        </selectKey>
+        
+        <include refid="alfresco.content.insert_Encoding_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_ContentUrl" parameterType="ContentUrl" >
+        
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_content_url_seq')
+        </selectKey>
+        
+         <include refid="alfresco.content.insert_ContentUrl_Sequence"/>
+        
+    </insert>
+    
+    <insert id="insert_ContentData" parameterType="ContentData" >
+    
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_content_data_seq')
+        </selectKey>
+        
+        <include refid="alfresco.content.insert_ContentData_Sequence"/>
+        
+    </insert>
+
+    <insert id="insert_KeyData" parameterType="ContentUrlKey">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_content_url_enc_seq')
+        </selectKey>
+
+        <include refid="alfresco.content.insert_KeyData_Sequence"/>
+    </insert>
+</mapper>

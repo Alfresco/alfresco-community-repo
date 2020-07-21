@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+
+   <!--
+      For a content cache, see <a href="http://wiki.alfresco.com/wiki/CachingContentStore">CachingContentStore</a>
+   -->
+
+   <!--
+    This file is not included in the application context by default.
+    If you include this file, please ensure that you review the sample
+    beans contained here.
+    -->
+
+   <bean id="localDriveContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>/var/alfresco/contentstore</value>
+      </constructor-arg>
+   </bean>
+   <bean id="networkContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>/share/alfresco/contentstore</value>
+      </constructor-arg>
+   </bean>
+   <bean id="fileContentStore" class="org.alfresco.repo.content.replication.ReplicatingContentStore" >
+      <property name="primaryStore">
+         <ref bean="localDriveContentStore" />
+      </property>
+      <property name="secondaryStores">
+         <list>
+            <ref bean="networkContentStore" />
+         </list>
+      </property>
+      <property name="outbound">
+         <value>false</value>
+      </property>
+      <property name="retryingTransactionHelper">
+         <ref bean="retryingTransactionHelper"/>
+      </property>
+   </bean>
+</beans>

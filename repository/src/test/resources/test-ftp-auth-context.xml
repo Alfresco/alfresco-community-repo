@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+    <!-- Authentication chains for FTP testing -->
+    
+    <bean id="testFtpAuthentication"
+          class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+          parent="abstractPropertyBackedBean">
+        <property name="defaultChain">
+            <value>type1:authType1,type2:authType2,type3:authType3</value>
+        </property>
+    </bean>
+    
+    <bean id="testFtpAuthenticationAllDisabled"
+          class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+          parent="abstractPropertyBackedBean">
+        <property name="defaultChain">
+            <value>type1:authType1,type2:authType2</value>
+        </property>
+    </bean>
+    
+    <bean id="testFtpAuthenticationAllFailing"
+          class="org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager"
+          parent="abstractPropertyBackedBean">
+        <property name="defaultChain">
+            <value>type1:authType1,type2:authType2</value>
+        </property>
+    </bean>
+</beans>

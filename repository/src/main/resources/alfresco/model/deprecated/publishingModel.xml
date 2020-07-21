@@ -1,0 +1,368 @@
+<model name="pub:publishingmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+    <description>Alfresco Publishing Content Model</description>
+    <author>Alfresco</author>
+    <published>2011-05-04</published>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm" />
+        <import uri="http://www.alfresco.org/model/site/1.0" prefix="st" />
+    </imports>
+
+    <namespaces>
+        <namespace uri="http://www.alfresco.org/model/publishing/1.0" prefix="pub" />
+    </namespaces>
+
+    <types>
+        <type name="pub:DeliveryChannel">
+            <title>Delivery Channel</title>
+            <description>The base type for all delivery channels</description>
+            <parent>cm:folder</parent>
+            <properties>
+                <property name="pub:channelTypeId">
+                    <title>Channel Type Id</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="pub:authorisationComplete">
+                    <title>Has the channel authorisation process been completed?</title>
+                    <type>d:boolean</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+            <associations>
+                <child-association name="pub:deliveryServers">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>pub:DeliveryServer</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </child-association>
+                <child-association name="pub:publishedNodes">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>cm:cmobject</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </child-association>                
+            </associations>
+        </type>
+
+        <type name="pub:SiteChannelContainer">
+            <title>Delivery Channel Container</title>
+            <description>A container type that holds a set of delivery channels within a Share site</description>
+            <parent>cm:folder</parent>
+            <mandatory-aspects>
+                <aspect>st:siteContainer</aspect>
+            </mandatory-aspects>
+        </type>
+
+        <type name="pub:DeliveryServer">
+            <title>Delivery Server</title>
+            <description>The base type for all delivery servers</description>
+            <parent>sys:base</parent>
+        </type>
+
+        <type name="pub:Environment">
+            <title>Publishing Environment</title>
+            <description>A container type that holds a set of delivery channels</description>
+            <parent>cm:folder</parent>
+            <associations>
+                <child-association name="pub:publishingQueueAssoc">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>pub:PublishingQueue</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </child-association>
+            </associations>
+        </type>
+
+        <type name="pub:PublishingQueue">
+            <title>Publishing Queue</title>
+            <description>A container type that holds publishing events that are yet to be processed
+         </description>
+            <parent>sys:base</parent>
+            <associations>
+                <child-association name="pub:publishingEventAssoc">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </source>
+                    <target>
+                        <class>pub:PublishingEvent</class>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </target>
+                </child-association>
+            </associations>
+        </type>
+
+        <type name="pub:PublishingEvent">
+            <title>Publishing Event</title>
+            <description>Holds details of a publishing event</description>
+            <parent>sys:base</parent>
+            <properties>
+                <property name="pub:publishingEventStatus">
+                    <title>Status</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                    <constraints>
+                        <constraint type="LIST">
+                            <parameter name="allowedValues">
+                                <list>
+                                    <value>SCHEDULED</value>
+                                    <value>IN_PROGRESS</value>
+                                    <value>CANCEL_REQUESTED</value>
+                                    <value>COMPLETED</value>
+                                    <value>FAILED</value>
+                                </list>
+                            </parameter>
+                        </constraint>
+                    </constraints>
+                </property>
+                <property name="pub:publishingEventPayload">
+                    <title>Payload</title>
+                    <type>d:content</type>
+                    <mandatory>false</mandatory>
+                    <index enabled="false">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="pub:publishingEventNodesToPublish">
+                    <title>Nodes to publish</title>
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="pub:publishingEventNodesToUnpublish">
+                    <title>Nodes to unpublish</title>
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="pub:publishingEventNodesDependedOn">
+                    <title>Nodes depended on</title>
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                    <index enabled="true">
+                        <atomic>true</atomic>
+                        <stored>false</stored>
+                        <tokenised>false</tokenised>
+                    </index>
+                </property>
+                <property name="pub:publishingEventTime">
+                    <title>Scheduled time for the event</title>
+                    <type>d:datetime</type>
+                </property>
+                <property name="pub:publishingEventTimeZone">
+                    <title>Time zone of the scheduled time for the event</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:publishingEventComment">
+                    <title>Comment for the event</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:publishingEventChannel">
+                    <title>Channel to publish to</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:publishingEventWorkflowId">
+                    <title>The Id of the associated Publishing Event Workflow Instance</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:statusUpdateMessage">
+                    <title>The status update message</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:statusUpdateNodeRef">
+                    <title>The status update NodeRef used to generate a URL</title>
+                    <type>d:text</type>
+                </property>
+                <property name="pub:statusUpdateChannelNames">
+                    <title>The names of the channels to be notified of this status update.</title>
+                    <type>d:text</type>
+                    <multiple>true</multiple>
+                </property>
+            </properties>
+            <mandatory-aspects>
+                <aspect>cm:auditable</aspect>
+            </mandatory-aspects>
+        </type>
+
+        <type name="pub:Connection">
+            <title>Publishing Connectiont</title>
+            <description>Holds details of an OAuth connection</description>
+            <parent>cm:cmobject</parent>
+            <properties>
+                <property name="pub:accountId">
+                    <title>Account Id</title>
+                    <type>d:any</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pub:providerId">
+                    <title>Provider Id</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pub:providerAccountId">
+                    <title>Provider Account Id</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pub:accessToken">
+                    <title>Access Token</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pub:secret">
+                    <title>Access Secret</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+                <property name="pub:refreshToken">
+                    <title>Refresh Token</title>
+                    <type>d:text</type>
+                    <mandatory>true</mandatory>
+                </property>
+            </properties>
+        </type>
+
+    </types>
+
+    <aspects>
+        <aspect name="pub:channelInfo">
+            <title>Channel Info</title>
+            <description>Applied to a node that exists within a Delivery Channel</description>
+            <parent>cm:titled</parent>
+            <properties>
+                <property name="pub:channel">
+                    <title>Containing Channel Node</title>
+                    <type>d:noderef</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="pub:channelType">
+                    <title>Containing Channel Type</title>
+                    <type>d:text</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="pub:published">
+            <title>Published</title>
+            <description>Applied to a published node</description>
+            <parent>cm:titled</parent>
+            <associations>
+                <association name="pub:source">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>cm:content</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+                <association name="pub:lastPublishingEvent">
+                    <source>
+                        <mandatory>false</mandatory>
+                        <many>true</many>
+                    </source>
+                    <target>
+                        <class>pub:PublishingEvent</class>
+                        <mandatory>false</mandatory>
+                        <many>false</many>
+                    </target>
+                </association>
+            </associations>
+        </aspect>
+
+        <aspect name="pub:OAuth1DeliveryChannelAspect">
+            <title>OAuth1 Authenticated Delivery Channel</title>
+            <description>Applied to delivery channels that use OAuth1</description>
+            <properties>
+                <property name="pub:oauth1TokenValue">
+                    <title>The value of the OAuth1 token</title>
+                    <type>d:encrypted</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="pub:oauth1TokenSecret">
+                    <title>The secret of the OAuth1 token</title>
+                    <type>d:encrypted</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="pub:OAuth2DeliveryChannelAspect">
+            <title>OAuth2 Authenticated Delivery Channel</title>
+            <description>Applied to delivery channels that use OAuth2</description>
+            <properties>
+                <property name="pub:oauth2Token">
+                    <title>The value of the OAuth2 token</title>
+                    <type>d:encrypted</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+        <aspect name="pub:UserPasswordDeliveryChannelAspect">
+            <title>Username and Password Authenticated Delivery Channel</title>
+            <description>Applied to delivery channels that use OAuth1</description>
+            <properties>
+                <property name="pub:channelUsername">
+                    <title>The authenticated channel username</title>
+                    <type>d:encrypted</type>
+                    <multiple>false</multiple>
+                </property>
+                <property name="pub:channelPassword">
+                    <title>The authenticated channel password</title>
+                    <type>d:encrypted</type>
+                    <multiple>false</multiple>
+                </property>
+            </properties>
+        </aspect>
+
+      <aspect name="pub:AssetAspect">
+         <title>Published Asset</title>
+         <description>Applied to a node that has been published to an external delivery service</description>
+         <properties>
+            <property name="pub:assetId">
+               <title>Published Asset Id</title>
+               <type>d:text</type>
+           </property>
+           <property name="pub:assetUrl">
+              <title>Published Asset URL</title>
+              <type>d:text</type>
+           </property>
+        </properties>
+      </aspect>
+    </aspects>
+</model>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <cm:folder view:childName="${spaces.replication.replication_actions.childname}">
+      <view:properties>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>replication_actions_space</sys:node-uuid>
+         <cm:name>${spaces.replication.replication_actions.name}</cm:name>
+         <cm:title>${spaces.replication.replication_actions.name}</cm:title>
+         <cm:description>${spaces.replication.replication_actions.description}</cm:description>
+      </view:properties>
+   </cm:folder>
+
+</view:view>
+      

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Blog Integration Model -->
+
+<!-- Note: the blg: namespace is defined further on in the document -->
+<model name="blg:blogintegration" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->   
+   <description>Blog Integration Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->   
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+
+   <!-- Records Management Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/blogintegration/1.0" prefix="blg"/>
+   </namespaces>
+   
+   <aspects>
+   
+      <aspect name="blg:blogDetails">
+        <title>Blog Details</title>
+        <properties>	            
+            <property name="blg:blogImplementation">
+				<title>Blog Type</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>                       
+            <property name="blg:id">
+				<title>Blog Identifier</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+				<default>0</default>
+			</property>                       
+            <property name="blg:name">
+				<title>Blog Name</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>             
+            <property name="blg:description">
+				<title>Blog Description</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>
+            <property name="blg:url">
+				<title>Blog URL</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>            
+            <property name="blg:userName">
+				<title>Blog User Name</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>            
+            <property name="blg:password">
+				<title>Blog User Password</title>
+				<type>d:text</type>
+				<mandatory>false</mandatory>
+			</property>			
+        </properties>
+     </aspect> 
+     
+     <aspect name="blg:blogPost">
+        <title>Blog Post</title>
+        <properties>	            
+            <property name="blg:postId">
+				<title>Blog post identifier</title>
+				<type>d:text</type>
+				<protected>true</protected>	
+				<mandatory>true</mandatory>			
+			</property>  	            
+            <property name="blg:published">
+				<title>Blog published</title>
+				<type>d:boolean</type>
+				<protected>true</protected>
+				<mandatory>true</mandatory>
+			</property>  	            
+            <property name="blg:link">
+				<title>Blog post link</title>
+				<type>d:text</type>
+				<protected>true</protected>
+				<mandatory>true</mandatory>
+			</property> 	            
+            <property name="blg:posted">
+				<title>Date posted</title>
+				<type>d:date</type>
+				<protected>true</protected>
+				<mandatory>true</mandatory>
+			</property> 	            
+            <property name="blg:lastUpdate">
+				<title>Date last updated</title>
+				<type>d:date</type>
+				<protected>true</protected>
+				<mandatory>true</mandatory>
+			</property> 
+		</properties>
+		
+         <associations>
+            <association name="blg:blogDetails">
+               <title>Blog details</title>
+               <source>
+                  <role>blg:posts</role>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>blg:blogDetails</class>
+                  <role>blg:blogDetails</role>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+         </associations>
+   	  </aspect>
+
+   </aspects>
+   
+</model>

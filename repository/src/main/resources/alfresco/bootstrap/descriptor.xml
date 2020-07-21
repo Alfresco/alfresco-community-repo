@@ -1,0 +1,26 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+           xmlns:sys="http://www.alfresco.org/model/system/1.0">
+
+	<sys:descriptor view:childName="${system.descriptor.childname}">
+	    <sys:name>${repository.name}</sys:name>
+		<sys:versionMajor>${version.major}</sys:versionMajor>
+		<sys:versionMinor>${version.minor}</sys:versionMinor>
+		<sys:versionRevision>${version.revision}</sys:versionRevision>
+      <sys:versionBuild>${version.build}</sys:versionBuild>
+		<sys:versionLabel>${version.label}</sys:versionLabel>
+		<sys:versionSchema>${version.schema}</sys:versionSchema>
+	</sys:descriptor>
+
+	<sys:descriptor view:childName="${system.descriptor.current.childname}">
+        <sys:name>${repository.name}</sys:name>
+		<sys:versionMajor>${version.major}</sys:versionMajor>
+		<sys:versionMinor>${version.minor}</sys:versionMinor>
+		<sys:versionRevision>${version.revision}</sys:versionRevision>
+      <sys:versionBuild>${version.build}</sys:versionBuild>
+		<sys:versionEdition><view:values><view:value>${version.edition}</view:value></view:values></sys:versionEdition>
+		<sys:versionLabel>${version.label}</sys:versionLabel>
+		<sys:versionSchema>${version.schema}</sys:versionSchema>
+    	<sys:versionProperties>contentUrl=classpath:alfresco/version.properties|mimetype=text/plain|size=|encoding=UTF8</sys:versionProperties>
+	</sys:descriptor>
+
+</view:view>

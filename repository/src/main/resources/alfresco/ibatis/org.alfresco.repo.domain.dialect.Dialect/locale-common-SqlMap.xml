@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.locale">
+
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Locale" type="Locale">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="localeStr" column="locale_str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+   
+    <!--                -->
+    <!-- Parameter Maps -->
+    <!--                -->
+    
+    <parameterMap id="parameter_LocaleStr" type="map">
+        <parameter property="str" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </parameterMap>
+   
+    <parameterMap id="parameter_LocaleId" type="map">
+        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+   
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <sql id="insert_Locale_AutoIncrement">
+        insert into alf_locale (version, locale_str) 
+        values (#{version}, #{localeStr})
+    </sql>
+    
+    <sql id="insert_Locale_Sequence">
+        insert into alf_locale (id, version, locale_str) 
+        values (#{id}, #{version}, #{localeStr})
+    </sql>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_LocaleById" parameterMap="parameter_LocaleId" resultMap="result_Locale">
+        select
+            *
+        from
+            alf_locale
+        where
+            id = ?
+    </select>
+    
+    <select id="select_LocaleByName" parameterMap="parameter_LocaleStr" resultMap="result_Locale">
+        select
+            *
+        from
+            alf_locale
+        where
+            locale_str = ?
+    </select>
+    
+</mapper>

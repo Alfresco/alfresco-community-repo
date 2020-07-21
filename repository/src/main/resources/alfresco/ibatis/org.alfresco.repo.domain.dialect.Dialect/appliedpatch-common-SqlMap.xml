@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.appliedpatch">
+
+    <!--NOTE: MyBatis #224 - eg. Oracle -->
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_AppliedPatch" type="AppliedPatch">
+        <result property="id" column="id" jdbcType="VARCHAR" javaType="string"/>
+        <result property="description" column="description" jdbcType="VARCHAR" javaType="string"/>
+        <result property="fixesFromSchema" column="fixes_from_schema" jdbcType="INTEGER" javaType="int"/>
+        <result property="fixesToSchema" column="fixes_to_schema" jdbcType="INTEGER" javaType="int"/>
+        <result property="targetSchema" column="target_schema" jdbcType="INTEGER" javaType="int"/>
+        <result property="appliedToSchema" column="applied_to_schema" jdbcType="INTEGER" javaType="int"/>
+        <result property="appliedOnDate" column="applied_on_date" jdbcType="TIMESTAMP" javaType="date" />
+        <result property="appliedToServer" column="applied_to_server" jdbcType="VARCHAR" javaType="string"/>
+        <result property="wasExecuted" column="was_executed" jdbcType="BOOLEAN" javaType="boolean"/>
+        <result property="succeeded" column="succeeded" jdbcType="BOOLEAN" javaType="boolean"/>
+        <result property="report" column="report" jdbcType="VARCHAR" javaType="string"/>
+    </resultMap>
+    
+    <!--                         -->
+    <!-- SQL Snippets / Inserts  -->
+    <!--                         -->
+    
+    <!-- MyBatis #224 -->
+    <insert id="insert_AppliedPatch" parameterType="AppliedPatch">
+        insert into alf_applied_patch
+            (
+                id, description,
+                fixes_from_schema, fixes_to_schema, target_schema,
+                applied_to_schema, applied_on_date, applied_to_server,
+                was_executed, succeeded, report
+            )
+            values
+            (
+                #{id}, #{description,jdbcType=VARCHAR},
+                #{fixesFromSchema,jdbcType=INTEGER}, #{fixesToSchema,jdbcType=INTEGER}, #{targetSchema,jdbcType=INTEGER},
+                #{appliedToSchema,jdbcType=INTEGER}, #{appliedOnDate,jdbcType=TIMESTAMP}, #{appliedToServer,jdbcType=VARCHAR},
+                #{wasExecuted,jdbcType=BOOLEAN}, #{succeeded,jdbcType=BOOLEAN}, #{report,jdbcType=VARCHAR}
+            )
+    </insert>
+    
+    <!--                -->
+    <!-- Updates        -->
+    <!--                -->
+    
+    <!-- MyBatis #224 -->
+    <insert id="update_AppliedPatch" parameterType="AppliedPatch">
+        update alf_applied_patch
+            set
+                description = #{description,jdbcType=VARCHAR},
+                fixes_from_schema = #{fixesFromSchema,jdbcType=INTEGER},
+                fixes_to_schema = #{fixesToSchema,jdbcType=INTEGER},
+                target_schema = #{targetSchema,jdbcType=INTEGER},
+                applied_to_schema = #{appliedToSchema,jdbcType=INTEGER},
+                applied_on_date = #{appliedOnDate,jdbcType=TIMESTAMP},
+                applied_to_server = #{appliedToServer,jdbcType=VARCHAR},
+                was_executed = #{wasExecuted,jdbcType=BOOLEAN},
+                succeeded = #{succeeded,jdbcType=BOOLEAN},
+                report = #{report,jdbcType=VARCHAR}
+            where
+                id = #{id}
+    </insert>
+    
+    <!--                -->
+    <!-- Statements     -->
+    <!--                -->
+    
+    <select id="select_AppliedPatchById" parameterType="AppliedPatch" resultMap="result_AppliedPatch">
+        select
+            id, description,
+            fixes_from_schema, fixes_to_schema, target_schema,
+            applied_to_schema, applied_on_date, applied_to_server,
+            was_executed, succeeded, report
+        from
+            alf_applied_patch
+        where
+            id = #{id}
+    </select>
+    
+    <select id="select_AllAppliedPatches" resultMap="result_AppliedPatch">
+        select
+            id, description,
+            fixes_from_schema, fixes_to_schema, target_schema,
+            applied_to_schema, applied_on_date, applied_to_server,
+            was_executed, succeeded, report
+        from
+            alf_applied_patch
+        order by
+            target_schema
+    </select>
+    
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+    "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+   
+    <!-- Remote FileFolderService exposure -->
+
+    <bean id="fileFolderRemoteServer" class="org.alfresco.repo.remote.FileFolderRemoteServer">
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="fileFolderService">
+            <ref bean="FileFolderService"/>
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+    </bean>
+    
+    <bean id="fileFolderRemoteRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+        <property name="service">
+            <ref bean="fileFolderRemoteServer"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.remote.FileFolderRemote</value>
+        </property>
+        <property name="serviceName">
+            <value>org.alfresco.FileFolderRemote</value>
+        </property>
+        <property name="registryPort">
+            <value>${alfresco.rmi.services.port}</value>
+        </property>
+    </bean>
+    
+    <!-- Remote Loader exposure -->
+
+    <bean id="loaderRemoteServer" class="org.alfresco.repo.remote.LoaderRemoteServer">
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="fileFolderService">
+            <ref bean="FileFolderService"/>
+        </property>
+        <property name="checkOutCheckInService">
+ 	    <ref bean="CheckoutCheckinService"/>
+ 	</property>
+ 	<property name="fileFolderRemote">
+            <ref bean="fileFolderRemoteServer"/>
+        </property>
+    </bean>
+    
+    <bean id="loaderRemoteServerRMI" class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
+        <property name="service">
+            <ref bean="loaderRemoteServer"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.remote.LoaderRemote</value>
+        </property>
+        <property name="serviceName">
+            <value>org.alfresco.LoaderRemote</value>
+        </property>
+        <property name="registryPort">
+            <value>${alfresco.rmi.services.port}</value>
+        </property>
+    </bean>
+    
+</beans>

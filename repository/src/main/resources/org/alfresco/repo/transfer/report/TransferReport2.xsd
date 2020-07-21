@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.alfresco.org/model/transferReport/2.0"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:report="http://www.alfresco.org/model/transferReport/2.0"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+   <!-- XML Schema for the client side transferReport owned by the 
+   alfresco transferService -->
+   
+   <xs:element name="transferReport" type="report:transferReport">
+   <xs:annotation>
+       <xs:documentation>This is an Alfresco client side transfer report</xs:documentation>
+   </xs:annotation>
+   </xs:element>
+   
+   <xs:complexType name="transferReport">
+      <xs:annotation>
+         <xs:documentation>
+         The Alfresco client side transfer report
+         </xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+         <xs:element name="target" type="report:target" maxOccurs="1"
+                  minOccurs="1">
+         </xs:element>
+         <xs:element name="definition" type="report:definition"
+                  maxOccurs="1" minOccurs="1">
+         </xs:element>
+         <xs:element name="exception" type="report:exception" maxOccurs="1"
+                  minOccurs="0">
+         </xs:element>
+         <xs:element name="events" type="report:events" maxOccurs="1"
+                  minOccurs="0">
+         </xs:element>
+         <xs:sequence maxOccurs="unbounded" minOccurs="0">
+           <xs:element name="node" type="report:node">
+         </xs:element>
+         </xs:sequence>
+      </xs:sequence>
+   </xs:complexType>
+
+   <xs:complexType name="target">
+      <xs:annotation>
+         <xs:documentation>
+            The destination of the target
+         </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="name" type="string"></xs:attribute>
+      <xs:attribute name="endpointPort" type="int"></xs:attribute>
+      <xs:attribute name="endpointHost" type="string"></xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="definition">
+         <xs:annotation>
+         <xs:documentation>
+            The contents of the transfer
+         </xs:documentation>
+      </xs:annotation>
+      <xs:attribute name="isSync" type="boolean"></xs:attribute>
+      <xs:attribute name="isReadOnly" type="boolean"></xs:attribute>
+      <xs:attribute name="numberOfNodes" type="long"></xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="node">
+         <xs:annotation>
+         <xs:documentation>
+            The nodes being transferred
+         </xs:documentation>
+         </xs:annotation>
+
+        <xs:sequence>
+          <xs:element name="primaryParent" maxOccurs="1"
+                  minOccurs="0" type="report:primaryParent">
+          </xs:element>
+        </xs:sequence>
+
+        <xs:attribute name="nodeRef" type="string"></xs:attribute>
+        
+   </xs:complexType>
+
+   <xs:complexType name="events">
+      <xs:choice maxOccurs="unbounded" minOccurs="0">
+         <xs:element name="event" type="report:event"></xs:element>
+         <xs:element name="eventBegin" type="report:eventBegin"></xs:element>
+         <xs:element name="eventStartState" type="report:eventStartState"></xs:element>
+         <xs:element name="eventEndState" type="report:eventEndState"></xs:element>
+         <xs:element name="eventSendContent" type="report:eventSendContent"></xs:element>
+         <xs:element name="eventSendSnapshot" type="report:eventSendSnapshot"></xs:element>
+         <xs:element name="eventCommittingStatus" type="report:eventCommittingStatus"></xs:element>
+         <xs:element name="eventReport" type="report:eventReport"></xs:element>
+         <xs:element name="eventSuccess" type="report:eventSuccess"></xs:element>
+         <xs:element name="eventCancelled" type="report:eventCancelled"></xs:element>
+         <xs:element name="eventError" type="report:eventError"></xs:element>
+      </xs:choice>
+   </xs:complexType>
+
+   <xs:complexType name="event" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventBegin" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="transferId" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventStartState" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="state" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventEndState" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="state" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventSendSnapshot" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventReport" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="nodeRef" type="string"></xs:attribute>
+      <xs:attribute name="reportType" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventCommittingStatus" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="position" type="string"></xs:attribute>
+      <xs:attribute name="range" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventSendContent" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+      <xs:attribute name="position" type="string"></xs:attribute>
+      <xs:attribute name="range" type="string"></xs:attribute>
+      <xs:attribute name="size" type="string"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventSuccess" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventCancelled" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="eventError" mixed="true">
+      <xs:attribute name="date" type="dateTime"></xs:attribute>
+   </xs:complexType>
+   
+   <xs:complexType name="exception">
+      <xs:attribute name="type" type="string"></xs:attribute>
+      <xs:attribute name="message" type="string"></xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="primaryParent">
+      <xs:sequence>
+        <xs:element name="parentAssoc" type="report:parentAssoc"/>
+        <xs:element name="primaryPath" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+
+
+   <xs:complexType name="parentAssoc" mixed="true">
+      <xs:attribute name="from" use="required" type="xs:string"/>
+      <xs:attribute name="isPrimary" use="required" type="xs:boolean"/>
+      <xs:attribute name="type" use="required"/>
+   </xs:complexType>
+     
+
+</xs:schema>

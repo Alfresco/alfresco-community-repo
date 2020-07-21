@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<!-- Test configurations for XmlMetadataExtracters -->
+<beans>
+   <import resource="classpath:alfresco/application-context.xml" />
+   
+   <!-- An extractor that operates on Alfresco models -->
+   <bean id="extracter.xml.AlfrescoModelMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/alfresco-model-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/alfresco-model-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- An extractor that operates on DITA Concept Files -->
+   <bean id="extracter.xml.DITAConceptMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/dita-concept-quick-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/dita-concept-quick-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- An extractor that operates on Eclipse project files -->
+   <bean id="extracter.xml.EclipseProjectMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XPathMetadataExtracter"
+         parent="baseMetadataExtracter"
+         init-method="init" >
+      <property name="mappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/eclipse-project-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+      <property name="xpathMappingProperties">
+         <bean class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+            <property name="location">
+               <value>classpath:xml-metadata/eclipse-project-xpath-mappings.properties</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+   
+   <!-- A selector that checks root element names -->
+   <bean
+         id="extracter.xml.selector.RootElementSelector"
+         class="org.alfresco.repo.content.selector.RootElementNameContentWorkerSelector"
+         init-method="init">
+      <property name="workers">
+         <map>
+            <entry key="BOGUS_ROOT_ELEMENT">
+               <null />
+            </entry>
+            <entry key="model">
+               <ref bean="extracter.xml.AlfrescoModelMetadataExtracter" />
+            </entry>
+            <entry key="projectDescription">
+               <ref bean="extracter.xml.EclipseProjectMetadataExtracter" />
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!-- A selector that executes XPath statements -->
+   <bean
+         id="extracter.xml.selector.XPathSelector"
+         class="org.alfresco.repo.content.selector.XPathContentWorkerSelector"
+         init-method="init">
+      <property name="workers">
+         <map>
+            <entry key="/my:test">
+               <null />
+            </entry>
+            <entry key="/model[@name='fm:forummodel']">
+               <ref bean="extracter.xml.AlfrescoModelMetadataExtracter" />
+            </entry>
+            <entry key="/projectDescription">
+               <ref bean="extracter.xml.EclipseProjectMetadataExtracter" />
+            </entry>
+         </map>
+      </property>
+   </bean>
+   
+   <!-- The wrapper XML metadata extracter -->
+   <bean
+         id="extracter.xml.XMLMetadataExtracter"
+         class="org.alfresco.repo.content.metadata.xml.XmlMetadataExtracter"
+         parent="baseMetadataExtracter">
+      <property name="overwritePolicy">
+         <value>EAGER</value>
+      </property>
+      <property name="selectors">
+         <list>
+            <ref bean="extracter.xml.selector.XPathSelector" />
+         </list>
+      </property>
+   </bean>
+   
+</beans>

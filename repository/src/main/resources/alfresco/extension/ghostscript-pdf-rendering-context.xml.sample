@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- =============================================== -->
+<!--            GhostScript PDF Rendering            -->
+<!--                                                 -->
+<!-- Uses GhostScript [http://www.ghostscript.com/]  -->
+<!-- to transform PDF files into images (PNG), as    -->
+<!-- an alternative to the built in JVM support      -->
+<!-- To fully enable this, you will probably have to -->
+<!-- alter some of the complex transformer           -->
+<!-- definitions in content-services-context.xml     -->
+<!-- =============================================== -->
+
+<beans>
+  <!-- Content Transformations -->
+
+  <!-- Generic GS transformation worker -->
+  <bean id="transformer.worker.ghostscript" class="org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerWorker">
+    <property name="checkCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="command">
+          <list>
+            <value>${gs.exe}</value>
+            <value>-version</value>
+          </list>
+        </property>
+        <property name="errorCodes">
+          <value>127</value>
+        </property>
+      </bean>
+    </property>
+    <property name="transformCommand">
+      <bean class="org.alfresco.util.exec.RuntimeExec">
+        <property name="commandsAndArguments">
+          <map>
+            <entry key="Windows.*">
+              <list>
+                <value>cmd</value>
+                <value>/C</value>
+                <value>${gs.exe} -dNOPAUSE -dSAFER -dBATCH -sDEVICE=png16m -dFirstPage=1 -dLastPage=1 ${resolution_opts} ${antialias_opts} "-sOutputFile=${target}" "${source}" 2&gt; NUL</value>
+              </list>
+            </entry>
+            <entry key="Linux">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${gs.exe} -dNOPAUSE -dSAFER -dBATCH -sDEVICE=png16m -dFirstPage=1 -dLastPage=1 ${resolution_opts} ${antialias_opts} "-sOutputFile=${target}" "${source}" 2&gt; /dev/null</value>
+              </list>
+            </entry>
+            <entry key="Mac OS X">
+              <list>
+                <value>sh</value>
+                <value>-c</value>
+                <value>${gs.exe} -dNOPAUSE -dSAFER -dBATCH -sDEVICE=png16m -dFirstPage=1 -dLastPage=1 ${resolution_opts} ${antialias_opts} "-sOutputFile=${target}" "${source}" 2&gt; /dev/null</value>
+              </list>
+            </entry>
+          </map>
+        </property>
+        <property name="waitForCompletion">
+          <value>true</value>
+        </property>
+        <property name="defaultProperties">
+          <props>
+            <prop key="resolution_opts">-r72</prop>
+            <prop key="antialias_opts">-dTextAlphaBits=4 -dGraphicsAlphaBits=4</prop>
+          </props>
+        </property>
+      </bean>
+    </property>
+
+    <property name="explicitTransformations">
+      <list>
+        <!-- Transform PDF to PNG -->
+        <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails">
+          <property name="sourceMimetype">
+            <value>application/pdf</value>
+          </property>
+          <property name="targetMimetype">
+            <value>image/png</value>
+          </property>
+        </bean>
+      </list>
+    </property>
+    <property name="mimetypeService">
+      <ref bean="mimetypeService"/>
+    </property>
+  </bean>
+
+  <bean id="transformer.ghostscript" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+    <property name="worker">
+      <ref bean="transformer.worker.ghostscript" />
+    </property>
+  </bean>
+</beans>

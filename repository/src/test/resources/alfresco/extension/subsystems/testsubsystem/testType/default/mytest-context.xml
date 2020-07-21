@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <!--  Demonstrate that it should be possible to extend / override subsystem Spring config -->
+   <bean id="anotherBean" class="java.lang.String">
+      <constructor-arg>
+         <value>An extra bean I changed</value>
+      </constructor-arg>
+   </bean>
+
+</beans>

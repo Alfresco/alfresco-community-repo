@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.usage.insert">
+
+    <insert id="insert_UsageDelta" parameterType="UsageDelta">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_usage_delta_seq')
+        </selectKey>
+    
+        <include refid="alfresco.usage.insert_UsageDelta_Sequence"/>
+    </insert>
+    
+</mapper>

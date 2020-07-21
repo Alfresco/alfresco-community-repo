@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.tenants">
+
+    <!--NOTE: MyBatis #224 - eg. Oracle -->
+    
+    <!--                -->
+    <!-- Result Maps    -->
+    <!--                -->
+    
+    <resultMap id="result_Tenant" type="Tenant">
+        <result property="tenantDomain" column="tenant_domain" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="enabled" column="enabled" jdbcType="BIT" javaType="java.lang.Boolean"/>
+        <result property="tenantName" column="tenant_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentRoot" column="content_root" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="dbUrl" column="db_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
+    </resultMap>
+    
+    <!--                -->
+    <!-- SQL Snippets   -->
+    <!--                -->
+    
+    <insert id="insert_Tenant" parameterType="Tenant">
+        insert into alf_tenant 
+            (
+                tenant_domain, 
+                version, 
+                enabled, 
+                tenant_name, 
+                content_root, 
+                db_url)
+        values 
+            (
+                #{tenantDomain},
+                #{version}, 
+                #{enabled}, 
+                #{tenantName,jdbcType=VARCHAR}, 
+                #{contentRoot,jdbcType=VARCHAR}, 
+                #{dbUrl,jdbcType=VARCHAR}
+            )
+    </insert>
+    
+    <delete id="delete_Tenant" parameterType="Tenant">
+        delete from alf_tenant where tenant_domain = #{tenantDomain}
+    </delete>
+    
+    <select id="select_Tenant" resultMap="result_Tenant">
+        select
+            tenant_domain as tenantDomain,
+            version as version,
+            enabled as enabled,
+            tenant_name as tenantName,
+            content_root as contentRoot,
+            db_url as dbUrl
+        from
+            alf_tenant
+        where
+            tenant_domain = #{tenantDomain}
+    </select>
+    
+    <select id="select_Tenants" parameterType="TenantQuery" resultMap="result_Tenant">
+        select
+            tenant_domain   as tenantDomain,
+            version         as version,
+            enabled         as enabled,
+            tenant_name     as tenantName,
+            content_root    as contentRoot,
+            db_url          as dbUrl
+        from
+            alf_tenant
+        <where>
+            <if test="enabled != null">enabled = #{enabled}</if>
+        </where>
+    </select>
+    
+    <!-- Optimistic update of the tenant -->
+    <update id="update_Tenant" parameterType="Tenant">
+        update
+            alf_tenant
+        set
+            enabled = #{enabled},
+            content_root = #{contentRoot,jdbcType=VARCHAR},
+            db_url = #{dbUrl,jdbcType=VARCHAR},
+            tenant_name = #{tenantName,jdbcType=VARCHAR},
+            version = #{version}
+        where
+            tenant_domain = #{tenantDomain}
+        <if test="version gt 0">
+            and version = (#{version} - 1)
+        </if>
+    </update>
+    
+</mapper>

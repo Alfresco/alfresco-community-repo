@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+   <!-- Transaction Interceptors for the Discussions Service -->
+   <bean id="discussionServiceReadTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingReadTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>getPost</value>
+                <value>getTopic</value>
+                <value>getPrimaryPost</value>
+                <value>getMostRecentPost</value>
+                <value>getForNodeRef</value>
+                <value>findTopics</value>
+                <value>listPosts</value>
+                <value>listTopics</value>
+                <value>listHotTopics</value>
+                <value>listPostReplies</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="discussionServiceWriteTxnAdvisor" class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="advice">
+            <ref bean="retryingWriteTxnAdvice"/>
+        </property>
+        <property name="mappedNames">
+            <list>
+                <value>createPost</value>
+                <value>createTopic</value>
+                <value>createReply</value>
+                <value>deletePost</value>
+                <value>deleteTopic</value>
+                <value>updatePost</value>
+                <value>updateTopic</value>
+            </list>
+        </property>
+    </bean>
+
+
+   <!-- Discussions Service -->
+   <bean id="DiscussionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.service.cmr.discussion.DiscussionService</value>
+      </property>
+      <property name="target">
+         <ref bean="discussionService" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="discussionServiceReadTxnAdvisor" />
+            <idref bean="discussionServiceWriteTxnAdvisor" />
+            <idref bean="checkTxnAdvisor" />
+            <idref bean="AuditMethodInterceptor" />
+            <idref bean="exceptionTranslator" />
+            <idref bean="DiscussionService_security" />
+         </list>
+      </property>
+   </bean>
+
+   <!-- List of Discussion Canned queries -->
+   <bean id="discussionCannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
+       <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
+   </bean>
+    
+   <!-- The regular GetChildren Auditable Canned Query Factory -->
+   <bean name="discussionGetChildrenCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenAuditableCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+
+   <!-- The GetChildren Auditable with Target Assocs Canned Query Factory -->
+   <bean name="discussionGetChildrenWithTargetAssocsAuditableCannedQueryFactory" class="org.alfresco.repo.node.getchildren.GetChildrenWithTargetAssocsAuditableCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+
+   <!-- The Get Discussions Topics and Posts Canned Query Factory -->
+   <bean name="discussionGetDiscussionTopcisWithPostsCannedQueryFactory" class="org.alfresco.repo.discussion.cannedqueries.GetDiscussionTopcisWithPostsCannedQueryFactory">
+       <property name="registry" ref="discussionCannedQueryRegistry"/>
+       <property name="tenantService" ref="tenantService"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
+       <property name="qnameDAO" ref="qnameDAO"/>
+       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+       <property name="methodSecurity" ref="DiscussionService_security_listPosts"/>
+   </bean>
+
+   <!-- Discussion Service base bean -->
+	<bean id="discussionService" class="org.alfresco.repo.discussion.DiscussionServiceImpl">
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="searchService" ref="SearchService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="taggingService" ref="TaggingService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="transactionService" ref="transactionService" />
+        <property name="cannedQueryRegistry" ref="discussionCannedQueryRegistry" />
+        <property name="tenantService" ref="tenantService"/>
+	</bean>
+
+</beans>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<model name="testwf:testWorkflowModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+    <description>Test Workflow Model</description>
+    <author>Nick Smith</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d" />
+        <import uri="http://www.alfresco.org/model/bpm/1.0" prefix="bpm" />
+    </imports>
+
+    <namespaces> 
+        <namespace uri="http://www.alfresco.org/model/workflow/test/1.0" prefix="testwf"/> 
+    </namespaces> 
+
+
+    <types>
+
+        <type name="testwf:startTaskVarScriptAssign">
+            <parent>bpm:startTask</parent>
+            <mandatory-aspects>
+                <aspect>testwf:requestData</aspect>
+            </mandatory-aspects>
+        </type>
+        
+        <type name="testwf:assignVarTask"> 
+            <parent>bpm:workflowTask</parent> 
+            <mandatory-aspects>
+                <aspect>testwf:requestData</aspect>
+            </mandatory-aspects>
+        </type>
+        
+    </types>
+
+    <aspects> 
+        
+        <aspect name="testwf:requestData"> 
+            <properties> 
+                <property name="testwf:simpleText"> 
+                    <type>d:text</type> 
+                    <mandatory>true</mandatory> 
+                    <default></default> 
+                </property> 
+                <property name="testwf:listConstrainedText">
+                    <type>d:text</type> 
+                    <mandatory>false</mandatory> 
+                    <default> </default> 
+                    <constraints> 
+                        <constraint type="LIST"> 
+                            <parameter name="allowedValues"> 
+                                <list> 
+                                    <value>First</value> 
+                                    <value>Second</value> 
+                                    <value>Third</value> 
+                                    <value> </value> 
+                                </list> 
+                            </parameter> 
+                            <parameter name="caseSensitive"><value>true</value></parameter> 
+                        </constraint> 
+                    </constraints> 
+                </property> 
+            </properties> 
+        </aspect> 
+
+    </aspects> 
+
+</model>

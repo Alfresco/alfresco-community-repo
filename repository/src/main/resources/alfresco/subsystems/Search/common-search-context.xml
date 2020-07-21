@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Core and miscellaneous bean definitions -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- SOLR Tracking   -->
+    
+    <bean id="search.solrTrackingComponent" class="org.alfresco.repo.solr.SOLRTrackingComponentImpl" init-method="init">
+        <property name="permissionService" ref="permissionService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="ownableService" ref="ownableService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="solrDAO" ref="solrDAO" />
+        <property name="dictionaryDAO" ref="dictionaryDAO" />
+        <property name="aclDAO" ref="aclDAO" />
+        <property name="enabled">
+            <value>${search.solrTrackingSupport.enabled}</value>
+        </property>
+        <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
+        <property name="namespaceService" ref="namespaceService" />
+    </bean>
+
+    <!--  Ignore indexing by node type or by node aspects  -->
+    
+    <bean id="search.abstractIndexFilter" abstract="true" init-method="init" >
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+    </bean>
+    
+    <bean id="search.TypeIndexFilter" class="org.alfresco.repo.search.TypeIndexFilter" parent="search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificTypes">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificTypes}</value>
+        </property>
+        <property name="typesForIgnoringPaths">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}person</value>
+                <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
+                <value>{http://www.alfresco.org/model/content/1.0}authorityContainer</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="search.AspectIndexFilter" class="org.alfresco.repo.search.AspectIndexFilter" parent="search.abstractIndexFilter">
+        <property name="ignorePathsForSpecificAspects">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificAspects}</value>
+        </property>
+        <property name="aspectsForIgnoringPaths">
+            <list></list>
+        </property>
+    </bean>
+
+    <!-- Query Register Component -->
+
+    <bean id="search.queryRegisterComponent" class="org.alfresco.repo.search.QueryRegisterComponentImpl">
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespaceService">
+            <ref bean="namespaceService" />
+        </property>
+        <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
+    </bean>
+    
+    <bean id="search.fts.alfresco.switching" class="org.alfresco.repo.search.impl.solr.DbOrIndexSwitchingQueryLanguage" >
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="name">
+            <value>fts-alfresco</value>
+        </property>
+        <property name="dbQueryLanguage">
+            <ref bean="search.fts.alfresco.db" />
+        </property>
+        <property name="indexQueryLanguage">
+            <ref bean="search.fts.alfresco.index" />
+        </property>
+        <property name="queryConsistency">
+            <value>${solr.query.fts.queryConsistency}</value>
+        </property>
+        <property name="solrDao" ref="solrDAO"/>
+        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+    </bean> 
+
+    <bean id="search.fts.alfresco.db" class="org.alfresco.repo.search.impl.solr.DbAftsQueryLanguage" >
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="factories">
+            <list>
+                <ref bean="search.indexerAndSearcherFactory" />
+            </list>
+        </property>
+        <property name="queryEngine">
+            <ref bean="search.dbQueryEngine" />
+        </property>
+         <property name="metadataIndexCheck1">
+            <ref bean="metadataQueryIndexesCheck" />
+        </property>
+        <property name="metadataIndexCheck2">
+            <ref bean="metadataQueryIndexesCheck2" />
+        </property>
+    </bean>
+    
+    <bean id="search.dbQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryEngine" >
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="metadataIndexCheck2">
+            <ref bean="metadataQueryIndexesCheck2" />
+        </property>
+    </bean>
+   
+   <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.repo.search.impl.querymodel.QueryEngine</value>
+        </property>
+        <property name="target">
+            <ref bean="search.dbQueryEngineImpl"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="search.dbQueryEngineSecurity"/>
+            </list>
+        </property>
+    </bean>
+   
+   <bean id="search.dbQueryEngineSecurity" class="net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.executeQuery=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
+               org.alfresco.repo.search.impl.querymodel.QueryEngine.getQueryModelFactory=ACL_ALLOW
+            </value>
+        </property>
+    </bean>
+   
+   
+</beans>

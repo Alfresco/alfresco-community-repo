@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+ 
+<beans>
+   <!--
+    This file is not included in the application context by default.
+    If you include this file, please ensure that you review the sample
+    beans contained here.
+    -->
+
+    <bean id="contentService" parent="baseContentService">
+      <property name="store">
+          <ref bean="cachingContentStore" />
+      </property>
+    </bean>
+    
+    
+    <bean id="cachingContentStore" class="org.alfresco.repo.content.caching.CachingContentStore" init-method="init">
+        <property name="backingStore" ref="backingStore"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="cacheOnInbound" value="${system.content.caching.cacheOnInbound}"/>
+        <property name="quota" ref="standardQuotaManager"/>
+    </bean>
+
+
+    <!--
+        The backingStore should NOT be a FileContentStore. If using a FileContentStore there
+        is no need to use a CachingContentStore and therefore no need for the backingStore.
+        
+        This should be configured with a slow ContentStore that might benefit from caching
+        such as the S3ContentStore or the XAMContentStore.   
+     -->
+    <bean id="backingStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+        <constructor-arg>
+            <value>${dir.contentstore}</value>
+        </constructor-arg>
+    </bean>
+    
+
+    <bean id="contentCache" class="org.alfresco.repo.content.caching.ContentCacheImpl">
+        <property name="memoryStore" ref="cachingContentStoreCache"/>
+        <property name="cacheRoot" value="${dir.cachedcontent}"/>
+    </bean>
+
+
+    <bean
+        id="standardQuotaManager"
+        class="org.alfresco.repo.content.caching.quota.StandardQuotaStrategy"
+        init-method="init"
+        destroy-method="shutdown">
+            <!--  maxUsageMB: the maximum disk usage that should be used for cached content files -->
+            <property name="maxUsageMB" value="${system.content.caching.maxUsageMB}"/>
+            
+            <!-- maxFileSizeMB: files larger than this size will not be kept in the cache -->
+            <property name="maxFileSizeMB" value="${system.content.caching.maxFileSizeMB}"/>
+            
+            <property name="panicThresholdPct" value="${system.content.caching.panicThresholdPct}"/>
+            <property name="cleanThresholdPct" value="${system.content.caching.cleanThresholdPct}"/>
+            <property name="targetUsagePct" value="${system.content.caching.targetUsagePct}"/>
+            <property name="normalCleanThresholdSec" value="${system.content.caching.normalCleanThresholdSec}"/>
+            
+            <property name="cache" ref="contentCache"/>
+            <property name="cleaner" ref="cachedContentCleaner"/>
+    </bean>
+
+
+    <bean id="unlimitedQuotaManager" class="org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy"/>        
+
+
+    <!-- Cache factory creates instances of SimpleCache and is defined in cache-context.xml -->
+    <bean id="cachingContentStoreCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.cachingContentStoreCache"/>
+    </bean>
+
+
+    <bean id="cachingContentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="cachedContentCleaner">
+                    <ref bean="cachedContentCleaner" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="cachedContentCleaner"
+        class="org.alfresco.repo.content.caching.cleanup.CachedContentCleaner"
+        init-method="init">
+        <property name="minFileAgeMillis" value="${system.content.caching.minFileAgeMillis}"/>
+        <property name="maxDeleteWatchCount" value="${system.content.caching.maxDeleteWatchCount}"/>
+        <property name="cache" ref="contentCache"/>
+        <property name="usageTracker" ref="standardQuotaManager"/>
+    </bean>
+    
+    <bean id="cachingContentStoreCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="cachingContentStoreCleanerJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${system.content.caching.contentCleanup.cronExpression}</value>
+        </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
+    </bean>    
+</beans>

@@ -1,0 +1,618 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-remote-api</artifactId>
+    <name>Alfresco Remote API</name>
+    <version>8.213-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>12</version>
+    </parent>
+
+    <scm>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-remote-api.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-remote-api</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <properties>
+        <licenseName>community</licenseName>
+
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
+
+        <dependency.alfresco-repository.version>8.243</dependency.alfresco-repository.version>
+        <dependency.alfresco-data-model.version>8.135</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>8.37</dependency.alfresco-core.version>
+
+        <dependency.alfresco-pdf-renderer.version>1.1</dependency.alfresco-pdf-renderer.version>
+        <dependency.jackson.version>2.11.1</dependency.jackson.version>
+        <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
+
+        <dependency.webscripts.version>8.5</dependency.webscripts.version>
+        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
+        <dependency.spring.version>5.2.7.RELEASE</dependency.spring.version>
+        <dependency.postgresql.version>42.2.14</dependency.postgresql.version>
+        <dependency.cxf.version>3.3.7</dependency.cxf.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Newer cxf libs, see REPO-3131 -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-rs-client</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-ws-policy</artifactId>
+                <version>${dependency.cxf.version}</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>com.github.junrar</groupId>
+                <artifactId>junrar</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>1.13.1</version>
+            </dependency>
+            <!-- update dependency from opencmis-extension -->
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1-HTTPCLIENT-1265</version>
+            </dependency>
+            <!-- newer dependency from camel-jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.12</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.13</version>
+            </dependency>
+            <!-- REPO-4986, REPO-4987 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${dependency.alfresco-repository.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${dependency.alfresco-data-model.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+                <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
+                <exclusion>
+                  <groupId>org.codehaus.woodstox</groupId>
+                  <artifactId>woodstox-core-asl</artifactId>
+                </exclusion>
+                <!-- Duplicate classes from jakarta.annotation:jakarta.annotation-api-->
+                <exclusion>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </exclusion>
+                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+                <exclusion>
+                  <groupId>org.apache.geronimo.specs</groupId>
+                  <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${dependency.jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${dependency.jackson-databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${dependency.jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+            <version>1.5.8</version>
+        </dependency>
+        <!-- newer version, see REPO-3133 -->
+        <dependency>
+            <groupId>org.alfresco.surf</groupId>
+            <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml</groupId>
+            <artifactId>jaxrpc-api</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <!-- This is needed at runtime by Web Client, so not really a test dependency -->
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-test-tck</artifactId>
+            <version>${dependency.opencmis.version}</version>
+            <exclusions>
+                <!-- Duplicate classes from com.sun.activation:jakarta.activation-->
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>javax.activation</artifactId>
+                </exclusion>
+                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+                <exclusion>
+                  <groupId>org.apache.geronimo.specs</groupId>
+                  <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-jta_1.1_spec</artifactId>
+                </exclusion>
+            </exclusions>
+            <!-- <scope>test</scope> -->
+        </dependency>
+        <!-- the cxf libs were updated, see dependencyManagement section -->
+
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.4.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${dependency.spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-repository</artifactId>
+            <version>${dependency.alfresco-repository.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+            <exclusions>
+                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
+                <exclusion>
+                    <groupId>javax.transaction</groupId>
+                    <artifactId>jta</artifactId>
+                </exclusion>
+                <!-- Duplicates classes from jakarta.xml.bind:jakarta.xml.bind-api -->
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.surf</groupId>
+            <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${dependency.postgresql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>8.2.0.v20160908</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.jetty.orbit</groupId>
+                    <artifactId>javax.servlet</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>8.2.0.v20160908</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>8.2.0.v20160908</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco.cmis.client</groupId>
+            <artifactId>alfresco-opencmis-extension</artifactId>
+            <version>2.0</version>
+            <scope>test</scope>
+            <exclusions>
+              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
+              <exclusion>
+                <groupId>org.apache.geronimo.specs</groupId>
+                <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
+              </exclusion>
+              <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
+              <exclusion>
+                  <groupId>javax.annotation</groupId>
+                  <artifactId>javax.annotation-api</artifactId>
+              </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+    <profiles>
+         <!-- Profiles to extract the alfresco-pdf-renderer -->
+		<profile>
+			<id>win-alfresco-pdf-renderer-test</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.alfresco</groupId>
+					<artifactId>alfresco-pdf-renderer</artifactId>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
+					<classifier>win64</classifier>
+					<type>tgz</type>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<inherited>false</inherited>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>extract-alfresco-pdf-renderer-test</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<skip>${skipTests}</skip>
+									<target>
+										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
+										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<untar compression="gzip" src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz" dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
+		</profile>
+		<profile>
+			<id>linux-alfresco-pdf-renderer-test</id>
+			<activation>
+				<os>
+					<family>linux</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.alfresco</groupId>
+					<artifactId>alfresco-pdf-renderer</artifactId>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
+					<classifier>linux</classifier>
+					<type>tgz</type>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<inherited>false</inherited>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>extract-alfresco-pdf-renderer-test</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<skip>${skipTests}</skip>
+									<target>
+										<echo message="Extracting alfresco-pdf-renderer (linux) for testing..." />
+										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
+											<arg value="xf" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-linux.tgz" />
+										</exec>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
+		</profile>
+		<profile>
+			<id>osx-alfresco-pdf-renderer-test</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.alfresco</groupId>
+					<artifactId>alfresco-pdf-renderer</artifactId>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
+					<classifier>osx</classifier>
+					<type>tgz</type>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<inherited>false</inherited>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>extract-alfresco-pdf-renderer-test</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<skip>${skipTests}</skip>
+									<target>
+										<echo message="Extracting alfresco-pdf-renderer (OS-X) for testing..." />
+										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
+											<arg value="xf" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-osx.tgz" />
+										</exec>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
+		</profile>
+    </profiles>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>2.0.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <!-- Create a jar of test classes -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <systemPropertyVariables>
+                                <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
+
+                                <!-- Database related properties -->
+                                <db.url>${db.url}</db.url>
+                                <db.driver>${db.driver}</db.driver>
+                                <db.name>${db.name}</db.name>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <dir.root>${dir.root}</dir.root>
+                                <img.exe>${img.exe}</img.exe>
+                                <!-- BDE-91 -->
+                                <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
+                                <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>
+                                <!-- FTR used in TransferWebScriptTest -->
+                                <transferservice.receiver.enabled>true</transferservice.receiver.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- We still use committed generated sources -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/generated</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- ACE-3329 Create _en.properties message files  -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+                    <execution>
+                        <id>duplicate-english-messages</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <target>
+                        <copy todir="${project.build.outputDirectory}">
+                            <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
+                        </copy>
+                    </target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                    <organizationName>Alfresco Software Limited</organizationName>
+                    <failOnMissingHeader>true</failOnMissingHeader>
+                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                    <licenseResolver>classpath://alfresco</licenseResolver>
+                    <licenseName>${licenseName}</licenseName>
+                    <roots>
+                        <root>src</root>
+                    </roots>
+                    <includes>
+                        <include>**/*.java</include>
+                        <include>**/*.jsp</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-licenses</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check-file-header</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.alfresco</groupId>
+                        <artifactId>alfresco-license-headers</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.alfresco.org"
+    xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
+    xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/" version="1.0">
+
+    <xs:import schemaLocation="CMIS-Core.xsd" namespace="http://docs.oasis-open.org/ns/cmis/core/200908/" />
+
+    <xs:element name="setAspects">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="aspectsToAdd" type="xs:string" />
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="aspectsToRemove" type="xs:string" />
+                <xs:element name="properties" type="cmis:cmisPropertiesType" minOccurs="0" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="aspects">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="appliedAspects" type="xs:string" />
+                <xs:element name="properties" type="cmis:cmisPropertiesType" minOccurs="0" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

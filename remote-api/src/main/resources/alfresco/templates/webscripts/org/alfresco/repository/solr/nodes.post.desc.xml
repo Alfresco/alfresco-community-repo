@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get the nodes in the given transactions</shortname>
+  <description>Get the nodes updated/deleted in the given transactions.</description>
+  <url>/api/solr/nodes</url>
+  <format default="json">argument</format>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+</webscript>

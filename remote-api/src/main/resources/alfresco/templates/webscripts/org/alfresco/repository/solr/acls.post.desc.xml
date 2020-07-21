@@ -1,0 +1,27 @@
+<webscript>
+  <shortname>Get ACLs</shortname>
+  <description>Get the ACLs for given ChangeSets.</description>
+  <url>/api/solr/acls?fromId={fromId?}&amp;maxResults={maxResults?}</url>
+  <format default="json">argument</format>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+  <args>
+    <arg>
+      <name>fromId</name>
+      <description>Minimum ACL ID that can be specified when exactly one ACL ChangeSet ID is given</description>
+    </arg> 
+    <arg>
+      <name>maxResults</name>
+      <description>Maximum number of results (optional: default 1024)</description>
+    </arg> 
+    <arg>
+      <name>POST content</name>
+      <description>
+      { aclChangeSetIds : [ 1, 2, ..., n] }
+      </description>
+    </arg> 
+ </args>
+</webscript>

@@ -1,0 +1,44 @@
+<webscript>
+  <shortname>Create invitation for web site</shortname>
+  <description><![CDATA[
+  Create a new invitation for this web site.
+  <br />
+  For a Nominated Invitation, where an existing site member nominates someone else who is possibly not yet an alfresco user to become a member of this web site.
+  
+  <br />
+  For an existing user, the invitee is identified by inviteeUserName.   
+  For a user who does not have a userName a new account will be generated based upon 
+  	inviteeFirstName, inviteeLastName and inviteeEmail  
+  <br /> if inviteeUserName is specified then inviteeFirstName, inviteeLastName and inviteeEmail are ignored.
+  
+  <dl>
+   <dt>invitationType</dt><dd>mandatory - "NOMINATED"</dd>
+   <dt>inviteeFirstName</dt> <dd> optional </dd>
+   <dt>inviteeLastName</dt> <dd> optional </dd>
+   <dt>inviteeEmail</dt> <dd> optional </dd>
+   <dt>inviteeUserName</dt> <dd> optional </dd>
+   <dt>serverPath</dt><dd></dd>
+   <dt>acceptURL</dt><dd></dd>
+   <dt>rejectURL</dt><dd></dd>
+   <dt>inviteeRoleName</dt> <dd> mandatory what role to be given on this web site </dd>
+  </dl>
+
+  <br />
+  For a Moderated Invitation, where an existing user wants to be made a member of a moderated web site.
+  <dl> 
+  <dt>invitationType</dt><dd>mandatory - "MODERATED"</dd>
+  <dt>inviteeUserName</dt><dd>optional who wants to be invited to this web site? </dd>
+  <dt>inviteeComments</dt> <dd>mandatory (but can be blank) why do they want membership to this site ? </dd>
+  <dt>inviteeRoleName</dt> <dd>mandatory what role to be given on this web site </dd>
+  </dl>
+  <br /> 
+  
+  Returns HTTPStatus.Created (201) if an invitation is created. 
+    
+  ]]></description>
+  <url>/api/sites/{shortname}/invitations</url>
+  <format default="json"/>
+  <lifecycle>limited_support</lifecycle>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

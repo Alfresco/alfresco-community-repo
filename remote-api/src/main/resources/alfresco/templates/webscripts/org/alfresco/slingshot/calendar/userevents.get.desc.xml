@@ -1,0 +1,27 @@
+<webscript>
+  <shortname>User Events</shortname>
+  <description><![CDATA[
+  Lists all of the events for a user, either on one site, or across all the
+  sites that they belong to.
+  ]]></description>
+  <url>/calendar/events/user?from={from}&amp;to={to?}&amp;repeating={repeating?}</url>
+  <url>/calendar/events/{site}/user?from={from}&amp;to={to?}&amp;repeating={repeating?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <shortname>from</shortname>
+      <description>The date to find events from (inclusive), in the format YYYY-MM-DD</description>
+    </arg>
+    <arg>
+      <shortname>to</shortname>
+      <description>The date to find events until (inclusive), in the format YYYY-MM-DD. If this isn't given, all events into the future will be returned.</description>
+    </arg>
+    <arg>
+      <shortname>repeating</shortname>
+      <description>Should only the first instance of a repeating event be returned, or should all repeating instances in the date range be supplied? Default is only the first instance. (If no "to date" is supplied, past repeating events with no end date will not show up. When working with repeating events, it is strongly recommended that a to date is given).</description>
+    </arg>
+  </args>
+</webscript>

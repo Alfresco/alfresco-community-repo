@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Get rule type collection</shortname>
+  <description>Gets all Rule Types defined by the system.</description>
+  <url>/api/ruletypes</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

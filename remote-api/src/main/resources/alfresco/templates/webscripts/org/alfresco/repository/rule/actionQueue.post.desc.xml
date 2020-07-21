@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Post action queue</shortname>
+  <description>Adds a new action to the execution queue.</description>
+  <url>/api/actionQueue?async={async?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

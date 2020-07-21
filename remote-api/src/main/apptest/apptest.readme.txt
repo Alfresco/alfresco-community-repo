@@ -1,0 +1,33 @@
+AppClientTest is a tool for testing an AtomPub Service.
+
+http://code.google.com/p/feedvalidator/wiki/AppClientTest
+
+1) To install and test installation...
+
+$ svn co http://feedvalidator.googlecode.com/svn/trunk/apptestsuite/client/validator/ validator
+$ python validator/appclienttest.py --output=results.html "http://bitworking.org/projects/apptestsite/app.cgi/service/;service_document" 
+$ firefox results.html
+
+The above has been encapsulated in...
+
+/projects/remote-api/source/test/apptest/install.sh
+
+2) To execute appclienttest against Alfresco
+
+/projects/remote-api/source/test/apptest/test.sh
+
+
+3) Note: appclienttest.py arguments...
+
+ -h, --help          show this help message and exit
+  --credentials=FILE  FILE that contains a name and password on separate lines
+                      with an optional third line with the authentication type
+                      of 'ClientLogin <service>'.
+  --output=FILE       FILE to store test results
+  --verbose           Print extra information while running.
+  --quiet             Do not print anything while running.
+  --debug             Print low level HTTP information while running.
+  --html              Output is formatted in HTML
+  --record=DIR        Record all the responses to be used later in playback
+                      mode.
+  --playback=DIR      Playback responses stored from a previous run.

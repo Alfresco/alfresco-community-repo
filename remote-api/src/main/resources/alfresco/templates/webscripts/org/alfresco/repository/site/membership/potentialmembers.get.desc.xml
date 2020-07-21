@@ -1,0 +1,21 @@
+<webscript>
+  <shortname>List potential Web site members</shortname>
+  <description> <![CDATA[
+  Get a colleciton of People and/or Groups who are not yet Site members.
+   <br />
+  'shortname' is the shortname of the web site
+  <br />
+  Parameters:
+  <ul>
+  <li>filter, Optional, filter</li>
+  <li>maxResults, Optional, maximum resultset to return</li>
+  <li>authorityType, Optional, returns either GROUP or USER authorities.  If not specified returns all authorities.</li> 
+  <li>zone, Optional, specifies group zone if including groups in query.</li> 
+  </ul>
+  ]]></description>
+  <url>/api/sites/{shortname}/potentialmembers?filter={filter?}&amp;maxResults={maxResults?}&amp;authorityType={authorityType?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

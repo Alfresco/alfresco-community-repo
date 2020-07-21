@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="webdav.initParams" class="org.alfresco.repo.webdav.WebDAVServlet$WebDAVInitParameters">
+        <property name="enabled" value="${system.webdav.servlet.enabled}" />
+        <property name="storeName" value="${system.webdav.storeName}" />
+        <property name="rootPath" value="${system.webdav.rootPath}" />
+    </bean>
+    
+    <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockServiceImpl">
+      <property name="lockService">
+         <ref bean="LockService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="checkOutCheckInService">
+         <ref bean="CheckoutCheckinService" />
+      </property>
+   </bean>
+   
+   <bean id="baseWebDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" abstract="true">
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="fileFolderService">
+         <ref bean="FileFolderService" />
+      </property>
+      <property name="searchService">
+         <ref bean="SearchService" />
+      </property>
+      <property name="namespaceService">
+         <ref bean="NamespaceService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService" />
+      </property>
+      <property name="mimetypeService">
+         <ref bean="MimetypeService" />
+      </property>
+      <property name="lockService">
+         <ref bean="webDAVLockService" />
+      </property>
+      <property name="actionService">
+         <ref bean="ActionService" />
+      </property>
+      <property name="permissionService">
+         <ref bean="PermissionService" />
+      </property>
+      <property name="hiddenAspect">
+         <ref bean="hiddenAspect" />
+      </property>
+      <property name="authenticationService">
+         <ref bean="authenticationService" />
+      </property>
+      <property name="tenantService">
+         <ref bean="tenantService" />
+      </property>
+      <property name="sizeLimitString">
+         <value>${system.content.maximumFileSizeLimit}</value>
+      </property>
+      <property name="policyBehaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
+      <property name="renameShufflePattern">
+         <value>${system.webdav.renameShufflePattern}</value>
+      </property>
+      <property name="urlPathPrefix">
+         <value>${system.webdav.url.path.prefix}</value>
+      </property>
+      <property name="eventPublisher" ref="eventPublisher" />
+    </bean>   
+   
+    <bean id="webDAVHelper" class="org.alfresco.repo.webdav.WebDAVHelper" parent="baseWebDAVHelper" />
+
+   <!--  Content Streamer -->
+   <bean id="webscript.content.streamer" class="org.alfresco.repo.web.scripts.content.ContentStreamer">
+      <property name="nodeService" ref="NodeService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="contentService" ref="ContentService" />
+      <property name="eventPublisher" ref="eventPublisher" />
+      <property name="siteService" ref="SiteService" />
+   </bean>
+</beans>

@@ -1,0 +1,1 @@
+${testPerson.properties['userName']}

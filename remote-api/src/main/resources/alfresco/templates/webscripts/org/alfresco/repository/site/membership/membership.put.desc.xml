@@ -1,0 +1,31 @@
+<webscript>
+  <shortname>Update Web site membership</shortname>
+  <description> <![CDATA[
+  Update the membership role for a user or group.
+  
+  <br />
+  'shortname' is the shortname of the web site
+  <br />
+  Required parameters,
+  <br />
+        role, mandatory String,  the new role name for this membership.
+  <br />
+        person object, with userName property
+  <br>
+  		OR      
+        group object, with fullName property
+  <br />
+    	OR      
+        authority object, with fullName property
+  <br />
+  
+  Returns: The new authority.
+  
+  ]]>
+  </description>
+  <url>/api/sites/{shortname}/memberships</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

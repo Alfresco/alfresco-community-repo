@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get sites</shortname>
+  <description>Get a collection of the sites of which a a person is an explicit member.</description>
+  <url>/api/people/{userid}/sites?size={pagesize?}&amp;pos={position?}&amp;roles={roles?}</url>
+  <url>/api/people/{userid}/sites/{filter}?size={pagesize?}&amp;pos={position?}&amp;roles={roles?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

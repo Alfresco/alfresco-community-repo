@@ -1,0 +1,230 @@
+/*
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+@CHARSET "UTF-8";
+
+body { 
+	font-family: arial,sans-serif;
+	font-size: 10pt; 
+}
+
+h1 {
+	font-family: Georgia;
+}
+
+h2 {
+	font-family: Georgia;
+}
+
+h3 {
+	font-family: Georgia;
+}
+
+a:link {
+	color: #204a87;
+	text-decoration: none;	
+}
+
+a:visited {
+	color: #204a87;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #204a87;
+	text-decoration: underline;
+}
+
+a:active {
+	color: a40000;
+	text-decoration: underline;
+}
+
+div.navigationbox {
+	background-color: #f6f1de;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	margin-right: 0px;
+	padding: 5px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888a85;
+}
+
+table.servicetable {
+	border-collapse: collapse;
+}
+
+table.servicetable th{
+	font-size: 10pt;
+	font-weight: bold;	
+	padding: 5px;
+	text-align: left;
+}
+
+table.servicetable td {
+	font-size: 10pt; 
+	padding: 5px;
+	border-bottom-style: solid;
+	border-color: #dddddd;
+	border-width: 1px;
+}
+
+.servicebox {
+	background-color: #f6f1de;
+	font-size: 10pt; 
+	padding: 10px;
+	margin: 10px;
+	border-color: #888a85;
+	border-style: solid;
+	border-width: 2px;
+}
+
+table.feedtable {
+	border-collapse: collapse;
+}
+
+table.feedtable th {
+	font-size: 10pt;
+	font-weight: bold;	
+	text-align: left;
+}
+
+.tdinfo {
+	font-size: 10pt; 
+	padding-left: 3px;
+	padding-top: 3px;
+	padding-bottom: 0px;
+	padding-right: 10px;
+}
+
+.tdinfo2 {
+	font-size: 10pt; 
+	padding: 3px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+.tdlinks {
+	font-size: 8pt; 
+	padding: 3px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+.tdmore {
+	background-color: #eeeeec;
+	font-size: 10pt; 
+	padding-left: 3px;
+	padding-top: 3px;
+	padding-bottom: 0px;
+	padding-right: 10px;
+}
+
+.tdinfo-odd {
+	background-color: #fcf9df;
+	font-size: 10pt; 
+	padding-left: 3px;
+	padding-top: 3px;
+	padding-bottom: 0px;
+	padding-right: 10px;
+}
+
+.tdinfo2-odd {
+	background-color: #fcf9df;
+	font-size: 10pt; 
+	padding: 3px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+.tdlinks-odd {
+	background-color: #fcf9df;
+	font-size: 8pt; 
+	padding: 3px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+.tdmore-odd {
+	background-color: #fce94f;
+	font-size: 10pt; 
+	padding: 3px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+a.actionlink:link {
+	color: #888a85;
+	text-decoration: none;	
+}
+
+a.actionlink:visited {
+	color: #888a85;
+	text-decoration: none;
+}
+
+a.actionlink:hover {
+	color: #2e3436;
+	text-decoration: underline;
+}
+
+a.actionlink:active {
+	color: red;
+	text-decoration: underline;
+}
+
+table.entrytable {
+	border-collapse: collapse;
+}
+
+table.entrytable th {
+	font-size: 10pt;
+	font-weight: bold;	
+	text-align: left;
+}
+
+table.entrytable td {
+	font-size: 10pt; 
+	padding: 5px;
+	border-bottom-style: solid;
+	border-color: #d3d7cf;
+	border-width: 1px;
+}
+
+div.entrysummary {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+	margin-right: 0px;
+	padding: 5px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #888a85;	
+	height: 150px;
+	overflow: auto;
+}

@@ -1,0 +1,10 @@
+<settings>
+    <!-- required to push artifacts to repositories -->
+    <servers>
+        <server>
+            <id>alfresco-public</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+    </servers>
+</settings>

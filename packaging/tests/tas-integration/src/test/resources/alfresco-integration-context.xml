@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context-3.0.xsd
+          http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<context:annotation-config />
+	<context:component-scan base-package="org.alfresco" />
+	<import resource="classpath:dataprep-context.xml" />
+	<import resource="classpath*:alfresco-cifs-context.xml" />
+	<import resource="classpath*:alfresco-ftp-context.xml" />
+	<import resource="classpath*:alfresco-restapi-context.xml" />
+	<import resource="classpath*:alfresco-cmis-context.xml" />
+	<import resource="classpath*:alfresco-smtp-context.xml" />
+	<import resource="classpath*:alfresco-imap-context.xml" />
+	<import resource="classpath*:alfresco-webdav-context.xml" />
+	<import resource="classpath*:alfresco-share-po-context.xml" />
+</beans>
+

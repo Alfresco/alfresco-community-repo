@@ -1,0 +1,97 @@
+.osSidebarPanel
+{
+   background-color: #f5f5f5;
+   padding: 4px;
+   min-width: auto;
+   *width: 100%;
+}
+
+/* IE6 & IE7 fix */
+.osSidebarPanel
+{
+   *margin-right: -9px;
+}
+
+.osPanel
+{
+   margin-bottom: 3px;
+}
+
+/* IE6 & IE7 fix */
+.osPanel
+{
+   *margin-right: 4px;
+   *padding-right: 4px;
+}
+
+.osControls
+{
+   padding: 4px;
+   background-color: white;
+   border: 1px solid #babfc5;
+   -moz-border-radius: 7px;
+}
+
+.osOptions
+{
+   margin-top: 6px;
+   margin-left: 4px;
+}
+
+.osResults
+{
+   margin-top: 6px;
+   padding: 3px;
+   background-color: white;
+   border: 1px solid #babfc5;
+   -moz-border-radius: 7px;
+   *width: 100%;
+}
+
+.osEngineTitle
+{
+   padding: 3px;
+   margin-bottom: 2px;
+   font-weight: bold;
+   color: #004488;
+   white-space: nowrap;
+   border-bottom: 1px dotted #bbb;
+}
+
+.osResultsPaging
+{
+   padding: 6px 4px 4px 4px;
+   font-size: 9px;
+   text-align: center;
+}
+
+.osResultsPaging img
+{
+   vertical-align: -4px;
+}
+
+.osResultNoMatch
+{
+   padding: 4px;
+}
+
+.osResultIcon
+{
+   padding: 4px 4px 0px 4px;
+}
+
+.osResultTitle
+{
+   font-weight: bold;
+   padding-top: 4px;
+}
+
+.osResultTitle a, .osResultTitle a:hover, .osResultTitle a:link, .osResultTitle a:visited
+{
+   font-weight: bold;
+}
+
+.osResultSummary
+{
+   padding-bottom: 3px;
+}

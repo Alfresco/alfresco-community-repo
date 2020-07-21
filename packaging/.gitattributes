@@ -1,0 +1,8 @@
+.* eol=crlf
+*.html eol=crlf
+*.java eol=crlf
+*.txt eol=crlf
+*.css eol=crlf
+*.xml eol=crlf
+*.js eol=crlf
+*.properties eol=crlf

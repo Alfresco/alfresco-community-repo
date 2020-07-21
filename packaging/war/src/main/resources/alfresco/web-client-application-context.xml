@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   
+   <!-- ===================================== -->
+   <!-- Web Script Beans                      -->
+   <!-- ===================================== -->
+
+   <bean id="globalAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
+    
+   <bean id="GlobalAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>globalAuthenticationFilter</value>
+      </property>
+      <!-- Fall back to a benign default implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
+      </property>
+   </bean>
+   
+   <bean id="WebscriptCookieAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>cookieBasedAuthenticationFilter</value>
+      </property>
+      <!-- Uses this implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.web.app.servlet.WebscriptCookieAuthenticationFilter">
+            <property name="authenticationService">
+               <ref bean="AuthenticationService" />
+            </property>
+            <property name="personService">
+               <ref bean="PersonService" />
+            </property>
+            <property name="nodeService">
+               <ref bean="NodeService" />
+            </property>
+            <property name="transactionService">
+               <ref bean="TransactionService" />
+            </property>
+            <property name="authenticationComponent">
+               <ref bean="AuthenticationComponent" />
+            </property>
+            <property name="remoteUserMapper">
+               <ref bean="RemoteUserMapper" />
+            </property>
+         </bean>
+      </property>
+   </bean> 
+   
+   <bean id="SOLRAuthenticationFilter" class="org.alfresco.repo.web.scripts.solr.SOLRAuthenticationFilter">
+      <property name="secureComms" value="${solr.secureComms}"/>
+   </bean>
+   
+   <bean id="WebscriptAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>webscriptAuthenticationFilter</value>
+      </property>
+      <!-- Fall back to a benign default implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
+      </property>
+   </bean>
+   
+   <bean id="webDavAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
+
+   <bean id="WebDavAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+      <property name="applicationContextManager">
+         <ref bean="Authentication" />
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
+         </list>
+      </property>
+      <property name="sourceBeanName">
+         <value>webDavAuthenticationFilter</value>
+      </property>
+      <!-- Fall back to the default alfresco implementation -->
+      <property name="defaultTarget">
+         <bean class="org.alfresco.repo.webdav.auth.AuthenticationFilter">
+            <property name="authenticationListener">
+               <ref bean="webDavAuthenticationListener"/>
+            </property>
+            <property name="authenticationService">
+               <ref bean="AuthenticationService" />
+            </property>
+            <property name="personService">
+               <ref bean="PersonService" />
+            </property>
+            <property name="nodeService">
+               <ref bean="NodeService" />
+            </property>
+            <property name="transactionService">
+               <ref bean="TransactionService" />
+            </property>
+            <property name="authenticationComponent">
+               <ref bean="AuthenticationComponent" />
+            </property>
+            <property name="remoteUserMapper">
+               <ref bean="RemoteUserMapper" />
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <bean id="PublicAPIAuthenticationFilter" class="org.alfresco.repo.web.filter.beans.NullFilter" />
+   
+</beans>

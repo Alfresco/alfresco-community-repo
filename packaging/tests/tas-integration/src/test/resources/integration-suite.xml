@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Integration" preserve-order="true">
+	<listeners>
+        <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
+        <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
+        <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
+	</listeners>
+
+    <test name="Integration Tests">
+        <packages>
+            <package name="org.alfresco.tas.integration.*"/>
+        </packages>
+    </test>
+</suite>

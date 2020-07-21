@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="EmailTests">
+	<listeners>
+		<listener class-name="org.alfresco.utility.report.TestCountListener"></listener>
+	</listeners>
+	<test name="EmailTests">
+		<groups>
+			<run>
+				<exclude name="demo" />
+				<exclude name="unit" />
+			</run>
+		</groups>
+		<packages>
+			<package name="org.alfresco.email.*"></package>
+		</packages>
+	</test> <!-- Test -->
+</suite> <!-- Suite -->

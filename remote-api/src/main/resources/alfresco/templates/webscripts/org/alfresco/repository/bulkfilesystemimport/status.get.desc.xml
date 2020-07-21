@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Bulk Filesystem Import Status</shortname>
+  <description>Web Script that provides a simple UI for monitoring the status of a bulk filesystem import.</description>
+  <url>/bulkfsimport/status</url>
+  <format default="html"/>
+  <authentication>admin</authentication>
+  <family>Bulk Filesystem Import</family>
+  <cache>
+    <never>true</never>
+  </cache>
+</webscript>

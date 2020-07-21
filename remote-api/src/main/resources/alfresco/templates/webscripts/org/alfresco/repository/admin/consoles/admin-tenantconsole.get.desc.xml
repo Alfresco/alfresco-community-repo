@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Admin Console - Tenant Admin Console</shortname>
+   <description><![CDATA[Admin Console WebScript that displays the Tenant Admin Console.]]></description>
+   <url>/admin/admin-tenantconsole</url>
+   <family>AdminConsole</family>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction allow="readonly">required</transaction>
+</webscript>

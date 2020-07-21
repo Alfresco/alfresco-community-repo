@@ -1,0 +1,303 @@
+<xsd:schema xmlns:cms="http://www.alfresco.org/ws/model/content/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.alfresco.org/ws/model/content/1.0" elementFormDefault="qualified" version="0.1">
+    <xsd:annotation>
+    	<xsd:documentation>Alfresco Web Services for Content Management. Type Definitions - Draft.</xsd:documentation>
+    </xsd:annotation>
+    
+	<!-- -->    
+	<!-- Identifier Definitions -->
+	<!-- -->
+
+	<xsd:simpleType name="Name">
+        <xsd:annotation>
+        	<xsd:documentation>TODO: Define constraints</xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+ 			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="UUID">
+		<xsd:restriction base="xsd:string">
+		    <xsd:pattern value="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="Path">
+        <xsd:annotation>
+        	<xsd:documentation>TODO: Define constraints</xsd:documentation>
+        </xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+    
+    <xsd:complexType name="Store">
+    	<xsd:sequence>
+    		<xsd:element name="scheme" type="xsd:string" maxOccurs="1" minOccurs="0" nillable="true"/>
+    		<xsd:element name="address" type="xsd:string"  maxOccurs="1" minOccurs="0" nillable="true"/>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="Reference">
+    	<xsd:sequence>
+    		<xsd:element name="store" type="cms:Store"  maxOccurs="1" minOccurs="0" nillable="true" />
+    		<xsd:element maxOccurs="1" minOccurs="0" name="uuid" type="cms:UUID" nillable="true"/>
+    		<xsd:element default="/" maxOccurs="1" minOccurs="0" name="path" type="cms:Path" nillable="true"/>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ParentReference">
+    	<xsd:complexContent>
+    		<xsd:extension base="cms:Reference">
+    			<xsd:group ref="cms:ChildAssociation"></xsd:group>
+   			</xsd:extension>
+    	</xsd:complexContent>
+    </xsd:complexType>
+
+	<xsd:group name="ChildAssociation">
+		<xsd:sequence>
+			<xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="associationType" type="cms:Name"/>
+ 			<xsd:element maxOccurs="1" minOccurs="0" nillable="true" name="childName" type="cms:Name"/>
+		</xsd:sequence>
+	</xsd:group>
+
+	<!-- -->
+	<!-- Meta Data Definitions -->
+	<!-- -->
+	
+	<xsd:complexType name="ClassDefinition">
+		<xsd:sequence>
+			<xsd:element name="name" type="cms:Name"></xsd:element>
+			<xsd:group ref="cms:TextualDescription"></xsd:group>
+			<xsd:element name="superClass" type="cms:Name" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="isAspect" type="xsd:boolean"></xsd:element>
+			<xsd:element name="properties" type="cms:PropertyDefinition" minOccurs="0" maxOccurs="unbounded" nillable="true"></xsd:element>
+			<xsd:element name="associations" type="cms:AssociationDefinition" minOccurs="0" maxOccurs="unbounded" nillable="true"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="ValueDefinition">
+		<xsd:sequence>
+			<xsd:element name="name" type="cms:Name"></xsd:element>
+			<xsd:group ref="cms:TextualDescription"></xsd:group>
+			<xsd:element name="dataType" type="cms:Name"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="PropertyDefinition">
+		<xsd:complexContent>
+			<xsd:extension base="cms:ValueDefinition">
+				<xsd:sequence>
+					<xsd:element name="mandatory" type="xsd:boolean" default="false"></xsd:element>
+					<xsd:element name="readOnly" type="xsd:boolean" default="false"></xsd:element>
+					<xsd:element name="defaultValue" maxOccurs="1" minOccurs="0" type="xsd:string"></xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	
+	<xsd:complexType name="AssociationDefinition">
+		<xsd:sequence>
+			<xsd:element name="name" type="cms:Name"></xsd:element>
+			<xsd:group ref="cms:TextualDescription"></xsd:group>
+			<xsd:element name="isChild" type="xsd:boolean" default="true"></xsd:element>
+			<xsd:element name="sourceRole" type="cms:RoleDefinition" maxOccurs="1" minOccurs="0"></xsd:element>			
+			<xsd:element name="targetRole" type="cms:RoleDefinition" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="targetClass" type="cms:Name"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="RoleDefinition">
+		<xsd:sequence>
+			<xsd:element name="name" type="cms:Name" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="cardinality" type="cms:Cardinality" default="*" maxOccurs="1" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="NodeDefinition">
+		<xsd:sequence>
+			<xsd:element name="type" type="cms:ClassDefinition"></xsd:element>
+			<xsd:element name="aspects" type="cms:ClassDefinition" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:group name="TextualDescription">
+		<xsd:sequence>
+			<xsd:element name="title" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+			<xsd:element name="description" type="xsd:string" maxOccurs="1" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+
+	<xsd:simpleType name="Cardinality">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="0..1"></xsd:enumeration>
+			<xsd:enumeration value="1"></xsd:enumeration>
+			<xsd:enumeration value="*"></xsd:enumeration>
+			<xsd:enumeration value="1..*"></xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:group name="AnonymousType">
+		<xsd:sequence>
+			<xsd:element name="type" type="cms:Name"></xsd:element>
+			<xsd:element name="aspects" type="cms:Name" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+
+	<!-- -->	
+	<!-- Generic Content Definitions -->
+	<!-- -->
+	
+    <xsd:complexType name="Node">
+    	<xsd:sequence>
+    		<xsd:element name="reference" type="cms:Reference"></xsd:element>
+    		<xsd:group ref="cms:AnonymousType"/>
+    		<xsd:element name="properties" type="cms:NamedValue" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ContentFormat">
+    	<xsd:sequence>
+    		<xsd:element name="mimetype">
+    			<xsd:annotation>
+    				<xsd:documentation>
+    					TODO: MinOccurs = 0?
+    					TODO: Define Constraints
+    				</xsd:documentation>
+    			</xsd:annotation>
+    			<xsd:simpleType>
+			        <xsd:restriction base="xsd:string">
+			 			<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+    		</xsd:element>
+    		<xsd:element name="encoding" minOccurs="0">
+    			<xsd:annotation>
+    				<xsd:documentation>
+    					TODO: MinOccurs = 0?
+    					TODO: Define Constraints
+    				</xsd:documentation>
+    			</xsd:annotation>
+    			<xsd:simpleType>
+			        <xsd:restriction base="xsd:string">
+			 			<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+    		</xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="NamedValue">
+    	<xsd:sequence>
+    		<xsd:element name="name" type="cms:Name"></xsd:element>
+    		<xsd:element name="isMultiValue" type="xsd:boolean" default="false"></xsd:element>
+    		<xsd:element name="value" type="xsd:string" nillable="true"></xsd:element>
+    		<xsd:element name="values" type="xsd:string" nillable="true" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+    	</xsd:sequence>
+    </xsd:complexType>
+
+	<!-- -->
+	<!-- Query Definitions -->
+	<!-- -->
+
+    <xsd:complexType name="Query">
+    	<xsd:sequence>
+    		<xsd:element name="language" type="xsd:string"/>
+    		<xsd:element name="statement" type="xsd:string"/>
+    	</xsd:sequence>
+    </xsd:complexType>
+    
+	<xsd:complexType name="ResultSet">
+		<xsd:sequence>
+			<xsd:element name="rows" type="cms:ResultSetRow" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+			<xsd:element name="totalRowCount" type="xsd:long"></xsd:element>
+			<xsd:element name="metaData" type="cms:ResultSetMetaData" maxOccurs="1" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="ResultSetRow">
+		<xsd:sequence>
+			<xsd:element name="rowIndex" type="xsd:long"></xsd:element>
+			<xsd:element name="columns" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0"/>
+			<xsd:element name="score" type="xsd:float" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="node" maxOccurs="1" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="id" type="cms:UUID"></xsd:element>
+						<xsd:group ref="cms:AnonymousType"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="ResultSetMetaData">
+		<xsd:sequence>
+			<xsd:element name="valueDefs" type="cms:ValueDefinition" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+			<xsd:element name="classDefs" type="cms:ClassDefinition" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="Predicate">
+		<xsd:choice>
+			<xsd:element name="nodes" type="cms:Reference" maxOccurs="unbounded" minOccurs="0" nillable="true">
+			</xsd:element>
+			<xsd:sequence>
+				<xsd:element name="store" type="cms:Store" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+				<xsd:element name="query" type="cms:Query" maxOccurs="1" minOccurs="0" nillable="true"></xsd:element>
+			</xsd:sequence>
+		</xsd:choice>
+	</xsd:complexType>
+
+	<!-- -->
+	<!-- Version Definitions -->
+	<!-- -->
+	
+	<xsd:complexType name="Version">
+		<xsd:sequence>
+			<xsd:element name="id" type="cms:Reference"></xsd:element>
+			<xsd:element name="created" type="xsd:dateTime" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="creator" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="label" type="xsd:string" maxOccurs="1" minOccurs="0"></xsd:element>
+			<xsd:element name="major" type="xsd:boolean" default="true"></xsd:element>
+			<xsd:element name="commentaries" type="cms:NamedValue" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="VersionHistory">
+		<xsd:sequence>
+		    <xsd:element name="marker" type="xsd:string" nillable="true"/>
+			<xsd:element name="versions" type="cms:Version" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<!-- -->
+	<!-- Classification Definitions -->
+	<!-- -->
+	
+	<xsd:complexType name="Category">
+		<xsd:sequence>
+			<xsd:element name="id" type="cms:Reference"></xsd:element>
+			<xsd:group ref="cms:TextualDescription"></xsd:group>
+		</xsd:sequence>
+	</xsd:complexType>
+	
+	<xsd:complexType name="Classification">
+		<xsd:sequence>
+		    <xsd:element name="classification" type="cms:Name"></xsd:element>
+			<xsd:element name="rootCategory" type="cms:Category"></xsd:element>
+		    <xsd:group ref="cms:TextualDescription"></xsd:group>
+		</xsd:sequence>
+	</xsd:complexType> 
+
+	<!-- <xsd:complexType name="Classification">
+		<xsd:complexContent>
+			<xsd:extension base="cms:Category">
+				<xsd:sequence>
+					<xsd:element name="rootCategory" type="cms:Category"></xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType> -->
+
+</xsd:schema>

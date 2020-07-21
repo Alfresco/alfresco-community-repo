@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Get blog posts for a number of days</shortname>
+  <description>Get all posts for a blog that were created within the specified number of days.</description>
+  <url>/api/blog/site/{site}/{container}/{path}/posts/new?numdays={numdays}</url>
+  <url>/api/blog/site/{site}/{container}/posts/new?numdays={numdays}</url>
+  <url>/api/blog/node/{store_type}/{store_id}/{id}/posts/new?numdays={numdays}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

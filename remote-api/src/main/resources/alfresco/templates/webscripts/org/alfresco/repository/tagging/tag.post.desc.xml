@@ -1,0 +1,18 @@
+<webscript>
+  <shortname>Create new tag</shortname>
+  <description><![CDATA[
+  Create a new tag in the specified store.
+  <br />
+  The following properties need be set in the POST body.
+  <dl>
+  <dt>name</dt><dd>Name of the tag to create. Note tags are created in lowercase.</dd>
+  </dl>
+  ]]></description>
+  <url>/api/tags/{store_type}/{store_id}</url>  
+  <url>/api/tag/{store_type}/{store_id}</url>  <!--  Keep for backwards compatibility -->
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Tagging</family>
+</webscript>

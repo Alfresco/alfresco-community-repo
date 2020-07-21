@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Admin Console - root page</shortname>
+   <description><![CDATA[Admin Console WebScript that retrieves available admin console tools and redirects to the first one.]]></description>
+   <url>/admin</url>
+   <url>/admin/</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction allow="readonly">required</transaction>
+</webscript>

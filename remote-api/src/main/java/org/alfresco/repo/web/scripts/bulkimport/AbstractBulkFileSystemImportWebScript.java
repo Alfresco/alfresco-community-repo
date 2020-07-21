@@ -1,0 +1,222 @@
+/*
+ * #%L
+ * Alfresco Remote API
+ * %%
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+
+package org.alfresco.repo.web.scripts.bulkimport;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Date;
+
+import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+
+/**
+ * contains common fields and methods for the import web scripts.
+ */
+public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
+{
+    protected static final Log logger = LogFactory.getLog(BulkFilesystemImporter.class);
+    
+    protected static final String WEB_SCRIPT_URI_BULK_FILESYSTEM_IMPORT_STATUS = "/bulkfsimport/status";
+    
+	protected static final String PARAMETER_TARGET_NODEREF = "targetNodeRef";
+	protected static final String PARAMETER_TARGET_PATH    = "targetPath";
+
+	protected static final String COMPANY_HOME_NAME = "Company Home";
+	protected static final String COMPANY_HOME_PATH = "/" + COMPANY_HOME_NAME;
+    
+    // Web scripts parameters (common)
+	protected static final String PARAMETER_REPLACE_EXISTING        = "replaceExisting";
+	protected static final String PARAMETER_EXISTING_FILE_MODE      = "existingFileMode";
+	protected static final String PARAMETER_VALUE_REPLACE_EXISTING 	= "replaceExisting";
+	protected static final String PARAMETER_SOURCE_DIRECTORY       	= "sourceDirectory";
+	protected static final String PARAMETER_DISABLE_RULES		    = "disableRules";
+	protected static final String PARAMETER_VALUE_DISABLE_RULES		= "disableRules";
+
+	protected static final String IMPORT_ALREADY_IN_PROGRESS_MODEL_KEY = "importInProgress";
+	protected static final String IMPORT_ALREADY_IN_PROGRESS_ERROR_KEY ="bfsit.error.importAlreadyInProgress";
+
+	protected static final String PARAMETER_BATCH_SIZE              = "batchSize";
+	protected static final String PARAMETER_NUM_THREADS             = "numThreads";
+	
+	protected FileFolderService fileFolderService;
+	protected Repository repository;
+	   
+	protected volatile boolean importInProgress;
+    
+	protected NodeRef getTargetNodeRef(String targetNodeRefStr, String targetPath) throws FileNotFoundException
+	{
+		NodeRef targetNodeRef;
+		
+		if (targetNodeRefStr == null || targetNodeRefStr.trim().length() == 0)
+        {
+            if (targetPath == null || targetPath.trim().length() == 0)
+            {
+                throw new WebScriptException("Error: neither parameter '" + PARAMETER_TARGET_NODEREF +
+                                           "' nor parameter '" + PARAMETER_TARGET_PATH +
+                                           "' was provided, but at least one is required !");
+            }
+    		targetNodeRef = convertPathToNodeRef(targetPath.trim());
+        }
+        else
+        {
+            targetNodeRef = new NodeRef(targetNodeRefStr.trim());
+        }
+
+		return targetNodeRef;
+	}
+
+	protected NodeRef convertPathToNodeRef(String targetPath) throws FileNotFoundException
+	{
+	    NodeRef result          = null;
+	    NodeRef companyHome     = repository.getCompanyHome();
+	    String  cleanTargetPath = targetPath.replaceAll("/+", "/");
+		
+	    if (cleanTargetPath.startsWith(COMPANY_HOME_PATH))
+	        cleanTargetPath = cleanTargetPath.substring(COMPANY_HOME_PATH.length());
+	    
+	    if (cleanTargetPath.startsWith("/"))
+	        cleanTargetPath = cleanTargetPath.substring(1);
+	    
+	    if (cleanTargetPath.endsWith("/"))
+	        cleanTargetPath = cleanTargetPath.substring(0, cleanTargetPath.length() - 1);
+	    
+	    if (cleanTargetPath.length() == 0)
+	        result = companyHome;
+	    else
+	    {
+	    	FileInfo info = fileFolderService.resolveNamePath(companyHome, Arrays.asList(cleanTargetPath.split("/")));
+	        if(info == null)
+	        	throw new WebScriptException("could not determine NodeRef for path :'"+cleanTargetPath+"'");
+	        
+	        result = info.getNodeRef();
+	    }
+	    
+	    return(result);
+	}
+
+	protected String buildTextMessage(Throwable t)
+	{
+	    StringBuffer result        = new StringBuffer();
+	    String       timeOfFailure = (new Date()).toString();
+	    String       hostName      = null;
+	    String       ipAddress     = null;
+	
+	    try
+	    {
+	        hostName  = InetAddress.getLocalHost().getHostName();
+	        ipAddress = InetAddress.getLocalHost().getHostAddress();
+	    }
+	    catch (UnknownHostException uhe)
+	    {
+	        hostName  = "unknown";
+	        ipAddress = "unknown";
+	    }
+	
+	    result.append("\nTime of failure:             " + timeOfFailure);
+	    result.append("\nHost where failure occurred: " + hostName + " (" + ipAddress + ")");
+	    
+	    if (t != null)
+	    {
+	        result.append("\nRoot exception:");
+	        result.append(renderExceptionStackAsText(t));
+	    }
+	    else
+	    {
+	        result.append("\nNo exception was provided.");
+	    }
+	
+	    return(result.toString());
+	}
+
+	private String renderExceptionStackAsText( Throwable t)
+	{
+	    StringBuffer result = new StringBuffer();
+	
+	    if (t != null)
+	    {
+	        String    message = t.getMessage();
+	        Throwable cause   = t.getCause();
+	
+	        if (cause != null)
+	        {
+	            result.append(renderExceptionStackAsText(cause));
+	            result.append("\nWrapped by:");
+	        }
+	
+	        if (message == null)
+	        {
+	            message = "";
+	        }
+	
+	        result.append("\n");
+	        result.append(t.getClass().getName());
+	        result.append(": ");
+	        result.append(message);
+	        result.append("\n");
+	        result.append(renderStackTraceElements(t.getStackTrace()));
+	    }
+	
+	    return(result.toString());
+	}
+
+	private String renderStackTraceElements(StackTraceElement[] elements)
+	{
+	    StringBuffer result = new StringBuffer();
+	
+	    if (elements != null)
+	    {
+	        for (int i = 0; i < elements.length; i++)
+	        {
+	            result.append("\tat " + elements[i].toString() + "\n");
+	        }
+	    }
+	
+	    return(result.toString());
+	}
+	
+	// boilerplate setters
+
+	public void setFileFolderService(FileFolderService fileFolderService)
+	{
+		this.fileFolderService = fileFolderService;
+	}
+
+	public void setRepository(Repository repository)
+	{
+		this.repository = repository;
+	}
+
+}

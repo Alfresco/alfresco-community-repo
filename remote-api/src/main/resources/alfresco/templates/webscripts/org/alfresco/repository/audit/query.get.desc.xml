@@ -1,0 +1,112 @@
+<webscript>
+  <shortname>Alfresco audit service query</shortname>
+  <description>
+    <![CDATA[
+    Query to retrieve audit events.
+    
+    JSON returned:
+    {
+       "count":2,
+       "entries": 
+       [
+          {
+             "id":49,
+             "application":AlfrescoRepository,
+             "user":testAuditAuthenticationService,
+             "time":"2010-09-01T14:02:08.454+01:00",
+             "values":
+             {
+                         "\/repository\/login\/error\/user":"testAuditAuthenticationService"
+             }
+             
+          },
+          {
+             "id":51,
+             "application":AlfrescoRepository,
+             "user":null,
+             "time":"2010-09-01T15:26:07.571+01:00",
+             "values":
+             {
+                         "\/repository\/login\/error\/user":"banana"
+             }
+          }
+       ]
+    }
+       
+    To get the last entry ID:
+       /api/audit/query/{application}?forward=false&limit=1&verbose=false
+    
+    Note: It is not possible to get a total result count without executing the query.
+    ]]>
+  </description>
+  <url>/api/audit/query/{application}?fromId={fromId}&amp;toId={toId}&amp;fromTime={fromTime}&amp;toTime={toTime}&amp;user={user}&amp;forward={forward}&amp;limit={limit}&amp;verbose={verbose}</url>
+  <url>/api/audit/query/{application}/{path}?value={value}&amp;valueType={valueType}&amp;fromId={fromId}&amp;toId={toId}&amp;fromTime={fromTime}&amp;toTime={toTime}&amp;user={user}&amp;forward={forward}&amp;limit={limit}&amp;verbose={verbose}</url>
+  <format default="json" />
+  <authentication>admin</authentication>
+  <transaction allow="readonly">required</transaction>
+  <family>Audit</family>
+  <lifecycle>internal</lifecycle>
+  <args>
+    <arg>
+      <name>application</name>
+      <description>
+        <![CDATA[
+        Name of the audit application (mandatory).
+        e.g. /api/audit/query/AlfrescoRepository : AlfrescoRepository
+        ]]>
+      </description>
+    </arg> 
+    <arg>
+      <name>path</name>
+      <description>
+        <![CDATA[
+        Full value path to search against.
+        e.g. /api/audit/query/AlfrescoRepository/repository/login/error/user : /repository/login/error/user
+        ]]>
+      </description>
+    </arg> 
+    <arg>
+      <name>value</name>
+      <description>
+        <![CDATA[
+        Optional value to search for.  If no 'valueType' is specified, then the value will be treated as a String. 
+        ]]>
+      </description>
+    </arg> 
+    <arg>
+      <name>valueType</name>
+      <description>
+        <![CDATA[
+        Optional class name to convert the 'value' parameter.
+        e.g. valueType=java.lang.Long 
+        ]]>
+      </description>
+    </arg> 
+    <arg>
+      <name>limit</name>
+      <description>
+        <![CDATA[
+        Optionally limit the number of entries retrieved.
+        e.g. limit=100
+        The default, when unspecified, is 100.  Using extreme values will result in memory issues
+        during the FreeMarker template conversion.  It is possible to use the lower bound ID-based
+        queries ('fromId'), in conjunction with the 'limit' parameter, to page through results.
+        ]]>
+      </description>
+    </arg> 
+    <arg>
+      <name>verbose</name>
+      <description>
+        <![CDATA[
+        Determine if entry 'values' should be returned.
+        e.g. verbose=true  : pull back all entry values
+        e.g. verbose=false : ignore all entry values 
+        ]]>
+      </description>
+    </arg> 
+ </args>
+  
+  <!--  turn off the multipart formdata processing -->
+  <formdata multipart-processing="false" />
+
+</webscript>

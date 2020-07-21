@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<webscript>
+  <shortname>Handles POST for the Search api</shortname>
+  <description>Hands back a little bit of JSON</description>
+  <url>/public/search/versions/1/search</url>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <format default="json">argument</format>
+  <lifecycle>public_api</lifecycle>
+</webscript>

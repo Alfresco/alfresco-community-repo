@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>Get tagscope tags</shortname>
+  <description><![CDATA[
+  Get all tags of the nearest available tagscope.
+  ]]></description>
+  <url>/api/tagscopes/node/{store_type}/{store_id}/{id}/tags</url>
+  <url>/api/tagscopes/site/{site}/tags</url>
+  <url>/api/tagscopes/site/{site}/{container}/tags</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <family>Tagging</family>
+</webscript>

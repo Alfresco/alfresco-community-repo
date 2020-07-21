@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+		$Revision: 135 $ $Date: 2009-10-19 10:59:00 -0700 (Mon, 19 Oct 2009) $
+		$Author: albertcbrown $ $HeadURL:
+		http://tools.oasis-open.org/version-control/svn/cmis/trunk/SchemaProject/schema/CMIS-RestAtom.xsd
+		$
+	-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified"
+	targetNamespace="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1"
+	xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+	version="1.0">
+	
+	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200908/"
+		schemaLocation="CMIS-Core.xsd" />
+	<xs:import namespace="http://www.w3.org/2005/Atom"
+		schemaLocation="ATOM.xsd" />
+
+
+	<xs:attribute name="id" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>
+				This attribute MAY be used on XML elements that refer to a CMIS resources.  Examples are:
+				- atom:link
+				- cmis:type
+			</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+	
+	<xs:attribute name="renditionKind" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension attribute that will
+				be
+				used to specify the rendition kind of a link with relation
+				alternate if it is a CMIS Rendition.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:attribute>
+
+	<xs:element name="repositoryInfo" type="cmis:cmisRepositoryInfoType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain CMIS repository information
+				inside an AtomPub
+				workspace element inside an AtomPub Service document
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="collectionType" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to express the CMIS collection type.
+				This is only valid inside
+				an app:collection element.
+				Valid values are in
+				enumCollectionType. If
+				the value is not in enumCollectionType, then
+				it denotes a
+				repository-specific relationship.
+				
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="type" type="cmis:cmisTypeDefinitionType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the Atom extension element that will be
+				used to contain a type definition (document, folder, relationship,
+				or policy) inside an atom entry element.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+
+	<xs:element name="children" type="atom:feedType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the Atom extension element that will be
+				used to contain a feed inside an atom entry element.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="numItems" type="xs:integer">
+		<xs:annotation>
+			<xs:documentation>
+				This is the Atom extension element that will be
+				used to express the number of items in a feed if known.
+
+				This may only
+				be used as an extension to the Feed.
+
+				Reference - numItems from Part
+				I.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:simpleType name="enumCollectionType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="root" />
+			<xs:enumeration value="unfiled" />
+			<xs:enumeration value="checkedout" />
+			<xs:enumeration value="types" />
+			<xs:enumeration value="query" />
+			<xs:enumeration value="changes" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="enumUriTemplateType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="objectbyid" />
+			<xs:enumeration value="objectbypath" />
+			<xs:enumeration value="query" />
+			<xs:enumeration value="typebyid" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="cmisUriTemplateType">
+		<xs:sequence>
+			<xs:element name="template" type="xs:string" />
+			<xs:element name="type" type="xs:string" />
+			<xs:element name="mediatype" type="xs:string" />
+			<xs:any processContents="lax" namespace="##other" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="uritemplate" type="cmisra:cmisUriTemplateType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain CMIS URI Templates inside an AtomPub
+				workspace
+				element inside an AtomPub Service document</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="object" type="cmis:cmisObjectType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain a CMIS object instance inside an Atom entry element.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="pathSegment" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain the path segment for this object in a particular
+				folder. This element MAY only be specified in an atom:entry inside
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="relativePathSegment" type="xs:string">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain the path segment for this object for the particular
+				folder returned in the Object Parents feed.
+				Unlike pathSegment which
+				is set on the atom entry when contained in a feed for a folder, this
+				is set on an atom entry representing a folder for a parents feed on
+				the object.
+
+				This element MAY only be specified in an atom:entry
+				representing a folder
+				inside an object parents feed.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="cmisContentType">
+		<xs:sequence>
+			<xs:element name="mediatype" type="xs:string" />
+			<xs:element name="base64" type="xs:string" />
+			<xs:any processContents="lax" namespace="##other" minOccurs="0"
+				maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="content" type="cmisra:cmisContentType">
+		<xs:annotation>
+			<xs:documentation>
+				This is the AtomPub extension element that will be
+				used to contain the base64 content inside an atom entry.
+
+				This is used
+				to convey the content on creation or update via AtomPub as
+				an
+				alternate mechanism.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:simpleType name="enumReturnVersion">
+		<xs:annotation>
+			<xs:documentation>
+				This is an enumeration used for specifying the
+				version to return on a GET of an atom entry via URI argument.
+			</xs:documentation>
+		</xs:annotation>
+
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="this">
+				<xs:annotation>
+					<xs:documentation>
+						This is getObject service for the version specified
+			</xs:documentation>
+				</xs:annotation>
+
+			</xs:enumeration>
+			<xs:enumeration value="latest">
+				<xs:annotation>
+					<xs:documentation>
+						This is the same as major==false on
+						getObjectOfLatestVersion
+					</xs:documentation>
+				</xs:annotation>
+
+			</xs:enumeration>
+			<xs:enumeration value="latestmajor">
+				<xs:annotation>
+					<xs:documentation>
+						This is the same as major==true on
+						getObjectOfLatestVersion
+					</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+
+
+	<xs:simpleType name="enumLinkRelations">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="self" />
+			<xs:enumeration value="edit" />
+			<xs:enumeration value="edit-media" />
+			<xs:enumeration value="via" />
+			<xs:enumeration value="up" />
+			<xs:enumeration value="down" />
+			<xs:enumeration value="alternate" />
+			<xs:enumeration value="version-history" />
+			<xs:enumeration value="current-version" />
+			<xs:enumeration value="working-copy" />
+			<xs:enumeration value="service" />
+			<xs:enumeration value="describedby" />
+
+			<!--  paging -->
+			<xs:enumeration value="first" />
+			<xs:enumeration value="last" />
+			<xs:enumeration value="next" />
+			<xs:enumeration value="previous" />
+
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/allowableactions">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_ALLOWABLEACTIONS" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/relationships">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_RELATIONSHIPS" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/source">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_SOURCE" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/target">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_TARGET" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/policies">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_POLICIES" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+			<xs:enumeration value="http://docs.oasis-open.org/ns/cmis/link/200908/acl">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_ACL" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+
+			<!--  changes -->
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/changes">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_CHANGES" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+
+			<!--  folder tree -->
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/foldertree">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_FOLDERTREE" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+
+
+			<!--  types descendants -->
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/typedescendants">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_TYPEDESCENDANTS" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+			<xs:enumeration
+				value="http://docs.oasis-open.org/ns/cmis/link/200908/rootdescendants">
+				<xs:annotation>
+					<xs:appinfo>
+						<jaxb:typesafeEnumMember name="CMIS_ROOTDESCENDANTS" />
+					</xs:appinfo>
+				</xs:annotation>
+			</xs:enumeration>
+
+
+		</xs:restriction>
+	</xs:simpleType>
+
+	<!--  CMIS Rest Arguments -->
+	<xs:simpleType name="enumArguments">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="childTypes" />
+			<xs:enumeration value="continueOnFailure" />
+			<xs:enumeration value="checkin" />
+			<xs:enumeration value="checkinComment" />
+			<xs:enumeration value="depth" />
+			<xs:enumeration value="direction" />
+			<xs:enumeration value="filter" />
+			<xs:enumeration value="folderId" />
+			<xs:enumeration value="includeACL" />
+			<xs:enumeration value="includeAllowableActions" />
+			<xs:enumeration value="includeProperties" />
+			<xs:enumeration value="includePathSegment" />
+			<xs:enumeration value="includeRelativePathSegment" />
+			<xs:enumeration value="includePropertyDefinitions" />
+			<xs:enumeration value="includePolicyIds" />
+			<xs:enumeration value="includeRelationships" />
+			<xs:enumeration value="includeSubRelationshipTypes" />
+			<xs:enumeration value="length" />
+			<xs:enumeration value="major" />
+			<xs:enumeration value="maxItems" />
+      		<xs:enumeration value="overwriteFlag" />
+			<xs:enumeration value="removeFrom" />
+			<xs:enumeration value="relationshipDirection" />
+			<xs:enumeration value="relationshipType" />
+			<xs:enumeration value="repositoryId" />
+			<xs:enumeration value="returnVersion" />
+			<xs:enumeration value="skipCount" />
+			<xs:enumeration value="thisVersion" />
+			<xs:enumeration value="typeId" />
+			<xs:enumeration value="types" />
+			<xs:enumeration value="unfileObject" />
+			<xs:enumeration value="versioningState" />
+		</xs:restriction>
+	</xs:simpleType>
+
+
+
+</xs:schema>
+	<!-- EOF -->

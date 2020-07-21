@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Query site collection</shortname>
+  <description>Queries the collection of sites.</description>
+  <url>/api/sites/query</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Event Listing</shortname>
+   <description>List of all upcoming events for a site</description>
+   <url>/calendar/eventList</url>
+   <url>/calendar/eventList-{site}.ics</url>
+   <format default="json">argument</format>
+   <authentication>guest</authentication>
+   <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

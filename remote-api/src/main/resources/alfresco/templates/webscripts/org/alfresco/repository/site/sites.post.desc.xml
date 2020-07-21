@@ -1,0 +1,29 @@
+<webscript>
+  <shortname>Create Web site</shortname>
+  <description>  <![CDATA[
+  Creates a new Web site based on the site preset and details provided.
+  <br />
+  Note: this method only creates a site at the repository level, it does not create a fully functional site.
+  It should be considered for internal use only at the moment.
+  Currently, creating a site programmatically needs to be done in the Share context, using the create-site module.
+  Further information can be found at the address http://your_domain:8080/share/page/index/uri/modules/create-site.post
+  within your Alfresco installation.
+  
+  <br />
+  The following properties may be set.
+  
+  <dl>
+  <dt>shortName</dt><dd>the shortName of the web site, mandatory, must be unique</dd>
+  <dt>sitePreset</dt><dd>the sitePreset</dd>
+  <dt>title</dt><dd>the title of the web site</dd>
+  <dt>description</dt><dd>the description for the web site</dd>
+  <dt>visibility</dt><dd>the site visibility, one of (PUBLIC,MODERATED,PRIVATE), defaults to PUBLIC</dd>
+  <dt>type</dt><dd>the type of site to create, optional</dd>
+  </dl>
+  ]]></description>
+  <url>/api/sites</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

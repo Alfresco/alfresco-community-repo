@@ -1,0 +1,22 @@
+<webscript>
+  <shortname>Cancel invitation</shortname>
+  <description><![CDATA[
+  Cancel an open invitation.
+  <BR>
+  Canceling an invitation immediatly stops the invitation. This is different to rejecting an 
+  invitation, which will result in the invitation workflow continuing to a normal but rejected conclusion.   
+  In particular, the approver or invitee are not notified if an invitation is canceled. 
+  <BR>
+  Only a site manager may cancel an nominated invitation.
+  <BR>
+  A site manager or the invitee may cancel a moderated invitation. 			
+  <BR>
+  Returns 200, STATUS_OK on success.
+  ]]>
+  </description>
+  <url>/api/sites/{shortname}/invitations/{invitationId}</url>
+  <format default="json"/>
+  <lifecycle>limited_support</lifecycle>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

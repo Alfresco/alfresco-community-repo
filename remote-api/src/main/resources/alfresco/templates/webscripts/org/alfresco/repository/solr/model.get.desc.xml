@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Get Model</shortname>
+  <description>Get the model for given model name.</description>
+  <url>/api/solr/model</url>
+  <format default="json">argument</format>
+  <!-- Solr api is protected by a solr-specific authentication mechanism -->
+  <authentication>none</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+  <family>SOLR</family>
+  <args>
+ </args>
+</webscript>

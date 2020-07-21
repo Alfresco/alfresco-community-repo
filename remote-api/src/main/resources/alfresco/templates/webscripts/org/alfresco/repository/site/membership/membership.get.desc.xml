@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Get Web site membership</shortname>
+  <description> <![CDATA[
+  Get the membership details for a user or group.
+  <br />
+  'shortname' is the shortname of the Web site,  'authorityname' is the full authority name for the membership.
+  <br />
+  Returns a membership or Status.NOT_FOUND(404)
+  
+  ]]></description>
+  <url>/api/sites/{shortname}/memberships/{authorityname}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

@@ -1,0 +1,57 @@
+<webscript>
+  <shortname>File upload</shortname>
+  <description><![CDATA[
+  Upload file content and meta-data into repository.
+  
+  <br />
+  HTML form data
+  <ul>
+    <li>filedata, (mandatory) HTML type file</li>
+    <li>You must specify one of:
+       <br>&nbsp;destination (the folder NodeRef where the node will be created)
+       <br>&nbsp;updateNodeRef (the NodeRef of an existing node that will be updated)
+       <br>&nbsp;siteid and containerid (the Site name and the container in that site where the document will be created)
+    </li>
+    <li>uploaddirectory - name of the folder (either in the site container or the destination) where the document will be uploaded. This folder must already exist</li>
+    <li>description - Description for a version update (versionDescription)</li>
+    <li>contenttype - The content type that this document should be specialised to</li>
+    <li>majorversion</li>
+    <li>overwrite</li>
+    <li>thumbnails</li>
+  </ul> 
+  
+  <br />
+  Return content
+  <ul>
+  <li>nodeRef</li>
+  </ul>
+
+  <br />
+  Return status: STATUS_OK (200)
+  ]]>
+  </description>
+  <url>/api/upload</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
+  <responses>
+    <response>
+      <format>json</format>
+      <type>
+      <![CDATA[
+      {
+        "nodeRef": string,
+        "fileName": string,
+        "status":
+        {
+          "code": 200,
+          "name": "OK",
+          "description": "File uploaded successfully"
+        }
+      }
+      ]]>
+      </type>
+    </response>
+  </responses>
+</webscript>

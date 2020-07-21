@@ -1,0 +1,80 @@
+body 
+{
+   margin: 4px;
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+}
+
+div
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   color: #515D6B;
+}
+
+div.title
+{
+   font-weight: bold;
+   font-size: 13px;
+}
+
+div.titlebar
+{
+   font-weight: bold;
+   padding: 2px 0px 2px 8px;
+   background-color: #DCE4EB;
+   border-bottom: 1px solid #CCD4DB;
+}
+
+div.indent
+{
+   padding-left: 3px;
+}
+
+span
+{
+   font-size: 11px;
+}
+
+span.title
+{
+   font-weight: bold;
+   font-size: 13px;
+   color: #666677;
+}
+
+span.indent
+{
+   padding-left: 3px;
+}
+
+a:link, a:visited
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   text-decoration: none;
+   color: #168ECE;
+}
+
+a:hover
+{
+   color: #168ECE;
+   text-decoration: underline;
+}
+
+form
+{
+   padding: 0px;
+   margin: 0px;
+}
+
+input
+{
+   font-family: Trebuchet MS, Arial, sans-serif;
+   font-size: 12px;
+   margin: 2px;
+   padding: 1px 2px 1px 2px;
+   color: #515D6B;
+   background-color: #F8FCFD;
+   border: 1px solid #CCD4DB;
+}

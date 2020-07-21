@@ -1,0 +1,531 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+   
+   <display-name>Alfresco</display-name>
+
+   <description>Alfresco</description>
+
+   <!-- Spring Application Context location -->
+   <context-param>
+      <description>Spring config file location</description>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>/WEB-INF/web-application-context.xml</param-value>
+   </context-param>
+   
+   <context-param>
+      <description>Do not try to resolve web app root as file</description>
+      <param-name>log4jExposeWebAppRoot</param-name>
+      <param-value>false</param-value>
+   </context-param>
+
+	<!--  These were previously init params for the WebDAV servlet,
+	      but since they are also needed to MT-enable the 
+	      ExternalAccess servlet, I have made them context wide. -->
+   <context-param>
+         <param-name>store</param-name>
+         <param-value>workspace://SpacesStore</param-value>
+   </context-param>
+   <context-param>
+         <param-name>rootPath</param-name>
+         <param-value>/app:company_home</param-value>
+   </context-param>
+
+   <!-- Enterprise context-param placeholder -->
+
+   <filter>
+      <description>Cleans the security context after the request was processed</description>
+      <filter-name>Clear security context filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.ClearSecurityContextFilter</filter-class>
+   </filter>
+
+   <filter>
+      <description>Authentication filter mapped to all authenticated URLs. Mainly for SSO support</description>
+      <filter-name>Global Authentication Filter</filter-name>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>GlobalAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
+      <description>Authentication filter mapped to web script URLs. Mainly for SSO support</description>
+      <filter-name>WebScript Authentication Filter</filter-name>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>WebscriptAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
+      <description>Directly handles login script calls, allowing Surf to establish a cookie for a manual login</description>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>WebscriptCookieAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+      
+   <filter>
+      <filter-name>WebDAV Authentication Filter</filter-name>
+      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+      <init-param>
+         <param-name>beanName</param-name>
+         <param-value>WebDavAuthenticationFilter</param-value>
+      </init-param>
+   </filter>
+
+   <filter>
+      <description>Sets fallback default locale for ALL requests</description>
+      <filter-name>Global Localization Filter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.GlobalLocalizationFilter</filter-class>
+   </filter>
+
+   <filter>
+      <filter-name>X509AuthFilter</filter-name>
+      <filter-class>org.alfresco.web.app.servlet.AlfrescoX509ServletFilter</filter-class>
+      <!--
+      Uncomment to validate a specific cert for a specific URL.
+      <init-param>
+         <param-name>cert-contains</param-name>
+         <param-value>CN=Alfresco Repository Client,OU=Unknown,O=Alfresco Software Ltd.,L=Maidenhead,ST=UK,C=GB</param-value>
+      </init-param>
+      -->
+   </filter>
+
+   <filter>
+      <description>CSRF Token filter. Checks for a session based CSRF token in request headers (or form parameters) based on config.</description>
+      <filter-name>CSRF Token Filter</filter-name>
+      <filter-class>org.springframework.extensions.webscripts.servlet.CSRFFilter</filter-class>
+   </filter>
+
+   <!-- Enterprise filter placeholder -->
+   <filter-mapping>
+      <filter-name>Clear security context filter</filter-name>
+      <url-pattern>/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>Global Localization Filter</filter-name>
+      <url-pattern>/*</url-pattern>
+      <dispatcher>REQUEST</dispatcher>
+   </filter-mapping>
+
+   <!-- Activiti Global Authentication Filter mapping placeholder -->
+
+   <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
+   <filter-mapping>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </filter-mapping>
+   
+   <!-- The WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->
+   <filter-mapping>
+      <filter-name>WebScript Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>WebScript Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>Global Authentication Filter</filter-name>
+      <url-pattern>/api/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>WebDAV Authentication Filter</filter-name>
+      <url-pattern>/webdav/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>WebDAV Authentication Filter</filter-name>
+      <url-pattern>/cmisatom/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/service/api/solr/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/s/api/solr/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/wcservice/api/solr/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>X509AuthFilter</filter-name>
+      <url-pattern>/wcs/api/solr/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/service/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/s/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/service/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/s/admin/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcservice/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcs/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcservice/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcs/admin/*</url-pattern>
+   </filter-mapping>
+
+   <!-- Enterprise filter-mapping placeholder -->
+   
+   <!-- Spring Context Loader listener - can disable loading of context if runtime config changes are needed -->
+   <listener>
+      <listener-class>org.alfresco.web.app.ContextLoaderListener</listener-class>
+   </listener>
+
+   <!-- WebDAV session listener - ensures that no locked resources is left after session expires -->
+   <listener>
+      <listener-class>org.alfresco.repo.webdav.WebDAVSessionListener</listener-class>
+   </listener>
+
+   <!-- CORS session listener - enables and configures CORS -->
+   <listener>
+      <listener-class>org.alfresco.web.app.servlet.CORSContextListener</listener-class>
+   </listener>
+
+   <!-- Enterprise listener placeholder -->
+   <servlet>
+      <servlet-name>downloadContent</servlet-name>
+      <servlet-class>org.alfresco.web.app.servlet.DownloadContentServlet</servlet-class>
+   </servlet>
+
+   <servlet>
+      <servlet-name>WebDAV</servlet-name>
+      <servlet-class>org.alfresco.repo.webdav.WebDAVServlet</servlet-class>
+      <load-on-startup>5</load-on-startup>
+   </servlet>
+
+   <servlet>
+      <servlet-name>apiServlet</servlet-name>
+      <servlet-class>org.alfresco.repo.web.scripts.AlfrescoWebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.remoteuser</param-value>
+      </init-param>
+   </servlet>
+   
+   <servlet>
+      <servlet-name>wcapiServlet</servlet-name>
+      <servlet-class>org.alfresco.repo.web.scripts.AlfrescoWebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>webscripts.authenticator.remoteuser</param-value>
+      </init-param>
+   </servlet>
+
+   <!-- See comment on the servlet-mapping CMISFileShareServlet.
+   <servlet>
+      <servlet-name>CMISFileShareServlet</servlet-name>
+      <servlet-class>org.apache.chemistry.opencmis.browser.BrowseServlet</servlet-class>
+      <init-param>
+         <param-name>auxroot</param-name>
+         <param-value>cmisfs/browser/</param-value>
+      </init-param>
+      <init-param>
+         <param-name>allow</param-name>
+         <param-value>http.*</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atomsvc+xml</param-name>
+         <param-value>/cmisfs/stylesheets/service.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atom+xml;type=feed</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atom+xml; type=feed</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmistree+xml</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/atom+xml;type=entry</param-name>
+         <param-value>/cmisfs/stylesheets/entry.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmisallowableactions+xml</param-name>
+         <param-value>/cmisfs/stylesheets/actions.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>stylesheet:application/cmisacl+xml</param-name>
+         <param-value>/cmisfs/stylesheets/acl.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:renditions</param-name>
+         <param-value>/cmisfs/stylesheets/renditions.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:relationships</param-name>
+         <param-value>/cmisfs/stylesheets/relationships.xsl</param-value>
+      </init-param>
+      <init-param>
+         <param-name>override-stylesheet:thumbnails</param-name>
+         <param-value>/cmisfs/stylesheets/thumbnails.xsl</param-value>
+      </init-param>
+   </servlet>
+   -->
+
+    <servlet>
+        <servlet-name>cmisws10</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.0</param-value>
+        </init-param>
+        <load-on-startup>7</load-on-startup>
+    </servlet>
+    
+    <servlet>
+        <servlet-name>cmisws11</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet</servlet-class>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.1</param-value>
+        </init-param>
+        <load-on-startup>7</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>cmisatom10</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet</servlet-class>
+        <init-param>
+            <param-name>callContextHandler</param-name>
+            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cmisVersion</param-name>
+            <param-value>1.0</param-value>
+        </init-param>
+        <load-on-startup>8</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>cmisbrowser</servlet-name>
+        <servlet-class>org.apache.chemistry.opencmis.server.impl.browser.CmisBrowserBindingServlet</servlet-class>
+        <init-param>
+            <param-name>callContextHandler</param-name>
+            <param-value>org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler</param-value>
+        </init-param>
+        <load-on-startup>8</load-on-startup>
+    </servlet>
+
+   <servlet>
+      <servlet-name>cmistck</servlet-name>
+      <servlet-class>org.apache.chemistry.opencmis.tck.runner.WebRunnerServlet</servlet-class>
+      <load-on-startup>8</load-on-startup>
+   </servlet>
+
+   <servlet>
+      <servlet-name>publicapiServlet</servlet-name>
+      <servlet-class>org.alfresco.rest.api.PublicApiWebScriptServlet</servlet-class>
+      <init-param>
+         <param-name>authenticator</param-name>
+         <param-value>publicapi.authenticator</param-value>
+      </init-param>
+   </servlet>
+
+   <!-- Enterprise servlet placeholder -->
+
+   <servlet-mapping>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/download/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>downloadContent</servlet-name>
+      <url-pattern>/d/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+        <servlet-name>WebDAV</servlet-name>
+        <url-pattern>/webdav/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>apiServlet</servlet-name>
+      <url-pattern>/service/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>apiServlet</servlet-name>
+      <url-pattern>/s/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>wcapiServlet</servlet-name>
+      <url-pattern>/wcservice/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>wcapiServlet</servlet-name>
+      <url-pattern>/wcs/*</url-pattern>
+   </servlet-mapping>
+
+   <!-- The cmisbrowser endpoint is provided by the Chemistry project.
+        If you uncomment this section you need to make sure for security
+		reasons that that you have a firewall set up so that it is not
+		accessible from outside of the organisation.
+   <servlet-mapping>
+      <servlet-name>CMISFileShareServlet</servlet-name>
+      <url-pattern>/cmisbrowser</url-pattern>
+   </servlet-mapping>
+   -->
+   
+   <servlet-mapping>
+      <servlet-name>cmisws10</servlet-name>
+      <url-pattern>/cmisws/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>cmisatom10</servlet-name>
+      <url-pattern>/cmisatom/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>cmisbrowser</servlet-name>
+      <url-pattern>/cmisbrowser/*</url-pattern>
+   </servlet-mapping>
+
+   <servlet-mapping>
+      <servlet-name>publicapiServlet</servlet-name>
+      <url-pattern>/api/*</url-pattern>
+   </servlet-mapping>
+    
+   <!-- The CMIS TCK is deactivated by default. -->
+   <!-- CMISTCK
+   <servlet-mapping>
+      <servlet-name>cmistck</servlet-name>
+      <url-pattern>/cmistck</url-pattern>
+   </servlet-mapping>
+   CMISTCK -->
+
+   <!-- Enterprise servlet-mapping placeholder -->
+
+   <session-config>
+      <session-timeout>60</session-timeout>
+   </session-config>
+
+   <welcome-file-list>
+      <welcome-file>index.jsp</welcome-file>
+   </welcome-file-list>
+   
+   <!-- Toggle securecomms placeholder start -->
+   
+
+   <!-- Toggle securecomms placeholder end -->
+   
+   <env-entry>
+      <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
+      <env-entry-name>properties/startup.enable</env-entry-name>
+      <env-entry-type>java.lang.Boolean</env-entry-type>
+      <env-entry-value>true</env-entry-value>
+   </env-entry>
+
+   <env-entry>
+      <description>The filesystem directory below which content and index data is stored. Should be on a shared disk
+         if this is a clustered installation.</description>
+      <env-entry-name>properties/dir.root</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
+   </env-entry>
+
+   <env-entry>
+      <description>The fully qualified name of a org.hibernate.dialect.Dialect subclass that allows Hibernate to
+         generate SQL optimized for a particular relational database. Choose from org.hibernate.dialect.DerbyDialect,
+         org.hibernate.dialect.MySQLInnoDBDialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect,
+         org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect, org.hibernate.dialect.PostgreSQLDialect</description>
+      <env-entry-name>properties/hibernate.dialect</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
+   </env-entry>
+
+   <env-entry>
+      <description>Mapping from tokens in Hibernate queries to SQL tokens. For PostgreSQL, set this to "true
+         TRUE, false FALSE".</description>
+      <env-entry-name>properties/hibernate.query.substitutions</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
+   </env-entry>
+
+   <env-entry>
+      <description>Enable use of JDBC3 PreparedStatement.getGeneratedKeys() to retrieve natively generated keys
+         after insert. Requires JDBC3+ driver. Set to false if your driver has problems with the Hibernate identifier
+         generators. By default, tries to determine the driver capabilities using connection metadata. </description>
+      <env-entry-name>properties/hibernate.jdbc.use_get_generated_keys</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
+   </env-entry>
+
+   <env-entry>
+      <description>Qualify unqualified table names with the given schema/tablespace in generated SQL. It may be
+         necessary to set this when the target database has more than one schema.</description>
+      <env-entry-name>properties/hibernate.default_schema</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
+   </env-entry>
+
+</web-app>
